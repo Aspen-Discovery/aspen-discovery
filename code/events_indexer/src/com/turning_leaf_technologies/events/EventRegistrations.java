@@ -4,18 +4,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class EventRegistrations {
-	private long id;
-	private long userId;
-	private String userBarcode;
-	private String sourceId;
-	private long waitlist;
+	private final long id;
+	private final long userId;
+	private final String sourceId;
 
 	EventRegistrations(ResultSet existingRegistrationsRS) throws SQLException{
 		this.id = existingRegistrationsRS.getLong("id");
 		this.userId = existingRegistrationsRS.getLong("userId");
-		this.userBarcode = existingRegistrationsRS.getString("userBarcode");
 		this.sourceId = existingRegistrationsRS.getString("sourceId");
-		this.waitlist = existingRegistrationsRS.getLong("waitlist");
 	}
 
 	long getId() {
@@ -26,15 +22,7 @@ class EventRegistrations {
 		return userId;
 	}
 
-	String getUserBarcode() {
-		return userBarcode;
-	}
-
 	String getSourceId() {
 		return sourceId;
-	}
-
-	long getWaitlist() {
-		return waitlist;
 	}
 }

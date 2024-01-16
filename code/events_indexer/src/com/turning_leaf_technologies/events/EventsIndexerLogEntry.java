@@ -11,9 +11,9 @@ import java.util.Date;
 
 public class EventsIndexerLogEntry implements BaseLogEntry {
 	private Long id;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 	private int numEvents = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
@@ -23,8 +23,8 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
 
-	private Logger logger;
-	private String name;
+	private final Logger logger;
+	private final String name;
 
 	EventsIndexerLogEntry(String name, Connection dbConn, Logger logger) {
 		this.name = name;
@@ -39,7 +39,7 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
 		Date date = new Date();
@@ -139,6 +139,7 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	boolean hasErrors() {
 		return numErrors > 0;
 	}

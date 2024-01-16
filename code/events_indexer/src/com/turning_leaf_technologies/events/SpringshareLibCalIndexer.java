@@ -4,7 +4,6 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -16,14 +15,13 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,30 +35,28 @@ import java.util.zip.CRC32;
 import static java.util.Calendar.YEAR;
 
 class SpringshareLibCalIndexer {
-	private long settingsId;
-	private String name;
+	private final long settingsId;
+	private final String name;
 	private String baseUrl;
-	private String calId;
-	private String clientId;
-	private String clientSecret;
-	private int numberOfDaysToIndex;
+	private final String calId;
+	private final String clientId;
+	private final String clientSecret;
+	private final int numberOfDaysToIndex;
 
-	private Connection aspenConn;
-	private EventsIndexerLogEntry logEntry;
-	private HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
-	private HashSet<String> librariesToShowFor = new HashSet<>();
-	private static CRC32 checksumCalculator = new CRC32();
+	private final Connection aspenConn;
+	private final EventsIndexerLogEntry logEntry;
+	private final HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
+	private final HashSet<String> librariesToShowFor = new HashSet<>();
+	private static final CRC32 checksumCalculator = new CRC32();
 
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
 	private PreparedStatement addRegistrantStmt;
 	private PreparedStatement deleteRegistrantStmt;
 
-	private ConcurrentUpdateSolrClient solrUpdateServer;
-	//TODO: Update full reload based on settings
-	private boolean doFullReload = true;
+	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
-	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -92,6 +88,7 @@ class SpringshareLibCalIndexer {
 		}
 
 		try {
+			//noinspection SpellCheckingInspection
 			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
 			deleteRegistrantStmt = aspenConn.prepareStatement("DELETE FROM user_events_registrations WHERE userId = ? AND sourceId = ?");
 		} catch (Exception e) {
@@ -131,10 +128,10 @@ class SpringshareLibCalIndexer {
 		return existingRegistrations;
 	}
 
-	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-	private SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
-	private SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
-	private SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
+	private final SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+	private final SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private final SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
+	private final SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
 
 	void indexEvents() {
 		// LibCal API request
@@ -142,20 +139,23 @@ class SpringshareLibCalIndexer {
 		nextYear.setTime(new Date());
 		nextYear.add(YEAR, 1);
 		JSONArray libCalEvents = getLibCalEvents();
-		if (doFullReload) {
-			try {
-				solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
-				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logEntry.incErrors("Solr is not running properly, try restarting " + rse.toString());
-				System.exit(-1);
-			} catch (Exception e) {
-				logEntry.incErrors("Error deleting from index ", e);
-			}
+
+		if (libCalEvents == null) {
+			return;
+		}
+
+		try {
+			solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
+			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
+			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
+			System.exit(-1);
+		} catch (Exception e) {
+			logEntry.incErrors("Error deleting from index ", e);
 		}
 
 		Date lastDateToIndex = new Date();
-		long numberOfDays = numberOfDaysToIndex * 24;
+		long numberOfDays = numberOfDaysToIndex * 24L;
 		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
 
 		for (int i = 0; i < libCalEvents.length(); i++){
@@ -166,245 +166,205 @@ class SpringshareLibCalIndexer {
 				checksumCalculator.update(rawResponse.getBytes());
 				long checksum = checksumCalculator.getValue();
 
-				Integer eventIdRaw = curEvent.getInt("id");
+				int eventIdRaw = curEvent.getInt("id");
 				String eventId = Integer.toString(eventIdRaw);
-				boolean eventExists = false;
-				boolean eventChanged = false;
-				if (existingEvents.containsKey(eventId)){
-					eventExists = true;
-					if (checksum != existingEvents.get(eventId).getRawChecksum()){
-						eventChanged = true;
-					}
-				}
+
+				boolean eventExists = existingEvents.containsKey(eventId);
+
 				String sourceId = "libcal_" + settingsId + "_" + eventId;
 
-				if (doFullReload || !eventExists || eventChanged){
-					//Add the event to solr
-					try {
-						if (curEvent.has("public")){
-							if (!curEvent.getBoolean("public")){
-								continue;
-							}
-						}
-						SolrInputDocument solrDocument = new SolrInputDocument();
-						solrDocument.addField("id", sourceId);
-						solrDocument.addField("identifier", eventId);
-						solrDocument.addField("type", "event_libcal");
-						solrDocument.addField("source", settingsId);
-						solrDocument.addField("url", curEvent.getJSONObject("url").getString("public"));
-						int boost = 1;
-						/* // "type" does not exist in LibCal as such
-						String eventType = getStringForKeyLibCal(curEvent, "type");
-						//Translate the Event Type
-						int boost = 1;
-						if (eventType == null ){
-							eventType = "Unknown";
-						}else if (eventType.equals("libcal_closing")) {
-							eventType = "Library Closure";
-						}else if (eventType.equals("libcal_event")) {
-							eventType = "Event";
-							boost = 5;
-						}else if (eventType.equals("libcal_reservation")) {
-							eventType = "Reservation";
-							boost = 2;
-						}
-						solrDocument.addField("event_type", eventType);
-						*/
-						String eventType = "Undefined";
-						if (curEvent.has("physical_seats") && curEvent.getInt("physical_seats") > 0) {
-							if (curEvent.has("online_seats") && curEvent.getInt("online_seats") > 0) {
-								eventType = "Hybrid In-person and Online";
-							} else {
-								eventType = "In-person";
-							}
-						} else if (curEvent.has("online_seats") && curEvent.getInt("online_seats") > 0) {
-							eventType = "Online";
-						}
-						solrDocument.addField("event_type", eventType);
-
-						//Don't index reservations since they are restricted to staff and
-						/* // LibCal has space bookings, see https://bywater.libcal.com/admin/api/1.1/endpoint/space_post
-						if (eventType != null && eventType.equals("libcal_reservation")) {
-							continue;
-						}*/
-
-						solrDocument.addField("last_indexed", new Date());
-
-						/* // LibCal events to not have a changed field
-						solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
-						*/
-
-						Date startDate = getDateForKey(curEvent,"start");
-						//Make sure the start date is within the range of dates we are indexing
-
-						solrDocument.addField("start_date", startDate);
-						if (startDate.after(lastDateToIndex)) {
+				//Add the event to solr
+				try {
+					if (curEvent.has("public")){
+						if (!curEvent.getBoolean("public")){
 							continue;
 						}
-						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
-						Date endDate = getDateForKey(curEvent,"end");
-						solrDocument.addField("end_date", endDate);
+					}
+					SolrInputDocument solrDocument = new SolrInputDocument();
+					solrDocument.addField("id", sourceId);
+					solrDocument.addField("identifier", eventId);
+					solrDocument.addField("type", "event_libcal");
+					solrDocument.addField("source", settingsId);
+					solrDocument.addField("url", curEvent.getJSONObject("url").getString("public"));
+					int boost = 1;
+					// "type" does not exist in LibCal as such
 
-						//Only add events for the next year
-						if (startDate.after(nextYear.getTime())){
-							continue;
+					String eventType = "Undefined";
+					if (curEvent.has("physical_seats") && curEvent.getInt("physical_seats") > 0) {
+						if (curEvent.has("online_seats") && curEvent.getInt("online_seats") > 0) {
+							eventType = "Hybrid In-person and Online";
+						} else {
+							eventType = "In-person";
 						}
-						HashSet<String> eventDays = new HashSet<>();
-						HashSet<String> eventMonths = new HashSet<>();
-						HashSet<String> eventYears = new HashSet<>();
-						Date tmpDate = (Date)startDate.clone();
+					} else if (curEvent.has("online_seats") && curEvent.getInt("online_seats") > 0) {
+						eventType = "Online";
+					}
+					solrDocument.addField("event_type", eventType);
 
-						if (tmpDate.equals(endDate) || tmpDate.after(endDate)){
+					//Don't index reservations since they are restricted to staff and
+					// LibCal has space bookings, see https://bywater.libcal.com/admin/api/1.1/endpoint/space_post
+
+					solrDocument.addField("last_indexed", new Date());
+
+					// LibCal events to not have a changed field
+
+					Date startDate = getDateForKey(curEvent,"start");
+					//Make sure the start date is within the range of dates we are indexing
+
+					solrDocument.addField("start_date", startDate);
+					if (startDate == null || startDate.after(lastDateToIndex)) {
+						continue;
+					}
+					solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
+					Date endDate = getDateForKey(curEvent,"end");
+					solrDocument.addField("end_date", endDate);
+
+					//Only add events for the next year
+					if (startDate.after(nextYear.getTime())){
+						continue;
+					}
+					HashSet<String> eventDays = new HashSet<>();
+					HashSet<String> eventMonths = new HashSet<>();
+					HashSet<String> eventYears = new HashSet<>();
+					Date tmpDate = (Date)startDate.clone();
+
+					if (tmpDate.equals(endDate) || tmpDate.after(endDate)){
+						eventDays.add(eventDayFormatter.format(tmpDate));
+						eventMonths.add(eventMonthFormatter.format(tmpDate));
+						eventYears.add(eventYearFormatter.format(tmpDate));
+					}else {
+						while (tmpDate.before(endDate)) {
 							eventDays.add(eventDayFormatter.format(tmpDate));
 							eventMonths.add(eventMonthFormatter.format(tmpDate));
 							eventYears.add(eventYearFormatter.format(tmpDate));
-						}else {
-							while (tmpDate.before(endDate)) {
-								eventDays.add(eventDayFormatter.format(tmpDate));
-								eventMonths.add(eventMonthFormatter.format(tmpDate));
-								eventYears.add(eventYearFormatter.format(tmpDate));
-								tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
-							}
+							tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
 						}
-						//Boost based on start date, we will give preference to anything in the next 30 days
-						Date today = new Date();
-						if (startDate.before(today) || startDate.equals(today)){
-							boost += 30;
-						}else{
-							long daysInFuture = (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-							if (daysInFuture > 30){
-								daysInFuture = 30;
-							}
-							boost += (30 - daysInFuture);
-						}
-						solrDocument.addField("event_day", eventDays);
-						solrDocument.addField("event_month", eventMonths);
-						solrDocument.addField("event_year", eventYears);
-						solrDocument.addField("title", curEvent.getString("title"));
-						solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "campus")));
-						solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "location")));
-						/* // LibCal events do not have a field for offsite_address
-						solrDocument.addField("offsite_address", getStringForKeyLibCal(curEvent, "offsite_address"));
-						*/
-						solrDocument.addField("online_address", getNameStringForKeyLibCal(curEvent, "online_address"));
-						solrDocument.addField("age_group", getNameStringsForKeyLibCal(curEvent, "audience"));
-						solrDocument.addField("program_type", getNameStringsForKeyLibCal(curEvent, "category"));
-						// TODO: James is not sure that internal_tags is indexing in a useful way 2022 03 16
-						HashSet<String> internalCategories =  getNameStringsForKeyLibCal(curEvent, "internal_tags");
-						if (internalCategories.contains("Featured")){
-							boost += 10;
-						}
-						solrDocument.addField("internal_category", internalCategories);
-						solrDocument.addField("event_state", getNameStringsForKeyLibCal(curEvent, "event_state"));
-						/* // TODO: How does LibCal declare a cancellation?
-						HashSet<String> reservationStates = getNameStringsForKeyLibCal(curEvent, "reservation_state");
-						if (reservationStates.contains("Cancelled")){
-							boost -= 10;
-						}
-						*/
-						solrDocument.addField("reservation_state", getNameStringsForKeyLibCal(curEvent, "reservation_state"));
-						solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
-
-						// TODO : request Springshare build registration start and end date like Library Market Library Calendar
-						// solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
-						// solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
-
-						// Springshare LibCal does not have teaser / program_description equivalent 2022 03 06
-						//if (curEvent.get("program_description") instanceof JSONArray) {
-						//	JSONArray programDescriptions = curEvent.getJSONArray("program_description");
-						//	if (programDescriptions.length() > 0) {
-						//		solrDocument.addField("teaser", programDescriptions.toString());
-						//	}
-						//}else{
-						//	solrDocument.addField("teaser", getStringForKeyLibCal(curEvent, "program_description"));
-						//}
-
-						solrDocument.addField("description", getNameStringForKeyLibCal(curEvent,"description"));
-
-						// TODO: how does Aspen use image_url? It does not look like it actually uses the image...
-						solrDocument.addField("image_url", getNameStringForKeyLibCal(curEvent, "featured_image"));
-
-						solrDocument.addField("library_scopes", librariesToShowFor);
-
-						if (boost < 1){
-							boost = 1;
-						}
-						solrDocument.addField("boost", boost);
-
-						solrUpdateServer.add(solrDocument);
-					} catch (SolrServerException | IOException e) {
-						logEntry.incErrors("Error adding event to solr ", e);
 					}
-
-					//Add the event to the database
-					try {
-						addEventStmt.setLong(1, settingsId);
-						addEventStmt.setString(2, eventId);
-						addEventStmt.setString(3, curEvent.getString("title"));
-						addEventStmt.setLong(4, checksum);
-						addEventStmt.setString(5, rawResponse);
-						addEventStmt.executeUpdate();
-					} catch (SQLException e) {
-						logEntry.incErrors("Error adding event to database " , e);
-					}
-
-					if (eventExists){
-						existingEvents.remove(eventId);
-						logEntry.incUpdated();
+					//Boost based on start date, we will give preference to anything in the next 30 days
+					Date today = new Date();
+					if (startDate.before(today) || startDate.equals(today)){
+						boost += 30;
 					}else{
-						logEntry.incAdded();
+						long daysInFuture = (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+						if (daysInFuture > 30){
+							daysInFuture = 30;
+						}
+						boost += (int) (30 - daysInFuture);
+					}
+					solrDocument.addField("event_day", eventDays);
+					solrDocument.addField("event_month", eventMonths);
+					solrDocument.addField("event_year", eventYears);
+					solrDocument.addField("title", curEvent.getString("title"));
+					solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "campus")));
+					solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "location")));
+					// LibCal events do not have a field for offsite_address
+
+					solrDocument.addField("online_address", getNameStringForKeyLibCal(curEvent, "online_address"));
+					solrDocument.addField("age_group", getNameStringsForKeyLibCal(curEvent, "audience"));
+					solrDocument.addField("program_type", getNameStringsForKeyLibCal(curEvent, "category"));
+					// TODO: James is not sure that internal_tags is indexing in a useful way 2022 03 16
+					HashSet<String> internalCategories =  getNameStringsForKeyLibCal(curEvent, "internal_tags");
+					if (internalCategories.contains("Featured")){
+						boost += 10;
+					}
+					solrDocument.addField("internal_category", internalCategories);
+					solrDocument.addField("event_state", getNameStringsForKeyLibCal(curEvent, "event_state"));
+					// TODO: How does LibCal declare a cancellation?
+
+					solrDocument.addField("reservation_state", getNameStringsForKeyLibCal(curEvent, "reservation_state"));
+					solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
+
+					// TODO : request Springshare build registration start and end date like Library Market Library Calendar
+					// solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
+					// solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
+
+					// Springshare LibCal does not have teaser / program_description equivalent 2022 03 06
+
+					solrDocument.addField("description", getNameStringForKeyLibCal(curEvent,"description"));
+
+					// TODO: how does Aspen use image_url? It does not look like it actually uses the image...
+					solrDocument.addField("image_url", getNameStringForKeyLibCal(curEvent, "featured_image"));
+
+					solrDocument.addField("library_scopes", librariesToShowFor);
+
+					if (boost < 1){
+						boost = 1;
+					}
+					solrDocument.addField("boost", boost);
+
+					solrUpdateServer.add(solrDocument);
+				} catch (SolrServerException | IOException e) {
+					logEntry.incErrors("Error adding event to solr ", e);
+				}
+
+				//Add the event to the database
+				try {
+					addEventStmt.setLong(1, settingsId);
+					addEventStmt.setString(2, eventId);
+					addEventStmt.setString(3, curEvent.getString("title"));
+					addEventStmt.setLong(4, checksum);
+					addEventStmt.setString(5, rawResponse);
+					addEventStmt.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error adding event to database " , e);
+				}
+
+				if (eventExists){
+					existingEvents.remove(eventId);
+					logEntry.incUpdated();
+				}else{
+					logEntry.incAdded();
+				}
+
+				//Fetch registrations here and add to DB - for events that require registration ONLY
+				if (curEvent.getBoolean("registration")){
+					JSONArray libCalEvent = getRegistrations(Integer.valueOf(eventId));
+					HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
+
+					HashSet<String> uniqueBarcodesRegistered = new HashSet<>();
+					if (libCalEvent != null) {
+						JSONArray libCalEventRegistrants = libCalEvent.getJSONArray(0);
+						for (int j = 0; j < libCalEventRegistrants.length(); j++) {
+							try {
+								JSONObject curRegistrant = libCalEventRegistrants.getJSONObject(j);
+
+								if (!curRegistrant.getString("barcode").isEmpty()){
+									uniqueBarcodesRegistered.add(curRegistrant.getString("barcode"));
+								}
+							} catch (JSONException e) {
+								logEntry.incErrors("Error getting JSON information ", e);
+							}
+						}
 					}
 
-					//Fetch registrations here and add to DB - for events that require registration ONLY
-					if (curEvent.getBoolean("registration")){
-						JSONArray libCalEvent = getRegistrations(Integer.valueOf(eventId));
-						HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
-
-						HashSet<String> uniqueBarcodesRegistered = new HashSet<>();
-						if (libCalEvent != null) {
-							JSONArray libCalEventRegistrants = libCalEvent.getJSONArray(0);
-							for (int j = 0; j < libCalEventRegistrants.length(); j++) {
-								try {
-									JSONObject curRegistrant = libCalEventRegistrants.getJSONObject(j);
-
-									if (!curRegistrant.getString("barcode").isEmpty()){
-										uniqueBarcodesRegistered.add(curRegistrant.getString("barcode"));
-									}
-								} catch (JSONException e) {
-									logEntry.incErrors("Error getting JSON information ", e);
+					for (String uniqueBarcodeRegistered : uniqueBarcodesRegistered){
+						try {
+							PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
+							getUserIdStmt.setString(1, uniqueBarcodeRegistered);
+							ResultSet getUserIdRS = getUserIdStmt.executeQuery();
+							while (getUserIdRS.next()){
+								long userId = getUserIdRS.getLong("id");
+								if (registrationsForEvent.containsKey(userId)){
+									registrationsForEvent.remove(userId);
+								}else{
+									addRegistrantStmt.setLong(1, userId);
+									addRegistrantStmt.setString(2, uniqueBarcodeRegistered);
+									addRegistrantStmt.setString(3, sourceId);
+									addRegistrantStmt.executeUpdate();
 								}
 							}
+						} catch (SQLException e) {
+							logEntry.incErrors("Error adding registrant info to database " , e);
 						}
+					}
 
-						for (String uniqueBarcodeRegistered : uniqueBarcodesRegistered){
-							try {
-								PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
-								getUserIdStmt.setString(1, uniqueBarcodeRegistered);
-								ResultSet getUserIdRS = getUserIdStmt.executeQuery();
-								while (getUserIdRS.next()){
-									long userId = getUserIdRS.getLong("id");
-									if (registrationsForEvent.containsKey(userId)){
-										registrationsForEvent.remove(userId);
-									}else{
-										addRegistrantStmt.setLong(1, userId);
-										addRegistrantStmt.setString(2, uniqueBarcodeRegistered);
-										addRegistrantStmt.setString(3, sourceId);
-										addRegistrantStmt.executeUpdate();
-									}
-								}
-							} catch (SQLException e) {
-								logEntry.incErrors("Error adding registrant info to database " , e);
-							}
-						}
-
-						for(EventRegistrations registrantInfo : registrationsForEvent.values()){
-							try {
-								deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
-								deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
-								deleteRegistrantStmt.executeUpdate();
-							}catch (SQLException e) {
-								logEntry.incErrors("Error deleting registration info ", e);
-							}
+					for(EventRegistrations registrantInfo : registrationsForEvent.values()){
+						try {
+							deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
+							deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
+							deleteRegistrantStmt.executeUpdate();
+						}catch (SQLException e) {
+							logEntry.incErrors("Error deleting registration info ", e);
 						}
 					}
 				}
@@ -466,7 +426,6 @@ class SpringshareLibCalIndexer {
 					if (keyObj.has("name")) {
 						return keyObj.getString("name");
 					}else{
-						//noinspection LoopStatementThatDoesntLoop
 						for (String objKey: keyObj.keySet()){
 							return keyObj.getString(objKey);
 						}
@@ -569,48 +528,53 @@ class SpringshareLibCalIndexer {
 
 	private JSONArray getRegistrations(Integer eventId) {
 		try {
-			CloseableHttpClient httpclient = HttpClients.createDefault();
-			HttpRequestBase apiRequest;
-			String authTokenUrl = baseUrl + "/1.1/oauth/token";
-			ArrayList<NameValuePair> params = new ArrayList<>();
-			params.add(new BasicNameValuePair("grant_type", "client_credentials"));
-			params.add(new BasicNameValuePair("client_id", clientId));
-			params.add(new BasicNameValuePair("client_secret", clientSecret));
-			HttpPost authTokenRequest = new HttpPost(authTokenUrl);
-			authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-			String accessToken = "";
-			String tokenType = "";
-			try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
-				StatusLine status = response1.getStatusLine();
-				HttpEntity entity1 = response1.getEntity();
-				if (status.getStatusCode() == 200) {
-					String response = EntityUtils.toString(entity1);
-					JSONObject authData = new JSONObject(response);
-					tokenType = authData.getString("token_type");
-					accessToken = authData.getString("access_token");
+			JSONArray eventRegistrations;
+			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+				HttpRequestBase apiRequest;
+				String authTokenUrl = baseUrl + "/1.1/oauth/token";
+				ArrayList<NameValuePair> params = new ArrayList<>();
+				params.add(new BasicNameValuePair("grant_type", "client_credentials"));
+				params.add(new BasicNameValuePair("client_id", clientId));
+				params.add(new BasicNameValuePair("client_secret", clientSecret));
+				HttpPost authTokenRequest = new HttpPost(authTokenUrl);
+				authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+				String accessToken = "";
+				String tokenType = "";
+				try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
+					StatusLine status = response1.getStatusLine();
+					HttpEntity entity1 = response1.getEntity();
+					if (status.getStatusCode() == 200) {
+						String response = EntityUtils.toString(entity1);
+						JSONObject authData = new JSONObject(response);
+						tokenType = authData.getString("token_type");
+						accessToken = authData.getString("access_token");
+					}
 				}
-			}
 
-			JSONArray eventRegistrations = new JSONArray();
-			String apiRegistrationsURL = baseUrl + "/1.1/events/" + eventId + "/registrations?waitlist=1";
-			apiRequest = new HttpGet(apiRegistrationsURL);
-			apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
-			try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
-				StatusLine status = response1.getStatusLine();
-				HttpEntity entity1 = response1.getEntity();
-				if (status.getStatusCode() == 200) {
-					//LibCal returns an array of objects that have an array of registrants because they allow checking multiple eventIds at once
-					String response = EntityUtils.toString(entity1);
-					JSONArray eventRegArray = new JSONArray(response);
-					JSONObject response2 = eventRegArray.getJSONObject(0); //only checking one event at a time so only need first index
-					JSONArray registrants = response2.getJSONArray("registrants");
-					eventRegistrations.put(registrants);
+				eventRegistrations = new JSONArray();
+				//noinspection SpellCheckingInspection
+				String apiRegistrationsURL = baseUrl + "/1.1/events/" + eventId + "/registrations?waitlist=1";
+				apiRequest = new HttpGet(apiRegistrationsURL);
+				apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
+				try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+					StatusLine status = response1.getStatusLine();
+					HttpEntity entity1 = response1.getEntity();
+					if (status.getStatusCode() == 200) {
+						//LibCal returns an array of objects that have an array of registrants because they allow checking multiple eventIds at once
+						String response = EntityUtils.toString(entity1);
+						JSONArray eventRegArray = new JSONArray(response);
+						JSONObject response2 = eventRegArray.getJSONObject(0); //only checking one event at a time so only need first index
+						JSONArray registrants = response2.getJSONArray("registrants");
+						eventRegistrations.put(registrants);
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+					return null;
 				}
+				return eventRegistrations;
 			} catch (Exception e) {
-				logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
-				return null;
+				logEntry.incErrors("Unable to create HTTP connection", e);
 			}
-			return eventRegistrations;
 		} catch (Exception e) {
 			logEntry.incErrors("Error getting event registrations", e);
 		}
@@ -633,8 +597,9 @@ class SpringshareLibCalIndexer {
 					for (int i = 0; i < calendars.length(); i++){
 						// visibility must be Public
 						if (calendars.get(i) instanceof JSONObject && Objects.equals(calendars.getJSONObject(i).getString("visibility"), "Public")) {
-							Integer calid = calendars.getJSONObject(i).getInt("calid");
-							values.add(calid);
+							//noinspection SpellCheckingInspection
+							Integer calId = calendars.getJSONObject(i).getInt("calid");
+							values.add(calId);
 						}
 					}
 				}
