@@ -35,7 +35,7 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
   -->
-  <luceneMatchVersion>8.11.2</luceneMatchVersion>
+  <luceneMatchVersion>7.6.0</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -75,8 +75,14 @@
   <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
 
+  <lib dir="${solr.install.dir:../../../..}/contrib/clustering/lib/" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-clustering-\d.*\.jar" />
+
   <lib dir="${solr.install.dir:../../../..}/contrib/langid/lib/" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-langid-\d.*\.jar" />
+
+  <lib dir="${solr.install.dir:../../../..}/contrib/velocity/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
 
   <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="lucene-analyzers-icu-\d.*\.jar" />
@@ -247,6 +253,25 @@
     <!-- <infoStream file="INFOSTREAM.txt">false</infoStream> -->
   </indexConfig>
 
+
+  <!-- JMX
+
+       This example enables JMX if and only if an existing MBeanServer
+       is found, use this if you want to configure JMX through JVM
+       parameters. Remove this to disable exposing Solr configuration
+       and statistics to JMX.
+
+       For more details see http://wiki.apache.org/solr/SolrJmx
+    -->
+  <jmx />
+  <!-- If you want to connect to a particular server, specify the
+       agentId
+    -->
+  <!-- <jmx agentId="myAgent" /> -->
+  <!-- If you want to start a new MBeanServer, specify the serviceUrl -->
+  <!-- <jmx serviceUrl="service:jmx:rmi:///jndi/rmi://localhost:9999/solr"/>
+    -->
+
   <!-- The default high-performance update handler -->
   <updateHandler class="solr.DirectUpdateHandler2">
 
@@ -348,32 +373,23 @@
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <query>
 
-    <!-- Maximum number of clauses allowed when parsing a boolean query string.
-
-        This limit only impacts boolean queries specified by a user as part of a query string,
-        and provides per-collection controls on how complex user specified boolean queries can
-        be.  Query strings that specify more clauses then this will result in an error.
-
-        If this per-collection limit is greater then the global `maxBooleanClauses` limit
-        specified in `solr.xml`, it will have no effect, as that setting also limits the size
-        of user specified boolean queries.
-     -->
-    <maxBooleanClauses>${solr.max.booleanClauses:1024}</maxBooleanClauses>
+    <!-- Maximum number of clauses in each BooleanQuery,  an exception
+         is thrown if exceeded.  It is safe to increase or remove this setting,
+         since it is purely an arbitrary limit to try and catch user errors where
+         large boolean queries may not be the best implementation choice.
+      -->
+    <maxBooleanClauses>1024</maxBooleanClauses>
 
     <!-- Solr Internal Query Caches
 
-         There are four implementations of cache available for Solr:
-         LRUCache, based on a synchronized LinkedHashMap,
-         LFUCache and FastLRUCache, based on a ConcurrentHashMap, and CaffeineCache -
-         a modern and robust cache implementation. Note that in Solr 9.0
-         only CaffeineCache will be available, other implementations are now
-         deprecated.
+         There are two implementations of cache available for Solr,
+         LRUCache, based on a synchronized LinkedHashMap, and
+         FastLRUCache, based on a ConcurrentHashMap.
 
          FastLRUCache has faster gets and slower puts in single
          threaded operation and thus is generally faster than LRUCache
          when the hit ratio of the cache is high (> 75%), and may be
          faster under other scenarios on multi-cpu systems.
-         Starting with Solr 9.0 the default cache implementation used is CaffeineCache.
     -->
 
     <!-- Filter Cache
@@ -398,7 +414,8 @@
                       to occupy. Note that when this option is specified, the size
                       and initialSize parameters are ignored.
       -->
-    <filterCache size="512"
+    <filterCache class="solr.FastLRUCache"
+                 size="512"
                  initialSize="512"
                  autowarmCount="0"/>
 
@@ -410,7 +427,8 @@
             maxRamMB - the maximum amount of RAM (in MB) that this cache is allowed
                        to occupy
       -->
-    <queryResultCache size="512"
+    <queryResultCache class="solr.LRUCache"
+                      size="512"
                       initialSize="512"
                       autowarmCount="0"/>
 
@@ -420,12 +438,14 @@
          document).  Since Lucene internal document ids are transient,
          this cache will not be autowarmed.
       -->
-    <documentCache size="512"
+    <documentCache class="solr.LRUCache"
+                   size="512"
                    initialSize="512"
                    autowarmCount="0"/>
 
     <!-- custom cache currently used by block join -->
     <cache name="perSegFilter"
+           class="solr.search.LRUCache"
            size="10"
            initialSize="0"
            autowarmCount="10"
@@ -438,7 +458,8 @@
          even if not configured here.
       -->
     <!--
-       <fieldValueCache size="512"
+       <fieldValueCache class="solr.FastLRUCache"
+                        size="512"
                         autowarmCount="128"
                         showItems="32" />
       -->
@@ -454,6 +475,7 @@
       -->
     <!--
        <cache name="myUserCache"
+              class="solr.LRUCache"
               size="4096"
               initialSize="1024"
               autowarmCount="1024"
@@ -678,6 +700,7 @@
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
       <str name="spellcheck.dictionary">default</str>
+      <str name="spellcheck.dictionary">wordbreak</str>
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
@@ -694,7 +717,22 @@
   </requestHandler>
 
 
-  <initParams path="/update/**,/query,/select,/spell">
+  <!-- A Robust Example
+
+       This example SearchHandler declaration shows off usage of the
+       SearchHandler with many defaults declared
+
+       Note that multiple instances of the same Request Handler
+       (SearchHandler) can be registered multiple times with different
+       names (and different init parameters)
+    -->
+  <requestHandler name="/browse" class="solr.SearchHandler" useParams="query,facets,velocity,browse">
+    <lst name="defaults">
+      <str name="echoParams">explicit</str>
+    </lst>
+  </requestHandler>
+
+  <initParams path="/update/**,/query,/select,/tvrh,/elevate,/browse,/spell">
     <lst name="defaults">
       <str name="df">keywords</str>
     </lst>
@@ -767,7 +805,7 @@
     -->
   <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
 
-    <str name="queryAnalyzerFieldType">text_general</str>
+    <!--<str name="queryAnalyzerFieldType">text_general</str>-->
 
     <!-- Multiple "Spell Checkers" can be declared and used by this
          component
@@ -791,23 +829,20 @@
       <!-- minimum length of a query term to be considered for correction -->
       <int name="minQueryLength">4</int>
       <!-- maximum threshold of documents a query term can appear to be considered for correction -->
-      <float name="maxQueryFrequency">0.01</float>
-      <!-- uncomment this to require suggestions to occur in 1% of the documents
-        <float name="thresholdTokenFrequency">.01</float>
-      -->
+      <float name="maxQueryFrequency">10</float>
+      <!-- uncomment this to require suggestions to occur in 1% of the documents -->
+      <float name="thresholdTokenFrequency">2</float>
     </lst>
 
     <!-- a spellchecker that can break or combine words.  See "/spell" handler below for usage -->
-    <!--
     <lst name="spellchecker">
       <str name="name">wordbreak</str>
       <str name="classname">solr.WordBreakSolrSpellChecker</str>
-      <str name="field">name</str>
+      <str name="field">spelling</str>
       <str name="combineWords">true</str>
       <str name="breakWords">true</str>
-      <int name="maxChanges">10</int>
+      <int name="maxChanges">1</int>
     </lst>
-    -->
   </searchComponent>
 
   <!-- A request handler for demonstrating the spellcheck component.
@@ -830,6 +865,7 @@
            collations (re-written queries) can include a combination of
            corrections from both spellcheckers -->
       <str name="spellcheck.dictionary">default</str>
+      <str name="spellcheck.dictionary">wordbreak</str>
       <str name="spellcheck">on</str>
       <str name="spellcheck.extendedResults">true</str>
       <str name="spellcheck.count">10</str>
@@ -837,7 +873,7 @@
       <str name="spellcheck.maxResultsForSuggest">5</str>
       <str name="spellcheck.collate">true</str>
       <str name="spellcheck.collateExtendedResults">true</str>
-      <str name="spellcheck.maxCollationTries">10</str>
+      <str name="spellcheck.maxCollationTries">25</str>
       <str name="spellcheck.maxCollations">5</str>
     </lst>
     <arr name="last-components">
@@ -889,30 +925,42 @@
     </arr>
   </requestHandler>
 
-
-  <!-- Query Elevation Component
-
-       http://wiki.apache.org/solr/QueryElevationComponent
-
-       a search component that enables you to configure the top
-       results for a given query regardless of the normal lucene
-       scoring.
-    -->
-	<!--
-  <searchComponent name="elevator" class="solr.QueryElevationComponent" >
-    <str name="queryFieldType">string</str>
-  </searchComponent>
--->
-
-  <!-- A request handler for demonstrating the elevator component -->
-  <requestHandler name="/elevate" class="solr.SearchHandler" startup="lazy">
+  <!-- A request handler for loading more like this -->
+  <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
     <lst name="defaults">
-      <str name="echoParams">explicit</str>
+      <str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,authorStr,language</str>
+      <str name="mlt.qf">
+        language^1000
+        subject_facet^800
+        topic_facet^600
+        awards_facet^100
+        authorStr^75
+        era^50
+        genre_facet^50
+        geographic_facet^50
+        personal_name_facet^50
+        corporate_name_facet^50
+        mpaa_rating
+        accelerated_reader_interest_level
+      </str>
+      <str name="mlt.mintf">1</str>
+      <str name="mlt.mindf">2</str>
+      <str name="mlt.maxdf">10000</str>
+      <str name="mlt.boost">true</str>
     </lst>
-    <arr name="last-components">
-      <str>elevator</str>
-    </arr>
   </requestHandler>
+
+  <requestHandler name="/mlt_keyword" class="solr.MoreLikeThisHandler">
+    <lst name="defaults">
+      <str name="mlt.fl">keywords_proper</str>
+      <str name="mlt.mintf">1</str>
+      <str name="mlt.mindf">2</str>
+      <str name="mlt.maxdf">5000</str>
+      <str name="mlt.boost">true</str>
+    </lst>
+  </requestHandler>
+
+
 
   <!-- Highlighting Component
 
@@ -1063,21 +1111,21 @@
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
-      <str name="name">keyword_suggestions</str>
+      <str name="name">subject_suggestions</str>
       <str name="lookupImpl">FuzzyLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
-      <str name="field">keyword_suggestions</str>
+      <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
-      <str name="name">infix_keyword_suggestions</str>
+      <str name="name">infix_subject_suggestions</str>
       <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
-      <str name="indexPath">infix_keyword_suggestions</str>
+      <str name="indexPath">infix_subject_suggestions</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
-      <str name="field">keyword_suggestions</str>
+      <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="buildOnStartup">false</str>
@@ -1110,15 +1158,11 @@
     </arr>
   </requestHandler>
 
-  <requestHandler name="/suggest" class="solr.SearchHandler"
+  <requestHandler name="/subject_suggest" class="solr.SearchHandler"
                   startup="lazy" >
     <lst name="defaults">
-      <str name="suggest.dictionary">title_suggestions</str>
-      <str name="suggest.dictionary">infix_title_suggestions</str>
-      <str name="suggest.dictionary">author_suggestions</str>
-      <str name="suggest.dictionary">infix_author_suggestions</str>
-      <str name="suggest.dictionary">keyword_suggestions</str>
-      <str name="suggest.dictionary">infix_keyword_suggestions</str>
+      <str name="suggest.dictionary">subject_suggestions</str>
+      <str name="suggest.dictionary">infix_subject_suggestions</str>
       <str name="suggest">true</str>
       <str name="suggest.count">5</str>
     </lst>
@@ -1126,6 +1170,24 @@
       <str>suggest</str>
     </arr>
   </requestHandler>
+
+  <requestHandler name="/suggest" class="solr.SearchHandler"
+                  startup="lazy" >
+    <lst name="defaults">
+      <str name="suggest.dictionary">title_suggestions</str>
+      <str name="suggest.dictionary">infix_title_suggestions</str>
+      <str name="suggest.dictionary">author_suggestions</str>
+      <str name="suggest.dictionary">infix_author_suggestions</str>
+      <str name="suggest.dictionary">subject_suggestions</str>
+      <str name="suggest.dictionary">infix_subject_suggestions</str>
+      <str name="suggest">true</str>
+      <str name="suggest.count">5</str>
+    </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+  </requestHandler>
+
   <!-- Update Processors
 
        Chains of Update Processor Factories for dealing with Update
@@ -1318,6 +1380,15 @@
      If you expect a MIME type of "application/json" just remove this override.
     -->
     <str name="content-type">text/plain; charset=UTF-8</str>
+  </queryResponseWriter>
+
+  <!--
+     Custom response writers can be declared as needed...
+    -->
+  <queryResponseWriter name="velocity" class="solr.VelocityResponseWriter" startup="lazy">
+    <str name="template.base.dir">${velocity.template.base.dir:}</str>
+    <str name="solr.resource.loader.enabled">${velocity.solr.resource.loader.enabled:true}</str>
+    <str name="params.resource.loader.enabled">${velocity.params.resource.loader.enabled:false}</str>
   </queryResponseWriter>
 
   <!-- XSLT response writer transforms the XML output by any xslt file found
