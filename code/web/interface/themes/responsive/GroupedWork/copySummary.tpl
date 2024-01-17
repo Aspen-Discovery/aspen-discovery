@@ -15,8 +15,8 @@
 			{if !empty($item.displayByDefault) && $numRowsShown<3}
 				{if $item.isEContent == false}
 					<div class="itemSummary row" style="margin: 0">
-						<div class="col-lg-12">
-							<span class="notranslate">{if empty($item.isEContent)}<strong>{$item.shelfLocation}</strong>{/if}
+						<div class="col-lg-12 itemLocationDetails" data-shelfLocation="{$item.shelfLocation|escape:"javascript"}" data-subLocation="{$item.subLocation|escape:"javascript"}" data-callNumber="{$item.callNumber|escape:"javascript"}">
+							<span class="notranslate" >{if empty($item.isEContent)}<strong>{$item.shelfLocation}</strong>{/if}
 							<br>{$item.callNumber}
 								<br>{if $item.availableCopies < 999}
 									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
