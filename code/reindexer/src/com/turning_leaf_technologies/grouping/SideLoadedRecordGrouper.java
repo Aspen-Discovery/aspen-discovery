@@ -5,12 +5,11 @@ import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 
 public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
-	private SideLoadSettings settings;
+	private final SideLoadSettings settings;
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -23,7 +22,7 @@ public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
 		this.settings = settings;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
+	public String processMarcRecord(org.marc4j.marc.Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 
 		if (primaryIdentifier != null){

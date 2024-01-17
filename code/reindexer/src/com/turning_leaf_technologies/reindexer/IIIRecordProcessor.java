@@ -157,7 +157,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasTangibleItems){
 		if (hasTangibleItems && hideOrderRecordsForBibsWithPhysicalItems) {
 			return;
 		}
@@ -245,7 +245,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		return super.isItemSuppressed(curItem, itemIdentifier, suppressionNotes);
 	}
 
-	protected boolean isBibSuppressed(Record record, String identifier) {
+	protected boolean isBibSuppressed(org.marc4j.marc.Record record, String identifier) {
 		if (exportFieldMapping != null){
 			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 			if (sierraFixedField != null){
@@ -279,7 +279,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record, boolean hasChildRecords) {
+	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		boolean formatLoaded = false;
 		if (exportFieldMapping != null) {
 			if (checkSierraMatTypeForFormat) {

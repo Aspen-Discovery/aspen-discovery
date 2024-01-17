@@ -294,7 +294,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for eContent items.
 		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
@@ -431,13 +431,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadCustomFacets(AbstractGroupedWorkSolr groupedWork, Record record, RecordInfo recordInfo) {
+	private void loadCustomFacets(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo) {
 		loadCustomFacet(1, settings.getCustomFacet1SourceField(), settings.getCustomFacet1ValuesToIncludePattern(), settings.getCustomFacet1ValuesToExcludePattern(), groupedWork, record, recordInfo);
 		loadCustomFacet(2, settings.getCustomFacet2SourceField(), settings.getCustomFacet2ValuesToIncludePattern(), settings.getCustomFacet2ValuesToExcludePattern(), groupedWork, record, recordInfo);
 		loadCustomFacet(3, settings.getCustomFacet3SourceField(), settings.getCustomFacet3ValuesToIncludePattern(), settings.getCustomFacet3ValuesToExcludePattern(), groupedWork, record, recordInfo);
 	}
 
-	private void loadCustomFacet(int customFacetNumber, String sourceField, Pattern valuesToIncludePattern, Pattern valuesToExcludePattern, AbstractGroupedWorkSolr groupedWork, Record record, RecordInfo recordInfo) {
+	private void loadCustomFacet(int customFacetNumber, String sourceField, Pattern valuesToIncludePattern, Pattern valuesToExcludePattern, AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo) {
 		if (sourceField.length() > 0) {
 			Set<String> fieldData = MarcUtil.getFieldList(record, sourceField);
 			if (fieldData.size() > 0) {
@@ -485,11 +485,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			ResultSet childRecordsRS = loadChildRecordsStmt.executeQuery();
 			while (childRecordsRS.next()){
 				String childRecordId = childRecordsRS.getString("childRecordId");
-				Record marcRecord = indexer.loadMarcRecordFromDatabase(profileType, childRecordId, indexer.getLogEntry());
+				org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(profileType, childRecordId, indexer.getLogEntry());
 				if (marcRecord != null){
 					DataField titleField = marcRecord.getDataField(245);
 					if (titleField != null) {
-						@SuppressWarnings("SpellCheckingInspection")
 						String childTitle = titleField.getSubfieldsAsString("abfgnp", " ");
 						groupedWork.addContents(childTitle);
 						hasChildRecords = true;
@@ -520,7 +519,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return firstParentId;
 	}
 
-	private void loadMarcHoldingItems(RecordInfo recordInfo, Record marcRecord) {
+	private void loadMarcHoldingItems(RecordInfo recordInfo, org.marc4j.marc.Record marcRecord) {
 		//We have marc holdings if we have one or more 852 and 866 fields with subfield 6.
 		boolean hasValid852 = false;
 		boolean hasValid866 = false;
@@ -576,7 +575,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	//Suppress all marc records for eContent that can be loaded via API
-	protected boolean isBibSuppressed(Record record, String identifier) {
+	protected boolean isBibSuppressed(org.marc4j.marc.Record record, String identifier) {
 		//Check to see if the bib is an authority
 		if (record.getLeader().getTypeOfRecord() == 'z'){
 			updateRecordSuppression(true, new StringBuilder().append("Suppressed because leader indicates it's an authority"), identifier);
@@ -627,7 +626,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasTangibleItems){
 		if (orderTag == null || orderTag.length() == 0){
 			return;
 		}
@@ -727,7 +726,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
@@ -786,7 +785,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//return status.equals("o") || status.equals("1");
 	}
 
-	private void loadOrderIds(AbstractGroupedWorkSolr groupedWork, Record record) {
+	private void loadOrderIds(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
 		//Load order ids from recordNumberTag
 		Set<String> recordIds = MarcUtil.getFieldList(record, settings.getRecordNumberTag() + "a");
 		for(String recordId : recordIds){
@@ -796,7 +795,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
+	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, org.marc4j.marc.Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
 		for (DataField itemField : itemRecords){
@@ -815,7 +814,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return suppressionNotes;
 	}
 
-	void getIlsEContentItems(Record record, RecordInfo mainRecordInfo, String identifier, DataField itemField){
+	void getIlsEContentItems(org.marc4j.marc.Record record, RecordInfo mainRecordInfo, String identifier, DataField itemField){
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
@@ -930,13 +929,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected String getSourceType(Record record, DataField itemField) {
+	protected String getSourceType(org.marc4j.marc.Record record, DataField itemField) {
 		return "Unknown Source";
 	}
 
 	private SimpleDateFormat lastCheckInFormatter = null;
 	protected final HashSet<String> unhandledFormatBoosts = new HashSet<>();
-	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
+	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, DataField itemField, StringBuilder suppressionNotes) {
 		if (lastCheckInFormatter == null && settings.getLastCheckinFormat() != null && settings.getLastCheckinFormat().length() > 0){
 			lastCheckInFormatter = new SimpleDateFormat(settings.getLastCheckinFormat());
 		}
@@ -1071,7 +1070,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void scopeItems(RecordInfo recordInfo, AbstractGroupedWorkSolr groupedWork, Record record){
+	private void scopeItems(RecordInfo recordInfo, AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 			if (itemInfo.isVirtualChildRecord()) {
 				itemInfo.setAvailable(false);
@@ -1103,7 +1102,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadScopeInfoForVirtualHoldingsItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	protected void loadScopeInfoForVirtualHoldingsItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		String itemLocation = itemInfo.getLocationCode();
 		String format = itemInfo.getFormat();
 		if (format == null){
@@ -1128,7 +1127,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		String itemLocation = itemInfo.getLocationCode();
 		String shelfLocation = itemInfo.getShelfLocation();
 		String collectionCode = itemInfo.getCollection();
@@ -1160,7 +1159,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForVirtualChildItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForVirtualChildItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){
@@ -1184,7 +1183,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Determine status, need to do this before determining if it is available since that is part of the check.
 		String recordIdentifier = recordInfo.getRecordIdentifier();
 		String displayStatus = getDisplayStatus(itemInfo, recordIdentifier);
@@ -1334,7 +1333,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemStatus == null && itemLocation == null;
 	}
 
-	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
+	void loadItemCallNumber(org.marc4j.marc.Record record, DataField itemField, ItemInfo itemInfo) {
 		boolean hasCallNumber = false;
 		String volume = null;
 		if (itemField != null){
@@ -1615,7 +1614,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, org.marc4j.marc.Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		if (index856Links) {
 			List<DataField> recordUrls = MarcUtil.getDataFields(record, 856);
@@ -1816,7 +1815,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record, boolean hasChildRecords) {
+	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		//Check to see if we have child records, if so format will be Serials
 		if (hasChildRecords) {
 			//A record with children will not generally have items, so we will load from the bib.
@@ -1862,7 +1861,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	void largePrintCheck(RecordInfo recordInfo, Record record){
+	void largePrintCheck(RecordInfo recordInfo, org.marc4j.marc.Record record){
 		HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
 		try {
 			if (settings.getCheckRecordForLargePrint()){
@@ -1890,7 +1889,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	void loadPrintFormatFromBib(RecordInfo recordInfo, Record record) {
+	void loadPrintFormatFromBib(RecordInfo recordInfo, org.marc4j.marc.Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
@@ -1931,7 +1930,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 * @param econtentRecord The record to load format information for
 	 * @param econtentItem   The item to load format information for
 	 */
-	protected void loadIlsEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	protected void loadIlsEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 
 	}
 
@@ -2023,7 +2022,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translatedValues;
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (determineAudienceBy == 0) {
 			super.loadTargetAudiences(groupedWork, record, printItems, identifier, treatUnknownAudienceAs);
 		}else{
@@ -2072,7 +2071,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (determineLiteraryFormBy == 0){
 			super.loadLiteraryForms(groupedWork, record, printItems, identifier);
 		}else{
@@ -2103,7 +2102,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void getFormatFromFallbackField(Record record, LinkedHashSet<String> printFormats) {
+	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, fallbackFormatField);
 		for (String curField : fields) {
 			if (hasTranslation("format", curField.toLowerCase())){

@@ -6,9 +6,9 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
@@ -33,7 +33,7 @@ public class GroupedWorkIndexer {
 	private final Logger logger;
 	private final Long indexStartTime;
 	private int totalRecordsHandled = 0;
-	private ConcurrentUpdateSolrClient updateServer;
+	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private RecordGroupingProcessor recordGroupingProcessor;
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
@@ -285,16 +285,17 @@ public class GroupedWorkIndexer {
 		//Initialize the updateServer and solr server
 		logEntry.addNote("Setting up update server and solr server");
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder;
+		String solrUrl;
 		if (indexVersion == 1) {
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrUrl = "http://localhost:" + solrPort + "/solr/grouped_works";
 		}else{
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			solrUrl = "http://localhost:" + solrPort + "/solr/grouped_works_v2";
 		}
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
+				.withThreadCount(2)
+				.withQueueSize(100)
+				.build();
 
 		try {
 			scopes = IndexingUtils.loadScopes(dbConn, logger);
@@ -525,6 +526,7 @@ public class GroupedWorkIndexer {
 				lexileLine = lexileReader.readLine();
 				curLine++;
 			}
+			lexileReader.close();
 			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
 		}catch (FileNotFoundException fne){
 			//This is normal
@@ -540,7 +542,7 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-		} catch (HttpSolrClient.RemoteSolrException rse) {
+		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 			logEntry.incErrors("Solr is not running properly, try restarting", rse);
 			System.exit(-1);
 		} catch (Exception e) {
@@ -942,7 +944,7 @@ public class GroupedWorkIndexer {
 				String newId = permanentId;
 				if (ilsRecordGroupers.containsKey(type)) {
 					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
-					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					org.marc4j.marc.Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork) {
@@ -957,7 +959,7 @@ public class GroupedWorkIndexer {
 					}
 				} else if (sideLoadRecordGroupers.containsKey(type)) {
 					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
-					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					org.marc4j.marc.Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork) {
@@ -975,7 +977,7 @@ public class GroupedWorkIndexer {
 				} else if (type.equals("axis360")) {
 					newId = getRecordGroupingProcessor().groupAxis360Record(identifier);
 				} else if (type.equals("cloud_library")) {
-					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
+					org.marc4j.marc.Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
 					if (cloudLibraryRecord == null) {
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork) {
@@ -1082,7 +1084,7 @@ public class GroupedWorkIndexer {
 					//Reindexing in the future is done if the time to reshelve is set to ensure that we reindex when that time expires.
 					try {
 						HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
-						if (autoReindexTimes.size() > 0) {
+						if (!autoReindexTimes.isEmpty()) {
 							for (Long autoReindexTime : autoReindexTimes) {
 								getScheduledWorkStmt.setString(1, groupedWork.getId());
 								getScheduledWorkStmt.setLong(2, autoReindexTime);
@@ -1135,12 +1137,12 @@ public class GroupedWorkIndexer {
 			if (lexileInformation.containsKey(isbn)){
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
 				String lexileCode = lexileTitle.getLexileCode();
-				if (lexileCode.length() > 0){
+				if (!lexileCode.isEmpty()){
 					groupedWork.setLexileCode(this.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
-				if (lexileTitle.getSeries().length() > 0){
+				if (!lexileTitle.getSeries().isEmpty()){
 					groupedWork.addSeries(lexileTitle.getSeries());
 				}
 				break;
@@ -1159,7 +1161,7 @@ public class GroupedWorkIndexer {
 					ResultSet arBookInfoRS = getArBookInfoStmt.executeQuery();
 					if (arBookInfoRS.next()){
 						String bookLevel = arBookInfoRS.getString("bookLevel");
-						if (bookLevel.length() > 0){
+						if (!bookLevel.isEmpty()){
 							groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
 						}
 						groupedWork.setAcceleratedReaderPointValue(arBookInfoRS.getString("arPoints"));
@@ -1259,20 +1261,20 @@ public class GroupedWorkIndexer {
 			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
 			if (displayInfoRS.next()) {
 				String title = displayInfoRS.getString("title");
-				if (title.length() > 0){
+				if (!title.isEmpty()){
 					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", "", true);
 					groupedWork.clearSubTitle();
 				}
 				String author = displayInfoRS.getString("author");
-				if (author.length() > 0){
+				if (!author.isEmpty()){
 					groupedWork.setAuthorDisplay(author);
 				}
 				String seriesName = displayInfoRS.getString("seriesName");
 				String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
-				if (seriesName.length() > 0) {
+				if (!seriesName.isEmpty()) {
 					groupedWork.clearSeries();
 					groupedWork.addSeries(seriesName);
-					if (seriesDisplayOrder.length() > 0) {
+					if (!seriesDisplayOrder.isEmpty()) {
 						groupedWork.addSeriesWithVolume(seriesName, seriesDisplayOrder);
 					}
 				}
@@ -1318,7 +1320,6 @@ public class GroupedWorkIndexer {
 	/**
 	 * System translation maps are used for things that are not customizable (or that shouldn't be customized)
 	 * by library.  For example, translations of language codes, or things where MARC standards define the values.
-	 *
 	 * We can also load translation maps that are specific to an indexing profile.  That is done within
 	 * the record processor itself.
 	 */
@@ -1401,7 +1402,7 @@ public class GroupedWorkIndexer {
 		}
 		if (translatedValue != null){
 			translatedValue = translatedValue.trim();
-			if (translatedValue.length() == 0){
+			if (translatedValue.isEmpty()){
 				translatedValue = null;
 			}
 		}
@@ -2212,7 +2213,7 @@ public class GroupedWorkIndexer {
 					//Check to see if we need to save local urls
 					for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
 						String localUrl = scopingInfo.getLocalUrl();
-						if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
+						if (localUrl != null && !localUrl.isEmpty() && !localUrl.equals(itemInfo.geteContentUrl())) {
 							addItemUrlStmt.setLong(1, itemId);
 							addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
 							addItemUrlStmt.setString(3, localUrl);
@@ -2375,7 +2376,7 @@ public class GroupedWorkIndexer {
 		UNCHANGED, CHANGED, NEW
 	}
 
-	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, MarcFactory marcFactory, String marcIndex) {
+	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, org.marc4j.marc.Record recordWithAdditionalItems, String recordNumber, MarcFactory marcFactory, String marcIndex) {
 		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
 		//Copy the record to the individual marc path
 		Record mergedRecord = recordWithAdditionalItems;

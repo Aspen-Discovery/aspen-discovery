@@ -47,7 +47,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getTitleAuthorityStmt;
 	private boolean lookupAuthorAuthoritiesInDB = true;
 	private boolean lookupTitleAuthoritiesInDB = true;
-	private HashMap<String, String> titleAuthorities = new HashMap<>();
+	private final HashMap<String, String> titleAuthorities = new HashMap<>();
 
 	private PreparedStatement markWorkAsNeedingReindexStmt;
 
@@ -256,11 +256,11 @@ public class RecordGroupingProcessor {
 	}
 
 
-	List<DataField> getDataFields(Record marcRecord, String tag) {
+	List<DataField> getDataFields(org.marc4j.marc.Record marcRecord, String tag) {
 		return marcRecord.getDataFields(tag);
 	}
 
-	List<DataField> getDataFields(Record marcRecord, int tag) {
+	List<DataField> getDataFields(org.marc4j.marc.Record marcRecord, int tag) {
 		return marcRecord.getDataFields(tag);
 	}
 
@@ -279,7 +279,7 @@ public class RecordGroupingProcessor {
 			groupedWork.makeUnique(primaryIdentifierString);
 			groupedWorkPermanentId = groupedWork.getPermanentId();
 		}else{
-			String alternateGroupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
+			String alternateGroupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork);
 			if (alternateGroupedWorkPermanentId != null) {
 				if (alternateGroupedWorkPermanentId.length() > 36) {
 					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
@@ -310,7 +310,7 @@ public class RecordGroupingProcessor {
 				logEntry.incErrors("Error determining existing grouped work for identifier", e);
 			}
 		}else if (originalGroupedWorkId.equals("false")) {
-			//A value of false means we prevalidated that there was not an existing id
+			//A value of false means we pre validated that there was not an existing id
 			originalGroupedWorkId = null;
 		}
 
@@ -343,7 +343,7 @@ public class RecordGroupingProcessor {
 			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
 
 			if (existingIdRS.next()) {
-				//There is an existing grouped work
+				//grouped work already exists
 				groupedWorkId = existingIdRS.getLong("id");
 
 				//Mark that the work has been updated
@@ -385,7 +385,7 @@ public class RecordGroupingProcessor {
 
 	}
 
-	private String checkForAlternateTitleAuthor(GroupedWork groupedWork, String groupedWorkPermanentId) {
+	private String checkForAlternateTitleAuthor(GroupedWork groupedWork) {
 		try {
 			//Check to see if we know the work based on the title and author through the merge process
 			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
@@ -541,7 +541,7 @@ public class RecordGroupingProcessor {
 	 * @param subtitle           The subtitle of the record
 	 * @param author             The author of the record
 	 * @param format             The format of the record
-	 * @param primaryDataChanged Whether or not the primary data has been changed
+	 * @param primaryDataChanged Whether the primary data has been changed
 	 * @return The permanent id of the grouped work
 	 */
 	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, String language, boolean primaryDataChanged) {
@@ -739,7 +739,7 @@ public class RecordGroupingProcessor {
 
 	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
-	public String translateValue(@SuppressWarnings("SameParameterValue") String mapName, String value) {
+	public String translateValue(String mapName, String value) {
 		value = value.toLowerCase();
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		String translatedValue;
@@ -768,7 +768,7 @@ public class RecordGroupingProcessor {
 		}
 		if (translatedValue != null) {
 			translatedValue = translatedValue.trim();
-			if (translatedValue.length() == 0) {
+			if (translatedValue.isEmpty()) {
 				translatedValue = null;
 			}
 		}
@@ -790,7 +790,7 @@ public class RecordGroupingProcessor {
 			if (reloadAuthorAuthorities) {
 				PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
-					CSVReader csvReader = new CSVReader(new FileReader(new File("../reindexer/author_authorities.properties")));
+					CSVReader csvReader = new CSVReader(new FileReader("../reindexer/author_authorities.properties"));
 					String[] curLine = csvReader.readNext();
 					while (curLine != null) {
 						try {
@@ -820,7 +820,7 @@ public class RecordGroupingProcessor {
 			if (reloadTitleAuthorities) {
 				PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
-					CSVReader csvReader = new CSVReader(new FileReader(new File("../reindexer/title_authorities.properties")));
+					CSVReader csvReader = new CSVReader(new FileReader("../reindexer/title_authorities.properties"));
 					String[] curLine = csvReader.readNext();
 					while (curLine != null) {
 						try {
@@ -870,7 +870,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
-		if (lookupAuthorAuthoritiesInDB && originalAuthor.length() > 0) {
+		if (lookupAuthorAuthoritiesInDB && !originalAuthor.isEmpty()) {
 			try {
 				getAuthoritativeAuthorStmt.setString(1, originalAuthor);
 				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
@@ -885,7 +885,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeTitle(String originalTitle) {
-		if (originalTitle.length() > 0) {
+		if (!originalTitle.isEmpty()) {
 			if (lookupTitleAuthoritiesInDB) {
 				try {
 					getTitleAuthorityStmt.setString(1, originalTitle);
@@ -911,7 +911,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String languageFields = "008[35-37]";
-	public String getLanguageBasedOnMarcRecord(Record marcRecord) {
+	public String getLanguageBasedOnMarcRecord(org.marc4j.marc.Record marcRecord) {
 		String activeLanguage = null;
 		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
 		for (String language : languages){
@@ -965,7 +965,7 @@ public class RecordGroupingProcessor {
 		return processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, language, true);
 	}
 
-	public String groupCloudLibraryRecord(String cloudLibraryId, Record cloudLibraryRecord){
+	public String groupCloudLibraryRecord(String cloudLibraryId, org.marc4j.marc.Record cloudLibraryRecord){
 		try{
 			getCloudLibraryDetailsForRecordStmt.setString(1, cloudLibraryId);
 			ResultSet getItemDetailsForRecordRS = getCloudLibraryDetailsForRecordStmt.executeQuery();
@@ -995,7 +995,7 @@ public class RecordGroupingProcessor {
 			JSONObject field = fields.getJSONObject(i);
 			if (field.getString("name").equals(fieldName)){
 				JSONArray fieldValues = field.getJSONArray("values");
-				if (fieldValues.length() == 0) {
+				if (fieldValues.isEmpty()) {
 					return "";
 				}else if (fieldValues.length() == 1) {
 					return fieldValues.getString(0).trim();

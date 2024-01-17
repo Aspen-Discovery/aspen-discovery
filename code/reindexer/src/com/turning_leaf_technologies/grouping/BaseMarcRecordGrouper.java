@@ -39,9 +39,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		baseSettings = settings;
 	}
 
-	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer);
+	public abstract String processMarcRecord(org.marc4j.marc.Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer);
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(org.marc4j.marc.Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
 		if (marcRecord == null) {
 			isValid = false;
@@ -53,7 +53,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			if (recordNumberField instanceof DataField) {
 				DataField curRecordNumberField = (DataField) recordNumberField;
 				Subfield subfieldA = curRecordNumberField.getSubfield(recordNumberSubfield);
-				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
+				if (subfieldA != null && (recordNumberPrefix.isEmpty() || subfieldA.getData().length() > recordNumberPrefix.length())) {
 					if (subfieldA.getData().startsWith(recordNumberPrefix)) {
 						String recordNumber = subfieldA.getData().trim();
 						if (recordNumber.indexOf(' ') > 0){
@@ -79,7 +79,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	protected String getFormatFromBib(Record record) {
+	protected String getFormatFromBib(org.marc4j.marc.Record record) {
 		String leader = record.getLeader().toString();
 		char leaderBit;
 		ControlField fixedField = (ControlField) record.getVariableField(8);
@@ -400,7 +400,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return "Unknown";
 	}
 
-	String setGroupingCategoryForWork(Record marcRecord, GroupedWork workForTitle) {
+	String setGroupingCategoryForWork(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
 		//Format
 		String groupingFormat;
 		switch (baseSettings.getFormatSource()) {
@@ -424,7 +424,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return groupingFormat;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
+	private void setWorkAuthorBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
 		String author = null;
 		DataField field100 = marcRecord.getDataField(100);
 		DataField field110 = marcRecord.getDataField(110);
@@ -462,7 +462,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
+	private DataField setWorkTitleBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
 		//Check for a uniform title field
 		//The uniform title is useful for movies (often has the release year)
 		DataField field130 = marcRecord.getDataField(130);
@@ -477,16 +477,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		//The 240 only gives good information if the language is not English.  If the language isn't English,
 		//it generally gives the english translation which could help to group translated versions with the original work.
 		// Not implementing this for now until we get additional feedback 2/2021
-		@SuppressWarnings("CommentedOutCode")
-		/*DataField field240 = marcRecord.getDataField(240);
-		if (field240 != null && field240.getSubfield('a') != null){
-			if (field240.getSubfield('l') != null) {
-				if (!field240.getSubfield('l').getData().equalsIgnoreCase("English")) {
-					assignTitleInfoFromMarcField(workForTitle, field240);
-					return field240;
-				}
-			}
-		}*/
 
 		DataField field245 = marcRecord.getDataField(245);
 		if (field245 != null && field245.getSubfield('a') != null) {
@@ -536,7 +526,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
 	}
 
-	GroupedWork setupBasicWorkForIlsRecord(Record marcRecord) {
+	GroupedWork setupBasicWorkForIlsRecord(org.marc4j.marc.Record marcRecord) {
 		GroupedWork workForTitle = new GroupedWork(this);
 
 		//Title
@@ -553,7 +543,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	String languageFields = "008[35-37]";
-	private void setLanguageBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
+	private void setLanguageBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
 		String activeLanguage = null;
 		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
 		for (String language : languages){
@@ -571,7 +561,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 		//Check to see if the language has a space in it.
 		if (activeLanguage == null){
-			if (treatUnknownLanguageAs.length() > 0){
+			if (!treatUnknownLanguageAs.isEmpty()){
 				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
 				if (activeLanguage.length() != 3 || activeLanguage.contains(" ")){
 					activeLanguage = "unk";
@@ -601,7 +591,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return numRemainingRecordsToDelete;
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public int getNumExistingTitles(BaseIndexingLogEntry logEntry) {
 		try {
 			//Clear previous records if we load multiple times
@@ -645,7 +634,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseIndexingLogEntry logEntry) {
 		try {
 			//Clear previous records if we load multiple times

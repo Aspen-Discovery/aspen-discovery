@@ -5,7 +5,6 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -24,7 +23,6 @@ public class GroupedReindexMain {
 
 	//General configuration
 	private static String serverName;
-	@SuppressWarnings("FieldCanBeLocal")
 	private static final String processName = "grouped_reindex";
 	private static boolean fullReindex = false;
 	private static boolean clearIndex = false;

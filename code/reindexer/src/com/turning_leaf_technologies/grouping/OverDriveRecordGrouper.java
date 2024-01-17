@@ -49,7 +49,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 					byte[] rawDataBytes = metadataRS.getBytes("rawData");
 					if (rawDataBytes != null) {
 						String metadata = new String(rawDataBytes, StandardCharsets.UTF_8);
-						JSONObject productMetadata = null;
+						JSONObject productMetadata;
 						try {
 							productMetadata = new JSONObject(metadata);
 							if (productMetadata.has("languages")) {
@@ -86,10 +86,10 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	private String processOverDriveRecord(String overdriveId, String title, String subtitle, String series, String author, String mediaType, String primaryLanguage) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
 		//Remove invalid data from subtitles.
-		if (subtitle != null && subtitle.length() > 0) {
+		if (subtitle != null && !subtitle.isEmpty()) {
 			String subtitleLower = subtitle.toLowerCase(Locale.ROOT);
 			//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
-			if (series != null && series.length() > 0 && subtitleLower.contains(series.toLowerCase())){
+			if (series != null && !series.isEmpty() && subtitleLower.contains(series.toLowerCase())){
 				subtitle = "";
 			//Remove book club notices and award winners
 			}else if (subtitleLower.contains("book club") || subtitleLower.contains("award winner") || subtitleLower.contains("read with jenna")) {
