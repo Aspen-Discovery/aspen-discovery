@@ -103,6 +103,24 @@ export const SystemMessagesContext = React.createContext({
      resetSystemMessages: () => {},
 });
 
+export const SearchContext = React.createContext({
+     query: '',
+     currentIndex: 'Keyword',
+     currentSource: 'local',
+     sources: [],
+     indexes: [],
+     facets: [],
+     sort: 'relevance',
+     updateQuery: () => {},
+     updateCurrentIndex: () => {},
+     updateCurrentSource: () => {},
+     updateIndexes: () => {},
+     updateSources: () => {},
+     updateFacets: () => {},
+     updateSort: () => {},
+     resetSearch: () => {},
+});
+
 export const ThemeProvider = ({ children }) => {
      const [theme, setTheme] = useState([]);
 
@@ -671,5 +689,84 @@ export const SystemMessagesProvider = ({ children }) => {
                }}>
                {children}
           </SystemMessagesContext.Provider>
+     );
+};
+
+export const SearchProvider = ({ children }) => {
+     const [currentIndex, setCurrentIndex] = useState();
+     const [currentSource, setCurrentSource] = useState();
+     const [indexes, setIndexes] = useState();
+     const [sources, setSources] = useState();
+     const [facets, setFacets] = useState();
+     const [sort, setSort] = useState();
+     const [query, setQuery] = useState();
+
+     const updateCurrentIndex = (data) => {
+          setCurrentIndex(data);
+          console.log('updated currentIndex in SearchContext');
+     };
+
+     const updateCurrentSource = (data) => {
+          setCurrentSource(data);
+          console.log('updated currentSource in SearchContext');
+     };
+
+     const updateIndexes = (data) => {
+          setIndexes(data);
+          console.log('updated indexes in SearchContext');
+     };
+
+     const updateSources = (data) => {
+          setSources(data);
+          console.log('updated sources in SearchContext');
+     };
+
+     const updateFacets = (data) => {
+          setFacets(data);
+          console.log('updated facets in SearchContext');
+     };
+
+     const updateSort = (data) => {
+          setSort(data);
+          console.log('updated sort in SearchContext');
+     };
+
+     const updateQuery = (data) => {
+          setQuery(data);
+          console.log('updated query in SearchContext');
+     };
+
+     const resetSearch = () => {
+          setCurrentIndex('Keyword');
+          setCurrentSource('local');
+          setIndexes({});
+          setSources({});
+          setQuery('');
+          setFacets({});
+          setSort('relevance');
+          console.log('reset SearchContext');
+     };
+
+     return (
+          <SearchContext.Provider
+               value={{
+                    currentIndex,
+                    updateCurrentIndex,
+                    currentSource,
+                    updateCurrentSource,
+                    indexes,
+                    updateIndexes,
+                    sources,
+                    updateSources,
+                    facets,
+                    updateFacets,
+                    query,
+                    updateQuery,
+                    sort,
+                    updateSort,
+                    resetSearch,
+               }}>
+               {children}
+          </SearchContext.Provider>
      );
 };

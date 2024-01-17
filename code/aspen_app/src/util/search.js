@@ -97,6 +97,8 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url, lan
           pageSize,
           page,
           language,
+          searchIndex: SEARCH.searchIndex,
+          source: SEARCH.searchSource,
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -436,14 +438,15 @@ export async function getSearchIndexes(url, language = 'en', source = 'local') {
      });
      const response = await discovery.get(endpoint.url + 'getSearchIndexes');
      if (response.ok) {
-          if (response?.data?.result) {
-               return response.data.result;
+          if (response?.data?.result?.searchIndexes) {
+               SEARCH.validIndexes = response.data.result.searchIndexes;
+               return response.data.result.searchIndexes;
           }
      }
 
      return {
           success: false,
-          searchIndexes: [],
+          indexes: [],
      };
 }
 
@@ -459,14 +462,15 @@ export async function getSearchSources(url, language = 'en') {
      });
      const response = await discovery.get(endpoint.url + 'getSearchSources');
      if (response.ok) {
-          if (response?.data?.result) {
-               return response.data.result;
+          if (response?.data?.result?.searchSources) {
+               SEARCH.validSources = response.data.result.searchSources;
+               return response.data.result.searchSources;
           }
      }
 
      return {
           success: false,
-          searchSources: [],
+          sources: [],
      };
 }
 

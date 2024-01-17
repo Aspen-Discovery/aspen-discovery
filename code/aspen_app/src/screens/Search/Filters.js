@@ -3,7 +3,9 @@ import { useNavigation, useNavigationState } from '@react-navigation/native';
 import _ from 'lodash';
 import { Box, Button, Center, ChevronRightIcon, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Text, View, VStack } from 'native-base';
 import React from 'react';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { Platform } from 'react-native';
+
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -18,8 +20,12 @@ export const FiltersScreen = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
+     const { currentIndex, currentSource, indexes, sources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
      const pendingFiltersFromParams = useNavigationState((state) => state.routes[0]['params']['pendingFilters']);
      const [searchTerm, setSearchTerm] = React.useState(SEARCH.term ?? '');
+
+     console.log('currentIndex: ' + currentIndex);
+     console.log('currentSource: ' + currentSource);
 
      let facets = SEARCH.availableFacets ? Object.keys(SEARCH.availableFacets) : [];
      let pendingFilters = SEARCH.pendingFilters ?? [];
@@ -230,8 +236,8 @@ export const FiltersScreen = () => {
           <View style={{ flex: 1 }}>
                <ScrollView>
                     <Box safeArea={5}>
-                         <VStack>
-                              <FormControl pb={5}>
+                         <VStack space={2}>
+                              <FormControl>
                                    <Input
                                         returnKeyType="search"
                                         variant="outline"
@@ -273,13 +279,19 @@ export const FiltersScreen = () => {
                               </FormControl>
                               <HStack space={2}>
                                    <FormControl maxW="50%">
-                                        <Select>
-                                             <Select.Item key={1} value={1} label="Keyword" />
+                                        <Select isReadOnly={Platform.OS === 'android'} name="changeIndex" selectedValue={currentIndex} onValueChange={(itemValue) => updateCurrentIndex(itemValue)}>
+                                             {_.map(indexes, function (item, index, array) {
+                                                  return <Select.Item key={index} label={item} value={index} />;
+                                             })}
                                         </Select>
                                    </FormControl>
                                    <FormControl maxW="50%">
-                                        <Select>
-                                             <Select.Item key={1} value={1} label="in Library Catalog" />
+                                        <Select isReadOnly={Platform.OS === 'android'} name="changeSource" selectedValue={currentSource} onValueChange={(itemValue) => updateCurrentSource(itemValue)}>
+                                             {_.map(sources, function (source, index, array) {
+                                                  if (index === 'events' || index === 'local') {
+                                                       return <Select.Item key={index} label={source.name} value={index} />;
+                                                  }
+                                             })}
                                         </Select>
                                    </FormControl>
                               </HStack>

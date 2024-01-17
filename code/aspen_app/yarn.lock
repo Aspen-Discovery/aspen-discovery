@@ -5374,6 +5374,11 @@ expo-cached-image@47.0.0:
   resolved "https://registry.yarnpkg.com/expo-cached-image/-/expo-cached-image-47.0.0.tgz#bc616145186e1cb41a26d4a6976058f4c9fdcfd4"
   integrity sha512-3j4OZauP5p1nDcRf73DXdhUkVi0NcytzsvToEmpyzLmJfTydUrDw3vLck+pO8TS8kPSCx/5OJ7Yf76wlvcE0VA==
 
+expo-calendar@~11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/expo-calendar/-/expo-calendar-11.1.1.tgz#c790dce535dc97fb15982b54b1c59c46dfe21d8d"
+  integrity sha512-ErXERbhdzI7RhdEFF94p5+UljoMT6p+POf2eDmoBicg7RieM/6kHDUL75B0JzBFy9FS86RDDdsIHFf2gzl6qWw==
+
 expo-constants@~14.2.0, expo-constants@~14.2.1:
   version "14.2.1"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-14.2.1.tgz#b5b6b8079d2082c31ccf2cbc7cf97a0e83c229c3"

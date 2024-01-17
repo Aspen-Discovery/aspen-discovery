@@ -10,7 +10,7 @@ import React from 'react';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLists } from '../../util/api/list';
@@ -18,7 +18,7 @@ import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCh
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
-import { getDefaultFacets } from '../../util/search';
+import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
 import { ForceLogout } from '../Auth/ForceLogout';
 import DisplayBrowseCategory from './Category';
 
@@ -42,6 +42,7 @@ export const DiscoverHomeScreen = () => {
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const [searchTerm, setSearchTerm] = React.useState('');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -193,6 +194,17 @@ export const DiscoverHomeScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
+                    if (version >= '24.02.00') {
+                         updateCurrentIndex('Keyword');
+                         updateCurrentSource('local');
+                         await getSearchIndexes(library.baseUrl, language, 'local').then((result) => {
+                              updateIndexes(result);
+                         });
+                         await getSearchSources(library.baseUrl, language).then((result) => {
+                              updateSources(result);
+                         });
+                    }
+
                     if (version >= '22.11.00') {
                          await getDefaultFacets(language);
                     }

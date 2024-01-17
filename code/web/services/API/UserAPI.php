@@ -948,6 +948,8 @@ class UserAPI extends Action {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
 
+			$userData->numSavedEvents = $user->getNumSavedEvents('upcoming');
+
 			$userData->summaryFines = translate([
 				'text' => 'Your accounts have %1% in fines',
 				1 => $userData->fines,
