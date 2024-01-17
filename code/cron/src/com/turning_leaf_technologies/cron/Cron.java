@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.cron;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class Cron {
 		String serverName;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -36,14 +37,14 @@ public class Cron {
 		
 		Date currentTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "cron");
-		logger.info(currentTime.toString() + ": Starting Cron");
+		logger.info(currentTime + ": Starting Cron");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 		
 		//Connect to the database
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database","database_aspen_jdbc"));
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
@@ -106,7 +107,7 @@ public class Cron {
 			}
 		
 			currentTime = new Date();
-			logger.info(currentTime.toString() + ": Running Process " + processToRun.getProcessName());
+			logger.info(currentTime + ": Running Process " + processToRun.getProcessName());
 			if (processToRun.getProcessClass() == null){
 				logger.error("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
 				cronEntry.addNote("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
@@ -119,12 +120,18 @@ public class Cron {
 				Class processHandlerClass = Class.forName(processToRun.getProcessClass());
 				Object processHandlerClassObject;
 				try {
-					processHandlerClassObject = processHandlerClass.newInstance();
+					try {
+						//noinspection unchecked
+						processHandlerClassObject = processHandlerClass.getDeclaredConstructor().newInstance();
+					} catch (InvocationTargetException | NoSuchMethodException e) {
+						logger.error("Error creating cron class", e);
+						continue;
+					}
 					IProcessHandler processHandlerInstance = (IProcessHandler) processHandlerClassObject;
 					cronEntry.addNote("Starting cron process " + processToRun.getProcessName());
 					cronEntry.saveResults();
 					
-					//Mark the time the run was started rather than finished so really long running processes
+					//Mark the time the run was started rather than finished so really long-running processes
 					//can go on while faster processes execute multiple times in other threads.
 					markProcessStarted(processToRun);
 					processHandlerInstance.doCronProcess(serverName, ini, processSettings, dbConn, cronEntry, logger);
@@ -192,7 +199,7 @@ public class Cron {
 			boolean runProcess = false;
 			String frequencyHours = cronIni.get(processName, "frequencyHours");
 			ProcessToRun newProcess = new ProcessToRun(processName, processHandler);
-			if (frequencyHours == null || frequencyHours.length() == 0){
+			if (frequencyHours == null || frequencyHours.isEmpty()){
 				//If the frequency isn't set, automatically run the process 
 				runProcess = true;
 			}else if (frequencyHours.trim().compareTo("-1") == 0) {
@@ -221,7 +228,7 @@ public class Cron {
 	
 						}
 					} catch (NumberFormatException e) {
-						logger.warn("Warning: the lastRun setting for " + processName + " was invalid. " + e.toString());
+						logger.warn("Warning: the lastRun setting for " + processName + " was invalid. " + e);
 					}
 				}
 			}

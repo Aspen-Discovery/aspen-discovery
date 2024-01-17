@@ -67,6 +67,7 @@
       <w>controlfield</w>
       <w>copynumber</w>
       <w>crontab</w>
+      <w>curdate</w>
       <w>datafield</w>
       <w>dateaccessioned</w>
       <w>datearrived</w>
@@ -223,6 +224,7 @@
       <w>sounddisc</w>
       <w>soundrecording</w>
       <w>sourcebrowse</w>
+      <w>spammy</w>
       <w>spellcheck</w>
       <w>spidering</w>
       <w>springshare</w>

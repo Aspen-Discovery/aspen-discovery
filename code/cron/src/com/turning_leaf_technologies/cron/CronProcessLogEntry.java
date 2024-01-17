@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
@@ -13,16 +12,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 public class CronProcessLogEntry implements BaseLogEntry {
-	private Logger logger;
-	private CronLogEntry cronLogEntry;
+	private final Logger logger;
+	private final CronLogEntry cronLogEntry;
 	private Long logProcessId;
-	private String processName;
-	private Date startTime;
+	private final String processName;
+	private final Date startTime;
 	private Date endTime;
 	private int numErrors;
 	private int numSkipped;
 	private int numUpdates;
-	private StringBuilder notesText = new StringBuilder();
+	private final StringBuilder notesText = new StringBuilder();
 	private boolean maxNoteTextLengthReached = false;
 
 	private static PreparedStatement insertLogEntry;
@@ -42,7 +41,7 @@ public class CronProcessLogEntry implements BaseLogEntry {
 		}
 	}
 	private Date getLastUpdate() {
-		//The last time the log entry was updated so we can tell if a process is stuck
+		//The last time the log entry was updated, so we can tell if a process is stuck
 		return new Date();
 	}
 
@@ -70,7 +69,7 @@ public class CronProcessLogEntry implements BaseLogEntry {
 		numUpdates += updates;
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -91,12 +90,13 @@ public class CronProcessLogEntry implements BaseLogEntry {
 			notesText.append(cleanedNote);
 		}else{
 			cleanedNote = "<li>Additional Notes truncated</li>";
+			notesText.append(cleanedNote);
 			maxNoteTextLengthReached = true;
 		}
 	}
 
 	private String getNotesHtml() {
-		return notesText.toString() + "</ol>";
+		return notesText + "</ol>";
 	}
 	
 	public synchronized boolean saveResults() {

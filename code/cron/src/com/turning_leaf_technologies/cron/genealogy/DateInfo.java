@@ -17,13 +17,13 @@ class DateInfo {
 	private boolean yearSet = false;
 	private boolean notSet = true;
 	
-	private static SimpleDateFormat format1 = new SimpleDateFormat("dd MMM yyyy"); //24 JUN 1895 used for marriage date birth date and death date
-	private static SimpleDateFormat format2 = new SimpleDateFormat("yyyy");
-	private static SimpleDateFormat format3 = new SimpleDateFormat("MMM yyyy");
-	private static SimpleDateFormat format4 = new SimpleDateFormat("MM/dd/yyyy H:mm:ss");
-	private static SimpleDateFormat format5 = new SimpleDateFormat("M/d/yyyy H:mm:ss");
-	private static SimpleDateFormat format6 = new SimpleDateFormat("M/d/yyyy");
-	private static SimpleDateFormat solrFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static final SimpleDateFormat format1 = new SimpleDateFormat("dd MMM yyyy"); //24 JUN 1895 used for marriage date birthdate and death date
+	private static final SimpleDateFormat format2 = new SimpleDateFormat("yyyy");
+	private static final SimpleDateFormat format3 = new SimpleDateFormat("MMM yyyy");
+	private static final SimpleDateFormat format4 = new SimpleDateFormat("MM/dd/yyyy H:mm:ss");
+	private static final SimpleDateFormat format5 = new SimpleDateFormat("M/d/yyyy H:mm:ss");
+	private static final SimpleDateFormat format6 = new SimpleDateFormat("M/d/yyyy");
+	private static final SimpleDateFormat solrFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
 	DateInfo(int day, int month, int year){
 		if (day != 0 || month != 0 || year != 0) {
@@ -45,7 +45,7 @@ class DateInfo {
 	}
 	DateInfo(String originalDate){
 		this.originalDate = originalDate;
-		if (originalDate == null || originalDate.length() == 0 || originalDate.matches("NOT LISTED|NOT LSITED|NOT GIVEN|N/D")){
+		if (originalDate == null || originalDate.isEmpty() || originalDate.matches("NOT LISTED|NOT LSITED|NOT GIVEN|N/D")){
 			return;
 		}
 		try {

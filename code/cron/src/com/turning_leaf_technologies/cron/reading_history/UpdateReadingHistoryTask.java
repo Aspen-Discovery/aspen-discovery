@@ -1,26 +1,25 @@
 package com.turning_leaf_technologies.cron.reading_history;
 
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
-import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class UpdateReadingHistoryTask implements Runnable {
 	private static long numTasksRun = 0;
-	private String aspenUrl;
-	private String cat_username;
-	private String cat_password;
-	private CronProcessLogEntry processLog;
-	private Logger logger;
+	private final String aspenUrl;
+	private final String cat_username;
+	private final String cat_password;
+	private final CronProcessLogEntry processLog;
+	private final Logger logger;
 	UpdateReadingHistoryTask(String aspenUrl, String cat_username, String cat_password, CronProcessLogEntry processLog, Logger logger) {
 		this.aspenUrl = aspenUrl;
 		this.cat_username = cat_username;
@@ -50,7 +49,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 				}
 				retry = false;
 				// Call the patron API to get their checked out items
-				URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8"));
+				URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, StandardCharsets.UTF_8));
 				//logger.error("Updating reading history for " + cat_username);
 				HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
 				//Give 10 seconds for connection timeout and 10 minutes for read timeout
@@ -61,8 +60,6 @@ public class UpdateReadingHistoryTask implements Runnable {
 				conn.addRequestProperty("Cache-Control", "no-cache");
 				if (conn.getResponseCode() == 200) {
 					String patronDataJson = AspenStringUtils.convertStreamToString(conn.getInputStream());
-					//logger.debug(patronApiUrl.toString());
-					//logger.debug("Json for patron reading history " + patronDataJson);
 					logger.debug("Got results for " + cat_username);
 					try {
 						JSONObject patronData = new JSONObject(patronDataJson);
@@ -97,10 +94,11 @@ public class UpdateReadingHistoryTask implements Runnable {
 				}
 			}
 		} catch (MalformedURLException e) {
-			processLog.incErrors("Bad url for patron API " + e.toString());
+			processLog.incErrors("Bad url for patron API " + e);
 			hadError = true;
 		} catch (IOException e) {
 			String errorMessage = e.getMessage();
+			//noinspection SpellCheckingInspection
 			errorMessage = errorMessage.replaceAll(cat_password, "XXXX");
 			processLog.incErrors("Unable to retrieve information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorMessage);
 			hadError = true;

@@ -2,8 +2,8 @@ package com.turning_leaf_technologies.cron;
 
 class ProcessToRun {
 	
-	private String processName;
-	private String processClass;
+	private final String processName;
+	private final String processClass;
 	private String[] arguments = null;
 	private Long lastRunVariableId = null;
 	private Long lastRunTime = null;
