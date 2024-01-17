@@ -191,7 +191,13 @@ public class GroupedReindexMain {
 		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 		baseLogPath = configIni.get("Site", "baseLogPath");
+		String solrHost = configIni.get("Index", "solrHost");
 		String solrPort = configIni.get("Reindex", "solrPort");
+
+		if (solrHost == null || solrHost.length() == 0) {
+        	logger.error("You must provide the host where the solr index is loaded in the import configuration file");
+        	System.exit(1);
+        }
 		if (solrPort == null || solrPort.length() == 0) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
