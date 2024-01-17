@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.oai;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
-import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,16 +14,16 @@ class OAISolrRecord {
 	private String title;
 	private String creator;
 	private String contributor;
-	private HashSet<String> subjects = new HashSet<>();
+	private final HashSet<String> subjects = new HashSet<>();
 	private String description;
-	private HashSet<String> coverage = new HashSet<>();
-	private HashSet<String> publisher = new HashSet<>();
-	private HashSet<String> format = new HashSet<>();
+	private final HashSet<String> coverage = new HashSet<>();
+	private final HashSet<String> publisher = new HashSet<>();
+	private final HashSet<String> format = new HashSet<>();
 	private String language;
-	private HashSet<String> source = new HashSet<>();
-	private HashSet<String> relation = new HashSet<>();
+	private final HashSet<String> source = new HashSet<>();
+	private final HashSet<String> relation = new HashSet<>();
 	private String rights;
-	private HashSet<String> date = new HashSet<>();
+	private final HashSet<String> date = new HashSet<>();
 	private String id;
 	private String collection_name;
 	private long collection_id;
@@ -137,10 +136,6 @@ class OAISolrRecord {
 
 	void setId(String id) {
 		this.id = id;
-	}
-
-	String getId() {
-		return this.id;
 	}
 
 	void setCollectionName(String collection_name) {
