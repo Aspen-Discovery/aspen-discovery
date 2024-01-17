@@ -22,10 +22,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
    
     private $curl_connection;
 
-    /**
-	 * @var string mixed
-	 */
-	private $searchIndex = 'Everything';
+	
+  
 
 	/**Track query time info */
     protected $queryStartTime = null;
@@ -66,6 +64,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $expand = false;
 
 	/**Facets, filters and limiters */
+	  /**
+	 * @var string mixed
+	 */
+	private $searchIndex = 'Everything';
 	protected $facets = [];
 	protected $filters = [];
 	protected $facetFields;
@@ -73,10 +75,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetValue;
 	protected $sortOptions = [];
 	protected $queryOptions = [];
-
-	protected $publicationDates = [];
-
-
+	//Values for the main facets - each has an array of available values
 	protected $facetValueFilters = [
 		'Author',
 		'ContentType',
@@ -85,7 +84,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'SubjectTerms',
 		'PublicationYear',
 	];
-
+	//Options to filter results by - checkbox, single value
 	protected $limitOptions = [
 		'Full Text Online',
 		'Scholarly',
@@ -93,15 +92,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Open Access',
 		'Available in Library Collection',
 	];
-
-	protected $facetConfig = null;
-
-
-
-
-
-
-  
+	
     public function __construct() {
 
         //Initialize properties with default values
@@ -153,16 +144,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return true;
 	}
 
-	  	/**
-	//  * @return SearchObject_SummonSearcher
+	/**
+	 * Create an instance of the Summon Searcher
+	 * @return SearchObject_SummonSearcher
 	 */
-	// public static function getInstance() {
-	// 	if (SearchObject_SummonSearcher::$instance == null) {
-	// 		SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
-	// 	}
-	// 	return SearchObject_SummonSearcher::$instance;
-	// }
-
+	 public static function getInstance() {
+	if (SearchObject_SummonSearcher::$instance == null) {
+		SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
+		}
+		return SearchObject_SummonSearcher::$instance;
+	}
 
 	/**
 	 * Retreive settings for institution's summon connector
@@ -377,7 +368,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     /**
 	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
+	 * results. Called by results.php.
 	 *
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
@@ -386,11 +377,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		global $interface;
 		$html = [];
 		if (isset($this->lastSearchResults)) {
-			// foreach($this->lastSearchResults as $key=>$value){
 			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
 				$current = &$this->lastSearchResults[$x];
-				// $interface->assign('recordIndex', $key + 1);
-				// $interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->pageNumber - 1) * $this->pageSize));
 
@@ -536,7 +524,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($contentTypes);
 						foreach ($counts as $contentType => $count){
-							$availableFacetValues[] = "$contentType $count";
+							$availableFacetValues[] = "$contentType ($count)";
 						}
 						break;
 					case 'Discipline':
@@ -549,7 +537,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($disciplines);
 						foreach ($counts as $term => $count){
-							$availableFacetValues[] = "$term $count";
+							$availableFacetValues[] = "$term ($count)";
 						}
 						break;
 					case 'DatabaseName':				
@@ -566,7 +554,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($databases);
 						foreach ($counts as $term => $count) {
-							$availableFacetValues[] = "$term $count";
+							$availableFacetValues[] = "$term ($count)";
 						}
 						break;
 					case 'SubjectTerms':		
@@ -579,7 +567,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($subjects);
 						foreach ($counts as $term => $count){
-							$availableFacetValues[] = "$term $count";
+							$availableFacetValues[] = "$term ($count)";
 						}
 						break;
 					case 'PublicationYear':
@@ -590,7 +578,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($pubYear);
 						foreach ($counts as $year => $count) {
-							$availableFacetValues[] = "$year $count";
+							$availableFacetValues[] = "$year ($count)";
 						}
 						break;
 					case 'Author':
@@ -601,7 +589,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						}
 						$counts = array_count_values($authors);
 						foreach ($counts as $authorName => $count) {
-							$availableFacetValues[] = "$authorName $count";
+							$availableFacetValues[] = "$authorName ($count)";
 						}
 						break;
 					default: 
@@ -851,23 +839,23 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->searchIndex;
 	}
 
-    // public function setSearchTerm($searchTerm) {
-	// 	if (strpos($searchTerm, ':') !== false) {
-	// 		[
-	// 			$searchIndex,
-	// 			$term,
-	// 		] = explode(':', $searchTerm, 2);
-	// 		$this->setSearchTerms([
-	// 			'lookfor' => $term,
-	// 			'index' => $searchIndex,
-	// 		]);
-	// 	} else {
-	// 		$this->setSearchTerms([
-	// 			'lookfor' => $searchTerm,
-	// 			'index' => $this->getDefaultIndex(),
-	// 		]);
-	// 	}
-	// }
+    public function setSearchTerm($searchTerm) {
+		if (strpos($searchTerm, ':') !== false) {
+			[
+				$searchIndex,
+				$term,
+			] = explode(':', $searchTerm, 2);
+			$this->setSearchTerms([
+				'lookfor' => $term,
+				'index' => $searchIndex,
+			]);
+		} else {
+			$this->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index' => $this->getDefaultIndex(),
+			]);
+		}
+	}
 
     	/**
 	 * Retrieves a document specified by the ID.
