@@ -54,7 +54,7 @@ public class Axis360Extractor {
 	private long accessTokenSettingId;
 	private long accessTokenExpiration;
 
-	public Axis360Extractor(String serverName, Connection aspenConn, Axis360Setting setting, Ini configIni, Axis360ExtractLogEntry logEntry, Logger logger) {
+	Axis360Extractor(String serverName, Connection aspenConn, Axis360Setting setting, Ini configIni, Axis360ExtractLogEntry logEntry, Logger logger) {
 		this.serverName = serverName;
 		this.aspenConn = aspenConn;
 		this.setting = setting;
@@ -191,7 +191,6 @@ public class Axis360Extractor {
 		//Get a list of titles to process
 		String itemDetailsUrl = setting.getBaseUrl() + "/Services/VendorAPI/titleLicense/v2?modifiedSince=";
 		if (!setting.doFullReload() && (setting.getLastUpdateOfChangedRecords() != 0)){
-			//noinspection SpellCheckingInspection
 			itemDetailsUrl += new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date(setting.getLastUpdateOfChangedRecords() * 1000));
 		}else{
 			itemDetailsUrl += "2000-01-01T12:00:00Z";
@@ -463,7 +462,7 @@ public class Axis360Extractor {
 			JSONObject field = fields.getJSONObject(i);
 			if (field.getString("name").equals(fieldName)){
 				JSONArray fieldValues = field.getJSONArray("values");
-				if (fieldValues.length() == 0) {
+				if (fieldValues.isEmpty()) {
 					return "";
 				}else if (fieldValues.length() == 1) {
 					return fieldValues.getString(0).trim();

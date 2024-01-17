@@ -4,14 +4,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class Axis360Setting {
-	private String baseUrl;
-	private String vendorUsername;
-	private String vendorPassword;
-	private String libraryPrefix;
-	private boolean doFullReload;
-	private long lastUpdateOfChangedRecords;
-	private long lastUpdateOfAllRecords;
-	private long id;
+	private final String baseUrl;
+	private final String vendorUsername;
+	private final String vendorPassword;
+	private final String libraryPrefix;
+	private final boolean doFullReload;
+	private final long lastUpdateOfChangedRecords;
+	private final long lastUpdateOfAllRecords;
+	private final long id;
 
 	Axis360Setting(ResultSet settingsRS) throws SQLException {
 		baseUrl = settingsRS.getString("apiUrl");
