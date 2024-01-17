@@ -20,4 +20,4 @@ interface CodeTableInterface {
      */
     char getChar(int c, int mode);
 
-};
+}

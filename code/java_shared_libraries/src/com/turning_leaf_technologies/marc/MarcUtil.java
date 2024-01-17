@@ -1,12 +1,9 @@
 package com.turning_leaf_technologies.marc;
 
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.json.JSONException;
-import org.marc4j.*;
-import org.marc4j.marc.*;
 import org.marc4j.util.JsonParser;
 
 import java.io.*;
@@ -20,6 +17,19 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
+
+import org.marc4j.MarcException;
+import org.marc4j.MarcJsonReader;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcReader;
+import org.marc4j.MarcStreamReader;
+import org.marc4j.MarcStreamWriter;
+import org.marc4j.marc.MarcFactory;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
+import org.marc4j.marc.VariableField;
 
 /**
  * Class to handle loading data from MARC records
@@ -48,7 +58,7 @@ public class MarcUtil {
 	 * @return the contents of the indicated marc field(s)/subfield(s), as a set
 	 *         of Strings.
 	 */
-	public static Set<String> getFieldList(Record record, String tagStr) {
+	public static Set<String> getFieldList(org.marc4j.marc.Record record, String tagStr) {
 		if (lastRecordHashCode != record.hashCode()){
 			marcRecordFieldListCache.clear();
 			lastRecordHashCode = record.hashCode();
@@ -133,7 +143,7 @@ public class MarcUtil {
 	 *          - the ending index of the substring of the subfield value
 	 * @return the result set of strings
 	 */
-	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfield, int beginIx, int endIx) {
+	private static Set<String> getSubfieldDataAsSet(org.marc4j.marc.Record record, String fldTag, String subfield, int beginIx, int endIx) {
 		if (AspenStringUtils.isNumeric(fldTag)) {
 			int fldTagInt = Integer.parseInt(fldTag);
 			return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
@@ -142,7 +152,7 @@ public class MarcUtil {
 		}
 	}
 
-	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfield, int beginIx, int endIx) {
+	private static Set<String> getSubfieldDataAsSet(org.marc4j.marc.Record record, int fldTag, String subfield, int beginIx, int endIx) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
 		// Process Leader
@@ -183,13 +193,13 @@ public class MarcUtil {
 	 *          all the desired subfield values from a single instance of the
 	 *          fldTag
 	 */
-	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfieldsStr, String separator) {
+	private static Set<String> getSubfieldDataAsSet(org.marc4j.marc.Record record, String fldTag, String subfieldsStr, String separator) {
 		int fldTagInt = Integer.parseInt(fldTag);
 
 		return getSubfieldDataAsSet(record, fldTagInt, subfieldsStr, separator);
 	}
 
-	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfieldsStr, String separator) {
+	private static Set<String> getSubfieldDataAsSet(org.marc4j.marc.Record record, int fldTag, String subfieldsStr, String separator) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
 		// Process Leader
@@ -370,7 +380,7 @@ public class MarcUtil {
 	}
 
 	public static ControlField getControlField(Record marcRecord, String tag){
-		List variableFields = marcRecord.getControlFields(tag);
+		List<ControlField> variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
 		for (Object variableField : variableFields){
 			if (variableField instanceof ControlField){
@@ -381,7 +391,7 @@ public class MarcUtil {
 	}
 
 	public static ControlField getControlField(Record marcRecord, int tag){
-		List variableFields = marcRecord.getControlFields(tag);
+		List<ControlField> variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
 		for (Object variableField : variableFields){
 			if (variableField instanceof ControlField){

@@ -86,7 +86,7 @@ public abstract class VariableFieldImpl implements VariableField {
     }
 
     /**
-     * Compare's this {@link VariableField} to the supplied one.
+     * Compares this {@link VariableField} to the supplied one.
      * 
      * @param obj A {@link VariableField} to compare to this one
      * @return 0 for a match, -1 if this one sorts first, or 1 if it sorts last
@@ -97,7 +97,7 @@ public abstract class VariableFieldImpl implements VariableField {
             throw new ClassCastException("A VariableField object expected");
         }
 
-        return Integer.compare(numericTag, ((VariableFieldImpl) obj).getNumericTag());
+        return Integer.compare(numericTag, obj.getNumericTag());
     }
 
     /**

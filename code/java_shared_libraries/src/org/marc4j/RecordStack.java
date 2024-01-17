@@ -41,10 +41,10 @@ public class RecordStack {
     private boolean eof = false;
 
     /**
-     * Default constuctor.
+     * Default constructor.
      */
     public RecordStack() {
-        list = new ArrayList<Record>();
+        list = new ArrayList<>();
     }
 
     /**
@@ -52,11 +52,12 @@ public class RecordStack {
      * 
      * @param record the record object
      */
-    public synchronized void push(final Record record) {
-        while (list.size() > 0) {
+    public synchronized void push(final org.marc4j.marc.Record record) {
+        while (!list.isEmpty()) {
             try {
                 wait();
             } catch (final Exception e) {
+                //ignore error
             }
         }
         list.add(record);
@@ -69,18 +70,19 @@ public class RecordStack {
      * 
      * @return Record - the record object
      */
-    public synchronized Record pop() {
-        while (list.size() <= 0 && eof != true) {
+    public synchronized org.marc4j.marc.Record pop() {
+        while (list.isEmpty() && !eof) {
             try {
                 wait();
             } catch (final Exception e) {
+                //ignore error
             }
         }
         if (re != null) {
             throw (re);
         }
         Record record = null;
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             record = list.remove(0);
         }
         notifyAll();
@@ -95,19 +97,17 @@ public class RecordStack {
      * @return boolean
      */
     public synchronized boolean hasNext() {
-        while (list.size() <= 0 && eof != true) {
+        while (list.isEmpty() && !eof) {
             try {
                 wait();
             } catch (final Exception e) {
+                //ignore error
             }
         }
         if (re != null) {
             throw (re);
         }
-        if (!isEmpty() || !eof) {
-            return true;
-        }
-        return false;
+	    return !isEmpty() || !eof;
     }
 
     /**
@@ -137,7 +137,7 @@ public class RecordStack {
      * @return boolean
      */
     private synchronized boolean isEmpty() {
-        return (list.size() == 0);
+        return (list.isEmpty());
     }
 
 }

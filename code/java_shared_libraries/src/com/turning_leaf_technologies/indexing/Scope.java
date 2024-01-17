@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.indexing;
 
-import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.marc4j.marc.Record;
 
@@ -8,6 +7,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+
+import com.turning_leaf_technologies.indexing.InclusionRule;
+import com.turning_leaf_technologies.indexing.OverDriveScope;
+import com.turning_leaf_technologies.indexing.Axis360Scope;
+import com.turning_leaf_technologies.indexing.CloudLibraryScope;
+import com.turning_leaf_technologies.indexing.HooplaScope;
+import com.turning_leaf_technologies.indexing.PalaceProjectScope;
+import com.turning_leaf_technologies.indexing.SideLoadScope;
+import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 
 public class Scope implements Comparable<Scope>{
 	private long id;
@@ -85,7 +93,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+	public InclusionResult isItemPartOfScope(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		if (isItemOwnedByScope(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
 			if (econtentUrl == null){
 				return includedOwnedResult;
@@ -123,7 +131,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(String itemIdentifier, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, @NotNull String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+	public boolean isItemOwnedByScope(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		for(InclusionRule curRule: ownershipRules){
 			if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
 				return true;
@@ -151,7 +159,7 @@ public class Scope implements Comparable<Scope>{
 
 
 	@Override
-	public int compareTo(@NotNull Scope o) {
+	public int compareTo(Scope o) {
 		return scopeName.compareTo(o.scopeName);
 	}
 
@@ -191,7 +199,6 @@ public class Scope implements Comparable<Scope>{
 		return libraryScope;
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isRestrictOwningLibraryAndLocationFacets() {
 		return restrictOwningLibraryAndLocationFacets;
 	}

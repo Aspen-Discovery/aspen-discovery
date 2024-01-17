@@ -20,19 +20,10 @@
 
 package org.marc4j.converter.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Vector;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -48,10 +39,10 @@ public class CodeTableHandler extends DefaultHandler {
 
     private HashMap<Integer, Character> charset;
 
-    private HashMap<Integer, Vector<Integer>> combiningchars;
+    private HashMap<Integer, Vector<Integer>> combiningChars;
 
     /** Data element identifier */
-    private Integer isocode;
+    private Integer isoCode;
 
     private Integer marc;
 
@@ -59,18 +50,12 @@ public class CodeTableHandler extends DefaultHandler {
 
     private boolean useAlt = false;
 
-    private boolean iscombining;
+    private boolean isCombining;
 
     private Vector<Integer> combining;
 
-    /** Tag name */
-    // private String tag;
-
     /** StringBuffer to store data */
     private StringBuffer data;
-
-    /** Locator object */
-    private Locator locator;
 
     /**
      * Gets the character sets hashtable.
@@ -87,19 +72,7 @@ public class CodeTableHandler extends DefaultHandler {
      * @return The combining characters
      */
     HashMap<Integer, Vector<Integer>> getCombiningChars() {
-        return combiningchars;
-    }
-
-    /**
-     * <p>
-     * Registers the SAX2 <code>Locator</code> object.
-     * </p>
-     * 
-     * @param locator the {@link Locator}object
-     */
-    @Override
-    public void setDocumentLocator(final Locator locator) {
-        this.locator = locator;
+        return combiningChars;
     }
 
     /**
@@ -107,37 +80,30 @@ public class CodeTableHandler extends DefaultHandler {
      * 
      * @param uri - the uri
      * @param name - the name
-     * @param qName - the qname
-     * @param atts - the attributes
-     * @throws SAXParseException - when there is an exception
+     * @param qName - the qName
+     * @param attributes - the attributes
      */
     @Override
     public void startElement(final String uri, final String name, final String qName,
-            final Attributes atts) throws SAXParseException {
+            final Attributes attributes) {
         switch (name) {
             case "characterSet":
                 charset = new HashMap<>();
-                isocode = Integer.valueOf(atts.getValue("ISOcode"), 16);
+                isoCode = Integer.valueOf(attributes.getValue("ISOcode"), 16);
                 combining = new Vector<>();
                 break;
             case "marc":
-                data = new StringBuffer();
+	        case "ucs":
+	        case "alt":
+	        case "isCombining":
+		        data = new StringBuffer();
                 break;
             case "codeTables":
                 sets = new HashMap<>();
-                combiningchars = new HashMap<>();
+                combiningChars = new HashMap<>();
                 break;
-            case "ucs":
-                data = new StringBuffer();
-                break;
-            case "alt":
-                data = new StringBuffer();
-                break;
-            case "isCombining":
-                data = new StringBuffer();
-                break;
-            case "code":
-                iscombining = false;
+	        case "code":
+                isCombining = false;
                 break;
         }
     }
@@ -161,16 +127,14 @@ public class CodeTableHandler extends DefaultHandler {
      * 
      * @param uri - the uri
      * @param name - the name
-     * @param qName - the qname
-     * @throws SAXParseException - when there is an exception
+     * @param qName - the qName
      */
     @Override
-    public void endElement(final String uri, final String name, final String qName)
-            throws SAXParseException {
+    public void endElement(final String uri, final String name, final String qName) {
         switch (name) {
             case "characterSet":
-                sets.put(isocode, charset);
-                combiningchars.put(isocode, combining);
+                sets.put(isoCode, charset);
+                combiningChars.put(isoCode, combining);
                 combining = null;
                 charset = null;
                 break;
@@ -191,55 +155,18 @@ public class CodeTableHandler extends DefaultHandler {
                 }
                 break;
             case "code":
-                if (iscombining) {
+                if (isCombining) {
                     combining.add(marc);
                 }
                 charset.put(marc, ucs);
                 break;
             case "isCombining":
                 if (data.toString().equals("true")) {
-                    iscombining = true;
+                    isCombining = true;
                 }
                 break;
         }
 
         data = null;
-    }
-
-    /**
-     * The main class on the CodeTableHandler. FIXME needed? 
-     * 
-     * @param args - the command line arguments for the CodeTableHandler program
-     */
-    public static void main(final String[] args) {
-        @SuppressWarnings("unused")
-        HashMap<Integer, HashMap<Integer, Character>> charsets = null;
-
-        try {
-
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setValidating(false);
-            final SAXParser saxParser = factory.newSAXParser();
-            final XMLReader rdr = saxParser.getXMLReader();
-
-            final File file = new File(
-                    "C:\\Documents and Settings\\ckeith\\Desktop\\Projects\\Code Tables\\codetables.xml");
-            final InputSource src = new InputSource(new FileInputStream(file));
-
-            final CodeTableHandler saxUms = new CodeTableHandler();
-
-            rdr.setContentHandler(saxUms);
-            rdr.parse(src);
-
-            charsets = saxUms.getCharSets();
-
-            // System.out.println( charsets.toString() );
-            System.out.println(saxUms.getCombiningChars());
-
-        } catch (final Exception exc) {
-            exc.printStackTrace(System.out);
-            // System.err.println( "Exception: " + exc );
-        }
     }
 }

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import org.json.JSONException;
 /**
  * The JSONPointerException is thrown by {@link JSONPointer} if an error occurs
  * during evaluating a pointer.

@@ -39,13 +39,13 @@ public interface MarcReader {
      * 
      * @return Returns true if the iteration has more records
      */
-    public boolean hasNext();
+    boolean hasNext();
 
     /**
      * Returns the next record in the iteration.
      * 
      * @return Record - the record object
      */
-    public Record next();
+    Record next();
 
 }

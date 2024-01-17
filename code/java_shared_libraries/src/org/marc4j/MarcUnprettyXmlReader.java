@@ -11,7 +11,7 @@ import org.marc4j.marc.Subfield;
 
 public class MarcUnprettyXmlReader implements MarcReader {
 
-    private MarcXmlReader reader = null;
+    private final MarcXmlReader reader;
 
     public MarcUnprettyXmlReader(final InputStream input) {
         reader = new MarcXmlReader(input);

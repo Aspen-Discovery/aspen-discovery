@@ -72,7 +72,7 @@ public class ReverseCodeTableHash extends ReverseCodeTable {
     }
 
     /**
-     * Creates a reverse codetable hash from the supplied {@link InputStream}.
+     * Creates a reverse code table hash from the supplied {@link InputStream}.
      * 
      * @param byteStream - a Stream to read to create the ReverseCodeTable
      */
@@ -101,7 +101,7 @@ public class ReverseCodeTableHash extends ReverseCodeTable {
     }
 
     /**
-     * Creates a reverse codetable hash from the supplied file name.
+     * Creates a reverse code table hash from the supplied file name.
      * 
      * @param filename - the name of a file to read to create the ReverseCodeTable
      */
@@ -130,7 +130,7 @@ public class ReverseCodeTableHash extends ReverseCodeTable {
     }
 
     /**
-     * Creates a reverse codetable hash from the supplied {@link URI}.
+     * Creates a reverse code table hash from the supplied {@link URI}.
      * 
      * @param uri - a URI to access to read data to create the ReverseCodeTable
      */

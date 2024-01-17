@@ -25,6 +25,12 @@ SOFTWARE.
 */
 
 import java.io.Reader;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONPointer;
+import org.json.JSONPointerException;
+import org.json.JSONTokener;
+import org.json.XML;
 
 /**
  * The XMLTokener extends the JSONTokener to provide additional methods

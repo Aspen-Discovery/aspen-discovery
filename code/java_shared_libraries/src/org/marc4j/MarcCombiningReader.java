@@ -23,6 +23,7 @@ import org.marc4j.marc.VariableField;
  * @author rh9ec
  */
 
+@SuppressWarnings("GrazieInspection")
 public class MarcCombiningReader implements MarcReader {
 
     Record currentRecord = null;
@@ -31,11 +32,11 @@ public class MarcCombiningReader implements MarcReader {
 
     MarcReader reader;
 
-    String idsToMerge = null;
+    String idsToMerge;
 
-    String leftControlField = null;
+    String leftControlField;
 
-    String rightControlField = null;
+    String rightControlField;
 
     /**
      * Constructor for a "combining" Marc reader, that looks ahead at the Marc
@@ -58,46 +59,6 @@ public class MarcCombiningReader implements MarcReader {
         this.idsToMerge = idsToMerge;
         this.leftControlField = leftControlField;
         this.rightControlField = rightControlField;
-        // this.nextErrors = null;
-        // this.currentErrors = null;
-    }
-
-    /**
-     * Constructor for a "combining" Marc reader, that looks ahead at the Marc file to determine 
-     * when the next record is a continuation of the currently read record.  Because this reader 
-     * needs to have two records in memory to determine when the subsequent record is a continuation,
-     * if Error Handling is being performed, this constructor needs to be used, so that the errors 
-     * from the "next" record are not appended to the results for the "current" record.
-     * Call this constructor in the following way:
-     * <pre>
-     *          ErrorHandler errors2 = errors;
-     *          errors = new ErrorHandler();
-     *          reader = new MarcCombiningReader(reader, errors, errors2, combineConsecutiveRecordsFields);
-     * </pre>         
-     * @param reader - The Lower level MarcReader that returns Marc4J Record
-     *        objects that are read from a Marc file.
-     * @param currentErrors - ErrorHandler Object to use for attaching errors to
-     *        a record.
-     * @param nextErrors - ErrorHandler Object that was passed into the lower
-     *        level MarcReader
-     * @param idsToMerge - string representing a regular expression matching
-     *        those fields to be merged for continuation records.
-     * @param leftControlField - string representing a control field in the
-     *        current record to use for matching purposes (null to default to
-     *        001).
-     * @param rightControlField - string representing a control field in the
-     *        next record to use for matching purposes (null to default to 001).
-     */
-    @Deprecated
-    public MarcCombiningReader(final MarcReader reader, final ErrorHandler currentErrors,
-            final ErrorHandler nextErrors, final String idsToMerge, final String leftControlField,
-            final String rightControlField) {
-        this.reader = reader;
-        this.idsToMerge = idsToMerge;
-        this.leftControlField = leftControlField;
-        this.rightControlField = rightControlField;
-        // this.nextErrors = nextErrors;
-        // this.currentErrors = currentErrors;
     }
 
     /**
@@ -122,7 +83,7 @@ public class MarcCombiningReader implements MarcReader {
             final Record tmp = currentRecord;
             currentRecord = null;
             return tmp;
-        } else if (currentRecord == null) {
+        } else {
             if (nextRecord != null) {
                 currentRecord = nextRecord;
                 nextRecord = null;
@@ -135,13 +96,13 @@ public class MarcCombiningReader implements MarcReader {
                 nextRecord = reader.next();
             } catch (final Exception e) {
                 if (currentRecord != null) {
-                    final String recCntlNum = currentRecord.getControlNumber();
+                    final String recordControlNum = currentRecord.getControlNumber();
 
                     throw new MarcException(
-                            "Couldn't get next record after " + (recCntlNum != null ? recCntlNum
-                                    : "") + " -- " + e.toString());
+                            "Couldn't get next record after " + (recordControlNum != null ? recordControlNum
+                                    : "") + " -- " + e);
                 } else {
-                    throw new MarcException("Marc record couldn't be read -- " + e.toString());
+                    throw new MarcException("Marc record couldn't be read -- " + e);
                 }
             }
 
@@ -151,11 +112,11 @@ public class MarcCombiningReader implements MarcReader {
                     try {
                         nextRecord = reader.next();
                     } catch (final Exception e) {
-                        final String recCntlNum = currentRecord.getControlNumber();
+                        final String recordControlNum = currentRecord.getControlNumber();
 
                         throw new MarcException(
-                                "Couldn't get next record after " + (recCntlNum != null ? recCntlNum
-                                        : "") + " -- " + e.toString());
+                                "Couldn't get next record after " + (recordControlNum != null ? recordControlNum
+                                        : "") + " -- " + e);
                     }
                 } else {
                     nextRecord = null;
@@ -164,7 +125,6 @@ public class MarcCombiningReader implements MarcReader {
             return next();
         }
 
-        return null;
     }
 
     /**
@@ -175,27 +135,27 @@ public class MarcCombiningReader implements MarcReader {
      * @param tag - tag number to search for
      */
     private String findControlField(final Record record, final String tag) {
-        final String tagstart = tag.substring(0, 3);
-        final List<VariableField> fields = record.getVariableFields(tagstart);
+        final String tagStart = tag.substring(0, 3);
+        final List<VariableField> fields = record.getVariableFields(tagStart);
 
         for (final VariableField field : fields) {
             if (field instanceof ControlField) {
                 final ControlField cf = (ControlField) field;
 
-                if (cf.getTag().matches(tagstart)) {
+                if (cf.getTag().matches(tagStart)) {
                     return cf.getData();
                 }
             } else if (field instanceof DataField) {
                 final DataField df = (DataField) field;
 
-                if (df.getTag().matches(tagstart)) {
-                    char subfieldtag = 'a';
+                if (df.getTag().matches(tagStart)) {
+                    char subfieldTag = 'a';
 
                     if (tag.length() > 3) {
-                        subfieldtag = tag.charAt(4);
+                        subfieldTag = tag.charAt(4);
                     }
 
-                    final Subfield sf = df.getSubfield(subfieldtag);
+                    final Subfield sf = df.getSubfield(subfieldTag);
                     if (sf != null) {
                         return sf.getData();
                     }
@@ -219,8 +179,8 @@ public class MarcCombiningReader implements MarcReader {
         }
 
         // Initialize match strings extracted from records:
-        String leftStr = null;
-        String rightStr = null;
+        String leftStr;
+        String rightStr;
 
         // For both sides of the match (left and right), check to see if the
         // user provided a control field setting. If no preference was provided,
@@ -239,11 +199,7 @@ public class MarcCombiningReader implements MarcReader {
         }
 
         // Check for a match and return an appropriate status:
-        if (leftStr != null && rightStr != null && leftStr.equals(rightStr)) {
-            return true;
-        }
-
-        return false;
+	    return leftStr != null && leftStr.equals(rightStr);
     }
 
     /**
@@ -284,7 +240,7 @@ public class MarcCombiningReader implements MarcReader {
     static public Record combineRecords(final Record currentRecord, final Record nextRecord,
             final String idsToMerge, final String fieldInsertBefore) {
         final List<VariableField> existingFields = currentRecord.getVariableFields();
-        final List<VariableField> fieldsToMove = new ArrayList<VariableField>();
+        final List<VariableField> fieldsToMove = new ArrayList<>();
 
         // temporarily remove some existing fields
         for (final VariableField field : existingFields) {

@@ -42,8 +42,8 @@ public class Iso5426ToUnicode extends CharConverter {
      * @return {@link String}- the UCS/Unicode data
      */
     @Override
-    public String convert(final char data[]) {
-        final StringBuffer sb = new StringBuffer();
+    public String convert(final char[] data) {
+        final StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < data.length; i++) {
             final char c = data[i];
@@ -66,25 +66,16 @@ public class Iso5426ToUnicode extends CharConverter {
     }
 
     private boolean hasNext(final int pos, final int len) {
-        if (pos < (len - 1)) {
-            return true;
-        }
-        return false;
+	    return pos < (len - 1);
     }
 
     private boolean isAscii(final int i) {
-        if (i >= 0x00 && i <= 0x7F) {
-            return true;
-        }
-        return false;
+	    return i >= 0x00 && i <= 0x7F;
     }
 
     private boolean isCombining(final int i) {
         // if (i > 0xE0 && i < 0xFF)
-        if (i >= 0xC0 && i <= 0xDF) {
-            return true;
-        }
-        return false;
+	    return i >= 0xC0 && i <= 0xDF;
     }
 
     /**
@@ -132,11 +123,12 @@ public class Iso5426ToUnicode extends CharConverter {
             case 0xAE:
                 return 0x2117; // 2/14 sound recording copyright sign
             case 0xAF:
-                return 0x00AE; // 2/15 trade mark sign
+                return 0x00AE; // 2/15 trademark sign
 
             case 0xB0:
                 return 0x02BB; // 3/0 ayn
             case 0xB1:
+                //noinspection SpellCheckingInspection
                 return 0x02BC; // 3/1 alif/hamzah
             case 0xB2:
                 return 0x201A; // 3/2 left low single quotation mark
@@ -158,8 +150,10 @@ public class Iso5426ToUnicode extends CharConverter {
             case 0xBC:
                 return 0x266F; // 3/12 musical sharp
             case 0xBD:
+                //noinspection SpellCheckingInspection
                 return 0x02B9; // 3/13 mjagkij znak
             case 0xBE:
+                //noinspection SpellCheckingInspection
                 return 0x02BA; // 3/14 tverdyj znak
             case 0xBF:
                 return 0x00BF; // 3/15 inverted question mark
@@ -183,7 +177,7 @@ public class Iso5426ToUnicode extends CharConverter {
                 return 0x00D8; // 6/9 CAPITAL LETTER O WITH SOLIDUS [oblique
                                // stroke]
             case 0xEA:
-                return 0x0152; // 6/10 CAPITAL DIPHTONG OE
+                return 0x0152; // 6/10 CAPITAL DIPHTHONG OE
                 // 6/11 (this position shall not be used)
             case 0xEC:
                 return 0x00DE; // 6/12 CAPITAL LETTER THORN
@@ -210,7 +204,7 @@ public class Iso5426ToUnicode extends CharConverter {
                 return 0x00F8; // 7/9 small letter o with solidus (oblique
                                // stroke)
             case 0xFA:
-                return 0x0153; // 7/10 small diphtong oe
+                return 0x0153; // 7/10 small diphthong oe
             case 0xFB:
                 return 0x00DF; // 7/11 small letter sharp s
             case 0xFC:

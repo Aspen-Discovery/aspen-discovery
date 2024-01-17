@@ -12440,7 +12440,7 @@ Build
 Test Cases
 
 * LUCENE-3002: added 'tests.iter.min' to control 'tests.iter' by allowing to 
-  stop iterating if at least 'tests.iter.min' ran and a failure occured. 
+  stop iterating if at least 'tests.iter.min' ran and a failure occurred.
   (Shai Erera, Chris Hostetter)
 
 ======================= Lucene 3.1.0 =======================

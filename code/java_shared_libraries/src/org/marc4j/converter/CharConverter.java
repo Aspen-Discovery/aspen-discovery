@@ -30,7 +30,7 @@ public abstract class CharConverter {
 
     /**
      * The method that needs to be implemented in a subclass to create a
-     * CharConverter. Receives a data element extracted from a record as a array
+     * CharConverter. Receives a data element extracted from a record as an array
      * of characters, and converts that data and returns the result as a
      * <code>String</code> object.
      * 
@@ -48,7 +48,7 @@ public abstract class CharConverter {
      * @return String the conversion result
      */
     final public String convert(final byte[] dataElement) {
-        final char cData[] = new char[dataElement.length];
+        final char[] cData = new char[dataElement.length];
         for (int i = 0; i < dataElement.length; i++) {
             final byte b = dataElement[i];
             cData[i] = (char) (b >= 0 ? b : 256 + b);
@@ -65,7 +65,7 @@ public abstract class CharConverter {
      * @return String the conversion result
      */
     final public String convert(final String dataElement) {
-        char[] data = null;
+        char[] data;
         data = dataElement.toCharArray();
         return convert(data);
     }

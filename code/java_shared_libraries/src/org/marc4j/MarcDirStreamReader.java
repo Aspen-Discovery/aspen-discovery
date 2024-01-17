@@ -40,7 +40,7 @@ import org.marc4j.marc.Record;
 
 public class MarcDirStreamReader implements MarcReader {
 
-    File list[];
+    File[] list;
 
     MarcReader curFileReader;
 
@@ -56,7 +56,7 @@ public class MarcDirStreamReader implements MarcReader {
      * Constructs an instance that traverses the directory specified in the
      * parameter.
      * 
-     * @param dirName - The path of the directory from which to read all of the
+     * @param dirName - The path of the directory from which to read all the
      *        .mrc files
      */
     public MarcDirStreamReader(final String dirName) {
@@ -68,7 +68,7 @@ public class MarcDirStreamReader implements MarcReader {
      * Constructs an instance that traverses the directory specified in the
      * parameter.
      * 
-     * @param dir - The path of the directory from which to read all of the .mrc
+     * @param dir - The path of the directory from which to read all the .mrc
      *        files
      */
     public MarcDirStreamReader(final File dir) {
@@ -81,7 +81,7 @@ public class MarcDirStreamReader implements MarcReader {
      * and passes them on to each of the MarcPermissiveStreamReader that it
      * creates.
      * 
-     * @param dirName - The path of the directory from which to read all of the
+     * @param dirName - The path of the directory from which to read all the
      *        .mrc files
      * @param permissive - Set to true to specify that reader should try to
      *        handle and recover from errors in the input.
@@ -100,7 +100,7 @@ public class MarcDirStreamReader implements MarcReader {
      * and passes them on to each of the MarcPermissiveStreamReader that it
      * creates.
      * 
-     * @param dir - The path of the directory from which to read all of the .mrc
+     * @param dir - The path of the directory from which to read all the .mrc
      *        files
      * @param permissive - Set to true to specify that reader should try to
      *        handle and recover from errors in the input.
@@ -117,14 +117,14 @@ public class MarcDirStreamReader implements MarcReader {
      * and passes them on to each of the MarcPermissiveStreamReader that it
      * creates.
      * 
-     * @param dirName - The path of the directory from which to read all of the
+     * @param dirName - The path of the directory from which to read all the
      *        .mrc files
      * @param permissive - Set to true to specify that reader should try to
      *        handle and recover from errors in the input.
      * @param convertToUTF8 - Set to true to specify that reader should convert
      *        the records being read to UTF-8 encoding as they are being read.
      * @param defaultEncoding - Specifies the character encoding that the
-     *        records being read are presumed to be in..
+     *        records being read are presumed to be in.
      */
     public MarcDirStreamReader(final String dirName, final boolean permissive,
             final boolean convertToUTF8, final String defaultEncoding) {
@@ -138,14 +138,14 @@ public class MarcDirStreamReader implements MarcReader {
      * and passes them on to each of the MarcPermissiveStreamReader that it
      * creates.
      * 
-     * @param dir - The path of the directory from which to read all of the .mrc
+     * @param dir - The path of the directory from which to read all the .mrc
      *        files
      * @param permissive - Set to true to specify that reader should try to
      *        handle and recover from errors in the input.
      * @param convertToUTF8 - Set to true to specify that reader should convert
      *        the records being read to UTF-8 encoding as they are being read.
      * @param defaultEncoding - Specifies the character encoding that the
-     *        records being read are presumed to be in..
+     *        records being read are presumed to be in.
      */
     public MarcDirStreamReader(final File dir, final boolean permissive,
             final boolean convertToUTF8, final String defaultEncoding) {
@@ -154,18 +154,14 @@ public class MarcDirStreamReader implements MarcReader {
 
     private void init(final File dir, final boolean permissive, final boolean convertToUTF8,
             final String defaultEncoding) {
-        final FilenameFilter filter = new FilenameFilter() {
-
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return name.endsWith("mrc");
-            }
-        };
+        final FilenameFilter filter = (dir1, name) -> name.endsWith("mrc");
         this.permissive = permissive;
         this.convertToUTF8 = convertToUTF8;
         list = dir.listFiles(filter);
-        java.util.Arrays.sort(list);
-        curFileNum = 0;
+	    if (list != null) {
+		    java.util.Arrays.sort(list);
+	    }
+	    curFileNum = 0;
         curFileReader = null;
         this.defaultEncoding = defaultEncoding;
     }
@@ -175,10 +171,10 @@ public class MarcDirStreamReader implements MarcReader {
      */
     @Override
     public boolean hasNext() {
-        if (curFileReader == null || curFileReader.hasNext() == false) {
+        if (curFileReader == null || !curFileReader.hasNext()) {
             nextFile();
         }
-        return curFileReader == null ? false : curFileReader.hasNext();
+        return curFileReader != null && curFileReader.hasNext();
     }
 
     private void nextFile() {
@@ -207,7 +203,7 @@ public class MarcDirStreamReader implements MarcReader {
      */
     @Override
     public Record next() {
-        if (curFileReader == null || curFileReader.hasNext() == false) {
+        if (curFileReader == null || !curFileReader.hasNext()) {
             nextFile();
         }
         return curFileReader == null ? null : curFileReader.next();

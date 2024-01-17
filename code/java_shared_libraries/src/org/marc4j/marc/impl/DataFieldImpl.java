@@ -35,7 +35,7 @@ import org.marc4j.marc.Subfield;
 /**
  * DataField defines behavior for a data field (tag 010-999).
  * <p>
- * Data fields are variable fields identified by tags beginning with ASCII numeric values other than two zero's. Data
+ * Data fields are variable fields identified by tags beginning with ASCII numeric values other than two zeroes. Data
  * fields contain indicators, subfield codes, data and a field terminator.
  *
  * @author Bas Peters
@@ -54,7 +54,7 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
 
     private char ind2;
 
-    private final List<Subfield> subfields = new ArrayList<Subfield>();
+    private final List<Subfield> subfields = new ArrayList<>();
 
     /**
      * Creates a new <code>DataField</code>.
@@ -169,7 +169,7 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
      */
     @Override
     public List<Subfield> getSubfields(final char code) {
-        final List<Subfield> result = new ArrayList<Subfield>();
+        final List<Subfield> result = new ArrayList<>();
 
         for (final Subfield sf : subfields) {
             if (sf.getCode() == code) {
@@ -189,15 +189,13 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
      */
     @Override
     public List<Subfield> getSubfields(final String sfSpec) {
-        final List<Subfield> sfData = new ArrayList<Subfield>();
+        final List<Subfield> sfData = new ArrayList<>();
 
-        if (sfSpec == null || sfSpec.length() == 0) {
-            for (final Subfield sf : this.getSubfields()) {
-                sfData.add(sf);
-            }
+        if (sfSpec == null || sfSpec.isEmpty()) {
+	        sfData.addAll(this.getSubfields());
         } else if (sfSpec.contains("[")) {
             // Brackets indicate a pattern
-            Pattern sfPattern = null;
+            Pattern sfPattern;
             try {
                 sfPattern = Pattern.compile(sfSpec);
                 for (final Subfield sf : this.getSubfields()) {
@@ -301,6 +299,7 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
      *
      * @return A string representation of this data field
      */
+    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -330,19 +329,18 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
         if (subfieldsStr.length() > 1) {
             // automatic concatenation of grouped subFields
             StringBuilder buffer = new StringBuilder();
-            List<Subfield> subFields = subfields;
-            for (Subfield sf : subFields) {
+	        for (Subfield sf : subfields) {
                 if (subfieldsStr.indexOf(sf.getCode()) != -1 && sf.getData().length() >= endIx) {
                     if (buffer.length() > 0)
                         buffer.append(" ");
-                    buffer.append(sf.getData().substring(beginIx, endIx));
+                    buffer.append(sf.getData(), beginIx, endIx);
                 }
             }
             resultSet.add(buffer.toString());
         } else {
             // get all instances of the single subfield
-            List<Subfield> subFlds = getSubfields(subfieldsStr.charAt(0));
-            for (Subfield sf : subFlds) {
+            List<Subfield> matchingSubfields = getSubfields(subfieldsStr.charAt(0));
+            for (Subfield sf : matchingSubfields) {
                 if (sf.getData().length() >= endIx)
                     resultSet.add(sf.getData().substring(beginIx, endIx));
             }
@@ -355,8 +353,7 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
         if (subfieldsStr.length() > 1 || separator != null) {
             // concatenate subfields using specified separator or space
             StringBuilder buffer = new StringBuilder();
-            List<Subfield> subFields = subfields;
-            for (Subfield sf : subFields) {
+	        for (Subfield sf : subfields) {
                 if (subfieldsStr.indexOf(sf.getCode()) != -1) {
                     if (buffer.length() > 0) {
                         buffer.append(separator != null ? separator : " ");

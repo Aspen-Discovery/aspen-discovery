@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 
 public class SideLoadSettings extends BaseIndexingSettings {
 	private HashSet<String> deletedIds = new HashSet<>();

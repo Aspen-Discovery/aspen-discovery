@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A pull-event parser for JSON data.
@@ -26,13 +27,13 @@ import java.util.ArrayList;
  * Note that the event and member values are only valid while the parser is not searching for
  * the next event.
  * <p>
- * Threading Design : [x] Single Threaded  [ ] Threadsafe  [ ] Immutable  [ ] Isolated
+ * Threading Design : [x] Single Threaded  [ ] Thread safe  [ ] Immutable  [ ] Isolated
  *
  * @author          Lawrence Dol
  * @since           Build 2007.0726.0032
  */
 
-public class JsonParser extends Object {
+public class JsonParser {
 
     // *****************************************************************************
     // INSTANCE PROPERTIES
@@ -64,7 +65,7 @@ public class JsonParser extends Object {
     // PARSER VARIABLES
     private String inpName;                                       // the name of the input source (for location
 
-    // reporting)
+    // reporting
 
     private Reader inpReader;                                     // input inpReader
 
@@ -111,7 +112,7 @@ public class JsonParser extends Object {
         optPreloadInput = (opt & OPT_PRELOAD_INPUT) != 0;
         optUnquotedKeywords = (opt & OPT_UNQUOTED_KEYWORDS) != 0;
 
-        objectStack = new ArrayList<ObjectData>();
+        objectStack = new ArrayList<>();
         accumulator = new StringBuilder();
 
         reset(true);
@@ -138,7 +139,7 @@ public class JsonParser extends Object {
             try {
                 inpReader.close();
             } catch (final Throwable ign) {
-                ;
+                //Ignore this error
             }
         }
 
@@ -244,7 +245,7 @@ public class JsonParser extends Object {
      * <p>
      * <b><u>NOTE</u></b>
      * <p>
-     * All values are returned with EMCA-262 unescaping already applied. However if the value was specified in quotes
+     * All values are returned with EMCA-262 un-escaping already applied. However, if the value was specified in quotes
      * it is return enclosed in quotes in order to reflect the explicit indication of a text value. This means that
      * the string may contain ambiguous quotes when observed at face value, which situation is easily resolve using
      * the static methods <code>isQuoted()</code> and <code>stripQuotes</code>. Alternatively, the methods
@@ -294,20 +295,21 @@ public class JsonParser extends Object {
     /**
      * Construct a JSON parser from a character input source.
      *
-     * @param inpnam A text description of the source, used only for location text.
-     * @param inpsrc Input source.
-     * @param inpcls Whether to close the input source at end-of-input.
+     * @param inputName A text description of the source, used only for location text.
+     * @param inputSource Input source.
+     * @param closeInput Whether to close the input source at end-of-input.
      * @return the current JSONParser object for chaining purposes
      */
-    public JsonParser setInput(final String inpnam, final Reader inpsrc, final boolean inpcls) {
+    @SuppressWarnings("UnusedReturnValue")
+    public JsonParser setInput(final String inputName, final Reader inputSource, final boolean closeInput) {
         reset(false);
 
-        inpName = inpnam;
-        inpReader = inpsrc;
-        inpClose = inpcls;
+        inpName = inputName;
+        inpReader = inputSource;
+        inpClose = closeInput;
 
         if (optPreloadInput) {
-            inpReader = preloadInput(inpnam, inpReader, inpClose, 0);
+            inpReader = preloadInput(inputName, inpReader, inpClose, 0);
             inpClose = true;
         }
 
@@ -317,27 +319,28 @@ public class JsonParser extends Object {
     /**
      * Construct a JSON parser from a byte input source.
      *
-     * @param inpnam A text description of the source, used only for location text.
-     * @param inpsrc Input source.
-     * @param inpenc Character encoding used by the input source.
-     * @param inpcls Whether to close the input source at end-of-input.
+     * @param inputName A text description of the source, used only for location text.
+     * @param inputSource Input source.
+     * @param inputEncoding Character encoding used by the input source.
+     * @param closeInput Whether to close the input source at end-of-input.
      * @return the current JSONParser object for chaining purposes
      */
-    public JsonParser setInput(final String inpnam, final InputStream inpsrc, final String inpenc,
-            final boolean inpcls) {
+    @SuppressWarnings("UnusedReturnValue")
+    public JsonParser setInput(final String inputName, final InputStream inputSource, final String inputEncoding,
+            final boolean closeInput) {
         reset(false);
 
-        inpName = inpnam;
+        inpName = inputName;
         try {
-            inpReader = new InputStreamReader(inpsrc, inpenc);
+            inpReader = new InputStreamReader(inputSource, inputEncoding);
         } catch (final UnsupportedEncodingException thr) {
             throw new Escape(Escape.BAD_ENCODING,
-                    "The encoding '" + inpenc + "' is not supported by this Java Runtime Engine");
+                    "The encoding '" + inputEncoding + "' is not supported by this Java Runtime Engine");
         }
-        inpClose = inpcls;
+        inpClose = closeInput;
 
         if (optPreloadInput) {
-            inpReader = preloadInput(inpnam, inpReader, inpClose, 0);
+            inpReader = preloadInput(inputName, inpReader, inpClose, 0);
             inpClose = true;
         }
 
@@ -347,32 +350,29 @@ public class JsonParser extends Object {
     /**
      * Construct a JSON parser from a file input source.
      *
-     * @param inpfil Input source.
-     * @param inpenc Character encoding used by the input source.
-     * @param bufsiz Size of input buffer for reading from the file.
+     * @param inputFile Input source.
+     * @param inputEncoding Character encoding used by the input source.
+     * @param bufferSize Size of input buffer for reading from the file.
      * @return the current JSONParser object for chaining purposes
      */
-    public JsonParser setInput(final String inpfil, final String inpenc, final int bufsiz) {
+    @SuppressWarnings("UnusedReturnValue")
+    public JsonParser setInput(final String inputFile, final String inputEncoding, final int bufferSize) {
         reset(false);
 
-        inpName = inpfil;
+        inpName = inputFile;
         try {
-            inpReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(inpfil),
-                    bufsiz), inpenc);
+            inpReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(inputFile),
+                    bufferSize), inputEncoding);
         } catch (final UnsupportedEncodingException thr) {
             throw new Escape(Escape.BAD_ENCODING,
-                    "The encoding '" + inpenc + "' is not supported by this Java Runtime Engine",
+                    "The encoding '" + inputEncoding + "' is not supported by this Java Runtime Engine",
                     thr);
         } catch (final IOException thr) {
-            throw new Escape(Escape.IOERROR, "Could not access file \"" + inpfil + "\": " + thr,
+            throw new Escape(Escape.IOERROR, "Could not access file \"" + inputFile + "\": " + thr,
                     thr);
         }
-        inpClose = true;
-
         if (optPreloadInput) {
-            inpReader = preloadInput(inpfil, inpReader, inpClose, Math.min(Integer.MAX_VALUE,
-                    (int) new File(inpfil).length()));
-            inpClose = true;
+            inpReader = preloadInput(inputFile, inpReader, true, Math.min(Integer.MAX_VALUE, (int) new File(inputFile).length()));
         }
 
         return this;
@@ -381,31 +381,32 @@ public class JsonParser extends Object {
     /**
      * Construct a JSON parser from a file input source.
      *
-     * @param inpfil Input source.
-     * @param inpenc Character encoding used by the input source.
-     * @param bufsiz Size of input buffer for reading from the file.
+     * @param inputFile Input source.
+     * @param inputEncoding Character encoding used by the input source.
+     * @param bufferSize Size of input buffer for reading from the file.
      * @return the current JSONParser object for chaining purposes
      */
-    public JsonParser setInput(final File inpfil, final String inpenc, final int bufsiz) {
+    @SuppressWarnings("UnusedReturnValue")
+    public JsonParser setInput(final File inputFile, final String inputEncoding, final int bufferSize) {
         reset(false);
 
-        inpName = inpfil.toString();
+        inpName = inputFile.toString();
         try {
-            inpReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(inpfil),
-                    bufsiz), inpenc);
+            inpReader = new InputStreamReader(new BufferedInputStream(new FileInputStream(inputFile),
+                    bufferSize), inputEncoding);
         } catch (final UnsupportedEncodingException thr) {
             throw new Escape(Escape.BAD_ENCODING,
-                    "The encoding '" + inpenc + "' is not supported by this Java Runtime Engine",
+                    "The encoding '" + inputEncoding + "' is not supported by this Java Runtime Engine",
                     thr);
         } catch (final IOException thr) {
-            throw new Escape(Escape.IOERROR, "Could not access file \"" + inpfil + "\": " + thr,
+            throw new Escape(Escape.IOERROR, "Could not access file \"" + inputFile + "\": " + thr,
                     thr);
         }
         inpClose = true;
 
         if (optPreloadInput) {
-            inpReader = preloadInput(inpfil.toString(), inpReader, inpClose, Math.min(
-                    Integer.MAX_VALUE, (int) inpfil.length()));
+            inpReader = preloadInput(inputFile.toString(), inpReader, inpClose, Math.min(
+                    Integer.MAX_VALUE, (int) inputFile.length()));
             inpClose = true;
         }
 
@@ -449,18 +450,18 @@ public class JsonParser extends Object {
                         // TEST FOR COMMENTS
                         if (ich == '*' || ich == '#') {
                             while ((ich = readChar()) != -1 && ich != '\n') {
-                                ;
+                                //Just using side effect
                             }
                         } else if (ich == '/') {
                             int tmp = readChar();
                             if (tmp == '/') {
                                 while ((ich = readChar()) != -1 && ich != '\n') {
-                                    ;
+                                    //Just using side effect
                                 }
                             } else if (tmp == '*') {
                                 if (!optMultilineComments) {
                                     throw parserError(Escape.MALFORMED,
-                                            "Multiline comment not permitted by parser", null,
+                                            "Multiline comment not permitted by parser",
                                             evtLine, evtColumn);
                                 }
                                 while ((tmp = readChar()) != -1) {
@@ -470,12 +471,13 @@ public class JsonParser extends Object {
                                 }
                                 if (tmp != '/') {
                                     throw parserError(Escape.MALFORMED,
-                                            "Multiline comment not closed before EOF", null,
+                                            "Multiline comment not closed before EOF",
                                             evtLine, evtColumn);
                                 }
                                 ich = ' ';
                             } else {                                                      // one slash, but not two
                                 unreadChar(tmp);
+                                //noinspection DataFlowIssue
                                 ich = '/';
                             }
                         }
@@ -494,7 +496,7 @@ public class JsonParser extends Object {
                         if ((ich = readChar()) == -1) {
                             throw parserError(Escape.BAD_ESCAPE,
                                     "The input stream ended with an incomplete escape sequence",
-                                    null, lin, col);
+                                    lin, col);
                         }
                         switch (ich) {
                             case '"': {
@@ -506,9 +508,10 @@ public class JsonParser extends Object {
                             }
                                 continue;              // backslash
                             case '/': {
+                                //noinspection UnnecessaryUnicodeEscape
                                 storeChar('\u2044');
                             }
-                                continue;              // solidus (I was suprised too!!)
+                                continue;              // solidus (I was surprised too!!)
                             case 'b': {
                                 storeChar('\b');
                             }
@@ -538,7 +541,7 @@ public class JsonParser extends Object {
                                     throw parserError(
                                             Escape.BAD_ESCAPE,
                                             "The input stream ended with an incomplete escape sequence",
-                                            null, lin, col);
+                                            lin, col);
                                 }
                                 storeChar((char) decodeHexChar((char) ic1, (char) ic2, (char) ic3,
                                         (char) ic4, lin, col));
@@ -551,7 +554,7 @@ public class JsonParser extends Object {
                                     throw parserError(
                                             Escape.BAD_ESCAPE,
                                             "The input stream ended with an incomplete escape sequence",
-                                            null, lin, col);
+                                            lin, col);
                                 }
                                 storeChar((char) decodeHexByte((char) ic1, (char) ic2, lin, col));
                             }
@@ -561,7 +564,7 @@ public class JsonParser extends Object {
                                 throw parserError(
                                         Escape.BAD_ESCAPE,
                                         "The text string contains the invalid escape sequence '\\" + (char) ich,
-                                        null, lin, col);
+                                        lin, col);
                         }
                     }
 
@@ -589,8 +592,7 @@ public class JsonParser extends Object {
                         if (accumulator.length() != 0) {
                             throw parserError(
                                     Escape.MALFORMED,
-                                    "Text was found preceding an unescaped opening quote: \"" + accumulator + "\" (this is usually caused by a missing colon, a missing comma or missing quotes); Text=\"" + accumulator
-                                            .toString() + "\"");
+                                    "Text was found preceding an unescaped opening quote: \"" + accumulator + "\" (this is usually caused by a missing colon, a missing comma or missing quotes); Text=\"" + accumulator + "\"");
                         }
                         if (!amd) {
                             throw parserError(
@@ -605,7 +607,7 @@ public class JsonParser extends Object {
 
                     switch (ich) {
                         case ':': {
-                            if (mbrName.length() > 0) {
+                            if (!mbrName.isEmpty()) {
                                 throw parserError(
                                         Escape.MALFORMED,
                                         "An object member value contained a colon but was not enclosed in quotes (this can often be caused by a missing comma between members)");
@@ -616,7 +618,7 @@ public class JsonParser extends Object {
                                         "An array element cannot be a Name:Value pair - it must be only a value (this is most likely caused by misplaced or missing closing bracket)");
                             }
                             final String txt = getAccumulatedText(true);
-                            if (txt.length() == 0) {
+                            if (txt.isEmpty()) {
                                 throw parserError(Escape.MALFORMED,
                                         "An object member name cannot be blank");
                             }
@@ -643,14 +645,12 @@ public class JsonParser extends Object {
                             } else if (pet == EVT_OBJECT_ENDED) {
                                 throw parserError(
                                         Escape.MALFORMED,
-                                        "Text was found between an object's closing brace and a subsequent comma or end of line (this is usually caused by a missing comma); Text=\"" + accumulator
-                                                .toString() + "\"");
+                                        "Text was found between an object's closing brace and a subsequent comma or end of line (this is usually caused by a missing comma); Text=\"" + accumulator + "\"");
                             } else if (pet == EVT_ARRAY_ENDED) {
                                 throw parserError(
                                         Escape.MALFORMED,
-                                        "Text was found between an array's closing bracket and a subsequent comma (this is usually caused by a missing comma); Text=\"" + accumulator
-                                                .toString() + "\"");
-                            } else if (objectData.arrayDepth == 0 && mbrName.length() == 0) {
+                                        "Text was found between an array's closing bracket and a subsequent comma (this is usually caused by a missing comma); Text=\"" + accumulator + "\"");
+                            } else if (objectData.arrayDepth == 0 && mbrName.isEmpty()) {
                                 throw parserError(
                                         Escape.MALFORMED,
                                         "Object member name or value is missing in a Name:Value pair (this is possibly caused by missing array brackets in an array)");
@@ -669,8 +669,7 @@ public class JsonParser extends Object {
                             if (accumulator.length() != 0) {
                                 throw parserError(
                                         Escape.MALFORMED,
-                                        "Text was found preceding an object's opening brace (this is usually caused by a missing comma or colon, or by using equals instead of a colon); Text=\"" + accumulator
-                                                .toString() + "\"");
+                                        "Text was found preceding an object's opening brace (this is usually caused by a missing comma or colon, or by using equals instead of a colon); Text=\"" + accumulator + "\"");
                             }
                             pushObjectData();
                             if (objectData.arrayDepth != 0) {
@@ -682,12 +681,11 @@ public class JsonParser extends Object {
 
                         case '}': {
                             mbrValue = getAccumulatedText(false);
-                            if (objectData.arrayDepth == 0 && mbrName.length() == 0 && mbrValue
-                                    .length() > 0) {
+                            if (objectData.arrayDepth == 0 && mbrName.isEmpty() && !mbrValue.isEmpty()) {
                                 throw parserError(
                                         Escape.MALFORMED,
                                         "Object member name or value is missing in a Name:Value pair (this is possibly caused by missing array brackets in an array)");
-                            } else if (mbrValue.length() > 0) {
+                            } else if (!mbrValue.isEmpty()) {
                                 unreadChar(ich);
                                 if (objectData.arrayDepth != 0) {
                                     mbrName = objectData.arrayName;
@@ -703,8 +701,7 @@ public class JsonParser extends Object {
                             if (accumulator.length() != 0) {
                                 throw parserError(
                                         Escape.MALFORMED,
-                                        "Text was found preceding an array's opening bracket (this is usually caused by a missing comma or colon, or by using equals instead of a colon); Text=\"" + accumulator
-                                                .toString() + "\"");
+                                        "Text was found preceding an array's opening bracket (this is usually caused by a missing comma or colon, or by using equals instead of a colon); Text=\"" + accumulator + "\"");
                             }
                             if (objectData.arrayDepth == 0) {
                                 objectData.arrayName = mbrName;
@@ -723,7 +720,7 @@ public class JsonParser extends Object {
                             }
 
                             mbrValue = getAccumulatedText(false);
-                            if (mbrValue.length() > 0) {
+                            if (!mbrValue.isEmpty()) {
                                 unreadChar(ich);
                                 if (objectData.arrayDepth != 0) {
                                     mbrName = objectData.arrayName;
@@ -751,13 +748,11 @@ public class JsonParser extends Object {
                                 if (pws && accumulator.length() != 0) {
                                     throw parserError(
                                             Escape.MALFORMED,
-                                            "Text with embedded spaces was found but not enclosed in quotes (this is often caused by a missing comma following an unquoted value); Text=\"" + accumulator
-                                                    .toString() + "\"");
+                                            "Text with embedded spaces was found but not enclosed in quotes (this is often caused by a missing comma following an unquoted value); Text=\"" + accumulator + "\"");
                                 }
                                 storeChar((char) ich);
                                 pws = false;
                             }
-                            continue;
                         }
                     }
                 }
@@ -765,7 +760,7 @@ public class JsonParser extends Object {
                 // END OF INPUT REACHED
                 mbrName = null;
                 mbrValue = null;
-                if (objectStack.size() != 0) {
+                if (!objectStack.isEmpty()) {
                     if (qut) {
                         throw parserError(
                                 Escape.MALFORMED,
@@ -788,7 +783,7 @@ public class JsonParser extends Object {
                     try {
                         inpReader.close();
                     } catch (final Throwable ign) {
-                        ;
+                        //Ignore this error
                     }
                 }
             }
@@ -798,7 +793,7 @@ public class JsonParser extends Object {
                 try {
                     inpReader.close();
                 } catch (final Throwable ign) {
-                    ;
+                    //Ignore this error
                 }
             }
             throw new Escape(Escape.IOERROR, "I/O Exception: " + thr, thr);
@@ -859,7 +854,7 @@ public class JsonParser extends Object {
         try {
             return decodeHexByte(c1, c2);
         } catch (final Exception thr) {
-            throw parserError(Escape.BAD_ESCAPE, thr.getMessage(), null, lin, col);
+            throw parserError(Escape.BAD_ESCAPE, thr.getMessage(), lin, col);
         }
     }
 
@@ -868,12 +863,12 @@ public class JsonParser extends Object {
         try {
             return decodeHexChar(c1, c2, c3, c4);
         } catch (final Exception thr) {
-            throw parserError(Escape.BAD_ESCAPE, thr.getMessage(), null, lin, col);
+            throw parserError(Escape.BAD_ESCAPE, thr.getMessage(), lin, col);
         }
     }
 
     private Location createLocation(final int lin, final int col) {
-        return new Location(inpName, lin, col, mbrName != null && mbrName.length() != 0 ? mbrName
+        return new Location(inpName, lin, col, mbrName != null && !mbrName.isEmpty() ? mbrName
                 : objectData.arrayName);
     }
 
@@ -893,7 +888,8 @@ public class JsonParser extends Object {
                 if (ich == '\n') {
                     inpColumn = 0;
                     inpLine++;
-                } else if (ich == '\uFEFF') {
+                } else if (ich == '\uFEFF') //noinspection SpellCheckingInspection
+                {
                     ich = ' ';
                 }                  // FEFF is used as BOM; otherwise is a zero width space
                 else {
@@ -961,16 +957,11 @@ public class JsonParser extends Object {
     }
 
     private Escape parserError(final int cod, final String txt) {
-        return parserError(cod, txt, null);
+        return parserError(cod, txt, inpLine, inpColumn);
     }
 
-    private Escape parserError(final int cod, final String txt, final Throwable thr) {
-        return parserError(cod, txt, thr, inpLine, inpColumn);
-    }
-
-    private Escape parserError(final int cod, final String txt, final Throwable thr, final int lin,
-            final int col) {
-        return new Escape(cod, txt + "; at " + createLocation(lin, col), thr);
+    private Escape parserError(final int cod, final String txt, final int lin, final int col) {
+        return new Escape(cod, txt + "; at " + createLocation(lin, col), null);
     }
 
     // *****************************************************************************
@@ -981,7 +972,7 @@ public class JsonParser extends Object {
     // STATIC NESTED CLASSES
     // *****************************************************************************
 
-    static public final class Location extends Object {
+    static public final class Location {
 
         private final String inpName;
 
@@ -991,11 +982,11 @@ public class JsonParser extends Object {
 
         private final String mbrName;
 
-        Location(final String inpnam, final int inplin, final int inpcol, final String mbrnam) {
-            inpName = inpnam;
-            inpLine = inplin;
-            inpCol = inpcol;
-            mbrName = mbrnam == null || mbrnam.length() == 0 ? null : mbrnam;
+        Location(final String inputName, final int inputLine, final int inputColumn, final String memberName) {
+            inpName = inputName;
+            inpLine = inputLine;
+            inpCol = inputColumn;
+            mbrName = memberName == null || memberName.isEmpty() ? null : memberName;
         }
 
         @Override
@@ -1030,13 +1021,13 @@ public class JsonParser extends Object {
     // STATIC NESTED CLASSES
     // *****************************************************************************
 
-    static class ObjectData extends Object {
+    static class ObjectData {
 
-        final String name;                                   // object name (may be "")
+        final String name;                                   // object name (can be "")
 
         String arrayName;                              // array member name for this object (initially "")
 
-        int arrayDepth;                             // array depth to detect when multi-dimensional array
+        int arrayDepth;                             // array depth to detect when multidimensional array
 
         // finally ends
 
@@ -1069,7 +1060,7 @@ public class JsonParser extends Object {
     /** Returned from next() when a simple object member (Name:Value pair or array element) is read. */
     static public final int EVT_OBJECT_MEMBER = 6;
 
-    static private String[] EVT_NAMES = { "Invalid",                                                                  // 0
+    static private final String[] EVT_NAMES = { "Invalid",                                                                  // 0
             "ObjectBegin",                                                              // 1
             "ObjectEnded",                                                              // 2
             "ArrayBegin",                                                               // 3
@@ -1087,7 +1078,7 @@ public class JsonParser extends Object {
     /** Option to allow multiline comments using &#47;* and *&#47;. */
     static public final int OPT_MULTILINE_COMMENTS = 0x00000004;
 
-    /** Option to allow mutiline strings - this permits strings to be broken over multiple lines in an unambigous manner. */
+    /** Option to allow multiline strings - this permits strings to be broken over multiple lines in an unambiguous manner. */
     static public final int OPT_MULTILINE_STRINGS = 0x00000008;
 
     /** Option to allow single-quotes to be used for strings. */
@@ -1146,7 +1137,7 @@ public class JsonParser extends Object {
             return Boolean.FALSE;
         } else if (isQuoted(val)) {
             return stripQuotes(val);
-        } else if (val.length() == 0) {
+        } else if (val.isEmpty()) {
             return val;
         } else {
             return new BigDecimal(val);
@@ -1190,11 +1181,9 @@ public class JsonParser extends Object {
 
         if (val != null && (len = val.length()) > 1) {
             final char ch0 = val.charAt(0);
-            if ((ch0 == '"' || ch0 == '\'') && ch0 == val.charAt(len - 1)) {
-                return true;                                                        // NOTE: Don't test for unescaped quotes because
-                // the value has already been unescaped as it was
-                // parsed.
-            }
+	        // the value has already been unescaped as it was
+	        // parsed.
+	        return (ch0 == '"' || ch0 == '\'') && ch0 == val.charAt(len - 1);                                                        // NOTE: Don't test for unescaped quotes because
         }
         return false;
     }
@@ -1203,26 +1192,25 @@ public class JsonParser extends Object {
     // STATIC METHODS - PRIVATE UTILITY
     // *****************************************************************************
 
-    static private Reader preloadInput(final String inpnam, final Reader inprdr,
-            final boolean inpcls, final int sizest) throws Escape {
+    static private Reader preloadInput(final String inputName, final Reader inputReader,
+            final boolean closeInput, final int size) throws Escape {
         CharArrayWriter wtr;                                    // writer
         char[] buf = new char[10240];                    // read buffer
         int len;                                    // read length
 
         try {
-            wtr = new CharArrayWriter(sizest > 0 ? sizest : 10240);
-            while ((len = inprdr.read(buf)) != -1) {
+            wtr = new CharArrayWriter(size > 0 ? size : 10240);
+            while ((len = inputReader.read(buf)) != -1) {
                 wtr.write(buf, 0, len);
             }
             wtr.flush();
-            if (inpcls) {
+            if (closeInput) {
                 wtr.close();
             }
-            buf = null;
-            return new CharArrayReader(wtr.toCharArray());
+	        return new CharArrayReader(wtr.toCharArray());
         } catch (final IOException thr) {
             throw new Escape(Escape.IOERROR,
-                    "Could not read input from \"" + inpnam + "\": " + thr, thr);
+                    "Could not read input from \"" + inputName + "\": " + thr, thr);
         }
     }
 
@@ -1233,9 +1221,7 @@ public class JsonParser extends Object {
     static int[] decodeHex;                              // hex table for decoding hex-based escapes
     static {
         decodeHex = new int[256];
-        for (int xa = 0; xa < decodeHex.length; xa++) {
-            decodeHex[xa] = -1;
-        }
+	    Arrays.fill(decodeHex, -1);
         decodeHex['0'] = 0;
         decodeHex['1'] = 1;
         decodeHex['2'] = 2;
@@ -1295,6 +1281,7 @@ public class JsonParser extends Object {
         static public final int GENERAL = 1;
 
         /** Input/Output error. */
+        @SuppressWarnings("SpellCheckingInspection")
         static public final int IOERROR = 2;
 
         /** Invalid encoding. */
@@ -1306,22 +1293,23 @@ public class JsonParser extends Object {
         /** A bad escape sequence was encountered. */
         static public final int BAD_ESCAPE = 6;
 
-        /** An method was invokeD when the parser was in an invalid state for it. */
+        /** A method was invokeD when the parser was in an invalid state for it. */
         static public final int INVALID_STATE = 7;
 
-        /** An method could not be reflectively retrieved or invoked. */
+        /** A method could not be reflectively retrieved or invoked. */
         static public final int METHOD_ERROR = 8;
 
         /** Data-type conversion error. */
         static public final int CONVERSION = 9;
 
         /** Minimum code required for any sub-class. */
+        @SuppressWarnings("SpellCheckingInspection")
         static public final int SUBCLSMIN = 1000;
 
         private final int code;
 
         /**
-         * Create an exception with a code and details.  It is recommened that the detail always include very specific information about the cause of the error.
+         * Create an exception with a code and details.  It is recommended that the detail always include very specific information about the cause of the error.
          * @param code      The error code.
          * @param detail    Specific detail text indicating the cause of the error.
          */
@@ -1330,10 +1318,10 @@ public class JsonParser extends Object {
         }
 
         /**
-         * Create an exception with a code and details.  It is recommened that the detail always include very specific information about the cause of the error.
+         * Create an exception with a code and details.  It is recommended that the detail always include very specific information about the cause of the error.
          * @param code      The error code.
          * @param detail    Specific detail text indicating the cause of the error.
-         * @param cause     The causitive throwable object, if any.
+         * @param cause     The original cause throwable object, if any.
          */
         public Escape(final int code, final String detail, final Throwable cause) {
             super(detail, cause);

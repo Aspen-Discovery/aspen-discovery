@@ -34,7 +34,7 @@ public interface Record extends Serializable {
 
     /**
      * Sets the identifier. The purpose of this identifier is to provide an
-     * identifier for persistency.
+     * identifier for persistence.
      *
      * @param id the identifier
      */

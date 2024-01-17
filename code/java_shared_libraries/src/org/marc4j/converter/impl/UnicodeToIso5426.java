@@ -46,27 +46,26 @@ public class UnicodeToIso5426 extends CharConverter {
      * @return {@link String}- the UNIMARC (ISO 5426 charset) data
      */
     @Override
-    public String convert(final char data[]) {
+    public String convert(final char[] data) {
         // Conversion does not support "combining diacritical" characters
         // Must normalize first for correct results
         final char[] normalizedData = Normalizer.normalize(String.valueOf(data),
                 Normalizer.Form.NFC).toCharArray();
 
-        final StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < normalizedData.length; i++) {
-            final char c = normalizedData[i];
-            if (c < 128) {
-                sb.append(c);
-            } else {
-                final int d = convert(c);
-                if (d < 256) {
-                    sb.append((char) d);
-                } else {
-                    sb.append((char) (d / 256));
-                    sb.append((char) (d % 256));
-                }
-            }
-        }
+        final StringBuilder sb = new StringBuilder();
+	    for (final char c : normalizedData) {
+		    if (c < 128) {
+			    sb.append(c);
+		    } else {
+			    final int d = convert(c);
+			    if (d < 256) {
+				    sb.append((char) d);
+			    } else {
+				    sb.append((char) (d / 256));
+				    sb.append((char) (d % 256));
+			    }
+		    }
+	    }
         return sb.toString();
     }
 
@@ -91,7 +90,7 @@ public class UnicodeToIso5426 extends CharConverter {
             case 0x00AB:
                 return 0xAB; // 2/11 left angle quotation mark
             case 0x00AE:
-                return 0xAF; // 2/15 trade mark sign
+                return 0xAF; // 2/15 trademark sign
             case 0x00B7:
                 return 0xB7; // 3/7 middle dot
             case 0x00B8:
@@ -372,9 +371,9 @@ public class UnicodeToIso5426 extends CharConverter {
             case 0x0151:
                 return 0xCD6F; // small o with double acute
             case 0x0152:
-                return 0xEA; // 6/10 CAPITAL DIPHTONG OE
+                return 0xEA; // 6/10 CAPITAL DIPHTHONG OE
             case 0x0153:
-                return 0xFA; // 7/10 small diphtong oe
+                return 0xFA; // 7/10 small diphthong oe
             case 0x0154:
                 return 0xC252; // CAPITAL R WITH ACUTE ACCENT
             case 0x0155:
@@ -508,12 +507,15 @@ public class UnicodeToIso5426 extends CharConverter {
             case 0x01FD:
                 return 0xC2F1; // small ae with acute
             case 0x02B9:
+                //noinspection SpellCheckingInspection
                 return 0xBD; // 3/13 mjagkij znak
             case 0x02BA:
+                //noinspection SpellCheckingInspection
                 return 0xBE; // 3/14 tverdyj znak
             case 0x02BB:
                 return 0xB0; // 3/0 ayn
             case 0x02BC:
+                //noinspection SpellCheckingInspection
                 return 0xB1; // 3/1 alif/hamzah
             case 0x02CC:
                 return 0xDA20; // small low vertical bar

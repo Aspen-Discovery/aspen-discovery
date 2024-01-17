@@ -62,7 +62,7 @@ import org.xml.sax.InputSource;
  *
  * MarcStreamWriter writer = new MarcStreamWriter(System.out, Constants.MARC8);
  * MarcXmlReader reader =
- *   new MarcXmlReader(in, &quot;http://www.loc.gov/standards/marcxml/xslt/MODS2MARC21slim.xsl&quot;);
+ *   new MarcXmlReader(in, &quot;<a href="http://www.loc.gov/standards/marcxml/xslt/MODS2MARC21slim.xsl&quot;">...</a>);
  * while (reader.hasNext()) {
  *   Record record = reader.next();
  *   writer.write(record);
@@ -72,6 +72,7 @@ import org.xml.sax.InputSource;
  *
  * @author Bas Peters
  */
+@SuppressWarnings("SpellCheckingInspection")
 public class MarcXmlReader implements MarcReader {
 
     private final RecordStack queue;
@@ -142,7 +143,7 @@ public class MarcXmlReader implements MarcReader {
         final MarcXmlParserThread producer = new MarcXmlParserThread(queue, input);
         final TransformerFactory factory = TransformerFactory.newInstance();
         final SAXTransformerFactory stf = (SAXTransformerFactory) factory;
-        TransformerHandler th = null;
+        TransformerHandler th;
         try {
             th = stf.newTransformerHandler(stylesheet);
         } catch (final TransformerConfigurationException e) {

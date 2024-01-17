@@ -41,11 +41,8 @@ public class Verifier
      * @return true if the tag is a valid ControlField tag
      */
     public static boolean isControlField(String tag) {
-        if (tag.length() == 3 && tag.charAt(0) == '0' && tag.charAt(1) == '0' && tag.charAt(2) >= '0' && tag.charAt(2) <= '9')// if (Integer.parseInt(tag) < 10)
-        {
-            return true;
-        }
-        return false;
+	    // if (Integer.parseInt(tag) < 10)
+	    return tag.length() == 3 && tag.charAt(0) == '0' && tag.charAt(1) == '0' && tag.charAt(2) >= '0' && tag.charAt(2) <= '9';
     }
 
     /**

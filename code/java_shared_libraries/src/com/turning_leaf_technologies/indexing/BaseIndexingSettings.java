@@ -30,7 +30,7 @@ public class BaseIndexingSettings {
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		char result = ' ';
 		String databaseValue = indexingProfilesRS.getString(fieldName);
-		if (!indexingProfilesRS.wasNull() && databaseValue.length() > 0) {
+		if (!indexingProfilesRS.wasNull() && !databaseValue.isEmpty()) {
 			result = databaseValue.charAt(0);
 		}
 		return result;

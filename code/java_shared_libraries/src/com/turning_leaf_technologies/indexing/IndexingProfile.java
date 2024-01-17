@@ -96,9 +96,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private Pattern customFacet3ValuesToExcludePattern;
 
 	//Evergreen settings
-	private int numRetriesForBibLookups;
-	private int numMillisecondsToPauseAfterBibLookups;
-	private int numExtractionThreads;
+	private final int numRetriesForBibLookups;
+	private final int numMillisecondsToPauseAfterBibLookups;
+	private final int numExtractionThreads;
 
 	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -118,29 +118,29 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.includeLocationNameInDetailedLocation = indexingProfileRS.getBoolean("includeLocationNameInDetailedLocation");
 		try {
 			String pattern = indexingProfileRS.getString("nonHoldableLocations");
-			if (pattern != null && pattern.length() > 0) {
+			if (pattern != null && !pattern.isEmpty()) {
 				nonHoldableLocations = Pattern.compile("^(" + pattern + ")$");
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Could not load non holdable locations", e);
 		}
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-		if (locationsToSuppress != null && locationsToSuppress.length() > 0){
+		if (locationsToSuppress != null && !locationsToSuppress.isEmpty()){
 			locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 		}
 
 		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0){
+		if (collectionsToSuppress != null && !collectionsToSuppress.isEmpty()){
 			collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 		}
 		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
 		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-		if (statusesToSuppress != null && statusesToSuppress.length() > 0){
+		if (statusesToSuppress != null && !statusesToSuppress.isEmpty()){
 			this.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 		}
 		try {
 			String pattern = indexingProfileRS.getString("nonHoldableStatuses");
-			if (pattern != null && pattern.length() > 0) {
+			if (pattern != null && !pattern.isEmpty()) {
 				this.nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 			}
 		}catch (Exception e){
@@ -226,7 +226,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 1
 		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
 		this.customFacet1ValuesToInclude = indexingProfileRS.getString("customFacet1ValuesToInclude");
-		if (this.customFacet1ValuesToInclude != null && this.customFacet1ValuesToInclude.length() > 0 && !this.customFacet1ValuesToInclude.equals(".*")) {
+		if (this.customFacet1ValuesToInclude != null && !this.customFacet1ValuesToInclude.isEmpty() && !this.customFacet1ValuesToInclude.equals(".*")) {
 			try {
 				customFacet1ValuesToIncludePattern = Pattern.compile(customFacet1ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -234,7 +234,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet1ValuesToExclude = indexingProfileRS.getString("customFacet1ValuesToExclude");
-		if (this.customFacet1ValuesToExclude != null && this.customFacet1ValuesToExclude.length() > 0) {
+		if (this.customFacet1ValuesToExclude != null && !this.customFacet1ValuesToExclude.isEmpty()) {
 			try {
 				customFacet1ValuesToExcludePattern = Pattern.compile(customFacet1ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -245,7 +245,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 2
 		this.customFacet2SourceField = indexingProfileRS.getString("customFacet2SourceField");
 		this.customFacet2ValuesToInclude = indexingProfileRS.getString("customFacet2ValuesToInclude");
-		if (this.customFacet2ValuesToInclude != null && this.customFacet2ValuesToInclude.length() > 0 && !this.customFacet2ValuesToInclude.equals(".*")) {
+		if (this.customFacet2ValuesToInclude != null && !this.customFacet2ValuesToInclude.isEmpty() && !this.customFacet2ValuesToInclude.equals(".*")) {
 			try {
 				customFacet2ValuesToIncludePattern = Pattern.compile(customFacet2ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -253,7 +253,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet2ValuesToExclude = indexingProfileRS.getString("customFacet2ValuesToExclude");
-		if (this.customFacet2ValuesToExclude != null && this.customFacet2ValuesToExclude.length() > 0) {
+		if (this.customFacet2ValuesToExclude != null && !this.customFacet2ValuesToExclude.isEmpty()) {
 			try {
 				customFacet2ValuesToExcludePattern = Pattern.compile(customFacet2ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -264,7 +264,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 3
 		this.customFacet3SourceField = indexingProfileRS.getString("customFacet3SourceField");
 		this.customFacet3ValuesToInclude = indexingProfileRS.getString("customFacet3ValuesToInclude");
-		if (this.customFacet3ValuesToInclude != null && this.customFacet3ValuesToInclude.length() > 0 && !this.customFacet3ValuesToInclude.equals(".*")) {
+		if (this.customFacet3ValuesToInclude != null && !this.customFacet3ValuesToInclude.isEmpty() && !this.customFacet3ValuesToInclude.equals(".*")) {
 			try {
 				customFacet3ValuesToIncludePattern = Pattern.compile(customFacet3ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -272,7 +272,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet3ValuesToExclude = indexingProfileRS.getString("customFacet3ValuesToExclude");
-		if (this.customFacet3ValuesToExclude != null && this.customFacet3ValuesToExclude.length() > 0) {
+		if (this.customFacet3ValuesToExclude != null && !this.customFacet3ValuesToExclude.isEmpty()) {
 			try {
 				customFacet3ValuesToExcludePattern = Pattern.compile(customFacet3ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -293,16 +293,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.groupingClass = groupingClass;
 	}
 
-	public String getSpecifiedFormatCategory() {
-		return specifiedFormatCategory;
-	}
-
 	private void setSpecifiedFormatCategory(String specifiedFormatCategory) {
 		this.specifiedFormatCategory = specifiedFormatCategory;
-	}
-
-	public String getFormatSource() {
-		return formatSource;
 	}
 
 	private void setFormatSource(String formatSource) {
@@ -774,7 +766,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	}
 
 	public void setSuppressRecordsWithUrlsMatching(String suppressRecordsWithUrlsMatching) {
-		if (suppressRecordsWithUrlsMatching.length() == 0){
+		if (suppressRecordsWithUrlsMatching.isEmpty()){
 			this.suppressRecordsWithUrlsMatching = null;
 		}else {
 			this.suppressRecordsWithUrlsMatching = Pattern.compile(suppressRecordsWithUrlsMatching, Pattern.CASE_INSENSITIVE);
