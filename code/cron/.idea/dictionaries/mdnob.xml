@@ -184,6 +184,7 @@
       <w>overidden</w>
       <w>patronbarcode</w>
       <w>patroncodes</w>
+      <w>pcrud</w>
       <w>pcts</w>
       <w>photonegative</w>
       <w>physicalobject</w>
@@ -200,6 +201,7 @@
       <w>puliter</w>
       <w>rbdigital</w>
       <w>recordtype</w>
+      <w>reindexed</w>
       <w>reindexer</w>
       <w>replacementprice</w>
       <w>replacementpricedate</w>
