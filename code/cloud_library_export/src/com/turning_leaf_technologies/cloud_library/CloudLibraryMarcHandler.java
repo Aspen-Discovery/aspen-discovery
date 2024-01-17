@@ -6,7 +6,7 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,12 +23,11 @@ import org.marc4j.MarcWriter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
-import org.marc4j.marc.Record;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryMarcHandler extends DefaultHandler {
-	private CloudLibraryExporter exporter;
+	private final CloudLibraryExporter exporter;
 	private PreparedStatement updateCloudLibraryItemStmt;
 	private PreparedStatement updateCloudLibraryAvailabilityStmt;
 	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
@@ -44,7 +43,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	private final long settingId;
 
 	private int numDocuments = 0;
-	private Record marcRecord;
+	private org.marc4j.marc.Record marcRecord;
 	private String nodeContents = "";
 	private String tag = "";
 	private DataField dataField;
@@ -100,12 +99,12 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				tag = attributes.getValue("tag");
 				String indicator1 = attributes.getValue("ind1");
 				char ind1 = ' ';
-				if (indicator1.length() > 0) {
+				if (!indicator1.isEmpty()) {
 					ind1 = indicator1.charAt(0);
 				}
 				String indicator2 = attributes.getValue("ind2");
 				char ind2 = ' ';
-				if (indicator2.length() > 0) {
+				if (!indicator2.isEmpty()) {
 					ind2 = indicator2.charAt(0);
 				}
 				dataField = marcFactory.newDataField(tag, ind1, ind2);
@@ -113,7 +112,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			case "marc:subfield":
 				String subfieldCodeStr = attributes.getValue("code");
 				subfieldCode = ' ';
-				if (subfieldCodeStr.length() > 0) {
+				if (!subfieldCodeStr.isEmpty()) {
 					subfieldCode = subfieldCodeStr.charAt(0);
 				}
 				break;
@@ -151,12 +150,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		MarcWriter writer = new MarcStreamWriter(stream, "UTF-8", true);
 		writer.write(marcRecord);
 		String marcAsString;
-		try {
-			marcAsString = stream.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			logger.error("Wrong encoding", e);
-			return;
-		}
+		marcAsString = stream.toString(StandardCharsets.UTF_8);
 		checksumCalculator.reset();
 		checksumCalculator.update(marcAsString.getBytes());
 		long itemChecksum = checksumCalculator.getValue();

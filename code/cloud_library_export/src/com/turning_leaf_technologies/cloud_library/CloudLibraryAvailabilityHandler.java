@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryAvailabilityHandler extends DefaultHandler {
