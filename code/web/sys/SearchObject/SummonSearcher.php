@@ -71,14 +71,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetFields;
 	protected $queryFacets;
 	protected $facetValue;
+	protected $facetLabel;
 	protected $sortOptions = [];
 	protected $queryOptions = [];
+
+	protected $publicationDates = [];
 
 
 	protected $facetValueFilters = [
 		'Author',
 		'ContentType',
-		'CorporateAuthor',
 		'DatabaseName',
 		'Discipline',
 		'SubjectTerms',
@@ -92,6 +94,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Open Access',
 		'Available in Library Collection',
 	];
+
+	protected $facetConfig = null;
 
 
 
@@ -514,11 +518,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		//Check for search
 		if (isset($this->facetValueFilters)){
 			foreach($this->facetValueFilters as $facetValueFilter) {
-				$facetLabel = $facetValueFilter;
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					'label' => (string)$facetLabel,
+					'label' => (string)$this->facetLabel,
 					'valuesToShow' => 5,
 				];
 				if ($this->facetValueFilters == 'SourceType') {
@@ -527,253 +530,92 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$list = [];
 				switch($facetValueFilter) {
 					case 'ContentType':
-						$availableFacetValues = array(
-							'Archival Material',
-							'Article',
-							'Audio Recording',
-							'Book / eBook', 
-							'Book Chapter',
-							'Book Review',
-							'Computer File',
-							'Conference Proceeding',
-							'Data Set',
-							'Dissertation / Thesis',
-							'Government Document',
-							'Journal / eJournal',
-							'Journal Article',
-							'Library Holding',
-							'Magazine Article',
-							'Manuscript',
-							'Map',
-							'Market Research',
-							'Microfilm',
-							'Newsletter',
-							'Newspaper',
-							'Newspaper Article',
-							'Paper',
-							'Presentation',
-							'Publication',
-							'Reference',
-							'Report',
-							'Technical Report',
-							'Trade Publication Article',
-							'Transcript',
-							'Web Resource',
-						);
-						$facetLabel = 'Content Type';
+						$contentTypes = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record){
+							$contentTypes[] = $record['ContentType'][0];
+						}
+						$counts = array_count_values($contentTypes);
+						foreach ($counts as $contentType => $count){
+							$availableFacetValues[] = "$contentType $count";
+						}
+						$this->facetLabel = 'Content Type';
 						break;
 					case 'Discipline':
-						$availableFacetValues = array(
-							'Agriculture',
-							'Anatomy & Physiology',
-							'Anthropology',
-							'Applied Sciences',
-							'Architecture',
-							'Astronomy & Astrophysics',
-							'Biology',
-							'Botany',
-							'Business',
-							'Chemistry',
-							'Computer Science',
-							'Dance',
-							'Dentistry',
-							'Diet & Clinical Nutrition',
-							'Drama',
-							'Ecology',
-							'Economics',
-							'Education',
-							'Engineering',
-							'Environmental Sciences',
-							'Film',
-							'Forestry',
-							'Geography',
-							'Geology',
-							'Government',
-							'History & Archaeology',
-							'Human Anatomy & Physiology',
-							'International Relations',
-							'Journalism & Communications',
-							'Languages & Literatures',
-							'Law',
-							'Library & Information Science',
-							'Mathematics',
-							'Medicine',
-							'Meteorology & Climatology',
-							'Military & Naval Science',
-							'Music',
-							'Nursing',
-							'Occupational Therapy & Rehabilitation',
-							'Oceanography',
-							'Parapsychology & Occult Sciences',
-							'Pharmacy, Therapeutics, & Pharmacology',
-							'Philosophy',
-							'Physical Therapy',
-							'Physics',
-							'Political Science',
-							'Psychology',
-							'Public Health',
-							'Recreation & Sports',
-							'Religion',
-							'Sciences (general)',
-							'Social Sciences (general)',
-							'Social Welfare & Social Work',
-							'Sociology & Social History',
-							'Statistics',
-							'Veterinary Medicine',
-							'Visual Arts',
-							'Women\'s Studies',
-							'Zoology',
-						);
+						$disciplines = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record) {
+							foreach ($record['Discipline'] as $discipline){
+								$disciplines[] = $discipline;
+							}
+						}
+						$counts = array_count_values($disciplines);
+						foreach ($counts as $term => $count){
+							$availableFacetValues[] = "$term $count";
+						}
+						$this->facetLabel = 'Discipline';
 						break;
-					case 'DatabaseName':
-						$availableFacetValues = array(
-							'American Economic Association',
-							'AUC Wiley Frozen Package in 2012',
-							'BMJ Journals',
-							'Cambridge Journals 2016 Full Collection',
-							'Cambridge University Press Journals',
-							'DOAJ Directory of Oprn Access Journals',
-							'Emerald Complete Journals',
-							'EZB Electronic Journals Library',
-							'Free E - Journals',
-							'Free Medical Journals',
-							'Freely Accessible Arts & Humanities Journals',
-							'Freely Accessible Social Science Journals - check A-Z of ejournals',
-							'HighWire Press (Subscribed Journals)',
-							'Individual e-journals',
-							'Ingenta',
-							'ITC Publications',
-							'Lexis Library',
-							'LexisLibrary - UK Journals',
-							'Nature_OA',
-							'New England Journal of Medicine Current',
-							'NUS Single-Journal Subscriptions',
-							'Oxford Journals - Coonect here FIRST to enable access',
-							'Oxford Journals 2021 Law',
-							'Sage',
-							'SAGE Journals',
-							'SAGE:BIBSAM:Premier:2014-2016',
-							'Science Journals (Open access)',
-							'Springer Nature - Connect here FIRST to enable access',
-							'Taylor & Francis',
-							'Taylor & Francis Journals Complete',
-							'The Lancet',
-							'University of California Press journals (for access to the journal Film Quarterly',
-							'vLex Global - General Edition',
-							'Westlaw',
-							'Wiley Online Library Journals'
-						);
+					case 'DatabaseName':				
+						$databases = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record){
+							foreach ($record['DatabaseName'] as $dataBase) {
+								if (in_array('DatabseName', $record)){
+									$databases[] = $dataBase;
+								} else {
+									continue;
+								}
+							}
+						}
+						$counts = array_count_values($databases);
+						foreach ($counts as $term => $count) {
+							$availableFacetValues[] = "$term $count";
+						}
+						$this->facetLabel = 'Database Name';
 						break;
-					case 'SubjectTerms':
-						$availableFacetValues = array(
-							'adult',
-							'aged',
-							'airlines',
-							'analysis',
-							'animals',
-							'arts & humanities',
-							'banking industry',
-							'banks',
-							'biological and medical sciences',
-							'biology',
-							'business',
-							'business & economics',
-							'children',
-							'china',
-							'clinical medicine',
-							'coronaviruses',
-							'covid-19',
-							'criminology',
-							'criminology & penology',
-							'democracy',
-							'economic aspects',
-							'economic conditions',
-							'economic development',
-							'economic growth',
-							'economic history',
-							'economic policy',
-							'economics',
-							'education',
-							'elections',
-							'employment',
-							'europe',
-							'european union',
-							'evaluation',
-							'female',
-							'finance',
-							'forecasts and trends',
-							'foreign policy',
-							'general & internal medicine',
-							'government',
-							'government & law',
-							'health aspects',
-							'history',
-							'human rights',
-							'humans',
-							'internal medicine',
-							'international',
-							'international law',
-							'international relations',
-							'international trade',
-							'journalists',
-							'law',
-							'laws, regulations and rules',
-							'legislation',
-							'life sciences & biomedicine',
-							'male',
-							'management',
-							'medical and health sciences',
-							'medical sciences',
-							'medicine',
-							'medicine, general & internal',
-							'middle aged',
-							'multidisciplinary sciences',
-							'news',
-							'nonfiction',
-							'patients',
-							'physicians',
-							'planning',
-							'political activity',
-							'political aspects',
-							'political economy',
-							'political parties',
-							'political science',
-							'political science & public administration',
-							'politics',
-							'population',
-							'presidents',
-							'prices and rates',
-							'prime ministers',
-							'psychology',
-							'public administration',
-							'public health',
-							'public relations',
-							'science & technology ',
-							'science & technology - other topics',
-							'social aspects',
-							'social sciences',
-							'social sciences - other topics',
-							'social sciences, interdisciplinary',
-							'sociology',
-							'state',
-							'statistics',
-							'studies',
-							'surgery',
-							'taxation',
-							'terrorism',
-							'u.s.a',
-							'united kingdom',
-							'united states',
-							'war',
-							'women'
-						);
-						$facetLabel = 'Subject Terms';
+					case 'SubjectTerms':		
+						$subjects = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record) {
+							foreach ($record['SubjectTerms'] as $term) {
+								$subjects[] = $term;
+							}
+						}
+						$counts = array_count_values($subjects);
+						foreach ($counts as $term => $count){
+							$availableFacetValues[] = "$term $count";
+						}
+						$this->facetLabel = 'Subject Terms';
+						break;
+					case 'PublicationYear':
+						$pubYear = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record){
+							$pubYear[] = $record['PublicationYear'][0];
+						}
+						$counts = array_count_values($pubYear);
+						foreach ($counts as $year => $count) {
+							$availableFacetValues[] = "$year $count";
+						}
+						$this->facetLabel = 'Publication Year';
+						break;
+					case 'Author':
+						$authors = [];
+						$availableFacetValues = [];
+						foreach ($this->lastSearchResults as $record) {
+							$authors[] = $record['Author'][0];
+						}
+						$counts = array_count_values($authors);
+						foreach ($counts as $authorName => $count) {
+							$availableFacetValues[] = "$authorName $count";
+						}
+						$this->facetLabel = 'Author';
 						break;
 					default: 
 						$availableFacetValues = array(
 							''
 						);
-						$facetLabel = $facetValueFilter;
+						$this->facetLabel = $facetValueFilter;
 						break;
 				}
 				foreach ($availableFacetValues as $facetValue) {
@@ -796,6 +638,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
 			}
+			var_dump($availableFacetValues);
 		return 	$availableFacets;
 	}	
 
