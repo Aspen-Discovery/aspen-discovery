@@ -71,7 +71,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetFields;
 	protected $queryFacets;
 	protected $facetValue;
-	protected $facetLabel;
 	protected $sortOptions = [];
 	protected $queryOptions = [];
 
@@ -510,7 +509,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $url;
 	}
 
-
+	/**TODO: Sort out Spacing for facet names in switch and in main list */
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
@@ -521,10 +520,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					'label' => (string)$this->facetLabel,
+					'label' => $facetValueFilter,
 					'valuesToShow' => 5,
 				];
-				if ($this->facetValueFilters == 'SourceType') {
+				if ($facetValueFilter == 'ContentType') {
 					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
 				}
 				$list = [];
@@ -539,7 +538,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $contentType => $count){
 							$availableFacetValues[] = "$contentType $count";
 						}
-						$this->facetLabel = 'Content Type';
 						break;
 					case 'Discipline':
 						$disciplines = [];
@@ -553,7 +551,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $term => $count){
 							$availableFacetValues[] = "$term $count";
 						}
-						$this->facetLabel = 'Discipline';
 						break;
 					case 'DatabaseName':				
 						$databases = [];
@@ -571,7 +568,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $term => $count) {
 							$availableFacetValues[] = "$term $count";
 						}
-						$this->facetLabel = 'Database Name';
 						break;
 					case 'SubjectTerms':		
 						$subjects = [];
@@ -585,7 +581,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $term => $count){
 							$availableFacetValues[] = "$term $count";
 						}
-						$this->facetLabel = 'Subject Terms';
 						break;
 					case 'PublicationYear':
 						$pubYear = [];
@@ -597,7 +592,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $year => $count) {
 							$availableFacetValues[] = "$year $count";
 						}
-						$this->facetLabel = 'Publication Year';
 						break;
 					case 'Author':
 						$authors = [];
@@ -609,13 +603,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						foreach ($counts as $authorName => $count) {
 							$availableFacetValues[] = "$authorName $count";
 						}
-						$this->facetLabel = 'Author';
 						break;
 					default: 
 						$availableFacetValues = array(
 							''
 						);
-						$this->facetLabel = $facetValueFilter;
 						break;
 				}
 				foreach ($availableFacetValues as $facetValue) {
@@ -629,7 +621,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 							'countIsApproximate' => false,
 						];
 						 if ($isApplied) {
-							$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetValueFilter . ':' . $facetValue);
+							$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetValueFilter['facetLabel'] . ':' . $facetValue);
 					 	} else {
 							$facetSettings['url'] = $this->renderSearchUrl() . '&filter=' . $facetValueFilter . ':' . urlencode($facetValue);
 					 	}
