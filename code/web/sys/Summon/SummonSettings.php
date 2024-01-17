@@ -5,11 +5,13 @@ class SummonSettings extends DataObject {
 	public $__table = 'summon_settings';
 	public $id;
 	public $name;
-	public $summonApiProfile;
 	public $summonApiId;
 	public $summonApiPassword;
 	public $summonBaseApi;
-	public $summonSearchProfile;
+
+	function getEncryptedFieldNames(): array {
+		return ['summonApiPassword'];
+	}
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -27,20 +29,6 @@ class SummonSettings extends DataObject {
 				'description' => 'A name for these settings',
 				'required' => true,
 			],
-			'summonApiProfile' => [
-				'property' => 'summonApiProfile',
-				'type' => 'text',
-				'label' => 'Summon API Profile',
-				'description' => 'The profile to use when connecting to the Summon API',
-				'hideInLists' => true,
-			],
-			'summonSearchProfile' => [
-				'property' => 'summonSearchProfile',
-				'type' => 'text',
-				'label' => 'Summon Search Profile',
-				'description' => 'The profile to use when linking to Summon',
-				'hideInLists' => true,
-			],
 			'summonBaseApi' => [
 				'property' => 'summonBaseApi',
 				'type' => 'text',
@@ -57,7 +45,7 @@ class SummonSettings extends DataObject {
 			],
 			'summonApiPassword' => [
 				'property' => 'summonApiPassword',
-				'type' => 'text',
+				'type' => 'storedPassword',
 				'label' => 'Summon API Password',
 				'description' => 'The password to use when connecting to the Summon API',
 				'hideInLists' => true,

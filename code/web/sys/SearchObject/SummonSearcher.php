@@ -9,7 +9,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     static $instance;
 	/** @var SummonSettings */
-    private $summonSettings;
+    // private $summonSettings;
     private $summonBaseApi ='http://api.summon.serialssolutions.com';
 
 	/**Build URL */
@@ -48,7 +48,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     	/** @var string */
 	protected $searchSource = 'local';
     protected $searchType = 'basic';
-	protected $pageSize = 20;
 
 /** Values for the options array*/
 	protected $holdings = false;
@@ -73,6 +72,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetFields;
 	protected $queryFacets;
 	protected $facetValue;
+	protected $pageSize = 20;
+
 	protected $sortOptions = [];
 	protected $queryOptions = [];
 	//Values for the main facets - each has an array of available values
@@ -160,14 +161,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	*/
 	private function getSettings() {
 		global $library;
-		if ($this->summonSettings == null) {
-			$this->summonSettings = new SummonSettings();
-			$this->summonSettings->id = $library->summonSettingsId;
-			if (!$this->summonSettings->find(true)) {
-				$this->summonSettings = null;
+		if (!str_contains( $library->summonSettingsId, -1 )) {
+			$summonSettings = new SummonSettings();
+			$summonSettings->id = $library->summonSettingsId;
+			if (!$summonSettings->find(true)) {
+				$summonSettings = null;
 			}
+			return $summonSettings;
 		}
-		return $this->summonSettings;
+		AspenError::raiseError(new AspenError('There are no Summon Settings set for this library system.'));
 	}
 
 
@@ -195,6 +197,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	/**
+	 * TODO: - check whether we need to create a session
 	 * Use Institution's Summon API credentials to authenticate and allow connection with the Summon API
 	*/
     public function authenticate($settings, $queryString) {
@@ -609,7 +612,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
 		$settings = $this->getSettings();
 		$this->startQueryTimer();
-		if ($settings != null) {
 			if (isset($_REQUEST['pageNumber']) && is_numeric($_REQUEST['pageNumber']) && $_REQUEST['pageNumber'] != 1) {
 				$this->pageNumber = $_REQUEST['pageNumber'];
 			} else {
@@ -625,9 +627,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->stopQueryTimer();
 			}
 			return $recordData;
-		} else {
-			return new Exception('Please add your Summon settings');
-		}
+		
 	}
 
     public function process($input) {
@@ -690,8 +690,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $result;
     }
 
-
-
 	/**
 	 * Start the timer to work out how long a query takes.  Complements
 	 * stopQueryTimer().
@@ -723,19 +721,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->queryTime;
 	}
 
-	/**TODO: Work out whether this function is still required */
-     public function retreiveRecord() {
-       //call send request to access records array
-	   $recordsArray = $this->sendRequest();
-
-	   //check the documents key exists in the recorddata
-	   if(!empty($recordArray['recordData']['documents'])) {
-		//Return each individual document
-		return $recordsArray['recordData']['documents'];
-	   } 
-	   return;
-	 }
-
 	 /**
 	  * Search options specific to Summon
 	  */
@@ -759,8 +744,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		];
      }
 
-   
-
 	 //Used in Union/Ajax - getSummonResults
     public function getDefaultIndex() {
 		return $this->searchIndex;
@@ -782,22 +765,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				'index' => $this->getDefaultIndex(),
 			]);
 		}
-	}
-
-    	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param string[] $ids An array of documents to retrieve from Solr
-	 * @access  public
-	 * @return  array              The requested resources
-	 */
-	public function getRecords($ids) {
-		$records = [];
-		require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
-		foreach ($ids as $index => $id) {
-			$records[$index] = new SummonRecordDriver($ids);
-		}
-		return $records;
 	}
 
     public function getIndexError() {

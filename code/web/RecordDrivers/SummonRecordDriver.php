@@ -5,31 +5,20 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
 class SummonRecordDriver extends RecordInterface {
 	private $record;
-
 	/**
 	 * Constructor.  We build the object using all the data retrieved
-	 * from the (Solr) index.  Since we have to
-	 * make a search call to find out which record driver to construct,
-	 * we will already have this data available, so we might as well
-	 * just pass it into the constructor.
-	 *
 	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
 	public function __construct($record) {
 		$this->record= $record;
-		// foreach ($this->lastSearchResults as $record) {
-
-		// }
 	}
-
-	
 
 	public function isValid() {
 		return true;
 	}
 
-
+	#TODO: - Check with Mark how to handle the 1x1 white pixel images
 	public function getBookcoverUrl($size='large', $absolutePath =false) {
 		if ($size == 'medium' || $size == 'small') {
 			if (!empty($this->record['thumbnail_m'])) {
@@ -86,13 +75,11 @@ class SummonRecordDriver extends RecordInterface {
 		global $interface;
 
 		$id = $this->getUniqueID();
+		$formats = $this->getFormats();
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', $id);
 		$interface->assign('module', $this->getModule());
-
-		$formats = $this->getFormats();
 		$interface->assign('summFormats', $formats);
-
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
@@ -107,13 +94,12 @@ class SummonRecordDriver extends RecordInterface {
 		}
 
 		$interface->assign('summDescription', $this->getDescription());
-
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
-		$recordUsage = new SummonRecordUsage();
 		global $aspenUsage;
+		$recordUsage = new SummonRecordUsage();
 		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->summonId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
@@ -126,7 +112,6 @@ class SummonRecordDriver extends RecordInterface {
 			$recordUsage->timesUsed = 0;
 			$recordUsage->insert();
 		}
-
 		return 'RecordDrivers/Summon/result.tpl';
 	}
 
@@ -134,23 +119,18 @@ class SummonRecordDriver extends RecordInterface {
 		global $interface;
 
 		$interface->assign('summId', $this->getUniqueID());
-
-
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 
 		//Get cover image size
-		global $interface;
 		$appliedTheme = $interface->getAppliedTheme();
-
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 
-		// if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-		// 	$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-		// } else {
-		// 	$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-		// }
-
+		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		}
 		return 'RecordDrivers/Summon/browse_result.tpl';
 	}
 
@@ -164,23 +144,19 @@ class SummonRecordDriver extends RecordInterface {
 	 */
 	public function getCombinedResult() {
 		global $interface;
-
+		$formats = $this->getFormats();
 		$id = $this->getUniqueID();
+		
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', $id);
 		$interface->assign('module', $this->getModule());
-
-		$formats = $this->getFormats();
 		$interface->assign('summFormats', $formats);
-
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
-
 		$interface->assign('summDescription', $this->getDescription());
-
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -189,22 +165,21 @@ class SummonRecordDriver extends RecordInterface {
 
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		global $interface;
+
 		$interface->assign('showRatings', $collectionSpotlight->showRatings);
-
 		$interface->assign('key', $index);
-
-		if ($collectionSpotlight->coverSize == 'small') {
-			$imageUrl = $this->getBookcoverUrl('small');
-		} else {
-			$imageUrl = $this->getBookcoverUrl('medium');
-		}
-
 		$interface->assign('title', $this->getTitle());
 		$interface->assign('author', $this->getAuthor());
 		$interface->assign('description', $this->getDescription());
 		$interface->assign('shortId', $this->getUniqueID());
 		$interface->assign('id', $this->getUniqueID());
 		$interface->assign('titleURL', $this->getLinkUrl());
+
+		if ($collectionSpotlight->coverSize == 'small') {
+			$imageUrl = $this->getBookcoverUrl('small');
+		} else {
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
 		$interface->assign('imageUrl', $imageUrl);
 
 		if ($collectionSpotlight->showRatings) {
@@ -239,8 +214,7 @@ class SummonRecordDriver extends RecordInterface {
 		return null;
 	}
 
-	/**
-	 * Get the full title of the record.
+	/** * Get the full title of the record.
 	 *
 	 * @return  string
 	 */
@@ -251,22 +225,6 @@ class SummonRecordDriver extends RecordInterface {
 			$title='Unknown Title';
 		}
 		return $title;
-
-			
-	
-		// if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
-		// 	if (isset($this->recordData->RecordInfo->BibRecord->BibEntity->Titles)) {
-		// 		return $this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
-		// 	}
-		// }
-		// if (isset($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships)) {
-		// 	foreach ($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships as $relationship) {
-		// 		if (isset($relationship->BibEntity->Titles)) {
-		// 			return $relationship->BibEntity->Titles[0]->TitleFull;
-		// 		}
-		// 	}
-		// }
-	
 	}
 
 	/**
@@ -288,7 +246,6 @@ class SummonRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-
 
 
 	public function getId() {
@@ -376,20 +333,9 @@ class SummonRecordDriver extends RecordInterface {
 		return $author;
 	}
 
-
 	public function getExploreMoreInfo() {
 		return [];
 	}
-
-	// public function getAllSubjectHeadings() {
-	// 	$subjectHeadings = [];
-	// 	if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0) {
-	// 		foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject) {
-	// 			$subjectHeadings[] = (string)$subject->SubjectFull;
-	// 		}
-	// 	}
-	// 	return $subjectHeadings;
-	// }
 
 	public function getPermanentId() {
 		return $this->getUniqueID();
@@ -401,14 +347,13 @@ class SummonRecordDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
+	 * @param int $listId ID of list containing desired tags/notes (or null to show tags/notes from all user's lists). 
+	 * @param bool $allowEdit Should we display edit controls?
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($listId = null, $allowEdit = true) {
+	public function getListEntry($listId = null, $allowEdit = true) { 
 		$this->getSearchResult('list');
-
 		//Switch template
 		return 'RecordDrivers/Summon/listEntry.tpl';
 	}
@@ -432,13 +377,12 @@ class SummonRecordDriver extends RecordInterface {
 		if (!empty($primary)) {
 			$authors[] = $primary;
 		}
-
+		//TODO: - Make get places of publication function
 		//$pubPlaces = $this->getPlacesOfPublication();
 		$details = [
 			'authors' => $authors,
 			'title' => $this->getTitle(),
 			'subtitle' => '',
-			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
 			'pubName' => null,
 			'pubDate' => null,
 			'edition' => null,
