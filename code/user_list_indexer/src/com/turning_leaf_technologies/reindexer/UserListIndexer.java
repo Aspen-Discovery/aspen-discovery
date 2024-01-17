@@ -6,7 +6,6 @@ import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -32,12 +31,12 @@ class UserListIndexer {
 	private Connection dbConn;
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
-	private SolrClient groupedWorkServer;
+	private Http2SolrClient groupedWorkServer;
 	private TreeSet<Scope> scopes;
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
-	private SolrClient openArchivesServer;
+	private Http2SolrClient openArchivesServer;
 	private PreparedStatement getListDisplayNameAndAuthorStmt;
 	private final String serverName;
 	private final String baseUrl;
@@ -97,18 +96,13 @@ class UserListIndexer {
 
 	void close() {
 		this.dbConn = null;
-		try {
-			groupedWorkServer.close();
-			groupedWorkServer = null;
-		} catch (IOException e) {
-			logger.error("Could not close grouped work server", e);
-		}
-		try{
-			openArchivesServer.close();
-			openArchivesServer = null;
-		} catch (IOException e) {
-			logger.error("Could not close open archives server", e);
-		}
+
+		groupedWorkServer.close();
+		groupedWorkServer = null;
+
+		openArchivesServer.close();
+		openArchivesServer = null;
+
 		updateServer.close();
 		updateServer = null;
 		scopes = null;

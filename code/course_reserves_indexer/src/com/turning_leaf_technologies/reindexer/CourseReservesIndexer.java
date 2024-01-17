@@ -4,11 +4,9 @@ import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -21,46 +19,41 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.TreeSet;
 
 class CourseReservesIndexer {
-	private Connection dbConn;
+	private final Connection dbConn;
 	private final Logger logger;
-	private ConcurrentUpdateSolrClient updateServer;
-	private SolrClient groupedWorkServer;
+	private ConcurrentUpdateHttp2SolrClient updateServer;
+	private Http2SolrClient groupedWorkServer;
 	private final TreeSet<Scope> scopes;
-	private HashMap<String, String> libraryTranslations = new HashMap<>();
+	private final HashMap<String, String> libraryTranslations = new HashMap<>();
 
 	CourseReservesIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
 		this.logger = logger;
 
 		String solrPort = configIni.get("Reindex", "solrPort");
-		if (solrPort == null || solrPort.length() == 0) {
+		if (solrPort == null || solrPort.isEmpty()) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/course_reserves");
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
-		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
-		groupedWorkServer = groupedWorkHttpBuilder.build();
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/course_reserves", http2Client)
+				.withThreadCount(2)
+				.withQueueSize(100)
+				.build();
+
+		groupedWorkServer = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2").build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 	}
 
 	void close() {
-		this.dbConn = null;
-		try {
-			groupedWorkServer.close();
-			groupedWorkServer = null;
-		} catch (IOException e) {
-			logger.error("Could not close grouped work server", e);
-		}
+		groupedWorkServer.close();
+		groupedWorkServer = null;
+
 		updateServer.close();
 		updateServer = null;
 	}
@@ -108,7 +101,7 @@ class CourseReservesIndexer {
 		return numCourseReservesProcessed;
 	}
 
-	private boolean updateSolrForCourseReserve(boolean fullReindex, ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForCourseReserveStmt, ResultSet allCourseReservesRS, long lastReindexTime, CourseReservesIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForCourseReserve(boolean fullReindex, ConcurrentUpdateHttp2SolrClient updateServer, PreparedStatement getTitlesForCourseReserveStmt, ResultSet allCourseReservesRS, long lastReindexTime, CourseReservesIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
 		CourseReserveSolr courseReserveSolr = new CourseReserveSolr(this);
 		long courseReserveId = allCourseReservesRS.getLong("id");
 
@@ -150,7 +143,7 @@ class CourseReservesIndexer {
 				String source = allTitlesRS.getString("source");
 				String sourceId = allTitlesRS.getString("sourceId");
 				if (!allTitlesRS.wasNull()){
-					if (sourceId.length() > 0 && source.equals("GroupedWork")) {
+					if (!sourceId.isEmpty() && source.equals("GroupedWork")) {
 						// Skip archive object Ids
 						SolrQuery query = new SolrQuery();
 						query.setQuery("id:" + sourceId);
@@ -160,7 +153,7 @@ class CourseReservesIndexer {
 							QueryResponse response = groupedWorkServer.query(query);
 							SolrDocumentList results = response.getResults();
 							//Should only ever get one response
-							if (results.size() >= 1) {
+							if (!results.isEmpty()) {
 								SolrDocument curWork = results.get(0);
 								courseReserveSolr.addTitle(sourceId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
 							}

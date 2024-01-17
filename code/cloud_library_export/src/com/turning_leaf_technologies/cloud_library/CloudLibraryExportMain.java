@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CloudLibraryExportMain {
 	private static Logger logger;
-
 	private static Ini configIni;
 
 	private static Connection aspenConn;
@@ -32,7 +31,7 @@ public class CloudLibraryExportMain {
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -42,7 +41,7 @@ public class CloudLibraryExportMain {
 
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
