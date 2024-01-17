@@ -269,6 +269,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.fids' => $this->idsToFetch,
 
 			// 's.ff' =>$this->getFacetSet(),
+			's.ff' =>'ContentType,or',
 
 			's.fvf' => $this->getFilters(),
 			//set to default 1 at top of page
@@ -628,13 +629,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			// $searchUrl .= '&relatedcontent=rs';
 		}
 			$options = implode($this->getOptions($query));
-			$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
+			$queryString = 's.ff=ContentType,or' . '&s.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
 			$headers = $this->authenticate($settings, $queryString);
+			// $queryString .= 
 			$recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
 			if (!empty($recordData)){
 				$recordData = $this->processData($recordData); 
 				$this->stopQueryTimer();
 			}
+			print_r($recordData);
 			return $recordData;
 	}
 
