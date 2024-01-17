@@ -35,7 +35,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $debug = false;
 
     // STATS
-	protected $resultsTotal;
+	protected $resultsTotal = 0;
 
 	protected $searchTerms;
 
@@ -59,7 +59,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $rangeFilters = array();
 	protected $openAccessFilter = false;
 	protected $highlight = false;
-	protected $pageNumber = 1;
 	protected $expand = false;
 
 	/**Facets, filters and limiters */
@@ -72,8 +71,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetFields;
 	protected $queryFacets;
 	protected $facetValue;
-	protected $pageSize = 20;
-
+	protected $limit= 20;
+	protected $page = 1;
 	protected $sortOptions = [];
 	protected $queryOptions = [];
 	//Values for the main facets - each has an array of available values
@@ -255,11 +254,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
 	public function getOptions ($query) {
 		$options = array(
-			's.q' => $query,
+			// 's.q' => $query,
 			//set to default at top of page
-			's.ps' => $this->pageSize,
+			's.ps' => $this->limit,
 			//set to default at top of page
-			's.pn' => $this->pageNumber,
+			's.pn' => $this->page,
 			//set to default -  false at top of page
 			's.ho' => $this->holdings ? 'true' : 'false',
 			//set to default -  false at top of page
@@ -269,7 +268,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 			's.fids' => $this->idsToFetch,
 
-			's.ff' =>$this->getFacetSet(),
+			// 's.ff' =>$this->getFacetSet(),
 
 			's.fvf' => $this->getFilters(),
 			//set to default 1 at top of page
@@ -350,7 +349,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $summary;
 	}
 
-    	/**
+    /**TODO: - Returning only firat 10 results despite per page set to 20 and many more results - gives the dame results on all subsequent pages
 	 * Return a url for use by pagination template
 	 *
 	 * @access  public
@@ -383,7 +382,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
 				$current = &$this->lastSearchResults[$x];
 				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->pageNumber - 1) * $this->pageSize));
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 				$record = new SummonRecordDriver($current);
@@ -411,7 +410,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		if (isset($this->lastSearchResults)) {
 			foreach($this->lastSearchResults as $key=>$value){
 				$interface->assign('recordIndex', $key + 1);
-				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->pageSize));
+				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 				$record = new SummonRecordDriver($value);
@@ -501,6 +500,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	/**TODO: Sort out Spacing for facet names in switch and in main list */
+	/**TODO: - Filter Summon Results correclty */
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
@@ -553,8 +553,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return 	$availableFacets;
 	}	
 
+	/**TODO: - Ask Mark for help*/
+	// public function filterRecordData($recordData) {
+	// 	foreach ($recordData['documents'] as $record) {
+	// 		if ($record[]);
+	// 	}
+	// }
+
 	/*
 	* Called by Results.php - Lists checkbox filter options
+	TODO - Checkbox not staying ticked although moved to applied list
 	* 
 	*/
 	public function getLimitList() {
@@ -612,14 +620,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
 		$settings = $this->getSettings();
 		$this->startQueryTimer();
-			if (isset($_REQUEST['pageNumber']) && is_numeric($_REQUEST['pageNumber']) && $_REQUEST['pageNumber'] != 1) {
-				$this->pageNumber = $_REQUEST['pageNumber'];
-			} else {
-				$this->pageNumber = 1;
-			}
-
-			$options = $this->getOptions($query);
-			$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $this->queryOptions ;
+		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1) {
+			$this->page = $_REQUEST['page'];
+			// $searchUrl .= '&pagenumber=' . $this->page;
+		} else {
+			$this->page = 1;
+			// $searchUrl .= '&relatedcontent=rs';
+		}
+			$options = implode($this->getOptions($query));
+			$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
 			$headers = $this->authenticate($settings, $queryString);
 			$recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
 			if (!empty($recordData)){
@@ -627,7 +636,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->stopQueryTimer();
 			}
 			return $recordData;
-		
 	}
 
     public function process($input) {
