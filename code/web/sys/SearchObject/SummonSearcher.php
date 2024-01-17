@@ -501,7 +501,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
-		$availableFacetValues = [];
 		//Check for search
 		if (isset($this->facetValueFilters)){
 			foreach($this->facetValueFilters as $facetValueFilter) {
@@ -515,93 +514,23 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
 				}
 				$list = [];
-				switch($facetValueFilter) {
-					case 'ContentType':
-						$contentTypes = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record){
-							$contentTypes[] = $record['ContentType'][0];
+				$availableFacetValues = [];
+				$valuesArray = [];
+				foreach ($this->lastSearchResults as $record) {
+					if (!is_array($record["$facetValueFilter"])) {
+						$valuesArray[] = $record["$facetValueFilter"][0];
+					} else {
+						foreach ($record["$facetValueFilter"] as $value){
+							$valuesArray[] = $value;
 						}
-						$counts = array_count_values($contentTypes);
-						foreach ($counts as $contentType => $count){
-							$availableFacetValues[] = "$contentType ($count)";
-						}
-						break;
-					case 'Discipline':
-						$disciplines = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record) {
-							foreach ($record['Discipline'] as $discipline){
-								$disciplines[] = $discipline;
-							}
-						}
-						$counts = array_count_values($disciplines);
-						foreach ($counts as $term => $count){
-							$availableFacetValues[] = "$term ($count)";
-						}
-						break;
-					case 'DatabaseName':				
-						$databases = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record){
-							foreach ($record['DatabaseName'] as $dataBase) {
-								if (in_array('DatabseName', $record)){
-									$databases[] = $dataBase;
-								} else {
-									continue;
-								}
-							}
-						}
-						$counts = array_count_values($databases);
-						foreach ($counts as $term => $count) {
-							$availableFacetValues[] = "$term ($count)";
-						}
-						break;
-					case 'SubjectTerms':		
-						$subjects = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record) {
-							foreach ($record['SubjectTerms'] as $term) {
-								$subjects[] = $term;
-							}
-						}
-						$counts = array_count_values($subjects);
-						foreach ($counts as $term => $count){
-							$availableFacetValues[] = "$term ($count)";
-						}
-						break;
-					case 'PublicationYear':
-						$pubYear = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record){
-							$pubYear[] = $record['PublicationYear'][0];
-						}
-						$counts = array_count_values($pubYear);
-						foreach ($counts as $year => $count) {
-							$availableFacetValues[] = "$year ($count)";
-						}
-						break;
-					case 'Author':
-						$authors = [];
-						$availableFacetValues = [];
-						foreach ($this->lastSearchResults as $record) {
-							$authors[] = $record['Author'][0];
-						}
-						$counts = array_count_values($authors);
-						foreach ($counts as $authorName => $count) {
-							$availableFacetValues[] = "$authorName ($count)";
-						}
-						break;
-					default: 
-						$availableFacetValues = array(
-							''
-						);
-						break;
+					}
+				}
+				$counts = array_count_values($valuesArray);
+				foreach ($counts as $key => $value){
+					$availableFacetValues[] = "$key ($value)";
 				}
 				foreach ($availableFacetValues as $facetValue) {
 					$isApplied = array_key_exists($facetValue, $this->filterList);
-				
-
 						$facetSettings = [
 							'value' => $facetValue,
 							'display' => $facetValue,
@@ -618,7 +547,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
 			}
-			var_dump($availableFacetValues);
 		return 	$availableFacets;
 	}	
 
@@ -642,7 +570,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $limitList;
 	}
 	
-
 	/**
 	 * Generate an HMAC hash for authentication
 	 *
