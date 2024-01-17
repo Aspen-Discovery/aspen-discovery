@@ -14,8 +14,6 @@ public class ItemChangeInfo {
 	private String shelvingLocation;
 	private String iType;
 	private boolean suppress;
-	private String notes;
-
 
 	String getItemId() {
 		return itemId;
@@ -105,20 +103,16 @@ public class ItemChangeInfo {
 		this.shelvingLocation = shelvingLocation;
 	}
 
-	String getiType() {
+	String getIType() {
 		return iType;
 	}
 
-	void setiType(String iType) {
+	void setIType(String iType) {
 		this.iType = iType;
 	}
 
 	void setSuppress(String suppress) {
 		this.suppress = suppress.equalsIgnoreCase("true");
-	}
-
-	boolean isSuppressed(){
-		return this.suppress;
 	}
 
 	public String toString(){
@@ -137,11 +131,4 @@ public class ItemChangeInfo {
 				"suppress: " + suppress + "\r\n";
 	}
 
-	public void setNotes(String notes) {
-		this.notes = notes;
-	}
-
-	public String getNotes() {
-		return notes;
-	}
 }

@@ -63,7 +63,7 @@ public class CarlXExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -96,7 +96,7 @@ public class CarlXExportMain {
 		String processName = "carlx_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
@@ -104,7 +104,7 @@ public class CarlXExportMain {
 		while (true){
 			Date startTime = new Date();
 			startTimeForLogging = startTime.getTime() / 1000;
-			logger.info(startTime.toString() + ": Starting CarlX Extract");
+			logger.info(startTime + ": Starting CarlX Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -167,9 +167,7 @@ public class CarlXExportMain {
 						try {
 							exportHolds(carlXInstanceInformation.carlXConn, carlXInstanceInformation.carlXViewVersion, dbConn);
 						} catch (Exception e) {
-							logger.error("Error exporting holds", e);
-							System.out.println("Error: " + e.toString());
-							e.printStackTrace();
+							logEntry.incErrors("Error exporting holds", e);
 						}
 					} else {
 						logEntry.incErrors("Did not export holds because connection to the CARL.X database was not established");
@@ -196,7 +194,7 @@ public class CarlXExportMain {
 						groupedWorkIndexer = null;
 					}
 				}catch(Exception e){
-					System.out.println("Error closing connection: " + e.toString());
+					System.out.println("Error closing connection: " + e);
 					logger.error("Error closing connection: ", e);
 				}
 			}catch (Exception e){
@@ -262,8 +260,7 @@ public class CarlXExportMain {
 				dbConn.close();
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
-			e.printStackTrace();
+			System.out.println("Error closing aspen connection: " + e);
 		}
 	}
 
@@ -276,7 +273,7 @@ public class CarlXExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -303,7 +300,7 @@ public class CarlXExportMain {
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		long latestMarcFile = 0;
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+		if (exportedMarcFiles != null){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				if (exportedMarcFile.lastModified() > latestMarcFile){
 					latestMarcFile = exportedMarcFile.lastModified();
@@ -328,7 +325,7 @@ public class CarlXExportMain {
 
 	/**
 	 * Updates Aspen using the MARC export or exports provided.
-	 * To see which records are deleted it needs to get a list of all records that are already in the database
+	 * To see which records are deleted it needs to get a list of all records that are already in the database,
 	 * so it can detect what has been deleted.
 	 *
 	 * @param exportedMarcFiles - An array of files to process
@@ -356,12 +353,12 @@ public class CarlXExportMain {
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
-					Record curBib = catalogReader.next();
+					org.marc4j.marc.Record curBib = catalogReader.next();
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
 						lastRecordProcessed = recordNumber;
-						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						recordNumber = recordNumber.replaceAll("\\D", "");
 						long recordNumberDigits = Long.parseLong(recordNumber);
 						if (recordNumberDigits > maxIdInExport){
 							maxIdInExport = recordNumberDigits;
@@ -390,7 +387,7 @@ public class CarlXExportMain {
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
-						Record curBib = catalogReader.next();
+						org.marc4j.marc.Record curBib = catalogReader.next();
 						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 						boolean deleteRecord = false;
 						if (recordIdentifier == null) {
@@ -508,13 +505,13 @@ public class CarlXExportMain {
 			long lastCarlXExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 			if (lastUpdateFromMarc > lastCarlXExtractTime){
-				//get an extra two and a half hours since it can take awhile for the MARC export to complete.
+				//get an extra two and a half hours since it can take a while for the MARC export to complete.
 				lastCarlXExtractTime = lastUpdateFromMarc - (long)(2.5 * 60 * 60);
 			}else {
 				if (lastCarlXExtractTime == 0) {
 					lastCarlXExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 				}else{
-					//Give a one minute buffer to account for potential differences in timestamps.
+					//Give a one-minute buffer to account for potential differences in timestamps.
 					//If the difference between server times is greater than the difference between index start time and the time a change was made in the ILS, those changes are lost because the time aspen requests is in the future for the ILS.
 					lastCarlXExtractTime -= 60;
 				}
@@ -523,7 +520,7 @@ public class CarlXExportMain {
 			Timestamp lastExtractTimestamp = new Timestamp(lastCarlXExtractTime * 1000);
 
 			//Get a list of bibs that have changed.  CARL.X does not have a way to load all BIBs in the system
-			//so if we are running a full update we will just load everything that has changed since January 1, 2000
+			//so if we are running a full update we will just load everything that has changed since January 1, 2000,
 			//which is before CARL.X came into existence.
 			DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -570,7 +567,7 @@ public class CarlXExportMain {
 					logger.info("Loaded updated items");
 				}
 
-				// Fetch Item Information for each ID.  What we really want is a full list of BIDs
+				// Fetch Item Information for each ID.  What we really want is a full list of BIDs,
 				// so we can fetch MARC records for them.
 				itemUpdates = fetchItemInformation(updatedItemIDs, deletedBibs);
 				if (hadErrors) {
@@ -585,7 +582,7 @@ public class CarlXExportMain {
 					}
 				}
 
-				if (createdItemIDs.size() > 0) {
+				if (!createdItemIDs.isEmpty()) {
 					createdItems = fetchItemInformation(createdItemIDs, deletedBibs);
 					if (hadErrors) {
 						logEntry.incErrors("Failed to Fetch Item Information for created items");
@@ -600,7 +597,7 @@ public class CarlXExportMain {
 					}
 				}
 
-				if (deletedItemIDs.size() > 0) {
+				if (!deletedItemIDs.isEmpty()) {
 					deletedItems = fetchItemInformation(deletedItemIDs, deletedBibs);
 					if (hadErrors) {
 						logEntry.addNote("Failed to Fetch Item Information for deleted items");
@@ -630,7 +627,7 @@ public class CarlXExportMain {
 			if (singleWorkId == null) {
 				// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
 				// look them up within Solr as long as the item id is exported as part of the MARC record
-				if (deletedItemIDs.size() > 0) {
+				if (!deletedItemIDs.isEmpty()) {
 					for (String deletedItemID : deletedItemIDs) {
 						logger.debug("Item " + deletedItemID + " should be deleted, but we didn't get a bib for it.");
 						//TODO: Now you *really* have to get the BID, dude.
@@ -640,7 +637,7 @@ public class CarlXExportMain {
 			logEntry.saveResults();
 
 			//Process New Bibs
-			if (createdBibs.size() > 0) {
+			if (!createdBibs.isEmpty()) {
 				logger.debug("There are " + createdBibs.size() + " that need to be processed");
 				bibsNotFound = new HashSet<>();
 				totalChanges += updateBibRecords(createdBibs, bibsNotFound, true);
@@ -671,7 +668,7 @@ public class CarlXExportMain {
 	}
 
 	private static int deleteBibs(Connection dbConn, int totalChanges, HashSet<String> deletedBibs) {
-		if (deletedBibs.size() > 0) {
+		if (!deletedBibs.isEmpty()) {
 			logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
 			for (String deletedBibID : deletedBibs) {
 				String carlId = getFileIdForRecordNumber(deletedBibID);
@@ -697,7 +694,7 @@ public class CarlXExportMain {
 		if (accountProfileRS.next()) {
 			String host = accountProfileRS.getString("databaseHost");
 			String port = accountProfileRS.getString("databasePort");
-			if (port == null || port.length() == 0) {
+			if (port == null || port.isEmpty()) {
 				port = "1521";
 			}
 			String databaseName = accountProfileRS.getString("databaseName");
@@ -707,14 +704,11 @@ public class CarlXExportMain {
 			carlXInstanceInformation = new CarlXInstanceInformation();
 			carlXInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
 			carlXInstanceInformation.baseAPIUrl = accountProfileRS.getString("patronApiUrl");
-			switch (accountProfileRS.getString("carlXViewVersion")) {
-				case "v2":
-					carlXInstanceInformation.carlXViewVersion = "v2";
-					break;
-				default:
-					carlXInstanceInformation.carlXViewVersion = "v";
-					break;
-			} ;
+			if (accountProfileRS.getString("carlXViewVersion").equals("v2")) {
+				carlXInstanceInformation.carlXViewVersion = "v2";
+			} else {
+				carlXInstanceInformation.carlXViewVersion = "v";
+			}
 
 			Connection carlxConn;
 			try{
@@ -726,7 +720,7 @@ public class CarlXExportMain {
 
 				carlXInstanceInformation.carlXConn = carlxConn;
 			}catch(Exception e){
-				logger.error("Error connecting to CARL.X database", e);
+				logEntry.incErrors("Could not connect to CARL.X database, will not have holds exported.", e);
 			}
 		} else {
 			logger.error("Could not find an account profile for CARL.X stopping");
@@ -740,10 +734,10 @@ public class CarlXExportMain {
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
 		int numUpdates = 0;
-		//This should be more than 1, but CARL.X will throw 500 errors occasionally so we need to isolate individual
-		//bib records so we don't have records get deleted if another bib in a batch is incorrect.
+		//This should be more than 1, but CARL.X will throw 500 errors occasionally, so we need to isolate individual
+		//bib records, so we don't have records get deleted if another bib in a batch is incorrect.
 		int getMARCRecordsRequestBatchSize = 1;
-		while (updatedBibs.size() > 0) {
+		while (!updatedBibs.isEmpty()) {
 			logger.debug("Getting data for " + updatedBibs.size() + " updated bibs");
 			HashSet<String> bibsInBatch = new HashSet<>();
 			try {
@@ -764,7 +758,7 @@ public class CarlXExportMain {
 				ArrayList<String> updatedBibCopy = new ArrayList<>(updatedBibs);
 				int numAdded = 0;
 				for (String updatedBibID : updatedBibCopy) {
-					if (updatedBibID.length() > 0) {
+					if (!updatedBibID.isEmpty()) {
 						getMarcRecordsSoapRequest.append("<mar:BID>").append(updatedBibID).append("</mar:BID>\n");
 						numAdded++;
 					}
@@ -788,7 +782,7 @@ public class CarlXExportMain {
 						successfulResponse = true;
 						// Parse Response
 						Document doc = createXMLDocumentForSoapResponse(marcRecordSOAPResponse);
-						logger.debug("MARC record response " + doc.toString());
+						logger.debug("MARC record response " + doc);
 						Node soapEnvelopeNode = doc.getFirstChild();
 						Node soapBodyNode = soapEnvelopeNode.getLastChild();
 						Node getMarcRecordsResponseNode = soapBodyNode.getFirstChild();
@@ -808,9 +802,9 @@ public class CarlXExportMain {
 									Node marcRecordNode = marcRecordInfo.item(i);
 
 									// Build Marc Object from the API data
-									Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
+									org.marc4j.marc.Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
 
-									Record currentMarcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), currentBibID, logEntry);
+									org.marc4j.marc.Record currentMarcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), currentBibID, logEntry);
 
 									//Check to see if we need to load items
 									ArrayList<ItemChangeInfo> itemsForBib = fetchItemsForBib(currentBibID, bibsNotFound);
@@ -1016,6 +1010,7 @@ public class CarlXExportMain {
 		for (int j=0; j < numFields; j++) {
 			Node marcField   = marcFields.item(j);
 			String fieldName = marcField.getNodeName().replaceFirst("ns4:", "");
+			String tag;
 			switch (fieldName) {
 				case "leader" :
 					// Set Leader
@@ -1026,7 +1021,6 @@ public class CarlXExportMain {
 					// Set Control Field
 					String field = marcField.getTextContent();
 					field = field.replace("{U+001E}", ""); // get rid of unicode characters at the end of some control fields.
-					String tag;
 					if (marcField.hasAttributes()) {
 						NamedNodeMap attributes = marcField.getAttributes();
 						Node attributeNode      = attributes.getNamedItem("tag");
@@ -1107,7 +1101,7 @@ public class CarlXExportMain {
 			processItemInformationRequest(itemUpdates, bibsNotFound, getItemInformationSoapRequest);
 		} catch (Exception e) {
 			logger.error("Error Retrieving SOAP updated items", e);
-			logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
+			logEntry.addNote("Error Retrieving SOAP updated items " + e);
 			hadErrors = true;
 		}
 		return itemUpdates;
@@ -1120,7 +1114,7 @@ public class CarlXExportMain {
 		if (itemIDs.size() > 100){
 			logger.warn("There are more than 100 items that need updates " + itemIDs.size());
 		}
-		while (itemIDs.size() > 0) {
+		while (!itemIDs.isEmpty()) {
 			//Set an upper limit on number of IDs for one request, and process in batches
 			StringBuilder getItemInformationSoapRequest;
 			String getItemInformationSoapRequestStart = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
@@ -1154,7 +1148,7 @@ public class CarlXExportMain {
 				processItemInformationRequest(itemUpdates, bibsNotFound, getItemInformationSoapRequest.toString());
 			} catch (Exception e) {
 				logger.error("Error Retrieving SOAP updated items", e);
-				logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
+				logEntry.addNote("Error Retrieving SOAP updated items " + e);
 				hadErrors = true;
 			}
 		}
@@ -1173,7 +1167,7 @@ public class CarlXExportMain {
 			Node responseStatus = getItemInformationResponseNode.getFirstChild().getFirstChild();
 			// There is a Response Statuses Node, which then contains the Response Status Node
 			String responseStatusCode = responseStatus.getFirstChild().getTextContent();
-			logger.debug("Item information response " + doc.toString());
+			logger.debug("Item information response " + doc);
 			if (responseStatusCode.equals("0") || responseStatusCode.equals("60")) { // Successful response
 
 				NodeList ItemStatuses = getItemInformationResponseNode.getChildNodes();
@@ -1251,14 +1245,14 @@ public class CarlXExportMain {
 									currentItem.setLocation(detailValue);
 									break;
 								case "MediaCode":
-									currentItem.setiType(detailValue);
+									currentItem.setIType(detailValue);
 									break;
 								// Fields we don't currently do anything with
 								case "Suppress":
 									//logger.debug("Suppression for item is " + detailValue);
 									currentItem.setSuppress(detailValue);
 								case "Notes":
-									currentItem.setNotes(detailValue);
+									//currentItem.setNotes(detailValue);
 								case "HoldsHistory": // Number of times item has gone to Hold Shelf status since counter set
 								case "InHouseCirc":
 								case "Price":
@@ -1328,7 +1322,7 @@ public class CarlXExportMain {
 		}
 	}
 
-	//If we make this multi-threaded, will want to make the formatter non-static
+	//If we make this to use multithreading, will want to make the formatter non-static
 	private static final SimpleDateFormat itemInformationFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 	private static String formatDateFieldForMarc(String dateFormat, String date) {
 		String dateForMarc = null;
@@ -1359,7 +1353,7 @@ public class CarlXExportMain {
 		updateItemSubfield(itemField, indexingProfile.getLocationSubfield(), changeInfo.getLocation());
 		updateItemSubfield(itemField, indexingProfile.getShelvingLocationSubfield(), changeInfo.getShelvingLocation());
 		if (indexingProfile.getITypeSubfield() != ' ' && !changeInfo.getYearToDateCheckouts().isEmpty()) {
-			updateItemSubfield(itemField, indexingProfile.getITypeSubfield(), changeInfo.getiType());
+			updateItemSubfield(itemField, indexingProfile.getITypeSubfield(), changeInfo.getIType());
 		}
 		updateItemSubfield(itemField, indexingProfile.getItemStatusSubfield(), changeInfo.getStatus());
 
@@ -1413,9 +1407,7 @@ public class CarlXExportMain {
 			}
 		}
 
-//		if (changeInfo.getNotes() != null && changeInfo.getNotes().length() > 0){
-//			updateItemSubfield(itemField, 'n', changeInfo.getNotes());
-//		}
+		//Do not include notes because they can contain patron data in CARL.X
 	}
 
 	private static void updateItemSubfield(DataField itemField, char subfield, String value) {
@@ -1424,30 +1416,6 @@ public class CarlXExportMain {
 		} else {
 			itemField.getSubfield(subfield).setData(value);
 		}
-	}
-
-	private static Record loadMarc(String curBibId) {
-		//Load the existing marc record from file
-		try {
-			logger.debug("Loading MARC for " + curBibId);
-			File marcFile = indexingProfile.getFileForIlsRecord(getFileIdForRecordNumber(curBibId));
-			if (marcFile.exists()) {
-				FileInputStream inputStream = new FileInputStream(marcFile);
-				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF8");
-				if (marcReader.hasNext()) {
-					Record marcRecord = marcReader.next();
-					inputStream.close();
-					return marcRecord;
-				} else {
-					logger.info("Could not read marc record for " + curBibId + ". The bib was empty");
-				}
-			}else{
-				logger.debug("Marc Record does not exist for " + curBibId + " (" + marcFile.getAbsolutePath() + "). It is not part of the main extract yet.");
-			}
-		}catch (Exception e){
-			logger.error("Error updating marc record for bib " + curBibId, e);
-		}
-		return null;
 	}
 
 	private static String getFileIdForRecordNumber(String recordNumber) {
@@ -1483,7 +1451,7 @@ public class CarlXExportMain {
 
 		Savepoint startOfHolds = null;
 		try {
-			logger.info("Starting export of holds");
+			logEntry.addNote("Starting export of holds");
 
 			PreparedStatement addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 
@@ -1527,21 +1495,21 @@ public class CarlXExportMain {
 				dbConn.commit();
 				dbConn.setAutoCommit(true);
 			}catch (Exception e){
-				logger.warn("error committing hold updates rolling back", e);
+				logEntry.incErrors("error committing hold updates rolling back", e);
 				dbConn.rollback(startOfHolds);
 			}
 
 		} catch (Exception e) {
-			logger.error("Unable to export holds from CARL.X", e);
+			logEntry.incErrors("Unable to export holds from CARL.X", e);
 			if (startOfHolds != null) {
 				try {
 					dbConn.rollback(startOfHolds);
 				}catch (Exception e1){
-					logger.error("Unable to rollback due to exception", e1);
+					logEntry.incErrors("Unable to rollback due to exception", e1);
 				}
 			}
 		}
-		logger.info("Finished exporting holds");
+		logEntry.addNote("Finished exporting holds");
 	}
 
 	private static String groupRecord(Connection dbConn, Record marcRecord) {
@@ -1562,6 +1530,6 @@ public class CarlXExportMain {
 		return groupedWorkIndexer;
 	}
 
-	private static Pattern patronIDPattern = Pattern.compile("\\b\\d{6,14}\\b");
+	private static final Pattern patronIDPattern = Pattern.compile("\\b\\d{6,14}\\b");
 
 }
