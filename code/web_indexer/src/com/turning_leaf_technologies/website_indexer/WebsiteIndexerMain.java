@@ -50,8 +50,21 @@ public class WebsiteIndexerMain {
 			Connection aspenConn = connectToDatabase(configIni);
 
 			try {
-				String solrPort = configIni.get("Reindex", "solrPort");
-				ConcurrentUpdateHttp2SolrClient solrUpdateServer = setupSolrClient(solrPort);
+				String solrPort = configIni.get("Index", "solrPort");
+				if (solrPort == null || solrPort.isEmpty()) {
+					solrPort = configIni.get("Reindex", "solrPort");
+					if (solrPort == null || solrPort.isEmpty()) {
+						solrPort = "8080";
+					}
+				}
+				String solrHost = configIni.get("Index", "solrHost");
+				if (solrHost == null || solrHost.isEmpty()) {
+					solrHost = configIni.get("Reindex", "solrHost");
+					if (solrHost == null || solrHost.isEmpty()) {
+						solrHost = "localhost";
+					}
+				}
+				ConcurrentUpdateHttp2SolrClient solrUpdateServer = setupSolrClient(solrHost, solrPort);
 
 				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 0");
 				PreparedStatement getLibrariesForSettingsStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_website_indexing inner join library on library.libraryId = library_website_indexing.libraryId where settingId = ?");
@@ -257,9 +270,9 @@ public class WebsiteIndexerMain {
 		System.exit(0);
 	}
 
-	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrPort) {
+	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrHost, String solrPort) {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		return new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/website_pages", http2Client)
+		return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/website_pages", http2Client)
 				.withThreadCount(2)
 				.withQueueSize(100)
 				.build();

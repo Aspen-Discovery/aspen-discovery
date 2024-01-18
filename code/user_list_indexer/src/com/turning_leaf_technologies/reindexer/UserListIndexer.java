@@ -58,14 +58,23 @@ class UserListIndexer {
 			logger.error("Error loading a list of users with the listPublisher role");
 		}
 
-		String solrPort = configIni.get("Reindex", "solrPort");
+		String solrPort = configIni.get("Index", "solrPort");
 		if (solrPort == null || solrPort.isEmpty()) {
-			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
-			System.exit(1);
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
 		}
 
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/lists", http2Client)
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/lists", http2Client)
 				.withThreadCount(2)
 				.withQueueSize(100)
 				.build();
@@ -88,7 +97,7 @@ class UserListIndexer {
 		}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
-		Http2SolrClient.Builder openArchivesHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
+		Http2SolrClient.Builder openArchivesHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives");
 		openArchivesServer = openArchivesHttpBuilder.build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);

@@ -33,19 +33,28 @@ class CourseReservesIndexer {
 		this.dbConn = dbConn;
 		this.logger = logger;
 
-		String solrPort = configIni.get("Reindex", "solrPort");
+		String solrPort = configIni.get("Index", "solrPort");
 		if (solrPort == null || solrPort.isEmpty()) {
-			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
-			System.exit(1);
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
 		}
 
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/course_reserves", http2Client)
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
 				.withThreadCount(2)
 				.withQueueSize(100)
 				.build();
 
-		groupedWorkServer = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2").build();
+		groupedWorkServer = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2").build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 	}

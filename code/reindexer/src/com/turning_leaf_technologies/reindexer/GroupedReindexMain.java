@@ -191,21 +191,10 @@ public class GroupedReindexMain {
 		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 		baseLogPath = configIni.get("Site", "baseLogPath");
-		String solrHost = configIni.get("Index", "solrHost");
-		String solrPort = configIni.get("Reindex", "solrPort");
-
-		if (solrHost == null || solrHost.length() == 0) {
-        	logger.error("You must provide the host where the solr index is loaded in the import configuration file");
-        	System.exit(1);
-        }
-		if (solrPort == null || solrPort.length() == 0) {
-			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
-			System.exit(1);
-		}
 
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}

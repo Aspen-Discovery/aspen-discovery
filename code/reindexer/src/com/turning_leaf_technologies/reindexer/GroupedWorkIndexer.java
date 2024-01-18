@@ -169,7 +169,20 @@ public class GroupedWorkIndexer {
 		this.clearIndex = clearIndex;
 		this.regroupAllRecords = regroupAllRecords;
 
-		String solrPort = configIni.get("Reindex", "solrPort");
+		String solrPort = configIni.get("Index", "solrPort");
+		if (solrPort == null || solrPort.isEmpty()) {
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
+		}
 
 		//Load the last Index time
 		try{
@@ -287,9 +300,9 @@ public class GroupedWorkIndexer {
 
 		String solrUrl;
 		if (indexVersion == 1) {
-			solrUrl = "http://localhost:" + solrPort + "/solr/grouped_works";
+			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works";
 		}else{
-			solrUrl = "http://localhost:" + solrPort + "/solr/grouped_works_v2";
+			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2";
 		}
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)

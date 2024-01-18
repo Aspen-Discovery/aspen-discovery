@@ -121,8 +121,22 @@ public class OaiIndexerMain {
 	}
 
 	private static void extractAndIndexOaiData(int collectionToIndex) {
-		String solrPort = configIni.get("Reindex", "solrPort");
-		setupSolrClient(solrPort);
+		String solrPort = configIni.get("Index", "solrPort");
+		if (solrPort == null || solrPort.isEmpty()) {
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
+		}
+
+		setupSolrClient(solrHost, solrPort);
 
 		if (fullReload) {
 			try {
@@ -417,9 +431,9 @@ public class OaiIndexerMain {
 		return new OpenArchivesExtractLogEntry(collectionName, aspenConn, logger);
 	}
 
-	private static void setupSolrClient(String solrPort) {
+	private static void setupSolrClient(String solrHost, String solrPort) {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives", http2Client)
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives", http2Client)
 				.withThreadCount(2)
 				.withQueueSize(100)
 				.build();
