@@ -18,7 +18,7 @@ class SummonRecordDriver extends RecordInterface {
 		return true;
 	}
 
-	#TODO: - Check with Mark how to handle the 1x1 white pixel images
+	#TODO: - Check with Mark how to handle the 1x1 white pixel images and find default image for those records with no image
 	public function getBookcoverUrl($size='large', $absolutePath =false) {
 		if ($size == 'medium' || $size == 'small') {
 			if (!empty($this->record['thumbnail_m'])) {

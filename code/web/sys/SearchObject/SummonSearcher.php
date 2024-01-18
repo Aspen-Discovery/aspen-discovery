@@ -22,17 +22,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
    
     private $curl_connection;
 
-	
-  
-
 	/**Track query time info */
     protected $queryStartTime = null;
 	protected $queryEndTime = null;
 	protected $queryTime = null;
-
-
-	protected $defaultSort = 'relevance';
-	protected $debug = false;
 
     // STATS
 	protected $resultsTotal = 0;
@@ -54,47 +47,59 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $didYouMean = false;
 	protected $language = 'en';
 	protected $idsToFetch = array();
+	/**@var int */
 	protected $maxTopics = 1;
 	protected $groupFilters = array();
 	protected $rangeFilters = array();
 	protected $openAccessFilter = false;
 	protected $highlight = false;
 	protected $expand = false;
-
+	/**
+	 * @var string
+	 */
+	protected $sort = null;
+	protected $defaultSort = 'relevance';
+	protected $query;
+	protected $filters = array();
+	/**
+	 * @var int
+	 */
+	protected $limit= 20;
+	/**
+	 * @var int
+	 */
+	protected $page = 1;
+	/**
+	 * @var int
+	 */
+	protected $maxRecDb = 2;
+	protected $bookMark;
+	protected $debug = false;
+	protected $journalTitle = false;
+	protected $lightWeightRes = false;
+	protected $sortCommands = array();
 	/**Facets, filters and limiters */
 	  /**
 	 * @var string mixed
 	 */
 	private $searchIndex = 'Everything';
-	protected $facets = [];
-	protected $filters = [];
-	protected $facetFields;
-	protected $queryFacets;
-	protected $facetValue;
-	protected $limit= 20;
-	protected $page = 1;
 	protected $sortOptions = [];
-	protected $queryOptions = [];
 	//Values for the main facets - each has an array of available values
-	protected $facetValueFilters = [
-		'Author',
-		'ContentType',
-		'DatabaseName',
-		'Discipline',
-		'SubjectTerms',
-		'PublicationYear',
+	protected $facets = [
+		'ContentType,or,1,30',
+		'SubjectTerms,or,1,30',	
 	];
+	protected $facetFields;
 	//Options to filter results by - checkbox, single value
 	protected $limitOptions = [
 		'Full Text Online',
-		'Scholarly',
+		'IsScholarly,or,1,2',
 		'Peer Reviewed',
 		'Open Access',
 		'Available in Library Collection',
 	];
 	
     public function __construct() {
-
         //Initialize properties with default values
         $this->searchSource = 'summon';
         $this->searchType = 'summon';
@@ -196,7 +201,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	/**
-	 * TODO: - check whether we need to create a session
 	 * Use Institution's Summon API credentials to authenticate and allow connection with the Summon API
 	*/
     public function authenticate($settings, $queryString) {
@@ -210,51 +214,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $headers;
     }
 
-	/**Build a query using the search terms entered by the user */
-	public function getQuery() {
-		$query = [];
-		foreach ($this->searchTerms as $key => $value) {
-			if (is_array($value)) {
-				foreach ($value as $term) {
-					$term = urlencode($term);
-					$query[] = $term;
-				}
-			} elseif (!is_null($value)) {
-				$value = urlencode($value);
-				$query[] =$value;
-			}
-		} return $query;
-	}
-
-	public function getFilters() {
-		$facetIndex = 1;
-		foreach ($this->filterList as $field => $filter) {
-			$appliedFilters = '';
-			if (is_array($filter)) {
-				$appliedFilters .= "$facetIndex,";
-				foreach ($filter as $key => $value) {
-					if ($key > 0) {
-						$appliedFilters[] = ',';
-					}
-					$value = urlencode($value);
-					$appliedFilters .= "$field:" . urlencode($value);
-				}
-			} else {
-				$appliedFilters .= "$facetIndex,$field:" . urlencode($filter);
-
-				$filter = urlencode($filter);
-				// $appliedFilters .= "$facetIndex,$field=$field";
-				 $appliedFilters .= "$facetIndex,$field:" .urlencode($filter);
-			}
-			$facetIndex++;
-		}
-		return $appliedFilters;
-	}
-
 	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
-	public function getOptions ($query) {
+	public function getOptions () {
 		$options = array(
-			// 's.q' => $query,
+			's.q' => $this->query,
 			//set to default at top of page
 			's.ps' => $this->limit,
 			//set to default at top of page
@@ -265,40 +228,40 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.dym' => $this->didYouMean ? 'true' : 'false',
 			//set to default - en at top of page
 			's.l' => $this->language,
-
-			's.fids' => $this->idsToFetch,
-
-			// 's.ff' =>$this->getFacetSet(),
-			's.ff' =>'ContentType,or',
-
-			's.fvf' => $this->getFilters(),
+			//set to an empty array
+			's.fids' =>$this->idsToFetch,
+			//set in array 
+			's.ff' =>$this->facets,
+			//empty array
+			's.fvf' => $this->filters,
 			//set to default 1 at top of page
 			's.rec.topic.max' => $this->maxTopics,
-
+			//empty array
 			's.fvgf' => $this->groupFilters,
-
+			//empty arrray
 			's.rf' => $this->rangeFilters,
-
-			's.sort' => $this->sort,
-
+			#TODO: - implement sort without breaking summon
+			// 's.sort' => $this->sort,
+			//false by default
 			's.exp' => $this->expand ? 'true' : 'false',
-
+			//false by default
 			's.oaf' => $this->openAccessFilter ? 'true' : 'false',
-			
+			//to bookmark an item - top of page
+			's.bookMark' => $this->bookMark,
+			//false by default
+			's.debug' => $this->debug ? 'true' : 'false',
+			//false by default - recommend journals
+			's.rec.jt' => $this->journalTitle ? 'true' : 'false',
+			//false by default
+			's.light' => $this->lightWeightRes ? 'true' : 'false',
+			//2 by default - max db reccomendations
+			's.rec.db.max' => $this->maxRecDb,
+			//allows access to records
+			's.role' =>  'authenticated',
+			//set in array - sort facet
+			's.cmd' => $this->sortCommands,
 		);
-		$buildQuery = [];
-
-		foreach ($options as $key => $value) {
-			if (is_array($value)) {
-				foreach($value as $additionalValue) {
-					$buildQuery[] = "{$key}[]=$additionalValue";
-				}
-			} elseif (!is_null($value)) {
-				$value = urlencode($value);
-				$buildQuery[] = "$key=$value";
-			}
-		}
-		return $buildQuery;
+		return $options;
 	}
  
 	/**
@@ -312,14 +275,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->lastSearchResults = $recordData['documents'];
 				$this->page = $recordData['query']['pageNumber'];
 				$this->resultsTotal = $recordData['recordCount'];
-				$this->sort = $recordData['query']['sort'];
-				$this->facetFields= $recordData['facetFields'];
-				$this->queryFacets = $recordData['query']['rangeFacetFields'];
-				
+				$this->filters = $recordData['query']['facetValueFilters'];
+				$this->facetFields= $recordData['facetFields'];	
 			}
 		return $recordData;
 	}
-
 
     /**
 	 * Return an array of data summarising the results of a search.
@@ -329,10 +289,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 */
 	public function getResultSummary() {
 		$summary = [];
-
 		$summary['page'] = $this->page;
 		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = (int)$this->resultsTotal;
+		#TODO: - do we need this? facet field summ
 		// $summary['facetFields'] = $this->facetFields;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
@@ -350,7 +310,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $summary;
 	}
 
-    /**TODO: - Returning only firat 10 results despite per page set to 20 and many more results - gives the dame results on all subsequent pages
+    /**TODO: - Returning only first 20 results  - gives the same results on all subsequent pages
 	 * Return a url for use by pagination template
 	 *
 	 * @access  public
@@ -452,23 +412,18 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			'relevance' =>[
 				'id' => 'relevance',
 				'label' => 'Relevance',
+				$this->sortCommands = 'setSortByRelevancy()',
 			],
-			'date(newest)' =>[
-				'id' => 'date(newest)',
-				'label' => 'Date(newest)',
+			'setSort' => [
+				'id' =>'setSort',
+				'label' => 'asc/desc',
+				$this->sortCommands = 'setSort()'
 			],
-			'date(oldest)' =>[
-				'id' => 'date(oldest)',
-				'label' => 'Date(oldest)',
-			],
-			'author' =>[
-				'id' => 'author',
-				'label' => 'Author'
-			],
-			'title' =>[
-				'id' => 'title',
-				'label' => 'Title',
-			],		
+			'reverse' => [
+				'id' => 'reverse',
+				'label' =>'Reverse',
+				$this->sortCommands = 'reverseSortOrder()'
+			]	
 		];
 		if ($this->sortOptions != null) {
 			foreach ($this->sortOptions as $sortOption) {
@@ -500,85 +455,50 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $url;
 	}
 
-	/**TODO: Sort out Spacing for facet names in switch and in main list */
-	/**TODO: - Filter Summon Results correclty */
-	//Facets set for Summon - callled in Summon's Results
-    public function getFacetSet() {
+	/**
+	 * Called in Results.php
+	 */
+	public function getFacetSet() {
 		$availableFacets = [];
-		//Check for search
-		if (isset($this->facetValueFilters)){
-			foreach($this->facetValueFilters as $facetValueFilter) {
-				$availableFacets[$facetValueFilter] = [
+		if (isset($this->facetFields)) {
+			foreach ($this->facetFields as $facetField) {
+				$facetId = $facetField['displayName'];
+				$availableFacets[$facetId] = [
 					'collapseByDefault' => true,
-					'multiSelect' => true,
-					'label' => $facetValueFilter,
-					'valuesToShow' => 5,
+					'multiSelect' =>true,
+					'label' =>$facetId,
+					'valuesToShow' =>5,
 				];
-				if ($facetValueFilter == 'ContentType') {
-					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
+				if ($facetId == 'ContentType') {
+					$availableFacets[$facetId]['collapseByDefault'] = false;
 				}
 				$list = [];
-				$availableFacetValues = [];
-				$valuesArray = [];
-				foreach ($this->lastSearchResults as $record) {
-					if (!is_array($record["$facetValueFilter"])) {
-						$valuesArray[] = $record["$facetValueFilter"][0];
-					} else {
-						foreach ($record["$facetValueFilter"] as $value){
-							$valuesArray[] = $value;
-						}
-					}
+				foreach ($facetField['counts'] as $value) {
+					$facetValue = $value['value'];
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+					$facetSettings = [
+						'value' => $facetValue,
+						'display' =>$facetValue,
+						'count' =>$value['count'],
+						'isApplied' => $value['isApplied'],
+						'isNegated' => $value['isNegated'],
+					];
+					$list[] = $facetSettings;
 				}
-				$counts = array_count_values($valuesArray);
-				foreach ($counts as $key => $value){
-					$availableFacetValues[] = "$key ($value)";
-				}
-				foreach ($availableFacetValues as $facetValue) {
-					$isApplied = array_key_exists($facetValue, $this->filterList);
-						$facetSettings = [
-							'value' => $facetValue,
-							'display' => $facetValue,
-							'isApplied' => $isApplied,
-							'countIsApproximate' => false,
-						];
-						 if ($isApplied) {
-							$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetValueFilter['facetLabel'] . ':' . $facetValue);
-					 	} else {
-							$facetSettings['url'] = $this->renderSearchUrl() . '&filter=' . $facetValueFilter . ':' . urlencode($facetValue);
-					 	}
-					 	$list[] = $facetSettings;
-					 }
-					$availableFacets[$facetValueFilter]['list'] = $list;
-				}
+				$availableFacets[$facetId]['list'] = $list;
 			}
-		return 	$availableFacets;
-	}	
-
-	/**TODO: - Ask Mark for help*/
-	// public function filterRecordData($recordData) {
-	// 	foreach ($recordData['documents'] as $record) {
-	// 		if ($record[]);
-	// 	}
-	// }
-
+		}
+		var_dump($availableFacets);
+		return $availableFacets;
+	}
+	
 	/*
 	* Called by Results.php - Lists checkbox filter options
-	TODO - Checkbox not staying ticked although moved to applied list
+	TODO - Checkbox not staying ticked although moved to applied list - change to Summon filters
 	* 
 	*/
 	public function getLimitList() {
 		$limitList = [];
-		foreach ($this->limitOptions as $limit) {
-			$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
-		
-			$limitList[$limit] = [
-				'url' => $this->renderLinkWithLimiter($limit),
-				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
-				'display' => $limit,
-				'value' => $limit,
-				'isApplied' => $limitIsApplied,
-			];
-		}
 		return $limitList;
 	}
 	
@@ -617,28 +537,31 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 * @return object API response
 	 */
 	public function sendRequest() {
-		$query = $this->getQuery();
 		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
 		$settings = $this->getSettings();
 		$this->startQueryTimer();
-		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1) {
-			$this->page = $_REQUEST['page'];
-			// $searchUrl .= '&pagenumber=' . $this->page;
-		} else {
-			$this->page = 1;
-			// $searchUrl .= '&relatedcontent=rs';
-		}
-			$options = implode($this->getOptions($query));
-			$queryString = 's.ff=ContentType,or' . '&s.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
-			$headers = $this->authenticate($settings, $queryString);
-			// $queryString .= 
-			$recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
-			if (!empty($recordData)){
-				$recordData = $this->processData($recordData); 
-				$this->stopQueryTimer();
+		$query = array();
+		$options = $this->getOptions();
+		foreach ($options as $key => $value) {
+			if (is_array($value)) {
+				foreach ($value as $additionalValue) {
+					$query[] = "$key=$additionalValue";
+				}
+			} elseif (!is_null($value)) {
+				$value = urlencode($value);
+				$query[] = "$key=$value";
 			}
-			print_r($recordData);
-			return $recordData;
+		}
+		//Summon query must be sent in alphabetical order, otherwise it will return an error
+		asort($query);
+		$queryString = implode('&', $query);
+		$headers = $this->authenticate($settings, $queryString);
+		$recordData = $this->httpRequest($baseUrl, $queryString, $headers);
+		if (!empty($recordData)){
+			$recordData = $this->processData($recordData); 
+			$this->stopQueryTimer();
+		}
+		return $recordData;
 	}
 
     public function process($input) {
@@ -677,12 +600,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             return SearchObject_SummonSearcher::$searchOptions;
         }
     }
-//TODO: add escape chars
 
     /**
 	 * Send HTTP request with headers modified to meet Summon API requirements
 	 */
-    protected function httpRequest($baseUrl, $queryString, $options, $headers) {
+    protected function httpRequest($baseUrl, $queryString, $headers) {
 		foreach ($headers as $key =>$value) {
 			$modified_headers[] = $key.": ".$value;
 		}
