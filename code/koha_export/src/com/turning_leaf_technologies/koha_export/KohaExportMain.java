@@ -55,7 +55,7 @@ public class KohaExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -255,7 +255,7 @@ public class KohaExportMain {
 							String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
 							if (author != null) {
 								Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
-								if (alternativeNames.size() > 0) {
+								if (!alternativeNames.isEmpty()) {
 									numAuthoritiesExported++;
 									getAuthorIdStmt.setString(1, author);
 									ResultSet getAuthorIdRS = getAuthorIdStmt.executeQuery();
@@ -435,7 +435,6 @@ public class KohaExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
@@ -592,7 +591,7 @@ public class KohaExportMain {
 			try {
 				String host = accountProfileRS.getString("databaseHost");
 				String port = accountProfileRS.getString("databasePort");
-				if (port == null || port.length() == 0) {
+				if (port == null || port.isEmpty()) {
 					port = "3306";
 				}
 				String databaseName = accountProfileRS.getString("databaseName");
@@ -606,8 +605,8 @@ public class KohaExportMain {
 						"?user=" + user +
 						"&password=" + password +
 						"&useUnicode=yes&characterEncoding=UTF-8";
-				if (timezone != null && timezone.length() > 0) {
-					kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+				if (timezone != null && !timezone.isEmpty()) {
+					kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, StandardCharsets.UTF_8);
 				}
 
 				Connection kohaConn = connectToKohaDatabase(kohaConnectionJDBC);
@@ -734,7 +733,7 @@ public class KohaExportMain {
 				if (translation == null) {
 					translation = value;
 				}
-				if (value.length() > 0) {
+				if (!value.isEmpty()) {
 					insertFormatStmt.setLong(1, indexingProfileId);
 					insertFormatStmt.setString(2, value);
 					insertFormatStmt.setString(3, translation);
@@ -762,7 +761,7 @@ public class KohaExportMain {
 				if (translation == null) {
 					translation = value;
 				}
-				if (value.length() > 0) {
+				if (!value.isEmpty()) {
 					try {
 						insertTranslationStmt.setLong(1, translationMapId);
 						insertTranslationStmt.setString(2, value);
