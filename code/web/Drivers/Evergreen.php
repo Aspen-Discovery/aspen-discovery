@@ -77,7 +77,7 @@ class Evergreen extends AbstractIlsDriver {
 						$checkout->recordId = $mappedRecord['doc_id'];
 						$checkout->title = $mappedRecord['title'];
 						$checkout->author = $mappedRecord['author'];
-						$checkout->callNumber = $this->getCallNumberForCopy($mappedCopy, $authtoken);
+						$checkout->callNumber = $this->getCallNumberForCopy($mappedCopy, $authToken);
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver((string)$checkout->recordId);
 						if ($recordDriver->isValid()) {
@@ -195,9 +195,9 @@ class Evergreen extends AbstractIlsDriver {
 				$callno = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
 				$label = $callno["label"];
 				$obj = $callno["prefix"];
-				$prefix = $this->mapEvergreenFields($obj->__p, $this->fechIdl($obj->__c));
+				$prefix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
 				$obj = $callno["suffix"];
-				$suffix = $this->mapEvergreenFields($obj->__p, $this->fechIdl($obj->__c));
+				$suffix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
 				if ($prefix["label"]) {
 					$label = $prefix["label"] . " " . $label;
 				}
