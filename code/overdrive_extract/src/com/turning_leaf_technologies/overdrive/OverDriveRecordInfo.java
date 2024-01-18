@@ -12,8 +12,7 @@ class OverDriveRecordInfo {
 	//Data from base title call
 	private String id;
 	private long databaseId = -1;
-	private HashSet<AdvantageCollectionInfo> collections = new HashSet<>();
-	private boolean deleted;
+	private final HashSet<AdvantageCollectionInfo> collections = new HashSet<>();
 
 	String getId() {
 		return id;
@@ -35,13 +34,5 @@ class OverDriveRecordInfo {
 
 	void setDatabaseId(long databaseId) {
 		this.databaseId = databaseId;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
-
-	public boolean isDeleted() {
-		return deleted;
 	}
 }

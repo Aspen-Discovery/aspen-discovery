@@ -1,12 +1,9 @@
 package com.turning_leaf_technologies.overdrive;
 
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashSet;
 
 public class OverDriveSetting {
@@ -14,13 +11,10 @@ public class OverDriveSetting {
 	private String clientSecret;
 	private final String clientKey;
 	private final String accountId;
-	private final String websiteId;
 	private final String productsKey;
 	private final boolean runFullUpdate;
 	private final long lastUpdateOfChangedRecords;
-	private final long lastUpdateOfAllRecords;
 	private final boolean allowLargeDeletes;
-	private final int numExtractionThreads;
 	private final boolean enableRequestLogging;
 	private final int numRetriesOnError;
 	private final HashSet<String> productsToUpdate = new HashSet<>();
@@ -36,13 +30,10 @@ public class OverDriveSetting {
 		}
 		clientKey = settingRS.getString("clientKey");
 		accountId = settingRS.getString("accountId");
-		websiteId = settingRS.getString("websiteId");
 		productsKey = settingRS.getString("productsKey");
 		runFullUpdate = settingRS.getBoolean("runFullUpdate");
 		allowLargeDeletes = settingRS.getBoolean("allowLargeDeletes");
 		lastUpdateOfChangedRecords = settingRS.getLong("lastUpdateOfChangedRecords");
-		lastUpdateOfAllRecords = settingRS.getLong("lastUpdateOfAllRecords");
-		numExtractionThreads = settingRS.getInt("numExtractionThreads");
 		enableRequestLogging = settingRS.getBoolean("enableRequestLogging");
 		numRetriesOnError = Math.max(1, settingRS.getInt("numRetriesOnError"));
 		String productsToUpdateStr = settingRS.getString("productsToUpdate");
@@ -54,7 +45,7 @@ public class OverDriveSetting {
 		String[] products = productsToUpdateStr.split("\r\n|\r|\n");
 		for (String product : products){
 			product = product.trim().toLowerCase();
-			if (product.length() > 0) {
+			if (!product.isEmpty()) {
 				productsToUpdate.add(product);
 			}
 		}
@@ -76,10 +67,6 @@ public class OverDriveSetting {
 		return accountId;
 	}
 
-	public String getWebsiteId() {
-		return websiteId;
-	}
-
 	public String getProductsKey() {
 		return productsKey;
 	}
@@ -92,16 +79,8 @@ public class OverDriveSetting {
 		return lastUpdateOfChangedRecords;
 	}
 
-	public long getLastUpdateOfAllRecords() {
-		return lastUpdateOfAllRecords;
-	}
-
 	public boolean isAllowLargeDeletes() {
 		return allowLargeDeletes;
-	}
-
-	public int getNumExtractionThreads() {
-		return numExtractionThreads;
 	}
 
 	public boolean isEnableRequestLogging() {

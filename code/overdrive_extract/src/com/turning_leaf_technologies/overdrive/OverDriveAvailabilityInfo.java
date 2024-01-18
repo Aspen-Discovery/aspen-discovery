@@ -4,7 +4,6 @@ class OverDriveAvailabilityInfo {
 	//Information from the database
 	private long id;
 	private long libraryId;
-	private long settingId;
 	private boolean available;
 	private int copiesOwned;
 	private int copiesAvailable;
@@ -76,13 +75,5 @@ class OverDriveAvailabilityInfo {
 
 	void setNewAvailabilityLoaded() {
 		this.newAvailabilityLoaded = true;
-	}
-
-	public long getSettingId() {
-		return settingId;
-	}
-
-	void setSettingId(long settingId) {
-		this.settingId = settingId;
 	}
 }

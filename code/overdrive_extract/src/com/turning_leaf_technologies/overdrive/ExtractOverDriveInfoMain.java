@@ -28,7 +28,7 @@ public class ExtractOverDriveInfoMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -69,7 +69,7 @@ public class ExtractOverDriveInfoMain {
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-			if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+			if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 				logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 				System.exit(1);
 			}
@@ -214,6 +214,8 @@ public class ExtractOverDriveInfoMain {
 		} catch (SQLException e) {
 			logger.error("Error closing database connection", e);
 		}
+
+		System.exit(0);
 	}
 
 	private static HashSet<OverDriveSetting> loadSettings(boolean extractSingleWork) {
@@ -232,7 +234,7 @@ public class ExtractOverDriveInfoMain {
 		} catch (SQLException e) {
 			logger.error("Error loading settings from the database", e);
 		}
-		if (settings.size() == 0) {
+		if (settings.isEmpty()) {
 			logger.error("Unable to find settings for Boundless, please add settings to the database");
 		}
 		return settings;
