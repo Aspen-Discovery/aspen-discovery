@@ -76,6 +76,8 @@ public class HorizonExportMain {
 
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Horizon Export");
+
+		System.exit(0);
 	}
 
 	/**

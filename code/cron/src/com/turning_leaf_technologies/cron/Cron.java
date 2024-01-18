@@ -160,6 +160,8 @@ public class Cron {
 		cronEntry.setFinished();
 		cronEntry.addNote("Cron run finished");
 		cronEntry.saveResults();
+
+		System.exit(0);
 	}
 
 	private static void markProcessStarted(ProcessToRun processToRun) {

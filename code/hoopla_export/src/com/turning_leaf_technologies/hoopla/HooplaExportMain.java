@@ -207,6 +207,7 @@ public class HooplaExportMain {
 			}
 		}
 
+		System.exit(0);
 	}
 
 	private static void processRecordsToReload(HooplaExtractLogEntry logEntry) {
