@@ -231,6 +231,8 @@ public class FolioExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void disconnectDatabase() {

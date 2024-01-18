@@ -228,6 +228,8 @@ public class KohaExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void exportAuthorAuthorities(Connection dbConn, Connection kohaConn) {

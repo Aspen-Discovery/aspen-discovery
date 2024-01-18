@@ -267,6 +267,8 @@ public class EvergreenExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void exportVolumes(Connection dbConn) {

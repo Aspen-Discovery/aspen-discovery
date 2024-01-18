@@ -18,7 +18,6 @@ import org.ini4j.Ini;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.marc.Record;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +46,7 @@ public class SideLoadingMain {
 		String profileToLoad = "";
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -169,6 +168,8 @@ public class SideLoadingMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static void processSideLoad(SideLoadSettings settings, PreparedStatement getFilesForSideloadStmt, PreparedStatement insertSideloadFileStmt, PreparedStatement updateSideloadFileStmt) {
@@ -341,7 +342,7 @@ public class SideLoadingMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				//getGroupedWorkIndexer().loadMarcRecordFromDatabase() Ticket 95343
-				Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					//Regroup the record
 					String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
@@ -370,7 +371,7 @@ public class SideLoadingMain {
 			MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(fileToProcess), true, true, settings.getMarcEncoding());
 			while (marcReader.hasNext()) {
 				try {
-					Record marcRecord = marcReader.next();
+					org.marc4j.marc.Record marcRecord = marcReader.next();
 					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 					if (recordIdentifier != null) {
 						existingRecords.remove(recordIdentifier.getIdentifier());

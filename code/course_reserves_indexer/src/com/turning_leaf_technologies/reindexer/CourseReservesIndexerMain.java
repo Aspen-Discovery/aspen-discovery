@@ -115,6 +115,8 @@ public class CourseReservesIndexerMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static void disconnectDatabase(Connection aspenConn) {

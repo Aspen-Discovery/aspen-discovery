@@ -148,6 +148,8 @@ public class GroupedReindexMain {
 
 		logEntry.addNote("Finished Reindex for " + serverName);
 		logEntry.setFinished();
+
+		System.exit(0);
 	}
 
 	private static void initializeReindex() {

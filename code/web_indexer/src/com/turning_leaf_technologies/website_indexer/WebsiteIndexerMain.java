@@ -253,6 +253,8 @@ public class WebsiteIndexerMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrPort) {

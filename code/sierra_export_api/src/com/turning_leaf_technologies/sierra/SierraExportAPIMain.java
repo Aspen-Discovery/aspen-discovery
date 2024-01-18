@@ -31,12 +31,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.VariableField;
 
 public class SierraExportAPIMain {
 	private static Logger logger;
 
-	@SuppressWarnings("SpellCheckingInspection")
 	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -61,7 +59,7 @@ public class SierraExportAPIMain {
 		boolean extractSingleRecord = false;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -350,7 +348,7 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					//Regroup the record
 					String groupedWorkId = groupSierraRecord(marcRecord);
@@ -1090,7 +1088,6 @@ public class SierraExportAPIMain {
 	}
 
 
-	@SuppressWarnings("SpellCheckingInspection")
 	private static final SimpleDateFormat sierraAPIDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private static void getItemsForBib(String id, Record marcRecord, JSONObject itemIds) {
 		//Get a list of all items
@@ -1442,7 +1439,7 @@ public class SierraExportAPIMain {
 		return true;
 	}
 
-	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors, boolean ignore404errors) {
+	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, boolean logErrors, boolean ignore404errors) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
 			//Connect to the API to get our token
 			HttpURLConnection conn;

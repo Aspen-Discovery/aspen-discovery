@@ -83,12 +83,16 @@ public class OaiIndexerMain {
 			connectToDatabase();
 
 			extractAndIndexOaiData(collectionToProcess);
+
+			disconnectDatabase();
 		}
 
 		logger.info("Finished " + new Date());
 		long endTime = new Date().getTime();
 		long elapsedTime = endTime - startTime.getTime();
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+
+		System.exit(0);
 	}
 
 	private static void connectToDatabase() {
@@ -103,6 +107,15 @@ public class OaiIndexerMain {
 			deleteOpenArchivesRecord = aspenConn.prepareStatement("DELETE FROM open_archives_record WHERE id = ?");
 		} catch (Exception e) {
 			logger.error("Error connecting to aspen database", e);
+			System.exit(1);
+		}
+	}
+
+	private static void disconnectDatabase() {
+		try {
+			aspenConn.close();
+		} catch (Exception e) {
+			logger.error("Error closing database ", e);
 			System.exit(1);
 		}
 	}

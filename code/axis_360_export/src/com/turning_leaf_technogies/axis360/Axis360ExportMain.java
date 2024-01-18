@@ -150,6 +150,8 @@ public class Axis360ExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 

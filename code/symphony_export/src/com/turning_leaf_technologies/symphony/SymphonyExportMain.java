@@ -22,8 +22,6 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
 
 public class SymphonyExportMain {
 	private static Logger logger;
@@ -45,7 +43,7 @@ public class SymphonyExportMain {
 	public static void main(String[] args){
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -410,7 +408,7 @@ public class SymphonyExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -612,6 +610,7 @@ public class SymphonyExportMain {
 						}
 						volumeInfoLine = csvReader.readLine();
 					}
+					csvReader.close();
 					if (curIlsId != null) {
 						//Save the last volume information
 						saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
@@ -892,7 +891,7 @@ public class SymphonyExportMain {
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
-					Record curBib = catalogReader.next();
+					org.marc4j.marc.Record curBib = catalogReader.next();
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
@@ -944,7 +943,7 @@ public class SymphonyExportMain {
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
-						Record curBib = catalogReader.next();
+						org.marc4j.marc.Record curBib = catalogReader.next();
 						numRecordsRead++;
 						DataField marc245 = curBib.getDataField(245);
 						boolean has245 = marc245 != null;
@@ -1117,7 +1116,6 @@ public class SymphonyExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
@@ -1130,7 +1128,7 @@ public class SymphonyExportMain {
 				int numRecordsRead = 0;
 				while (reader.hasNext()) {
 					try {
-						Record marcRecord = reader.next();
+						org.marc4j.marc.Record marcRecord = reader.next();
 						numRecordsRead++;
 						String id = getPrimaryIdentifierFromMarcRecord(marcRecord);
 						idsInMainFile.add(id);
@@ -1184,7 +1182,7 @@ public class SymphonyExportMain {
 								String ohohseven = line.replace("|", " ");
 								//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
 								MarcFactory factory = MarcFactory.newInstance();
-								Record marcRecord = factory.newRecord();
+								org.marc4j.marc.Record marcRecord = factory.newRecord();
 								marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
 								if (!ohohseven.equals("-")) {
 									marcRecord.addVariableField(factory.newControlField("007", ohohseven));
@@ -1254,6 +1252,7 @@ public class SymphonyExportMain {
 						}
 						line = reader.readLine();
 					}
+					reader.close();
 				}catch (Exception e){
 					logger.error("Error reading holds file ", e);
 					hadErrors = true;
@@ -1294,6 +1293,7 @@ public class SymphonyExportMain {
 						}
 						line = reader.readLine();
 					}
+					reader.close();
 					logger.info(holdsByBib.size() + " bibs with holds (including periodicals) lastCatalogIdRead for periodicals = " + lastCatalogIdRead);
 				}catch (Exception e){
 					logger.error("Error reading periodicals holds file ", e);
@@ -1331,7 +1331,7 @@ public class SymphonyExportMain {
 	}
 
 
-	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
+	private static String getPrimaryIdentifierFromMarcRecord(org.marc4j.marc.Record marcRecord) {
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.getRecordNumberTagInt());
 		String recordNumber = null;
 		//Make sure we only get one ils identifier

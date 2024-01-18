@@ -107,6 +107,8 @@ public class CloudLibraryExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static int extractCloudLibraryData() {

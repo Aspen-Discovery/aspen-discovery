@@ -251,6 +251,8 @@ public class EvolveExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {

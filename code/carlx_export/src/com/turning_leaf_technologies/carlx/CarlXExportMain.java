@@ -251,6 +251,8 @@ public class CarlXExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void disconnectDatabase(Connection dbConn) {

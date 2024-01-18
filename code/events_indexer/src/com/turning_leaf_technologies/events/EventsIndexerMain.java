@@ -104,6 +104,8 @@ public class EventsIndexerMain {
 				logger.error("Error indexing events", e);
 			}
 
+			disconnectDatabase(aspenConn);
+
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
 				logger.warn("Ending because the checksum for the jar changed");
@@ -125,6 +127,8 @@ public class EventsIndexerMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrPort) {
@@ -151,5 +155,14 @@ public class EventsIndexerMain {
 			System.exit(1);
 		}
 		return aspenConn;
+	}
+
+	private static void disconnectDatabase(Connection aspenConn) {
+		try {
+			aspenConn.close();
+		} catch (Exception e) {
+			logger.error("Error closing database ", e);
+			System.exit(1);
+		}
 	}
 }
