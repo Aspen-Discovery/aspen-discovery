@@ -3000,8 +3000,10 @@ class SearchAPI extends Action {
 				if (array_key_exists($facet['label'], $appliedFacets)) {
 					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
 					$label = $facet['label'];
+					$appliedFacetForKey = $options[$key]['facets'] ?? [];
 					foreach($appliedFacets[$label] as $appliedFacet) {
-						if (!in_array($appliedFacet['display'], $options[$key]['facets'])) {
+						$id = array_search($appliedFacet['display'], array_column($appliedFacetForKey, 'display'));
+						if (!$id && $id !== 0) {
 							//$facet = $appliedFacets[$facet['label']][0];
 							$options[$key]['facets'][$i]['value'] = $appliedFacet['value'];
 							$options[$key]['facets'][$i]['display'] = $appliedFacet['display'];
