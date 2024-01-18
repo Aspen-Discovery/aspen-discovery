@@ -180,6 +180,8 @@ public class SymphonyExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static void processCourseReserves(Connection dbConn, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
