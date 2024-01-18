@@ -274,6 +274,8 @@ class EventAPI extends Action {
 					'message' => 'You must provide an event id, source, and vendor to save this event.'
 				];
 			}
+			
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = $user->id;
 			$userEventsEntry->sourceId = $id;
