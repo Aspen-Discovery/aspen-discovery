@@ -8,20 +8,15 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
-import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
-import org.w3c.dom.NodeList;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -45,7 +40,7 @@ public class FolioExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -247,7 +242,6 @@ public class FolioExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
