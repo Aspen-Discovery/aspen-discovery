@@ -375,4 +375,15 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 
 		return $result;
 	}
+
+	public function getBypassSetting() {
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting();
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->bypassAspenEventPages;
+		}
+
+		return false;
+	}
 }

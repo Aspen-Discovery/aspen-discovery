@@ -170,7 +170,7 @@ export const LoginScreen = () => {
                          </Button>
                     ) : null}
                     <Center>
-                         <Text mt={5} fontSize="xs" color="coolGray.600">
+                         <Text mt={5} fontSize="xs" _light={{ color: 'darkText' }} _dark={{ color: 'lightText' }}>
                               {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? 'Development'}]
                          </Text>
                     </Center>

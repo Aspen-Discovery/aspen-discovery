@@ -4,11 +4,11 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { createAuthTokens, ENDPOINT, getHeaders, getResponseCode, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
 import { PATRON } from './loadPatron';
-import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const SEARCH = {
      term: null,
@@ -21,6 +21,8 @@ export const SEARCH = {
      defaultFacets: [],
      pendingFilters: [],
      appendedParams: '',
+     searchSource: 'local',
+     searchIndex: 'Keyword',
 };
 
 const endpoint = ENDPOINT.search;
@@ -95,6 +97,8 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url, lan
           pageSize,
           page,
           language,
+          searchIndex: SEARCH.searchIndex,
+          source: SEARCH.searchSource,
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -419,6 +423,55 @@ export function buildParamsForUrl() {
      SEARCH.appendedParams = params;
      console.log(params);
      return params;
+}
+
+export async function getSearchIndexes(url, language = 'en', source = 'local') {
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               searchSource: source,
+               language: language,
+          },
+     });
+     const response = await discovery.get(endpoint.url + 'getSearchIndexes');
+     if (response.ok) {
+          if (response?.data?.result?.searchIndexes) {
+               SEARCH.validIndexes = response.data.result.searchIndexes;
+               return response.data.result.searchIndexes;
+          }
+     }
+
+     return {
+          success: false,
+          indexes: [],
+     };
+}
+
+export async function getSearchSources(url, language = 'en') {
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               language: language,
+          },
+     });
+     const response = await discovery.get(endpoint.url + 'getSearchSources');
+     if (response.ok) {
+          if (response?.data?.result?.searchSources) {
+               SEARCH.validSources = response.data.result.searchSources;
+               return response.data.result.searchSources;
+          }
+     }
+
+     return {
+          success: false,
+          sources: [],
+     };
 }
 
 /**

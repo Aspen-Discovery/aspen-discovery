@@ -3415,13 +3415,54 @@ class SirsiDynixROA extends HorizonAPI {
 				];
 				$hiddenDefault = true;
 			}
+			$fields['librarySection'] = [
+				'property' => 'librarySection',
+				'type' => 'section',
+				'label' => 'Library',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['identitySection'] = [
+				'property' => 'identitySection',
+				'type' => 'section',
+				'label' => 'Identity',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['mainAddressSection'] = [
+				'property' => 'mainAddressSection',
+				'type' => 'section',
+				'label' => 'Main Address',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['contactInformationSection'] = [
+				'property' => 'contactInformationSection',
+				'type' => 'section',
+				'label' => 'Contact Information',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
 			//Use self registration fields
 			/** @var SelfRegistrationFormValues $customField */
 			foreach ($customFields as $customField) {
 				if ($customField->symphonyName == 'library') {
-					$fields[$customField->symphonyName] = $pickupLocationField;
+					$fields['librarySection'] = [
+						'property' => 'librarySection',
+						'type' => 'section',
+						'label' => 'Library',
+						'hideInLists' => true,
+						'expandByDefault' => true,
+						'properties' => [
+							$customField->symphonyName => $pickupLocationField,
+						],
+					];
 				} elseif (($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
-					$fields[$customField->symphonyName] = [
+					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
 						'label' => $customField->displayName,
@@ -3430,7 +3471,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'hiddenByDefault' => $hiddenDefault,
 					];
 				} elseif ($customField->symphonyName == 'cellPhone' && $library->promptForSMSNoticesInSelfReg) {
-					$fields[$customField->symphonyName] = [
+					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
 						'label' => $customField->displayName,
@@ -3438,14 +3479,14 @@ class SirsiDynixROA extends HorizonAPI {
 						'note' => $customField->note,
 						'hiddenByDefault' => true,
 					];
-					$fields['SMS Notices'] = [
+					$fields[$customField->section]['properties']['SMS Notices'] = [
 						'property' => 'smsNotices',
 						'type' => 'checkbox',
 						'label' => 'Receive notices via text',
 						'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
 					];
 				} elseif ($customField->symphonyName == "email"){
-					$fields[$customField->symphonyName] = [
+					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => 'email',
 						'label' => $customField->displayName,
@@ -3454,7 +3495,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'note' => $customField->note,
 						'autocomplete' => false,
 					];
-					$fields['email2'] = [
+					$fields[$customField->section]['properties']['email2'] = [
 							'property' => 'email2',
 							'type' => 'email2',
 							'label' => 'Confirm Email',
@@ -3463,7 +3504,7 @@ class SirsiDynixROA extends HorizonAPI {
 							'autocomplete' => false,
 					];
 				} elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
-					$fields[$customField->symphonyName] = [
+					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
 						'label' => $customField->displayName,
@@ -3479,7 +3520,7 @@ class SirsiDynixROA extends HorizonAPI {
 					if (!empty($library->validSelfRegistrationStates)){
 						$validStates = explode('|', $library->validSelfRegistrationStates);
 						$validStates = array_combine($validStates, $validStates);
-						$fields[$customField->symphonyName] = [
+						$fields[$customField->section]['properties'][] = [
 							'property' => $customField->symphonyName,
 							'type' => 'enum',
 							'values' => $validStates,
@@ -3488,7 +3529,7 @@ class SirsiDynixROA extends HorizonAPI {
 							'note' => $customField->note,
 						];
 					} else {
-						$fields[$customField->symphonyName] = [
+						$fields[$customField->section]['properties'][] = [
 							'property' => $customField->symphonyName,
 							'type' => $customField->fieldType,
 							'label' => $customField->displayName,
@@ -3498,13 +3539,20 @@ class SirsiDynixROA extends HorizonAPI {
 						];
 					}
 				} else {
-					$fields[$customField->symphonyName] = [
+					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
 						'label' => $customField->displayName,
 						'required' => $customField->required,
 						'note' => $customField->note
 					];
+				}
+			}
+			foreach ($fields as $section) {
+				if ($section['type'] == 'section') {
+					if (empty($section['properties'])) {
+						unset ($fields[$section['property']]);
+					}
 				}
 			}
 		}

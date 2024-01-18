@@ -282,6 +282,7 @@ class UserAPI extends Action {
 						'message' => 'User is valid',
 						'session' => session_id(),
 						'validUntil' => strtotime('+2 weeks'),
+						'lang' => $validatedUser->interfaceLanguage ?? 'en',
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
@@ -294,6 +295,7 @@ class UserAPI extends Action {
 							'userId' => $invalidUser['userId'] ?? null,
 							'session' => false,
 							'validUntil' => null,
+							'lang' => 'en',
 						];
 					}
 				}
@@ -945,6 +947,8 @@ class UserAPI extends Action {
 			if($promptForHoldNotifications) {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
+
+			$userData->numSavedEvents = $user->getNumSavedEvents('upcoming');
 
 			$userData->summaryFines = translate([
 				'text' => 'Your accounts have %1% in fines',

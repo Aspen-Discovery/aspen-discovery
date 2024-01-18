@@ -1,8 +1,12 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 import _ from 'lodash';
-import { Box, Button, Center, ChevronRightIcon, HStack, Pressable, ScrollView, Text, View, VStack } from 'native-base';
+import { Box, Button, Center, ChevronRightIcon, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Text, View, VStack } from 'native-base';
 import React from 'react';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { Platform } from 'react-native';
+
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, UserContext } from '../../context/initialContext';
+import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 // custom components and helper files
@@ -16,7 +20,12 @@ export const FiltersScreen = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
+     const { currentIndex, currentSource, indexes, sources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
      const pendingFiltersFromParams = useNavigationState((state) => state.routes[0]['params']['pendingFilters']);
+     const [searchTerm, setSearchTerm] = React.useState(SEARCH.term ?? '');
+
+     console.log('currentIndex: ' + currentIndex);
+     console.log('currentSource: ' + currentSource);
 
      let facets = SEARCH.availableFacets ? Object.keys(SEARCH.availableFacets) : [];
      let pendingFilters = SEARCH.pendingFilters ?? [];
@@ -34,11 +43,13 @@ export const FiltersScreen = () => {
           return (
                <Pressable key={index} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" py="5" onPress={() => openCluster(label)}>
                     <VStack alignContent="center">
-                         <HStack justifyContent="space-between" align="center">
-                              <Text bold>{label}</Text>
+                         <HStack justifyContent="space-between" alignItems="center" alignContent="center">
+                              <VStack>
+                                   <Text bold>{label}</Text>
+                                   {appliedFacet(label)}
+                              </VStack>
                               <ChevronRightIcon />
                          </HStack>
-                         {appliedFacet(label)}
                     </VStack>
                </Pressable>
           );
@@ -213,10 +224,81 @@ export const FiltersScreen = () => {
           });
      };
 
+     const clearSearch = () => {};
+
+     const openScanner = () => {};
+
+     const search = async () => {
+          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: false });
+     };
+
      return (
           <View style={{ flex: 1 }}>
                <ScrollView>
-                    <Box safeArea={5}>{facets.map((item, index, array) => renderFilter(item, index))}</Box>
+                    <Box safeArea={5}>
+                         <VStack space={2}>
+                              <FormControl>
+                                   <Input
+                                        returnKeyType="search"
+                                        variant="outline"
+                                        autoCapitalize="none"
+                                        onChangeText={(term) => setSearchTerm(term)}
+                                        status="info"
+                                        placeholder={getTermFromDictionary(language, 'search')}
+                                        onSubmitEditing={search}
+                                        value={searchTerm}
+                                        size="xl"
+                                        _dark={{
+                                             color: 'muted.50',
+                                             borderColor: 'muted.50',
+                                        }}
+                                        InputLeftElement={
+                                             <Icon
+                                                  as={<Ionicons name="search" />}
+                                                  size={5}
+                                                  ml="2"
+                                                  color="muted.800"
+                                                  _dark={{
+                                                       color: 'muted.50',
+                                                  }}
+                                             />
+                                        }
+                                        InputRightElement={
+                                             <>
+                                                  {searchTerm ? (
+                                                       <Pressable onPress={() => clearSearch()}>
+                                                            <Icon as={MaterialCommunityIcons} name="close-circle" size={6} mr="2" />
+                                                       </Pressable>
+                                                  ) : null}
+                                                  <Pressable onPress={() => openScanner()}>
+                                                       <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
+                                                  </Pressable>
+                                             </>
+                                        }
+                                   />
+                              </FormControl>
+                              <HStack space={2}>
+                                   <FormControl maxW="50%">
+                                        <Select isReadOnly={Platform.OS === 'android'} name="changeIndex" selectedValue={currentIndex} onValueChange={(itemValue) => updateCurrentIndex(itemValue)}>
+                                             {_.map(indexes, function (item, index, array) {
+                                                  return <Select.Item key={index} label={item} value={index} />;
+                                             })}
+                                        </Select>
+                                   </FormControl>
+                                   <FormControl maxW="50%">
+                                        <Select isReadOnly={Platform.OS === 'android'} name="changeSource" selectedValue={currentSource} onValueChange={(itemValue) => updateCurrentSource(itemValue)}>
+                                             {_.map(sources, function (source, index, array) {
+                                                  if (index === 'events' || index === 'local') {
+                                                       return <Select.Item key={index} label={source.name} value={index} />;
+                                                  }
+                                             })}
+                                        </Select>
+                                   </FormControl>
+                              </HStack>
+                         </VStack>
+
+                         {facets.map((item, index, array) => renderFilter(item, index))}
+                    </Box>
                </ScrollView>
                {actionButtons()}
           </View>

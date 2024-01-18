@@ -1,4 +1,4 @@
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
@@ -10,7 +10,7 @@ import React from 'react';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLists } from '../../util/api/list';
@@ -18,7 +18,7 @@ import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCh
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
-import { getDefaultFacets } from '../../util/search';
+import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
 import { ForceLogout } from '../Auth/ForceLogout';
 import DisplayBrowseCategory from './Category';
 
@@ -42,6 +42,7 @@ export const DiscoverHomeScreen = () => {
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const [searchTerm, setSearchTerm] = React.useState('');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -193,6 +194,17 @@ export const DiscoverHomeScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
+                    if (version >= '24.02.00') {
+                         updateCurrentIndex('Keyword');
+                         updateCurrentSource('local');
+                         await getSearchIndexes(library.baseUrl, language, 'local').then((result) => {
+                              updateIndexes(result);
+                         });
+                         await getSearchSources(library.baseUrl, language).then((result) => {
+                              updateSources(result);
+                         });
+                    }
+
                     if (version >= '22.11.00') {
                          await getDefaultFacets(language);
                     }
@@ -433,6 +445,10 @@ export const DiscoverHomeScreen = () => {
           return <ForceLogout />;
      }
 
+     const clearSearch = () => {
+          setSearchTerm('');
+     };
+
      return (
           <ScrollView>
                <Box safeArea={5}>
@@ -445,7 +461,6 @@ export const DiscoverHomeScreen = () => {
                               onChangeText={(term) => setSearchTerm(term)}
                               status="info"
                               placeholder={getTermFromDictionary(language, 'search')}
-                              clearButtonMode="while-editing"
                               onSubmitEditing={search}
                               value={searchTerm}
                               size="xl"
@@ -465,17 +480,16 @@ export const DiscoverHomeScreen = () => {
                                    />
                               }
                               InputRightElement={
-                                   <Pressable onPress={() => openScanner()}>
-                                        <Icon
-                                             as={<Ionicons name="barcode-outline" />}
-                                             size={6}
-                                             mr="2"
-                                             color="muted.800"
-                                             _dark={{
-                                                  color: 'muted.50',
-                                             }}
-                                        />
-                                   </Pressable>
+                                   <>
+                                        {searchTerm ? (
+                                             <Pressable onPress={() => clearSearch()}>
+                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={6} mr="2" />
+                                             </Pressable>
+                                        ) : null}
+                                        <Pressable onPress={() => openScanner()}>
+                                             <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
+                                        </Pressable>
+                                   </>
                               }
                          />
                     </FormControl>

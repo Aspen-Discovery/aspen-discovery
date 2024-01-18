@@ -41,7 +41,9 @@ class SearchAPI extends Action {
 					'searchFacetCluster',
 					'getFormatCategories',
 					'getBrowseCategoryListForUser',
-					'searchAvailableFacets'
+					'searchAvailableFacets',
+					'getSearchSources',
+					'getSearchIndexes'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -2448,6 +2450,8 @@ class SearchAPI extends Action {
 		$results = [
 			'success' => false,
 			'type' => $searchType,
+			'searchIndex' => 'Keyword',
+			'searchSource' => 'local',
 			'count' => 0,
 			'totalResults' => 0,
 			'lookfor' => $_REQUEST['lookfor'] ?? null,
@@ -2470,6 +2474,7 @@ class SearchAPI extends Action {
 					'success' => false,
 					'message' => 'The id of the list to load must be provided as the id parameter.',
 					'count' => 0,
+					'searchIndex' => 'lists',
 					'totalResults' => 0,
 					'items' => [],
 					'lookfor' => null,
@@ -2544,6 +2549,9 @@ class SearchAPI extends Action {
 					'fileName' => $link,
 					'append' => false,
 				];
+				$results['searchIndex'] = $searchObject->getSearchIndex();
+				$results['searchSource'] = $searchObject->getSearchSource();
+				$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 				require_once ROOT_DIR . '/sys/Pager.php';
 				$pager = new Pager($options);
 				$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2635,6 +2643,9 @@ class SearchAPI extends Action {
 				'fileName' => $link,
 				'append' => false,
 			];
+			$results['searchIndex'] = $searchObject->getSearchIndex();
+			$results['searchSource'] = $searchObject->getSearchSource();
+			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 			require_once ROOT_DIR . '/sys/Pager.php';
 			$pager = new Pager($options);
 			$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2655,43 +2666,99 @@ class SearchAPI extends Action {
 			return $results;
 		}
 
+
+		$searchEngine = $_REQUEST['source'] ?? 'local';
+		if($searchEngine == 'local' || $searchEngine == 'catalog') {
+			$searchEngine = 'GroupedWork';
+		}
+		$searchEngine = ucfirst($searchEngine);
+
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		if($searchEngine == 'Events') {
+			require_once ROOT_DIR . '/sys/SolrConnector/EventsSolrConnector.php';
+		} else {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		}
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject = SearchObjectFactory::initSearchObject($searchEngine);
 		$searchObject->init();
 
 		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])) {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
 
-		if (isset($_REQUEST['filter'])) {
-			if (is_array($_REQUEST['filter'])) {
-				$givenFilters = $_REQUEST['filter'];
-				foreach ($givenFilters as $filter) {
-					$filterSplit = explode(':', $filter);
-					if($filterSplit[0] == 'availability_toggle') {
-						$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-						$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+		if($searchEngine == 'GroupedWork') {
+			if (isset($_REQUEST['filter'])) {
+				if (is_array($_REQUEST['filter'])) {
+					$givenFilters = $_REQUEST['filter'];
+					foreach ($givenFilters as $filter) {
+						$filterSplit = explode(':', $filter);
+						if($filterSplit[0] == 'availability_toggle') {
+							$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+							$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+						}
 					}
 				}
-			}
-		} elseif (isset($_REQUEST['availability_toggle'])) {
-			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-			$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
-		} else {
-			$searchLibrary = Library::getSearchLibrary(null);
-			$searchLocation = Location::getSearchLocation(null);
-			if ($searchLocation) {
-				$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			} elseif (isset($_REQUEST['availability_toggle'])) {
+				$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+				$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
 			} else {
-				$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				$searchLibrary = Library::getSearchLibrary(null);
+				$searchLocation = Location::getSearchLocation(null);
+				if ($searchLocation) {
+					$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				} else {
+					$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				}
+				$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+				$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 			}
-			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
+
+		$lmBypass = false;
+		$commmunicoBypass = false;
+		$springshareBypass = false;
+		$libraryEventSettings = [];
+		if($searchEngine == 'Events') {
+			$searchLibrary = Library::getSearchLibrary(null);
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventsSetting = new LibraryEventsSetting();
+			$libraryEventsSetting->libraryId = $searchLibrary->libraryId;
+			$libraryEventSettings = $libraryEventsSetting->fetchAll();
+
+			foreach($libraryEventSettings as $setting) {
+				$source = $setting->settingSource;
+				$id = $setting->settingId;
+				if($source == 'library_market') {
+					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+					$eventSetting = new LMLibraryCalendarSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$lmBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else if ($source == 'communico') {
+					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+					$eventSetting = new CommunicoSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$commmunicoBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else if ($source == 'springshare') {
+					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+					$eventSetting = new SpringshareLibCalSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$springshareBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else {
+					// invalid event source
+				}
+			}
+		}
+
+		$searchObject->setSearchSource($_REQUEST['source'] ?? 'local');
 
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
 		$timer->logTime('Setup Search');
@@ -2726,12 +2793,16 @@ class SearchAPI extends Action {
 			// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
 
+		$results['searchIndex'] = $searchObject->getSearchIndex();
+		$results['searchSource'] = $searchObject->getSearchSource();
+		$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$timer->logTime('no hits processing');
 
 			// try changing availability_toggle if not already global
-			if($_REQUEST['availability_toggle'] != 'global') {
+			if(isset($_REQUEST['availability_toggle']) && $_REQUEST['availability_toggle'] != 'global') {
 				$_REQUEST['availability_toggle'] = 'global';
 				$this->searchLite();
 			}
@@ -2757,29 +2828,64 @@ class SearchAPI extends Action {
 			$records = $searchObject->getResultRecordSet();
 			$items = [];
 			foreach ($records as $recordKey => $record) {
-				$items[$recordKey]['key'] = $record['id'];
-				$items[$recordKey]['title'] = $record['title_display'];
-				$items[$recordKey]['author'] = $record['author_display'];
-				$items[$recordKey]['image'] = $configArray['Site']['url'] . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
-				$items[$recordKey]['language'] = $record['language'][0];
-				$items[$recordKey]['summary'] = $record['display_description'];
-				$items[$recordKey]['itemList'] = [];
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
-				if ($groupedWorkDriver->isValid()) {
-					$i = 0;
-					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
-					foreach ($relatedManifestations as $relatedManifestation) {
-						foreach ($relatedManifestation->getVariations() as $obj) {
-							if (!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
-								$format = $obj->manifestation->format;
-								$items[$recordKey]['itemList'][$format]['key'] = $i;
-								$items[$recordKey]['itemList'][$format]['name'] = translate([
-									'text' => $format,
-									'isPublicFacing' => true
-								]);
-								$i++;
-							};
+				if($searchEngine == 'Events') {
+					if(str_starts_with($record['id'], 'lc')) {
+						$eventSource = 'library_calendar';
+						$bypass = $lmBypass;
+					} else if (str_starts_with($record['id'], 'communico')) {
+						$eventSource = 'communico';
+						$bypass = $commmunicoBypass;
+					} else if (str_starts_with($record['id'], 'libcal')) {
+						$eventSource = 'libcal';
+						$bypass = $springshareBypass;
+					} else {
+						$eventSource = 'unknown';
+						$bypass = false;
+					}
+
+					$registrationRequired = false;
+					if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
+						$registrationRequired = true;
+					}
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['source'] = $eventSource;
+					$items[$recordKey]['title'] = $record['title'];
+					$items[$recordKey]['author'] = null;
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
+					$items[$recordKey]['language'] = null;
+					$items[$recordKey]['summary'] = strip_tags($record['description']);
+					$items[$recordKey]['registration_required'] = $registrationRequired;
+					$items[$recordKey]['event_day'] = $record['event_day'];
+					$items[$recordKey]['start_date'] = $record['start_date'];
+					$items[$recordKey]['end_date'] = $record['end_date'];
+					$items[$recordKey]['url'] = $record['url'];
+					$items[$recordKey]['bypass'] = $bypass;
+					$items[$recordKey]['itemList'] = [];
+				} else {
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['title'] = $record['title_display'];
+					$items[$recordKey]['author'] = $record['author_display'];
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+					$items[$recordKey]['language'] = $record['language'][0];
+					$items[$recordKey]['summary'] = $record['display_description'];
+					$items[$recordKey]['itemList'] = [];
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+					if ($groupedWorkDriver->isValid()) {
+						$i = 0;
+						$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+						foreach ($relatedManifestations as $relatedManifestation) {
+							foreach ($relatedManifestation->getVariations() as $obj) {
+								if (!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+									$format = $obj->manifestation->format;
+									$items[$recordKey]['itemList'][$format]['key'] = $i;
+									$items[$recordKey]['itemList'][$format]['name'] = translate([
+										'text' => $format,
+										'isPublicFacing' => true
+									]);
+									$i++;
+								};
+							}
 						}
 					}
 				}
@@ -2792,30 +2898,32 @@ class SearchAPI extends Action {
 			$options = [];
 			$index = 0;
 
-			$availabilityToggle = $topFacetSet['availability_toggle'];
-			if($availabilityToggle) {
-				$key = translate([
-					'text' => $availabilityToggle['label'],
-					'isPublicFacing' => true
-				]);
-				$options[$key]['key'] = -1;
-				$options[$key]['label'] = $key;
-				$options[$key]['field'] = $availabilityToggle['field_name'];
-				$options[$key]['hasApplied'] = true;
-				$options[$key]['multiSelect'] = false;
-
-				$i = 0;
-				foreach ($availabilityToggle['list'] as $item) {
-					$options[$key]['facets'][$i]['value'] = $item['value'];
-					$options[$key]['facets'][$i]['display'] = translate([
-						'text' => $item['display'],
+			if($topFacetSet) {
+				$availabilityToggle = $topFacetSet['availability_toggle'];
+				if ($availabilityToggle) {
+					$key = translate([
+						'text' => $availabilityToggle['label'],
 						'isPublicFacing' => true
 					]);
-					$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
-					$options[$key]['facets'][$i]['count'] = $item['count'];
-					$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-					$options[$key]['facets'][$i]['multiSelect'] = false;
-					$i++;
+					$options[$key]['key'] = -1;
+					$options[$key]['label'] = $key;
+					$options[$key]['field'] = $availabilityToggle['field_name'];
+					$options[$key]['hasApplied'] = true;
+					$options[$key]['multiSelect'] = false;
+
+					$i = 0;
+					foreach ($availabilityToggle['list'] as $item) {
+						$options[$key]['facets'][$i]['value'] = $item['value'];
+						$options[$key]['facets'][$i]['display'] = translate([
+							'text' => $item['display'],
+							'isPublicFacing' => true
+						]);
+						$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$options[$key]['facets'][$i]['count'] = $item['count'];
+						$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						$options[$key]['facets'][$i]['multiSelect'] = false;
+						$i++;
+					}
 				}
 			}
 
@@ -2852,7 +2960,10 @@ class SearchAPI extends Action {
 				$options[$key]['label'] = $key;
 				$options[$key]['field'] = $facet['field_name'];
 				$options[$key]['hasApplied'] = $facet['hasApplied'];
-				$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+				$options[$key]['multiSelect'] = false;
+				if(isset($facet['multiSelect'])) {
+					$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+				}
 				if (isset($facet['sortedList'])) {
 					foreach ($facet['sortedList'] as $item) {
 						$options[$key]['facets'][$i]['value'] = $item['value'];
@@ -2877,7 +2988,10 @@ class SearchAPI extends Action {
 						if (isset($item['multiSelect'])) {
 							$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
 						} else {
-							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$options[$key]['facets'][$i]['multiSelect'] = false;
+							if(isset($facet['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
 						}
 						$i++;
 					}
@@ -2924,7 +3038,7 @@ class SearchAPI extends Action {
 			}
 		}
 		if (empty($results['items'])) {
-			if ($_REQUEST['page'] != 1) {
+			if (isset($_REQUEST['page']) && $_REQUEST['page'] != 1) {
 				$results['message'] = "end of results";
 			}
 		}
@@ -3461,6 +3575,61 @@ class SearchAPI extends Action {
 			];
 		}
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchSources() {
+		global $library;
+		global $location;
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		[
+			$enableCombinedResults,
+			$showCombinedResultsFirst,
+			$combinedResultsName,
+		] = $searchSources::getCombinedSearchSetupParameters($location, $library);
+
+		$validSearchSources = $searchSources->getSearchSources();
+
+		return [
+			'success' => true,
+			'sources' => $validSearchSources
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchIndexes() {
+		global $library;
+		global $location;
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		[
+			$enableCombinedResults,
+			$showCombinedResultsFirst,
+			$combinedResultsName,
+		] = $searchSources::getCombinedSearchSetupParameters($location, $library);
+
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$validSearchSources = $searchSources->getSearchSources();
+		$activeSearchSource = 'catalog';
+		if (isset($_REQUEST['searchSource'])) {
+			$activeSearchSource = $_REQUEST['searchSource'];
+		}
+		$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+		if (!array_key_exists($activeSearchSource, $validSearchSources)) {
+			$activeSearchSource = array_key_first($validSearchSources);
+		}
+		$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+		$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
+
+		return [
+			'success' => true,
+			'indexes' => [
+				$activeSearchSource => $searchIndexes
+			]
+		];
 	}
 
 	/** @noinspection PhpUnused */
