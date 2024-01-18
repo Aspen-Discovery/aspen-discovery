@@ -11,7 +11,13 @@ class SummonRecordDriver extends RecordInterface {
 	 * @access  public
 	 */
 	public function __construct($record) {
+		if (is_string($record)) {
+			/** @var SearchObject_SummonSearcher $summonSearcher */
+			$summonSearcher = SearchObjectFactory::initSearchObject("Summon");
+			$this->record = $summonSearcher->retrieveRecord($record);
+		}else{
 		$this->record= $record;
+		}
 	}
 
 	public function isValid() {

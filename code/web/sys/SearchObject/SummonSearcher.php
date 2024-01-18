@@ -473,6 +473,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		}
 		return $availableFacets;
 	}
+
+	public function retrieveRecord ($id) {
+		foreach ($this->lastSearchResults as $record) {
+			if ($id == $record['ID'][0]) {
+				return $record;
+			}
+		}
+		return null;
+	}
  
 	public function addFacetValueFilter() {
 		$filter = $this->getFilters();
