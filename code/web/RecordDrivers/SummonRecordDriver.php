@@ -20,16 +20,15 @@ class SummonRecordDriver extends RecordInterface {
 
 	#TODO: - Check with Mark how to handle the 1x1 white pixel images and find default image for those records with no image
 	public function getBookcoverUrl($size='large', $absolutePath =false) {
-		if ($size == 'medium' || $size == 'small') {
-			if (!empty($this->record['thumbnail_m'])) {
-				return $this->record['thumbnail_m'][0];
-			} return $this->getBookcoverUrl('large');
+		global $configArray;
+		if ($absolutePath) {
+			$bookCoverUrl = $configArray['Site']['url'];
+		} else {
+			$bookCoverUrl = '';
 		}
-		if ($size == 'large') {
-			if (!empty($this->record['thumbnail_l'])) {
-				return $this->record['thumbnail_l'][0];
-			} 
-		} return null;
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=summon";
+
+		return $bookCoverUrl;
 	}
 
 	/**
@@ -56,8 +55,8 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getUniqueID() {
-		if (isset($this->record['DBID'])) {
-			return $this->record['DBID'][0];
+		if (isset($this->record['ID'])) {
+			return (string)$this->record['ID'][0];
 		} else {
 			return null;
 		}

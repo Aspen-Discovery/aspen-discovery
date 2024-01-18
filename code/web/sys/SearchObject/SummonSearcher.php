@@ -9,7 +9,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     static $instance;
 	/** @var SummonSettings */
-    // private $summonSettings;
     private $summonBaseApi ='http://api.summon.serialssolutions.com';
 
 	/**Build URL */
@@ -54,10 +53,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $openAccessFilter = false;
 	protected $highlight = false;
 	protected $expand = false;
+	protected $sortOptions = array();
 	/**
 	 * @var string
 	 */
-	protected $sort = null;
 	protected $defaultSort = 'relevance';
 	protected $query;
 	protected $filters = array();
@@ -77,28 +76,32 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $debug = false;
 	protected $journalTitle = false;
 	protected $lightWeightRes = false;
-	protected $sortCommands = array();
-	/**Facets, filters and limiters */
+	protected $sort = null;
 	  /**
 	 * @var string mixed
 	 */
 	private $searchIndex = 'Everything';
-	protected $sortOptions = [];
+	/**Facets, filters and limiters */
 	//Values for the main facets - each has an array of available values
 	protected $facets = [
+		'Author,or',
 		'ContentType,or,1,30',
 		'SubjectTerms,or,1,30',	
+		'Discipline,or,1,30',
+		'Language,or,1,30',
+		'DatabaseName,or,1,30',
+		'SourceType,or,1,30',	
 	];
 	protected $facetFields;
 	//Options to filter results by - checkbox, single value
 	protected $limitOptions = [
 		'Full Text Online',
-		'IsScholarly,or,1,2',
+		'Is Scholarly',
 		'Peer Reviewed',
 		'Open Access',
 		'Available in Library Collection',
 	];
-	
+
     public function __construct() {
         //Initialize properties with default values
         $this->searchSource = 'summon';
@@ -176,7 +179,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		AspenError::raiseError(new AspenError('There are no Summon Settings set for this library system.'));
 	}
 
-
     public function getCurlConnection() {
 		if ($this->curl_connection == null) {
             $this->curl_connection = curl_init();
@@ -214,6 +216,18 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $headers;
     }
 
+	public function getSort() {
+		$this->sortOptions = array(
+			'Relevance',
+			'Reverse',
+			'Date(newest)',
+			'Date(oldest)',
+		);
+		foreach ($this->sortOptions as $sortOption) {
+			$sortOption = $sortOption . ':' . $this->facetFields;
+		}
+	}
+
 	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
 	public function getOptions () {
 		$options = array(
@@ -232,7 +246,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.fids' =>$this->idsToFetch,
 			//set in array 
 			's.ff' =>$this->facets,
-			//empty array
+			//empty array,
 			's.fvf' => $this->filters,
 			//set to default 1 at top of page
 			's.rec.topic.max' => $this->maxTopics,
@@ -240,8 +254,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.fvgf' => $this->groupFilters,
 			//empty arrray
 			's.rf' => $this->rangeFilters,
-			#TODO: - implement sort without breaking summon
-			// 's.sort' => $this->sort,
+			//uses options defined in array 
+			's.sort' => $this->getSort(),
 			//false by default
 			's.exp' => $this->expand ? 'true' : 'false',
 			//false by default
@@ -257,13 +271,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//2 by default - max db reccomendations
 			's.rec.db.max' => $this->maxRecDb,
 			//allows access to records
-			's.role' =>  'authenticated',
-			//set in array - sort facet
-			's.cmd' => $this->sortCommands,
+			's.role' =>  'authenticated',			
 		);
 		return $options;
 	}
- 
+
 	/**
 	 * Use the data that is returned when from the API and process it to assign it to variables
 	 */
@@ -292,8 +304,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$summary['page'] = $this->page;
 		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = (int)$this->resultsTotal;
-		#TODO: - do we need this? facet field summ
-		// $summary['facetFields'] = $this->facetFields;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
 		// Last record needs more care
@@ -310,8 +320,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $summary;
 	}
 
-    /**TODO: - Returning only first 20 results  - gives the same results on all subsequent pages
-	 * Return a url for use by pagination template
+	 /** Return a url for use by pagination template
 	 *
 	 * @access  public
 	 * @return  string   URL of a new search
@@ -390,7 +399,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	//Assign properties to each of the sort options
 	public function getSortList() {
-		$sortOptions = $this->getSortOptions();
+		$sortOptions = $this->sortOptions;
 		$list = [];
 		if ($sortOptions != null) {
 			foreach ($sortOptions as $sort => $label) {
@@ -402,37 +411,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			 }
 		}
 		return $list;
-	}
-
-	/**
-	 * Options for the order of results returned to the UI
-	 */
-	public function getSortOptions() {
-		$this->sortOptions =[
-			'relevance' =>[
-				'id' => 'relevance',
-				'label' => 'Relevance',
-				$this->sortCommands = 'setSortByRelevancy()',
-			],
-			'setSort' => [
-				'id' =>'setSort',
-				'label' => 'asc/desc',
-				$this->sortCommands = 'setSort()'
-			],
-			'reverse' => [
-				'id' => 'reverse',
-				'label' =>'Reverse',
-				$this->sortCommands = 'reverseSortOrder()'
-			]	
-		];
-		if ($this->sortOptions != null) {
-			foreach ($this->sortOptions as $sortOption) {
-				$this->sort = $sortOption['id'];
-				$desc = $sortOption['label'];
-				$this->sortOptions[$this->sort] =$desc;
-			}
-		}
-		return $this->sortOptions;
 	}
 
 	/**
@@ -460,6 +438,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 */
 	public function getFacetSet() {
 		$availableFacets = [];
+		$this->filters = [];
 		if (isset($this->facetFields)) {
 			foreach ($this->facetFields as $facetField) {
 				$facetId = $facetField['displayName'];
@@ -475,23 +454,42 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$list = [];
 				foreach ($facetField['counts'] as $value) {
 					$facetValue = $value['value'];
-					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+					$isApplied = array_key_exists($facetId, $this->filterList);
 					$facetSettings = [
 						'value' => $facetValue,
 						'display' =>$facetValue,
 						'count' =>$value['count'],
-						'isApplied' => $value['isApplied'],
-						'isNegated' => $value['isNegated'],
+						'isApplied' => $isApplied,
 					];
+					if ($isApplied) {
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+					} else {
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					}
 					$list[] = $facetSettings;
 				}
 				$availableFacets[$facetId]['list'] = $list;
 			}
 		}
-		var_dump($availableFacets);
 		return $availableFacets;
 	}
+ 
+	public function addFacetValueFilter() {
+		$filter = $this->getFilters();
+         if(is_array($filter)) {
+			foreach ($filter as $eachFilter) {
+				$this->filters .=$eachFilter;
+		 	} 
+		} else {
+			$this->filters[] = $filter;
+		}
+	}
 	
+	public function getFilters() {
+	  foreach($this->filterList as $filter){
+		return $filter;
+	  }
+	}
 	/*
 	* Called by Results.php - Lists checkbox filter options
 	TODO - Checkbox not staying ticked although moved to applied list - change to Summon filters
@@ -499,6 +497,14 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	*/
 	public function getLimitList() {
 		$limitList = [];
+	    foreach ($this->limitOptions as $limitOption) {
+			$isApplied = array_key_exists($limitOption, $this->filterList);
+			$limitList[$limitOption] = [
+				'value' => $limitOption,
+				'display' =>$limitOption,
+				'isApplied' => $isApplied,
+			];
+		}	
 		return $limitList;
 	}
 	
