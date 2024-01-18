@@ -58,14 +58,14 @@ public class SideLoadingMain {
 		String processName = "sideload_processing";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			Date startTime = new Date();
-			logger.info(startTime.toString() + ": Starting Side Load Export");
+			logger.info(startTime + ": Starting Side Load Export");
 			startTimeForLogging = startTime.getTime() / 1000;
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -82,7 +82,7 @@ public class SideLoadingMain {
 			//Get a list of side loads
 			try {
 				PreparedStatement getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads ORDER BY name");
-				if (profileToLoad.length() > 0){
+				if (!profileToLoad.isEmpty()){
 					getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads where name = ? OR id = ? ORDER BY name");
 					getSideloadsStmt.setString(1, profileToLoad);
 					getSideloadsStmt.setString(2, profileToLoad);
@@ -113,7 +113,7 @@ public class SideLoadingMain {
 				groupedWorkIndexer = null;
 			}
 
-			logger.info("Finished exporting data " + new Date().toString());
+			logger.info("Finished exporting data " + new Date());
 			long endTime = new Date().getTime();
 			long elapsedTime = endTime - startTime.getTime();
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
@@ -150,7 +150,7 @@ public class SideLoadingMain {
 
 			disconnectDatabase(aspenConn);
 
-			if (profileToLoad.length() > 0){
+			if (!profileToLoad.isEmpty()){
 				break;
 			}
 
@@ -203,10 +203,10 @@ public class SideLoadingMain {
 						if (curFile.getFilename().equalsIgnoreCase(marcFile.getName())){
 							logger.warn("Matched file on file system '" + marcFile.getName() + " 'to file in database - id " + curFile.getId());
 							curFile.setExistingFile(marcFile);
-							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then readd
+							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then re-add
 							filesToProcess.remove(curFile);
 							filesToProcess.add(curFile);
-							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile.toString());
+							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile);
 							foundFileInDB = true;
 							break;
 						}
@@ -437,7 +437,7 @@ public class SideLoadingMain {
 				System.exit(1);
 			}
 		} catch (Exception e) {
-			logger.error("Error connecting to Aspen database " + e.toString());
+			logger.error("Error connecting to Aspen database " + e);
 			System.exit(1);
 		}
 		return aspenConn;
