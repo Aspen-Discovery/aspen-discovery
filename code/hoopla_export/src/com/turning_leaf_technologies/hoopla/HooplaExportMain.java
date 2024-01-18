@@ -56,7 +56,7 @@ public class HooplaExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -400,7 +400,7 @@ public class HooplaExportMain {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
-						if (responseTitles != null && responseTitles.length() > 0) {
+						if (responseTitles != null && !responseTitles.isEmpty()) {
 							updateTitlesInDB(responseTitles, doFullReload);
 							logEntry.saveResults();
 						}
@@ -422,7 +422,7 @@ public class HooplaExportMain {
 								responseJSON = new JSONObject(response.getMessage());
 								if (responseJSON.has("titles")) {
 									responseTitles = responseJSON.getJSONArray("titles");
-									if (responseTitles != null && responseTitles.length() > 0) {
+									if (responseTitles != null && !responseTitles.isEmpty()) {
 										updateTitlesInDB(responseTitles, doFullReload);
 									}
 								}
@@ -521,7 +521,7 @@ public class HooplaExportMain {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
-						if (responseTitles != null && responseTitles.length() > 0) {
+						if (responseTitles != null && !responseTitles.isEmpty()) {
 							updateTitlesInDB(responseTitles, false);
 							logEntry.saveResults();
 						}
