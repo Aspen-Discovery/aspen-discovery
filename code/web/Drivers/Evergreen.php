@@ -37,13 +37,13 @@ class Evergreen extends AbstractIlsDriver {
 
 		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
-			//Get a list of holds
+			//Get a list of circulations
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = [
 				'Content-Type: application/x-www-form-urlencoded',
 			];
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$request = 'service=open-ils.actor&method=open-ils.actor.user.checked_out';
+			$request = 'service=open-ils.circ&method=open-ils.circ.actor.user.checked_out';
 			$request .= '&param=' . json_encode($authToken);
 			$request .= '&param=' . $patron->unique_ils_id;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
@@ -53,23 +53,39 @@ class Evergreen extends AbstractIlsDriver {
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0])) {
-					//Process out titles
-					foreach ($apiResponse->payload[0]->out as $checkoutId) {
-						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
-						if ($checkout != null) {
-							$index++;
-							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
-							$checkedOutTitles[$sortKey] = $checkout;
+					//Process circulations
+					foreach ($apiResponse->payload as $payload) {
+						$mappedCheckout = $this->mapEvergreenFields($payload->circ->__p, $this->fetchIdl('circ'));
+						$mappedRecord = $this->mapEvergreenFields($payload->record->__p, $this->fetchIdl('mvr'));
+						$mappedCopy = $this->mapEvergreenFields($payload->copy->__p, $this->fetchIdl('acp'));
+						$checkout = new Checkout();
+						$checkout->type = 'ils';
+						$checkout->source = $this->getIndexingProfile()->name;
+						$checkout->sourceId = $mappedCheckout['target_copy'];
+						$checkout->userId = $patron->id;
+						$checkout->itemId = $mappedCopy['id'];
+						$checkout->barcode = $mappedCopy['barcode'];
+						$checkout->dueDate = strtotime($mappedCheckout['due_date']);
+						$checkout->checkoutDate = strtotime($mappedCheckout['create_time']);
+						if ($mappedCheckout['auto_renewal'] == 't') {
+							$checkout->autoRenew = true;
 						}
-					}
-					//Process overdue titles
-					foreach ($apiResponse->payload[0]->overdue as $checkoutId) {
-						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
-						if ($checkout != null) {
-							$index++;
-							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
-							$checkedOutTitles[$sortKey] = $checkout;
+						$checkout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
+						$checkout->maxRenewals = $mappedCheckout['renewal_remaining'];
+						$checkout->renewalId = $mappedCheckout['target_copy'];
+						$checkout->renewIndicator = $mappedCheckout['target_copy'];
+						$checkout->recordId = $mappedRecord['doc_id'];
+						$checkout->title = $mappedRecord['title'];
+						$checkout->author = $mappedRecord['author'];
+						$checkout->callNumber = $this->getCallNumberForCopy($mappedCopy, $authToken);
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver((string)$checkout->recordId);
+						if ($recordDriver->isValid()) {
+							$checkout->updateFromRecordDriver($recordDriver);
 						}
+						$index++;
+						$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+						$checkedOutTitles[$sortKey] = $checkout;
 					}
 				}
 			}
@@ -153,6 +169,44 @@ class Evergreen extends AbstractIlsDriver {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Load call number label based on a mapped item object
+	 *
+	 * @param array $mappedCopy a mapped Evergreen copy object
+	 * @param $authtoken
+	 * @return string call number label associated with the copy
+	 */
+	private function getCallNumberForCopy(array $mappedCopy, $authtoken) {
+		$label = '';
+		$flesh = ["flesh"=>1,"flesh_fields"=>["acn"=>["prefix","suffix"]]];
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.pcrud&method=open-ils.pcrud.retrieve.acn';
+		$request .= '&param=' . json_encode($authtoken);
+		$request .= '&param=' . $mappedCopy["call_number"];
+		$request .= '&param=' . json_encode($flesh);
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		ExternalRequestLogEntry::logRequest('evergreen.getCallNumberForCopy', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+				$obj = $apiResponse->payload[0];
+				$callno = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				$label = $callno["label"];
+				$obj = $callno["prefix"];
+				$prefix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				$obj = $callno["suffix"];
+				$suffix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				if ($prefix["label"]) {
+					$label = $prefix["label"] . " " . $label;
+				}
+				if ($suffix["label"]) {
+					$label = $label . " " . $suffix["label"];
+				}
+			}
+		}
+		return $label;
 	}
 
 	/**
