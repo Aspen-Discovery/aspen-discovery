@@ -1183,6 +1183,9 @@ class ListAPI extends Action {
 				$recordIds = $_REQUEST['recordIds'];
 			}
 		}
+
+		$source = $_REQUEST['source'] ?? 'GroupedWork';
+
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
@@ -1200,8 +1203,40 @@ class ListAPI extends Action {
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
-						$userListEntry->source = 'GroupedWork';
+						$userListEntry->source = $source;
 						$userListEntry->sourceId = $id;
+
+						if($source === 'Events') {
+							if (preg_match('`^communico`', $id)){
+								require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+								$recordDriver = new CommunicoEventRecordDriver($id);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^libcal`', $id)){
+								require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+								$recordDriver = new SpringshareLibCalEventRecordDriver($id);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^lc_`', $id)){
+								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+								$recordDriver = new LibraryCalendarEventRecordDriver($id);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							}
+						} else {
+							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+							$groupedWork = new GroupedWork();
+							$groupedWork->permanent_id = $id;
+							if ($groupedWork->find(true)) {
+								$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+							}
+						}
 
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
