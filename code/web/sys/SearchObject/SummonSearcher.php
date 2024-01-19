@@ -60,6 +60,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $defaultSort = 'relevance';
 	protected $query;
 	protected $filters = array();
+
 	/**
 	 * @var int
 	 */
@@ -94,13 +95,14 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	];
 	protected $facetFields;
 	//Options to filter results by - checkbox, single value
-	protected $limitOptions = [
-		'Full Text Online',
-		'Is Scholarly',
-		'Peer Reviewed',
-		'Open Access',
-		'Available in Library Collection',
-	];
+	// protected $limitOptions = [
+		// 'hasFullText' =>'Full Text Online',
+		// 'IsScholarly' =>'Is Scholarly',
+		// 'PeerReviewed' => 'Peer Reviewed',
+		// 'OpenAccess' => 'Open Access',
+		// 'inHoldings' => 'Available in Library Collection',
+	// 	$this->holdings,
+	// ];
 
     public function __construct() {
         //Initialize properties with default values
@@ -230,8 +232,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
 	public function getOptions () {
+		//Search terms in an array with the index of your search and your search terms. We must add the index to the query and then add the 'look for' terms.
+		$searchQuery = $this->searchTerms[0]['index'].':('.implode('&', array_slice($this->searchTerms[0],1)).')';
 		$options = array(
-			's.q' => $this->query,
+			's.q' => $searchQuery,
 			//set to default at top of page
 			's.ps' => $this->limit,
 			//set to default at top of page
@@ -247,7 +251,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			//set in array 
 			's.ff' =>$this->facets,
 			//empty array,
-			's.fvf' => $this->filters,
+			's.fvf' => $this->getSummonFilters(),
 			//set to default 1 at top of page
 			's.rec.topic.max' => $this->maxTopics,
 			//empty array
@@ -496,44 +500,50 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			$this->filters[] = $filter;
 		}
 	}
-	
-	// public function getSummonFilters() {
-	// 	$this->filters = array();
-	// 	foreach($this->filterList as $key => $value) {
-	// 		if(is_array($value)) {
-	// 			foreach($value as $val){
-	// 				$parts = explode(' ', $val);
-	// 				$result = implode('+', $parts);
-	// 				$this->filters[] = $key . ':' . urlencode($result);
-	// 			}
-	// 		} else {
-	// 			$parts = explode(' ', $value);
-	// 			$result = implode('+', $parts);
-	// 			$this->filters = $key . ':' . urlencode($result);
-	// 		}
-	// 	}
-	
-	//   var_dump($this->filters);
-	//   return $this->filters;
-	// }
+	public function getSummonFilters() {
+        $this->filters = array();
+		$mergedArray =array_merge($this->filterList, $this->getLimitList());
+        foreach($mergedArray as $key => $value) {
+            if(is_array($value)) {
+                foreach($value as $val){
+                    $parts = explode(' ', $val);
+                    $result = implode('+', $parts);
+                    $this->filters[] = urlencode($key . ',') . $result . urlencode(',');
+                }
+            } else {
+                $parts = explode(' ', $value);
+                $result = implode('+', $parts);
+                $this->filters = urlencode($key . ',') . $result . urlencode(',');
+            }
+        }
+      var_dump($this->filters);
+      return $this->filters;
+    }	
 	
 	/*
 	* Called by Results.php - Lists checkbox filter options
 	TODO - Checkbox not staying ticked although moved to applied list - change to Summon filters
 	* 
 	*/
-	public function getLimitList() {
-		$limitList = [];
-	    foreach ($this->limitOptions as $limitOption) {
-			$isApplied = array_key_exists($limitOption, $this->filterList);
-			$limitList[$limitOption] = [
-				'value' => $limitOption,
-				'display' =>$limitOption,
-				'isApplied' => $isApplied,
-			];
-		}	
-		return $limitList;
-	}
+	// public function getLimitList() {
+	// 	$limitList = [];
+	// 	foreach ($this->lastSearchResults as $record){
+	// 		foreach ($this->limitOptions as $limitOption =>$label) {
+	// 			$isApplied = array_key_exists($limitOption, $this->filterList);
+	// 			if (is_array($record[$limitOption])){
+	// 				$value = $record[$limitOption][0];
+	// 			} else {
+	// 				$value = $record[$limitOption];
+	// 			}
+	// 			$limitList[$label] = [
+	// 				'value' => $label,
+	// 				'display' =>$label,
+	// 				'isApplied' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+	// 			];
+	// 		}	
+	// 	}
+	// 	return $limitList;
+	// }
 	
 	/**
 	 * Generate an HMAC hash for authentication
@@ -575,6 +585,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$this->startQueryTimer();
 		$query = array();
 		$options = $this->getOptions();
+		$this->searchTerms;
 		foreach ($options as $key => $value) {
 			if (is_array($value)) {
 				foreach ($value as $additionalValue) {
@@ -594,7 +605,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			$recordData = $this->processData($recordData); 
 			$this->stopQueryTimer();
 		}
-		// var_dump($recordData);
+		var_dump($queryString);
 		return $recordData;
 	}
 
@@ -716,19 +727,19 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->searchIndex;
 	}
 
-    public function setSearchTerm($searchTerm) {
-		if (strpos($searchTerm, ':') !== false) {
+    public function setSearchTerm() {
+		if (strpos($this->searchTerms, ':') !== false) {
 			[
 				$searchIndex,
 				$term,
-			] = explode(':', $searchTerm, 2);
+			] = explode(':', $this->searchTerms, 2);
 			$this->setSearchTerms([
 				'lookfor' => $term,
 				'index' => $searchIndex,
 			]);
 		} else {
 			$this->setSearchTerms([
-				'lookfor' => $searchTerm,
+				'lookfor' => $this->searchTerms,
 				'index' => $this->getDefaultIndex(),
 			]);
 		}
