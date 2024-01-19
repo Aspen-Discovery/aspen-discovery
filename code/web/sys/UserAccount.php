@@ -73,6 +73,17 @@ class UserAccount {
 			if (isset($_SESSION['activeUserId'])) {
 				if(isset($_SESSION['loggedInViaSSO'])) {
 					UserAccount::$isLoggedIn = true;
+				} elseif (isset($_REQUEST['session']) && isset($_REQUEST['user'])) {
+					require_once ROOT_DIR . '/services/API/UserAPI.php';
+					$apiAuth = new UserAPI();
+					if($apiAuth->getLiDAUserAgent()) {
+						$session = new SharedSession();
+						$session->setSessionId($_REQUEST['session']);
+						$session->setUserId($_REQUEST['user']);
+						if($session->find(true)) {
+							UserAccount::$isLoggedIn = true;
+						}
+					}
 				} else {
 					UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
 				}

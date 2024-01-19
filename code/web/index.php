@@ -1358,7 +1358,9 @@ function checkForMaliciouslyFormattedParameters(): void {
 		if (is_array($_REQUEST['page'])) {
 			$isMaliciousUrl = true;
 		} elseif (!is_numeric($_REQUEST['page'])) {
-			$isMaliciousUrl = true;
+			if ($_REQUEST['page'] != 'accountActivity') {
+				$isMaliciousUrl = true;
+			}
 		}
 	}
 	if (isset($_REQUEST['recordIndex']) && !empty($_REQUEST['recordIndex'])) {

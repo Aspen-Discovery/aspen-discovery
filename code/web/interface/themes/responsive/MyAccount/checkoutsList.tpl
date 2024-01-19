@@ -1,3 +1,4 @@
+{strip}
 {if !empty($transList)}
 	<form id="renewForm_{$source}" action="/MyAccount/CheckedOut">
 		<div id="pager" class="row">
@@ -35,7 +36,7 @@
 				{elseif $checkedOutTitle->type == 'axis360'}
 					{include file="MyAccount/axis360CheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{elseif $checkedOutTitle->type == 'palace_project'}
-					{include file="MyAccount/palaceProjectOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+					{include file="MyAccount/palaceProjectCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{else}
 					<div class="row">
 						{translate text="Unknown record source %1%" 1=$checkedOutTitle->type isPublicFacing=true}
@@ -59,6 +60,7 @@
 {else}
 	{translate text='You do not have any items checked out' isPublicFacing=true}.
 {/if}
+{/strip}
 <script type="text/javascript">
     AspenDiscovery.Ratings.initializeRaters();
 </script>

@@ -5,6 +5,7 @@ class Authentication_LiDA extends Action {
 	/**
 	 * @throws UnknownAuthenticationMethodException
 	 */
+
 	public function launch() {
 		if (isset($_GET['init'])) {
 			global $logger;
@@ -26,8 +27,6 @@ class Authentication_LiDA extends Action {
 							}
 						}
 					} else {
-						$session->delete();
-
 						// create a new shared session
 						$data = random_bytes(16);
 						assert(strlen($data) == 16);
@@ -39,6 +38,7 @@ class Authentication_LiDA extends Action {
 						$sharedSession->setSessionId($uuid);
 						$sharedSession->setUserId($_REQUEST['user']);
 						$sharedSession->setCreated(strtotime('now'));
+						$sharedSession->insert();
 
 						if (UserAccount::findNewAspenUser('id', $_REQUEST['user'])) {
 							$tmpUser = new User();

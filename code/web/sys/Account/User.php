@@ -1354,7 +1354,7 @@ class User extends DataObject {
 				$allCheckedOut = array_merge($allCheckedOut, $palaceProjectCheckedOutItems);
 				$timer->logTime("Loaded transactions from Palace Project. {$this->id}");
 				if ($source == 'all' || $source == 'palace_project') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $palaceProjectCheckedOutItems);
 				}
 			}
 
