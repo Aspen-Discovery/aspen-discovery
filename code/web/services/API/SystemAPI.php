@@ -1091,6 +1091,7 @@ class SystemAPI extends Action {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			global $library;
+			global $configArray;
 			$links = $library->libraryLinks;
 			$libraryLinks = [];
 			/** @var LibraryLink $libraryLink */
@@ -1105,7 +1106,14 @@ class SystemAPI extends Action {
 				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
 					$libraryLinks[$libraryLink->category] = [];
 				}
+
+				$url = $libraryLink->url;
+				if(!str_starts_with($url, 'http')) {
+					$libraryLink->url = $configArray['Site']['url'] . $url;
+				}
+
 				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+
 			}
 
 			return [

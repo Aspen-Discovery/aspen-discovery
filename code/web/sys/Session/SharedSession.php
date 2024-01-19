@@ -10,7 +10,7 @@ class SharedSession extends DataObject {
 	protected $createdOn;
 
 	public function isSessionStillValid() {
-		return $this->createdOn > strtotime('+1 hour', $this->createdOn);
+		return $this->createdOn < strtotime('+1 hour', $this->createdOn);
 	}
 
 	public function getSessionId() : mixed {
@@ -50,8 +50,21 @@ class SharedSession extends DataObject {
 		$page = '/MyAccount/' . $returnTo;
 		global $configArray;
 		$redirectTo = $configArray['Site']['url'] . $page . '?minimalInterface=true'; // set minimalInterface to hide some unnecessary elements that clutter the mobile UI
-
 		if(UserAccount::loginWithAspen($user)) {
+			global $timer;
+			/** SessionInterface $session */
+			global $session;
+			require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+			session_name('aspen_session');
+			$session = new MySQLSession();
+			$session->init();
+
+			$timer->logTime('Session initialization MySQLSession');
+
+			$_SESSION['activeUserId'] = $user->id;
+			$_SESSION['rememberMe'] = false;
+			$_SESSION['loggedInViaSSO'] = true;
+
 			header('Location: ' . $redirectTo);
 		}
 	}

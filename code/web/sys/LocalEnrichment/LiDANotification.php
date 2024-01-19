@@ -335,6 +335,15 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 		$ptypesForNotifications->lidaNotificationId = $this->id;
 		$ptypes = $ptypesForNotifications->fetchAll('patronTypeId');
 
+		$eligiblePTypes = [];
+		foreach($ptypes as $ptype) {
+			$eligiblePType = new PType();
+			$eligiblePType->id = $ptype;
+			if($eligiblePType->find(true)) {
+				$eligiblePTypes[] = $eligiblePType->pType;
+			}
+		}
+
 		$allTokens = new UserNotificationToken();
 		$allTokens->notifyCustom = 1;
 		$userTokens = $allTokens->fetchAll('userId');
@@ -345,7 +354,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 			if($eligibleUser->find(true)) {
 				$homeLocation = $eligibleUser->getHomeLocation();
 				$homeLibrary = $eligibleUser->getHomeLibrary();
-				if(in_array($eligibleUser->patronType, $ptypes)) {
+				if(in_array($eligibleUser->patronType, $eligiblePTypes)) {
 					if (in_array($homeLocation->locationId, $locations) && in_array($homeLibrary->libraryId, $libraries)) {
 						$users[] = $userToken;
 					}
