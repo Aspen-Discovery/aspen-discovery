@@ -454,15 +454,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$list = [];
 				foreach ($facetField['counts'] as $value) {
 					$facetValue = $value['value'];
-					$isApplied = array_key_exists($facetId, $this->filterList);
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($value, $this->filterList[$facetId]);
 					$facetSettings = [
 						'value' => $facetValue,
 						'display' =>$facetValue,
 						'count' =>$value['count'],
-						'isApplied' => $isApplied,
+						'isApplied' => $value->isApplied,
 					];
 					if ($isApplied) {
-						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $value);
 					} else {
 						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
 					}
@@ -471,6 +471,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetId]['list'] = $list;
 			}
 		}
+		 var_dump($this->filterList);
 		return $availableFacets;
 	}
 
@@ -482,7 +483,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		}
 		return null;
 	}
- 
+
 	public function addFacetValueFilter() {
 		$filter = $this->getFilters();
          if(is_array($filter)) {
@@ -494,11 +495,26 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		}
 	}
 	
-	public function getFilters() {
-	  foreach($this->filterList as $filter){
-		return $filter;
-	  }
-	}
+	// public function getSummonFilters() {
+	// 	$this->filters = array();
+	// 	foreach($this->filterList as $key => $value) {
+	// 		if(is_array($value)) {
+	// 			foreach($value as $val){
+	// 				$parts = explode(' ', $val);
+	// 				$result = implode('+', $parts);
+	// 				$this->filters[] = $key . ':' . urlencode($result);
+	// 			}
+	// 		} else {
+	// 			$parts = explode(' ', $value);
+	// 			$result = implode('+', $parts);
+	// 			$this->filters = $key . ':' . urlencode($result);
+	// 		}
+	// 	}
+	
+	//   var_dump($this->filters);
+	//   return $this->filters;
+	// }
+	
 	/*
 	* Called by Results.php - Lists checkbox filter options
 	TODO - Checkbox not staying ticked although moved to applied list - change to Summon filters
@@ -576,6 +592,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			$recordData = $this->processData($recordData); 
 			$this->stopQueryTimer();
 		}
+		// var_dump($recordData);
 		return $recordData;
 	}
 
