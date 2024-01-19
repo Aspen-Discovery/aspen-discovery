@@ -51,21 +51,8 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$this->holds[$patron->id] = $holds;
 		}
 
-		global $interface;
-		if ($interface != null) {
-			$gitBranch = $interface->getVariable('gitBranch');
-			if (substr($gitBranch, -1) == "\n") {
-				$gitBranch = substr($gitBranch, 0, -1);
-			}
-		} else {
-			$gitBranch = 'Primary';
-		}
+		$headers = $this->getPalaceProjectHeaders($patron);
 		$checkoutsUrl = $settings->apiUrl . "/" . $settings->libraryId . "/loans";
-		$headers = [
-			'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-			'Accept: application/opds+json',
-			'User-Agent: Aspen Discovery ' . $gitBranch
-		];
 
 		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
@@ -87,6 +74,14 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 					if ($overDriveRecord->isValid()) {
 						$checkout->updateFromRecordDriver($overDriveRecord);
 						$checkout->format = $checkout->getRecordFormatCategory();
+					}
+
+					$links = $publication->links;
+					foreach ($links as $link) {
+						if ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
+							$checkout->canReturnEarly = true;
+							$checkout->earlyReturnUrl = $link->href;
+						}
 					}
 
 					$key = $checkout->source . $checkout->sourceId . $checkout->userId;
@@ -139,54 +134,91 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	 * Return a title currently checked out to the user
 	 *
 	 * @param $patron User
-	 * @param $transactionId   string
+	 * @param $recordId   string
 	 * @return array
 	 */
-	public function returnCheckout($patron, $transactionId) {
+	public function returnCheckout($patron, $recordId) {
 		$result = [
 			'success' => false,
+			'title' => translate([
+				'text' => 'Error returning title',
+				'isPublicFacing' => true,
+			]),
 			'message' => translate([
 				'text' => 'Unknown error',
 				'isPublicFacing' => true,
 			]),
 		];
 
-		$settings = $this->getSettings();
-		$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2?transactionID=$transactionId";
-		$headers = [
-			'Authorization: Basic' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-		];
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, false);
-		$response = $this->curlWrapper->curlGetPage($returnCheckoutUrl);
-		ExternalRequestLogEntry::logRequest('palaceProject.returnCheckout', 'GET', $returnCheckoutUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
-		/** @var stdClass $xmlResults */
-		$xmlResults = simplexml_load_string($response);
-		$removeHoldResult = $xmlResults->EarlyCheckinRestResult;
-		$status = $removeHoldResult->status;
-		if ($status->code != '0000') {
-			$result['message'] = translate([
-				'text' => "Could not return Boundless title, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
+		$checkouts = $patron->getCheckouts(false,'palace_project');
+		$foundCheckout = false;
+		foreach ($checkouts as $checkout) {
+			if ($checkout->recordId == $recordId) {
+				$foundCheckout = true;
+				$returnUrl = $checkout->earlyReturnUrl;
+				$headers = $this->getPalaceProjectHeaders($patron);
 
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Unable to return title',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => "Could not return Boundless title, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
+				$this->initCurlWrapper();
+				$this->curlWrapper->addCustomHeaders($headers, true);
+				$response = $this->curlWrapper->curlGetPage($returnUrl);
+				ExternalRequestLogEntry::logRequest('palaceProject.returnCheckout', 'POST', $returnUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
+				if ($response != false) {
+					//This returns XML, but we don't really need it for anything, the response code is enough.
+					//$jsonResponse = json_decode($response);
+					if ($this->curlWrapper->getResponseCode() == 200) {
+						$result['success'] = true;
+						$result['title'] = translate([
+							'text' => 'Title returned successfully',
+							'isPublicFacing' => true,
+						]);
+						$result['message'] = translate([
+							'text' => 'Your Palace Project title was returned successfully',
+							'isPublicFacing' => true,
+						]);
 
-			$this->incrementStat('numApiErrors');
-		} else {
+						// Result for API or app use
+						$result['api']['title'] = translate([
+							'text' => 'Title returned',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'Your Palace Project title was returned successfully',
+							'isPublicFacing' => true,
+						]);
+						$this->incrementStat('numEarlyReturns');
+						$patron->clearCachedAccountSummaryForSource('palace_project');
+						$patron->forceReloadOfCheckouts();
+					} else {
+						$result['message'] = translate([
+							'text' => "Could not return Palace Project title",
+							'isPublicFacing' => true,
+						]);
+
+						// Result for API or app use
+						$result['api']['title'] = translate([
+							'text' => 'Unable to return title',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => "Could not return Palace Project title",
+							'isPublicFacing' => true,
+						]);
+
+						$this->incrementStat('numApiErrors');
+					}
+				}
+				break;
+			}
+		}
+		if (!$foundCheckout) {
+			//Title was already returned
 			$result['success'] = true;
+			$result['title'] = translate([
+				'text' => 'Title returned successfully',
+				'isPublicFacing' => true,
+			]);
 			$result['message'] = translate([
-				'text' => 'Your Boundless title was returned successfully',
+				'text' => 'Your Palace Project title was previously returned',
 				'isPublicFacing' => true,
 			]);
 
@@ -196,13 +228,9 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Your Boundless title was returned successfully',
+				'text' => 'Your Palace Project title was returned successfully',
 				'isPublicFacing' => true,
 			]);
-
-			$this->incrementStat('numEarlyReturns');
-			$patron->clearCachedAccountSummaryForSource('palaceProject');
-			$patron->forceReloadOfCheckouts();
 		}
 		return $result;
 	}
@@ -448,20 +476,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		if ($recordDriver->isValid()) {
 			$borrowLink = $recordDriver->getBorrowLink();
 
-			global $interface;
-			if ($interface != null) {
-				$gitBranch = $interface->getVariable('gitBranch');
-				if (substr($gitBranch, -1) == "\n") {
-					$gitBranch = substr($gitBranch, 0, -1);
-				}
-			} else {
-				$gitBranch = 'Primary';
-			}
-			$headers = [
-				'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-				'Accept: application/opds+json',
-				'User-Agent: Aspen Discovery ' . $gitBranch
-			];
+			$headers = $this->getPalaceProjectHeaders($patron);
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, true);
 			$response = $this->curlWrapper->curlGetPage($borrowLink);
@@ -512,6 +527,16 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						'text' => 'Sorry, we could not checkout this Palace Project title to you.',
 						'isPublicFacing' => true,
 					]);
+					if (!empty($jsonResponse->detail)) {
+						$result['message'] .= '<br/>' . translate([
+								'text' => $jsonResponse->detail,
+								'isPublicFacing' => true,
+							]);
+						$result['api']['message'] .= "\n" . translate([
+								'text' => $jsonResponse->detail,
+								'isPublicFacing' => true,
+							]);
+					}
 				}
 			} else {
 				global $logger;
@@ -778,5 +803,22 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$palaceProjectStats->$fieldName = 1;
 			$palaceProjectStats->insert();
 		}
+	}
+
+	private function getPalaceProjectHeaders(User $patron) {
+		global $interface;
+		if ($interface != null) {
+			$gitBranch = $interface->getVariable('gitBranch');
+			if (substr($gitBranch, -1) == "\n") {
+				$gitBranch = substr($gitBranch, 0, -1);
+			}
+		} else {
+			$gitBranch = 'Primary';
+		}
+		return [
+			'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
+			'Accept: application/opds+json',
+			'User-Agent: Aspen Discovery ' . $gitBranch
+		];
 	}
 }

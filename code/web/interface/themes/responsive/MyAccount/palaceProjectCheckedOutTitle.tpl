@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row palace_project_checkout_{$record->recordId|escapeCSS}">
+	<div class="result row palace_project_checkout_{$record->recordId|escapeCSS}_{$record->userId}">
 		{* Cover Column *}
 		{if !empty($showCovers)}
 			{*<div class="col-xs-4">*}
@@ -74,15 +74,14 @@
 
 				{* Actions for Title *}
 				<div class="col-sm-12 col-md-4 col-lg-3">
-{*					<div class="btn-group btn-group-vertical btn-block">*}
-{*						{if !empty($record->accessOnlineUrl)}*}
-{*							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>*}
-{*						{/if}*}
-{*						{if $record->canRenew}*}
-{*							<a href="#" onclick="return AspenDiscovery.Axis360.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>*}
-{*						{/if}*}
-{*						<a href="#" onclick="return AspenDiscovery.Axis360.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->transactionId}');" class="btn btn-sm btn-warning">{translate text='Return Now' isPublicFacing=true}</a>*}
-{*					</div>*}
+					<div class="btn-group btn-group-vertical btn-block">
+						{if !empty($record->accessOnlineUrl)}
+							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Palace Project' isPublicFacing=true}</a>
+						{/if}
+						{if $record->canReturnEarly}
+							<a href="#" onclick="return AspenDiscovery.PalaceProject.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-info">{translate text='Return Now' isPublicFacing=true}</a>
+						{/if}
+					</div>
 					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}

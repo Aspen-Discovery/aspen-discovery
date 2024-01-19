@@ -13,6 +13,50 @@ function getUpdates24_02_00(): array {
 		 ], //name*/
 
 		//mark - ByWater
+		'track_palace_project_user_usage' => [
+			'title' => 'Palace Project Usage by user',
+			'description' => 'Add a table to track how often a particular user uses Palace Project.',
+			'sql' => [
+				"CREATE TABLE user_palace_project_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					userId INT(11) NOT NULL,
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					usageCount INT(11) DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE user_palace_project_usage ADD INDEX (instance, userId, year, month)",
+				"ALTER TABLE user_palace_project_usage ADD INDEX (instance, year, month)",
+			],
+		], //track_palace_project_user_usage
+
+		'track_palace_project_record_usage' => [
+			'title' => 'Palace Project Record Usage',
+			'description' => 'Add a table to track how records within Palace Project are used.',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE palace_project_record_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					palaceProjectId INT(11),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					timesHeld INT(11) NOT NULL DEFAULT 0,
+					timesCheckedOut INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, axis360Id, year, month)",
+				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, year, month)",
+			],
+		], //track_palace_project_record_usage
+
+		'palace_project_return_url' => [
+			'title' => 'Palace Project Return URL',
+			'description' => 'Store the return URL with Checkouts for Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user_checkout ADD COLUMN earlyReturnUrl VARCHAR(255)",
+			],
+		], //track_palace_project_record_usage
 
 		//kirstien - ByWater
 

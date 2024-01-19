@@ -112,5 +112,28 @@ AspenDiscovery.PalaceProject = (function () {
 			return false;
 		},
 
+		returnCheckout: function (patronId, recordId, encodedId) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true);
+						$(".palace_project_checkout_" + encodedId + "_" + patronId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+				}
+			});
+			return false;
+		}
 	}
 }(AspenDiscovery.PalaceProject || {}));

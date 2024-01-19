@@ -201,4 +201,35 @@ class PalaceProject_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	/** @noinspection PhpUnused */
+	function returnCheckout() {
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['recordId'];
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				return $driver->returnCheckout($patron, $id);
+			} else {
+				return [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'result' => false,
+				'message' => translate([
+					'text' => 'You must be logged in to return titles.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
 }
