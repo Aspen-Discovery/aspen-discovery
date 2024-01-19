@@ -2856,8 +2856,12 @@ class SearchAPI extends Action {
 					$items[$recordKey]['summary'] = strip_tags($record['description']);
 					$items[$recordKey]['registration_required'] = $registrationRequired;
 					$items[$recordKey]['event_day'] = $record['event_day'];
-					$items[$recordKey]['start_date'] = $record['start_date'];
-					$items[$recordKey]['end_date'] = $record['end_date'];
+
+					$startDate = new DateTime($record['start_date']);
+					$items[$recordKey]['start_date'] = $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+					$endDate = new DateTime($record['end_date']);
+					$items[$recordKey]['end_date'] = $endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+
 					$items[$recordKey]['url'] = $record['url'];
 					$items[$recordKey]['bypass'] = $bypass;
 					$items[$recordKey]['itemList'] = [];
