@@ -1,7 +1,5 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import org.ini4j.Ini;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -12,7 +10,7 @@ public class CloudLibrarySettings {
 	private final String accountKey;
 	private final String libraryId;
 	private final boolean doFullReload;
-	private long lastExtractTime;
+	private final long lastExtractTime;
 	private final long lastExtractTimeAll;
 
 	public CloudLibrarySettings(ResultSet getSettingsRS) throws SQLException {

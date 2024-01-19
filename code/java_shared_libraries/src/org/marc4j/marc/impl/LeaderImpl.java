@@ -357,12 +357,12 @@ public class LeaderImpl implements Leader {
      */
     @Override
     public String toString() {
-        return new StringBuffer().append(format5.format(getRecordLength()))
-                .append(getRecordStatus()).append(getTypeOfRecord()).append(
-                        getImplDefined1()).append(getCharCodingScheme())
-                .append(getIndicatorCount()).append(getSubfieldCodeLength())
-                .append(format5.format(getBaseAddressOfData())).append(
-                        getImplDefined2()).append(getEntryMap()).toString();
+        return format5.format(getRecordLength()) +
+		        getRecordStatus() + getTypeOfRecord() +
+		        String.valueOf(getImplDefined1()) + getCharCodingScheme() +
+		        getIndicatorCount() + getSubfieldCodeLength() +
+		        format5.format(getBaseAddressOfData()) +
+		        String.valueOf(getImplDefined2()) + String.valueOf(getEntryMap());
     }
 
     private boolean isInteger(final String value) {
@@ -391,7 +391,7 @@ public class LeaderImpl implements Leader {
         return true;
     }
 
-    private static DecimalFormat format5 = new org.marc4j.util.CustomDecimalFormat(5);
+    private static final DecimalFormat format5 = new org.marc4j.util.CustomDecimalFormat(5);
 
     /**
      * Sets the ID for the leader.

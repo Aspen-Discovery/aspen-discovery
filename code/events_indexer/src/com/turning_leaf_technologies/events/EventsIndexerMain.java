@@ -5,8 +5,8 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.ini4j.Ini;
 
 import java.sql.*;
@@ -20,7 +20,7 @@ public class EventsIndexerMain {
 		String serverName;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -31,14 +31,13 @@ public class EventsIndexerMain {
 		String processName = "events_indexer";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			Date startTime = new Date();
-			Long startTimeForLogging = startTime.getTime() / 1000;
-			logger.info("Starting " + processName + ": " + startTime.toString());
+			logger.info("Starting " + processName + ": " + startTime);
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -47,8 +46,22 @@ public class EventsIndexerMain {
 			Connection aspenConn = connectToDatabase(configIni);
 
 			try {
-				String solrPort = configIni.get("Reindex", "solrPort");
-				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
+				String solrPort = configIni.get("Index", "solrPort");
+				if (solrPort == null || solrPort.isEmpty()) {
+					solrPort = configIni.get("Reindex", "solrPort");
+					if (solrPort == null || solrPort.isEmpty()) {
+						solrPort = "8080";
+					}
+				}
+				String solrHost = configIni.get("Index", "solrHost");
+				if (solrHost == null || solrHost.isEmpty()) {
+					solrHost = configIni.get("Reindex", "solrHost");
+					if (solrHost == null || solrHost.isEmpty()) {
+						solrHost = "localhost";
+					}
+				}
+
+				ConcurrentUpdateHttp2SolrClient solrUpdateServer = setupSolrClient(solrHost, solrPort);
 
 				// LibraryMarket LibraryCalendar
 				PreparedStatement getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from lm_library_calendar_settings");
@@ -105,6 +118,8 @@ public class EventsIndexerMain {
 				logger.error("Error indexing events", e);
 			}
 
+			disconnectDatabase(aspenConn);
+
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
 				logger.warn("Ending because the checksum for the jar changed");
@@ -126,16 +141,16 @@ public class EventsIndexerMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+
+		System.exit(0);
 	}
 
-	private static ConcurrentUpdateSolrClient setupSolrClient(String solrPort) {
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/events");
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		ConcurrentUpdateSolrClient updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
-
-		return updateServer;
+	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrHost, String solrPort) {
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/events", http2Client)
+			.withThreadCount(2)
+			.withQueueSize(100)
+			.build();
 	}
 
 	private static Connection connectToDatabase(Ini configIni) {
@@ -154,5 +169,14 @@ public class EventsIndexerMain {
 			System.exit(1);
 		}
 		return aspenConn;
+	}
+
+	private static void disconnectDatabase(Connection aspenConn) {
+		try {
+			aspenConn.close();
+		} catch (Exception e) {
+			logger.error("Error closing database ", e);
+			System.exit(1);
+		}
 	}
 }

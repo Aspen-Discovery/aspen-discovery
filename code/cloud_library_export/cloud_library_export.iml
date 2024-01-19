@@ -27,7 +27,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="reindexer" />
+    <orderEntry type="module" module-name="reindexer" scope="PROVIDED" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

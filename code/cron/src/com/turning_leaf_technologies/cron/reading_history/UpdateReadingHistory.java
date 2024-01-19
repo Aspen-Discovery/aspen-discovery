@@ -28,7 +28,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		processLog.addNote("Updating Reading History");
 
 		String aspenUrl = configIni.get("Site", "url");
-		if (aspenUrl == null || aspenUrl.length() == 0) {
+		if (aspenUrl == null || aspenUrl.isEmpty()) {
 			processLog.incErrors("Unable to get URL for Aspen in General settings.  Please add a url key to Site section.");
 			return;
 		}
@@ -48,7 +48,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 
 			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password, lastReadingHistoryUpdate FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, ils_barcode, ils_password, lastReadingHistoryUpdate FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			if (numUsersToUpdate > 0) {
 				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
@@ -56,27 +56,27 @@ public class UpdateReadingHistory implements IProcessHandler {
 				//Process all the threads, we will allow up to 8 concurrent threads to start
 				ThreadPoolExecutor executor = new ThreadPoolExecutor(4, 8, 5000, TimeUnit.MILLISECONDS, blockingQueue);
 
-				//Setup the ThreadGroup
+				//Set up the ThreadGroup
 				ResultSet userResults = getUsersStmt.executeQuery();
 				while (userResults.next()) {
 
 					// For each patron
-					String cat_username = userResults.getString("cat_username");
+					String cat_username = userResults.getString("ils_barcode");
 					String cat_password = null;
 					try{
-						cat_password = EncryptionUtils.decryptString(userResults.getString("cat_password"), servername, processLog);
+						cat_password = EncryptionUtils.decryptString(userResults.getString("ils_password"), servername, processLog);
 					}catch (Exception e){
 						processLog.addNote("Could not decrypt password for " + cat_username + " " + e);
 					}
 
-					if (cat_password == null || cat_password.length() == 0) {
+					if (cat_password == null || cat_password.isEmpty()) {
 						numSkipped++;
 						processLog.incSkipped();
 						continue;
 					}
 
 					if (startTime - userResults.getLong("lastReadingHistoryUpdate") < (23 * 60 * 60)){
-						//Only update records every 23 hours (since the update runs everyday, we give it a bit of buffer to make sure that we do update daily unless
+						//Only update records every 23 hours (since the update runs every day, we give it a bit of buffer to make sure that we do update daily unless
 						//the user has updated themselves.
 						numAlreadyUpToDate++;
 						processLog.incSkipped();

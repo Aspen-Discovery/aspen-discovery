@@ -70,7 +70,7 @@ import org.marc4j.util.CustomDecimalFormat;
  */
 public class MarcStreamWriter implements MarcWriter {
 
-    protected OutputStream out = null;
+    protected OutputStream out;
 
     public final static String ENCODING_FOR_DIR_ENTRIES = "ISO8859_1";
     public final static String ENCODING_BY_CHAR_CODE = "per_record";
@@ -114,7 +114,7 @@ public class MarcStreamWriter implements MarcWriter {
      * Constructs an instance and creates a <code>Writer</code> object with the specified output stream.
      *
      * @param out - the OutputStream to write to
-     * @param allowOversizeRecord - true to allow oversized records to be written out.
+     * @param allowOversizeRecord - true to allow over-sized records to be written out.
      */
     public MarcStreamWriter(final OutputStream out, final boolean allowOversizeRecord) {
         this.out = out;
@@ -127,7 +127,7 @@ public class MarcStreamWriter implements MarcWriter {
      *
      * @param out - the OutputStream to write to
      * @param encoding - the encoding to use when writing out the record
-     * @param allowOversizeRecord - true to allow oversized records to be written out.
+     * @param allowOversizeRecord - true to allow over-sized records to be written out.
      */
     public MarcStreamWriter(final OutputStream out, final String encoding, final boolean allowOversizeRecord) {
         this.encoding = encoding;
@@ -221,7 +221,7 @@ public class MarcStreamWriter implements MarcWriter {
 
             if (!allowOversizeEntry && (baseAddress > 99999 || recordLength > 99999 || hasOversizeOffset)) {
                 throw new MarcException("Record is too long to be a valid MARC binary record, it's length would be " +
-                        recordLength + " which is more thatn 99999 bytes");
+                        recordLength + " which is more than 99999 bytes");
             }
             if (!allowOversizeEntry && (hasOversizeLength)) {
                 throw new MarcException("Record has field that is too long to be a valid MARC binary record. "
@@ -233,9 +233,7 @@ public class MarcStreamWriter implements MarcWriter {
             out.write(Constants.RT);
 
         } catch (final IOException e) {
-            throw new MarcException("IO Error occured while writing record", e);
-        } catch (final MarcException e) {
-            throw e;
+            throw new MarcException("IO Error occurred while writing record", e);
         }
     }
 
@@ -261,7 +259,7 @@ public class MarcStreamWriter implements MarcWriter {
         try {
             out.close();
         } catch (final IOException e) {
-            throw new MarcException("IO Error occured on close", e);
+            throw new MarcException("IO Error occurred on close", e);
         }
     }
 
@@ -284,18 +282,18 @@ public class MarcStreamWriter implements MarcWriter {
     }
 
     /**
-     * Returns <code>true</code> if an oversized entry is allowed; else, <code>false</code>.
+     * Returns <code>true</code> if an over-sized entry is allowed; else, <code>false</code>.
      *
-     * @return <code>true</code> if an oversized entry is allowed
+     * @return <code>true</code> if an over-sized entry is allowed
      */
     public boolean allowsOversizeEntry() {
         return allowOversizeEntry;
     }
 
     /**
-     * Sets whether an oversized entry is allowed.
+     * Sets whether an over-sized entry is allowed.
      *
-     * @param allowOversizeEntry - true if an oversized entry ought to be allowed
+     * @param allowOversizeEntry - true if an over-sized entry ought to be allowed
      */
     public void setAllowOversizeEntry(final boolean allowOversizeEntry) {
         this.allowOversizeEntry = allowOversizeEntry;

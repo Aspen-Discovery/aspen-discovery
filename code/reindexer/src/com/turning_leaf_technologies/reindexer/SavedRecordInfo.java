@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class SavedRecordInfo {
+public class SavedRecordInfo {
 	public long id;
 	public long sourceId;
 	public String recordIdentifier;

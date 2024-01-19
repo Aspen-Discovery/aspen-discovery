@@ -14,12 +14,12 @@ import org.apache.logging.log4j.Logger;
 
 public class CronLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
 	private int numErrors;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 
-	private Logger logger;
+	private final Logger logger;
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
 
@@ -35,14 +35,14 @@ public class CronLogEntry implements BaseLogEntry {
 		}
 	}
 	private Date getLastUpdate() {
-		//The last time the log entry was updated so we can tell if a process is stuck
+		//The last time the log entry was updated, so we can tell if a process is stuck
 		return new Date();
 	}
 	Long getLogEntryId() {
 		return logEntryId;
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -64,7 +64,7 @@ public class CronLogEntry implements BaseLogEntry {
 		}
 		notesText.append("</ol>");
 		if (notesText.length() > 25000){
-			notesText.substring(0, 25000);
+			notesText = new StringBuilder(notesText.substring(0, 25000) + " more data was truncated");
 		}
 		return notesText.toString();
 	}

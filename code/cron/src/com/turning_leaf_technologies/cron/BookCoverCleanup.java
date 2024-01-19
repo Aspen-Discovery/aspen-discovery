@@ -42,7 +42,7 @@ public class BookCoverCleanup implements IProcessHandler {
 								numFilesDeleted++;
 								processLog.incUpdated();
 							} else {
-								processLog.incErrors("Unable to delete file " + curFile.toString());
+								processLog.incErrors("Unable to delete file " + curFile);
 							}
 						}
 					}

@@ -55,7 +55,7 @@ public class EvolveExportMain {
 		if (args.length == 0)
 		{
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -251,6 +251,8 @@ public class EvolveExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
@@ -287,7 +289,6 @@ public class EvolveExportMain {
 	}
 
 	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory) {
-		@SuppressWarnings("SpellCheckingInspection")
 		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyyHHmmss");
 		long lastExtractTime;
 		lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords() * 1000;
@@ -358,7 +359,7 @@ public class EvolveExportMain {
 								}
 								String bibId = curItem.getString("ID");
 								//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
-								Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
+								org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
 								if (marcRecord != null) {
 									updateBibWithEvolveHolding(marcFactory, curItem, marcRecord);
 									logEntry.incUpdated();
@@ -447,7 +448,7 @@ public class EvolveExportMain {
 
 	}
 
-	private static void updateBibWithEvolveHolding(MarcFactory marcFactory, JSONObject curItem, Record marcRecord) {
+	private static void updateBibWithEvolveHolding(MarcFactory marcFactory, JSONObject curItem, org.marc4j.marc.Record marcRecord) {
 		//String itemBarcode = curItem.getString("Barcode");
 		List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
 
@@ -536,10 +537,10 @@ public class EvolveExportMain {
 		String rawMarc = curRow.getString("MARC");
 		try {
 			MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-			if (reader.hasNext()) //noinspection GrazieInspection
+			if (reader.hasNext())
 			{
 				String bibId = curRow.getString("ID");
-				Record marcRecord;
+				org.marc4j.marc.Record marcRecord;
 				try {
 					marcRecord = reader.next();
 				} catch (Exception e){
@@ -611,11 +612,10 @@ public class EvolveExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
-	private synchronized static String groupEvolveRecord(Record marcRecord) {
+	private synchronized static String groupEvolveRecord(org.marc4j.marc.Record marcRecord) {
 		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
@@ -642,7 +642,7 @@ public class EvolveExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -687,7 +687,7 @@ public class EvolveExportMain {
 		long latestMarcFile = 0;
 		boolean hasFullExportFile = false;
 		File fullExportFile = null;
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+		if (exportedMarcFiles != null){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				//Remove any files that are older than the last time we processed files.
 				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
@@ -724,7 +724,7 @@ public class EvolveExportMain {
 			filesToProcess.addAll(Arrays.asList(exportedMarcDeltaFiles));
 		}
 
-		if (filesToProcess.size() > 0){
+		if (!filesToProcess.isEmpty()){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
 			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
@@ -848,7 +848,7 @@ public class EvolveExportMain {
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
-					Record curBib = null;
+					org.marc4j.marc.Record curBib = null;
 					try {
 						curBib = catalogReader.next();
 					} catch (Exception e) {
@@ -868,7 +868,7 @@ public class EvolveExportMain {
 						if (recordIdentifier != null) {
 							String recordNumber = recordIdentifier.getIdentifier();
 							lastRecordProcessed = recordNumber;
-							recordNumber = recordNumber.replaceAll("[^\\d]", "");
+							recordNumber = recordNumber.replaceAll("\\D", "");
 							long recordNumberDigits = Long.parseLong(recordNumber);
 							if (recordNumberDigits > maxIdInExport) {
 								maxIdInExport = recordNumberDigits;
@@ -917,7 +917,7 @@ public class EvolveExportMain {
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
-						Record curBib = catalogReader.next();
+						org.marc4j.marc.Record curBib = catalogReader.next();
 						ArrayList<ControlField> updatedControlFields = new ArrayList<>();
 						for (ControlField controlField : curBib.getControlFields()){
 							//We're getting some extraneous separators that need to be removed, trim them off.
@@ -1075,7 +1075,7 @@ public class EvolveExportMain {
 				if (marcData != null && marcData.length > 0) {
 					String identifier = allMarcRecordsRS.getString("ilsId");
 					String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
-					Record marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
+					org.marc4j.marc.Record marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
 					if (marcRecord != null) {
 						List<DataField> allItemFields = MarcUtil.getDataFields(marcRecord, indexingProfile.getItemTagInt());
 						ArrayList<DataField> itemsToRemove = new ArrayList<>();
@@ -1103,7 +1103,7 @@ public class EvolveExportMain {
 								itemsToRemove.add(item1);
 							}
 						}
-						if (itemsToRemove.size() > 0) {
+						if (!itemsToRemove.isEmpty()) {
 							numBibsWithDuplicateItems++;
 							for (DataField itemToRemove : itemsToRemove) {
 								marcRecord.removeVariableField(itemToRemove);

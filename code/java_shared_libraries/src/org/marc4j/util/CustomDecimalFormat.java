@@ -29,7 +29,7 @@ public class CustomDecimalFormat extends DecimalFormat {
 
     public final static int REP_TRUNCATE = 2;
 
-    int overflowRepresentation = REP_ALL_NINES;
+    int overflowRepresentation;
 
     long maximumValue;
 

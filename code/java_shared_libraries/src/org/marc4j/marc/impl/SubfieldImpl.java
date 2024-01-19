@@ -125,6 +125,7 @@ public class SubfieldImpl implements Subfield {
      * 
      * @return String - a string representation of this subfield
      */
+    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public String toString() {
         return "$" + getCode() + getData();

@@ -8,9 +8,9 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.ini4j.Ini;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,7 +32,7 @@ public class OaiIndexerMain {
 	private static Logger logger;
 
 	private static Ini configIni;
-	private static ConcurrentUpdateSolrClient updateServer;
+	private static ConcurrentUpdateHttp2SolrClient updateServer;
 
 	private static Connection aspenConn;
 
@@ -50,12 +50,12 @@ public class OaiIndexerMain {
 		int collectionToProcess = -1;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
 			String collectionToProcessStr = AspenStringUtils.getInputFromCommandLine("Enter the Collection ID to process (blank to process all)");
-			if (collectionToProcessStr.length() > 0 && AspenStringUtils.isInteger(collectionToProcessStr)) {
+			if (!collectionToProcessStr.isEmpty() && AspenStringUtils.isInteger(collectionToProcessStr)) {
 				collectionToProcess = Integer.parseInt(collectionToProcessStr);
 			}
 		} else {
@@ -83,12 +83,16 @@ public class OaiIndexerMain {
 			connectToDatabase();
 
 			extractAndIndexOaiData(collectionToProcess);
+
+			disconnectDatabase();
 		}
 
 		logger.info("Finished " + new Date());
 		long endTime = new Date().getTime();
 		long elapsedTime = endTime - startTime.getTime();
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+
+		System.exit(0);
 	}
 
 	private static void connectToDatabase() {
@@ -107,15 +111,38 @@ public class OaiIndexerMain {
 		}
 	}
 
+	private static void disconnectDatabase() {
+		try {
+			aspenConn.close();
+		} catch (Exception e) {
+			logger.error("Error closing database ", e);
+			System.exit(1);
+		}
+	}
+
 	private static void extractAndIndexOaiData(int collectionToIndex) {
-		String solrPort = configIni.get("Reindex", "solrPort");
-		setupSolrClient(solrPort);
+		String solrPort = configIni.get("Index", "solrPort");
+		if (solrPort == null || solrPort.isEmpty()) {
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
+		}
+
+		setupSolrClient(solrHost, solrPort);
 
 		if (fullReload) {
 			try {
 				updateServer.deleteByQuery("*:*");
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			} catch (HttpSolrClient.RemoteSolrException rse) {
+			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logger.error("Solr is not running properly, try restarting", rse);
 				System.exit(-1);
 			} catch (Exception e) {
@@ -163,10 +190,10 @@ public class OaiIndexerMain {
 						boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
 						boolean deleted = collectionsRS.getBoolean("deleted");
 						ArrayList<Pattern> subjectFilters = new ArrayList<>();
-						if (subjectFilterString != null && subjectFilterString.length() > 0) {
+						if (subjectFilterString != null && !subjectFilterString.isEmpty()) {
 							String[] subjectFiltersRaw = subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
 							for (String subjectFilter : subjectFiltersRaw) {
-								if (subjectFilter.length() > 0) {
+								if (!subjectFilter.isEmpty()) {
 									subjectFilters.add(Pattern.compile("(\\b|-)" + subjectFilter.toLowerCase() + "(\\b|-)", Pattern.CASE_INSENSITIVE));
 								}
 							}
@@ -187,7 +214,7 @@ public class OaiIndexerMain {
 						ResultSet locationsForCollectionRS = getLocationsForCollectionStmt.executeQuery();
 						while (locationsForCollectionRS.next()) {
 							String subLocation = locationsForCollectionRS.getString("subLocation");
-							if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0) {
+							if (!locationsForCollectionRS.wasNull() && !subLocation.isEmpty()) {
 								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
 							} else {
 								String code = locationsForCollectionRS.getString("code");
@@ -211,20 +238,6 @@ public class OaiIndexerMain {
 			//Get existing records for the collection
 			OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
 
-//			if (!fullReload) {
-//				//Only need to do this if we aren't doing a full reload since the full reload deletes everything
-//				try {
-//					//Use the ID rather than name in case the name changes.
-//					updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
-//					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-//				} catch (HttpSolrClient.RemoteSolrException rse) {
-//					logger.error("Solr is not running properly, try restarting", rse);
-//					System.exit(-1);
-//				} catch (Exception e) {
-//					logger.error("Error deleting from index", e);
-//				}
-//			}
-
 			int numRecordsLoaded = 0;
 			int numRecordsSkipped = 0;
 
@@ -245,12 +258,7 @@ public class OaiIndexerMain {
 
 							String oaiUrl;
 							if (resumptionToken != null) {
-								try {
-									oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
-								} catch (UnsupportedEncodingException e) {
-									logEntry.incErrors("Error encoding resumption token", e);
-									return;
-								}
+								oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, StandardCharsets.UTF_8);
 							} else {
 								oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc";
 								if (loadOneMonthAtATime) {
@@ -261,13 +269,8 @@ public class OaiIndexerMain {
 									}
 									oaiUrl += "&from=" + startDate + "&until=" + endDate;
 								}
-								if (oaiSet.length() > 0) {
-									try {
-										oaiUrl += "&set=" + URLEncoder.encode(oaiSet, "UTF8");
-									} catch (UnsupportedEncodingException e) {
-										logEntry.incErrors("Error encoding resumption token", e);
-										return;
-									}
+								if (!oaiSet.isEmpty()) {
+									oaiUrl += "&set=" + URLEncoder.encode(oaiSet, StandardCharsets.UTF_8);
 								}
 							}
 
@@ -319,7 +322,7 @@ public class OaiIndexerMain {
 										if (resumptionTokenNode instanceof Element) {
 											Element resumptionTokenElement = (Element) resumptionTokenNode;
 											resumptionToken = resumptionTokenElement.getTextContent();
-											if (resumptionToken.length() > 0) {
+											if (!resumptionToken.isEmpty()) {
 												continueLoading = true;
 											}
 										}
@@ -353,10 +356,10 @@ public class OaiIndexerMain {
 					int numDeleted = 0;
 					while (recordsToDeleteRS.next()) {
 						//Delete from solr
-						Long idToDelete = recordsToDeleteRS.getLong("id");
+						long idToDelete = recordsToDeleteRS.getLong("id");
 						try {
 							updateServer.deleteByQuery("id:\"" + idToDelete + "\"");
-						} catch (HttpSolrClient.RemoteSolrException rse) {
+						} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 							logger.error("Solr is not running properly, try restarting", rse);
 							System.exit(-1);
 						} catch (Exception e) {
@@ -371,7 +374,7 @@ public class OaiIndexerMain {
 					}
 					logEntry.addNote("Deleted " + numDeleted + " records from the collection");
 					recordsToDeleteRS.close();
-				} catch (HttpSolrClient.RemoteSolrException rse) {
+				} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 					logEntry.incErrors("Solr is not running properly, try restarting", rse);
 					System.exit(-1);
 				} catch (SQLException e) {
@@ -404,7 +407,7 @@ public class OaiIndexerMain {
 				updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
 				updateServer.commit(true, true, false);
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			} catch (HttpSolrClient.RemoteSolrException rse) {
+			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logger.error("Solr is not running properly, try restarting", rse);
 				System.exit(-1);
 			} catch (Exception e) {
@@ -428,12 +431,12 @@ public class OaiIndexerMain {
 		return new OpenArchivesExtractLogEntry(collectionName, aspenConn, logger);
 	}
 
-	private static void setupSolrClient(String solrPort) {
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
+	private static void setupSolrClient(String solrHost, String solrPort) {
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives", http2Client)
+				.withThreadCount(2)
+				.withQueueSize(100)
+				.build();
 	}
 
 	private static boolean indexElement(Element curRecordElement, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude, Long startTime) {
@@ -573,7 +576,7 @@ public class OaiIndexerMain {
 				logger.debug("Skipping record because no identifier was provided.");
 			} else {
 				boolean subjectMatched = true;
-				if (subjectFilters.size() > 0) {
+				if (!subjectFilters.isEmpty()) {
 					subjectMatched = false;
 					for (String curSubject : solrRecord.getSubjects()) {
 						for (Pattern curSubjectFilter : subjectFilters) {
@@ -621,9 +624,6 @@ public class OaiIndexerMain {
 							if (rs.next()) {
 								solrRecord.setId(rs.getString(1));
 								updateServer.add(solrRecord.getSolrDocument());
-								ExistingOAIRecord existingRecord = new ExistingOAIRecord();
-								existingRecord.id = rs.getLong(1);
-								existingRecord.url = solrRecord.getIdentifier();
 								addedToIndex = true;
 							}
 							rs.close();
@@ -631,11 +631,11 @@ public class OaiIndexerMain {
 						}
 					} catch (SQLException e) {
 						logEntry.incErrors("Error adding record to database", e);
+					} catch (SolrServerException e) {
+						logEntry.incErrors("Error adding document to solr server", e);
 					}
 				}
 			}
-		} catch (SolrServerException e) {
-			logEntry.incErrors("Error adding document to solr server", e);
 		} catch (IOException e) {
 			logEntry.incErrors("I/O Error adding document to solr server", e);
 		}

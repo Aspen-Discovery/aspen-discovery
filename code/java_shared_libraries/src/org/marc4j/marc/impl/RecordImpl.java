@@ -37,7 +37,7 @@ import org.marc4j.marc.VariableField;
  *
  * @author Bas Peters
  */
-class RecordImpl implements Record {
+class RecordImpl implements org.marc4j.marc.Record {
 
     /**
      * A <code>serialVersionUID</code> for the class.
@@ -64,8 +64,8 @@ class RecordImpl implements Record {
      * Creates a new <code>Record</code>.
      */
     RecordImpl() {
-        controlFields = new ArrayList<ControlField>();
-        dataFields = new ArrayList<DataField>();
+        controlFields = new ArrayList<>();
+        dataFields = new ArrayList<>();
     }
 
     /**
@@ -153,8 +153,10 @@ class RecordImpl implements Record {
     public void removeVariableField(final VariableField field) {
         final String tag = field.getTag();
         if (Verifier.isControlField(tag)) {
+            //noinspection SuspiciousMethodCalls
             controlFields.remove(field);
         } else {
+            //noinspection SuspiciousMethodCalls
             dataFields.remove(field);
         }
         stringRepresentation = null;
@@ -223,16 +225,7 @@ class RecordImpl implements Record {
         if (tag.startsWith("LNK") && field.getTag().equals("880")) {
             final DataField df = (DataField) field;
             final Subfield link = df.getSubfield('6');
-            if (link != null && link.getData().equals(tag.substring(3))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean fieldMatches(final VariableField field, final int tag) {
-        if (field.getNumericTag() == tag) {
-            return true;
+	        return link != null && link.getData().equals(tag.substring(3));
         }
         return false;
     }
@@ -272,7 +265,7 @@ class RecordImpl implements Record {
 
     public DataField getDataField(int tag){
         VariableField field = getVariableField(tag);
-        if (field != null && field instanceof DataField){
+        if (field instanceof DataField){
             return (DataField) field;
         }else {
             return null;
@@ -347,7 +340,7 @@ class RecordImpl implements Record {
      * @return a List of all VariableFields plus the Leader represented as a ControlField
      */
     public List<VariableField> getVariableFieldsWithLeader() {
-        final List<VariableField> fields = new ArrayList<VariableField>();
+        final List<VariableField> fields = new ArrayList<>();
         final ControlField leaderAsField = new ControlFieldImpl("000", this.getLeader().toString());
         fields.add(leaderAsField);
         fields.addAll(controlFields);
@@ -374,7 +367,7 @@ class RecordImpl implements Record {
      */
     @Override
     public List<VariableField> getVariableFields(final String[] tags) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
         final List<VariableField> fields = getVariableFieldsWithLeader();
 
         for (final VariableField field : fields) {
@@ -390,7 +383,7 @@ class RecordImpl implements Record {
     }
 
     public List<VariableField> getVariableFields(final int[] tags) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
         for (int tag : tags) {
             result.addAll(getVariableFields(tag));
         }
@@ -452,6 +445,7 @@ class RecordImpl implements Record {
      *
      * @return String - a string representation of this record
      */
+    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public String toString() {
         if (stringRepresentation == null) {
@@ -476,7 +470,7 @@ class RecordImpl implements Record {
      */
     @Override
     public List<VariableField> find(final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
         Iterator<? extends VariableField> i = controlFields.iterator();
 
         while (i.hasNext()) {
@@ -505,7 +499,7 @@ class RecordImpl implements Record {
      */
     @Override
     public List<VariableField> find(final String tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
 
         for (final VariableField field : getVariableFields(tag)) {
             if (field.find(pattern)) {
@@ -517,7 +511,7 @@ class RecordImpl implements Record {
     }
 
     public List<VariableField> find(final int tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
 
         for (final VariableField field : getVariableFields(tag)) {
             if (field.find(pattern)) {
@@ -533,7 +527,7 @@ class RecordImpl implements Record {
      */
     @Override
     public List<VariableField> find(final String[] tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
 
         for (final VariableField field : getVariableFields(tag)) {
             if (field.find(pattern)) {
@@ -545,7 +539,7 @@ class RecordImpl implements Record {
     }
 
     public List<VariableField> find(final int[] tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
+        final List<VariableField> result = new ArrayList<>();
 
         for (final VariableField field : getVariableFields(tag)) {
             if (field.find(pattern)) {
@@ -599,7 +593,7 @@ class RecordImpl implements Record {
     public void addError(final String field, final String subfield, final int severity,
             final String message) {
         if (errors == null) {
-            errors = new LinkedList<MarcError>();
+            errors = new LinkedList<>();
         }
         errors.add(new MarcError(field, subfield, severity, message));
         if (severity > maxSeverity) {
@@ -614,11 +608,11 @@ class RecordImpl implements Record {
      */
     @Override
     public void addErrors(final List<MarcError> newErrors) {
-        if (newErrors == null || newErrors.size() == 0) {
+        if (newErrors == null || newErrors.isEmpty()) {
             return;
         }
         if (errors == null) {
-            errors = new LinkedList<MarcError>();
+            errors = new LinkedList<>();
         }
         for (final MarcError err : newErrors) {
             errors.add(err);
@@ -630,7 +624,7 @@ class RecordImpl implements Record {
 
     @Override
     public boolean hasErrors() {
-        return errors != null && errors.size() > 0;
+        return errors != null && !errors.isEmpty();
     }
 
     @Override

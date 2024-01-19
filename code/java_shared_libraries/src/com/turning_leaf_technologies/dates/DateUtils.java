@@ -75,11 +75,11 @@ public class DateUtils {
 		}
 	}
 
-	private final static Pattern FOUR_DIGIT_PATTERN_BRACES = Pattern.compile("\\[[12]\\d{3}\\]");
+	private final static Pattern FOUR_DIGIT_PATTERN_BRACES = Pattern.compile("\\[[12]\\d{3}]");
 	private final static Pattern FOUR_DIGIT_PATTERN_ONE_BRACE = Pattern.compile("\\[[12]\\d{3}");
 	private final static Pattern FOUR_DIGIT_PATTERN_STARTING_WITH_1_2 = Pattern.compile("(20|19|18|17|16|15)[0-9][0-9]");
 	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_1 = Pattern.compile("l\\d{3}");
-	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_2 = Pattern.compile("\\[19\\]\\d{2}");
+	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_2 = Pattern.compile("\\[19]\\d{2}");
 	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_3 = Pattern.compile("(20|19|18|17|16|15)[0-9][-?0-9]");
 	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_4 = Pattern.compile("i.e. (20|19|18|17|16|15)[0-9][0-9]");
 	private final static Pattern BC_DATE_PATTERN = Pattern.compile("[0-9]+ [Bb][.]?[Cc][.]?");
@@ -91,7 +91,7 @@ public class DateUtils {
 	 * @return Numeric part of date String (or null)
 	 */
 	public static String cleanDate(final String date) {
-		if (date == null || date.length() == 0) {
+		if (date == null || date.isEmpty()) {
 			return null;
 		}
 		Matcher matcher_braces = FOUR_DIGIT_PATTERN_BRACES.matcher(date);
@@ -113,7 +113,7 @@ public class DateUtils {
 				} else {
 					Matcher matcher_bc_date = BC_DATE_PATTERN.matcher(date);
 					if (matcher_bc_date.find()) {
-						cleanDate = null;
+						//cleanDate = null;
 					} else {
 						Matcher matcher_start_with_1_2 = FOUR_DIGIT_PATTERN_STARTING_WITH_1_2.matcher(date);
 						if (matcher_start_with_1_2.find()) {
@@ -125,7 +125,7 @@ public class DateUtils {
 							} else {
 								Matcher matcher_bracket_19_plus_two_digits = FOUR_DIGIT_PATTERN_OTHER_2.matcher(date);
 								if (matcher_bracket_19_plus_two_digits.find()) {
-									cleanDate = matcher_bracket_19_plus_two_digits.group().replaceAll("\\[", "").replaceAll("\\]", "");
+									cleanDate = matcher_bracket_19_plus_two_digits.group().replaceAll("\\[", "").replaceAll("]", "");
 								} else {
 									Matcher matcher_three_digits_plus_unk = FOUR_DIGIT_PATTERN_OTHER_3.matcher(date);
 									if (matcher_three_digits_plus_unk.find()) {

@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
-import com.turning_leaf_technologies.config.ConfigUtil;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -102,6 +101,9 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			int rowsRemoved = removeOldExternalRequestsStmt.executeUpdate();
 
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE external_request_log");
+			optimizeStmt.execute();
+
 			processLog.addNote("Removed " + rowsRemoved + " external request log entries");
 			processLog.incUpdated();
 
@@ -142,6 +144,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			removeOldCachedObjectsStmt.setLong(1, now);
 
 			int rowsRemoved = removeOldCachedObjectsStmt.executeUpdate();
+
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE cached_values");
+			optimizeStmt.execute();
 
 			processLog.addNote("Removed " + rowsRemoved + " long searches");
 			processLog.incUpdated();
@@ -324,6 +329,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			removeOldObjectHistoryStmt.setLong(1, removalTime);
 
 			int rowsRemoved = removeOldObjectHistoryStmt.executeUpdate();
+
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE object_history");
+			optimizeStmt.execute();
 
 			processLog.addNote("Removed " + rowsRemoved + " rows from object history");
 			processLog.incUpdated();

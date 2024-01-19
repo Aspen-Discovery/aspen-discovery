@@ -5,7 +5,7 @@ import java.util.HashSet;
 class AdvantageCollectionInfo {
 	private int advantageId;
 	private String collectionToken;
-	private HashSet<Long> aspenLibraryIds = new HashSet<>();
+	private final HashSet<Long> aspenLibraryIds = new HashSet<>();
 	private String name;
 
 	int getAdvantageId() {

@@ -47,7 +47,7 @@ public abstract class ReverseCodeTable {
 
     protected Hashtable<Integer, char[]> lastLookupValue = null;
 
-    protected byte g[];
+    protected byte[] g;
 
     protected String charsetsUsed;
 
@@ -110,10 +110,10 @@ public abstract class ReverseCodeTable {
      * and lastLookupValue so that subsequent lookups made in processing the same character will proceed more quickly.
      *
      * @param c - the UCS/Unicode character to look up
-     * @return Hashtable - contains all of the possible MARC-8 representations of that Unicode character
+     * @return Hashtable - contains all the possible MARC-8 representations of that Unicode character
      */
     public Hashtable<Integer, char[]> codeTableHash(final Character c) {
-        if (lastLookupKey != null && c.equals(lastLookupKey)) {
+        if (c.equals(lastLookupKey)) {
             return lastLookupValue;
         }
 
@@ -129,6 +129,7 @@ public abstract class ReverseCodeTable {
      * @param c - the UCS/Unicode character to look up
      * @return boolean - true if there is one or more MARC-8 representation of the given Unicode character.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean charHasMatch(final Character c) {
         return codeTableHash(c) != null;
     }
@@ -144,11 +145,7 @@ public abstract class ReverseCodeTable {
     public boolean inPreviousG0CharEntry(final Character c) {
         final Hashtable<Integer, char[]> chars = codeTableHash(c);
 
-        if (chars != null && chars.get((int) getPreviousG0()) != null) {
-            return true;
-        }
-
-        return false;
+	    return chars != null && chars.get((int) getPreviousG0()) != null;
     }
 
     /**
@@ -162,11 +159,7 @@ public abstract class ReverseCodeTable {
     public boolean inPreviousG1CharEntry(final Character c) {
         final Hashtable<Integer, char[]> chars = codeTableHash(c);
 
-        if (chars != null && chars.get((int) getPreviousG1()) != null) {
-            return true;
-        }
-
-        return false;
+	    return chars != null && chars.get((int) getPreviousG1()) != null;
     }
 
     /**
@@ -238,13 +231,13 @@ public abstract class ReverseCodeTable {
             }
         }
 
-        if (chars.containsKey('S')) {
-            returnVal = 'S';
-        } else {
-            returnVal = (char) chars.keySet().iterator().next().intValue();
-        }
+	    if (chars.containsKey('S')) {
+	        returnVal = 'S';
+	    } else {
+	        returnVal = (char) chars.keySet().iterator().next().intValue();
+	    }
 
-        charsetsUsed = charsetsUsed + returnVal;
+	    charsetsUsed = charsetsUsed + returnVal;
 
         return returnVal;
     }
@@ -257,7 +250,7 @@ public abstract class ReverseCodeTable {
      * @return char[] - an array of characters represented by the
      */
     public static char[] deHexify(final String str) {
-        char result[] = null;
+        char[] result = null;
 
         if (str.length() == 2) {
             result = new char[1];

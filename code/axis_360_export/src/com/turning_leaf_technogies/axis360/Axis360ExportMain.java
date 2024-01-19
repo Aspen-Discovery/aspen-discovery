@@ -14,7 +14,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.concurrent.*;
 
 public class Axis360ExportMain {
 	private static Logger logger;
@@ -28,12 +27,12 @@ public class Axis360ExportMain {
 		int settingToProcess = -1;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
 			String settingToProcessStr = AspenStringUtils.getInputFromCommandLine("Enter the Setting ID to process (blank to process all)");
-			if (settingToProcessStr.length() > 0 && AspenStringUtils.isInteger(settingToProcessStr)) {
+			if (!settingToProcessStr.isEmpty() && AspenStringUtils.isInteger(settingToProcessStr)) {
 				settingToProcess = Integer.parseInt(settingToProcessStr);
 			}
 		} else {
@@ -43,7 +42,7 @@ public class Axis360ExportMain {
 		String processName = "axis_360_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
@@ -63,12 +62,8 @@ public class Axis360ExportMain {
 
 			final int[] numChanges = {0};
 			//Process each setting in order.
-//			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
-//			int numSettingsAdded = 0;
 			for(Axis360Setting setting : settings) {
 				if (settingToProcess == -1 || settingToProcess == setting.getId()) {
-//				try {
-//					es.execute(() -> {
 					Axis360ExtractLogEntry logEntry = createDbLogEntry(startTime, setting.getId(), aspenConn);
 					if (!logEntry.saveResults()) {
 						logger.error("Could not save log entry to database, quitting");
@@ -155,6 +150,8 @@ public class Axis360ExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 
@@ -171,7 +168,7 @@ public class Axis360ExportMain {
 		} catch (SQLException e) {
 			logger.error("Error loading settings from the database");
 		}
-		if (settings.size() == 0) {
+		if (settings.isEmpty()) {
 			logger.error("Unable to find settings for Boundless, please add settings to the database");
 		}
 		return settings;

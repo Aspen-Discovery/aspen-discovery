@@ -43,7 +43,7 @@ public class PalaceProjectProcessor {
 			if (productRS.next()) {
 				byte[] rawResponseBytes = productRS.getBytes("rawResponse");
 				if (rawResponseBytes == null){
-					logEntry.incErrors("rawResponse for Palace Project title " + identifier + " was null skipping");
+					logEntry.incInvalidRecords(identifier);
 					return;
 				}
 				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);

@@ -58,19 +58,6 @@ class Admin_Locations extends ObjectEditor {
 		return 'locationId';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
-		$objectActions = [];
-		if ($existingObject != null && $existingObject instanceof Location) {
-			$objectActions[] = [
-				'text' => 'Reset Facets To Default',
-				'url' => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
-			];
-		} else {
-			echo("Existing object is null");
-		}
-		return $objectActions;
-	}
-
 	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/admin/systemslocations';
 	}

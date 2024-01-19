@@ -26,6 +26,13 @@ SOFTWARE.
 
 import java.util.Locale;
 
+import org.json.HTTPTokener;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+
 /**
  * Convert an HTTP header to a JSONObject and back.
  * @author JSON.org

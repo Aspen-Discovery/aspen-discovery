@@ -1,9 +1,9 @@
 package com.turning_leaf_technologies.indexing;
 
 public class IlsTitle {
-	private long checksum;
-	private long dateFirstDetected;
-	private boolean isDeleted;
+	private final long checksum;
+	private final long dateFirstDetected;
+	private final boolean isDeleted;
 
 	public IlsTitle(long checksum, long dateFirstDetected, boolean isDeleted) {
 		this.checksum = checksum;

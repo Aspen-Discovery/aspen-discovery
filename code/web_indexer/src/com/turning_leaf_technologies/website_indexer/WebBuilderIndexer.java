@@ -2,16 +2,14 @@ package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,13 +21,13 @@ class WebBuilderIndexer {
 	private final Connection aspenConn;
 	private final Ini configIni;
 
-	private final ConcurrentUpdateSolrClient solrUpdateServer;
+	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 	private final HashMap<Long, String> audiences = new HashMap<>();
 	private final HashMap<Long, String> categories = new HashMap<>();
 	private final HashMap<Long, String> librarySubdomains = new HashMap<>();
 	private final HashMap<Long, String> libraryBaseUrls = new HashMap<>();
 
-	WebBuilderIndexer(Ini configIni, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer){
+	WebBuilderIndexer(Ini configIni, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateHttp2SolrClient solrUpdateServer){
 		this.configIni = configIni;
 		this.logEntry = logEntry;
 		this.aspenConn = aspenConn;
@@ -46,8 +44,8 @@ class WebBuilderIndexer {
 			solrUpdateServer.deleteByQuery("recordtype:\"BasicPage\"");
 			solrUpdateServer.deleteByQuery("recordtype:\"PortalPage\"");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-		} catch (HttpSolrClient.RemoteSolrException rse) {
-			logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
+		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
+			logEntry.addNote("Solr is not running properly, try restarting " + rse);
 			System.exit(-1);
 		} catch (Exception e) {
 			logEntry.incErrors("Error deleting from index ", e);
@@ -73,7 +71,7 @@ class WebBuilderIndexer {
 				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 				String baseUrl = getLibrarySubdomainsRS.getString("baseUrl");
-				if (baseUrl == null || baseUrl.trim().length() == 0 || baseUrl.equals("null")){
+				if (baseUrl == null || baseUrl.trim().isEmpty() || baseUrl.equals("null")){
 					baseUrl = configIni.get("Site", "url");
 				}
 				libraryBaseUrls.put(getLibrarySubdomainsRS.getLong("libraryId"), baseUrl);
@@ -157,7 +155,7 @@ class WebBuilderIndexer {
 
 				String teaser = getResourcesRS.getString("teaser");
 				String description = getResourcesRS.getString("description");
-				if (teaser == null || teaser.length() == 0){
+				if (teaser == null || teaser.isEmpty()){
 					teaser = AspenStringUtils.trimTo(250, description);
 				}
 				solrDocument.addField("description", teaser);
@@ -210,7 +208,7 @@ class WebBuilderIndexer {
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
 				String url = getBasicPagesRS.getString("urlAlias");
-				if (url.length() == 0){
+				if (url.isEmpty()){
 					url = "/WebBuilder/BasicPage?id=" + id;
 				}
 				solrDocument.addField("source_url", url);
@@ -220,7 +218,7 @@ class WebBuilderIndexer {
 				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 				String teaser = getBasicPagesRS.getString("teaser");
 				String contents = getBasicPagesRS.getString("contents");
-				if (teaser == null || teaser.length() == 0){
+				if (teaser == null || teaser.isEmpty()){
 					teaser = AspenStringUtils.trimTo(250, contents);
 				}
 				solrDocument.addField("description", teaser);
@@ -278,7 +276,7 @@ class WebBuilderIndexer {
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
 				String url = getPortalPagesRS.getString("urlAlias");
-				if (url.length() == 0){
+				if (url.isEmpty()){
 					url = "/WebBuilder/PortalPage?id=" + id;
 				}
 				solrDocument.addField("source_url", url);

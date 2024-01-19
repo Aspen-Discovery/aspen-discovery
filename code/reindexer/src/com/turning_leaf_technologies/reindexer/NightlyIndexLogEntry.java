@@ -90,7 +90,6 @@ public class NightlyIndexLogEntry implements BaseIndexingLogEntry {
 	}
 
 	@Override
-	@SuppressWarnings("UnusedReturnValue")
 	public boolean saveResults() {
 		try {
 			if (logEntryId == null){

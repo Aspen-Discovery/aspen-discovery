@@ -91,17 +91,14 @@ public class ItemInfo{
 		this.locationCode = locationCode;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentUrl() {
 		return eContentUrl;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentUrl(String eContentUrl) {
 		this.eContentUrl = eContentUrl;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentFilename(String eContentFilename) {
 		this.eContentFilename = eContentFilename;
 	}
@@ -280,7 +277,6 @@ public class ItemInfo{
 		this.trimmedIType = AspenStringUtils.trimTrailingPunctuation(IType);
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentSource() {
 		return eContentSource;
 	}
@@ -289,7 +285,6 @@ public class ItemInfo{
 		return trimmedEContentSource;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
 		this.trimmedEContentSource = AspenStringUtils.trimTrailingPunctuation(eContentSource);

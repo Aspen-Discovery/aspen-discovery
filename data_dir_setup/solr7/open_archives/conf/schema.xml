@@ -5,7 +5,7 @@
 		<fieldType name="integer" class="IntPointField"/>
 		<fieldType name="long" class="LongPointField"/>
 		<fieldType name="float" class="FloatPointField"/>
-		<fieldType name="date" class="DateRangeField"/>
+		<fieldType name="date" class="DatePointField"/>
 		<fieldType name="random" class="RandomSortField"/>
 		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">

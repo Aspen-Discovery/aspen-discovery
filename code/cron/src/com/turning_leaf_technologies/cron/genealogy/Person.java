@@ -74,7 +74,7 @@ public class Person {
 	    	comments = rs.getString("comments");
 	    	if (rs.wasNull()) comments = null;
 		} catch (SQLException e) {
-			System.err.println("Error loading person " + e.toString());
+			System.err.println("Error loading person " + e);
 		}
     }
     String createMatchingQuery(){
@@ -111,7 +111,7 @@ public class Person {
 					numObituaries = obitRs.getInt(1);
 				}
 			} catch (SQLException e) {
-				System.out.println("Error loading obituaries for person " + personId + " " + e.toString());
+				System.out.println("Error loading obituaries for person " + personId + " " + e);
 			}
     	}
     	return numObituaries;
@@ -125,7 +125,7 @@ public class Person {
 					numMarriages = marriageRs.getInt(1);
 				}
 			} catch (SQLException e) {
-				System.out.println("Error loading mariages for person " + personId + " " + e.toString());
+				System.out.println("Error loading mariages for person " + personId + " " + e);
 			}
     	}
     	return numMarriages;
@@ -135,11 +135,11 @@ public class Person {
     	//Check to see which person is the better of the 2 records
     	//since they may not be exact duplicates of the other.
     	int thisBetterFactors = 0;
-    	int comment1Length = (this.comments == null || this.comments.length() == 0) ? 0 : this.comments.length();
-    	int comment2Length = (person2.comments == null || person2.comments.length() == 0) ? 0 : person2.comments.length();
+    	int comment1Length = (this.comments == null || this.comments.isEmpty()) ? 0 : this.comments.length();
+    	int comment2Length = (person2.comments == null || person2.comments.isEmpty()) ? 0 : person2.comments.length();
     	if (comment1Length != comment2Length) thisBetterFactors += (comment1Length > comment2Length) ? 1 : -1;
-    	int picture1Length = (this.picture == null || this.picture.length() == 0) ? 0 : this.picture.length();
-    	int picture2Length = (person2.picture == null || person2.picture.length() == 0) ? 0 : person2.picture.length();
+    	int picture1Length = (this.picture == null || this.picture.isEmpty()) ? 0 : this.picture.length();
+    	int picture2Length = (person2.picture == null || person2.picture.isEmpty()) ? 0 : person2.picture.length();
     	if (picture1Length != picture2Length) thisBetterFactors += (picture1Length > picture2Length) ? 1 : -1;
     	int numMarriages1 = getNumMarriages(conn);
     	int numMarriages12 = person2.getNumMarriages(conn);
@@ -162,17 +162,15 @@ public class Person {
     		return thisBetterFactors > 0;
     	}
     }
-    public boolean delete(Connection conn){
+    public void delete(Connection conn){
     	try {
     		System.out.println("Deleting person " + personId);
 			Statement deleteStatement = conn.createStatement();
 			deleteStatement.execute("DELETE FROM obituary where personId = " + personId);
 			deleteStatement.execute("DELETE FROM marriage where personId = " + personId);
 			deleteStatement.execute("DELETE FROM person where personId = " + personId);
-			return true;
-		} catch (SQLException e) {
-			System.out.println("Error deleting person " + e.toString());
-			return false;
-		}
+	    } catch (SQLException e) {
+			System.out.println("Error deleting person " + e);
+	    }
     }
 }

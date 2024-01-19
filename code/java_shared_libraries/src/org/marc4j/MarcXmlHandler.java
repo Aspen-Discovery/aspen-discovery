@@ -28,10 +28,10 @@ import java.util.Set;
 
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
-import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
+import org.marc4j.marc.Leader;
+import org.marc4j.marc.MarcFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -94,18 +94,18 @@ public class MarcXmlHandler implements ContentHandler {
     /** Set for mapping of element strings to constants (Integer) */
     private static final Map<String, Integer> ELEMENTS;
 
-    private MarcFactory factory = null;
+    private final MarcFactory factory;
 
     static {
-        ELEMENTS = new HashMap<String, Integer>();
-        ELEMENTS.put("collection", new Integer(COLLECTION_ID));
-        ELEMENTS.put("leader", new Integer(LEADER_ID));
-        ELEMENTS.put("record", new Integer(RECORD_ID));
-        ELEMENTS.put("controlfield", new Integer(CONTROLFIELD_ID));
-        ELEMENTS.put("datafield", new Integer(DATAFIELD_ID));
-        ELEMENTS.put("subfield", new Integer(SUBFIELD_ID));
+        ELEMENTS = new HashMap<>();
+        ELEMENTS.put("collection", COLLECTION_ID);
+        ELEMENTS.put("leader", LEADER_ID);
+        ELEMENTS.put("record", RECORD_ID);
+        ELEMENTS.put("controlfield", CONTROLFIELD_ID);
+        ELEMENTS.put("datafield", DATAFIELD_ID);
+        ELEMENTS.put("subfield", SUBFIELD_ID);
 
-        RECORD_TYPES = new HashSet<String>();
+        RECORD_TYPES = new HashSet<>();
         RECORD_TYPES.add("Bibliographic");
         RECORD_TYPES.add("Authority");
         RECORD_TYPES.add("Holdings");
@@ -127,38 +127,38 @@ public class MarcXmlHandler implements ContentHandler {
      * An event fired at the start of the document.
      */
     @Override
-    public void startDocument() throws SAXException {
+    public void startDocument() {
     }
 
     /**
      * An event fired at the start of an element.
      */
     @Override
-    public void startElement(final String uri, final String name, final String qName, final Attributes atts)
-            throws SAXException {
-        final String realname = name.length() == 0 ? qName : name;
-        final Integer elementType = ELEMENTS.get(stripNsPrefix(realname));
+    public void startElement(final String uri, final String name, final String qName, final Attributes attributes) {
+        final String realName = name.isEmpty() ? qName : name;
+        final Integer elementType = ELEMENTS.get(stripNsPrefix(realName));
 
         if (elementType == null) {
             if (record != null) {
-                record.addError("n/a", "n/a", MarcError.MINOR_ERROR, "Unexpected XML element: " + realname);
+                record.addError("n/a", "n/a", MarcError.MINOR_ERROR, "Unexpected XML element: " + realName);
                 return;  
             } else { 
-                throw new MarcException("Unexpected XML element: " + realname);
+                throw new MarcException("Unexpected XML element: " + realName);
             }
         }
 
-        switch (elementType.intValue()) {
+        switch (elementType) {
             case COLLECTION_ID:
                 break;
             case RECORD_ID:
-                final String typeAttr = atts.getValue(TYPE_ATTR);
+                final String typeAttr = attributes.getValue(TYPE_ATTR);
 
                 record = factory.newRecord();
 
                 if (typeAttr != null && RECORD_TYPES.contains(typeAttr)) {
                     record.setType(typeAttr);
                 }
+                //noinspection UnusedAssignment
                 prev_tag = "n/a";
                 
                 break;
@@ -166,7 +166,7 @@ public class MarcXmlHandler implements ContentHandler {
                 sb = new StringBuffer();
                 break;
             case CONTROLFIELD_ID:
-                tag = atts.getValue(TAG_ATTR);
+                tag = attributes.getValue(TAG_ATTR);
 
                 if (tag == null) {
                     if (record != null) {
@@ -181,7 +181,7 @@ public class MarcXmlHandler implements ContentHandler {
                 sb = new StringBuffer();
                 break;
             case DATAFIELD_ID:
-                tag = atts.getValue(TAG_ATTR);
+                tag = attributes.getValue(TAG_ATTR);
 
                 if (tag == null) {
                     if (record != null) {
@@ -192,8 +192,8 @@ public class MarcXmlHandler implements ContentHandler {
                     break;
                 }
 
-                String ind1 = atts.getValue(IND_1_ATTR);
-                String ind2 = atts.getValue(IND_2_ATTR);
+                String ind1 = attributes.getValue(IND_1_ATTR);
+                String ind2 = attributes.getValue(IND_2_ATTR);
 
                 if (ind1 == null) {
                     if (record != null) {
@@ -213,18 +213,18 @@ public class MarcXmlHandler implements ContentHandler {
                     break;
                 }
 
-                if (ind1.length() == 0) {
+                if (ind1.isEmpty()) {
                     ind1 = " ";
                 }
 
-                if (ind2.length() == 0) {
+                if (ind2.isEmpty()) {
                     ind2 = " ";
                 }
 
                 dataField = factory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
                 break;
             case SUBFIELD_ID:
-                String code = atts.getValue(CODE_ATTR);
+                String code = attributes.getValue(CODE_ATTR);
 
                 if (code == null) {
                     if (record != null) {
@@ -235,7 +235,7 @@ public class MarcXmlHandler implements ContentHandler {
                     break;
                 }
 
-                if (code.length() == 0) {
+                if (code.isEmpty()) {
                     code = " ";
                 }
 
@@ -264,23 +264,23 @@ public class MarcXmlHandler implements ContentHandler {
      *
      * @param uri - the uri
      * @param name - the name
-     * @param qName - the qname
+     * @param qName - the qName
      */
     @Override
-    public void endElement(final String uri, final String name, final String qName) throws SAXException {
-        final String realname = name.length() == 0 ? qName : name;
-        final Integer elementType = ELEMENTS.get(stripNsPrefix(realname));
+    public void endElement(final String uri, final String name, final String qName) {
+        final String realName = name.isEmpty() ? qName : name;
+        final Integer elementType = ELEMENTS.get(stripNsPrefix(realName));
 
         if (elementType == null) {
             if (record != null) {
-                //record.addError("n/a", "n/a", MarcError.MINOR_ERROR, "Unexpected XML element: " + realname);
+                //record.addError("n/a", "n/a", MarcError.MINOR_ERROR, "Unexpected XML element: " + realName);
                 return;  
             } else { 
-                throw new MarcException("Unexpected XML element: " + realname);
+                throw new MarcException("Unexpected XML element: " + realName);
             }
         }
 
-        switch (elementType.intValue()) {
+        switch (elementType) {
             case COLLECTION_ID:
                 break;
             case RECORD_ID:
@@ -318,7 +318,7 @@ public class MarcXmlHandler implements ContentHandler {
      * An event fired at the end of the document.
      */
     @Override
-    public void endDocument() throws SAXException {
+    public void endDocument() {
         queue.end();
     }
 
@@ -330,7 +330,7 @@ public class MarcXmlHandler implements ContentHandler {
      * @param length - how many characters to ignore
      */
     @Override
-    public void ignorableWhitespace(final char[] data, final int offset, final int length) throws SAXException {
+    public void ignorableWhitespace(final char[] data, final int offset, final int length) {
         // not implemented
     }
 
@@ -340,7 +340,7 @@ public class MarcXmlHandler implements ContentHandler {
      * @param prefix - the prefix
      */
     @Override
-    public void endPrefixMapping(final String prefix) throws SAXException {}
+    public void endPrefixMapping(final String prefix) {}
 
     /**
      * An event fired while consuming a skipped entity.
@@ -348,7 +348,7 @@ public class MarcXmlHandler implements ContentHandler {
      * @param name - the entity to skip
      */
     @Override
-    public void skippedEntity(final String name) throws SAXException {
+    public void skippedEntity(final String name) {
         // not implemented
     }
 
@@ -369,7 +369,7 @@ public class MarcXmlHandler implements ContentHandler {
      * @param data - the data
      */
     @Override
-    public void processingInstruction(final String target, final String data) throws SAXException {
+    public void processingInstruction(final String target, final String data) {
         // not implemented
     }
 
@@ -380,7 +380,7 @@ public class MarcXmlHandler implements ContentHandler {
      * @param uri - the uri
      */
     @Override
-    public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
+    public void startPrefixMapping(final String prefix, final String uri) {
         // not implemented
     }
 

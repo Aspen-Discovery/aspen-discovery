@@ -24,7 +24,7 @@ public class MarcReaderFactory {
         } else if (inputFilenames.length == 1) {
             return makeReader(config, searchDirectories, inputFilenames[0]);
         }
-        final List<MarcReader> readers = new ArrayList<MarcReader>();
+        final List<MarcReader> readers = new ArrayList<>();
         for (final String inputFilename : inputFilenames) {
             final MarcReader reader = makeReaderPart(config, inputFilename);
             readers.add(reader);
@@ -37,13 +37,13 @@ public class MarcReaderFactory {
     public static MarcReader makeReader(MarcReaderConfig config, final String[] searchDirectories,
             final List<String> inputFilenames) throws IOException {
 
-        if (inputFilenames.size() == 0) {
+        if (inputFilenames.isEmpty()) {
             return makeReader(config, searchDirectories, "stdin");
         } else if (inputFilenames.size() == 1) {
             return makeReader(config, searchDirectories, inputFilenames.iterator().next());
         }
 
-        final List<MarcReader> readers = new ArrayList<MarcReader>();
+        final List<MarcReader> readers = new ArrayList<>();
 
         for (final String inputFilename : inputFilenames) {
             final MarcReader reader = makeReaderPart(config, inputFilename);
@@ -73,8 +73,7 @@ public class MarcReaderFactory {
             throws IOException {
 
         InputStream is = new FileInputStream(inputFilename);
-        MarcReader reader = makeReaderInternal(config, is);
-        return reader;
+	    return makeReaderInternal(config, is);
     }
 
     public static MarcReader makeReader(MarcReaderConfig config, final InputStream input)
@@ -85,14 +84,13 @@ public class MarcReaderFactory {
     }
 
 
-    private static MarcReader makeReaderInternal(MarcReaderConfig config, final InputStream input)
-            throws IOException {
+    private static MarcReader makeReaderInternal(MarcReaderConfig config, final InputStream input) {
 
-        boolean inputTypeXML = false;
+        boolean inputTypeXML;
 
-        boolean inputTypeBinary = false;
+        boolean inputTypeBinary;
 
-        boolean inputTypeJSON = false;
+        boolean inputTypeJSON;
 
         boolean inputTypeMrk8 = false;
 
@@ -116,32 +114,32 @@ public class MarcReaderFactory {
             // logger.error("Fatal error: Exception reading from InputStream");
             throw new IllegalArgumentException("Fatal error: Exception reading from InputStream");
         }
-        final String filestart = new String(buffer);
+        final String fileStart = new String(buffer);
         inputTypeXML = false;
         inputTypeBinary = false;
         inputTypeJSON = false;
 
-        if (numRead == -1 || filestart.length() == 0) {
+        if (numRead == -1 || fileStart.isEmpty()) {
             inputTypeBinary = true;
-        } else if (filestart.substring(0, 5).equalsIgnoreCase("<?xml")) {
+        } else if (fileStart.substring(0, 5).equalsIgnoreCase("<?xml")) {
             inputTypeXML = true;
-        } else if (filestart.startsWith("{")) {
+        } else if (fileStart.startsWith("{")) {
             inputTypeJSON = true;
-        } else if (filestart.substring(0, 5).matches("\\d\\d\\d\\d\\d")) {
+        } else if (fileStart.substring(0, 5).matches("\\d\\d\\d\\d\\d")) {
             inputTypeBinary = true;
-        } else if (filestart.contains("<?xml") || filestart.contains("<?XML")) {
+        } else if (fileStart.contains("<?xml") || fileStart.contains("<?XML")) {
             inputTypeXML = true;
-        } else if (filestart.contains("<collection")) {
+        } else if (fileStart.contains("<collection")) {
             inputTypeXML = true;
-        } else if (filestart.matches("[^<]*<[^:>]+:collection[ >].*")) {
+        } else if (fileStart.matches("[^<]*<[^:>]+:collection[ >].*")) {
             inputTypeXML = true;
-        } else if (filestart.contains("<record")) {
+        } else if (fileStart.contains("<record")) {
             inputTypeXML = true;
-        } else if (filestart.matches("[^<]*<[^:>]+:record[ >].*")) {
+        } else if (fileStart.matches("[^<]*<[^:>]+:record[ >].*")) {
             inputTypeXML = true;
-        } else if (filestart.contains("<!--")) {
+        } else if (fileStart.contains("<!--")) {
             inputTypeXML = true;
-        } else if (filestart.contains("=LDR  ")) {
+        } else if (fileStart.contains("=LDR  ")) {
             inputTypeMrk8 = true;
         }
 
@@ -158,9 +156,9 @@ public class MarcReaderFactory {
             reader = new MarcPermissiveStreamReader(is, config.isPermissiveReader(), 
                     config.toUtf8(), config.getDefaultEncoding());
         } else {
-            // logger.error("Fatal error: Unable to determine type of inputfile");
+            // logger.error("Fatal error: Unable to determine type of input file");
             throw new IllegalArgumentException(
-                    "Fatal error: Unable to determine type of inputfile.  File starts with: " + filestart);
+                    "Fatal error: Unable to determine type of input file.  File starts with: " + fileStart);
         }
         return (reader);
     }
@@ -200,13 +198,12 @@ public class MarcReaderFactory {
                 remapProps.load(remapInputStream);
 
                 reader = new MarcScriptedRecordEditReader(reader, marcDeleteSubfields, remapProps);
-            }
-            else if (marcDeleteSubfields != null) {
+            } else {
                 reader = new MarcScriptedRecordEditReader(reader, marcDeleteSubfields, null);
             }
         }
 
-        // Do translating last so that if we are Filtering as well as
+        // Do translation last so that if we are Filtering as well as
         // translating, we don't expend the
         // effort to translate records, which may then be filtered out and
         // discarded.
@@ -217,18 +214,5 @@ public class MarcReaderFactory {
         return reader;
 
     }
-
-    // private static void setMarc4JProperties(final Properties configProps) {
-    // for (final String prop : configProps.stringPropertyNames()) {
-    // if (prop.startsWith("org.marc4j.")) {
-    // final String value = configProps.getProperty(prop);
-    // System.setProperty(prop, value);
-    // } else if (configProps.getProperty("marc.override") != null) {
-    // System.setProperty("org.marc4j.marc.MarcFactory",
-    // configProps.getProperty(
-    // "marc.override").trim());
-    // }
-    // }
-    // }
 
 }

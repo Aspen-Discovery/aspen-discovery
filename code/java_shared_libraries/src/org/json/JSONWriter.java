@@ -57,6 +57,12 @@ SOFTWARE.
  * @author JSON.org
  * @version 2016-08-08
  */
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONString;
+
 public class JSONWriter {
     private static final int maxdepth = 200;
 

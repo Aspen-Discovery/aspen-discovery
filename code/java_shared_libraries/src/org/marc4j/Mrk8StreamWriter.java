@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 import org.marc4j.converter.CharConverter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
+import org.marc4j.marc.Leader;
 import org.marc4j.marc.VariableField;
 
 /**
@@ -77,7 +77,7 @@ public class Mrk8StreamWriter implements MarcWriter {
         final StringBuilder recordStringBuilder = new StringBuilder();
 
         final Leader ldr = record.getLeader();
-        recordStringBuilder.append("=").append("LDR").append("  ").append(ldr.marshal()).append(System.lineSeparator());;
+        recordStringBuilder.append("=").append("LDR").append("  ").append(ldr.marshal()).append(System.lineSeparator());
 
         for (final VariableField field : record.getVariableFields()) {
             recordStringBuilder.append("=").append(field.getTag()).append("  ");

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.net;
 
 import org.apache.logging.log4j.Logger;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -18,7 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 

@@ -109,7 +109,7 @@ class ExtractOverDriveInfo {
 			getRecordGroupingProcessor();
 
 			try {
-				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
+				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().isEmpty() || settings.getClientKey().isEmpty() || settings.getAccountId().isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
 				} else {
 					if (checkForDeletedRecords) {
@@ -141,7 +141,7 @@ class ExtractOverDriveInfo {
 					for (OverDriveRecordInfo recordInfo : allProductsInOverDrive.values()) {
 						boolean libraryConnectedToAspen = false;
 						for (AdvantageCollectionInfo collectionInfo : recordInfo.getCollections()) {
-							if (collectionInfo.getAspenLibraryIds().size() > 0) {
+							if (!collectionInfo.getAspenLibraryIds().isEmpty()) {
 								libraryConnectedToAspen = true;
 								break;
 							}
@@ -399,7 +399,7 @@ class ExtractOverDriveInfo {
 			initOverDriveExtract(dbConn, logEntry);
 
 			try {
-				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
+				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().isEmpty() || settings.getClientKey().isEmpty() || settings.getAccountId().isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
@@ -531,7 +531,6 @@ class ExtractOverDriveInfo {
 		//Load last extract time regardless of if we are doing full index or partial index
 		if (!settings.isRunFullUpdate()) {
 			lastExtractDate = new Date(settings.getLastUpdateOfChangedRecords() * 1000);
-			@SuppressWarnings("SpellCheckingInspection")
 			SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 			//lastUpdateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 			logger.info("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
@@ -714,7 +713,7 @@ class ExtractOverDriveInfo {
 				}
 				AdvantageCollectionInfo mainCollectionInfo = null;
 				boolean loadCollectionInfo = false;
-				if (loadType == LOAD_ALL_PRODUCTS || allAdvantageCollections.size() == 0) {
+				if (loadType == LOAD_ALL_PRODUCTS || allAdvantageCollections.isEmpty()) {
 					mainCollectionInfo = new AdvantageCollectionInfo();
 					mainCollectionInfo.setAdvantageId(-1);
 					mainCollectionInfo.setName("Shared Libby Collection");
@@ -828,7 +827,7 @@ class ExtractOverDriveInfo {
 			}
 			processCollection = false;
 		}else{
-			if (collectionInfo.getAspenLibraryIds().size() == 0){
+			if (collectionInfo.getAspenLibraryIds().isEmpty()){
 				processCollection = false;
 			}
 		}
@@ -932,7 +931,7 @@ class ExtractOverDriveInfo {
 	}
 
 	private void loadProductsFromUrl(AdvantageCollectionInfo collectionInfo, String mainProductUrl, int loadType, long startTime) throws JSONException, SocketTimeoutException {
-		if  (loadType == LOAD_ALL_PRODUCTS && collectionInfo.getAspenLibraryIds().size() == 0) {
+		if  (loadType == LOAD_ALL_PRODUCTS && collectionInfo.getAspenLibraryIds().isEmpty()) {
 			logger.info("Not loading products for " + collectionInfo.getName() + " since it is not part of Aspen");
 		}
 		int numProductsLoaded = 0;
@@ -950,7 +949,7 @@ class ExtractOverDriveInfo {
 				logEntry.addNote(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryIds for the collection are " + collectionInfo.getAspenLibraryIds());
 				logEntry.saveResults();
 			}
-			long batchSize = 300;
+			int batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {
 				//Just search for the specific product
 				String batchUrl = mainProductUrl;
@@ -1021,7 +1020,7 @@ class ExtractOverDriveInfo {
 							try {
 								Thread.sleep(30000);
 							} catch (InterruptedException e) {
-								e.printStackTrace();
+								logEntry.addNote("Sleeping after loading product batch was interrupted");
 							}
 						}
 					}
@@ -1058,7 +1057,6 @@ class ExtractOverDriveInfo {
 			ResultSet getProductIdByOverDriveIdRS = getProductIdByOverDriveIdStmt.executeQuery();
 			if (getProductIdByOverDriveIdRS.next()){
 				curRecord.setDatabaseId(getProductIdByOverDriveIdRS.getLong("id"));
-				curRecord.setDeleted(getProductIdByOverDriveIdRS.getBoolean("deleted"));
 			}else{
 				curRecord.isNew = true;
 			}
@@ -1114,7 +1112,7 @@ class ExtractOverDriveInfo {
 			String primaryCreatorName = "";
 			if (metaData.has("creators")){
 				JSONArray creators = metaData.getJSONArray("creators");
-				if (creators.length() > 0) {
+				if (!creators.isEmpty()) {
 					JSONObject primaryCreator = creators.getJSONObject(0);
 					primaryCreatorRole = primaryCreator.getString("role");
 					if (primaryCreator.has("fileAs")) {
@@ -1280,7 +1278,7 @@ class ExtractOverDriveInfo {
 						JSONArray identifiers = format.getJSONArray("identifiers");
 						for (int j = 0; j < identifiers.length(); j++){
 							JSONObject identifier = identifiers.getJSONObject(j);
-							if (identifier.getString("value").length() > 0) {
+							if (!identifier.getString("value").isEmpty()) {
 								uniqueIdentifiers.add(identifier.getString("type") + ":" + identifier.getString("value"));
 							}
 						}
@@ -1347,7 +1345,6 @@ class ExtractOverDriveInfo {
 			while (existingAvailabilityRS.next()){
 				OverDriveAvailabilityInfo existingAvailability = new OverDriveAvailabilityInfo();
 				existingAvailability.setId(existingAvailabilityRS.getLong("id"));
-				existingAvailability.setSettingId(existingAvailabilityRS.getLong("settingId"));
 				existingAvailability.setLibraryId(existingAvailabilityRS.getLong("libraryId"));
 				existingAvailability.setAvailable(existingAvailabilityRS.getBoolean("available"));
 				existingAvailability.setCopiesOwned(existingAvailabilityRS.getInt("copiesOwned"));
@@ -1367,7 +1364,7 @@ class ExtractOverDriveInfo {
 		//We need to load availability for every collection because sharing can vary, but we only need to do the shared collection
 		//and any of our libraries that have Advantage collections
 		for (AdvantageCollectionInfo collectionInfo : overDriveInfo.getCollections()){
-			if (collectionInfo.getAspenLibraryIds().size() == 0){
+			if (collectionInfo.getAspenLibraryIds().isEmpty()){
 				continue;
 			}
 			es.execute(() -> {

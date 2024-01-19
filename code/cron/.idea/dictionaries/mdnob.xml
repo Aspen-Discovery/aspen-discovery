@@ -29,6 +29,8 @@
       <w>biblio</w>
       <w>biblionumber</w>
       <w>biblioserver</w>
+      <w>binaek</w>
+      <w>bingepass</w>
       <w>bisac</w>
       <w>bisacmt</w>
       <w>bisacrt</w>
@@ -65,6 +67,7 @@
       <w>controlfield</w>
       <w>copynumber</w>
       <w>crontab</w>
+      <w>curdate</w>
       <w>datafield</w>
       <w>dateaccessioned</w>
       <w>datearrived</w>
@@ -90,6 +93,7 @@
       <w>econtent</w>
       <w>ejournal</w>
       <w>emagazine</w>
+      <w>emca</w>
       <w>emusic</w>
       <w>enablereplication</w>
       <w>enumchron</w>
@@ -106,6 +110,7 @@
       <w>gamecube</w>
       <w>gifs</w>
       <w>goreader</w>
+      <w>hexify</w>
       <w>hmac</w>
       <w>holdingbranch</w>
       <w>homebranch</w>
@@ -136,10 +141,12 @@
       <w>lccn</w>
       <w>lccns</w>
       <w>lexile</w>
+      <w>libcal</w>
       <w>loginpassword</w>
       <w>longoverdue</w>
       <w>marcout</w>
       <w>marcs</w>
+      <w>marcxml</w>
       <w>materialtypes</w>
       <w>mclauth</w>
       <w>mcpld</w>
@@ -163,6 +170,7 @@
       <w>oclcs</w>
       <w>ocode</w>
       <w>offsite</w>
+      <w>ogonek</w>
       <w>ohohseven</w>
       <w>ohost</w>
       <w>oneclick</w>
@@ -171,30 +179,36 @@
       <w>onshelf</w>
       <w>opac</w>
       <w>osrf</w>
+      <w>overbar</w>
       <w>overdriveid</w>
       <w>overidden</w>
       <w>patronbarcode</w>
       <w>patroncodes</w>
+      <w>pcrud</w>
       <w>pcts</w>
       <w>photonegative</w>
       <w>physicalobject</w>
       <w>pika</w>
+      <w>pilcrow</w>
       <w>pinnell</w>
       <w>playaway</w>
       <w>postgresql</w>
       <w>poststamp</w>
+      <w>pratter</w>
       <w>prestamp</w>
       <w>prevscreen</w>
       <w>ptype</w>
       <w>puliter</w>
       <w>rbdigital</w>
       <w>recordtype</w>
+      <w>reindexed</w>
       <w>reindexer</w>
       <w>replacementprice</w>
       <w>replacementpricedate</w>
       <w>reshelve</w>
       <w>resv</w>
       <w>rsrc</w>
+      <w>sarkar</w>
       <w>searchstring</w>
       <w>searchtype</w>
       <w>seedpacket</w>
@@ -212,12 +226,14 @@
       <w>sounddisc</w>
       <w>soundrecording</w>
       <w>sourcebrowse</w>
+      <w>spammy</w>
       <w>spellcheck</w>
       <w>spidering</w>
       <w>springshare</w>
       <w>sslfactory</w>
       <w>sssxxx</w>
       <w>startdate</w>
+      <w>stdin</w>
       <w>stocknumber</w>
       <w>subdomain</w>
       <w>subdomains</w>
@@ -235,7 +251,10 @@
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>
+      <w>uncompress</w>
       <w>unencoded</w>
+      <w>unimarc</w>
+      <w>unpretty</w>
       <w>unscoped</w>
       <w>unstemmed</w>
       <w>upcs</w>
@@ -251,6 +270,7 @@
       <w>wkst</w>
       <w>wonderbook</w>
       <w>xbox</w>
+      <w>xmlns</w>
       <w>yourcloudlibrary</w>
       <w>zebraqueue</w>
       <w>zzzz</w>

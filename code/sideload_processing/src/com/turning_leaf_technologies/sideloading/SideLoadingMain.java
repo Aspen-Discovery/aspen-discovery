@@ -18,7 +18,6 @@ import org.ini4j.Ini;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.marc.Record;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +46,7 @@ public class SideLoadingMain {
 		String profileToLoad = "";
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -59,14 +58,14 @@ public class SideLoadingMain {
 		String processName = "sideload_processing";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			Date startTime = new Date();
-			logger.info(startTime.toString() + ": Starting Side Load Export");
+			logger.info(startTime + ": Starting Side Load Export");
 			startTimeForLogging = startTime.getTime() / 1000;
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -83,7 +82,7 @@ public class SideLoadingMain {
 			//Get a list of side loads
 			try {
 				PreparedStatement getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads ORDER BY name");
-				if (profileToLoad.length() > 0){
+				if (!profileToLoad.isEmpty()){
 					getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads where name = ? OR id = ? ORDER BY name");
 					getSideloadsStmt.setString(1, profileToLoad);
 					getSideloadsStmt.setString(2, profileToLoad);
@@ -114,7 +113,7 @@ public class SideLoadingMain {
 				groupedWorkIndexer = null;
 			}
 
-			logger.info("Finished exporting data " + new Date().toString());
+			logger.info("Finished exporting data " + new Date());
 			long endTime = new Date().getTime();
 			long elapsedTime = endTime - startTime.getTime();
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
@@ -151,7 +150,7 @@ public class SideLoadingMain {
 
 			disconnectDatabase(aspenConn);
 
-			if (profileToLoad.length() > 0){
+			if (!profileToLoad.isEmpty()){
 				break;
 			}
 
@@ -169,6 +168,8 @@ public class SideLoadingMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static void processSideLoad(SideLoadSettings settings, PreparedStatement getFilesForSideloadStmt, PreparedStatement insertSideloadFileStmt, PreparedStatement updateSideloadFileStmt) {
@@ -202,10 +203,10 @@ public class SideLoadingMain {
 						if (curFile.getFilename().equalsIgnoreCase(marcFile.getName())){
 							logger.warn("Matched file on file system '" + marcFile.getName() + " 'to file in database - id " + curFile.getId());
 							curFile.setExistingFile(marcFile);
-							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then readd
+							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then re-add
 							filesToProcess.remove(curFile);
 							filesToProcess.add(curFile);
-							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile.toString());
+							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile);
 							foundFileInDB = true;
 							break;
 						}
@@ -341,7 +342,7 @@ public class SideLoadingMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				//getGroupedWorkIndexer().loadMarcRecordFromDatabase() Ticket 95343
-				Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					//Regroup the record
 					String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
@@ -370,7 +371,7 @@ public class SideLoadingMain {
 			MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(fileToProcess), true, true, settings.getMarcEncoding());
 			while (marcReader.hasNext()) {
 				try {
-					Record marcRecord = marcReader.next();
+					org.marc4j.marc.Record marcRecord = marcReader.next();
 					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 					if (recordIdentifier != null) {
 						existingRecords.remove(recordIdentifier.getIdentifier());
@@ -436,7 +437,7 @@ public class SideLoadingMain {
 				System.exit(1);
 			}
 		} catch (Exception e) {
-			logger.error("Error connecting to Aspen database " + e.toString());
+			logger.error("Error connecting to Aspen database " + e);
 			System.exit(1);
 		}
 		return aspenConn;

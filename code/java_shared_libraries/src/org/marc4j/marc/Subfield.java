@@ -33,26 +33,26 @@ public interface Subfield extends Serializable {
      *
      * <p>
      * The purpose of this identifier is to provide an identifier for
-     * persistency.
+     * persistence.
      *
      * @param id
      *            the identifier
      */
-    public void setId(Long id);
+    void setId(Long id);
 
     /**
      * Returns the identifier.
      *
      * @return Long - the identifier
      */
-    public Long getId();
+    Long getId();
 
     /**
      * Returns the data element identifier.
      *
      * @return char - the data element identifier
      */
-    public char getCode();
+    char getCode();
 
     /**
      * Sets the data element identifier.
@@ -60,14 +60,14 @@ public interface Subfield extends Serializable {
      * @param code
      *            the data element identifier
      */
-    public void setCode(char code);
+    void setCode(char code);
 
     /**
      * Returns the data element.
      *
      * @return String - the data element
      */
-    public String getData();
+    String getData();
 
     /**
      * Sets the data element.
@@ -75,18 +75,18 @@ public interface Subfield extends Serializable {
      * @param data
      *            the data element
      */
-    public void setData(String data);
+    void setData(String data);
 
     /**
      * Returns true if the given regular expression matches a subsequence of the
      * data element.
      *
-     * See (@link java.util.regex.Pattern} for regular expressions.
+     * See (@link java.util.regex.Pattern) for regular expressions.
      *
      * @param pattern
      *            the regular expression
-     * @return true if the pattern matches, false othewise
+     * @return true if the pattern matches, false otherwise
      */
-    public boolean find(String pattern);
+    boolean find(String pattern);
 
 }

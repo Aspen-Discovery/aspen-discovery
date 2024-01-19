@@ -5,9 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.marc4j.marc.Leader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
@@ -53,7 +53,7 @@ public class MarcSplitStreamWriter extends MarcStreamWriter {
      * @param record - the <code>Record</code> object
      */
     @Override
-    public void write(final Record record) {
+    public void write(final Record record) throws MarcException {
         boolean doneWithRec = false;
         for (final DataField df : record.getDataFields()) {
             if (!df.getTag().matches(fieldsToSplit)) {
@@ -106,7 +106,7 @@ public class MarcSplitStreamWriter extends MarcStreamWriter {
                     if (!(df.getId() == null || df.getId().intValue() != 0)) {
                         continue;
                     }
-                    df.setId(new Long(0));
+                    df.setId(0L);
                     data.write(df.getIndicator1());
                     data.write(df.getIndicator2());
                     for (final Subfield sf : df.getSubfields()) {
@@ -142,9 +142,7 @@ public class MarcSplitStreamWriter extends MarcStreamWriter {
                 out.write(Constants.RT);
 
             } catch (final IOException e) {
-                throw new MarcException("IO Error occured while writing record", e);
-            } catch (final MarcException e) {
-                throw e;
+                throw new MarcException("IO Error occurred while writing record", e);
             }
         }
     }

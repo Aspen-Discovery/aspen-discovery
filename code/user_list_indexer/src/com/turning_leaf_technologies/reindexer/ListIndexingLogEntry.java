@@ -10,16 +10,16 @@ import java.util.Date;
 
 class ListIndexingLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 	private int numLists = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numSkipped = 0;
-	private Logger logger;
+	private final Logger logger;
 
     ListIndexingLogEntry(Connection dbConn, Logger logger){
 		this.logger = logger;
@@ -33,7 +33,7 @@ class ListIndexingLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
 		Date date = new Date();

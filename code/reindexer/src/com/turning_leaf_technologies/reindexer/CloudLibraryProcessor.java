@@ -75,7 +75,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				String rawMarc = productRS.getString("rawResponse");
 				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
 				if (reader.hasNext()) {
-					Record marcRecord = reader.next();
+					org.marc4j.marc.Record marcRecord = reader.next();
 					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
 
 					//Special processing for ILS Records
@@ -169,7 +169,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		//Unused, just calls updateGroupedWorkSolrDataBasedOnStandardMarcData
 	}
 

@@ -1,5 +1,6 @@
 
-/*******************************************************************
+/*
+******************************************************************
 *  TEXT-TO-MARC 21                      Date: October 7, 2003      *
 *  CHARACTER CONVERSION TABLE FOR MARCMaker Version 2.5            *
 *  Includes mnemonics for all Latin-1 (Windows 1252) and Latin-2   *
@@ -26,7 +27,7 @@
 *                                                                  *
 * Mnemonics encountered that are not listed in this table are      *
 * passed to the output record preceded by an ampersand (&) and     *
-* followed by a semicolon (;).  Thus "{zilch}" would be come       *
+* followed by a semicolon (;).  Thus, "{zilch}" would become       *
 * "&zilch;" in the output record.                                  *
 *                                                                  *
 * Mnemonics in this table are enclosed in curly braces "{...}".    *
@@ -38,13 +39,15 @@
 ********************************************************************
 * Mnemonic, hex value // name/comment                              *
 * {**},     ??                // [character name (FORMAT)]         *
-*__________________________________________________________________*/
+*__________________________________________________________________*
+*/
 
 package org.marc4j;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@SuppressWarnings({"GrazieInspection", "SpellCheckingInspection"})
 public class Mrk8TranslationTable  {
 
     public static String fromMrk8(final String datafield) {
@@ -63,8 +66,7 @@ public class Mrk8TranslationTable  {
                 continue;
             }
             if (i < j) {
-                sb.append(datafield.substring(i, j));
-                i = j-1;
+                sb.append(datafield, i, j);
             }
             int k = datafield.indexOf('}', j);
             String lookupVal = datafield.substring(j, k+1);
@@ -75,7 +77,7 @@ public class Mrk8TranslationTable  {
     }
 
     public static String toMrk8(String datafield) {
-        char chars[] = datafield.toCharArray();
+        char[] chars = datafield.toCharArray();
         StringBuilder sb = new StringBuilder();
         for (char c : chars)
         {
@@ -91,11 +93,11 @@ public class Mrk8TranslationTable  {
 
     private static String lookup(String toLookup) {
         if (mrk8Map == null) {
-            mrk8Map = new LinkedHashMap<String,String>();
-            for (int i = 0; i < mrk8Table.length; i++) {
-                String translateVal = translate(mrk8Table[i][1]);
-                mrk8Map.put(mrk8Table[i][0], translateVal);
-            }
+            mrk8Map = new LinkedHashMap<>();
+	        for (String[] strings : mrk8Table) {
+		        String translateVal = translate(strings[1]);
+		        mrk8Map.put(strings[0], translateVal);
+	        }
         }
 //        int maxlen = "DoubleLongLeftRightArrow".length() + 2;
         String lookupVal = mrk8Map.get(toLookup);
@@ -119,9 +121,11 @@ public class Mrk8TranslationTable  {
     }
 
     private static int charToNibble(char c) {
-        if (c >= '0' && c <= '9') return ((int)(c - '0'));
-        if (c >= 'A' && c <= 'F') return ((int)(c - 'A' + 10));
-        if (c >= 'a' && c <= 'f') return ((int)(c - 'a' + 10));
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        if (c >= 'a' && c <= 'f') {
+	        return (c - 'a' + 10);
+        }
         return 0;
     }
 
@@ -226,7 +230,7 @@ public class Mrk8TranslationTable  {
         {"{59}", "59x" },  // latin large letter y
         {"{5A}", "5Ax" },  // latin large letter z
         {"{5B}", "5Bx" },  // left bracket
-        {"{5C}", "5Cx" },  // back slash (reverse solidus)
+        {"{5C}", "5Cx" },  // backslash (reverse solidus)
         {"{5D}", "5Dx" },  // right bracket
         {"{5E}", "5Ex" },  // spacing circumflex
         {"{5F}", "5Fx" },  // spacing underscore
@@ -369,7 +373,7 @@ public class Mrk8TranslationTable  {
         {"{breve}", "E6x" },  // combining breve
         {"{breveb}", "F9x" },  // combining breve below
         {"{brvbar}", "7Cx" },  // broken vertical bar
-        {"{bsol}", "5Cx" },  // reverse solidus (back slash)
+        {"{bsol}", "5Cx" },  // reverse solidus (backslash)
         {"{bull}", "2Ax" },  // bullet
         {"{C}", "43x" },  // latin large letter c
         {"{c}", "63x" },  // latin small letter c

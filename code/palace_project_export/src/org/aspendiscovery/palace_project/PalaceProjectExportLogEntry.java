@@ -137,6 +137,7 @@ public class PalaceProjectExportLogEntry implements BaseIndexingLogEntry {
 		numAdded++;
 	}
 
+	@SuppressWarnings("unused")
 	void incDeleted() {
 		numDeleted++;
 	}
@@ -161,16 +162,19 @@ public class PalaceProjectExportLogEntry implements BaseIndexingLogEntry {
 		return numUpdated + numDeleted + numAdded;
 	}
 
+	@SuppressWarnings("unused")
 	public void incRecordsRegrouped() {
 		numRegrouped++;
 		if (numRegrouped % 1000 == 0){
 			this.saveResults();
 		}
 	}
+	@SuppressWarnings("unused")
 	public void incChangedAfterGrouping(){
 		numChangedAfterGrouping++;
 	}
 
+	@SuppressWarnings("unused")
 	public int getNumChangedAfterGrouping() {
 		return numChangedAfterGrouping;
 	}

@@ -1,22 +1,48 @@
 Manifest-Version: 1.0
-Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
- va_shared_libraries/commons-codec-1.12.jar ../java_shared_libraries/c
- ommons-collections4-4.3.jar ../java_shared_libraries/commons-lang3-3.
- 8.1.jar ../java_shared_libraries/commons-text-1.6.jar ../java_shared_
- libraries/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api
- -2.11.2.jar ../java_shared_libraries/log4j-core-2.11.2.jar ../java_sh
- ared_libraries/mysql-connector-java-8.0.29.jar ../java_shared_librari
- es/opencsv-4.5.jar ../../sites/default/solr-7.6.0/dist/solr-solrj-7.6
- .0.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/commons-io-2.5.j
- ar ../../sites/default/solr-7.6.0/dist/solrj-lib/commons-math3-3.6.1.
- jar ../../sites/default/solr-7.6.0/dist/solrj-lib/httpclient-4.5.3.ja
- r ../../sites/default/solr-7.6.0/dist/solrj-lib/httpcore-4.4.6.jar ..
- /../sites/default/solr-7.6.0/dist/solrj-lib/httpmime-4.5.3.jar ../../
- sites/default/solr-7.6.0/dist/solrj-lib/jcl-over-slf4j-1.7.24.jar ../
- ../sites/default/solr-7.6.0/dist/solrj-lib/noggit-0.8.jar ../../sites
- /default/solr-7.6.0/dist/solrj-lib/slf4j-api-1.7.24.jar ../../sites/d
- efault/solr-7.6.0/dist/solrj-lib/stax2-api-3.1.4.jar ../../sites/defa
- ult/solr-7.6.0/dist/solrj-lib/woodstox-core-asl-4.4.1.jar ../../sites
- /default/solr-7.6.0/dist/solrj-lib/zookeeper-3.4.11.jar
+Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
+ _shared_libraries/commons-codec-1.12.jar ../java_shared_libraries/commo
+ ns-collections4-4.3.jar ../java_shared_libraries/commons-lang3-3.8.1.ja
+ r ../java_shared_libraries/commons-text-1.6.jar ../java_shared_librarie
+ s/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api-2.11.2.ja
+ r ../java_shared_libraries/log4j-core-2.11.2.jar ../java_shared_librari
+ es/mysql-connector-java-8.0.29.jar ../java_shared_libraries/opencsv-4.5
+ .jar ../java_shared_libraries/commons-net-3.6.jar ../java_shared_librar
+ ies/jsch-0.1.55.jar ../java_shared_libraries/commons-lang3-3.8.1.jar ..
+ /../sites/default/solr-8.11.2/dist/solrj-lib/commons-io-2.8.0.jar ../..
+ /sites/default/solr-8.11.2/dist/solrj-lib/commons-math3-3.6.1.jar ../..
+ /sites/default/solr-8.11.2/dist/solrj-lib/httpclient-4.5.13.jar ../../s
+ ites/default/solr-8.11.2/dist/solrj-lib/httpcore-4.4.14.jar ../../sites
+ /default/solr-8.11.2/dist/solrj-lib/httpmime-4.5.13.jar ../../sites/def
+ ault/solr-8.11.2/dist/solrj-lib/jcl-over-slf4j-1.7.24.jar ../../sites/d
+ efault/solr-8.11.2/dist/solrj-lib/slf4j-api-1.7.24.jar ../../sites/defa
+ ult/solr-8.11.2/dist/solrj-lib/stax2-api-4.2.1.jar ../../sites/default/
+ solr-8.11.2/dist/solrj-lib/woodstox-core-6.2.4.jar ../../sites/default/
+ solr-8.11.2/dist/solrj-lib/zookeeper-3.6.2.jar ../../sites/default/solr
+ -8.11.2/dist/solr-solrj-8.11.2.jar ../../sites/default/solr-8.11.2/dist
+ /solr-core-8.11.2.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/je
+ tty-client-9.4.44.v20210927.jar ../../sites/default/solr-8.11.2/dist/so
+ lrj-lib/jetty-util-9.4.44.v20210927.jar ../../sites/default/solr-8.11.2
+ /dist/solrj-lib/jetty-http-9.4.44.v20210927.jar ../../sites/default/sol
+ r-8.11.2/dist/solrj-lib/jetty-io-9.4.44.v20210927.jar ../../sites/defau
+ lt/solr-8.11.2/dist/solrj-lib/commons-lang-2.6.jar ../../sites/default/
+ solr-8.11.2/dist/solrj-lib/http2-client-9.4.44.v20210927.jar ../../site
+ s/default/solr-8.11.2/dist/solrj-lib/http2-common-9.4.44.v20210927.jar 
+ ../../sites/default/solr-8.11.2/dist/solrj-lib/http2-hpack-9.4.44.v2021
+ 0927.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/http2-http-clie
+ nt-transport-9.4.44.v20210927.jar ../../sites/default/solr-8.11.2/dist/
+ solrj-lib/jetty-alpn-client-9.4.44.v20210927.jar ../../sites/default/so
+ lr-8.11.2/dist/solrj-lib/jetty-alpn-java-client-9.4.44.v20210927.jar ..
+ /../sites/default/solr-8.11.2/dist/solrj-lib/netty-buffer-4.1.68.Final.
+ jar ../../sites/default/solr-8.11.2/dist/solrj-lib/netty-codec-4.1.68.F
+ inal.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/netty-common-4.
+ 1.68.Final.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/netty-han
+ dler-4.1.68.Final.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/ne
+ tty-resolver-4.1.68.Final.jar ../../sites/default/solr-8.11.2/dist/solr
+ j-lib/netty-transport-4.1.68.Final.jar ../../sites/default/solr-8.11.2/
+ dist/solrj-lib/netty-transport-native-epoll-4.1.68.Final.jar ../../site
+ s/default/solr-8.11.2/dist/solrj-lib/netty-transport-native-unix-common
+ -4.1.68.Final.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/snappy
+ -java-1.1.7.6.jar ../../sites/default/solr-8.11.2/dist/solrj-lib/zookee
+ per-jute-3.6.2.jar
 Main-Class: com.turning_leaf_technologies.oai.OaiIndexerMain
 

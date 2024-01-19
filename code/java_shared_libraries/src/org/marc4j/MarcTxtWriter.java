@@ -3,7 +3,6 @@ package org.marc4j;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.marc4j.converter.CharConverter;
@@ -17,9 +16,9 @@ public class MarcTxtWriter implements MarcWriter {
     /**
      * Character encoding. Default is UTF-8.
      */
-    private String indexkeyprefix = null;
+    private String indexKeyPrefix = null;
 
-    private PrintWriter out = null;
+    private PrintWriter out;
 
     private CharConverter conv = null;
 
@@ -27,31 +26,19 @@ public class MarcTxtWriter implements MarcWriter {
         try {
             this.out = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);            
         }
-        catch (NoClassDefFoundError ncdf) {
-            try
-            {
-                this.out = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-            }
+        catch (NoClassDefFoundError e) {
+	        this.out = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         }
     }
 
-    public MarcTxtWriter(OutputStream os, String indexkeyprefix) {
+    public MarcTxtWriter(OutputStream os, String indexKeyPrefix) {
         try {
             this.out = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);            
         }
-        catch (NoClassDefFoundError ncdf) {
-            try
-            {
-                this.out = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-            }
+        catch (NoClassDefFoundError e) {
+	        this.out = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         }
-        this.indexkeyprefix = indexkeyprefix;
+        this.indexKeyPrefix = indexKeyPrefix;
     }
 
     @Override
@@ -64,14 +51,14 @@ public class MarcTxtWriter implements MarcWriter {
         else {
             recStr = record.toString();
         }
-        if (indexkeyprefix != null) {
-            String lines[] = recStr.split("\r?\n");
+        if (indexKeyPrefix != null) {
+            String[] lines = recStr.split("\r?\n");
             for (String line : lines) {
-                if (line.length() >= 3 && indexkeyprefix.contains(line.substring(0,3))) {
+                if (line.length() >= 3 && indexKeyPrefix.contains(line.substring(0,3))) {
                     out.println(line);
                 }
             }
-            if (indexkeyprefix.contains("err") && record.getErrors() != null) {
+            if (indexKeyPrefix.contains("err") && record.getErrors() != null) {
                 for (MarcError err : record.getErrors()) {
                     out.println(err.toString());
                 }
@@ -90,7 +77,7 @@ public class MarcTxtWriter implements MarcWriter {
     
         for (final VariableField field : record.getVariableFields()) {
             if (field instanceof ControlField) {
-                sb.append(field.toString());
+                sb.append(field);
             }
             else if (field instanceof DataField) {
                 DataField df = (DataField)field;

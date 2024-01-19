@@ -22,8 +22,6 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
 
 public class SymphonyExportMain {
 	private static Logger logger;
@@ -45,7 +43,7 @@ public class SymphonyExportMain {
 	public static void main(String[] args){
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -58,14 +56,14 @@ public class SymphonyExportMain {
 		String processName = "symphony_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			reindexStartTime = new Date();
-			logger.info(reindexStartTime.toString() + ": Starting Symphony Extract");
+			logger.info(reindexStartTime + ": Starting Symphony Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -95,7 +93,7 @@ public class SymphonyExportMain {
 					logger.error("Error deleting old log entries", e);
 				}
 			} catch (Exception e) {
-				System.out.println("Error connecting to aspen database " + e.toString());
+				System.out.println("Error connecting to aspen database " + e);
 				System.exit(1);
 			}
 
@@ -107,7 +105,7 @@ public class SymphonyExportMain {
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
 
-			exportHolds(dbConn, indexingProfile, profileToLoad);
+			exportHolds(dbConn, indexingProfile);
 
 			processCourseReserves(dbConn, indexingProfile, logEntry);
 
@@ -182,16 +180,13 @@ public class SymphonyExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static void processCourseReserves(Connection dbConn, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		File exportDir = new File(indexingProfile.getMarcPath() + "/../course_reserves/");
-		File[] courseReservesFiles = exportDir.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.matches("course-reserves.*\\.txt");
-			}
-		});
+		File[] courseReservesFiles = exportDir.listFiles((dir, name) -> name.matches("course-reserves.*\\.txt"));
 		if (courseReservesFiles == null){
 			return;
 		}
@@ -410,7 +405,7 @@ public class SymphonyExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -432,7 +427,7 @@ public class SymphonyExportMain {
 		}
 	}
 
-	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad){
+	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile){
 		File holdsExportFile = new File(indexingProfile.getMarcPath() + "/Holds.csv");
 		if (holdsExportFile.exists()){
 			long fileTimeStamp = holdsExportFile.lastModified();
@@ -545,7 +540,7 @@ public class SymphonyExportMain {
 					HashMap<String, VolumeInfo> volumesForRecord = new HashMap<>();
 					String curIlsId = null;
 					int curRow = 0;
-					int numMalformattedRows = 0;
+					int numImproperlyFormattedRows = 0;
 					while (volumeInfoLine != null) {
 						String[] volumeInfoFields = volumeInfoLine.split("\\|");
 						if (volumeInfoFields.length > 7) {
@@ -597,11 +592,11 @@ public class SymphonyExportMain {
 								}
 							} catch (NumberFormatException nfe) {
 								logger.debug("Mal formatted volume information " + volumeInfoLine);
-								numMalformattedRows++;
+								numImproperlyFormattedRows++;
 							}
 						}else{
 							logger.debug("Mal formatted volume information " + volumeInfoLine);
-							numMalformattedRows++;
+							numImproperlyFormattedRows++;
 						}
 
 						//Read the next line
@@ -612,12 +607,13 @@ public class SymphonyExportMain {
 						}
 						volumeInfoLine = csvReader.readLine();
 					}
+					csvReader.close();
 					if (curIlsId != null) {
 						//Save the last volume information
 						saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
 					}
 
-					logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
+					logEntry.addNote(numImproperlyFormattedRows + " rows were mal formatted in the volume export");
 					logEntry.saveResults();
 
 					if (volumeUpdateInfo.maxRelatedItemsLength > 0){
@@ -714,7 +710,6 @@ public class SymphonyExportMain {
 		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 
-		//unzipAllFiles(marcExportPath)
 		unzipAllFiles(marcExportPath);
 
 		//process unzipped files(marcExportPath)
@@ -724,7 +719,7 @@ public class SymphonyExportMain {
 		long latestMarcFile = 0;
 		boolean hasFullExportFile = false;
 		File fullExportFile = null;
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+		if (exportedMarcFiles != null){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				//Remove any files that are older than the last time we processed files.
 				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
@@ -772,7 +767,7 @@ public class SymphonyExportMain {
 			Arrays.sort(exportedMarcDeltaFiles, Comparator.comparingLong(File::lastModified));
 		}
 
-		if (filesToProcess.size() > 0){
+		if (!filesToProcess.isEmpty()){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
 			logEntry.saveResults();
@@ -785,7 +780,7 @@ public class SymphonyExportMain {
 
 	public static void unzipAllFiles(File export){
 		File[] unzipFiles = export.listFiles((dir, name) -> name.endsWith("zip"));
-		if (unzipFiles != null && unzipFiles.length >0) {
+		if (unzipFiles != null) {
 			for (File unzipFile : unzipFiles) {
 				long fileTimeStamp = unzipFile.lastModified();
 				boolean fileChanging = true;
@@ -804,12 +799,12 @@ public class SymphonyExportMain {
 				try {
 					UnzipUtility.unzip(unzipFile.getPath(), export.getPath());
 				} catch (IOException e) {
-					e.printStackTrace();
+					logEntry.incErrors("Unable to unzip file " + unzipFile.getPath(), e);
 				}
 			}
 		}
 		File [] gzippedFiles = export.listFiles((dir, name) -> name.endsWith("gz"));
-		if (gzippedFiles != null && gzippedFiles.length >0) {
+		if (gzippedFiles != null) {
 			for (File gzippedFile : gzippedFiles) {
 				long fileTimeStamp = gzippedFile.lastModified();
 				boolean fileChanging = true;
@@ -828,9 +823,10 @@ public class SymphonyExportMain {
 				try {
 					String exportFile = gzippedFile.getAbsolutePath().replace(".gz", "");
 					UnzipUtility.gUnzip(gzippedFile, new File(exportFile));
+					//noinspection ResultOfMethodCallIgnored
 					gzippedFile.delete();
 				} catch (IOException e) {
-					e.printStackTrace();
+					logEntry.incErrors("Unable to unzip file " + gzippedFile.getPath(), e);
 				}
 			}
 		}
@@ -838,12 +834,12 @@ public class SymphonyExportMain {
 
 	/**
 	 * Updates Aspen using the MARC export or exports provided.
-	 * To see which records are deleted it needs to get a list of all records that are already in the database
+	 * To see which records are deleted it needs to get a list of all records that are already in the database,
 	 * so it can detect what has been deleted.
 	 *
 	 * @param exportedMarcFiles - An array of files to process
-	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
-	 * @param fullExportFile
+	 * @param hasFullExportFile - Whether we are including a full export.  We will only delete records if we have a full export.
+	 * @param fullExportFile   - The file
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found
 	 */
@@ -861,7 +857,7 @@ public class SymphonyExportMain {
 		logEntry.addNote("Processing " + exportedMarcFiles.size() + " MARC files");
 		logEntry.saveResults();
 		//The files are sorted by date, we just need to make sure the last is not changing
-		if (exportedMarcFiles.size() > 0){
+		if (!exportedMarcFiles.isEmpty()){
 			File lastFile = exportedMarcFiles.get(exportedMarcFiles.size() -1);
 			boolean isFileChanging = true;
 			long lastSizeCheck = lastFile.length();
@@ -892,12 +888,12 @@ public class SymphonyExportMain {
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
-					Record curBib = catalogReader.next();
+					org.marc4j.marc.Record curBib = catalogReader.next();
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
 						lastRecordProcessed = recordNumber;
-						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						recordNumber = recordNumber.replaceAll("\\D", "");
 						long recordNumberDigits = Long.parseLong(recordNumber);
 						if (recordNumberDigits > maxIdInExport) {
 							maxIdInExport = recordNumberDigits;
@@ -944,19 +940,18 @@ public class SymphonyExportMain {
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
-						Record curBib = catalogReader.next();
+						org.marc4j.marc.Record curBib = catalogReader.next();
 						numRecordsRead++;
 						DataField marc245 = curBib.getDataField(245);
 						boolean has245 = marc245 != null;
+						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 						if (hasFullExportFile && curBibFile.equals(fullExportFile) && has245 && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
 							//We're skipping this record because we are doing a full export that got paused part way through
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
 							logEntry.incSkipped();
 						}else {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							boolean deleteRecord = false;
 							if (recordIdentifier == null) {
 								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
@@ -1117,11 +1112,11 @@ public class SymphonyExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
 	private static void processOrdersFile() {
+		//noinspection SpellCheckingInspection
 		File mainFile = new File(indexingProfile.getMarcPath() + "/fullexport.mrc");
 		HashSet<String> idsInMainFile = new HashSet<>();
 		if (mainFile.exists()){
@@ -1130,7 +1125,7 @@ public class SymphonyExportMain {
 				int numRecordsRead = 0;
 				while (reader.hasNext()) {
 					try {
-						Record marcRecord = reader.next();
+						org.marc4j.marc.Record marcRecord = reader.next();
 						numRecordsRead++;
 						String id = getPrimaryIdentifierFromMarcRecord(marcRecord);
 						idsInMainFile.add(id);
@@ -1146,6 +1141,7 @@ public class SymphonyExportMain {
 		//We have gotten 2 different exports a single export as CSV and a second daily version as XLSX.  If the XLSX exists, we will
 		//process that and ignore the CSV version.
 		File ordersFileMarc = new File(indexingProfile.getMarcPath() + "/orders.mrc");
+		//noinspection SpellCheckingInspection
 		File ordersFile = new File(indexingProfile.getMarcPath() + "/onorderfile.txt");
 		convertOrdersFileToMarc(ordersFile, ordersFileMarc, idsInMainFile);
 
@@ -1158,7 +1154,7 @@ public class SymphonyExportMain {
 			if (now - ordersFileLastModified > 7 * 24 * 60 * 60 * 1000){
 				logger.warn("Orders File was last written more than 7 days ago");
 			}
-			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
+			//Always process since we only received one export, and we are gradually removing records as they appear in the full export.
 			try{
 				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF-8", true);
 				BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)));
@@ -1184,7 +1180,7 @@ public class SymphonyExportMain {
 								String ohohseven = line.replace("|", " ");
 								//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
 								MarcFactory factory = MarcFactory.newInstance();
-								Record marcRecord = factory.newRecord();
+								org.marc4j.marc.Record marcRecord = factory.newRecord();
 								marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
 								if (!ohohseven.equals("-")) {
 									marcRecord.addVariableField(factory.newControlField("007", ohohseven));
@@ -1244,7 +1240,7 @@ public class SymphonyExportMain {
 							catalogId = catalogId.replaceAll("\\D", "");
 							lastCatalogIdRead = catalogId;
 							//Make sure the catalog is numeric
-							if (catalogId.length() > 0 && catalogId.matches("^\\d+$")){
+							if (!catalogId.isEmpty() && catalogId.matches("^\\d+$")){
 								if (holdsByBib.containsKey(catalogId)){
 									holdsByBib.put(catalogId, holdsByBib.get(catalogId) +1);
 								}else{
@@ -1254,6 +1250,7 @@ public class SymphonyExportMain {
 						}
 						line = reader.readLine();
 					}
+					reader.close();
 				}catch (Exception e){
 					logger.error("Error reading holds file ", e);
 					hadErrors = true;
@@ -1284,7 +1281,7 @@ public class SymphonyExportMain {
 							catalogId = catalogId.replaceAll("\\D", "");
 							lastCatalogIdRead = catalogId;
 							//Make sure the catalog is numeric
-							if (catalogId.length() > 0 && catalogId.matches("^\\d+$")){
+							if (!catalogId.isEmpty() && catalogId.matches("^\\d+$")){
 								if (holdsByBib.containsKey(catalogId)){
 									holdsByBib.put(catalogId, holdsByBib.get(catalogId) +1);
 								}else{
@@ -1294,6 +1291,7 @@ public class SymphonyExportMain {
 						}
 						line = reader.readLine();
 					}
+					reader.close();
 					logger.info(holdsByBib.size() + " bibs with holds (including periodicals) lastCatalogIdRead for periodicals = " + lastCatalogIdRead);
 				}catch (Exception e){
 					logger.error("Error reading periodicals holds file ", e);
@@ -1331,7 +1329,7 @@ public class SymphonyExportMain {
 	}
 
 
-	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
+	private static String getPrimaryIdentifierFromMarcRecord(org.marc4j.marc.Record marcRecord) {
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.getRecordNumberTagInt());
 		String recordNumber = null;
 		//Make sure we only get one ils identifier
@@ -1339,7 +1337,7 @@ public class SymphonyExportMain {
 			if (curVariableField instanceof DataField) {
 				DataField curRecordNumberField = (DataField) curVariableField;
 				Subfield subfieldA = curRecordNumberField.getSubfield('a');
-				if (subfieldA != null && (indexingProfile.getRecordNumberPrefix().length() == 0 || subfieldA.getData().length() > indexingProfile.getRecordNumberPrefix().length())) {
+				if (subfieldA != null && (indexingProfile.getRecordNumberPrefix().isEmpty() || subfieldA.getData().length() > indexingProfile.getRecordNumberPrefix().length())) {
 					if (curRecordNumberField.getSubfield('a').getData().startsWith(indexingProfile.getRecordNumberPrefix())) {
 						recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
 						break;

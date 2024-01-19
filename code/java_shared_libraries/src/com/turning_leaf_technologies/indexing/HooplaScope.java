@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.indexing;
 
-import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class HooplaScope {
 	private boolean excludeAbridged;
 	private boolean excludeParentalAdvisory;
 	private boolean excludeProfanity;
-	private ArrayList<Pattern> genreFilters = new ArrayList<>();
+	private final ArrayList<Pattern> genreFilters = new ArrayList<>();
 
 	public long getId() {
 		return id;
@@ -169,10 +168,10 @@ public class HooplaScope {
 		this.restrictToChildrensMaterial = restrictToChildrensMaterial;
 	}
 
-	private HashMap<String, Boolean> excludedRatings = new HashMap<>();
+	private final HashMap<String, Boolean> excludedRatings = new HashMap<>();
 
 	public boolean isRatingExcluded(String rating) {
-		if (rating.length() == 0) {
+		if (rating.isEmpty()) {
 			return false;
 		}
 		Boolean ratingExcluded = excludedRatings.get(rating);
@@ -256,6 +255,7 @@ public class HooplaScope {
 			case "MUSIC":
 				okToAdd = (includeMusic && price <= maxCostPerCheckoutMusic);
 				break;
+			//noinspection SpellCheckingInspection
 			case "BINGEPASS":
 				okToAdd = (includeBingePass && price <= maxCostPerCheckoutBingePass);
 				break;
@@ -277,7 +277,7 @@ public class HooplaScope {
 		if (okToAdd && isRatingExcluded(rating)) {
 			okToAdd = false;
 		}
-		if (okToAdd && genreFilters.size() > 0) {
+		if (okToAdd && !genreFilters.isEmpty()) {
 			boolean genreMatched = false;
 			for (String curGenre : genres) {
 				for (Pattern curSubjectFilter : genreFilters) {
@@ -298,10 +298,10 @@ public class HooplaScope {
 	}
 
 	public void setGenreFilters(String genresToExclude) {
-		if (genresToExclude != null && genresToExclude.length() > 0) {
+		if (genresToExclude != null && !genresToExclude.isEmpty()) {
 			String[] genresToExcludeRaw = genresToExclude.split("\\s*(\\r\\n|\\n|\\r)\\s*");
 			for (String genreToExclude : genresToExcludeRaw) {
-				if (genreToExclude.length() > 0) {
+				if (!genreToExclude.isEmpty()) {
 					genreFilters.add(Pattern.compile("(\\b|-)" + genreToExclude.toLowerCase() + "(\\b|-)", Pattern.CASE_INSENSITIVE));
 				}
 			}

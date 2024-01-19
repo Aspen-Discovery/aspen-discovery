@@ -30,7 +30,7 @@ import java.util.Set;
  * <p>
  * The {@code getSubfields*} methods take a subfield selector string, or subfield spec. 
  * <p>
- * The subfield spec can either specify each subfield needed, thusly:
+ * The subfield spec can either specify each subfield needed, like this:
  * <ul>
  * <li>
  * {@code abcfghnp}
@@ -38,7 +38,7 @@ import java.util.Set;
  * <p>
  * or the subfield spec can be enclosed in square brackets, and it 
  *    will be treated as a regular expression character class
- *    and all subfields matching the pattern will be returned, thusly:
+ *    and all subfields matching the pattern will be returned, like this:
  * <ul>
  * <li>
  * {@code [a-cf-hnp]}
@@ -62,6 +62,7 @@ import java.util.Set;
  * 
  * @author Bas Peters
  */
+@SuppressWarnings("SpellCheckingInspection")
 public interface DataField extends VariableField {
 
     /**
@@ -69,35 +70,35 @@ public interface DataField extends VariableField {
      *
      * @return The first indicator of the <code>DataField</code>
      */
-    public char getIndicator1();
+    char getIndicator1();
 
     /**
      * Sets the first indicator of the <code>DataField</code>.
      *
      * @param ind1 The first indicator of the <code>DataField</code>
      */
-    public void setIndicator1(char ind1);
+    void setIndicator1(char ind1);
 
     /**
      * Returns the second indicator of the <code>DataField</code>.
      *
      * @return The second indicator character of the <code>DataField</code>
      */
-    public char getIndicator2();
+    char getIndicator2();
 
     /**
      * Sets the second indicator of the <code>DataField</code>.
      *
      * @param ind2 The second indicator of the <code>DataField</code>
      */
-    public void setIndicator2(char ind2);
+    void setIndicator2(char ind2);
 
     /**
      * Returns the {@link List} of {@link Subfield}.
      *
      * @return The {@link List} of {@link Subfield}s
      */
-    public List<Subfield> getSubfields();
+    List<Subfield> getSubfields();
 
     /**
      * Returns the {@link List} of {@link Subfield}s for the given subfield code.
@@ -105,25 +106,25 @@ public interface DataField extends VariableField {
      * @param code The code of the subfields to return
      * @return The {@link List} of {@link Subfield}s in the <code>DataField</code>
      */
-    public List<Subfield> getSubfields(char code);
+    List<Subfield> getSubfields(char code);
 
     /**
      * Returns the list of <code>Subfield</code> objects that match the
      * subfield spec. Subfields are returned in the order they occur in the DataField.
      * <p>
-     * Note that if an invalid subfield spec is given this this routine will quietly
+     * Note that if an invalid subfield spec is given this routine will quietly
      * fail, and return no subfields whatsoever rather than throwing an exception.
      *
      * @param sfSpec - A subfield code pattern
      * @return List - the list of <code>Subfield</code> objects
      */
-    public List<Subfield> getSubfields(String sfSpec);
+    List<Subfield> getSubfields(String sfSpec);
 
     /**
      * Get the data from the specified subfields and returns a concatenated string.
-     * Subfields data are written to the string in the order the occur in the DataField.
+     * Subfields data are written to the string in the order they occur in the DataField.
      * <p>
-     * Note that if an invalid subfield spec is given this this routine will quietly
+     * Note that if an invalid subfield spec is given this routine will quietly
      * fail, and return no subfields whatsoever rather than throwing an exception.
      * 
      * @param sfSpec A subfield pattern which can include multiple subfield codes (e.g., "abc")
@@ -131,9 +132,9 @@ public interface DataField extends VariableField {
      *         or null if no subfields are matched
      * @throws java.util.regex.PatternSyntaxException if {@code sfSpec} is an invalid bracket expression.
      */
-    public String getSubfieldsAsString(String sfSpec);
+    String getSubfieldsAsString(String sfSpec);
 
-    public String getSubfieldsAsString(final String sfSpec, String separator);
+    String getSubfieldsAsString(final String sfSpec, String separator);
 
     /**
      * Returns the first <code>Subfield</code> with the given code.
@@ -141,7 +142,7 @@ public interface DataField extends VariableField {
      * @param code The subfield code of the <code>Subfield</code> to return
      * @return The <code>Subfield</code> or null if no subfield is found
      */
-    public Subfield getSubfield(char code);
+    Subfield getSubfield(char code);
 
     /**
      * Adds the supplied <code>Subfield</code> to the <code>DataField</code>.
@@ -149,7 +150,7 @@ public interface DataField extends VariableField {
      * @param subfield The <code>Subfield</code> object
      * @throws IllegalAddException when the parameter is not a <code>Subfield</code> instance
      */
-    public void addSubfield(Subfield subfield);
+    void addSubfield(Subfield subfield);
 
     /**
      * Inserts a <code>Subfield</code> at the specified position.
@@ -158,16 +159,16 @@ public interface DataField extends VariableField {
      * @param subfield  The <code>Subfield</code> to add to the <code>DataField</code>
      * @throws IllegalAddException when the parameter is not a <code>Subfield</code> instance
      */
-    public void addSubfield(int index, Subfield subfield);
+    void addSubfield(int index, Subfield subfield);
 
     /**
      * Removes a <code>Subfield</code>.
      *
      * @param subfield The <code>Subfield</code> to remove
      */
-    public void removeSubfield(Subfield subfield);
+    void removeSubfield(Subfield subfield);
 
-    public Set<String> getSubfieldDataAsSet(String subfield, int beginIx, int endIx);
+    Set<String> getSubfieldDataAsSet(String subfield, int beginIx, int endIx);
 
-    public Set<String> getSubfieldDataAsSet(String subfieldsStr, String separator);
+    Set<String> getSubfieldDataAsSet(String subfieldsStr, String separator);
 }

@@ -56,7 +56,7 @@ public class PalaceProjectExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -116,7 +116,7 @@ public class PalaceProjectExportMain {
 				System.out.println("Palace Project does not currently support extracting individual records.");
 				updatesRun = true;
 			}
-			int numChanges = logEntry.getNumChanges();
+
 			processRecordsToReload(logEntry);
 
 			if (recordGroupingProcessorSingleton != null) {
@@ -202,6 +202,8 @@ public class PalaceProjectExportMain {
 				}
 			}
 		}
+
+		System.exit(0);
 	}
 
 	private static boolean exportPalaceProjectData() {
@@ -218,13 +220,18 @@ public class PalaceProjectExportMain {
 				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
 				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
 				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
+
+				//Check to see if we should run.  For Palace Project we only need to check for updates once an hour.
 				Date now = new Date();
 				if ((now.getTime()  / 1000 - lastUpdate) < 60 * 60) {
 					//Don't update since it hasn't been an hour
+					//logger.warn("Not running since it hasn't been an hour.");
 					continue;
 				}
 
-				//Check to see if we should run.  For Palace Project we only need to check for updates once an hour.
+				logEntry.addNote("Starting update from Palace Project");
+				logEntry.saveResults();
+
 				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
@@ -240,7 +247,7 @@ public class PalaceProjectExportMain {
 						JSONObject responseJSON = new JSONObject(response.getMessage());
 						if (responseJSON.has("publications")) {
 							JSONArray responseTitles = responseJSON.getJSONArray("publications");
-							if (responseTitles != null && responseTitles.length() > 0) {
+							if (responseTitles != null && !responseTitles.isEmpty()) {
 								updateTitlesInDB(responseTitles, doFullReload);
 								logEntry.saveResults();
 							}
@@ -361,6 +368,7 @@ public class PalaceProjectExportMain {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static void exportSinglePalaceProjectTitle(String singleWorkId) {
 		try{
 			logEntry.addNote("Doing extract of single work " + singleWorkId);
@@ -384,7 +392,7 @@ public class PalaceProjectExportMain {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("publications")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("publications");
-						if (responseTitles != null && responseTitles.length() > 0) {
+						if (responseTitles != null && !responseTitles.isEmpty()) {
 							//updateTitlesInDB(responseTitles, false);
 							logEntry.saveResults();
 						}

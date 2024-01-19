@@ -31,12 +31,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.VariableField;
 
 public class SierraExportAPIMain {
 	private static Logger logger;
 
-	@SuppressWarnings("SpellCheckingInspection")
 	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -61,7 +59,7 @@ public class SierraExportAPIMain {
 		boolean extractSingleRecord = false;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -149,7 +147,7 @@ public class SierraExportAPIMain {
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
 				String apiVersion = sierraInstanceInformation.apiVersion;
-				if (apiVersion == null || apiVersion.length() == 0){
+				if (apiVersion == null || apiVersion.isEmpty()){
 					logger.error("No API Version was provided");
 					return;
 				}
@@ -167,8 +165,8 @@ public class SierraExportAPIMain {
 						logEntry.incErrors("Error regrouping all records", e);
 					}
 
-					//Get a list of all active bibs so we can see what needs to be deleted.
-					checkForDeletedBibsInSierra(sierraInstanceInformation, sierraConn);
+					//Get a list of all active bibs, so we can see what needs to be deleted.
+					checkForDeletedBibsInSierra(sierraConn);
 
 					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
@@ -187,7 +185,6 @@ public class SierraExportAPIMain {
 						sierraConn.close();
 					}catch(Exception e){
 						System.out.println("Error closing connection: " + e);
-						e.printStackTrace();
 					}
 				}
 
@@ -228,7 +225,6 @@ public class SierraExportAPIMain {
 				logger.info(currentTime + ": Finished Sierra Extract");
 			}catch (Exception e){
 				System.out.println("Error extracting data from Sierra " + e);
-				e.printStackTrace();
 				System.exit(1);
 			}
 
@@ -281,9 +277,11 @@ public class SierraExportAPIMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
-	private static void checkForDeletedBibsInSierra(SierraInstanceInformation sierraInstanceInformation, Connection sierraConn) {
+	private static void checkForDeletedBibsInSierra(Connection sierraConn) {
 		try {
 			HashSet<String> allBibsInSierra = new HashSet<>();
 			PreparedStatement getAllBibsStmt = sierraConn.prepareStatement("SELECT record_type_code, record_num FROM sierra_view.bib_record LEFT JOIN sierra_view.record_metadata ON sierra_view.bib_record.record_id = sierra_view.record_metadata.id WHERE record_type_code = 'b' AND is_suppressed = FALSE;", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -304,7 +302,7 @@ public class SierraExportAPIMain {
 						//This bib has been deleted
 						bibsToDelete.add(bibId);
 					} else {
-						//Remove it just to make future lookups faster
+						//Remove it faster to lookup information in the future
 						allBibsInSierra.remove(bibId);
 					}
 				}
@@ -337,7 +335,6 @@ public class SierraExportAPIMain {
 			allBibsToUpdate.clear();
 		}catch(Exception e){
 			System.out.println("Error closing connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
@@ -350,7 +347,7 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					//Regroup the record
 					String groupedWorkId = groupSierraRecord(marcRecord);
@@ -414,7 +411,7 @@ public class SierraExportAPIMain {
 
 	private static int updateBibs(SierraInstanceInformation sierraInstanceInformation) {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
-		if (allBibsToUpdate.size() == 0){
+		if (allBibsToUpdate.isEmpty()){
 			return 0;
 		}
 		logEntry.addNote("Found " + allBibsToUpdate.size() + " bib records that need to be updated with data from Sierra.");
@@ -434,10 +431,10 @@ public class SierraExportAPIMain {
 			updateMarcAndRegroupRecordIds(sierraInstanceInformation, ids);
 
 			numProcessed += maxIndex;
-			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0){
+			if (numProcessed % 250 == 0 || allBibsToUpdate.isEmpty()){
 				logEntry.saveResults();
 			}
-			if (allBibsToUpdate.size() > 0) {
+			if (!allBibsToUpdate.isEmpty()) {
 				hasMoreIdsToProcess = true;
 			}
 		}
@@ -610,7 +607,7 @@ public class SierraExportAPIMain {
 			logEntry.saveResults();
 		}
 
-		if (allDeletedIds.size() > 0){
+		if (!allDeletedIds.isEmpty()){
 			logEntry.addNote("Finished processing deleted records, deleted " + logEntry.getNumDeleted());
 		}else{
 			logEntry.addNote("No deleted records found");
@@ -991,7 +988,7 @@ public class SierraExportAPIMain {
 
 				//Load Fixed Fields
 				if (fixedFieldResults[0] != null) {
-					if (sierraExportFieldMapping.getFixedFieldDestinationField().length() > 0) {
+					if (!sierraExportFieldMapping.getFixedFieldDestinationField().isEmpty()) {
 						DataField fixedDataField = marcFactory.newDataField(sierraExportFieldMapping.getFixedFieldDestinationField(), ' ', ' ');
 						if (sierraExportFieldMapping.getBcode3DestinationSubfield() != ' ') {
 							String bCode3 = fixedFieldResults[0].getJSONObject("fixedFields").getJSONObject("31").getString("value");
@@ -1078,7 +1075,7 @@ public class SierraExportAPIMain {
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 			}else{
-				//Log this as an invalid record so we can continue, but return true so we don't log an error.
+				//Log this as an invalid record, so we can continue, but return true, so we don't log an error.
 				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
 				return true;
 			}
@@ -1090,7 +1087,6 @@ public class SierraExportAPIMain {
 	}
 
 
-	@SuppressWarnings("SpellCheckingInspection")
 	private static final SimpleDateFormat sierraAPIDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private static void getItemsForBib(String id, Record marcRecord, JSONObject itemIds) {
 		//Get a list of all items
@@ -1175,7 +1171,7 @@ public class SierraExportAPIMain {
 					//OPAC note
 					if (fixedFields.has("108") && indexingProfile.getNoteSubfield() != ' '){
 						String noteValue = fixedFields.getJSONObject("108").getString("value").trim();
-						if (noteValue.length() > 0 && !noteValue.equals("-")) {
+						if (!noteValue.isEmpty() && !noteValue.equals("-")) {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), noteValue));
 						}
 					}
@@ -1442,7 +1438,7 @@ public class SierraExportAPIMain {
 		return true;
 	}
 
-	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors, boolean ignore404errors) {
+	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, boolean logErrors, boolean ignore404errors) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
 			//Connect to the API to get our token
 			HttpURLConnection conn;
@@ -1734,7 +1730,7 @@ public class SierraExportAPIMain {
 			try {
 				String host = accountProfileRS.getString("databaseHost");
 				String port = accountProfileRS.getString("databasePort");
-				if (port == null || port.length() == 0) {
+				if (port == null || port.isEmpty()) {
 					port = "1032";
 				}
 				String databaseName = accountProfileRS.getString("databaseName");

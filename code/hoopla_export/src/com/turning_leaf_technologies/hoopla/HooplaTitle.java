@@ -1,11 +1,11 @@
 package com.turning_leaf_technologies.hoopla;
 
 class HooplaTitle {
-	private long id;
-	private long hooplaId;
-	private long checksum;
-	private boolean active;
-	private long rawResponseLength;
+	private final long id;
+	private final long hooplaId;
+	private final long checksum;
+	private final boolean active;
+	private final long rawResponseLength;
 	private boolean foundInExport;
 
 	HooplaTitle(long id, long hooplaId, long checksum, boolean active, long rawResponseLength) {
