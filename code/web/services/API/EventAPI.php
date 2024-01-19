@@ -115,9 +115,9 @@ class EventAPI extends Action {
 			$itemData['room'] = null;
 
 			// check if event has passed
-			$difference = $libraryCalendarDriver->getStartDate()->diff(new DateTime());;
-			$difference = (int)$difference->format('%a');
-			$itemData['pastEvent'] = $difference < 0;
+			$today = new DateTime('now');
+			$eventDay = $libraryCalendarDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($libraryCalendarDriver->getBranch());
 
