@@ -23,7 +23,8 @@ class EventAPI extends Action {
 				if (in_array($method, [
 					'getEventDetails',
 					'saveEvent',
-					'removeSavedEvent'
+					'removeSavedEvent',
+					'getSavedEvents'
 				])) {
 					header('Cache-Control: max-age=10800');
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -113,6 +114,11 @@ class EventAPI extends Action {
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
 
+			// check if event has passed
+			$today = new DateTime('now');
+			$eventDay = $libraryCalendarDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
+
 			$itemData['location'] = $this->getDiscoveryBranchDetails($libraryCalendarDriver->getBranch());
 
 			$user = $this->getUserForApiCall();
@@ -152,6 +158,11 @@ class EventAPI extends Action {
 			$itemData['programTypes'] = $communicoDriver->getProgramTypes();
 			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
+
+			// check if event has passed
+			$difference = $communicoDriver->getStartDate()->diff(new DateTime());;
+			$difference = (int)$difference->format('%a');
+			$itemData['pastEvent'] = $difference < 0;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
@@ -419,6 +430,119 @@ class EventAPI extends Action {
 					'message' => 'You must provide a saved event id to remove it.',
 				];
 			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	/**
+	 * Returns a list of events that a user has saved.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>filter - Filter to apply to the results (all, upcoming, past). Set to 'all' if not included.</li>
+	 * <li>page - Used for pagination. Default is 1.</li>
+	 * <li>pageSize - Used for pagination. Default is 20.</li>
+	 * </ul>
+	 *
+	 */
+
+	/* @noinspection PhpUnused */
+	function getSavedEvents() {
+		$curTime = time();
+		global $configArray;
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$filter = $_REQUEST['filter'] ?? 'all';
+			$page = $_REQUEST['page'] ?? 1;
+			$pageSize = $_REQUEST['pageSize'] ?? 20;
+			$sort = $_REQUEST['sort_by'] ?? 'checkedOut';
+
+			$savedEvents = [];
+			$events = [];
+
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$savedEvent = new UserEventsEntry();
+			$savedEvent->userId = $user->id;
+
+			if($filter == 'past') {
+				$savedEvent->whereAdd("eventDate < $curTime");
+				$savedEvent->orderBy('eventDate DESC');
+			} elseif ($filter == 'upcoming') {
+				$savedEvent->whereAdd("eventDate >= $curTime");
+				$savedEvent->orderBy('eventDate ASC');
+			} else {
+				$savedEvent->orderBy('eventDate DESC');
+			}
+			$savedEvent->limit(($page - 1) * $pageSize, $pageSize);
+			$savedEvent->find();
+
+			while ($savedEvent->fetch()) {
+				if (!array_key_exists($savedEvent->sourceId, $events)) {
+					$savedEvents[$savedEvent->sourceId] = clone $savedEvent;
+				}
+			}
+
+			foreach($savedEvents as $eventId => $event) {
+				$_REQUEST['id'] = $eventId;
+				$details = [];
+				$source = 'unknown';
+				$sourceFull = 'unknown';
+				if(str_starts_with($eventId, 'lc')) {
+					$source = 'lc';
+					$sourceFull = 'library_calendar';
+					$details = $this->getLMEventDetails();
+				} else if(str_starts_with($eventId, 'communico')) {
+					$source = 'communico';
+					$sourceFull = 'communico';
+					$details = $this->getCommunicoEventDetails();
+				} else if(str_starts_with($eventId, 'libcal')) {
+					$source = 'libcal';
+					$sourceFull = 'libcal';
+					$details = $this->getSpringshareEventDetails();
+				} else {
+					// something went wrong
+				}
+
+				if($details['success'] === true) {
+					$events[$event->sourceId]['id'] = $event->id;
+					$events[$event->sourceId]['sourceId'] = $event->sourceId;
+					$events[$event->sourceId]['title'] = $event->title;
+					$events[$event->sourceId]['startDate'] = $details['startDate'];
+					$events[$event->sourceId]['endDate'] = $details['endDate'];
+					$events[$event->sourceId]['url'] = $details['url'];
+					$events[$event->sourceId]['bypass'] = $details['bypass'];
+					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
+					$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
+					$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
+					$events[$event->sourceId]['pastEvent'] = $details['pastEvent'];
+					$events[$event->sourceId]['location'] = $details['location'];
+					$events[$event->sourceId]['source'] = $source;
+				} else {
+					$events[$event->sourceId]['invalid'] = true;
+					$events[$event->sourceId]['message'] = 'Event not found';
+				}
+			}
+
+			$options = [
+				'totalItems' => count($savedEvents),
+				'perPage' => $pageSize,
+				'append' => false,
+			];
+
+			$pager = new Pager($options);
+
+			return [
+				'success' => true,
+				'totalResults' => $pager->getTotalItems(),
+				'page_current' => (int)$pager->getCurrentPage(),
+				'page_total' => (int)$pager->getTotalPages(),
+				'filter' => $filter,
+				'events' => $events,
+			];
 		} else {
 			return [
 				'success' => false,
