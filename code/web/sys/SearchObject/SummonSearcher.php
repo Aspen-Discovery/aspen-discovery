@@ -476,12 +476,14 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	public function retrieveRecord ($id) {
-		foreach ($this->lastSearchResults as $record) {
-			if ($id == $record['ID'][0]) {
-				return $record;
-			}
-		}
-		return null;
+		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
+		$settings = $this->getSettings();
+		$queryString = "s.q=ID:($id)";
+		$headers = $this->authenticate($settings, $queryString);
+		$recordData = $this->httpRequest($baseUrl, $queryString, $headers);
+		if (!empty($recordData)){
+			$recordData = $this->processData($recordData); 
+		}return $recordData['documents'][0];
 	}
 
 	public function addFacetValueFilter() {
