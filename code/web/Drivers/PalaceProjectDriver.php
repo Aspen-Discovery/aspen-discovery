@@ -75,7 +75,22 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$jsonResponse = json_decode($response);
 			if (!empty($jsonResponse)) {
 				foreach ($jsonResponse->publications as $publication) {
+					$checkout = new Checkout();
+					$checkout->type = 'palace_project';
+					$checkout->source = 'palace_project';
+					$checkout->userId = $patron->id;
+					$checkout->sourceId = $publication->metadata->identifier;
+					$checkout->recordId = $publication->metadata->identifier;
 
+					require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+					$overDriveRecord = new PalaceProjectRecordDriver($checkout->sourceId);
+					if ($overDriveRecord->isValid()) {
+						$checkout->updateFromRecordDriver($overDriveRecord);
+						$checkout->format = $checkout->getRecordFormatCategory();
+					}
+
+					$key = $checkout->source . $checkout->sourceId . $checkout->userId;
+					$checkouts[$key] = $checkout;
 				}
 			}else {
 				global $logger;
@@ -452,7 +467,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$response = $this->curlWrapper->curlGetPage($borrowLink);
 			ExternalRequestLogEntry::logRequest('palaceProject.checkoutTitle', 'POST', $borrowLink, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			if ($response != false) {
-				$xmlResults = simplexml_load_string($response);
+				$jsonResponse = json_decode($response);
 				if ($this->curlWrapper->getResponseCode() == '200') {
 					$result['success'] = true;
 					$result['message'] = translate([
