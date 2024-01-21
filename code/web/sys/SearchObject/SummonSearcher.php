@@ -1,6 +1,5 @@
 <?php
 
-require_once ROOT_DIR . '/sys/SearchObject/BuildQuery.php';
 require_once ROOT_DIR . '/sys/Summon/SummonSettings.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
@@ -51,7 +50,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $groupFilters = array();
 	protected $rangeFilters = array();
 	protected $openAccessFilter = false;
-	protected $highlight = false;
 	protected $expand = false;
 	protected $sortOptions = array();
 	/**
@@ -81,7 +79,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	  /**
 	 * @var string mixed
 	 */
-	private $searchIndex = 'Everything';
+	private $searchIndex = 'Title';
 	/**Facets, filters and limiters */
 	//Values for the main facets - each has an array of available values
 	protected $facets = [
@@ -93,16 +91,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'DatabaseName,or,1,30',
 		'SourceType,or,1,30',	
 	];
+
 	protected $facetFields;
-	//Options to filter results by - checkbox, single value
-	// protected $limitOptions = [
-		// 'hasFullText' =>'Full Text Online',
-		// 'IsScholarly' =>'Is Scholarly',
-		// 'PeerReviewed' => 'Peer Reviewed',
-		// 'OpenAccess' => 'Open Access',
-		// 'inHoldings' => 'Available in Library Collection',
-	// 	$this->holdings,
-	// ];
 
     public function __construct() {
         //Initialize properties with default values
@@ -221,13 +211,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	public function getSort() {
 		$this->sortOptions = array(
 			'Relevance',
-			'Reverse',
-			'Date(newest)',
-			'Date(oldest)',
 		);
-		foreach ($this->sortOptions as $sortOption) {
-			$sortOption = $sortOption . ':' . $this->facetFields;
-		}
 	}
 
 	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
@@ -236,43 +220,43 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$searchQuery = $this->searchTerms[0]['index'].':('.implode('&', array_slice($this->searchTerms[0],1)).')';
 		$options = array(
 			's.q' => $searchQuery,
-			//set to default at top of page
+			//Results per page
 			's.ps' => $this->limit,
-			//set to default at top of page
+			//Page number
 			's.pn' => $this->page,
-			//set to default -  false at top of page
+			//In library collection - can be implemented for libraries as required
 			's.ho' => $this->holdings ? 'true' : 'false',
-			//set to default -  false at top of page
+			//Query suggestions - can be implemented for libraries as required
 			's.dym' => $this->didYouMean ? 'true' : 'false',
-			//set to default - en at top of page
+			//Default English
 			's.l' => $this->language,
-			//set to an empty array
+			//Fetch specific records
 			's.fids' =>$this->idsToFetch,
-			//set in array 
+			//Side facets to filter by
 			's.ff' =>$this->facets,
-			//empty array,
+			//Filters that are active - from side facets
 			's.fvf' => $this->getSummonFilters(),
-			//set to default 1 at top of page
+			//Default 1
 			's.rec.topic.max' => $this->maxTopics,
-			//empty array
+			//Filters
 			's.fvgf' => $this->groupFilters,
-			//empty arrray
+			//Filters
 			's.rf' => $this->rangeFilters,
-			//uses options defined in array 
+			//Order results
 			's.sort' => $this->getSort(),
-			//false by default
+			//False by default
 			's.exp' => $this->expand ? 'true' : 'false',
-			//false by default
+			//False by default
 			's.oaf' => $this->openAccessFilter ? 'true' : 'false',
-			//to bookmark an item - top of page
+			//To bookmark an item so you can retreive it later
 			's.bookMark' => $this->bookMark,
-			//false by default
+			//False by default
 			's.debug' => $this->debug ? 'true' : 'false',
-			//false by default - recommend journals
+			//False by default - recommend journals
 			's.rec.jt' => $this->journalTitle ? 'true' : 'false',
-			//false by default
+			//False by default
 			's.light' => $this->lightWeightRes ? 'true' : 'false',
-			//2 by default - max db reccomendations
+			//2 by default - max database reccomendations
 			's.rec.db.max' => $this->maxRecDb,
 			//allows access to records
 			's.role' =>  'authenticated',			
@@ -286,7 +270,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	public function processData($recordData) {
 			$recordData = $this->process($recordData); 
 			if (is_array($recordData)){
-
 				$this->sessionId = $recordData['sessionId'];
 				$this->lastSearchResults = $recordData['documents'];
 				$this->page = $recordData['query']['pageNumber'];
@@ -439,17 +422,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	/**
 	 * Called in Results.php
+	 * Controls side facets
 	 */
 	public function getFacetSet() {
 		$availableFacets = [];
+		$label = '';
 		$this->filters = [];
 		if (isset($this->facetFields)) {
 			foreach ($this->facetFields as $facetField) {
 				$facetId = $facetField['displayName'];
+				//results array does not return human readable option
+				$parts = preg_split('/(?=[A-Z])/', $facetId, -1, PREG_SPLIT_NO_EMPTY);
+				$displayName = implode(' ', $parts);
 				$availableFacets[$facetId] = [
 					'collapseByDefault' => true,
 					'multiSelect' =>true,
-					'label' =>$facetId,
+					'label' =>$displayName,
 					'valuesToShow' =>5,
 				];
 				if ($facetId == 'ContentType') {
@@ -458,12 +446,13 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$list = [];
 				foreach ($facetField['counts'] as $value) {
 					$facetValue = $value['value'];
+					//Ensures selected facet stays checked when selected - interacts with .tpl
 					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($value, $this->filterList[$facetId]);
 					$facetSettings = [
 						'value' => $facetValue,
 						'display' =>$facetValue,
 						'count' =>$value['count'],
-						'isApplied' => $value->isApplied,
+						'isApplied' => $value['isApplied'],
 					];
 					if ($isApplied) {
 						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $value);
@@ -475,10 +464,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetId]['list'] = $list;
 			}
 		}
-		 var_dump($this->filterList);
 		return $availableFacets;
 	}
 
+	//Retreive a specific record - used to retreive bookcovers
 	public function retrieveRecord ($id) {
 		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
 		$settings = $this->getSettings();
@@ -490,20 +479,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		}return $recordData['documents'][0];
 	}
 
-	public function addFacetValueFilter() {
-		$filter = $this->getFilters();
-         if(is_array($filter)) {
-			foreach ($filter as $eachFilter) {
-				$this->filters .=$eachFilter;
-		 	} 
-		} else {
-			$this->filters[] = $filter;
-		}
-	}
+	//Compile filter options chosen in side facets and add to filter array to be passed in via options array
 	public function getSummonFilters() {
         $this->filters = array();
-		$mergedArray =array_merge($this->filterList, $this->getLimitList());
-        foreach($mergedArray as $key => $value) {
+        foreach($this->filterList as $key => $value) {
             if(is_array($value)) {
                 foreach($value as $val){
                     $parts = explode(' ', $val);
@@ -516,34 +495,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                 $this->filters = urlencode($key . ',') . $result . urlencode(',');
             }
         }
-      var_dump($this->filters);
       return $this->filters;
     }	
-	
-	/*
-	* Called by Results.php - Lists checkbox filter options
-	TODO - Checkbox not staying ticked although moved to applied list - change to Summon filters
-	* 
-	*/
-	// public function getLimitList() {
-	// 	$limitList = [];
-	// 	foreach ($this->lastSearchResults as $record){
-	// 		foreach ($this->limitOptions as $limitOption =>$label) {
-	// 			$isApplied = array_key_exists($limitOption, $this->filterList);
-	// 			if (is_array($record[$limitOption])){
-	// 				$value = $record[$limitOption][0];
-	// 			} else {
-	// 				$value = $record[$limitOption];
-	// 			}
-	// 			$limitList[$label] = [
-	// 				'value' => $label,
-	// 				'display' =>$label,
-	// 				'isApplied' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
-	// 			];
-	// 		}	
-	// 	}
-	// 	return $limitList;
-	// }
 	
 	/**
 	 * Generate an HMAC hash for authentication
@@ -575,7 +528,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	/**
-	 * Send a fully built query string to the API with user authentication
+	 * Send a fully built query string to the API with user authentication - called in Results.php
 	 * @throws Exception
 	 * @return object API response
 	 */
@@ -605,7 +558,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			$recordData = $this->processData($recordData); 
 			$this->stopQueryTimer();
 		}
-		var_dump($queryString);
 		return $recordData;
 	}
 
@@ -700,29 +652,29 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	 /**
-	  * Search options specific to Summon
+	  * Search indexes
 	  */
      public function getSearchIndexes() {
 		return [
-			"Everything" => translate([
-				'text' => "Everything",
+			"Title" => translate([
+				'text' => "Title",
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-            'Books' => translate([
-                'text' => "Books",
+            'All Text' => translate([
+                'text' => "All Text",
 				'isPublicFacing' => true,
 				'inAttribute' => true,
             ]),
-            'Articles' => translate([
-                'text' => "Articles",
+            'Keyword' => translate([
+                'text' => "Keyword",
                 'isPublicFacing' => true,
                 'inAttribute' => true,
             ])
 		];
      }
 
-	 //Used in Union/Ajax - getSummonResults
+	 //Default search index
     public function getDefaultIndex() {
 		return $this->searchIndex;
 	}

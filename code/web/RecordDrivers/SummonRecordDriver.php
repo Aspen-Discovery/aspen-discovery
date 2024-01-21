@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
-
 class SummonRecordDriver extends RecordInterface {
 	private $record;
 	/**
@@ -24,7 +23,6 @@ class SummonRecordDriver extends RecordInterface {
 		return true;
 	}
 
-	#TODO: - Check with Mark how to handle the 1x1 white pixel images and find default image for those records with no image
 	public function getBookcoverUrl($size='large', $absolutePath = false) {
 		global $configArray;
 		if ($size == 'small' || $size == 'medium'){
@@ -85,7 +83,7 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
-		if ($view == 'covers') { // Displaying Results as bookcover tiles
+		if ($view == 'covers') { 
 			return $this->getBrowseResult();
 		}
 
@@ -283,13 +281,6 @@ class SummonRecordDriver extends RecordInterface {
 			return $this->record['hasFullText'];
 		}
 		return false;
-	}
-
-	public function getFullText() {
-	/* 	$fullText = (string)$this->recordData->FullText->Text->Value;
-		$fullText = html_entity_decode($fullText);
-		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText); */
-		return null;
 	}
 
 	/**
