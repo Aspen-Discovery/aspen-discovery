@@ -1202,7 +1202,6 @@ class ListAPI extends Action {
 					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $id;
 
@@ -1260,7 +1259,7 @@ class ListAPI extends Action {
 							$user->update();
 						}
 						$numAdded++;
-					}
+
 				}
 
 				if ($existingList) {

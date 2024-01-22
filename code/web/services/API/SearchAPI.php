@@ -2836,7 +2836,7 @@ class SearchAPI extends Action {
 						$eventSource = 'communico';
 						$bypass = $commmunicoBypass;
 					} else if (str_starts_with($record['id'], 'libcal')) {
-						$eventSource = 'libcal';
+						$eventSource = 'springshare_libcal';
 						$bypass = $springshareBypass;
 					} else {
 						$eventSource = 'unknown';

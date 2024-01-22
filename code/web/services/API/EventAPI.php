@@ -187,7 +187,7 @@ class EventAPI extends Action {
 			$itemData['title'] = $springshareDriver->getTitle();
 			$itemData['isAllDay'] = (bool)$springshareDriver->isAllDayEvent();
 			$itemData['startDate'] = $springshareDriver->getStartDate();
-			$itemData['endDate'] = $springshareDriver->getEndDateString();
+			$itemData['endDate'] = $springshareDriver->getEndDate();
 			$itemData['description'] = strip_tags($springshareDriver->getDescription());
 			$itemData['registrationRequired'] = $springshareDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
@@ -459,7 +459,6 @@ class EventAPI extends Action {
 			$filter = $_REQUEST['filter'] ?? 'all';
 			$page = $_REQUEST['page'] ?? 1;
 			$pageSize = $_REQUEST['pageSize'] ?? 20;
-			$sort = $_REQUEST['sort_by'] ?? 'checkedOut';
 
 			$savedEvents = [];
 			$events = [];
@@ -501,7 +500,7 @@ class EventAPI extends Action {
 					$details = $this->getCommunicoEventDetails();
 				} else if(str_starts_with($eventId, 'libcal')) {
 					$source = 'libcal';
-					$sourceFull = 'libcal';
+					$sourceFull = 'springshare_libcal';
 					$details = $this->getSpringshareEventDetails();
 				} else {
 					// something went wrong
