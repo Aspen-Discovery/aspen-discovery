@@ -41,6 +41,7 @@ class SystemAPI extends Action {
 					'getSystemMessages',
 					'dismissSystemMessage',
 					'getLibraryLinks',
+					'getLocations'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -144,6 +145,34 @@ class SystemAPI extends Action {
 				'message' => 'id not provided',
 			];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getLocations(): array {
+		$return = [
+			'success' => true,
+			'locations' => [],
+		];
+		$location = new Location();
+		$location->showInLocationsAndHoursList = 1;
+		$location->orderBy('displayName');
+		$location->find();
+		while ($location->fetch()) {
+			$return['locations'][$location->locationId] = $location->getApiInfo();
+		}
+
+		$userLatitude = $_GET['latitude'] ?? null;
+		$userLongitude = $_GET['longitude'] ?? null;
+		require_once ROOT_DIR . '/services/API/GreenhouseAPI.php';
+		$greenhouseApi = new GreenhouseAPI();
+		foreach ($return['locations'] as $location) {
+			$return['locations'][$location['locationId']]['distance'] = null;
+			if($userLongitude && $userLatitude && $location['longitude'] !== 0 && $location['latitude'] !== 0) {
+				$return['locations'][$location['locationId']]['distance'] = $greenhouseApi->findDistance($userLongitude, $userLatitude, $location['longitude'], $location['latitude'], $location['unit']);
+			}
+		}
+
+		return $return;
 	}
 
 	/** @noinspection PhpUnused */
