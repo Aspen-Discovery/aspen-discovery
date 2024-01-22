@@ -2,11 +2,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 import { LanguageContext } from '../../context/initialContext';
+import { EventScreen } from '../../screens/Event/Event';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 
 import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
+import { MyEvents } from '../../screens/MyAccount/Events/Events';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
 import { MyProfile } from '../../screens/MyAccount/Profile';
@@ -178,6 +180,23 @@ const AccountStackNavigator = () => {
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyReadingHistory' }}
+                    />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="MyEvents"
+                         component={MyEvents}
+                         options={{
+                              title: getTermFromDictionary(language, 'my_events'),
+                         }}
+                    />
+                    <Stack.Screen
+                         name="EventDetails"
+                         component={EventScreen}
+                         initialParams={{ prevRoute: 'MyEvents' }}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
+                         })}
                     />
                </Stack.Group>
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />

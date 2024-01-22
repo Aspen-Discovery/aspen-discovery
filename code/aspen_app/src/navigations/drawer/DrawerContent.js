@@ -155,6 +155,7 @@ export const DrawerContent = () => {
                               <SavedSearches />
                               <ReadingHistory />
                               <Fines />
+                              <Events />
                          </VStack>
 
                          <VStack space="3">
@@ -256,7 +257,7 @@ const Checkouts = () => {
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <VStack w="100%">
                          <Text fontWeight="500">
-                              {getTermFromDictionary(language, 'checked_out_titles')} {user ? <Text bold>({user.numCheckedOut})</Text> : null}
+                              {getTermFromDictionary(language, 'checked_out_titles')} {user ? <Text bold>({user.numCheckedOut ?? 0})</Text> : null}
                          </Text>
                     </VStack>
                </HStack>
@@ -302,7 +303,7 @@ const Holds = () => {
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <VStack w="100%">
                          <Text fontWeight="500">
-                              {getTermFromDictionary(language, 'titles_on_hold')} {user ? <Text bold>({user.numHolds})</Text> : null}
+                              {getTermFromDictionary(language, 'titles_on_hold')} {user ? <Text bold>({user.numHolds ?? 0})</Text> : null}
                          </Text>
                     </VStack>
                </HStack>
@@ -339,7 +340,7 @@ const UserLists = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {getTermFromDictionary(language, 'my_lists')} {user ? <Text bold>({user.numLists})</Text> : null}
+                                   {getTermFromDictionary(language, 'my_lists')} {user ? <Text bold>({user.numLists ?? 0})</Text> : null}
                               </Text>
                          </VStack>
                     </HStack>
@@ -401,7 +402,7 @@ const SavedSearches = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {getTermFromDictionary(language, 'saved_searches')} {user ? <Text bold>({user.numSavedSearches})</Text> : null}
+                                   {getTermFromDictionary(language, 'saved_searches')} {user ? <Text bold>({user.numSavedSearches ?? 0})</Text> : null}
                               </Text>
                          </VStack>
                     </HStack>
@@ -564,6 +565,39 @@ const Fines = () => {
                               {user.fines ?? '$0.00'}
                          </Badge>
                     </Container>
+               </Pressable>
+          );
+     }
+
+     return null;
+};
+
+const Events = () => {
+     const { user } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+
+     if (version >= '24.02.00') {
+          return (
+               <Pressable
+                    px="2"
+                    py="3"
+                    rounded="md"
+                    onPress={() => {
+                         navigateStack('AccountScreenTab', 'MyEvents', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         });
+                    }}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <VStack w="100%">
+                              <Text fontWeight="500">
+                                   {getTermFromDictionary(language, 'events')} <Text bold>({user.numSavedEvents ?? 0})</Text>
+                              </Text>
+                         </VStack>
+                    </HStack>
                </Pressable>
           );
      }

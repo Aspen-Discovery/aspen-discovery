@@ -1,9 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 import _ from 'lodash';
-import { Box, Button, Center, ChevronRightIcon, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Text, View, VStack } from 'native-base';
+import { Box, Button, Center, ChevronRightIcon, FormControl, HStack, Icon, Input, Pressable, ScrollView, Text, View, VStack } from 'native-base';
 import React from 'react';
-import { Platform } from 'react-native';
+import { loadingSpinner } from '../../components/loadingSpinner';
 
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -14,18 +14,21 @@ import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
 
 export const FiltersScreen = () => {
+     const [isLoading, setIsLoading] = React.useState(false);
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
-     const { currentIndex, currentSource, indexes, sources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
+     const { currentIndex, currentSource, indexes, sources, updateCurrentIndex, updateCurrentSource, updateIndexes } = React.useContext(SearchContext);
      const pendingFiltersFromParams = useNavigationState((state) => state.routes[0]['params']['pendingFilters']);
      const [searchTerm, setSearchTerm] = React.useState(SEARCH.term ?? '');
+     const [searchSourceLabel, setSearchSourceLabel] = React.useState('Library Catalog');
 
      console.log('currentIndex: ' + currentIndex);
      console.log('currentSource: ' + currentSource);
+     console.log(SEARCH.availableFacets);
 
      let facets = SEARCH.availableFacets ? Object.keys(SEARCH.availableFacets) : [];
      let pendingFilters = SEARCH.pendingFilters ?? [];
@@ -59,8 +62,7 @@ export const FiltersScreen = () => {
           const facetData = _.filter(SEARCH.availableFacets, ['label', cluster]);
           const pendingFacets = _.filter(pendingFilters, ['field', facetData[0]['field']]);
           let text = '';
-
-          if (!_.isUndefined(SEARCH.appliedFilters[cluster])) {
+          if (_.isObjectLike(SEARCH.appliedFilters) && !_.isUndefined(SEARCH.appliedFilters[cluster])) {
                const facet = SEARCH.appliedFilters[cluster];
                _.forEach(facet, function (item, key) {
                     if (text.length === 0) {
@@ -178,6 +180,14 @@ export const FiltersScreen = () => {
           });
      };
 
+     const openSearchSources = () => {
+          navigation.navigate('SearchSource');
+     };
+
+     const openSearchIndexes = () => {
+          navigation.navigate('SearchIndex');
+     };
+
      const updateSearch = () => {
           const params = buildParamsForUrl();
           SEARCH.hasPendingChanges = false;
@@ -224,12 +234,47 @@ export const FiltersScreen = () => {
           });
      };
 
-     const clearSearch = () => {};
+     const clearSearch = () => {
+          setSearchTerm('');
+     };
 
-     const openScanner = () => {};
+     const openScanner = async () => {
+          navigateStack('BrowseTab', 'Scanner');
+     };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: false });
+          navigateStack('BrowseTab', 'SearchResults', {
+               term: searchTerm,
+               type: 'catalog',
+               prevRoute: 'DiscoveryScreen',
+               scannerSearch: false,
+          });
+     };
+
+     const getSearchIndexLabel = () => {
+          if (currentIndex === 'Title') {
+               return getTermFromDictionary(language, 'title');
+          } else if (currentIndex === 'StartOfTitle') {
+               return getTermFromDictionary(language, 'start_of_title');
+          } else if (currentIndex === 'Series') {
+               return getTermFromDictionary(language, 'series');
+          } else if (currentIndex === 'Author') {
+               return getTermFromDictionary(language, 'author');
+          } else if (currentIndex === 'Subject') {
+               return getTermFromDictionary(language, 'subject');
+          } else if (currentIndex === 'LocalCallNumber') {
+               return getTermFromDictionary(language, 'local_call_number');
+          } else {
+               return getTermFromDictionary(language, 'keyword');
+          }
+     };
+
+     const getSearchSourceLabel = () => {
+          if (currentSource === 'events') {
+               return getTermFromDictionary(language, 'events');
+          } else {
+               return getTermFromDictionary(language, 'library_catalog');
+          }
      };
 
      return (
@@ -277,27 +322,35 @@ export const FiltersScreen = () => {
                                         }
                                    />
                               </FormControl>
-                              <HStack space={2}>
-                                   <FormControl maxW="50%">
-                                        <Select isReadOnly={Platform.OS === 'android'} name="changeIndex" selectedValue={currentIndex} onValueChange={(itemValue) => updateCurrentIndex(itemValue)}>
-                                             {_.map(indexes, function (item, index, array) {
-                                                  return <Select.Item key={index} label={item} value={index} />;
-                                             })}
-                                        </Select>
-                                   </FormControl>
-                                   <FormControl maxW="50%">
-                                        <Select isReadOnly={Platform.OS === 'android'} name="changeSource" selectedValue={currentSource} onValueChange={(itemValue) => updateCurrentSource(itemValue)}>
-                                             {_.map(sources, function (source, index, array) {
-                                                  if (index === 'events' || index === 'local') {
-                                                       return <Select.Item key={index} label={source.name} value={index} />;
-                                                  }
-                                             })}
-                                        </Select>
-                                   </FormControl>
-                              </HStack>
                          </VStack>
 
-                         {facets.map((item, index, array) => renderFilter(item, index))}
+                         {!isLoading ? (
+                              <>
+                                   <Pressable key={0} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" py="5" onPress={() => openSearchIndexes()}>
+                                        <VStack alignContent="center">
+                                             <HStack justifyContent="space-between" alignItems="center" alignContent="center">
+                                                  <VStack>
+                                                       <Text bold>{getTermFromDictionary(language, 'search_by')}</Text>
+                                                       <Text italic>{getSearchIndexLabel()}</Text>
+                                                  </VStack>
+                                                  <ChevronRightIcon />
+                                             </HStack>
+                                        </VStack>
+                                   </Pressable>
+                                   <Pressable key={1} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" py="5" onPress={() => openSearchSources()}>
+                                        <VStack alignContent="center">
+                                             <HStack justifyContent="space-between" alignItems="center" alignContent="center">
+                                                  <VStack>
+                                                       <Text bold>{getTermFromDictionary(language, 'search_in')}</Text>
+                                                       <Text italic>{getSearchSourceLabel()}</Text>
+                                                  </VStack>
+                                                  <ChevronRightIcon />
+                                             </HStack>
+                                        </VStack>
+                                   </Pressable>
+                              </>
+                         ) : null}
+                         {!isLoading ? facets.map((item, index, array) => renderFilter(item, index)) : <Box mt={5}>{loadingSpinner()}</Box>}
                     </Box>
                </ScrollView>
                {actionButtons()}

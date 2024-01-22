@@ -546,7 +546,7 @@ export function formatBrowseCategories(payload) {
                                         id = category.listId;
                                    }
 
-                                   if (!_.isUndefined(category.sourceId) && !_.isNull(category.sourceId) && category.sourceId !== -1 && category.sourceId !== '-1') {
+                                   if (!_.isUndefined(category.sourceId) && !_.isNull(category.sourceId) && category.sourceId !== '' && category.sourceId !== -1 && category.sourceId !== '-1') {
                                         id = category.sourceId;
                                    }
 

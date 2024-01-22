@@ -206,7 +206,7 @@ export const DiscoverHomeScreen = () => {
                     }
 
                     if (version >= '22.11.00') {
-                         await getDefaultFacets(language);
+                         await getDefaultFacets(library.baseUrl, 5, language);
                     }
 
                     console.log('notificationOnboard: ' + notificationOnboard);
@@ -235,7 +235,12 @@ export const DiscoverHomeScreen = () => {
      };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: false });
+          navigateStack('BrowseTab', 'SearchResults', {
+               term: searchTerm,
+               type: 'catalog',
+               prevRoute: 'DiscoveryScreen',
+               scannerSearch: false,
+          });
           clearText();
      };
 

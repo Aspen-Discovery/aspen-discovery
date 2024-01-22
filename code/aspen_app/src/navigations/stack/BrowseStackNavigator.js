@@ -1,23 +1,25 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
-import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
+import React from 'react';
+import Scanner from '../../components/Scanner';
+import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
+import { EventScreen } from '../../screens/Event/Event';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
-import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
-import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { Editions } from '../../screens/GroupedWork/Editions';
+import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
-import { getTermFromDictionary } from '../../translations/TranslationService';
+import Facet from '../../screens/Search/Facet';
+import { SearchIndexScreen } from '../../screens/Search/Facets/SearchIndex';
+import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
+import { FiltersScreen } from '../../screens/Search/Filters';
 import SearchByCategory from '../../screens/Search/SearchByCategory';
 import { SearchResultsForList } from '../../screens/Search/SearchByList';
 import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
-import { CommonActions } from '@react-navigation/native';
 import { SearchResults } from '../../screens/Search/SearchResults';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { FiltersScreen } from '../../screens/Search/Filters';
-import Facet from '../../screens/Search/Facet';
-import Scanner from '../../components/Scanner';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const BrowseStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -206,6 +208,14 @@ const BrowseStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
+               <Stack.Screen
+                    name="EventScreen"
+                    component={EventScreen}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
+                    })}
+                    initialParams={{ prevRoute: 'HomeScreen' }}
+               />
           </Stack.Navigator>
      );
 };
@@ -303,6 +313,24 @@ const FilterModal = () => {
                          headerShown: true,
                          presentation: 'card',
                     })}
+               />
+               <FilterModalStack.Screen
+                    name="SearchSource"
+                    component={SearchSourceScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'search_in'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+               <FilterModalStack.Screen
+                    name="SearchIndex"
+                    component={SearchIndexScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'search_by'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
                />
           </FilterModalStack.Navigator>
      );

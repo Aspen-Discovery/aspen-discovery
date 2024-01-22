@@ -66,7 +66,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
 
 export async function getDefaultFacets(url, limit = 5, language) {
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: url ?? LIBRARY.url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           params: { limit, language },
@@ -438,9 +438,9 @@ export async function getSearchIndexes(url, language = 'en', source = 'local') {
      });
      const response = await discovery.get(endpoint.url + 'getSearchIndexes');
      if (response.ok) {
-          if (response?.data?.result?.searchIndexes) {
-               SEARCH.validIndexes = response.data.result.searchIndexes;
-               return response.data.result.searchIndexes;
+          if (response?.data?.result?.indexes[source]) {
+               SEARCH.validIndexes = response.data.result.indexes[source];
+               return response.data.result.indexes[source];
           }
      }
 
@@ -462,9 +462,9 @@ export async function getSearchSources(url, language = 'en') {
      });
      const response = await discovery.get(endpoint.url + 'getSearchSources');
      if (response.ok) {
-          if (response?.data?.result?.searchSources) {
-               SEARCH.validSources = response.data.result.searchSources;
-               return response.data.result.searchSources;
+          if (response?.data?.result?.sources) {
+               SEARCH.validSources = response.data.result.sources;
+               return response.data.result.sources;
           }
      }
 

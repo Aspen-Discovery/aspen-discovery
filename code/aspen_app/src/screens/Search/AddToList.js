@@ -1,20 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import _ from 'lodash';
-import { Platform } from 'react-native';
-import { CloseIcon, VStack, Box, Button, Center, FormControl, HStack, Icon, Input, Radio, Select, Stack, Text, TextArea, Pressable } from 'native-base';
-import React, { useState } from 'react';
-import Modal from 'react-native-modal';
 import { useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
+import { Box, Button, Center, CloseIcon, FormControl, HStack, Icon, Input, Pressable, Radio, Select, Stack, Text, TextArea, VStack } from 'native-base';
+import React, { useState } from 'react';
+import { Platform } from 'react-native';
+import Modal from 'react-native-modal';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { addTitlesToList, createListFromTitle } from '../../util/api/list';
 
 import { PATRON } from '../../util/loadPatron';
-import { addTitlesToList, createListFromTitle, getLists } from '../../util/api/list';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { refreshProfile } from '../../util/api/user';
-import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const AddToList = (props) => {
      const item = props.itemId;
      const btnStyle = props.btnStyle;
+     const source = props.source ?? 'GroupedWork';
+     const btnWidth = props.btnWidth ?? 'auto';
      const [open, setOpen] = React.useState(false);
      const [screen, setScreen] = React.useState('add-new');
      const [loading, setLoading] = React.useState(false);
@@ -74,6 +75,14 @@ export const AddToList = (props) => {
      const SmallButton = () => {
           return (
                <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal} style={{ flex: 1, flexWrap: 'wrap' }}>
+                    {getTermFromDictionary(language, 'add_to_list')}
+               </Button>
+          );
+     };
+
+     const RegularButton = () => {
+          return (
+               <Button width={btnWidth} onPress={toggleModal}>
                     {getTermFromDictionary(language, 'add_to_list')}
                </Button>
           );
@@ -188,7 +197,7 @@ export const AddToList = (props) => {
                                                        isLoading={loading}
                                                        onPress={() => {
                                                             setLoading(true);
-                                                            addTitlesToList(listId, item, library.baseUrl).then((res) => {
+                                                            addTitlesToList(listId, item, library.baseUrl, source).then((res) => {
                                                                  updateLastListUsed(listId);
                                                                  queryClient.invalidateQueries({ queryKey: ['list', listId] });
                                                                  setLoading(false);
@@ -300,7 +309,7 @@ export const AddToList = (props) => {
                                                   isLoadingText={getTermFromDictionary(language, 'saving', true)}
                                                   onPress={() => {
                                                        setLoading(true);
-                                                       createListFromTitle(title, description, isPublic, item, library.baseUrl).then((res) => {
+                                                       createListFromTitle(title, description, isPublic, item, library.baseUrl, source).then((res) => {
                                                             updateLastListUsed(res.listId);
                                                             setOpen(false);
                                                             setLoading(false);
@@ -315,7 +324,7 @@ export const AddToList = (props) => {
                          </VStack>
                     </Box>
                </Modal>
-               {btnStyle === 'lg' ? LargeButton() : SmallButton()}
+               {btnStyle === 'lg' ? LargeButton() : btnStyle === 'reg' ? RegularButton() : SmallButton()}
           </>
      );
 };
