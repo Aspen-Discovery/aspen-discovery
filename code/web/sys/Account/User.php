@@ -1503,6 +1503,17 @@ class User extends DataObject {
 				}
 			}
 
+			//Get holds from Palace Project
+			if ($source == 'all' || $source == 'palace_project') {
+				if ($this->isValidForEContentSource('palace_project')) {
+					require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+					$driver = new PalaceProjectDriver();
+					$palaceProjectHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $palaceProjectHolds);
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
+				}
+			}
+
 			if ($source == 'all' || $source == 'interlibrary_loan') {
 				if ($this->hasInterlibraryLoan()) {
 					//For now, this is just VDX

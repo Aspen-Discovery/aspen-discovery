@@ -28,7 +28,6 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	 * @access public
 	 */
 	public function getCheckouts(User $patron): array {
-		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		if (isset($this->checkouts[$patron->id])) {
 			return $this->checkouts[$patron->id];
 		}
@@ -39,6 +38,8 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	}
 
 	public function loadCirculationInformation(User $patron) {
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$checkouts = [];
 		$holds = [
 			'available' => [],
@@ -57,35 +58,90 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
 		$response = $this->curlWrapper->curlGetPage($checkoutsUrl);
-		ExternalRequestLogEntry::logRequest('palaceProject.getCheckouts', 'POST', $checkoutsUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
+		ExternalRequestLogEntry::logRequest('palaceProject.getCirculation', 'POST', $checkoutsUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 		if ($response != false) {
 			$jsonResponse = json_decode($response);
 			if (!empty($jsonResponse)) {
 				foreach ($jsonResponse->publications as $publication) {
-					$checkout = new Checkout();
-					$checkout->type = 'palace_project';
-					$checkout->source = 'palace_project';
-					$checkout->userId = $patron->id;
-					$checkout->sourceId = $publication->metadata->identifier;
-					$checkout->recordId = $publication->metadata->identifier;
-
-					require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
-					$overDriveRecord = new PalaceProjectRecordDriver($checkout->sourceId);
-					if ($overDriveRecord->isValid()) {
-						$checkout->updateFromRecordDriver($overDriveRecord);
-						$checkout->format = $checkout->getRecordFormatCategory();
-					}
-
+					//Figure out if this is a hold or a checkout
 					$links = $publication->links;
+					$circulationType = 'checkout';
+					$holdAvailable = false;
 					foreach ($links as $link) {
-						if ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
-							$checkout->canReturnEarly = true;
-							$checkout->earlyReturnUrl = $link->href;
+						if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+							if ($link->properties->availability->state == 'reserved') {
+								$circulationType = 'hold';
+								$holdAvailable = false;
+							}else if ($link->properties->availability->state == 'ready') {
+								$circulationType = 'hold';
+								$holdAvailable = true;
+							}
 						}
 					}
 
-					$key = $checkout->source . $checkout->sourceId . $checkout->userId;
-					$checkouts[$key] = $checkout;
+					require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+					if ($circulationType == 'checkout') {
+						$checkout = new Checkout();
+						$checkout->type = 'palace_project';
+						$checkout->source = 'palace_project';
+						$checkout->userId = $patron->id;
+						$checkout->sourceId = $publication->metadata->identifier;
+						$checkout->recordId = $publication->metadata->identifier;
+
+						$palaceProjectRecord = new PalaceProjectRecordDriver($checkout->sourceId);
+						if ($palaceProjectRecord->isValid()) {
+							$checkout->updateFromRecordDriver($palaceProjectRecord);
+							$checkout->format = $checkout->getRecordFormatCategory();
+						}
+
+						foreach ($links as $link) {
+							if ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
+								$checkout->canReturnEarly = true;
+								$checkout->earlyReturnUrl = $link->href;
+							}
+						}
+
+						$key = $checkout->source . $checkout->sourceId . $checkout->userId;
+						$checkouts[$key] = $checkout;
+					}else{
+						$hold = new Hold();
+						$hold->type = 'palace_project';
+						$hold->source = 'palace_project';
+						$hold->userId = $patron->id;
+						$hold->sourceId = $publication->metadata->identifier;
+						$hold->recordId = $publication->metadata->identifier;
+
+						$palaceProjectRecord = new PalaceProjectRecordDriver($hold->sourceId);
+						if ($palaceProjectRecord->isValid()) {
+							$hold->updateFromRecordDriver($palaceProjectRecord);
+							$hold->format = $hold->getRecordFormatCategory();
+						}
+
+						$hold->userId = $patron->id;
+						$key = $hold->source . $hold->sourceId . $hold->userId;
+
+						$hold->available = $holdAvailable;
+
+						foreach ($links as $link) {
+							if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+								if (!empty($link->properties->availability->since)) {
+									$hold->createDate = strtotime($link->properties->availability->since);
+								}
+								if (!empty($link->properties->availability->until)) {
+									$hold->expirationDate = strtotime($link->properties->availability->until);
+								}
+							}elseif ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
+								$hold->cancellationUrl = $link->href;
+							}
+						}
+
+						if ($holdAvailable) {
+							$holds['available'][$key] = $hold;
+						} else {
+							$holds['unavailable'][$key] = $hold;
+						}
+					}
+
 				}
 			}else {
 				global $logger;
@@ -281,68 +337,85 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			]),
 		];
 
-		$settings = $this->getSettings($patron);
-		$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/{$patron->getBarcode()}";
-		$headers = [
-			'Authorization: Basic' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-		];
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, false);
-		$response = $this->curlWrapper->curlSendPage($holdUrl, 'GET');
-		ExternalRequestLogEntry::logRequest('palaceProject.placeHold', 'GET', $holdUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
-		/** @var stdClass $xmlResults */
-		$xmlResults = simplexml_load_string($response);
-		$addToHoldResult = $xmlResults->addtoholdResult;
-		$status = $addToHoldResult->status;
-		if ($status->code == '3111') {
-			//The title is available, try to check it out.
-			return $this->checkOutTitle($patron, $recordId, false);
-		} elseif ($status->code != '0000') {
-			$result['message'] = translate([
-				'text' => "Could not place Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
+		require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+		$recordDriver = new PalaceProjectRecordDriver($recordId);
+		if ($recordDriver->isValid()) {
+			$borrowLink = $recordDriver->getBorrowLink();
 
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Unable to place hold',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => "Could not place Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
+			$headers = $this->getPalaceProjectHeaders($patron);
+			$this->initCurlWrapper();
+			$this->curlWrapper->addCustomHeaders($headers, true);
+			$response = $this->curlWrapper->curlGetPage($borrowLink);
+			ExternalRequestLogEntry::logRequest('palaceProject.checkoutTitle', 'POST', $borrowLink, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
+			if ($response != false) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse == false) {
+					$xmlResponse = simplexml_load_string($response);
+				}
+				if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '201') {
+					$result['success'] = true;
+					$result['message'] = translate([
+						'text' => 'Your Palace Project hold was placed successfully.',
+						'isPublicFacing' => true,
+					]);
 
-			$this->incrementStat('numApiErrors');
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Hold Placed Successfully',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your Palace Project hold was placed successfully.',
+						'isPublicFacing' => true,
+					]);
+
+					$this->incrementStat('numHoldsPlaced');
+					$this->trackUserUsageOfPalaceProject($patron);
+					$this->trackRecordCheckout($recordId);
+					$patron->lastReadingHistoryUpdate = 0;
+					$patron->update();
+
+					$patron->clearCachedAccountSummaryForSource('palace_project');
+					$patron->forceReloadOfHolds();
+				}else{
+					$result['message'] = translate([
+						'text' => 'Sorry, we could not place this hold.',
+						'isPublicFacing' => true,
+					]);
+
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Unable to place hold',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Sorry, we could not place this hold.',
+						'isPublicFacing' => true,
+					]);
+					if (!empty($jsonResponse->detail)) {
+						$result['message'] .= '<br/>' . translate([
+								'text' => $jsonResponse->detail,
+								'isPublicFacing' => true,
+							]);
+						$result['api']['message'] .= "\n" . translate([
+								'text' => $jsonResponse->detail,
+								'isPublicFacing' => true,
+							]);
+					}
+				}
+			} else {
+				global $logger;
+				$logger->log('Error placing hold, no response from Palace Project', Logger::LOG_ERROR);
+				$this->incrementStat('numApiErrors');
+			}
+
 		} else {
-			$result['success'] = true;
 			$result['message'] = translate([
-				'text' => 'Your Boundless hold was placed successfully',
+				'text' => 'Invalid Record Id',
 				'isPublicFacing' => true,
 			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Hold Placed Successfully',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => 'Your Boundless hold was placed successfully',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['action'] = translate([
-				'text' => 'Go to Holds',
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numHoldsPlaced');
-			$this->trackUserUsageOfPalaceProject($patron);
-			$this->trackRecordHold($recordId);
-			$patron->clearCachedAccountSummaryForSource('palace_project');
-			$patron->forceReloadOfHolds();
 		}
+
 		return $result;
 	}
 
@@ -362,57 +435,75 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			]),
 		];
 
-		$settings = $this->getSettings($patron);
-		$cancelHoldUrl = $settings->apiUrl . "/Services/VendorAPI/removeHold/v2/$recordId/{$patron->getBarcode()}";
-		$headers = [
-			'Authorization: Basic' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-		];
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, false);
-		$response = $this->curlWrapper->curlSendPage($cancelHoldUrl, 'GET');
-		ExternalRequestLogEntry::logRequest('palaceProject.cancelHold', 'GET', $cancelHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
-		/** @var stdClass $xmlResults */
-		$xmlResults = simplexml_load_string($response);
-		$removeHoldResult = $xmlResults->removeholdResult;
-		$status = $removeHoldResult->status;
-		if ($status->code != '0000') {
-			$result['message'] = translate([
-				'text' => "Could not cancel Boundless hold, " . (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Unable to cancel hold',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => 'Could not cancel Boundless hold, ' . (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numApiErrors');
-		} else {
-			$result['success'] = true;
-			$result['message'] = translate([
-				'text' => 'Your Boundless hold was cancelled successfully',
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Hold cancelled',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => 'Your Boundless hold was cancelled successfully',
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numHoldsCancelled');
-			$patron->clearCachedAccountSummaryForSource('palace_project');
-			$patron->forceReloadOfHolds();
+		$holds = $patron->getHolds(false,'palace_project');
+		$foundHold = false;
+		foreach ($holds as $section) {
+			/** @var Hold $hold */
+			foreach ($section as $hold) {
+				if ($hold->recordId == $recordId) {
+					$foundHold = true;
+					break;
+				}
+			}
+			if ($foundHold) {
+				break;
+			}
 		}
+
+		if ($foundHold) {
+			$cancelHoldUrl = $hold->cancellationUrl;
+
+			$headers = $this->getPalaceProjectHeaders($patron);
+
+			$this->initCurlWrapper();
+			$this->curlWrapper->addCustomHeaders($headers, true);
+			$response = $this->curlWrapper->curlGetPage($cancelHoldUrl);
+			ExternalRequestLogEntry::logRequest('palaceProject.cancelHold', 'POST', $cancelHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
+			$cancelWorked = false;
+			if ($response != false) {
+				if ($this->curlWrapper->getResponseCode() == 200) {
+					$result['success'] = true;
+					$result['message'] = translate([
+						'text' => 'Your Palace Project hold was cancelled successfully',
+						'isPublicFacing' => true,
+					]);
+
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Hold cancelled',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your Palace Project hold was cancelled successfully',
+						'isPublicFacing' => true,
+					]);
+
+					$this->incrementStat('numHoldsCancelled');
+					$patron->clearCachedAccountSummaryForSource('palace_project');
+					$patron->forceReloadOfHolds();
+					$cancelWorked = true;
+				}
+			}
+			if (!$cancelWorked) {
+				$result['message'] = translate([
+					'text' => "Could not cancel Palace Project hold, " . (string)$status->statusMessage,
+					'isPublicFacing' => true,
+				]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate([
+					'text' => 'Unable to cancel hold',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Could not cancel Palace Project hold, ' . (string)$status->statusMessage,
+					'isPublicFacing' => true,
+				]);
+
+				$this->incrementStat('numApiErrors');
+			}
+		}
+
 		return $result;
 	}
 
@@ -483,7 +574,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			ExternalRequestLogEntry::logRequest('palaceProject.checkoutTitle', 'POST', $borrowLink, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			if ($response != false) {
 				$jsonResponse = json_decode($response);
-				if ($this->curlWrapper->getResponseCode() == '200') {
+				if ($jsonResponse == false) {
+					$xmlResponse = simplexml_load_string($response);
+				}
+				if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '201') {
 					$result['success'] = true;
 					$result['message'] = translate([
 						'text' => 'Your Palace Project title was checked out successfully. You may now download the title from your Account.',
@@ -496,7 +590,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['message'] = translate([
-						'text' => 'Your Boundless title was checked out successfully. You may now download the title from your Account.',
+						'text' => 'Your Palace Project title was checked out successfully. Use the Palace Project app to read/listen to the title.',
 						'isPublicFacing' => true,
 					]);
 					$result['api']['action'] = translate([
@@ -540,7 +634,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 				}
 			} else {
 				global $logger;
-				$logger->log('Error loading checkouts, no response from Palace Project', Logger::LOG_ERROR);
+				$logger->log('Error checking out title, no response from Palace Project', Logger::LOG_ERROR);
 				$this->incrementStat('numApiErrors');
 			}
 
@@ -661,134 +755,6 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		}
 	}
 
-	function freezeHold(User $patron, $recordId): array {
-		$result = [
-			'success' => false,
-			'message' => translate([
-				'text' => 'Unknown error',
-				'isPublicFacing' => true,
-			]),
-		];
-
-		$settings = $this->getSettings($patron);
-		$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/suspendHold/v2/$recordId/{$patron->getBarcode()}";
-		$headers = [
-			'Authorization: Basic' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-		];
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, false);
-		$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
-		ExternalRequestLogEntry::logRequest('palaceProject.freezeHold', 'GET', $freezeHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
-		/** @var stdClass $xmlResults */
-		$xmlResults = simplexml_load_string($response);
-		$freezeHoldResult = $xmlResults->HoldResult;
-		$status = $freezeHoldResult->status;
-		if ($status->code != '0000') {
-			$result['message'] = translate([
-				'text' => "Could not freeze Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Unable to freeze hold',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => "Could not freeze Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numApiErrors');
-		} else {
-			$result['success'] = true;
-			$result['message'] = translate([
-				'text' => 'Your hold was frozen successfully',
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Hold frozen',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => 'Your hold was frozen successfully',
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numHoldsFrozen');
-			$patron->forceReloadOfHolds();
-		}
-		return $result;
-	}
-
-	function thawHold(User $patron, $recordId): array {
-		$result = [
-			'success' => false,
-			'message' => translate([
-				'text' => 'Unknown error',
-				'isPublicFacing' => true,
-			]),
-		];
-
-		$settings = $this->getSettings($patron);
-		$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/activateHold/v2/$recordId/{$patron->getBarcode()}";
-		$headers = [
-			'Authorization: Basic' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
-		];
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, false);
-		$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
-		ExternalRequestLogEntry::logRequest('palaceProject.thawHold', 'GET', $freezeHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
-		/** @var stdClass $xmlResults */
-		$xmlResults = simplexml_load_string($response);
-		$thawHoldResult = $xmlResults->HoldResult;
-		$status = $thawHoldResult->status;
-		if ($status->code != '0000') {
-			$result['message'] = translate([
-				'text' => "Could not thaw Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Unable to thaw hold',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => "Could not thaw Boundless hold, %1%",
-				1 => (string)$status->statusMessage,
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numApiErrors');
-		} else {
-			$result['success'] = true;
-			$result['message'] = translate([
-				'text' => 'Your Boundless hold was thawed successfully',
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate([
-				'text' => 'Hold thawed',
-				'isPublicFacing' => true,
-			]);
-			$result['api']['message'] = translate([
-				'text' => 'Your Boundless hold was thawed successfully',
-				'isPublicFacing' => true,
-			]);
-
-			$this->incrementStat('numHoldsThawed');
-			$patron->forceReloadOfHolds();
-		}
-		return $result;
-	}
-
 	private function incrementStat(string $fieldName) {
 		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectStats.php';
 		$palaceProjectStats = new PalaceProjectStats();
@@ -818,7 +784,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		return [
 			'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
 			'Accept: application/opds+json',
-			'User-Agent: Aspen Discovery ' . $gitBranch
+			'User-Agent: Aspen Discovery ' . $gitBranch,
 		];
 	}
 }

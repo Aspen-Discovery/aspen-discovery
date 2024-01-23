@@ -56,7 +56,25 @@ function getUpdates24_02_00(): array {
 			'sql' => [
 				"ALTER TABLE user_checkout ADD COLUMN earlyReturnUrl VARCHAR(255)",
 			],
-		], //track_palace_project_record_usage
+		], //palace_project_return_url
+
+		'palace_project_collection_name' => [
+			'title' => 'Palace Project Collection Name',
+			'description' => 'Add collection name for titles in Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE palace_project_title ADD COLUMN collectionName VARCHAR(255)",
+			],
+		], //palace_project_collection_name
+
+		'palace_project_cancellation_url' => [
+			'title' => 'Palace Project Cancellation URL',
+			'description' => 'Store the cancellation URL with Holds for Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user_hold ADD COLUMN cancellationUrl VARCHAR(255)",
+			],
+		], //palace_project_cancellation_url
 
 		//kirstien - ByWater
 

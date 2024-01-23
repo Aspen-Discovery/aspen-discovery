@@ -3,6 +3,7 @@ package org.aspendiscovery.palace_project;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
+import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 
@@ -103,9 +104,6 @@ public class PalaceProjectExportMain {
 			createDbLogEntry(startTime, aspenConn);
 			logEntry.addNote("Starting extract");
 			logEntry.saveResults();
-
-			//Get a list of all existing records in the database
-			loadExistingTitles();
 
 			//Do work here
 			boolean updatesRun;
@@ -236,36 +234,96 @@ public class PalaceProjectExportMain {
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 
+				//Get a list of all existing records in the database
+				loadExistingTitles();
+
 				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Accept", "application/opds+json");
-				while (url != null) {
-					WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
-					if (!response.isSuccess()) {
-						logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
-					} else {
-						JSONObject responseJSON = new JSONObject(response.getMessage());
-						if (responseJSON.has("publications")) {
-							JSONArray responseTitles = responseJSON.getJSONArray("publications");
-							if (responseTitles != null && !responseTitles.isEmpty()) {
-								updateTitlesInDB(responseTitles, doFullReload);
-								logEntry.saveResults();
+
+				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
+				if (!response.isSuccess()) {
+					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
+				} else {
+					JSONObject responseJSON = new JSONObject(response.getMessage());
+
+					//Loop through facets to get a list of all collections for palace project
+					HashMap<String, String> validCollections = new HashMap<>();
+					if (responseJSON.has("facets")) {
+						JSONArray facetList = responseJSON.getJSONArray("facets");
+						for (int i = 0; i < facetList.length(); i++) {
+							JSONObject curFacet = facetList.getJSONObject(i);
+							if (curFacet.has("metadata")) {
+								JSONObject facetMetadata = curFacet.getJSONObject("metadata");
+								if (facetMetadata.getString("title").equals("Collection Name")) {
+									JSONArray links = curFacet.getJSONArray("links");
+									for (int j = 0; j < links.length(); j++) {
+										JSONObject link = links.getJSONObject(j);
+										String linkTitle = link.getString("title");
+										if (linkTitle.equals("All") || linkTitle.equals("OverDrive") || linkTitle.equals("Axis 360") || linkTitle.equals("Bibliotheca")) {
+											continue;
+										}
+										validCollections.put(linkTitle, link.getString("href"));
+									}
+								}
 							}
 						}
-						url = null;
-						//Get the next URL
-						if (responseJSON.has("links")) {
-							JSONArray links = responseJSON.getJSONArray("links");
-							for (int i = 0; i < links.length(); i++) {
-								JSONObject curLink = links.getJSONObject(i);
-								if (curLink.getString("rel").equals("next")) {
-									url = curLink.getString("href");
-									break;
+					}
+
+					for (String collectionName : validCollections.keySet()) {
+						String collectionUrl = validCollections.get(collectionName);
+						while (collectionUrl != null) {
+							WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
+							if (!response.isSuccess()) {
+								logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
+							} else {
+								JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
+								if (collectionResponseJSON.has("publications")) {
+									JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
+									if (responseTitles != null && !responseTitles.isEmpty()) {
+										updateTitlesInDB(collectionName, responseTitles, doFullReload);
+										logEntry.saveResults();
+									}
+								}
+								collectionUrl = null;
+								//Get the next URL
+								if (collectionResponseJSON.has("links")) {
+									JSONArray links = collectionResponseJSON.getJSONArray("links");
+									for (int i = 0; i < links.length(); i++) {
+										JSONObject curLink = links.getJSONObject(i);
+										if (curLink.getString("rel").equals("next")) {
+											collectionUrl = curLink.getString("href");
+											break;
+										}
+									}
 								}
 							}
 						}
 					}
 				}
+
+				//remove any remaining titles that we did not find
+				if (!logEntry.hasErrors()) {
+					int numDeleted = 0;
+					for (PalaceProjectTitle existingTitle : existingRecords.values()) {
+						deletePalaceProjectTitleFromDbStmt.setLong(1, existingTitle.getId());
+						deletePalaceProjectTitleFromDbStmt.executeUpdate();
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", existingTitle.getPalaceProjectId());
+						if (result.reindexWork) {
+							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						}
+						numDeleted++;
+						logEntry.incDeleted();
+					}
+					if (numDeleted > 0) {
+						logEntry.saveResults();
+						logger.warn("Deleted " + numDeleted + " old titles");
+					}
+				}
+
 				updatesRun = true;
 
 				//Set the extract time
@@ -297,7 +355,7 @@ public class PalaceProjectExportMain {
 		return updatesRun;
 	}
 
-	private static void updateTitlesInDB(JSONArray responseTitles, boolean doFullReload) {
+	private static void updateTitlesInDB(String collectionName, JSONArray responseTitles, boolean doFullReload) {
 		logEntry.incNumProducts(responseTitles.length());
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
@@ -312,10 +370,6 @@ public class PalaceProjectExportMain {
 				String palaceProjectId = curTitleMetadata.getString("identifier");
 				String title = curTitleMetadata.getString("title");
 
-				if (palaceProjectId.contains("Overdrive")){
-					logEntry.incSkipped();
-					continue;
-				}
 				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId);
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
@@ -333,9 +387,10 @@ public class PalaceProjectExportMain {
 				if (existingTitle == null){
 					addPalaceProjectTitleToDbStmt.setString(1, palaceProjectId);
 					addPalaceProjectTitleToDbStmt.setString(2, title);
-					addPalaceProjectTitleToDbStmt.setLong(3, rawChecksum);
-					addPalaceProjectTitleToDbStmt.setString(4, rawResponse);
-					addPalaceProjectTitleToDbStmt.setLong(5, startTimeForLogging);
+					addPalaceProjectTitleToDbStmt.setString(3, collectionName);
+					addPalaceProjectTitleToDbStmt.setLong(4, rawChecksum);
+					addPalaceProjectTitleToDbStmt.setString(5, rawResponse);
+					addPalaceProjectTitleToDbStmt.setLong(6, startTimeForLogging);
 					try {
 						addPalaceProjectTitleToDbStmt.executeUpdate();
 
@@ -348,9 +403,10 @@ public class PalaceProjectExportMain {
 					}
 				}else if (recordUpdated || doFullReload){
 					updatePalaceProjectTitleInDbStmt.setString(1, title);
-					updatePalaceProjectTitleInDbStmt.setLong(2, rawChecksum);
-					updatePalaceProjectTitleInDbStmt.setString(3, rawResponse);
-					updatePalaceProjectTitleInDbStmt.setLong(4, existingTitle.getId());
+					updatePalaceProjectTitleInDbStmt.setString(2, collectionName);
+					updatePalaceProjectTitleInDbStmt.setLong(3, rawChecksum);
+					updatePalaceProjectTitleInDbStmt.setString(4, rawResponse);
+					updatePalaceProjectTitleInDbStmt.setLong(5, existingTitle.getId());
 					try {
 						updatePalaceProjectTitleInDbStmt.executeUpdate();
 
@@ -362,6 +418,8 @@ public class PalaceProjectExportMain {
 						logEntry.incErrors("Error updating Palace Project data in database for record " + palaceProjectId + " " + title, e);
 					}
 				}
+
+				existingRecords.remove(palaceProjectId);
 			}catch (Exception e){
 				logEntry.incErrors("Error updating palace project data", e);
 			}
@@ -415,8 +473,8 @@ public class PalaceProjectExportMain {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
 				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
-				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, COMPRESS(?), ?)");
-				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
+				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, collectionName, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, COMPRESS(?), ?)");
+				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, collectionName = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
 			}else{
 				logger.error("Aspen database connection information was not provided");

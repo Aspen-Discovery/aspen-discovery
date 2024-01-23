@@ -134,6 +134,94 @@ AspenDiscovery.PalaceProject = (function () {
 				}
 			});
 			return false;
-		}
+		},
+
+		placeHold: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for placing holds (email and format depending on the interface.
+				var promptInfo = AspenDiscovery.PalaceProject.getHoldPrompts(id, 'hold');
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.PalaceProject.doHold(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.placeHold(id);
+				});
+			}
+			return false;
+		},
+
+		getHoldPrompts: function (id) {
+			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getHoldPrompts";
+			var result = false;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		doHold: function (patronId, id) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					AspenDiscovery.closeLightbox(function (){
+						// noinspection JSUnresolvedVariable
+						if (data.availableForCheckout) {
+							AspenDiscovery.PalaceProject.doCheckOut(patronId, id);
+						} else {
+							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.Account.loadMenuData();
+						}
+					});
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+				}
+			});
+			return true;
+		},
+
+		cancelHold: function (patronId, id, encodedId) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						$(".palace_projectHold_" + id + "_" + patronId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+				}
+			});
+		},
 	}
 }(AspenDiscovery.PalaceProject || {}));
