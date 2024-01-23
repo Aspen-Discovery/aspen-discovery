@@ -48,6 +48,7 @@ public class GroupedWorkIndexer {
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
 	protected static final HashSet<String> hideSubjects = new HashSet<>();
+	protected static final HashSet<String> hideSeries = new HashSet<>();
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
@@ -140,6 +141,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addRecordToDBStmt;
 	private PreparedStatement updateRecordInDBStmt;
 	private PreparedStatement getHideSubjectsStmt;
+	private PreparedStatement getHideSeriesStmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 
@@ -288,6 +290,7 @@ public class GroupedWorkIndexer {
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressedNoMarcAvailable = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			getHideSubjectsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getHideSeriesStmt = dbConn.prepareStatement("SELECT seriesNormalized from hide_series", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
@@ -458,6 +461,9 @@ public class GroupedWorkIndexer {
 		//Load subject facets to hide
 		loadHideSubjects();
 
+		//Load series to hide
+		loadHideSeries();
+
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
@@ -491,6 +497,7 @@ public class GroupedWorkIndexer {
 		translationMaps.clear();
 		lexileInformation.clear();
 		hideSubjects.clear();
+		hideSeries.clear();
 		scopes.clear();
 		try {
 			getRatingStmt.close();
@@ -1441,6 +1448,17 @@ public class GroupedWorkIndexer {
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading subjects to hide: ", e);
+		}
+	}
+
+	private void loadHideSeries() {
+		try {
+			ResultSet hideSeriesRS = getHideSeriesStmt.executeQuery();
+			while (hideSeriesRS.next()) {
+				hideSeries.add(hideSeriesRS.getString("seriesNormalized"));
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading series to hide: ", e);
 		}
 	}
 
