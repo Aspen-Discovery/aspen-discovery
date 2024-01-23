@@ -120,7 +120,7 @@ class Location extends DataObject {
 		$defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
-	private $_hours;
+	public $_hours;
 	private $_moreDetailsOptions;
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
@@ -2596,6 +2596,7 @@ class Location extends DataObject {
 		} else {
 			$apiInfo['email'] = $this->contactEmail;
 		}
+		unset($this->_hours);
 		$hours = $this->getHours();
 		foreach ($hours as $hour) {
 			$apiInfo['hours'][] = [
