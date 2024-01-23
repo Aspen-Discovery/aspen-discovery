@@ -14181,7 +14181,7 @@ AspenDiscovery.Searches = (function(){
 						select: function (event, ui) {
 							var form = $(searchTermSelector).closest('form');
 							$(searchTermSelector).val(ui.item.value);
-							form.submit();
+							if (form.attr('id') == 'searchForm') { form.submit() };
 							return false;
 						}
 					}).data('ui-autocomplete')._renderItem = function (ul, item) {

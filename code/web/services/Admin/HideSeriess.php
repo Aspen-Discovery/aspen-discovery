@@ -1,23 +1,23 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/Grouping/HideSubjectFacet.php';
+require_once ROOT_DIR . '/sys/Grouping/HideSeries.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Admin_HideSubjectFacets extends ObjectEditor {
+class Admin_HideSeriess extends ObjectEditor {
 	function getObjectType(): string {
-		return 'HideSubjectFacet';
+		return 'HideSeries';
 	}
 
 	function getToolName(): string {
-		return 'HideSubjectFacets';
+		return 'HideSeriess';
 	}
 
 	function getPageTitle(): string {
-		return 'Hidden Subjects';
+		return 'Hidden Series';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$object = new HideSubjectFacet();
+		$object = new HideSeries();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -30,11 +30,11 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'subjectTerm asc';
+		return 'SeriesTerm asc';
 	}
 
 	function getObjectStructure($context = ''): array {
-		return HideSubjectFacet::getObjectStructure($context);
+		return HideSeries::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -53,7 +53,7 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
-		$breadcrumbs[] = new Breadcrumb('/Admin/HideSubjectFacets', 'Hidden Subjects');
+		$breadcrumbs[] = new Breadcrumb('/Admin/HideSeriess', 'Hidden Series');
 		return $breadcrumbs;
 	}
 
@@ -66,7 +66,7 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 	}
 
 	function getInitializationJs(): string {
-		return 'AspenDiscovery.Searches.initAutoComplete({searchTermSelector: "subjectTerm", searchIndex: "Subject"})';
+		return 'AspenDiscovery.Searches.initAutoComplete({searchTermSelector: "seriesTerm", searchIndex: "Series"})';
 	}
 
 }

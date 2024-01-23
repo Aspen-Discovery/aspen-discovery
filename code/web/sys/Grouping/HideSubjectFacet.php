@@ -32,24 +32,16 @@ class HideSubjectFacet extends DataObject {
 				'description' => 'Subject term to hide, normalized',
 				'readOnly' => true,
 			],
-			'dateAdded' => [
-				'property' => 'dateAdded',
-				'type' => 'timestamp',
-				'label' => 'Date Added',
-				'description' => 'The date the record was added',
-				'readOnly' => true,
-			],
 		];
 	}
 
 	public function insert($context = '') {
-		$this->dateAdded = time();
 		$this->subjectNormalized = $this->normalizeSubject($this->subjectTerm);
 		return parent::insert();
 	}
 
 	public function update($context = '') {
-		$this->subjectNormalized = $this->normalizeSubject($this->subjectTerm);
+        $this->__set("subjectNormalized", $this->normalizeSubject($this->subjectTerm));
 		return parent::update();
 	}
 
