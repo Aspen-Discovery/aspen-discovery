@@ -120,7 +120,7 @@ class Location extends DataObject {
 		$defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
-	public $_hours;
+	protected $_hours;
 	private $_moreDetailsOptions;
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
