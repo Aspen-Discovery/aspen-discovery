@@ -115,6 +115,14 @@ const AccountStackNavigator = () => {
                          initialParams={{ prevRoute: 'MyList' }}
                     />
                     <Stack.Screen
+                         name="ListItemEvent"
+                         component={EventScreen}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
+                         })}
+                         initialParams={{ prevRoute: 'MyList' }}
+                    />
+                    <Stack.Screen
                          name="ListItem221200"
                          component={GroupedWork221200}
                          options={({ route }) => ({
