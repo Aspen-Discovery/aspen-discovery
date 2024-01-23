@@ -23,7 +23,6 @@ export const Settings_NotificationOptions = () => {
      const [notifyAccount, setNotifyAccount] = React.useState(false);
      const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken, aspenToken } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     console.log(library.baseUrl);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { language } = React.useContext(LanguageContext);
@@ -218,6 +217,14 @@ const DisplayPreference = (data) => {
      let defaultToggleState = false;
      console.log(preference.allow);
      defaultToggleState = preference.allow === 1 || preference.allow === '1' || preference.allow === true || preference.allow === 'true';
+
+     if (preference.option === 'notifySavedSearch') {
+          defaultToggleState = notifySavedSearch;
+     } else if (preference.option === 'notifyCustom') {
+          defaultToggleState = notifyCustom;
+     } else if (preference.option === 'notifyAccount') {
+          defaultToggleState = notifyAccount;
+     }
 
      const [toggled, setToggle] = React.useState(defaultToggleState);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
