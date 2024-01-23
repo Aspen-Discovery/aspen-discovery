@@ -4,15 +4,15 @@ import * as WebBrowser from 'expo-web-browser';
 import { Box, Button, Center, Icon, useColorModeValue, useToken } from 'native-base';
 import React from 'react';
 import { showLocation } from 'react-native-map-link';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 // custom components and helper files
 import { PATRON } from '../../util/loadPatron';
 
-const ContactButtons = () => {
+const ContactButtons = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
-     const { location } = React.useContext(LibraryBranchContext);
+     const location = data.data;
      const { language } = React.useContext(LanguageContext);
 
      const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));

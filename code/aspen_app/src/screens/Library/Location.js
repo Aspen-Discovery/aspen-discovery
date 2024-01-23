@@ -1,3 +1,4 @@
+import { useRoute } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -5,7 +6,6 @@ import _ from 'lodash';
 import moment from 'moment';
 import { Badge, Box, Button, Divider, Heading, ScrollView, Text, useColorModeValue, useToken } from 'native-base';
 import React from 'react';
-
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
@@ -16,11 +16,13 @@ import DisplayMap from './DisplayMap';
 // custom components and helper files
 import Hours from './Hours';
 
-export const MyLibrary = () => {
+export const Location = () => {
+     const route = useRoute();
+     const location = route.params?.data ?? false;
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location, locations } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
+     const { locations } = React.useContext(LibraryBranchContext);
      const [openToday, setOpenToday] = React.useState(false);
      const queryClient = useQueryClient();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
@@ -88,6 +90,10 @@ export const MyLibrary = () => {
      const selectLocations = () => {
           navigate('AllLocations', {});
      };
+
+     if (!location) {
+          return null;
+     }
 
      return (
           <ScrollView>

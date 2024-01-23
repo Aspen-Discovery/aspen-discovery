@@ -3,7 +3,6 @@ import { Box, useColorModeValue } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { LibraryBranchContext } from '../../context/initialContext';
 
 const mapStyle = [
      {
@@ -219,8 +218,8 @@ const mapStyleDark = [
      },
 ];
 
-const DisplayMap = () => {
-     const { location } = React.useContext(LibraryBranchContext);
+const DisplayMap = (data) => {
+     const location = data.data;
 
      const mapColorMode = useColorModeValue('light', 'dark');
 
