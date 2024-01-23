@@ -609,23 +609,39 @@ class ListAPI extends Action {
 					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
 					$imageUrl .= "&size=medium";
+					$recordType = $title['recordType'] ?? $title['recordtype'];
 
-					$listTitles[] = [
-						'id' => $title['id'],
-						'image' => $imageUrl,
-						'small_image' => $smallImageUrl,
-						'title' => $title['title'],
-						'author' => $title['author'],
-						'shortId' => $title['shortId'],
-						'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
-						'titleURL' => $title['titleURL'],
-						'description' => $title['description'],
-						'length' => $title['length'],
-						'publisher' => $title['publisher'],
-						'ratingData' => $title['ratingData'],
-						'format' => $title['format'],
-						'language' => $title['language'],
-					];
+					if($recordType == 'event') {
+						$listTitles[] = [
+							'id' => $title['id'],
+							'image' => $imageUrl,
+							'title' => $title['title'],
+							'recordType' => $recordType,
+							'description' => $title['description'],
+							'start_date' => $title['start_date'],
+							'end_date' => $title['end_date'],
+							'registration_required' => $title['registration_required'],
+							'bypass' => $title['bypass'],
+							'url' => $title['url']
+						];
+					} else {
+						$listTitles[] = [
+							'id' => $title['id'],
+							'image' => $imageUrl,
+							'small_image' => $smallImageUrl,
+							'title' => $title['title'],
+							'author' => $title['author'],
+							'shortId' => $title['shortId'],
+							'recordType' => $recordType,
+							'titleURL' => $title['titleURL'],
+							'description' => $title['description'],
+							'length' => $title['length'],
+							'publisher' => $title['publisher'],
+							'ratingData' => $title['ratingData'],
+							'format' => $title['format'],
+							'language' => $title['language'],
+						];
+					}
 				} else if (!$isLida) { //if not LiDA look at all the things
 					$imageUrl = "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
