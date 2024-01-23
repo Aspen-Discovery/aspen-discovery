@@ -1523,6 +1523,9 @@ class ListAPI extends Action {
 				$recordIds = $_REQUEST['recordIds'];
 			}
 		}
+
+		$source = $_REQUEST['source'] ?? 'GroupedWork';
+
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
@@ -1539,22 +1542,22 @@ class ListAPI extends Action {
 					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
-						$userListEntry->source = 'GroupedWork';
-						$userListEntry->sourceId = $id;
 
-						$existingEntry = false;
-						if ($userListEntry->find(true)) {
-							$userListEntry->delete();
-						} else {
-							return [
-								'success' => false,
-								'message' => 'Unable to find record to remove from the list.',
-							];
-						}
+					$userListEntry->source = $source;
+					$userListEntry->sourceId = $id;
 
-						$numRemoved++;
+					$existingEntry = false;
+					if ($userListEntry->find(true)) {
+						$userListEntry->delete();
+					} else {
+						return [
+							'success' => false,
+							'message' => 'Unable to find record to remove from the list.',
+						];
 					}
+
+					$numRemoved++;
+
 				}
 				if ($user->lastListUsed != $list->id) {
 					$user->lastListUsed = $list->id;
