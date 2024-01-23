@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
-import java.security.acl.Group;
 import java.util.*;
 
 public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneable {
@@ -74,10 +73,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			//language related fields
 			//Check to see if we have Unknown plus a valid value
-			if (languages.size() > 1 || groupedWorkIndexer.getTreatUnknownLanguageAs().length() != 0) {
+			if (languages.size() > 1 || !groupedWorkIndexer.getTreatUnknownLanguageAs().isEmpty()) {
 				languages.remove("Unknown");
 			}
-			if (languages.size() == 0) {
+			if (languages.isEmpty()) {
 				languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 			}
 			doc.addField("language", languages);
@@ -148,7 +147,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				targetAudienceFull.remove("No Attempt To Code");
 				targetAudienceFull.remove("Other");
 			}
-			if (targetAudienceFull.size() == 0) {
+			if (targetAudienceFull.isEmpty()) {
 				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience_full", targetAudienceFull);
@@ -158,7 +157,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (targetAudience.size() > 1) {
 				targetAudience.remove("Other");
 			}
-			if (targetAudience.size() == 0) {
+			if (targetAudience.isEmpty()) {
 				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience", targetAudience);
@@ -179,22 +178,22 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						allItemsOnOrder = false;
 					}
 				}
-				if (record.getFormatCategories().size() > 0) {
+				if (!record.getFormatCategories().isEmpty()) {
 					uniqueFormatCategories.addAll(record.getFormatCategories());
 				}
 				if (record.hasItemFormats()) {
 					uniqueFormats.addAll(record.getUniqueItemFormats());
 					uniqueFormats.addAll(record.getUniqueItemFormatsCategories());
 				}
-				if (record.getFormats().size() > 0) {
+				if (!record.getFormats().isEmpty()) {
 					uniqueFormats.addAll(record.getFormats());
 				}
 			}
-			if (uniqueFormatCategories.size() > 0) {
+			if (!uniqueFormatCategories.isEmpty()) {
 				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormatCategories, ", "));
 				addKeywords(uniqueFormatCategories);
 			}
-			if (uniqueFormats.size() > 0) {
+			if (!uniqueFormats.isEmpty()) {
 				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormats, ", "));
 				addKeywords(uniqueFormats);
 			}
@@ -235,15 +234,15 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//Awards and ratings
 			doc.addField("mpaa_rating", mpaaRatings);
 			doc.addField("awards_facet", awards);
-			if (lexileScore.length() == 0) {
+			if (lexileScore.isEmpty()) {
 				doc.addField("lexile_score", -1);
 			} else {
 				doc.addField("lexile_score", lexileScore);
 			}
-			if (lexileCode.length() > 0) {
+			if (!lexileCode.isEmpty()) {
 				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
-			if (fountasPinnell.length() > 0) {
+			if (!fountasPinnell.isEmpty()) {
 				doc.addField("fountas_pinnell", fountasPinnell);
 			}
 			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
@@ -364,7 +363,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				Scope curScope = null;
 				String scopeFacetLabel = null;
 				GroupedWorkDisplaySettings scopeDisplaySettings = null;
-				if (itemsWithScopingInfoForActiveScope.size() > 0) {
+				if (!itemsWithScopingInfoForActiveScope.isEmpty()) {
 					curScope = itemsWithScopingInfoForActiveScope.get(0).getScope();
 					scopeFacetLabel = curScope.getFacetLabel();
 					scopeDisplaySettings  = curScope.getGroupedWorkDisplaySettings();
@@ -390,7 +389,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					try {
 						formatsForItem = curItem.getFormatsForIndexing();
 						formatsCategoriesForItem = curItem.getFormatCategoriesForIndexing();
-						loadScopedFormatInfo(formats, formatCategories, scopePrefix, formatsForItem, formatsCategoriesForItem, curItem);
+						loadScopedFormatInfo(formats, formatCategories, scopePrefix, formatsForItem, formatsCategoriesForItem);
 
 						boolean addAllOwningLocations = false;
 						boolean addAllOwningLocationsToAvailableAt = false;
@@ -411,6 +410,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							eContentSources.add(scopePrefix + trimmedEContentSource);
 						} else { //physical materials
 							if (locallyOwned) {
+								//noinspection ConstantValue
 								addAvailabilityToggle(locallyOwned, isAvailable, false, availabilityToggleForItem);
 								if (isAvailable) {
 									availableAtForItem.add(scopeFacetLabel);
@@ -428,6 +428,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							}
 							if (libraryOwned) {
 								if (curScope.isLibraryScope() || (curScope.isLocationScope() && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
+									//noinspection ConstantValue
 									addAvailabilityToggle(libraryOwned, isAvailable, false, availabilityToggleForItem);
 								}
 								if (isAvailable) {
@@ -628,7 +629,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		return daysSinceAdded;
 	}
 
-	private void loadScopedFormatInfo(HashSet<String> scopedFormats, HashSet<String> scopedFormatCategories, String scopePrefix, HashSet<String> formatsForItem, HashSet<String> formatsCategoriesForItem, ItemInfo curItem) {
+	private void loadScopedFormatInfo(HashSet<String> scopedFormats, HashSet<String> scopedFormatCategories, String scopePrefix, HashSet<String> formatsForItem, HashSet<String> formatsCategoriesForItem) {
 		for (String format : formatsForItem) {
 			scopedFormats.add(scopePrefix + format);
 		}

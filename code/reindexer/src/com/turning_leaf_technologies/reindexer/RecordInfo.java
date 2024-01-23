@@ -3,8 +3,6 @@ package com.turning_leaf_technologies.reindexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 public class RecordInfo {
 	private String source;

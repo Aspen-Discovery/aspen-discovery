@@ -1126,6 +1126,11 @@ public class EvergreenExportMain {
 		} catch (Exception e) {
 			logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 			logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+			try {
+				recordsInMarcWriter.close();
+			}catch (Exception ioe){
+				logger.error("Error closing recordsInFullMarc.csv", ioe);
+			}
 			return totalChanges;
 		}
 		try {

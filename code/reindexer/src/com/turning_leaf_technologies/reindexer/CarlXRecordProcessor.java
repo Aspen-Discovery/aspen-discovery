@@ -1,7 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -9,7 +7,6 @@ import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.*;
 
 class CarlXRecordProcessor extends IlsRecordProcessor {
 	CarlXRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
@@ -40,38 +37,6 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		return statusCode;
 	}
 
-	/*private static Date yesterday = null;
-	private static Date lostDay = null;
-	String getOverriddenStatus(ItemInfo itemInfo, boolean groupedStatus) {
-		if (lostDay == null){
-			Calendar lostDayCal = GregorianCalendar.getInstance();
-			lostDayCal.roll(Calendar.DATE, -32);
-			lostDay = lostDayCal.getTime();
-		}
-		if (yesterday == null){
-			Calendar yesterdayCal = GregorianCalendar.getInstance();
-			yesterdayCal.roll(Calendar.DATE, -1);
-			yesterday = yesterdayCal.getTime();
-		}
-		String overriddenStatus = super.getOverriddenStatus(itemInfo, groupedStatus);
-		String statusToTest = overriddenStatus == null ? itemInfo.getStatusCode() : overriddenStatus;
-		if (statusToTest.equals("C")) {
-			//Depending on due date this could be checked out, overdue or lost
-			String dueDateStr = itemInfo.getDueDate();
-			try {
-				Date dueDate = dueDateFormatter.parse(dueDateStr);
-				if (dueDate.before(lostDay)) {
-					return "Lost";
-				} else if (dueDate.before(yesterday)) {
-					return "Overdue";
-				}
-			} catch (Exception e) {
-				logger.warn("Error parsing due date", e);
-			}
-		}
-		return overriddenStatus;
-	}*/
-
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
 		String location = translateValue("location", locationCode, identifier, true);
@@ -92,6 +57,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 			Subfield shelfLocationField = itemField.getSubfield(settings.getShelvingLocationSubfield());
 			if (shelfLocationField != null) {
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
+				//noinspection SpellCheckingInspection
 				if (shelfLocation.equals("xord")) {
 					item.itemInfo.setIsOrderItem();
 				}

@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.PalaceProjectScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -16,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 public class PalaceProjectProcessor {

@@ -1,23 +1,18 @@
 package com.turning_leaf_technologies.util;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SystemUtils {
 	public static boolean hasLowMemory(Ini configIni, Logger logger) {
-		Runtime runtime = Runtime.getRuntime();
-
 		if (configIni.get("System", "operatingSystem").equalsIgnoreCase("linux")){
 			try {
-				BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/meminfo"));
+				@SuppressWarnings("SpellCheckingInspection") BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/meminfo"));
 				long freeMem = 0;
 				long totalMem = 0;
 				String memInfoLine = bufferedReader.readLine();
@@ -34,23 +29,22 @@ public class SystemUtils {
 					}
 					memInfoLine = bufferedReader.readLine();
 				}
-				float percentMemoryAvialable = (float)freeMem / (float)totalMem;
-				logger.info("Free memory: " + freeMem + " total memory: " + totalMem + " percent memory usage: " + percentMemoryAvialable );
+				bufferedReader.close();
+				float percentMemoryAvailable = (float)freeMem / (float)totalMem;
+				logger.info("Free memory: " + freeMem + " total memory: " + totalMem + " percent memory usage: " + percentMemoryAvailable );
 
 				//These mimic what we alert for in getIndexStatus with an additional buffer to prevent the alert
 				if (freeMem < 1500000000){
 					return true;
-				}else if (percentMemoryAvialable < .075 && freeMem < 3000000000L){
-					return true;
-				}else{
-					return false;
+				}else {
+					return percentMemoryAvailable < .075 && freeMem < 3000000000L;
 				}
 			}catch (Exception e){
 				logger.error("Error determining if we have low memory", e);
 				return false;
 			}
 		}else{
-			//Can't easily determine for Windoes
+			//Can't easily determine for Windows
 			return false;
 		}
 	}

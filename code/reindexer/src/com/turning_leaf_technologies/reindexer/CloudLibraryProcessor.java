@@ -7,7 +7,6 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.marc.Record;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;

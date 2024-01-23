@@ -125,7 +125,7 @@ public class MarcPermissiveStreamReader implements MarcReader {
 
     private final boolean convertToUTF8;
 
-    private boolean permissive;
+    private final boolean permissive;
 
     private boolean translateLosslessUnicodeNumericCodeReferencesEnabled = true;
 
