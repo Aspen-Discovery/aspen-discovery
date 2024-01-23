@@ -133,6 +133,38 @@ function getUpdates24_02_00(): array {
 
 		//jacob - PTFS Europe
 
+        // James Staub
+        'permission_hide_series' => [
+            'title' => 'Change permission for Hide Subject Facets to umbrella Hide Metadata',
+            'description' => 'Add permission for Hide Series from Series Facet and Grouped Work Series Display Information',
+            'continueOnError' => false,
+            'sql' => [
+                "UPDATE permissions 
+                    SET name = 'Hide Metadata', 
+                        description = 'Controls if the user can hide metadata like Subjects and Series from facets and display information.' 
+                    WHERE name = 'Hide Subject Facets'",
+            ]
+        ], //permission_hide_series
+
+        'hide_series' => [
+            'title' => 'Add Series to Hide',
+            'description' => 'Add Series to Hide from Series Facet and Grouped Work Series Display Information',
+            'sql' => [
+                'CREATE TABLE IF NOT EXISTS hide_series (
+                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            seriesTerm VARCHAR(512) NOT NULL UNIQUE,
+                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE,
+                        ) ENGINE INNODB',
+            ],
+        ], // hide_series
+
+        'hide_subjects_drop_date_added' => [
+            'title' => 'Drop date added column from hide subject facets table',
+            'description' => 'Drop date added column from hide subject facets table',
+            'sql' => [
+                'ALTER TABLE aspen.hide_subject_facets DROP COLUMN dateAdded',
+            ],
+        ], // hide_subjects_drop_date_added
 
 	];
 }

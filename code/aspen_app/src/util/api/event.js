@@ -6,6 +6,50 @@ import { GLOBALS } from '../globals';
 /** *******************************************************************
  * General
  ******************************************************************* **/
+
+/**
+ * Return the user's saved events
+ * @param {number} page
+ * @param {number} pageSize
+ * @param {string} filter
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function fetchSavedEvents(page = 1, pageSize = 25, filter = 'upcoming', url, language = 'en') {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               page: page,
+               pageSize: pageSize,
+               filter,
+               language,
+          },
+     });
+
+     const response = await api.post('/EventAPI?method=getSavedEvents', postBody);
+     let data = [];
+     let morePages = false;
+     if (response.ok) {
+          data = response.data;
+          if (data.page_current !== data.page_total) {
+               morePages = true;
+          }
+     }
+
+     return {
+          events: data.events ?? [],
+          totalResults: data.totalResults ?? 0,
+          curPage: data.page_current ?? 0,
+          totalPages: data.page_total ?? 0,
+          hasMore: morePages,
+          filter: data.filter ?? filter,
+          message: data?.message ?? null,
+     };
+}
+
 /**
  * Returns event data for a given id
  * @param {string} id
@@ -52,8 +96,8 @@ export async function saveEvent(id, language, url) {
 
      const response = await discovery.post('/EventAPI?method=saveEvent', postBody);
      if (response.ok) {
-          if (response?.data?.result) {
-               return response.data.result;
+          if (response?.data) {
+               return response.data;
           }
      } else {
           console.log(response);
@@ -82,8 +126,8 @@ export async function removeSavedEvent(id, language, url) {
 
      const response = await discovery.post('/EventAPI?method=removeSavedEvent', postBody);
      if (response.ok) {
-          if (response?.data?.result) {
-               return response.data.result;
+          if (response?.data) {
+               return response.data;
           }
      } else {
           console.log(response);

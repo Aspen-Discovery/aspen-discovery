@@ -329,6 +329,16 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getEndDate(): ?object {
+		try {
+			$endDate = new DateTime($this->fields['end_date']);
+			$endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $endDate;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
 	public function getEndDateString() {
 		try {
 			return $this->fields['end_date'];

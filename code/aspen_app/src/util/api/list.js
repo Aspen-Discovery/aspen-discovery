@@ -1,11 +1,9 @@
-import { createAuthTokens, ENDPOINT, getHeaders, postData } from '../apiAuth';
-import { LIBRARY } from '../loadLibrary';
-import { GLOBALS } from '../globals';
-import { popAlert } from '../../components/loadError';
-import { PATRON } from '../loadPatron';
-import _ from 'lodash';
-import React from 'react';
 import { create } from 'apisauce';
+import _ from 'lodash';
+import { popAlert } from '../../components/loadError';
+import { createAuthTokens, ENDPOINT, getHeaders, postData } from '../apiAuth';
+import { GLOBALS } from '../globals';
+import { PATRON } from '../loadPatron';
 
 const endpoint = ENDPOINT.list;
 
@@ -91,7 +89,7 @@ export async function createList(title, description, isPublic = false, url) {
      }
 }
 
-export async function createListFromTitle(title, description, access, items, url) {
+export async function createListFromTitle(title, description, access, items, url, source = 'GroupedWork') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -102,6 +100,7 @@ export async function createListFromTitle(title, description, access, items, url
                title,
                description,
                access,
+               source,
                recordIds: items,
           },
      });
@@ -170,16 +169,17 @@ export async function clearListTitles(listId, url) {
      }
 }
 
-export async function addTitlesToList(id, itemId, url) {
+export async function addTitlesToList(id, itemId, url, source = 'GroupedWork') {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                listId: id,
                recordIds: itemId,
+               source,
           },
      });
      const response = await api.post('/ListAPI?method=addTitlesToList', postBody);

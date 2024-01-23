@@ -1,14 +1,14 @@
+import { useNavigation } from '@react-navigation/native';
 import _ from 'lodash';
 import { Box, Button, Center, FlatList, FormControl, Input, Text } from 'native-base';
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native';
-
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { getDefaultFacets } from '../../util/search';
 import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getDefaultFacets } from '../../util/search';
 
 export const SearchHome = () => {
      const navigation = useNavigation();
@@ -27,9 +27,10 @@ export const SearchHome = () => {
      React.useEffect(() => {
           async function preloadDefaultFacets() {
                if (discoveryVersion >= '22.11.00') {
-                    await getDefaultFacets(language);
+                    await getDefaultFacets(library.baseUrl, 5, language);
                }
           }
+
           preloadDefaultFacets();
      }, []);
 

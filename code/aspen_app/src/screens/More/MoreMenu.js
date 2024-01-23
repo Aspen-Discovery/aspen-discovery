@@ -128,14 +128,14 @@ const PrivacyPolicy = () => {
           secondaryToolbarColor: backgroundColor,
      };
 
-     const openURL = async (url) => {
-          const newUrl = appendQuery(url, 'minimalInterface=true');
-          console.log(newUrl);
-          WebBrowser.openBrowserAsync(url + '&minimalInterface=true', browserParams);
+     const openURL = async () => {
+          const url = appendQuery(LIBRARY.appSettings.privacyPolicy ?? GLOBALS.privacyPolicy, 'minimalInterface=true');
+          console.log(url);
+          WebBrowser.openBrowserAsync(url, browserParams);
      };
 
      return (
-          <Pressable px="2" py="3" onPress={() => openURL(LIBRARY.appSettings.privacyPolicy ?? GLOBALS.privacyPolicy)}>
+          <Pressable px="2" py="3" onPress={() => openURL()}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <Text fontWeight="500">{getTermFromDictionary(language, 'privacy_policy')}</Text>

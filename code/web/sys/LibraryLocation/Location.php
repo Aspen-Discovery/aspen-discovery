@@ -2570,7 +2570,8 @@ class Location extends DataObject {
 			'showInLocationsAndHoursList' => (string)$this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => [],
-			'code' => $this->code
+			'code' => $this->code,
+			'unit' => $this->unit,
 		];
 		if ($this->theme == "-1") {
 			$apiInfo['theme'] = $parentLibrary->getPrimaryTheme();

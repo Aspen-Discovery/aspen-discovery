@@ -3,9 +3,11 @@ import { CommonActions, useNavigation, useRoute } from '@react-navigation/native
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
+import moment from 'moment';
 
-import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
+import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { loadError } from '../../components/loadError';
@@ -19,7 +21,7 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../translat
 import { createAuthTokens, getHeaders } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { getAppliedFilters, getAvailableFacetsKeys, getSearchIndexes, getSearchSources, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
+import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
 import AddToList from './AddToList';
 
 export const SearchResults = () => {
@@ -68,8 +70,6 @@ export const SearchResults = () => {
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
-               updateCurrentIndex(data.index);
-               updateCurrentSource(data.source);
                if ((data.totalResults === 1 || data.totalResults === '1') && isScannerSearch) {
                     const result = data.results[0];
                     if (result.key) {
@@ -82,24 +82,6 @@ export const SearchResults = () => {
                     }
                }
           },
-     });
-
-     const { data: availableSources } = useQuery({
-          queryKey: ['availableSources', url, scope, language, currentIndex, currentSource],
-          queryFn: () => getSearchSources(url, language),
-          onSuccess: (data) => {
-               updateSources(data);
-          },
-          enabled: !!data,
-     });
-
-     const { data: availableIndexes } = useQuery({
-          queryKey: ['availableIndexes', url, scope, language, currentIndex, currentSource],
-          queryFn: () => getSearchIndexes(url, language, currentSource),
-          onSuccess: (data) => {
-               updateIndexes(data);
-          },
-          enabled: !!data,
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
@@ -226,23 +208,47 @@ const DisplayResult = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const { language } = React.useContext(LanguageContext);
+     const { currentIndex, currentSource } = React.useContext(SearchContext);
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
      const handlePressItem = () => {
-          if (version >= '23.01.00') {
-               navigate('GroupedWorkScreen', {
-                    id: item.key,
-                    title: getCleanTitle(item.title),
-                    url: library.baseUrl,
-                    libraryContext: library,
-               });
+          if (currentSource === 'events') {
+               let eventSource = item.source;
+               if (item.source === 'lc') {
+                    eventSource = 'library_calendar';
+               }
+               if (item.source === 'libcal') {
+                    eventSource = 'springshare';
+               }
+
+               if (item.bypass) {
+                    openURL(item.url);
+               } else {
+                    navigate('EventScreen', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         source: eventSource,
+                    });
+               }
           } else {
-               navigate('GroupedWorkScreen221200', {
-                    id: item.key,
-                    title: getCleanTitle(item.title),
-                    url: library.baseUrl,
-                    userContext: user,
-                    libraryContext: library,
-               });
+               if (version >= '23.01.00') {
+                    navigate('GroupedWorkScreen', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         libraryContext: library,
+                    });
+               } else {
+                    navigate('GroupedWorkScreen221200', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         userContext: user,
+                         libraryContext: library,
+                    });
+               }
           }
      };
 
@@ -256,10 +262,116 @@ const DisplayResult = (data) => {
           );
      }
 
+     const openURL = async (url) => {
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+          WebBrowser.openBrowserAsync(url, browserParams);
+     };
+
      const imageUrl = item.image;
 
      const key = 'medium_' + item.key;
      let url = library.baseUrl + '/bookcover.php?id=' + item.key + '&size=medium';
+
+     if (currentSource === 'events') {
+          //console.log(item);
+          url = imageUrl;
+          let registrationRequired = false;
+          if (!_.isUndefined(item.registration_required)) {
+               registrationRequired = item.registration_required;
+          }
+
+          const startTime = item.start_date.date;
+          const endTime = item.end_date.date;
+
+          let time1 = startTime.split(' ');
+          let day = time1[0];
+          let time2 = endTime.split(' ');
+
+          let time1arr = time1[1].split(':');
+          let time2arr = time2[1].split(':');
+
+          let displayDay = moment(day);
+          let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
+          let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+
+          displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
+          displayStartTime = moment(displayStartTime).format('h:mm A');
+          displayEndTime = moment(displayEndTime).format('h:mm A');
+
+          return (
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
+                    <HStack space={3}>
+                         <VStack maxW="35%">
+                              <CachedImage
+                                   cacheKey={key}
+                                   alt={item.title}
+                                   source={{
+                                        uri: `${url}`,
+                                        expiresIn: 86400,
+                                   }}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   resizeMode="cover"
+                                   placeholderContent={
+                                        <Box
+                                             bg="warmGray.50"
+                                             _dark={{
+                                                  bgColor: 'coolGray.800',
+                                             }}
+                                             width={{
+                                                  base: 100,
+                                                  lg: 200,
+                                             }}
+                                             height={{
+                                                  base: 150,
+                                                  lg: 250,
+                                             }}
+                                        />
+                                   }
+                              />
+                              <AddToList itemId={item.key} btnStyle="sm" />
+                         </VStack>
+                         <VStack w="65%">
+                              <Text
+                                   _dark={{ color: 'warmGray.50' }}
+                                   color="coolGray.800"
+                                   bold
+                                   fontSize={{
+                                        base: 'md',
+                                        lg: 'lg',
+                                   }}>
+                                   {item.title}
+                              </Text>
+                              {item.start_date && item.end_date ? (
+                                   <>
+                                        <Text>{displayDay}</Text>
+                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                             {displayStartTime} - {displayEndTime}
+                                        </Text>
+                                   </>
+                              ) : null}
+                              {registrationRequired ? (
+                                   <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                        <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                                             {getTermFromDictionary(language, 'registration_required')}
+                                        </Badge>
+                                   </Stack>
+                              ) : null}
+                         </VStack>
+                    </HStack>
+               </Pressable>
+          );
+     }
 
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
@@ -295,19 +407,21 @@ const DisplayResult = (data) => {
                                    />
                               }
                          />
-                         <Badge
-                              mt={1}
-                              _text={{
-                                   fontSize: 10,
-                                   color: 'coolGray.600',
-                              }}
-                              bgColor="warmGray.200"
-                              _dark={{
-                                   bgColor: 'coolGray.900',
-                                   _text: { color: 'warmGray.400' },
-                              }}>
-                              {item.language}
-                         </Badge>
+                         {item.language ? (
+                              <Badge
+                                   mt={1}
+                                   _text={{
+                                        fontSize: 10,
+                                        color: 'coolGray.600',
+                                   }}
+                                   bgColor="warmGray.200"
+                                   _dark={{
+                                        bgColor: 'coolGray.900',
+                                        _text: { color: 'warmGray.400' },
+                                   }}>
+                                   {item.language}
+                              </Badge>
+                         ) : null}
                          <AddToList itemId={item.key} btnStyle="sm" />
                     </VStack>
                     <VStack w="65%">
@@ -528,6 +642,7 @@ const CreateFilterButton = () => {
 };
 
 async function fetchSearchResults(term, page, scope, url, type, id, language, index, source) {
+     console.log(SEARCH.appendedParams);
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
