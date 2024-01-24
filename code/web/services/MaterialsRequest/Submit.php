@@ -180,6 +180,7 @@ class MaterialsRequest_Submit extends Action {
 
 									$materialsRequest->sendStatusChangeEmail();
 									$materialsRequest->sendStaffNewMaterialsRequestEmail();
+									unset($_REQUEST);
 								} else {
 									$interface->assign('success', false);
 									$interface->assign('error', translate([
