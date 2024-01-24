@@ -435,7 +435,7 @@ const Checkout = (props) => {
           renewMessage = checkout.renewError;
      }
 
-     const key = 'medium_' + checkout.groupedWorkId;
+     const key = 'medium_' + checkout.source + '_' + checkout.groupedWorkId;
      let url = library.baseUrl + '/bookcover.php?id=' + checkout.fullId + '&size=medium';
 
      return (
