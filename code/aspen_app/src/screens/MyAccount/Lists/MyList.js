@@ -109,7 +109,7 @@ export const MyList = () => {
                openURL(item.url);
           } else {
                navigateStack('AccountScreenTab', 'ListItemEvent', {
-                    id: id,
+                    id: item.id,
                     url: library.baseUrl,
                     title: getCleanTitle(item.title),
                     source: item.source,
