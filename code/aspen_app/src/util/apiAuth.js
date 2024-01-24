@@ -257,6 +257,10 @@ export function decodeHTML(string) {
      return decode(string);
 }
 
+export function urldecode(str) {
+     return decodeURIComponent(str.replace(/\+/g, ' '));
+}
+
 /**
  * Array of available endpoints into Aspen Discovery
  *
