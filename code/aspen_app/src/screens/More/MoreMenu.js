@@ -3,7 +3,7 @@ import { ListItem } from '@rneui/themed';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Divider, FlatList, HStack, Icon, Pressable, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
+import { Box, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
 import React from 'react';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
@@ -21,23 +21,25 @@ export const MoreMenu = () => {
      };
 
      return (
-          <Box>
-               <VStack space="4" my="2" mx="1">
-                    <MyLibrary />
-                    <Divider />
+          <ScrollView>
+               <Box>
+                    <VStack space="4" my="2" mx="1">
+                         <MyLibrary />
+                         <Divider />
 
-                    <VStack divider={<Divider />} space="4">
-                         {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
-                         <VStack space="3">
-                              <VStack>
-                                   <ViewAllLocations />
-                                   <Settings />
-                                   <PrivacyPolicy />
+                         <VStack divider={<Divider />} space="4">
+                              {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
+                              <VStack space="3">
+                                   <VStack>
+                                        <ViewAllLocations />
+                                        <Settings />
+                                        <PrivacyPolicy />
+                                   </VStack>
                               </VStack>
                          </VStack>
                     </VStack>
-               </VStack>
-          </Box>
+               </Box>
+          </ScrollView>
      );
 };
 
