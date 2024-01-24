@@ -127,6 +127,16 @@ function getUpdates24_02_00(): array {
 			],
 		], //self_reg_sections_assignment
 
+		'cloud_library_availability_changes' => [
+			'title' => 'Cloud Library Availability - On Order',
+			'description' => 'Adds additional API call data to determine if item is "Coming Soon" which will give it the status "On Order" instead of "Available"',
+			'sql' => [
+				'ALTER TABLE cloud_library_availability ADD COLUMN availabilityType SMALLINT NOT NULL DEFAULT 1',
+				'ALTER TABLE cloud_library_availability ADD COLUMN typeRawChecksum BIGINT',
+				'ALTER TABLE cloud_library_availability ADD COLUMN typeRawResponse MEDIUMTEXT',
+			],
+		], //cloud_library_availability_changes
+
 		//lucas - Theke
 
 		//alexander - PTFS Europe
@@ -149,12 +159,13 @@ function getUpdates24_02_00(): array {
         'hide_series' => [
             'title' => 'Add Series to Hide',
             'description' => 'Add Series to Hide from Series Facet and Grouped Work Series Display Information',
+			'continueOnError' => true,
             'sql' => [
                 'CREATE TABLE IF NOT EXISTS hide_series (
                             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             seriesTerm VARCHAR(512) NOT NULL UNIQUE,
-                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE,
-                        ) ENGINE INNODB',
+                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE
+                        ) ENGINE = InnoDB',
             ],
         ], // hide_series
 
@@ -162,7 +173,7 @@ function getUpdates24_02_00(): array {
             'title' => 'Drop date added column from hide subject facets table',
             'description' => 'Drop date added column from hide subject facets table',
             'sql' => [
-                'ALTER TABLE aspen.hide_subject_facets DROP COLUMN dateAdded',
+                'ALTER TABLE hide_subject_facets DROP COLUMN dateAdded',
             ],
         ], // hide_subjects_drop_date_added
 
