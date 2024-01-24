@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { LanguageContext } from '../../context/initialContext';
+import { AllLocations } from '../../screens/Library/AllLocations';
+import { Location } from '../../screens/Library/Location';
 
 import { MyLibrary } from '../../screens/Library/MyLibrary';
 import { MoreMenu } from '../../screens/More/MoreMenu';
@@ -22,6 +24,20 @@ const MoreStackNavigator = () => {
                     headerBackTitleVisible: false,
                }}>
                <Stack.Screen name="MoreMenu" component={MoreMenu} options={{ title: getTermFromDictionary(language, 'nav_more') }} />
+               <Stack.Screen
+                    name="AllLocations"
+                    component={AllLocations}
+                    options={({ route }) => ({
+                         title: getTermFromDictionary(language, 'locations'),
+                    })}
+               />
+               <Stack.Screen
+                    name="Location"
+                    component={Location}
+                    options={({ route }) => ({
+                         title: route?.params?.title ?? getTermFromDictionary(language, 'location'),
+                    })}
+               />
                <Stack.Screen
                     name="MyLibrary"
                     component={MyLibrary}

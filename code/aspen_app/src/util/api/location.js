@@ -1,10 +1,8 @@
-import React from 'react';
-import { LIBRARY } from '../loadLibrary';
-import { GLOBALS } from '../globals';
-import { createAuthTokens, getHeaders } from '../apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import _ from 'lodash';
 import { create } from 'apisauce';
+import { createAuthTokens, getHeaders } from '../apiAuth';
+import { GLOBALS } from '../globals';
+import { LIBRARY } from '../loadLibrary';
 
 export async function getLocationInfo(url = null) {
      const apiUrl = url ?? LIBRARY.url;
@@ -69,4 +67,25 @@ export async function getSelfCheckSettings(url = null) {
           success: false,
           settings: [],
      };
+}
+
+export async function getLocations(url, language = 'en', latitude, longitude) {
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               latitude,
+               longitude,
+               language,
+          },
+     });
+     const response = await discovery.get('/SystemAPI?method=getLocations');
+     if (response.ok) {
+          if (response?.data?.result?.locations) {
+               return response.data.result.locations;
+          }
+     }
+     return [];
 }

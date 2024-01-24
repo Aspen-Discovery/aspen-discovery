@@ -17,6 +17,7 @@ import { loadError, popAlert } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getEventDetails, saveEvent } from '../../util/api/event';
 import { decodeHTML, stripHTML } from '../../util/apiAuth';
@@ -71,7 +72,7 @@ export const EventScreen = () => {
                ) : (
                     <>
                          {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
-                         <DisplayEvent data={data.results} hasValidImage={hasValidImage} />
+                         <DisplayEvent data={data.results} source={source} />
                     </>
                )}
           </ScrollView>
@@ -107,10 +108,10 @@ const DisplayEvent = (payload) => {
 
      return (
           <>
-               {hasValidImage ? <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} /> : null}
+               {event.cover ? <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} /> : null}
                <Box safeArea={5} w="100%">
-                    <Center mt={hasValidImage ? 5 : 0} width="100%">
-                         {hasValidImage ? (
+                    <Center mt={event.cover ? 5 : 0} width="100%">
+                         {event.cover ? (
                               <CachedImage
                                    cacheKey={key}
                                    resizeMethod="scale"
@@ -133,7 +134,7 @@ const DisplayEvent = (payload) => {
                          {getDirections(event.location, event.room ?? false)}
                     </VStack>
                     {event.registrationRequired ? getRegistrationModal(event) : null}
-                    {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id)}
+                    {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
                     <HStack justifyContent="space-between" space={2}>
                          <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" />
                          <Button w="49%" onPress={() => openLink()}>
@@ -460,7 +461,7 @@ const getDirections = (location, room) => {
      );
 };
 
-const getAddToYourEvents = (id, page, filterBy) => {
+const getAddToYourEvents = (id, source) => {
      const queryClient = useQueryClient();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -473,6 +474,7 @@ const getAddToYourEvents = (id, page, filterBy) => {
                setIsLoading(false);
                queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, 'upcoming'] });
                queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+               queryClient.invalidateQueries({ queryKey: ['event', id, source, language, library.baseUrl] });
                if (result.success || result.success === 'true') {
                     popAlert(getTermFromDictionary(language, 'success'), result.message, 'success');
                } else {
@@ -492,7 +494,7 @@ const getAddToYourEvents = (id, page, filterBy) => {
 const getInYourEvents = () => {
      const { language } = React.useContext(LanguageContext);
      return (
-          <Button mb={2} colorScheme="tertiary">
+          <Button mb={2} colorScheme="tertiary" onPress={() => navigateStack('AccountScreenTab', 'MyEvents')}>
                {getTermFromDictionary(language, 'in_your_events')}
           </Button>
      );

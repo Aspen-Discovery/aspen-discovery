@@ -609,23 +609,39 @@ class ListAPI extends Action {
 					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
 					$imageUrl .= "&size=medium";
+					$recordType = $title['recordType'] ?? $title['recordtype'];
 
-					$listTitles[] = [
-						'id' => $title['id'],
-						'image' => $imageUrl,
-						'small_image' => $smallImageUrl,
-						'title' => $title['title'],
-						'author' => $title['author'],
-						'shortId' => $title['shortId'],
-						'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
-						'titleURL' => $title['titleURL'],
-						'description' => $title['description'],
-						'length' => $title['length'],
-						'publisher' => $title['publisher'],
-						'ratingData' => $title['ratingData'],
-						'format' => $title['format'],
-						'language' => $title['language'],
-					];
+					if($recordType == 'event') {
+						$listTitles[] = [
+							'id' => $title['id'],
+							'image' => $imageUrl,
+							'title' => $title['title'],
+							'recordType' => $recordType,
+							'description' => $title['description'],
+							'start_date' => $title['start_date'],
+							'end_date' => $title['end_date'],
+							'registration_required' => $title['registration_required'],
+							'bypass' => $title['bypass'],
+							'url' => $title['url']
+						];
+					} else {
+						$listTitles[] = [
+							'id' => $title['id'],
+							'image' => $imageUrl,
+							'small_image' => $smallImageUrl,
+							'title' => $title['title'],
+							'author' => $title['author'],
+							'shortId' => $title['shortId'],
+							'recordType' => $recordType,
+							'titleURL' => $title['titleURL'],
+							'description' => $title['description'],
+							'length' => $title['length'],
+							'publisher' => $title['publisher'],
+							'ratingData' => $title['ratingData'],
+							'format' => $title['format'],
+							'language' => $title['language'],
+						];
+					}
 				} else if (!$isLida) { //if not LiDA look at all the things
 					$imageUrl = "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
@@ -1507,6 +1523,9 @@ class ListAPI extends Action {
 				$recordIds = $_REQUEST['recordIds'];
 			}
 		}
+
+		$source = $_REQUEST['source'] ?? 'GroupedWork';
+
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
@@ -1523,22 +1542,22 @@ class ListAPI extends Action {
 					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
-						$userListEntry->source = 'GroupedWork';
-						$userListEntry->sourceId = $id;
 
-						$existingEntry = false;
-						if ($userListEntry->find(true)) {
-							$userListEntry->delete();
-						} else {
-							return [
-								'success' => false,
-								'message' => 'Unable to find record to remove from the list.',
-							];
-						}
+					$userListEntry->source = $source;
+					$userListEntry->sourceId = $id;
 
-						$numRemoved++;
+					$existingEntry = false;
+					if ($userListEntry->find(true)) {
+						$userListEntry->delete();
+					} else {
+						return [
+							'success' => false,
+							'message' => 'Unable to find record to remove from the list.',
+						];
 					}
+
+					$numRemoved++;
+
 				}
 				if ($user->lastListUsed != $list->id) {
 					$user->lastListUsed = $list->id;

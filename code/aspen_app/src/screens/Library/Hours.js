@@ -4,12 +4,12 @@ import { Box, FlatList, Heading, HStack, Text, VStack } from 'native-base';
 import React from 'react';
 
 // custom components and helper files
-import { LanguageContext, LibraryBranchContext } from '../../context/initialContext';
+import { LanguageContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
-const Hours = () => {
+const Hours = (data) => {
      const { language } = React.useContext(LanguageContext);
-     const { location } = React.useContext(LibraryBranchContext);
+     const location = data.data;
 
      /* location.hours */
 

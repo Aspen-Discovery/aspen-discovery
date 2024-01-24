@@ -12,8 +12,13 @@ import { GLOBALS } from '../../util/globals';
 import { LIBRARY } from '../../util/loadLibrary';
 
 export const MoreMenu = () => {
+     const { locations } = React.useContext(LibraryBranchContext);
      const { menu } = React.useContext(LibrarySystemContext);
      const hasMenuItems = _.size(menu);
+
+     const viewAllLocations = () => {
+          navigate('AllLocations', {});
+     };
 
      return (
           <Box>
@@ -25,6 +30,7 @@ export const MoreMenu = () => {
                          {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
                          <VStack space="3">
                               <VStack>
+                                   <ViewAllLocations />
                                    <Settings />
                                    <PrivacyPolicy />
                               </VStack>
@@ -98,6 +104,24 @@ const MyLibrary = () => {
                </Pressable>
           </Box>
      );
+};
+
+const ViewAllLocations = () => {
+     const { language } = React.useContext(LanguageContext);
+     const { locations } = React.useContext(LibraryBranchContext);
+
+     if (_.size(locations) > 1) {
+          return (
+               <Pressable px="2" py="3" onPress={() => navigate('AllLocations')}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <Text fontWeight="500">{getTermFromDictionary(language, 'view_all_locations')}</Text>
+                    </HStack>
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
 const Settings = () => {

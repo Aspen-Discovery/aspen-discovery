@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-ic
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import { Badge, Box, Button, Container, FormControl, HStack, Icon, Input, Pressable, ScrollView, Text } from 'native-base';
 import React from 'react';
@@ -14,6 +15,7 @@ import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext,
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLists } from '../../util/api/list';
+import { getLocations } from '../../util/api/location';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
@@ -30,11 +32,13 @@ export const DiscoverHomeScreen = () => {
      const navigation = useNavigation();
      const [invalidSession, setInvalidSession] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
+     const [userLatitude, setUserLatitude] = React.useState(0);
+     const [userLongitude, setUserLongitude] = React.useState(0);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
+     const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location } = React.useContext(LibraryBranchContext);
+     const { location, updateLocations } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
@@ -125,6 +129,15 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useQuery(['locations', library.baseUrl, language, userLatitude, userLongitude], () => getLocations(library.baseUrl, language, userLatitude, userLongitude), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateLocations(data);
+          },
+     });
+
      useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
@@ -194,6 +207,11 @@ export const DiscoverHomeScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
+                    let latitude = await SecureStore.getItemAsync('latitude');
+                    let longitude = await SecureStore.getItemAsync('longitude');
+                    setUserLatitude(latitude);
+                    setUserLongitude(longitude);
+
                     if (version >= '24.02.00') {
                          updateCurrentIndex('Keyword');
                          updateCurrentSource('local');

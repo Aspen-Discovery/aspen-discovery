@@ -1,13 +1,13 @@
 import { Box, Divider, Heading, Text } from 'native-base';
 import React from 'react';
-import { LanguageContext, LibraryBranchContext } from '../../context/initialContext';
+import { LanguageContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 // custom components and helper files
 import { decodeHTML, stripHTML } from '../../util/apiAuth';
 
-const AdditionalInformation = () => {
-     const { location } = React.useContext(LibraryBranchContext);
+const AdditionalInformation = (data) => {
+     const location = data.data;
      const { language } = React.useContext(LanguageContext);
 
      if (location.description) {
