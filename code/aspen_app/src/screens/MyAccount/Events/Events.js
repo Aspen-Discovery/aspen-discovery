@@ -25,7 +25,7 @@ export const MyEvents = () => {
      const [page, setPage] = React.useState(1);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const { user } = React.useContext(UserContext);
+     const { user, savedEvents, updateSavedEvents } = React.useContext(UserContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
      const pageSize = 25;
@@ -44,7 +44,8 @@ export const MyEvents = () => {
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
-               updateEvents(data.events);
+               //updateEvents(data.events);
+               updateSavedEvents(data.events);
           },
           onSettle: (data) => setLoading(false),
      });
@@ -153,7 +154,7 @@ export const MyEvents = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <FlatList data={Object.keys(events)} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={events[item]} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                         <FlatList data={Object.keys(savedEvents)} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={savedEvents[item]} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                     </>
                )}
           </SafeAreaView>

@@ -14,6 +14,7 @@ import { NotificationsOnboard } from '../../components/NotificationsOnboard';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { fetchSavedEvents } from '../../util/api/event';
 import { getLists } from '../../util/api/list';
 import { getLocations } from '../../util/api/location';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
@@ -36,7 +37,7 @@ export const DiscoverHomeScreen = () => {
      const [userLongitude, setUserLongitude] = React.useState(0);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
-     const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
+     const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location, updateLocations } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -153,6 +154,15 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
           onSuccess: (data) => {
                updateReadingHistory(data);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
           },
      });
 
