@@ -201,4 +201,176 @@ class PalaceProject_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	/** @noinspection PhpUnused */
+	function returnCheckout() {
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['recordId'];
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				return $driver->returnCheckout($patron, $id);
+			} else {
+				return [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'result' => false,
+				'message' => translate([
+					'text' => 'You must be logged in to return titles.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getHoldPrompts() {
+		$user = UserAccount::getLoggedInUser();
+		global $interface;
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		$usersWithPalaceProjectAccess = $this->getPalaceProjectUsers($user);
+
+		if (count($usersWithPalaceProjectAccess) == 1) {
+			$interface->assign('patronId', reset($usersWithPalaceProjectAccess)->id);
+		}
+
+		if (count($usersWithPalaceProjectAccess) == 0) {
+			// No Boundless Account Found, let the user create one if they want
+			return [
+				'success' => false,
+				'promptNeeded' => true,
+				'promptTitle' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'prompts' => translate([
+					'text' => 'Your account is not valid for Palace Project, please contact your local library.',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '',
+			];
+		} elseif (count($usersWithPalaceProjectAccess) > 1) {
+			$promptTitle = translate([
+				'text' => 'Palace Project Hold Options',
+				'isPublicFacing' => true,
+			]);
+			return [
+				'success' => true,
+				'promptNeeded' => true,
+				'promptTitle' => translate([
+					'text' => $promptTitle,
+					'isPublicFacing' => true,
+				]),
+				'prompts' => $interface->fetch('PalaceProject/ajax-hold-prompt.tpl'),
+				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.PalaceProject.processHoldPrompts();">' . translate([
+						'text' => 'Place Hold',
+						'isPublicFacing' => true,
+					]) . '</button>',
+			];
+		} else {
+			return [
+				'success' => true,
+				'patronId' => reset($usersWithPalaceProjectAccess)->id,
+				'promptNeeded' => false,
+			];
+		}
+	}
+
+	function placeHold() {
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['id'];
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				$result = $driver->placeHold($patron, $id);
+				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+				if ($result['success']) {
+					/** @noinspection HtmlUnknownTarget */
+					$result['title'] = translate([
+						'text' => "Hold Placed Successfully",
+						'isPublicFacing' => true,
+					]);
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+							'text' => 'View My Check Outs',
+							'isPublicFacing' => true,
+						]) . '</a>';
+				} else {
+					$result['title'] = translate([
+						'text' => "Error Checking Out Title",
+						'isPublicFacing' => true,
+					]);
+				}
+				return $result;
+			} else {
+				return [
+					'result' => false,
+					'title' => translate([
+						'text' => "Error Checking Out Title",
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'result' => false,
+				'title' => translate([
+					'text' => "Error Checking Out Title",
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You must be logged in to checkout an item.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function cancelHold(): array {
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['recordId'];
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				return $driver->cancelHold($patron, $id);
+			} else {
+				return [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'result' => false,
+				'message' => translate([
+					'text' => 'You must be logged in to cancel holds.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
 }

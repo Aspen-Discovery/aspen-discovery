@@ -1,24 +1,22 @@
 {strip}
-	<div class="result row axis360Hold_{$record->recordId}_{$record->userId}">
+	<div class="result row palace_projectHold_{$record->recordId|escapeCSS}_{$record->userId}">
 		<div class="selectTitle col-xs-12 col-sm-1">
-			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
+			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId|escapeCSS}|{$record->cancelId|escapeCSS}]" class="titleSelect" id="selected{$record->cancelId|escapeCSS}">
 		</div>
 		{* Cover column *}
 		{if !empty($showCovers)}
 		<div class="col-xs-3 col-sm-2">
-			{*<div class="row">*}
-				<div class="{*col-xs-10 *}text-center">
-					{if $record->getCoverUrl()}
-						{if $record->recordId && $record->getLinkUrl()}
-							<a href="{$record->getLinkUrl()}" id="descriptionTrigger{$record->recordId|escape:"url"}" aria-hidden="true">
-								<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
-							</a>
-						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" aria-hidden="true">
-						{/if}
+			<div class="text-center">
+				{if $record->getCoverUrl()}
+					{if $record->recordId && $record->getLinkUrl()}
+						<a href="{$record->getLinkUrl()}" id="descriptionTrigger{$record->recordId||escapeCSS}" aria-hidden="true">
+							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
+						</a>
+					{else}  Cover Image but no Record-View link
+						<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" aria-hidden="true">
 					{/if}
-				</div>
-			{*</div>*}
+				{/if}
+			</div>
 		</div>
 
 		{/if}
@@ -65,7 +63,7 @@
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='Source' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
-							{translate text="Boundless" isPublicFacing=true}
+							{translate text="Palace Project" isPublicFacing=true}
 						</div>
 					</div>
 
@@ -74,6 +72,15 @@
 							<div class="result-label col-tn-4">{translate text='Format' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{implode subject=$record->getFormats() glue=", " translate=true isPublicFacing=true}
+							</div>
+						</div>
+					{/if}
+
+					{if $record->createDate}
+						<div class="row">
+							<div class="result-label col-tn-4">{translate text='Date Placed' isPublicFacing=true}</div>
+							<div class="col-tn-8 result-value">
+								{$record->createDate|date_format:"%b %d, %Y"}
 							</div>
 						</div>
 					{/if}
@@ -88,27 +95,11 @@
 					{/if}
 
 					{if $section == 'available'}
-					{* Available Hold *}
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Expires' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								<strong>{$record->expirationDate|date_format:"%b %d, %Y at %l:%M %p"}</strong>
 							</div>
-						</div>
-					{else}
-						{* Unavailable hold *}
-						<div class="row">
-							{if $record->frozen}
-								<div class="result-label col-tn-4">{translate text='Status' isPublicFacing=true}</div>
-								<div class="col-tn-8 result-value">
-									<span class="frozenHold label label-warning">{translate text=$record->status isPublicFacing=true}</span>
-								</div>
-							{else}
-								<div class="result-label col-tn-4">{translate text='Position' isPublicFacing=true}</div>
-								<div class="col-tn-8 result-value">
-									{translate text="%1% out of %2%" 1=$record->position 2=$record->holdQueueLength isPublicFacing=true}
-								</div>
-							{/if}
 						</div>
 					{/if}
 				</div>
@@ -117,16 +108,9 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.Axis360.doCheckOut('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-action">{translate text="Checkout" isPublicFacing=true}</button>
+							<button onclick="return AspenDiscovery.PalaceProject.doCheckOut('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-action">{translate text="Checkout" isPublicFacing=true}</button>
 						{/if}
-						<button onclick="return AspenDiscovery.Axis360.cancelHold('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
-						{if $record->canFreeze}
-							{if $record->frozen}
-								<button onclick="return AspenDiscovery.Axis360.thawHold('{$record->userId}', '{$record->recordId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
-							{elseif $record->canFreeze}
-								<button onclick="return AspenDiscovery.Axis360.freezeHold('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
-							{/if}
-						{/if}
+						<button onclick="return AspenDiscovery.PalaceProject.cancelHold('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 					</div>
 					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">

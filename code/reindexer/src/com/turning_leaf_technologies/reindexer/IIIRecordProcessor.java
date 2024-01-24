@@ -4,7 +4,6 @@ import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.io.File;

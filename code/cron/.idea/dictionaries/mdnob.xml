@@ -64,6 +64,7 @@
       <w>cloudlibrary</w>
       <w>communico</w>
       <w>compactdisc</w>
+      <w>consortial</w>
       <w>controlfield</w>
       <w>copynumber</w>
       <w>crontab</w>
@@ -248,6 +249,7 @@
       <w>taperecording</w>
       <w>tapereel</w>
       <w>tasklist</w>
+      <w>tokener</w>
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>

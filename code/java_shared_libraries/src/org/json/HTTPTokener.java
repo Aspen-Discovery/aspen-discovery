@@ -24,11 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 /**
  * The HTTPTokener extends the JSONTokener to provide additional methods
  * for the parsing of HTTP headers.

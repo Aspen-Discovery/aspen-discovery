@@ -405,7 +405,7 @@ public class CloudLibraryExporter {
 
 		WebServiceResponse response = callCloudLibrary(apiPath);
 		if (response == null) {
-			//Something bad happened, we're done.
+			//Something really bad happened, we're done.
 			return null;
 		} else if (!response.isSuccess()) {
 			if (response.getResponseCode() != 500) {
@@ -428,6 +428,37 @@ public class CloudLibraryExporter {
 		}
 
 		return availability;
+	}
+
+	CloudLibraryAvailabilityType loadAvailabilityTypeForRecord(String cloudLibraryId) {
+		CloudLibraryAvailabilityType availabilityType = new CloudLibraryAvailabilityType();
+		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/circulation/item/" + cloudLibraryId;
+
+		WebServiceResponse response = callCloudLibrary(apiPath);
+		if (response == null) {
+			//Something really bad happened, we're done.
+			return null;
+		} else if (!response.isSuccess()) {
+			if (response.getResponseCode() != 500) {
+				logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+			}
+			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
+			return null;
+		} else {
+			availabilityType.setRawResponse(response.getMessage());
+			CloudLibraryAvailabilityTypeHandler handler = new CloudLibraryAvailabilityTypeHandler(availabilityType);
+
+			try {
+				SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+				SAXParser saxParser = saxParserFactory.newSAXParser();
+				saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
+			} catch (SAXException | ParserConfigurationException | IOException e) {
+				logger.error("Error parsing response", e);
+				logEntry.addNote("Error parsing response: " + e);
+			}
+		}
+
+		return availabilityType;
 	}
 
 	private WebServiceResponse callCloudLibrary(String apiPath) {
