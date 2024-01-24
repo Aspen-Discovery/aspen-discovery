@@ -622,7 +622,8 @@ class ListAPI extends Action {
 							'end_date' => $title['end_date'],
 							'registration_required' => $title['registration_required'],
 							'bypass' => $title['bypass'],
-							'url' => $title['url']
+							'url' => $title['url'],
+							'source' => $title['source']
 						];
 					} else {
 						$listTitles[] = [
