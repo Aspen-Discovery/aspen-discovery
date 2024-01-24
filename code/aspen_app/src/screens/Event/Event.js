@@ -246,23 +246,29 @@ const getAddToCalendar = (start, end, location, event) => {
      const [calendarId, setCalendarId] = React.useState();
      const [confirmAdd, setConfirmAdd] = React.useState(false);
 
-     const startTime = start.date;
-     const endTime = end.date;
+     let displayDay = false;
+     let displayStartTime = false;
+     let displayEndTime = false;
 
-     let time1 = startTime.split(' ');
-     let day = time1[0];
-     let time2 = endTime.split(' ');
+     if (start && end) {
+          const startTime = start.date;
+          const endTime = end.date;
 
-     let time1arr = time1[1].split(':');
-     let time2arr = time2[1].split(':');
+          let time1 = startTime.split(' ');
+          let day = time1[0];
+          let time2 = endTime.split(' ');
 
-     let displayDay = moment(day);
-     let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
-     let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+          let time1arr = time1[1].split(':');
+          let time2arr = time2[1].split(':');
 
-     displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
-     displayStartTime = moment(displayStartTime).format('h:mm A');
-     displayEndTime = moment(displayEndTime).format('h:mm A');
+          displayDay = moment(day);
+          displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
+          displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+
+          displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
+          displayStartTime = moment(displayStartTime).format('h:mm A');
+          displayEndTime = moment(displayEndTime).format('h:mm A');
+     }
 
      const handleAddToCalendar = async () => {
           const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -418,9 +424,11 @@ const getAddToCalendar = (start, end, location, event) => {
 
 const getDirections = (location, room) => {
      let hasCoordinates = false;
-     if (_.isObject(location.coordinates)) {
-          if (location.coordinates.latitude !== 0 && location.coordinates.longitude !== 0) {
-               hasCoordinates = true;
+     if (location) {
+          if (!_.isUndefined(location.coordinates) && _.isObject(location.coordinates)) {
+               if (location.coordinates.latitude !== 0 && location.coordinates.longitude !== 0) {
+                    hasCoordinates = true;
+               }
           }
      }
 
@@ -444,21 +452,25 @@ const getDirections = (location, room) => {
           }
      };
 
-     return (
-          <Pressable py="3" mb={5} onPress={() => handleGetDirections()}>
-               <HStack space="1" alignItems="center" justifyContent="space-between">
-                    <HStack space="3" alignItems="center">
-                         <Icon as={MaterialIcons} name="location-pin" size="5" />
-                         <VStack>
-                              {location.name ? <Text bold>{location.name}</Text> : null}
-                              {room ? <Text>{room}</Text> : null}
-                              {location.address ? <Text>{location.address}</Text> : null}
-                         </VStack>
+     if (location) {
+          return (
+               <Pressable py="3" mb={5} onPress={() => handleGetDirections()}>
+                    <HStack space="1" alignItems="center" justifyContent="space-between">
+                         <HStack space="3" alignItems="center">
+                              <Icon as={MaterialIcons} name="location-pin" size="5" />
+                              <VStack>
+                                   {location.name ? <Text bold>{location.name}</Text> : null}
+                                   {room ? <Text>{room}</Text> : null}
+                                   {location.address ? <Text>{location.address}</Text> : null}
+                              </VStack>
+                         </HStack>
+                         {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="7" /> : null}
                     </HStack>
-                    {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="7" /> : null}
-               </HStack>
-          </Pressable>
-     );
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
 const getAddToYourEvents = (id, source) => {
@@ -480,7 +492,6 @@ const getAddToYourEvents = (id, source) => {
                } else {
                     popAlert(getTermFromDictionary(language, 'error'), result.message, 'error');
                }
-               console.log(result);
           });
      };
 
