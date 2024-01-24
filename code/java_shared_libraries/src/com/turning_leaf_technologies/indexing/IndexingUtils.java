@@ -11,15 +11,6 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeSet;
 
-import com.turning_leaf_technologies.indexing.InclusionRule;
-import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.indexing.OverDriveScope;
-import com.turning_leaf_technologies.indexing.Axis360Scope;
-import com.turning_leaf_technologies.indexing.CloudLibraryScope;
-import com.turning_leaf_technologies.indexing.HooplaScope;
-import com.turning_leaf_technologies.indexing.PalaceProjectScope;
-import com.turning_leaf_technologies.indexing.SideLoadScope;
-import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 

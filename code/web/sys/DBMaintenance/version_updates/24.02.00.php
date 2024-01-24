@@ -13,6 +13,68 @@ function getUpdates24_02_00(): array {
 		 ], //name*/
 
 		//mark - ByWater
+		'track_palace_project_user_usage' => [
+			'title' => 'Palace Project Usage by user',
+			'description' => 'Add a table to track how often a particular user uses Palace Project.',
+			'sql' => [
+				"CREATE TABLE user_palace_project_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					userId INT(11) NOT NULL,
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					usageCount INT(11) DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE user_palace_project_usage ADD INDEX (instance, userId, year, month)",
+				"ALTER TABLE user_palace_project_usage ADD INDEX (instance, year, month)",
+			],
+		], //track_palace_project_user_usage
+
+		'track_palace_project_record_usage' => [
+			'title' => 'Palace Project Record Usage',
+			'description' => 'Add a table to track how records within Palace Project are used.',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE palace_project_record_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					palaceProjectId INT(11),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					timesHeld INT(11) NOT NULL DEFAULT 0,
+					timesCheckedOut INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, axis360Id, year, month)",
+				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, year, month)",
+			],
+		], //track_palace_project_record_usage
+
+		'palace_project_return_url' => [
+			'title' => 'Palace Project Return URL',
+			'description' => 'Store the return URL with Checkouts for Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user_checkout ADD COLUMN earlyReturnUrl VARCHAR(255)",
+			],
+		], //palace_project_return_url
+
+		'palace_project_collection_name' => [
+			'title' => 'Palace Project Collection Name',
+			'description' => 'Add collection name for titles in Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE palace_project_title ADD COLUMN collectionName VARCHAR(255)",
+			],
+		], //palace_project_collection_name
+
+		'palace_project_cancellation_url' => [
+			'title' => 'Palace Project Cancellation URL',
+			'description' => 'Store the cancellation URL with Holds for Palace Project',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user_hold ADD COLUMN cancellationUrl VARCHAR(255)",
+			],
+		], //palace_project_cancellation_url
 
 		//kirstien - ByWater
 
@@ -65,6 +127,16 @@ function getUpdates24_02_00(): array {
 			],
 		], //self_reg_sections_assignment
 
+		'cloud_library_availability_changes' => [
+			'title' => 'Cloud Library Availability - On Order',
+			'description' => 'Adds additional API call data to determine if item is "Coming Soon" which will give it the status "On Order" instead of "Available"',
+			'sql' => [
+				'ALTER TABLE cloud_library_availability ADD COLUMN availabilityType SMALLINT NOT NULL DEFAULT 1',
+				'ALTER TABLE cloud_library_availability ADD COLUMN typeRawChecksum BIGINT',
+				'ALTER TABLE cloud_library_availability ADD COLUMN typeRawResponse MEDIUMTEXT',
+			],
+		], //cloud_library_availability_changes
+
 		//lucas - Theke
 
 		//alexander - PTFS Europe
@@ -87,12 +159,13 @@ function getUpdates24_02_00(): array {
         'hide_series' => [
             'title' => 'Add Series to Hide',
             'description' => 'Add Series to Hide from Series Facet and Grouped Work Series Display Information',
+			'continueOnError' => true,
             'sql' => [
                 'CREATE TABLE IF NOT EXISTS hide_series (
                             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                             seriesTerm VARCHAR(512) NOT NULL UNIQUE,
-                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE,
-                        ) ENGINE INNODB',
+                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE
+                        ) ENGINE = InnoDB',
             ],
         ], // hide_series
 
@@ -100,7 +173,7 @@ function getUpdates24_02_00(): array {
             'title' => 'Drop date added column from hide subject facets table',
             'description' => 'Drop date added column from hide subject facets table',
             'sql' => [
-                'ALTER TABLE aspen.hide_subject_facets DROP COLUMN dateAdded',
+                'ALTER TABLE hide_subject_facets DROP COLUMN dateAdded',
             ],
         ], // hide_subjects_drop_date_added
 

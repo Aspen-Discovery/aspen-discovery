@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.PalaceProjectScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -16,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 public class PalaceProjectProcessor {
@@ -30,7 +28,7 @@ public class PalaceProjectProcessor {
 		this.logger = logger;
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, collectionName, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -49,6 +47,7 @@ public class PalaceProjectProcessor {
 				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);
 				JSONObject rawResponse = new JSONObject(rawResponseString);
 				JSONObject metadata = rawResponse.getJSONObject("metadata");
+				String collectionName = productRS.getString("collectionName");
 
 				RecordInfo palaceProjectRecord = groupedWork.addRelatedRecord("palace_project", identifier);
 				palaceProjectRecord.setRecordIdentifier("palace_project", identifier);
@@ -211,30 +210,40 @@ public class PalaceProjectProcessor {
 				}
 
 				String contentUrl = "";
+				boolean available = true;
 				if (rawResponse.has("links")) {
 					JSONArray links = rawResponse.getJSONArray("links");
 					for (int i = 0; i < links.length(); i++) {
 						JSONObject linkObject = links.getJSONObject(i);
 						if (linkObject.has("rel") && linkObject.get("rel").equals("http://opds-spec.org/acquisition/borrow")){
 							contentUrl = linkObject.getString("href");
+
+							if (linkObject.has("properties")) {
+								JSONObject properties = linkObject.getJSONObject("properties");
+								if (properties.has("availability")){
+									JSONObject availability = properties.getJSONObject("availability");
+									available = availability.getString("state").equals("available");
+								}
+							}
+
 						}
 					}
 				}
 
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setItemIdentifier(identifier);
-				itemInfo.seteContentSource("Palace Project");
+				itemInfo.seteContentSource(collectionName + " - Palace Project");
 				itemInfo.setIsEContent(true);
 				itemInfo.seteContentUrl(contentUrl);
-				itemInfo.setShelfLocation("Online Palace Project Collection");
-				itemInfo.setDetailedLocation("Online Palace Project Collection");
-				itemInfo.setCallNumber("Online Hoopla");
-				itemInfo.setSortableCallNumber("Online Palace Project");
+				itemInfo.setShelfLocation("Online " + collectionName + " - Palace Project");
+				itemInfo.setDetailedLocation("Online " + collectionName + " - Palace Project");
+				itemInfo.setCallNumber("Online " + collectionName);
+				itemInfo.setSortableCallNumber("Online " + collectionName);
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
 				//TODO: Check availability and update.  For now, assume 1 copy with unlimited use
 				itemInfo.setNumCopies(1);
-				itemInfo.setAvailable(true);
+				itemInfo.setAvailable(available);
 				itemInfo.setDetailedStatus("Available Online");
 				itemInfo.setGroupedStatus("Available Online");
 				itemInfo.setHoldable(false);

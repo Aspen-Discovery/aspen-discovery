@@ -1,21 +1,11 @@
 package com.turning_leaf_technologies.indexing;
 
-import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.marc4j.marc.Record;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
-import com.turning_leaf_technologies.indexing.InclusionRule;
-import com.turning_leaf_technologies.indexing.OverDriveScope;
-import com.turning_leaf_technologies.indexing.Axis360Scope;
-import com.turning_leaf_technologies.indexing.CloudLibraryScope;
-import com.turning_leaf_technologies.indexing.HooplaScope;
-import com.turning_leaf_technologies.indexing.PalaceProjectScope;
-import com.turning_leaf_technologies.indexing.SideLoadScope;
-import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 
 public class Scope implements Comparable<Scope>{
 	private long id;
@@ -45,7 +35,6 @@ public class Scope implements Comparable<Scope>{
 	private String additionalLocationsToShowAvailabilityFor;
 	private Pattern additionalLocationsToShowAvailabilityForPattern;
 	private boolean includeAllLibraryBranchesInFacets; //Only applies to location scopes
-	private String courseReserveLibrariesToInclude;
 	private Pattern courseReserveLibrariesToIncludePattern;
 
 	private GroupedWorkDisplaySettings groupedWorkDisplaySettings;
@@ -78,11 +67,9 @@ public class Scope implements Comparable<Scope>{
 		this.facetLabel = facetLabel.trim();
 	}
 
-	private static InclusionResult  includedOwnedResult = new InclusionResult(true, true, null);
-	private static InclusionResult  includedNonOwnedResult = new InclusionResult(true, false, null);
-	private static InclusionResult  nonIncludedNonOwnedResult = new InclusionResult(false, false, null);
-
-	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
+	private static final InclusionResult  includedOwnedResult = new InclusionResult(true, true, null);
+	private static final InclusionResult  includedNonOwnedResult = new InclusionResult(true, false, null);
+	private static final InclusionResult  nonIncludedNonOwnedResult = new InclusionResult(false, false, null);
 
 	/**
 	 * Determine if the item is part of the current scope based on location code and other information
@@ -91,7 +78,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param recordType        The type of record being checked based on profile
 	 * @param locationCode      The location code for the item.  Set to blank if location codes
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
-	 * @return                  Whether or not the item is included within the scope
+	 * @return                  Whether the item is included within the scope
 	 */
 	public InclusionResult isItemPartOfScope(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		if (isItemOwnedByScope(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
@@ -122,14 +109,6 @@ public class Scope implements Comparable<Scope>{
 
 	/**
 	 * Determine if the item is part of the current scope based on location code and other information
-	 *
-	 *
-	 *
-	 * @param fullKey
-	 * @param recordType        The type of record being checked based on profile
-	 * @param locationCode      The location code for the item.  Set to blank if location codes
-	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
-	 * @return                  Whether or not the item is included within the scope
 	 */
 	public boolean isItemOwnedByScope(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		for(InclusionRule curRule: ownershipRules){
@@ -199,6 +178,7 @@ public class Scope implements Comparable<Scope>{
 		return libraryScope;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isRestrictOwningLibraryAndLocationFacets() {
 		return restrictOwningLibraryAndLocationFacets;
 	}
@@ -229,7 +209,7 @@ public class Scope implements Comparable<Scope>{
 
 	void setAdditionalLocationsToShowAvailabilityFor(String additionalLocationsToShowAvailabilityFor) {
 		this.additionalLocationsToShowAvailabilityFor = additionalLocationsToShowAvailabilityFor;
-		if (additionalLocationsToShowAvailabilityFor.length() > 0){
+		if (!additionalLocationsToShowAvailabilityFor.isEmpty()){
 			additionalLocationsToShowAvailabilityForPattern = Pattern.compile(additionalLocationsToShowAvailabilityFor);
 		}
 	}
@@ -314,17 +294,16 @@ public class Scope implements Comparable<Scope>{
 	}
 
 	public void setCourseReserveLibrariesToInclude(String courseReserveLibrariesToInclude) {
-		this.courseReserveLibrariesToInclude = courseReserveLibrariesToInclude;
-		if (courseReserveLibrariesToInclude != null && courseReserveLibrariesToInclude.length() > 0){
+		if (courseReserveLibrariesToInclude != null && !courseReserveLibrariesToInclude.isEmpty()){
 			courseReserveLibrariesToIncludePattern = Pattern.compile(courseReserveLibrariesToInclude, Pattern.CASE_INSENSITIVE);
 		}
 	}
 
-	public boolean isCourseReserveLibaryIncluded(String courseLibary){
+	public boolean isCourseReserveLibraryIncluded(String courseLibrary){
 		if (courseReserveLibrariesToIncludePattern == null){
 			return false;
 		}else{
-			return courseReserveLibrariesToIncludePattern.matcher(courseLibary).matches();
+			return courseReserveLibrariesToIncludePattern.matcher(courseLibrary).matches();
 		}
 	}
 

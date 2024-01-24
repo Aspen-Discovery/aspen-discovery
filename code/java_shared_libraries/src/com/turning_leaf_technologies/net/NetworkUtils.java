@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.net;
 
 import org.apache.logging.log4j.Logger;
-import com.turning_leaf_technologies.net.WebServiceResponse;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;

@@ -27,6 +27,9 @@ class Hold extends CircEntry {
 	public $isIll;
 	public $pendingCancellation;
 
+	//For Palace Project
+	public $cancellationUrl;
+
 	//Try to get rid of
 	public $_freezeError;
 

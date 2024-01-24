@@ -7,7 +7,6 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.marc.Record;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -126,15 +125,30 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);
 					int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
-					boolean available = totalCopies > totalLoanCopies;
+					int totalHoldCopies = availabilityRS.getInt("totalHoldCopies");
+					boolean available = totalCopies > totalLoanCopies && totalHoldCopies == 0; // don't say item is available if there are holds on it
+					int availabilityType = availabilityRS.getInt("availabilityType");
 					itemInfo.setAvailable(available);
-					if (available) {
-						itemInfo.setDetailedStatus("Available Online");
-						itemInfo.setGroupedStatus("Available Online");
+					//if availability type allows checkouts
+					if (availabilityType == 1){
+						if (available) {
+							itemInfo.setDetailedStatus("Available Online");
+							itemInfo.setGroupedStatus("Available Online");
+						} else {
+							itemInfo.setDetailedStatus("Checked Out");
+							itemInfo.setGroupedStatus("Checked Out");
+						}
 					} else {
-						itemInfo.setDetailedStatus("Checked Out");
-						itemInfo.setGroupedStatus("Checked Out");
+						if (totalLoanCopies != 0) {
+							itemInfo.setDetailedStatus("Checked Out");
+							itemInfo.setGroupedStatus("Checked Out");
+						}else{
+							itemInfo.setIsOrderItem();
+							itemInfo.setDetailedStatus("On Order");
+							itemInfo.setGroupedStatus("On Order");
+						}
 					}
+
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
 						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope(settingId);

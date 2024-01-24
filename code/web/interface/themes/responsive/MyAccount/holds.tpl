@@ -32,6 +32,9 @@
 				{if $user->isValidForEContentSource('overdrive')}
 					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{$readerName} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
+				{if $user->isValidForEContentSource('palace_project')}
+					<li role="presentation"{if $tab=='palace_project'} class="active"{/if}><a href="#palace_project" aria-controls="palace_project" role="tab" data-toggle="tab">{translate text="Palace Project" isPublicFacing=true} <span class="badge"><span class="palace_project-holds-placeholder">&nbsp;</span></span></a></li>
+				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
@@ -58,6 +61,9 @@
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on cloudLibrary Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from cloudLibrary" isPublicFacing=true}</div></div>
 				{/if}
+				{if $user->isValidForEContentSource('palace_project')}
+					<div role="tabpanel" class="tab-pane{if $tab=='palace_project'} active{/if}" id="palace_project" aria-label="List of Holds on Palace Project Titles"><div id="palace_projectHoldsPlaceholder">{translate text="Loading holds from Palace Project" isPublicFacing=true}</div></div>
+				{/if}
 				{if $user->isValidForEContentSource('axis360')}
 					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="List of Holds on Boundless Titles"><div id="axis360HoldsPlaceholder">{translate text="Loading holds from Boundless" isPublicFacing=true}</div></div>
 				{/if}
@@ -79,6 +85,9 @@
 					});
 					$("a[href='#cloud_library']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('cloud_library');
+					});
+					$("a[href='#palace_project']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('palace_project');
 					});
 					$("a[href='#axis360']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('axis360');

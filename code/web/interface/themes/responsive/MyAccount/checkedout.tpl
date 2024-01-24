@@ -58,7 +58,7 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('palace_project')}
-					<div role="tabpanel" class="tab-pane{if $tab=='palace_project'} active{/if}" id="palace_project" aria-label="Palace Project Checkouts List"><div id="palaceProjectCheckoutsPlaceholder">{translate text="Loading checkouts from Palace Project" isPublicFacing=true}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='palace_project'} active{/if}" id="palace_project" aria-label="Palace Project Checkouts List"><div id="palace_projectCheckoutsPlaceholder">{translate text="Loading checkouts from Palace Project" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="cloudLibrary Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from cloudLibrary" isPublicFacing=true}</div></div>

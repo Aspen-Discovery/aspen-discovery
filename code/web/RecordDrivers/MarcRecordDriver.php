@@ -2376,7 +2376,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 				krsort($copies);
-				//Group holdings under the issue issue summary that is related.
+				//Group holdings under the issue summary that is related.
 				foreach ($copies as $key => $holding) {
 					//Have issue summary = false
 					$haveIssueSummary = false;
