@@ -14,7 +14,6 @@
 					</div>
 				</div>
 				</div>
-
 			<script src="https://js.stripe.com/v3/"></script>
 		{literal}
 			<script>
@@ -31,6 +30,10 @@
 					cardButton.innerHTML = "Submitting Payment...";
 
 					var paymentId = AspenDiscovery.Account.createStripeOrder('#fines{/literal}{$userId}{literal}', 'fine');
+					if (paymentId === false) {
+						cardButton.disabled = false;
+						cardButton.innerHTML = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
+					}
 
 					stripe.createPaymentMethod({
 						type: 'card',
@@ -44,6 +47,7 @@
 									cardButton.innerHTML = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
 								} else {
 									AspenDiscovery.Account.completeStripeOrder({/literal}{$userId}{literal}, 'fine', paymentId, result.paymentMethod.id);
+									cardButton.innerHTML = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
 								}
 							});
 				});
