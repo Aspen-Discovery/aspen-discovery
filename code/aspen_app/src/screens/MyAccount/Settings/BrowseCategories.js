@@ -33,13 +33,14 @@ const DisplayCategory = (data) => {
      const [toggled, setToggle] = React.useState(!category.isHidden);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      const updateToggle = async (category) => {
           const key = category['key'] ?? category['sourceId'];
 
           await updateBrowseCategoryStatus(key, library.baseUrl).then(async (response) => {
-               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl] });
-               queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl] });
+               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
+               queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
           });
 
           console.log(key + ', ' + category['isHidden']);
@@ -48,7 +49,7 @@ const DisplayCategory = (data) => {
           <Box borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
                     <Text
-                         isTruncated
+                         flexWrap="wrap"
                          bold
                          maxW="80%"
                          fontSize={{
