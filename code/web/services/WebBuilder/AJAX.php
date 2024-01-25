@@ -743,6 +743,7 @@ class WebBuilder_AJAX extends JSON_Action {
 	function getHoursAndLocations() {
 		//Get a list of locations for the current library
 		global $library;
+		global $configArray;
 		$tmpLocation = new Location();
 		$tmpLocation->libraryId = $library->libraryId;
 		$tmpLocation->showInLocationsAndHoursList = 1;
@@ -831,6 +832,11 @@ class WebBuilder_AJAX extends JSON_Action {
 				'hours' => $hours,
 				'hasValidHours' => $locationToProcess->hasValidHours(),
 				'description' => $parsedown->parse($locationToProcess->description),
+				'image' => $locationToProcess->locationImage ? $configArray['Site']['url'] . '/files/original/' . $locationToProcess->locationImage : null,
+				'longitude' => floatval($locationToProcess->longitude),
+				'latitude' => floatval($locationToProcess->latitude),
+				'homeLink' => !empty($library->homeLink) ? $library->homeLink : null,
+				'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
 			];
 
 			if (!empty($mapsKey)) {
