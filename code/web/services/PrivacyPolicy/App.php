@@ -8,28 +8,44 @@ class PrivacyPolicy_App extends Action {
 		global $library;
 
 		$appName = 'Aspen LiDA';
-		$appOwner = 'ByWater Solutions, LLC';
+		$address = '';
+		$tel = '';
+		$email = '';
 		$appSettings = new BrandedAppSetting();
 		if($appSettings->find(true)) {
 			if($appSettings->appName) {
 				$appName = $appSettings->appName;
+				$address = preg_replace('/\r\n|\r|\n/', '<br>', $appSettings->privacyPolicyContactAddress);
+				$tel = $appSettings->privacyPolicyContactPhone;
+				$email = $appSettings->privacyPolicyContactEmail;
 			}
+		}
+
+		$appOwner = 'ByWater Solutions, LLC';
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if (!empty($systemVariables) && !empty($systemVariables->supportingCompany)) {
+			$appOwner = $systemVariables->supportingCompany;
 		}
 
 		if($appName !== 'Aspen LiDA') {
 			$appOwner = $library->displayName;
 		}
 
-		$address = '';
-		$tel = '';
-		$email = '';
 		$location = new Location();
 		$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
 		$location->libraryId = $library->libraryId;
 		if ($location->find(true)) {
-			$address = preg_replace('/\r\n|\r|\n/', '<br>', $location->address);
-			$tel = $location->phone;
-			$email = $location->contactEmail;
+			if($address == '' && !is_null($address)) {
+				$address = preg_replace('/\r\n|\r|\n/', '<br>', $location->address);
+			}
+			if($tel == '' && !is_null($tel)) {
+				$tel = $location->phone;
+			}
+
+			if($email == '' && !is_null($email)) {
+				$email = $location->contactEmail;
+			}
 		}
 
 		$interface->assign('appName', $appName);

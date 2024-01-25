@@ -20,7 +20,7 @@ export const AddToList = (props) => {
      const [screen, setScreen] = React.useState('add-new');
      const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
-     const { updateUser } = React.useContext(UserContext);
+     const { user, updateUser } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const lists = PATRON.lists;
      const [listId, setListId] = useState();
@@ -38,7 +38,7 @@ export const AddToList = (props) => {
 
      const updateLastListUsed = async (id) => {
           queryClient.invalidateQueries({ queryKey: ['list', id] });
-          queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
+          queryClient.invalidAddateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           PATRON.listLastUsed = id;
           setListId(id);

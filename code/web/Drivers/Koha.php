@@ -7060,6 +7060,7 @@ class Koha extends AbstractIlsDriver {
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='$locationCode';";
 		$results = mysqli_query($this->dbConnection, $sql);
+		$curbsidePolicyId = null;
 
 		if ($results !== false) {
 			while ($curRow = $results->fetch_assoc()) {
@@ -7069,74 +7070,139 @@ class Koha extends AbstractIlsDriver {
 					$result['enabled'] = $curRow['enabled'];
 					$result['interval'] = $curRow['pickup_interval'];
 					$result['maxPickupsPerInterval'] = $curRow['patrons_per_interval'];
-					$result['disabledDays'] = [];
-
-					if (isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
-						$result['pickupTimes']['Sun']['startTime'] = date("H:i", strtotime($curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']));
-						$result['pickupTimes']['Sun']['endTime'] = date("H:i", strtotime($curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']));
-						$result['pickupTimes']['Sun']['available'] = true;
-					} else {
+					if($this->getKohaVersion() >= 22.11) {
+						// pickup scheduling slots moved to its own table, set everything as disabled and enable them as we find matches below
+						$curbsidePolicyId = $curRow['id'];
 						$result['pickupTimes']['Sun']['available'] = false;
 						$result['disabledDays'][] = 0;
-					}
-
-					if (isset($curRow['monday_start_hour']) && isset($curRow['monday_start_minute']) && isset($curRow['monday_end_hour']) && isset($curRow['monday_end_minute'])) {
-						$result['pickupTimes']['Mon']['startTime'] = date("H:i", strtotime($curRow['monday_start_hour'] . ':' . $curRow['monday_start_minute']));
-						$result['pickupTimes']['Mon']['endTime'] = date("H:i", strtotime($curRow['monday_end_hour'] . ':' . $curRow['monday_end_minute']));
-						$result['pickupTimes']['Mon']['available'] = true;
-					} else {
 						$result['pickupTimes']['Mon']['available'] = false;
 						$result['disabledDays'][] = 1;
-					}
-
-					if (isset($curRow['tuesday_start_hour']) && isset($curRow['tuesday_start_minute']) && isset($curRow['tuesday_end_hour']) && isset($curRow['tuesday_end_minute'])) {
-						$result['pickupTimes']['Tue']['startTime'] = date("H:i", strtotime($curRow['tuesday_start_hour'] . ':' . $curRow['tuesday_start_minute']));
-						$result['pickupTimes']['Tue']['endTime'] = date("H:i", strtotime($curRow['tuesday_end_hour'] . ':' . $curRow['tuesday_end_minute']));
-						$result['pickupTimes']['Tue']['available'] = true;
-					} else {
 						$result['pickupTimes']['Tue']['available'] = false;
 						$result['disabledDays'][] = 2;
-					}
-
-					if (isset($curRow['wednesday_start_hour']) && isset($curRow['wednesday_start_minute']) && isset($curRow['wednesday_end_hour']) && isset($curRow['wednesday_end_minute'])) {
-						$result['pickupTimes']['Wed']['startTime'] = date("H:i", strtotime($curRow['wednesday_start_hour'] . ':' . $curRow['wednesday_start_minute']));
-						$result['pickupTimes']['Wed']['endTime'] = date("H:i", strtotime($curRow['wednesday_end_hour'] . ':' . $curRow['wednesday_end_minute']));
-						$result['pickupTimes']['Wed']['available'] = true;
-					} else {
 						$result['pickupTimes']['Wed']['available'] = false;
 						$result['disabledDays'][] = 3;
-					}
-
-					if (isset($curRow['thursday_start_hour']) && isset($curRow['thursday_start_minute']) && isset($curRow['thursday_end_hour']) && isset($curRow['thursday_end_minute'])) {
-						$result['pickupTimes']['Thu']['startTime'] = date("H:i", strtotime($curRow['thursday_start_hour'] . ':' . $curRow['thursday_start_minute']));
-						$result['pickupTimes']['Thu']['endTime'] = date("H:i", strtotime($curRow['thursday_end_hour'] . ':' . $curRow['thursday_end_minute']));
-						$result['pickupTimes']['Thu']['available'] = true;
-					} else {
 						$result['pickupTimes']['Thu']['available'] = false;
 						$result['disabledDays'][] = 4;
-					}
-
-					if (isset($curRow['friday_start_hour']) && isset($curRow['friday_start_minute']) && isset($curRow['friday_end_hour']) && isset($curRow['friday_end_minute'])) {
-						$result['pickupTimes']['Fri']['startTime'] = date("H:i", strtotime($curRow['friday_start_hour'] . ':' . $curRow['friday_start_minute']));
-						$result['pickupTimes']['Fri']['endTime'] = date("H:i", strtotime($curRow['friday_end_hour'] . ':' . $curRow['friday_end_minute']));
-						$result['pickupTimes']['Fri']['available'] = true;
-					} else {
 						$result['pickupTimes']['Fri']['available'] = false;
 						$result['disabledDays'][] = 5;
-					}
-
-					if (isset($curRow['saturday_start_hour']) && isset($curRow['saturday_start_minute']) && isset($curRow['saturday_end_hour']) && isset($curRow['saturday_end_minute'])) {
-						$result['pickupTimes']['Sat']['startTime'] = date("H:i", strtotime($curRow['saturday_start_hour'] . ':' . $curRow['saturday_start_minute']));
-						$result['pickupTimes']['Sat']['endTime'] = date("H:i", strtotime($curRow['saturday_end_hour'] . ':' . $curRow['saturday_end_minute']));
-						$result['pickupTimes']['Sat']['available'] = true;
-					} else {
 						$result['pickupTimes']['Sat']['available'] = false;
 						$result['disabledDays'][] = 6;
-					}
+					} else {
+						$result['disabledDays'] = [];
+						if (isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
+							$result['pickupTimes']['Sun']['startTime'] = date('H:i', strtotime($curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']));
+							$result['pickupTimes']['Sun']['endTime'] = date('H:i', strtotime($curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']));
+							$result['pickupTimes']['Sun']['available'] = true;
+						} else {
+							$result['pickupTimes']['Sun']['available'] = false;
+							$result['disabledDays'][] = 0;
+						}
 
+						if (isset($curRow['monday_start_hour']) && isset($curRow['monday_start_minute']) && isset($curRow['monday_end_hour']) && isset($curRow['monday_end_minute'])) {
+							$result['pickupTimes']['Mon']['startTime'] = date('H:i', strtotime($curRow['monday_start_hour'] . ':' . $curRow['monday_start_minute']));
+							$result['pickupTimes']['Mon']['endTime'] = date('H:i', strtotime($curRow['monday_end_hour'] . ':' . $curRow['monday_end_minute']));
+							$result['pickupTimes']['Mon']['available'] = true;
+						} else {
+							$result['pickupTimes']['Mon']['available'] = false;
+							$result['disabledDays'][] = 1;
+						}
+
+						if (isset($curRow['tuesday_start_hour']) && isset($curRow['tuesday_start_minute']) && isset($curRow['tuesday_end_hour']) && isset($curRow['tuesday_end_minute'])) {
+							$result['pickupTimes']['Tue']['startTime'] = date('H:i', strtotime($curRow['tuesday_start_hour'] . ':' . $curRow['tuesday_start_minute']));
+							$result['pickupTimes']['Tue']['endTime'] = date('H:i', strtotime($curRow['tuesday_end_hour'] . ':' . $curRow['tuesday_end_minute']));
+							$result['pickupTimes']['Tue']['available'] = true;
+						} else {
+							$result['pickupTimes']['Tue']['available'] = false;
+							$result['disabledDays'][] = 2;
+						}
+
+						if (isset($curRow['wednesday_start_hour']) && isset($curRow['wednesday_start_minute']) && isset($curRow['wednesday_end_hour']) && isset($curRow['wednesday_end_minute'])) {
+							$result['pickupTimes']['Wed']['startTime'] = date('H:i', strtotime($curRow['wednesday_start_hour'] . ':' . $curRow['wednesday_start_minute']));
+							$result['pickupTimes']['Wed']['endTime'] = date('H:i', strtotime($curRow['wednesday_end_hour'] . ':' . $curRow['wednesday_end_minute']));
+							$result['pickupTimes']['Wed']['available'] = true;
+						} else {
+							$result['pickupTimes']['Wed']['available'] = false;
+							$result['disabledDays'][] = 3;
+						}
+
+						if (isset($curRow['thursday_start_hour']) && isset($curRow['thursday_start_minute']) && isset($curRow['thursday_end_hour']) && isset($curRow['thursday_end_minute'])) {
+							$result['pickupTimes']['Thu']['startTime'] = date('H:i', strtotime($curRow['thursday_start_hour'] . ':' . $curRow['thursday_start_minute']));
+							$result['pickupTimes']['Thu']['endTime'] = date('H:i', strtotime($curRow['thursday_end_hour'] . ':' . $curRow['thursday_end_minute']));
+							$result['pickupTimes']['Thu']['available'] = true;
+						} else {
+							$result['pickupTimes']['Thu']['available'] = false;
+							$result['disabledDays'][] = 4;
+						}
+
+						if (isset($curRow['friday_start_hour']) && isset($curRow['friday_start_minute']) && isset($curRow['friday_end_hour']) && isset($curRow['friday_end_minute'])) {
+							$result['pickupTimes']['Fri']['startTime'] = date('H:i', strtotime($curRow['friday_start_hour'] . ':' . $curRow['friday_start_minute']));
+							$result['pickupTimes']['Fri']['endTime'] = date('H:i', strtotime($curRow['friday_end_hour'] . ':' . $curRow['friday_end_minute']));
+							$result['pickupTimes']['Fri']['available'] = true;
+						} else {
+							$result['pickupTimes']['Fri']['available'] = false;
+							$result['disabledDays'][] = 5;
+						}
+
+						if (isset($curRow['saturday_start_hour']) && isset($curRow['saturday_start_minute']) && isset($curRow['saturday_end_hour']) && isset($curRow['saturday_end_minute'])) {
+							$result['pickupTimes']['Sat']['startTime'] = date('H:i', strtotime($curRow['saturday_start_hour'] . ':' . $curRow['saturday_start_minute']));
+							$result['pickupTimes']['Sat']['endTime'] = date('H:i', strtotime($curRow['saturday_end_hour'] . ':' . $curRow['saturday_end_minute']));
+							$result['pickupTimes']['Sat']['available'] = true;
+						} else {
+							$result['pickupTimes']['Sat']['available'] = false;
+							$result['disabledDays'][] = 6;
+						}
+					}
 				}
 			}
 			$results->close();
+
+			if($curbsidePolicyId && $this->getKohaVersion() >= 22.11) {
+				$this->initDatabaseConnection();
+				/** @noinspection SqlResolve */
+				$sql = "SELECT * FROM curbside_pickup_opening_slots WHERE curbside_pickup_policy_id='$curbsidePolicyId'";
+				$results = mysqli_query($this->dbConnection, $sql);
+				if ($results !== false) {
+					while ($curRow = $results->fetch_assoc()) {
+						if($curRow['day'] == 0) {
+							$result['pickupTimes']['Sun']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Sun']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Sun']['available'] = true;
+							unset($result['disabledDays'][0]);
+						}elseif ($curRow['day'] == 1) {
+							$result['pickupTimes']['Mon']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Mon']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Mon']['available'] = true;
+							unset($result['disabledDays'][1]);
+						} elseif ($curRow['day'] == 2) {
+							$result['pickupTimes']['Tue']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Tue']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Tue']['available'] = true;
+							unset($result['disabledDays'][2]);
+						} elseif ($curRow['day'] == 3) {
+							$result['pickupTimes']['Wed']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Wed']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Wed']['available'] = true;
+							unset($result['disabledDays'][3]);
+						} elseif ($curRow['day'] == 4){
+							$result['pickupTimes']['Thu']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Thu']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Thu']['available'] = true;
+							unset($result['disabledDays'][4]);
+						} elseif ($curRow['day'] == 5) {
+							$result['pickupTimes']['Fri']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Fri']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Fri']['available'] = true;
+							unset($result['disabledDays'][5]);
+						} elseif ($curRow['day'] == 6) {
+							$result['pickupTimes']['Sat']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Sat']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Sat']['available'] = true;
+							unset($result['disabledDays'][6]);
+						}
+					}
+				}
+				$results->close();
+			}
 		} else {
 			global $logger;
 			$logger->log("Error loading plugins " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);

@@ -169,17 +169,7 @@ class MaterialsRequest_Submit extends Action {
 								$materialsRequest->dateUpdated = time();
 
 								if ($materialsRequest->insert()) {
-									$interface->assign('success', true);
-									$interface->assign('materialsRequest', $materialsRequest);
-									// Update Request Counts on success
-									$interface->assign('requestsThisYear', ++$requestsThisYear);
-									$interface->assign('openRequests', ++$openRequests);
-
-									require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
-									MaterialsRequestUsage::incrementStat($materialsRequest->status, $homeLibrary->libraryId);
-
-									$materialsRequest->sendStatusChangeEmail();
-									$materialsRequest->sendStaffNewMaterialsRequestEmail();
+									header('Location: /MaterialsRequest/Results?success=true&id=' . $materialsRequest->id);
 								} else {
 									$interface->assign('success', false);
 									$interface->assign('error', translate([

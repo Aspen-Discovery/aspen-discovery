@@ -75,6 +75,9 @@ class MyAccount_CurbsidePickups extends MyAccount {
 				$interface->assign('showScheduleButton', false);
 			}
 
+			$userHomePickupLocation = $user->getHomeLocation();
+			$interface->assign('userHomePickupLocation', $userHomePickupLocation);
+
 			if ($availableHolds > 0) {
 				$interface->assign('hasHolds', true);
 				$allHolds = $user->getHolds(false, '', '', 'ils');

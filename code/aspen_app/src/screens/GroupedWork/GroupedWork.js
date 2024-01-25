@@ -20,7 +20,7 @@ import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { getLinkedAccounts } from '../../util/api/user';
 import { getGroupedWork } from '../../util/api/work';
-import { decodeHTML } from '../../util/apiAuth';
+import { decodeHTML, urldecode } from '../../util/apiAuth';
 import { getPickupLocations } from '../../util/loadLibrary';
 import { PATRON } from '../../util/loadPatron';
 import { getGroupedWork221200, getItemDetails } from '../../util/recordActions';
@@ -135,7 +135,7 @@ const DisplayGroupedWork = (payload) => {
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover, expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
+                    <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: urldecode(groupedWork.cover), expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>
