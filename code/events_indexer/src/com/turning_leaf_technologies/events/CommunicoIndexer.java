@@ -572,7 +572,7 @@ class CommunicoIndexer {
 			JSONArray eventRegistrations = new JSONArray();
 			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 
-				String apiRegistrationsURL = "https://api.communico.co/v3/attend/events" + eventId + "/registrants";
+				String apiRegistrationsURL = "https://api.communico.co/v3/attend/events/" + eventId + "/registrants";
 				HttpGet apiRequest = new HttpGet(apiRegistrationsURL);
 				apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
 				try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
