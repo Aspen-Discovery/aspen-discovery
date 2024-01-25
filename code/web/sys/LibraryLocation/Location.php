@@ -2005,7 +2005,7 @@ class Location extends DataObject {
 		return null;
 	}
 
-	public static function getLibraryHoursMessage(int $locationId): string {
+	public static function getLibraryHoursMessage(int $locationId, bool $simpleOutput = false): string {
 		$today = time();
 		$location = new Location();
 		$location->locationId = $locationId;
@@ -2029,18 +2029,33 @@ class Location extends DataObject {
 					$nextDayOfWeek = strftime('%a', $nextDay);
 					if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true) {
 						if (isset($closureReason)) {
-							$libraryHoursMessage = translate([
-								'text' => "%1% is closed today for %2%.",
-								1 => $location->displayName,
-								2 => $closureReason,
-								'isPublicFacing' => true
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed today for %1%',
+									1 => $closureReason,
+									'isPublicFacing' => true,
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% is closed today for %2%.',
+									1 => $location->displayName,
+									2 => $closureReason,
+									'isPublicFacing' => true
+								]);
+							}
 						} else {
-							$libraryHoursMessage = translate([
-								'text' => "%1% is closed today.",
-								1 => $location->displayName,
-								'isPublicFacing' => true
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed today',
+									'isPublicFacing' => true
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% is closed today.',
+									1 => $location->displayName,
+									'isPublicFacing' => true
+								]);
+							}
 						}
 					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
@@ -2072,12 +2087,20 @@ class Location extends DataObject {
 						$closeHour = 24;
 					}
 					if ($currentHour < $openHour) {
-						$libraryHoursMessage = translate([
-							'text' => "%1% will be open today from %2%",
-							1 => $location->displayName,
-							2 => Location::getOpenHoursMessage($todaysLibraryHours),
-							'isPublicFacing' => true
-						]);
+						if($simpleOutput) {
+							$libraryHoursMessage = translate([
+								'text' => 'Open until %1%',
+								1 => Location::getOpenHoursMessage($todaysLibraryHours, true),
+								'isPublicFacing' => true
+							]);
+						} else {
+							$libraryHoursMessage = translate([
+								'text' => '%1% will be open today from %2%',
+								1 => $location->displayName,
+								2 => Location::getOpenHoursMessage($todaysLibraryHours),
+								'isPublicFacing' => true
+							]);
+						}
 					} elseif ($currentHour > $closeHour) {
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
@@ -2097,20 +2120,37 @@ class Location extends DataObject {
 							}
 
 						} else {
-							$libraryHoursMessage = translate([
-								'text' => "%1% will be open tomorrow from %2%",
-								1 => $location->displayName,
-								2 => Location::getOpenHoursMessage($tomorrowsLibraryHours),
-								'isPublicFacing' => true,
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed until tomorrow %2%',
+									1 => $location->displayName,
+									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours, true, true),
+									'isPublicFacing' => true,
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% will be open tomorrow from %2%',
+									1 => $location->displayName,
+									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours),
+									'isPublicFacing' => true,
+								]);
+							}
 						}
 					} else {
-						$libraryHoursMessage = translate([
-							'text' => "%1% is open today from %2%",
-							1 => $location->displayName,
-							2 => Location::getOpenHoursMessage($todaysLibraryHours),
-							'isPublicFacing' => true
-						]);
+						if($simpleOutput) {
+							$libraryHoursMessage = translate([
+								'text' => 'Open until %1%',
+								1 => Location::getOpenHoursMessage($todaysLibraryHours, true),
+								'isPublicFacing' => true
+							]);
+						} else {
+							$libraryHoursMessage = translate([
+								'text' => '%1% is open today from %2%',
+								1 => $location->displayName,
+								2 => Location::getOpenHoursMessage($todaysLibraryHours),
+								'isPublicFacing' => true
+							]);
+						}
 					}
 				}
 			} else {
@@ -2122,7 +2162,7 @@ class Location extends DataObject {
 		return $libraryHoursMessage;
 	}
 
-	public static function getOpenHoursMessage($hours): string {
+	public static function getOpenHoursMessage($hours, $simpleOutput = false, $openTomorrow = false): string {
 		$formattedMessage = '';
 		if (empty($hours)) {
 			return $formattedMessage;
@@ -2137,12 +2177,28 @@ class Location extends DataObject {
 					'isPublicFacing' => true,
 				]);
 			}
-			$formattedMessage .= translate([
-				'text' => '%1% to %2%',
-				1 => $hours[$i]['openFormatted'],
-				2 => $hours[$i]['closeFormatted'],
-				'isPublicFacing' => true,
-			]);
+			if($simpleOutput) {
+				if(!$openTomorrow) {
+					$formattedMessage .= translate([
+						'text' => '%1%',
+						1 => $hours[$i]['closeFormatted'],
+						'isPublicFacing' => true,
+					]);
+				} else {
+					$formattedMessage .= translate([
+						'text' => '%1%',
+						1 => $hours[$i]['openFormatted'],
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				$formattedMessage .= translate([
+					'text' => '%1% to %2%',
+					1 => $hours[$i]['openFormatted'],
+					2 => $hours[$i]['closeFormatted'],
+					'isPublicFacing' => true,
+				]);
+			}
 		}
 		return $formattedMessage;
 	}
