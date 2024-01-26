@@ -14,6 +14,11 @@ class Donation extends DataObject {
 	public $firstName;
 	public $lastName;
 	public $email;
+	public $address;
+	public $address2;
+	public $city;
+	public $state;
+	public $zip;
 	public $anonymous;
 	public $donateToLocationId;
 	public $donateToLocation;
@@ -66,6 +71,41 @@ class Donation extends DataObject {
 				'type' => 'email',
 				'label' => 'Email',
 				'description' => 'The email of the person making the donation',
+				'readOnly' => true,
+			],
+			'address' => [
+				'property' => 'address',
+				'type' => 'text',
+				'label' => 'Address',
+				'description' => 'The address of the person making the donation',
+				'readOnly' => true,
+			],
+			'address2' => [
+				'property' => 'address2',
+				'type' => 'text',
+				'label' => 'Address 2',
+				'description' => 'The address of the person making the donation',
+				'readOnly' => true,
+			],
+			'city' => [
+				'property' => 'city',
+				'type' => 'text',
+				'label' => 'City',
+				'description' => 'The city of the person making the donation',
+				'readOnly' => true,
+			],
+			'state' => [
+				'property' => 'state',
+				'type' => 'text',
+				'label' => 'State',
+				'description' => 'The state of the person making the donation',
+				'readOnly' => true,
+			],
+			'zip' => [
+				'property' => 'zip',
+				'type' => 'text',
+				'label' => 'Zip',
+				'description' => 'The zipcode of the person making the donation',
 				'readOnly' => true,
 			],
 			'anonymous' => [
@@ -224,7 +264,7 @@ class Donation extends DataObject {
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$payment = new UserPayment();
 			$payment->id = $this->paymentId;
-			if($payment->find(true)) {
+			if ($payment->find(true)) {
 				return $payment->transactionDate;
 			} else {
 				return 'Unknown';
@@ -516,15 +556,15 @@ class Donation extends DataObject {
 				}
 			}
 			// Certified Payments by Deluxe
-			if($paymentType == 10) {
+			if ($paymentType == 10) {
 				global $library;
 				require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
 				$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
 				$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
-				if($deluxeSettings->find(true)) {
+				if ($deluxeSettings->find(true)) {
 					// connection URL to payment portal
 					$url = 'https://www.velocitypayment.com/vrelay/verify.do';
-					if($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == "1") {
+					if ($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == "1") {
 						$url = 'https://demo.velocitypayment.com/vrelay/verify.do';
 					}
 					$deluxeAPIConnectionUrl = $url;
@@ -538,13 +578,13 @@ class Donation extends DataObject {
 				}
 			}
 			// Square
-			if($paymentType == 12) {
+			if ($paymentType == 12) {
 				require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
 				$squareSetting = new SquareSetting();
 				$squareSetting->id = $library->squareSettingId;
-				if($squareSetting->find(true)) {
+				if ($squareSetting->find(true)) {
 					$cdnUrl = 'https://web.squarecdn.com/v1/square.js';
-					if($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
+					if ($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
 						$cdnUrl = 'https://sandbox.web.squarecdn.com/v1/square.js';
 					}
 					$squareCdnUrl = $cdnUrl;
@@ -554,11 +594,11 @@ class Donation extends DataObject {
 				}
 			}
 			// Stripe
-			if($paymentType == 13) {
+			if ($paymentType == 13) {
 				require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
 				$stripeSetting = new StripeSetting();
 				$stripeSetting->id = $library->stripeSettingId;
-				if($stripeSetting->find(true)) {
+				if ($stripeSetting->find(true)) {
 					$stripePublicKey = $stripeSetting->stripePublicKey;
 					$stripeSecretKey = $stripeSetting->stripeSecretKey;
 				}
