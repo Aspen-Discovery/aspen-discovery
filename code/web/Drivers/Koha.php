@@ -3677,6 +3677,7 @@ class Koha extends AbstractIlsDriver {
 				'required' => true,
 			];
 		} else {
+			$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
 			$fields['librarySection'] = [
 				'property' => 'librarySection',
 				'type' => 'section',
@@ -3691,6 +3692,7 @@ class Koha extends AbstractIlsDriver {
 						'description' => 'Please choose the Library location you would prefer to use',
 						'values' => $pickupLocations,
 						'required' => true,
+						'readOnly' => !$allowHomeLibraryUpdates,
 					],
 				],
 			];
