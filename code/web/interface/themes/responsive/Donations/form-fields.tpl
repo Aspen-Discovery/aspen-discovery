@@ -156,7 +156,31 @@
                         </div>
                         </div>
 
-                    {* ADDITIONAL FIELDS *}
+                    {elseif $formField->textId == 'firstName' || $formField->textId == 'lastName'}
+                        <div class="col-xs-6">
+                            <div class="form-group {$formField->textId}">
+                                <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
+                                <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg" {if $formField->textId == 'firstName' && $newDonation->firstName}value="{$newDonation->firstName}"{/if}{if $formField->textId == 'lastName' && $newDonation->lastName}value="{$newDonation->lastName}"{/if} autocomplete>
+                            </div>
+                        </div>
+                    {elseif ($formField->textId == 'address' ||
+                    $formField->textId == 'address2' || $formField->textId == 'city' || $formField->textId == 'state' || $formField->textId == 'zip')}
+                        <div class="{if $formField->textId == 'address' || $formField->textId == 'address2'}col-md-3{else}col-md-2{/if}">
+                            <div class="form-group {$formField->textId}">
+                                <label id="{$formField->textId}Label" for="{$formField->textId}"
+                                       class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
+                                <input type="text" name="{$formField->textId}" id="{$formField->textId}"
+                                       class="form-control input-lg"
+                                       {if $formField->textId == 'address' && $newDonation->address}value="{$newDonation->address}"{/if}
+                                        {if $formField->textId == 'address2' && $newDonation->address2}value="{$newDonation->address2}"{/if}
+                                        {if $formField->textId == 'city' && $newDonation->city}value="{$newDonation->city}"{/if}
+                                        {if $formField->textId == 'state' && $newDonation->state}value="{$newDonation->state}"{/if}
+                                        {if $formField->textId == 'zip' && $newDonation->zip}value="{$newDonation->zip}"{/if}
+                                       autocomplete="on">
+                            </div>
+                        </div>
+
+                            {* ADDITIONAL FIELDS *}
                     {elseif $formField->type == 'text'}
                         <div class="col-xs-12">
                         <div class="form-group {$formField->textId}">

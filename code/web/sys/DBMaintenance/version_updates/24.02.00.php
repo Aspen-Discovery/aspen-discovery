@@ -166,44 +166,66 @@ function getUpdates24_02_00(): array {
 		], //cloud_library_availability_changes
 
 		//lucas - Theke
+		 'requires_address_info' => [
+			 'title' => 'Requires address information',
+			 'description' => 'Add a checkbox to prompt users for their address when making a donation.',
+			 'continueOnError' => false,
+			 'sql' => [
+				 'ALTER TABLE donations_settings ADD COLUMN requiresAddressInfo TINYINT(1) default 0'
+			 ]
+		], //requires_address_info
+
+		'add_address_information_for_donations' => [
+			'title' => 'Adds address information for donations',
+			'description' => 'Adds new columns with address information of the user ',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE donations ADD COLUMN address VARCHAR(50)',
+				'ALTER TABLE donations ADD COLUMN address2 VARCHAR(50)',
+				'ALTER TABLE donations ADD COLUMN city VARCHAR(50)',
+				'ALTER TABLE donations ADD COLUMN state VARCHAR(50)',
+				'ALTER TABLE donations ADD COLUMN zip INT(11)',
+
+			]
+		], //add_address_information_for_donations
 
 		//alexander - PTFS Europe
 
 		//jacob - PTFS Europe
 
-        // James Staub
-        'permission_hide_series' => [
-            'title' => 'Change permission for Hide Subject Facets to umbrella Hide Metadata',
-            'description' => 'Add permission for Hide Series from Series Facet and Grouped Work Series Display Information',
-            'continueOnError' => false,
-            'sql' => [
-                "UPDATE permissions 
-                    SET name = 'Hide Metadata', 
-                        description = 'Controls if the user can hide metadata like Subjects and Series from facets and display information.' 
-                    WHERE name = 'Hide Subject Facets'",
-            ]
-        ], //permission_hide_series
+		// James Staub
+		'permission_hide_series' => [
+			'title' => 'Change permission for Hide Subject Facets to umbrella Hide Metadata',
+			'description' => 'Add permission for Hide Series from Series Facet and Grouped Work Series Display Information',
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE permissions 
+					SET name = 'Hide Metadata', 
+						description = 'Controls if the user can hide metadata like Subjects and Series from facets and display information.' 
+					WHERE name = 'Hide Subject Facets'",
+			]
+		], //permission_hide_series
 
-        'hide_series' => [
-            'title' => 'Add Series to Hide',
-            'description' => 'Add Series to Hide from Series Facet and Grouped Work Series Display Information',
+		'hide_series' => [
+			'title' => 'Add Series to Hide',
+			'description' => 'Add Series to Hide from Series Facet and Grouped Work Series Display Information',
 			'continueOnError' => true,
-            'sql' => [
-                'CREATE TABLE IF NOT EXISTS hide_series (
-                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                            seriesTerm VARCHAR(512) NOT NULL UNIQUE,
-                            seriesNormalized VARCHAR(512) NOT NULL UNIQUE
-                        ) ENGINE = InnoDB',
-            ],
-        ], // hide_series
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS hide_series (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							seriesTerm VARCHAR(512) NOT NULL UNIQUE,
+							seriesNormalized VARCHAR(512) NOT NULL UNIQUE
+						) ENGINE = InnoDB',
+			],
+		], // hide_series
 
-        'hide_subjects_drop_date_added' => [
-            'title' => 'Drop date added column from hide subject facets table',
-            'description' => 'Drop date added column from hide subject facets table',
-            'sql' => [
-                'ALTER TABLE hide_subject_facets DROP COLUMN dateAdded',
-            ],
-        ], // hide_subjects_drop_date_added
+		'hide_subjects_drop_date_added' => [
+			'title' => 'Drop date added column from hide subject facets table',
+			'description' => 'Drop date added column from hide subject facets table',
+			'sql' => [
+				'ALTER TABLE hide_subject_facets DROP COLUMN dateAdded',
+			],
+		], // hide_subjects_drop_date_added
 
 	];
 }
