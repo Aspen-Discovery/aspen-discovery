@@ -530,10 +530,16 @@ class PortalCell extends DataObject {
 					'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
 					'phone' => $locationToProcess->phone,
 					'tty' => $locationToProcess->tty,
+					'email' => $locationToProcess->contactEmail,
 					//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 					'hours' => $hours,
 					'hasValidHours' => $locationToProcess->hasValidHours(),
 					'description' => $parsedown->parse($locationToProcess->description),
+					'image' => $locationToProcess->locationImage ? $configArray['Site']['url'] . '/files/original/' . $locationToProcess->locationImage : null,
+					'longitude' => floatval($locationToProcess->longitude),
+					'latitude' => floatval($locationToProcess->latitude),
+					'homeLink' => !empty($library->homeLink) ? $library->homeLink : null,
+					'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
 				];
 
 				if (!empty($mapsKey)) {
