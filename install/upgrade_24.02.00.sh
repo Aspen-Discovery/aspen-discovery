@@ -5,10 +5,9 @@ if [ -z "$1" ]
     exit 1
 fi
 
-pkill java
-
-yum -y remove java
 yum install -y java-11-openjdk
+pkill java
+yum -y remove java-1.8.0-openjdk
 #update-alternatives --set java /usr/lib/jvm/java-11-openjdk-11.0.21.0.9-1.el7_9.x86_64/bin/java
 
 chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-8.11.2
