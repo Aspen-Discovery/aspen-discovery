@@ -560,7 +560,9 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	background-color: {$bodyBackgroundColor};
 	color: {$bodyTextColor};
 	border: 1px solid {$bodyTextColor};
-	border-radius: {$smallButtonRadius}
+    {if !empty($smallButtonRadius)}
+	    border-radius: {$smallButtonRadius}
+    {/if}
 {rdelim}
 
 #horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
@@ -581,7 +583,9 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	background-color: {$bodyBackgroundColor};
 	color: {$bodyTextColor};
 	border: 1px solid {$bodyTextColor};
-	border-radius: {$smallButtonRadius}
+    {if !empty($smallButtonRadius)}
+	    border-radius: {$smallButtonRadius}
+    {/if}
 {rdelim}
 
 legend{ldelim}
@@ -597,7 +601,9 @@ label{ldelim}
 
 .bootstrap-switch{ldelim}
 	border: 1px solid {$bodyTextColor};
-	border-radius: {$smallButtonRadius}
+    {if !empty($smallButtonRadius)}
+        border-radius: {$smallButtonRadius}
+    {/if}
 {rdelim}
 
 .bootstrap-switch > div > label{ldelim}
@@ -703,7 +709,9 @@ label{ldelim}
 
 {* Browse Category Carousel *}
 .jcarousel-pagination a{ldelim}
-	border-radius: {$smallButtonRadius};
+    {if !empty($smallButtonRadius)}
+        border-radius: {$smallButtonRadius}
+    {/if}
 	background: {$selectedBrowseCategoryBackgroundColor}70;
 	color: {$bodyTextColor};
 	box-shadow: none;
@@ -835,7 +843,9 @@ pre a{ldelim}
 	background-color: {$bodyBackgroundColor};
     color: {$bodyTextColor};
     border: 1px solid {$bodyTextColor};
-    border-radius: {$smallButtonRadius}
+    {if !empty($smallButtonRadius)}
+        border-radius: {$smallButtonRadius}
+    {/if}
 }
 
 .formatCategoryLabel, .share-tools-label{ldelim}
