@@ -290,7 +290,7 @@ class OverDriveProcessor {
 						groupedWork.setTitle(title, subtitle, title, metadata.get("sortTitle"), primaryFormat, formatCategory);
 						groupedWork.addFullTitle(fullTitle);
 
-						if (series != null && series.length() > 0) {
+						if (series != null && !series.isEmpty()) {
 							groupedWork.addSeries(series);
 							groupedWork.addSeriesWithVolume(series, "");
 						}
@@ -618,10 +618,10 @@ class OverDriveProcessor {
 			groupedWork.addTopicFacet(topics);
 			groupedWork.addGenre(genres);
 			groupedWork.addGenreFacet(genres);
-			if (literaryForm.size() > 0) {
+			if (!literaryForm.isEmpty()) {
 				groupedWork.addLiteraryForms(literaryForm);
 			}
-			if (literaryFormFull.size() > 0) {
+			if (!literaryFormFull.isEmpty()) {
 				groupedWork.addLiteraryFormsFull(literaryFormFull);
 			}
 		}
