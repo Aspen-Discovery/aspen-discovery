@@ -100,19 +100,10 @@
 			<div class="header-menu-option">
 				<i class="fas fa-cog fa-fw"></i>
 				<span>
-					<a onclick="AspenDiscovery.showDisplaySettings()">
+					<a {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
 					 	{translate text="Display Options" isPublicFacing=true}
 					</a>
 				</span>
-			</div>
-		{else}
-			<div class="header-menu-option">
-				<i class="fas fa-cog fa-fw"></i>
-				<span>
-					<a onclick="AspenDiscovery.showDisplaySettings()">
-						{translate text="Display" isPublicFacing=true}
-					</a>
-				 </span>
 			</div>
 		{/if}
 	{/if}
