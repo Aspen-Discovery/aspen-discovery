@@ -75,6 +75,14 @@ function getUpdates24_02_00(): array {
 				"ALTER TABLE user_hold ADD COLUMN cancellationUrl VARCHAR(255)",
 			],
 		], //palace_project_cancellation_url
+		'palace_project_title_length' => [
+			'title' => 'Palace Project Title Length',
+			'description' => 'Increase allowable length for palace project tiles',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE palace_project_title CHANGE COLUMN title title VARCHAR(750)",
+			],
+		], //palace_project_title_length
 
 		'translatable_text_blocks' => [
 			'title' => 'Translatable Text Blocks',
