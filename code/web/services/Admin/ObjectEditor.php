@@ -9,6 +9,9 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	function launch() {
 		global $interface;
+		global $activeLanguage;
+
+		$interface->assign('activeLanguage', $activeLanguage);
 
 		$user = UserAccount::getActiveUserObj();
 		if (!empty($user->updateMessage)) {

@@ -787,4 +787,14 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			'User-Agent: Aspen Discovery ' . $gitBranch,
 		];
 	}
+
+	public function getUsageInstructions() {
+		$settings = $this->getSettings();
+		if ($settings == false) {
+			return false;
+		}else{
+			global $activeLanguage;
+			return $settings->getTextBlockTranslation('instructionsForUsage', $activeLanguage->code, true);
+		}
+	}
 }

@@ -1251,10 +1251,10 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		if (printFormats.size() == 0 && fallbackFormatField != null && fallbackFormatField.length() > 0){
+		if (printFormats.isEmpty() && fallbackFormatField != null && !fallbackFormatField.isEmpty()){
 			getFormatFromFallbackField(record, printFormats);
 		}
-		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			if (printFormats.size() == 1 && printFormats.contains("Book")){
 				printFormats.clear();
 			}
@@ -1264,7 +1264,7 @@ abstract class MarcRecordProcessor {
 			if (printFormats.size() > 1){
 				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
 			}
-			if (printFormats.size() == 0 || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+			if (printFormats.isEmpty() || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
@@ -1272,7 +1272,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		if (printFormats.size() == 0) {
+		if (printFormats.isEmpty()) {
 			logger.debug("Did not get any formats for print record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 			printFormats.add("Book");
 //		}else if (printFormats.size() > 1){

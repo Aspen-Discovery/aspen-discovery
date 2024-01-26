@@ -1253,4 +1253,113 @@ abstract class DataObject implements JsonSerializable {
 	public function finishCopy($sourceId) {
 
 	}
+
+	public function getTextBlockTranslation($fieldName, $languageCode, $returnDefault = true){
+		$key = "{$fieldName}_{$languageCode}_$returnDefault";
+		if (!empty($this->_data[$key])){
+			return $this->_data[$key];
+		}
+		$loadDefault = $returnDefault;
+		if ($languageCode == 'default') {
+			$loadDefault = true;
+		}else {
+			if (!empty($this->getPrimaryKeyValue())) {
+				global $validLanguages;
+				$languageId = 1;
+				foreach ($validLanguages as $language) {
+					if ($language->code == $languageCode) {
+						$languageId = $language->id;
+						break;
+					}
+				}
+				require_once ROOT_DIR . '/sys/Administration/TextBlockTranslation.php';
+				$textBlockTranslation = new TextBlockTranslation();
+				$textBlockTranslation->objectType = get_class($this);
+				$textBlockTranslation->objectId = $this->getPrimaryKeyValue();
+				$textBlockTranslation->languageId = $languageId;
+				if ($textBlockTranslation->find(true)) {
+					$this->_data[$key] = $textBlockTranslation->translation;
+					return $this->_data[$key];
+				}
+			}
+		}
+		if ($loadDefault) {
+			$objectStructure = $this::getObjectStructure();
+			$fieldDefinition = $this->getFieldDefinition($fieldName, $objectStructure);
+			if ($fieldDefinition == false) {
+				$this->_data[$key] = '';
+			} else {
+				$defaultFile = $fieldDefinition['defaultTextFile'];
+				if (empty($defaultFile) || !file_exists(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile)) {
+					$this->_data[$key] = '';
+				}else {
+					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+					$parsedown = AspenParsedown::instance();
+					$this->_data[$key] = $parsedown->parse(file_get_contents(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile));
+				}
+			}
+		}else{
+			$this->_data[$key] = '';
+		}
+		return $this->_data[$key];
+	}
+
+	public function saveTextBlockTranslations($fieldName) {
+		global $validLanguages;
+
+		require_once ROOT_DIR . '/sys/Administration/TextBlockTranslation.php';
+		/** @var TextBlockTranslation[] $existingTranslations */
+		$existingTranslations = [];
+		$textBlockTranslation = new TextBlockTranslation();
+		$textBlockTranslation->objectType = get_class($this);
+		$textBlockTranslation->objectId = $this->getPrimaryKeyValue();
+		$textBlockTranslation->find();
+		while ($textBlockTranslation->fetch()) {
+			$existingTranslations[$textBlockTranslation->languageId] = clone($textBlockTranslation);
+		}
+
+		/** @var Language $language */
+		$privateFieldName = '_' . $fieldName;
+		$fieldValues = $this->$privateFieldName;
+		foreach ($validLanguages as $language) {
+			if ($language->code != 'ubb' && $language->code != 'pig') {
+				$translationForLanguage = $fieldValues[$language->code];
+				//Check to see if we have an existing translation
+				if (array_key_exists($language->id, $existingTranslations)) {
+					if (empty($translationForLanguage)) {
+						//If we get a blank value, we should delete the existing translation
+						$existingTranslations[$language->id]->delete();
+					}else{
+						//Update the existing value
+						$existingTranslations[$language->id]->translation = $translationForLanguage;
+						$existingTranslations[$language->id]->update();
+					}
+				}else{
+					//New translation, only save if it isn't blank
+					if (!empty($translationForLanguage)) {
+						$textBlockTranslation = new TextBlockTranslation();
+						$textBlockTranslation->objectType = get_class($this);
+						$textBlockTranslation->objectId = $this->getPrimaryKeyValue();
+						$textBlockTranslation->languageId = $language->id;
+						$textBlockTranslation->translation = $translationForLanguage;
+						$textBlockTranslation->insert();
+					}
+				}
+			}
+		}
+	}
+
+	public function getFieldDefinition($fieldName, $objectStructure) {
+		foreach ($objectStructure as $field) {
+			if ($field['property'] == $fieldName) {
+				return $field;
+			}elseif ($field['type'] == 'section') {
+				$subFieldDefinition = $this->getFieldDefinition($fieldName, $field['properties']);
+				if ($subFieldDefinition != false) {
+					return $subFieldDefinition;
+				}
+			}
+		}
+		return false;
+	}
 }

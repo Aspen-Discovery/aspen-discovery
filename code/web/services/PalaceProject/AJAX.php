@@ -373,4 +373,33 @@ class PalaceProject_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	function getUsageInstructions() {
+		global $activeLanguage;
+		require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+		$driver = new PalaceProjectDriver();
+		$usageInstructions = $driver->getUsageInstructions();
+		if ($usageInstructions == false) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error loading instructions',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to find instructions for using Palace Project titles.',
+					'isPublicFacing' => true,
+				]),
+			];
+		} else{
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Using Palace Project',
+					'isPublicFacing' => true,
+				]),
+				'message' => $usageInstructions,
+			];
+		}
+	}
 }

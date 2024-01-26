@@ -15642,9 +15642,30 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
 				}
 			});
 		},
+
+		showUsageInstructions: function () {
+			var url = Globals.path + "/PalaceProject/AJAX?method=getUsageInstructions";
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message);
+					} else {
+						AspenDiscovery.showMessage("Error Loading Instructions", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Loading Instructions", "An error occurred loading instructions.  Please try again in a few minutes.", false);
+				}
+			});
+		}
 	}
 }(AspenDiscovery.PalaceProject || {}));

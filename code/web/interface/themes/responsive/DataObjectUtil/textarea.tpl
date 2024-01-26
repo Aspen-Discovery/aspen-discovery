@@ -1,6 +1,8 @@
-<textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} {if !empty($property.description)}title='{$property.description}'{/if} class='form-control {if !empty($property.required) && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.maxLength)}maxlength="{$property.maxLength}" {/if}>{$propValue|escape}</textarea>
+<textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} {if !empty($property.description)}title='{$property.description}'{/if} class='form-control {if !empty($property.required) && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.maxLength)}maxlength="{$property.maxLength}" {/if}>
+	{$propValue|escape}
+</textarea>
 {*{if !empty($property.readOnly)}*}
-	{if $property.type == 'html' || ($property.type == 'markdown' && $useHtmlEditorRatherThanMarkdown)}
+	{if $property.type == 'html' || $property.type == 'translatableTextBlock' || ($property.type == 'markdown' && $useHtmlEditorRatherThanMarkdown)}
 		<script>
 		{literal}
 		tinymce.init({

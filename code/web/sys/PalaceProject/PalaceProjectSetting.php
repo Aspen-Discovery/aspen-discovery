@@ -12,6 +12,7 @@ class PalaceProjectSetting extends DataObject {
 	public $lastUpdateOfAllRecords;
 
 	private $_scopes;
+	protected $_instructionsForUsage;
 
 	public static function getObjectStructure($context = ''): array {
 		$palaceProjectScopeStructure = PalaceProjectScope::getObjectStructure($context);
@@ -64,6 +65,14 @@ class PalaceProjectSetting extends DataObject {
 				'description' => 'The timestamp when just changes were loaded',
 				'default' => 0,
 			],
+			'instructionsForUsage' => [
+				'property' => 'instructionsForUsage',
+				'type' => 'translatableTextBlock',
+				'label' => 'Instructions For Using Palace Project',
+				'description' => 'Provide instructions for how to use the Palace Project to read titles',
+				'defaultTextFile' => 'PalaceProjectSetting_instructionsForUsage.MD',
+				'hideInLists' => true,
+			],
 
 			'scopes' => [
 				'property' => 'scopes',
@@ -93,6 +102,7 @@ class PalaceProjectSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
+			$this->saveTextBlockTranslations('instructionsForUsage');
 		}
 		return true;
 	}
@@ -109,6 +119,7 @@ class PalaceProjectSetting extends DataObject {
 				$this->_scopes[] = $allScope;
 			}
 			$this->saveScopes();
+			$this->saveTextBlockTranslations('instructionsForUsage');
 		}
 		return $ret;
 	}

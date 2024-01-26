@@ -75,9 +75,7 @@
 				{* Actions for Title *}
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						{if !empty($record->accessOnlineUrl)}
-							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Palace Project' isPublicFacing=true}</a>
-						{/if}
+						<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Palace Project Instructions' isPublicFacing=true}</a>
 						{if $record->canReturnEarly}
 							<a href="#" onclick="return AspenDiscovery.PalaceProject.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-info">{translate text='Return Now' isPublicFacing=true}</a>
 						{/if}

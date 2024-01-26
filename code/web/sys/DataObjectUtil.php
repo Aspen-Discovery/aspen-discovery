@@ -477,6 +477,19 @@ class DataObjectUtil {
 				}
 				$object->setProperty($propertyName, $newValue, $property);
 			}
+		} elseif ($property['type'] == 'translatableTextBlock') {
+			//Set all the translations for
+			$allTranslations = [];
+			foreach ($_REQUEST as $requestName => $propertyValue) {
+				if (strpos($requestName, $propertyName) === 0) {
+					$language = str_replace($property['property'] . '_', '', $requestName);
+					if ($language != 'default') {
+						$allTranslations[$language] = $propertyValue;
+					}
+				}
+			}
+			$privatePropertyName = '_' . $propertyName;
+			$object->$privatePropertyName = $allTranslations;
 		} elseif ($property['type'] == 'oneToMany') {
 			//Check for deleted associations
 			$deletions = isset($_REQUEST[$propertyName . 'Deleted']) ? $_REQUEST[$propertyName . 'Deleted'] : [];

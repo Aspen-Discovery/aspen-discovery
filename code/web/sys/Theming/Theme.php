@@ -2423,7 +2423,7 @@ class Theme extends DataObject {
 		}
 
 		foreach($this as $index => $item) {
-			if(str_contains($index, 'Color')) {
+			if(strpos($index, 'Color') >= 0) {
 				if(is_null($item)) {
 					if($prevColors) {
 						if ($prevColors->$index) {

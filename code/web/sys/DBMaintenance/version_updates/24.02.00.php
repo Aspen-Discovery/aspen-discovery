@@ -76,6 +76,23 @@ function getUpdates24_02_00(): array {
 			],
 		], //palace_project_cancellation_url
 
+		'translatable_text_blocks' => [
+			'title' => 'Translatable Text Blocks',
+			'description' => 'Add the ability to translate large blocks of text within Aspen',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE text_block_translation (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					objectType VARCHAR(50) NOT NULL,
+					objectId INT(11) NOT NULL, 
+					languageId INT(11) NOT NULL,
+					translation MEDIUMTEXT,
+					UNIQUE (objectType, objectId, languageId)
+				) ENGINE INNODB"
+			],
+		], //translatable_text_blocks
+
+
 		//kirstien - ByWater
 
 		//kodi - ByWater
