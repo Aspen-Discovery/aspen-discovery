@@ -7,7 +7,7 @@ fi
 
 pkill java
 
-yum remove java
+yum -y remove java
 yum install -y java-11-openjdk
 #update-alternatives --set java /usr/lib/jvm/java-11-openjdk-11.0.21.0.9-1.el7_9.x86_64/bin/java
 
