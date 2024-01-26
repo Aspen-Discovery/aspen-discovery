@@ -9,6 +9,9 @@ class BrandedAppSetting extends DataObject {
 	public $logoLogin;
 	public $logoAppIcon;
 	public $privacyPolicy;
+	public $privacyPolicyContactAddress;
+	public $privacyPolicyContactPhone;
+	public $privacyPolicyContactEmail;
 	public $showFavicons;
 	public $logoNotification;
 	public $appName;
@@ -78,13 +81,45 @@ class BrandedAppSetting extends DataObject {
 				'required' => true,
 				'thumbWidth' => 96,
 			],
-			'privacyPolicy' => [
-				'property' => 'privacyPolicy',
-				'type' => 'text',
-				'label' => 'URL to Privacy Policy',
-				'description' => 'The web address for users to access the privacy policy for using the app',
-				'hideInLists' => true,
-				'required' => true,
+			'privacyPolicyInformationSection' => [
+				'property' => 'privacyPolicyInformationSection',
+				'type' => 'section',
+				'label' => 'Privacy Policy Information',
+				'note' => 'By default the contact information is imported in from either the main branch or the first location (if no main branch).',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'privacyPolicy' => [
+						'property' => 'privacyPolicy',
+						'type' => 'text',
+						'label' => 'URL to Privacy Policy',
+						'description' => 'The web address for users to access the privacy policy for using the app',
+						'hideInLists' => true,
+						'required' => true,
+					],
+					'privacyPolicyContactAddress' => [
+						'property' => 'privacyPolicyContactAddress',
+						'type' => 'textarea',
+						'label' => 'Address',
+						'description' => 'The address to list in the privacy policy',
+						'hideInLists' => true,
+					],
+					'privacyPolicyContactPhone' => [
+						'property' => 'privacyPolicyContactPhone',
+						'type' => 'text',
+						'label' => 'Phone Number',
+						'maxLength' => '25',
+						'description' => 'The phone number to list in the privacy policy',
+						'hideInLists' => true,
+					],
+					'privacyPolicyContactEmail' => [
+						'property' => 'privacyPolicyContactEmail',
+						'type' => 'text',
+						'label' => 'Email',
+						'description' => 'The email address to list in the privacy policy',
+						'hideInLists' => true,
+					],
+				],
 			],
 			'showFavicons' => [
 				'property' => 'showFavicons',
@@ -94,7 +129,20 @@ class BrandedAppSetting extends DataObject {
 				'hideInLists' => true,
 				'required' => false,
 			],
+
 		];
 	}
-
+/*
+ * 		$address = '';
+		$tel = '';
+		$email = '';
+		$location = new Location();
+		$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+		$location->libraryId = $library->libraryId;
+		if ($location->find(true)) {
+			$address = preg_replace('/\r\n|\r|\n/', '<br>', $location->address);
+			$tel = $location->phone;
+			$email = $location->contactEmail;
+		}
+ */
 }

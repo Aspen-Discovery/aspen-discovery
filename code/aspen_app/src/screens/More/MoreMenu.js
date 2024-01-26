@@ -3,7 +3,7 @@ import { ListItem } from '@rneui/themed';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Divider, FlatList, HStack, Icon, Pressable, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
+import { Box, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
 import React from 'react';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
@@ -12,26 +12,34 @@ import { GLOBALS } from '../../util/globals';
 import { LIBRARY } from '../../util/loadLibrary';
 
 export const MoreMenu = () => {
+     const { locations } = React.useContext(LibraryBranchContext);
      const { menu } = React.useContext(LibrarySystemContext);
      const hasMenuItems = _.size(menu);
 
-     return (
-          <Box>
-               <VStack space="4" my="2" mx="1">
-                    <MyLibrary />
-                    <Divider />
+     const viewAllLocations = () => {
+          navigate('AllLocations', {});
+     };
 
-                    <VStack divider={<Divider />} space="4">
-                         {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
-                         <VStack space="3">
-                              <VStack>
-                                   <Settings />
-                                   <PrivacyPolicy />
+     return (
+          <ScrollView>
+               <Box>
+                    <VStack space="4" my="2" mx="1">
+                         <MyLibrary />
+                         <Divider />
+
+                         <VStack divider={<Divider />} space="4">
+                              {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
+                              <VStack space="3">
+                                   <VStack>
+                                        <ViewAllLocations />
+                                        <Settings />
+                                        <PrivacyPolicy />
+                                   </VStack>
                               </VStack>
                          </VStack>
                     </VStack>
-               </VStack>
-          </Box>
+               </Box>
+          </ScrollView>
      );
 };
 
@@ -98,6 +106,24 @@ const MyLibrary = () => {
                </Pressable>
           </Box>
      );
+};
+
+const ViewAllLocations = () => {
+     const { language } = React.useContext(LanguageContext);
+     const { locations } = React.useContext(LibraryBranchContext);
+
+     if (_.size(locations) > 1) {
+          return (
+               <Pressable px="2" py="3" onPress={() => navigate('AllLocations')}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <Text fontWeight="500">{getTermFromDictionary(language, 'view_all_locations')}</Text>
+                    </HStack>
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
 const Settings = () => {

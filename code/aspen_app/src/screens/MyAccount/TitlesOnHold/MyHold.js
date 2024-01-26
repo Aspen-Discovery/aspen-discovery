@@ -103,7 +103,7 @@ export const MyHold = (props) => {
      };
 
      const initializeLeftColumn = () => {
-          const key = 'medium_' + hold.groupedWorkId;
+          const key = 'medium_' + hold.source + '_' + hold.groupedWorkId;
           if (hold.coverUrl && hold.source !== 'vdx') {
                let url = library.baseUrl + '/bookcover.php?id=' + hold.source + ':' + hold.id + '&size=medium';
                if (hold.upc) {

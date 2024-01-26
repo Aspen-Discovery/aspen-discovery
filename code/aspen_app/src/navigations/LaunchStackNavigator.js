@@ -18,7 +18,7 @@ const LaunchStackNavigator = () => {
                               <LibrarySystemContext.Consumer>
                                    {(library, version, url, menu) => (
                                         <LibraryBranchContext.Consumer>
-                                             {(location) => (
+                                             {(location, locations) => (
                                                   <SearchContext.Consumer>
                                                        {(currentIndex, updateCurrentIndex, currentSource, updateCurrentSource, indexes, updateIndexes, sources, updateSources, facets, updateFacets, query, updateQuery, sort, updateSort, resetSearch) => (
                                                             <UserContext.Consumer>

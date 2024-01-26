@@ -218,7 +218,7 @@ const DisplayResult = (data) => {
                if (item.source === 'lc') {
                     eventSource = 'library_calendar';
                }
-               if (item.source === 'libcal') {
+               if (item.source === 'libcal' || item.source === 'springshare_libcal') {
                     eventSource = 'springshare';
                }
 
@@ -339,7 +339,7 @@ const DisplayResult = (data) => {
                                         />
                                    }
                               />
-                              <AddToList itemId={item.key} btnStyle="sm" />
+                              <AddToList source="Events" itemId={item.key} btnStyle="sm" />
                          </VStack>
                          <VStack w="65%">
                               <Text

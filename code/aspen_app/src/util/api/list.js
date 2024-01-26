@@ -245,7 +245,7 @@ export async function getListTitles(id, url, page, pageSize = 20, numTitles = 25
      };
 }
 
-export async function removeTitlesFromList(listId, title, url) {
+export async function removeTitlesFromList(listId, title, url, source) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -254,6 +254,7 @@ export async function removeTitlesFromList(listId, title, url) {
           auth: createAuthTokens(),
           params: {
                listId,
+               source,
                recordIds: title,
           },
      });

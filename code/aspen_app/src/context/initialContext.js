@@ -22,6 +22,10 @@ export const UserContext = React.createContext({
      language: [],
      updatePickupLocations: () => {},
      locations: [],
+     readingHistory: [],
+     updateReadingHistory: () => {},
+     savedEvents: [],
+     updateSavedEvents: () => {},
      cards: [],
      updateCards: () => {},
      notificationSettings: [],
@@ -55,6 +59,8 @@ export const LibraryBranchContext = React.createContext({
      updateEnableSelfCheck: () => {},
      selfCheckSettings: [],
      updateSelfCheckSettings: () => {},
+     locations: [],
+     updateLocations: () => {},
 });
 export const BrowseCategoryContext = React.createContext({
      updateBrowseCategories: () => {},
@@ -225,6 +231,7 @@ export const LibraryBranchProvider = ({ children }) => {
      const [scope, setScope] = useState();
      const [enableSelfCheck, setEnableSelfCheck] = useState(false);
      const [selfCheckSettings, setSelfCheckSettings] = useState([]);
+     const [locations, setLocations] = useState();
 
      const updateLocation = (data) => {
           setLocation(data);
@@ -261,6 +268,11 @@ export const LibraryBranchProvider = ({ children }) => {
           console.log('updated self check settings in LibraryBranchContext');
      };
 
+     const updateLocations = (data) => {
+          setLocations(data);
+          console.log('updated locations in LibraryBranchContext');
+     };
+
      return (
           <LibraryBranchContext.Provider
                value={{
@@ -268,11 +280,13 @@ export const LibraryBranchProvider = ({ children }) => {
                     scope,
                     enableSelfCheck,
                     selfCheckSettings,
+                    locations,
                     updateLocation,
                     resetLocation,
                     updateScope,
                     updateEnableSelfCheck,
                     updateSelfCheckSettings,
+                    updateLocations,
                }}>
                {children}
           </LibraryBranchContext.Provider>
@@ -287,6 +301,7 @@ export const UserProvider = ({ children }) => {
      const [language, setLanguage] = useState('en');
      const [locations, setPickupLocations] = useState([]);
      const [readingHistory, setReadingHistory] = useState([]);
+     const [savedEvents, setSavedEvents] = useState([]);
      const [cards, setCards] = useState([]);
      const [notificationSettings, setNotificationSettings] = useState([]);
      const [notificationOnboard, setNotificationOnboard] = useState(0);
@@ -350,6 +365,11 @@ export const UserProvider = ({ children }) => {
      const updateReadingHistory = (data) => {
           setReadingHistory(data);
           console.log('updated reading history in UserContext');
+     };
+
+     const updateSavedEvents = (data) => {
+          setSavedEvents(data);
+          console.log('updated saved events in UserContext');
      };
 
      const updateLibraryCards = (data) => {
@@ -472,6 +492,8 @@ export const UserProvider = ({ children }) => {
                     updatePickupLocations,
                     readingHistory,
                     updateReadingHistory,
+                    savedEvents,
+                    updateSavedEvents,
                     cards,
                     updateLibraryCards,
                     notificationSettings,

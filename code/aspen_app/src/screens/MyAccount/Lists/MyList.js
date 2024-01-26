@@ -2,8 +2,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
-import { Box, Button, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
+import moment from 'moment';
+import { Badge, Box, Button, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { Platform, SafeAreaView } from 'react-native';
 import { loadError } from '../../../components/loadError';
@@ -37,6 +39,8 @@ export const MyList = () => {
           custom: 'Sort By User Defined',
      });
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
      React.useEffect(() => {
           async function fetchTranslations() {
@@ -100,6 +104,31 @@ export const MyList = () => {
           }
      };
 
+     const handleOpenEvent = (item) => {
+          if (item.bypass) {
+               openURL(item.url);
+          } else {
+               navigateStack('AccountScreenTab', 'ListItemEvent', {
+                    id: item.id,
+                    url: library.baseUrl,
+                    title: getCleanTitle(item.title),
+                    source: item.source,
+               });
+          }
+     };
+
+     const openURL = async (url) => {
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+          WebBrowser.openBrowserAsync(url, browserParams);
+     };
+
      if (status !== 'loading') {
           if (!_.isUndefined(data.defaultSort)) {
                setSort(data.defaultSort);
@@ -111,6 +140,110 @@ export const MyList = () => {
      const renderItem = (item) => {
           const imageUrl = item.image;
           const key = 'medium_' + item.id;
+
+          if (item.recordType === 'event') {
+               let registrationRequired = false;
+               if (!_.isUndefined(item.registration_required)) {
+                    registrationRequired = item.registration_required;
+               }
+
+               const startTime = item.start_date.date;
+               const endTime = item.end_date.date;
+
+               let time1 = startTime.split(' ');
+               let day = time1[0];
+               let time2 = endTime.split(' ');
+
+               let time1arr = time1[1].split(':');
+               let time2arr = time2[1].split(':');
+
+               let displayDay = moment(day);
+               let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
+               let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+
+               displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
+               displayStartTime = moment(displayStartTime).format('h:mm A');
+               displayEndTime = moment(displayEndTime).format('h:mm A');
+
+               return (
+                    <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenEvent(item)}>
+                         <HStack space={3}>
+                              <VStack maxW="35%">
+                                   <CachedImage
+                                        cacheKey={key}
+                                        alt={item.title}
+                                        source={{
+                                             uri: `${imageUrl}`,
+                                             expiresIn: 86400,
+                                        }}
+                                        style={{
+                                             width: 100,
+                                             height: 150,
+                                             borderRadius: 4,
+                                        }}
+                                        resizeMode="cover"
+                                        placeholderContent={
+                                             <Box
+                                                  bg="warmGray.50"
+                                                  _dark={{
+                                                       bgColor: 'coolGray.800',
+                                                  }}
+                                                  width={{
+                                                       base: 100,
+                                                       lg: 200,
+                                                  }}
+                                                  height={{
+                                                       base: 150,
+                                                       lg: 250,
+                                                  }}
+                                             />
+                                        }
+                                   />
+                                   <Button
+                                        onPress={() => {
+                                             removeTitlesFromList(id, item.id, library.baseUrl, 'Events').then(async () => {
+                                                  queryClient.invalidateQueries({ queryKey: ['list', id] });
+                                             });
+                                        }}
+                                        colorScheme="danger"
+                                        leftIcon={<Icon as={MaterialIcons} name="delete" size="xs" />}
+                                        size="sm"
+                                        variant="ghost">
+                                        {getTermFromDictionary(language, 'delete')}
+                                   </Button>
+                              </VStack>
+                              <VStack w="65%">
+                                   <Text
+                                        _dark={{ color: 'warmGray.50' }}
+                                        color="coolGray.800"
+                                        bold
+                                        fontSize={{
+                                             base: 'md',
+                                             lg: 'lg',
+                                        }}>
+                                        {item.title}
+                                   </Text>
+                                   {item.start_date && item.end_date ? (
+                                        <>
+                                             <Text>{displayDay}</Text>
+                                             <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                                  {displayStartTime} - {displayEndTime}
+                                             </Text>
+                                        </>
+                                   ) : null}
+                                   {registrationRequired ? (
+                                        <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                             <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                                                  {getTermFromDictionary(language, 'registration_required')}
+                                             </Badge>
+                                        </Stack>
+                                   ) : null}
+                              </VStack>
+                         </HStack>
+                    </Pressable>
+               );
+          }
+
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
                     <HStack space={3}>
@@ -147,7 +280,7 @@ export const MyList = () => {
                               />
                               <Button
                                    onPress={() => {
-                                        removeTitlesFromList(id, item.id, library.baseUrl).then(async () => {
+                                        removeTitlesFromList(id, item.id, library.baseUrl, 'GroupedWork').then(async () => {
                                              queryClient.invalidateQueries({ queryKey: ['list', id] });
                                         });
                                    }}

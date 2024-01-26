@@ -1,5 +1,4 @@
 import { create } from 'apisauce';
-import axios from 'axios';
 import { createAuthTokens, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
 
@@ -58,10 +57,10 @@ export async function fetchSavedEvents(page = 1, pageSize = 25, filter = 'upcomi
  * @param {string} url
  **/
 export async function getEventDetails(id, source, language, url) {
-     const { data } = await axios.get('/EventAPI?method=getEventDetails', {
+     const postBody = await postData();
+     const api = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                id: id,
@@ -69,9 +68,10 @@ export async function getEventDetails(id, source, language, url) {
                language,
           },
      });
+     const response = await api.post('/EventAPI?method=getEventDetails', postBody);
 
      return {
-          results: data,
+          results: response.data,
      };
 }
 

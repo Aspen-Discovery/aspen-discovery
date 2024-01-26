@@ -94,6 +94,17 @@ function getUpdates24_02_00(): array {
 
 
 		//kirstien - ByWater
+		'add_branded_app_privacy_policy_contact' => [
+			'title' => 'Add Branded App Privacy Policy Contact Fields',
+			'description' => 'Add fields to store custom address, phone number, and email address for display in branded Aspen LiDA Privacy Policy',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN privacyPolicyContactAddress LONGTEXT',
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN privacyPolicyContactPhone VARCHAR(25)',
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN privacyPolicyContactEmail VARCHAR(250)',
+			],
+		],
+		//palace_project_return_url
 
 		//kodi - ByWater
 		'self_reg_sections' => [

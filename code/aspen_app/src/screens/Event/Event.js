@@ -17,6 +17,7 @@ import { loadError, popAlert } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getEventDetails, saveEvent } from '../../util/api/event';
 import { decodeHTML, stripHTML } from '../../util/apiAuth';
@@ -71,7 +72,7 @@ export const EventScreen = () => {
                ) : (
                     <>
                          {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
-                         <DisplayEvent data={data.results} hasValidImage={hasValidImage} />
+                         <DisplayEvent data={data.results} source={source} />
                     </>
                )}
           </ScrollView>
@@ -107,10 +108,10 @@ const DisplayEvent = (payload) => {
 
      return (
           <>
-               {hasValidImage ? <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} /> : null}
+               {event.cover ? <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} /> : null}
                <Box safeArea={5} w="100%">
-                    <Center mt={hasValidImage ? 5 : 0} width="100%">
-                         {hasValidImage ? (
+                    <Center mt={event.cover ? 5 : 0} width="100%">
+                         {event.cover ? (
                               <CachedImage
                                    cacheKey={key}
                                    resizeMethod="scale"
@@ -133,7 +134,7 @@ const DisplayEvent = (payload) => {
                          {getDirections(event.location, event.room ?? false)}
                     </VStack>
                     {event.registrationRequired ? getRegistrationModal(event) : null}
-                    {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id)}
+                    {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
                     <HStack justifyContent="space-between" space={2}>
                          <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" />
                          <Button w="49%" onPress={() => openLink()}>
@@ -245,23 +246,29 @@ const getAddToCalendar = (start, end, location, event) => {
      const [calendarId, setCalendarId] = React.useState();
      const [confirmAdd, setConfirmAdd] = React.useState(false);
 
-     const startTime = start.date;
-     const endTime = end.date;
+     let displayDay = false;
+     let displayStartTime = false;
+     let displayEndTime = false;
 
-     let time1 = startTime.split(' ');
-     let day = time1[0];
-     let time2 = endTime.split(' ');
+     if (start && end) {
+          const startTime = start.date;
+          const endTime = end.date;
 
-     let time1arr = time1[1].split(':');
-     let time2arr = time2[1].split(':');
+          let time1 = startTime.split(' ');
+          let day = time1[0];
+          let time2 = endTime.split(' ');
 
-     let displayDay = moment(day);
-     let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
-     let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+          let time1arr = time1[1].split(':');
+          let time2arr = time2[1].split(':');
 
-     displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
-     displayStartTime = moment(displayStartTime).format('h:mm A');
-     displayEndTime = moment(displayEndTime).format('h:mm A');
+          displayDay = moment(day);
+          displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
+          displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+
+          displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
+          displayStartTime = moment(displayStartTime).format('h:mm A');
+          displayEndTime = moment(displayEndTime).format('h:mm A');
+     }
 
      const handleAddToCalendar = async () => {
           const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -417,9 +424,11 @@ const getAddToCalendar = (start, end, location, event) => {
 
 const getDirections = (location, room) => {
      let hasCoordinates = false;
-     if (_.isObject(location.coordinates)) {
-          if (location.coordinates.latitude !== 0 && location.coordinates.longitude !== 0) {
-               hasCoordinates = true;
+     if (location) {
+          if (!_.isUndefined(location.coordinates) && _.isObject(location.coordinates)) {
+               if (location.coordinates.latitude !== 0 && location.coordinates.longitude !== 0) {
+                    hasCoordinates = true;
+               }
           }
      }
 
@@ -443,24 +452,28 @@ const getDirections = (location, room) => {
           }
      };
 
-     return (
-          <Pressable py="3" mb={5} onPress={() => handleGetDirections()}>
-               <HStack space="1" alignItems="center" justifyContent="space-between">
-                    <HStack space="3" alignItems="center">
-                         <Icon as={MaterialIcons} name="location-pin" size="5" />
-                         <VStack>
-                              {location.name ? <Text bold>{location.name}</Text> : null}
-                              {room ? <Text>{room}</Text> : null}
-                              {location.address ? <Text>{location.address}</Text> : null}
-                         </VStack>
+     if (location) {
+          return (
+               <Pressable py="3" mb={5} onPress={() => handleGetDirections()}>
+                    <HStack space="1" alignItems="center" justifyContent="space-between">
+                         <HStack space="3" alignItems="center">
+                              <Icon as={MaterialIcons} name="location-pin" size="5" />
+                              <VStack>
+                                   {location.name ? <Text bold>{location.name}</Text> : null}
+                                   {room ? <Text>{room}</Text> : null}
+                                   {location.address ? <Text>{location.address}</Text> : null}
+                              </VStack>
+                         </HStack>
+                         {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="7" /> : null}
                     </HStack>
-                    {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="7" /> : null}
-               </HStack>
-          </Pressable>
-     );
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
-const getAddToYourEvents = (id, page, filterBy) => {
+const getAddToYourEvents = (id, source) => {
      const queryClient = useQueryClient();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -473,12 +486,12 @@ const getAddToYourEvents = (id, page, filterBy) => {
                setIsLoading(false);
                queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, 'upcoming'] });
                queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+               queryClient.invalidateQueries({ queryKey: ['event', id, source, language, library.baseUrl] });
                if (result.success || result.success === 'true') {
                     popAlert(getTermFromDictionary(language, 'success'), result.message, 'success');
                } else {
                     popAlert(getTermFromDictionary(language, 'error'), result.message, 'error');
                }
-               console.log(result);
           });
      };
 
@@ -492,7 +505,7 @@ const getAddToYourEvents = (id, page, filterBy) => {
 const getInYourEvents = () => {
      const { language } = React.useContext(LanguageContext);
      return (
-          <Button mb={2} colorScheme="tertiary">
+          <Button mb={2} colorScheme="tertiary" onPress={() => navigateStack('AccountScreenTab', 'MyEvents')}>
                {getTermFromDictionary(language, 'in_your_events')}
           </Button>
      );

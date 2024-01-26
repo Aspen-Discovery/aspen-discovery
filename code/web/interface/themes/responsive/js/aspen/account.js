@@ -1833,7 +1833,11 @@ AspenDiscovery.Account = (function () {
 						AspenDiscovery.showMessage('Error', message, false);
 					}
 				}
-			}).fail(AspenDiscovery.ajaxFail);
+			}).fail(function() {
+				const cardButton = document.getElementById('process-stripe-payment');
+				AspenDiscovery.ajaxFail();
+				cardButton.disabled = false;
+			})
 		},
 
 		updateFineTotal: function (finesFormId, userId, paymentType) {

@@ -362,8 +362,8 @@
   "onboard_notifications_title": "Stay in the loop",
   "onboard_notifications_body_new": "We noticed you haven't enabled notifications to receive alerts from your library. Take a moment to set them up to stay in the loop with your library.",
   "onboard_notifications_body_update": "Great news! We've added new types of alerts you can receive from your library. Why not take a second to review your current settings?",
-  "onboard_notifications_button_new": "Enable Notifications",
-  "onboard_notifications_button_update": "Review Notifications",
+  "onboard_notifications_button_new": "Enable",
+  "onboard_notifications_button_update": "Update",
   "onboard_notifications_button_cancel": "Not now",
   "recent_searches": "Recent Searches",
   "fetching_data": "Fetching data",
@@ -488,5 +488,9 @@
   "add_to_calendar": "Add to Calendar",
   "add_to_calendar_body": "Do you want to add this event to your device's calendar?",
   "add_event": "Add Event",
-  "event_details": "Event Details"
+  "event_details": "Event Details",
+  "a_to_z": "A to Z",
+  "distance": "Distance",
+  "locations": "Locations",
+  "view_all_locations": "View All Locations"
 }
