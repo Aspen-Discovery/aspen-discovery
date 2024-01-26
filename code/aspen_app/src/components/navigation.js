@@ -39,14 +39,15 @@ const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation(
 
 export const AuthContext = React.createContext();
 
-const iOSRelease = Constants.manifest2?.extra?.expoClient?.ios?.bundleIdentifier ?? Constants.manifest.ios.bundleIdentifier;
-const androidRelease = Constants.manifest2?.extra?.expoClient?.android?.package ?? Constants.manifest.android.package;
-const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
-const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
-const version = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
+const iOSRelease = Constants.expoConfig.ios.bundleIdentifier;
+const androidRelease = Constants.expoConfig.android.package;
+const iOSDist = Constants.expoConfig.ios.buildNumber;
+const androidDist = Constants.expoConfig.android.versionCode;
+const version = Constants.expoConfig.version;
 
 console.log(iOSRelease);
 console.log(iOSDist);
+console.log(version);
 
 let releaseCode = Platform.OS === 'android' ? androidRelease + '@' + version + '+' + androidDist : iOSRelease + '@' + version + '+' + iOSDist;
 releaseCode = releaseCode.toString();
@@ -54,8 +55,10 @@ releaseCode = releaseCode.toString();
 let distribution = Platform.OS === 'android' ? androidDist : iOSDist;
 distribution = distribution.toString();
 
+console.log(Constants.expoConfig.extra);
+
 Sentry.init({
-     dsn: Constants.manifest2?.extra?.expoClient?.extra?.sentryDSN ?? Constants.manifest.extra.sentryDSN,
+     dsn: Constants.expoConfig.extra.sentryDSN,
      enableInExpoDevelopment: false,
      enableAutoSessionTracking: true,
      sessionTrackingIntervalMillis: 10000,
@@ -224,7 +227,7 @@ export function App() {
           () => ({
                signIn: async () => {
                     //queryClient.invalidateQueries({});
-                    const userToken = Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId;
+                    const userToken = GLOBALS.appSessionId;
                     await AsyncStorage.setItem('@userToken', userToken);
                     dispatch({
                          type: 'SIGN_IN',

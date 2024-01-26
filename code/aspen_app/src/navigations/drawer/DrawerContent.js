@@ -192,7 +192,7 @@ const UserProfileOverview = () => {
      } else if (!_.isUndefined(library.favicon)) {
           icon = library.favicon;
      } else {
-          icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Constants.manifest.ios.icon;
+          icon = Constants.expoConfig.ios.icon;
      }
 
      return (

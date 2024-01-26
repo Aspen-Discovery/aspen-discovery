@@ -9,13 +9,11 @@ import { popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS, LOGIN_DATA } from './globals';
 import { PATRON } from './loadPatron';
-import { BrowseCategoryContext } from '../components/navigation';
-import { useContext } from 'react';
 
 export async function makeGreenhouseRequestNearby() {
      // todo: check if aspen-lida to use greenhouseUrl, otherwise use discoveryUrl
      let method = 'getLibraries';
-     let url = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
+     let url = Constants.expoConfig.extra.greenhouseUrl;
      let latitude,
           longitude = 0;
      if (GLOBALS.slug !== 'aspen-lida') {
@@ -74,7 +72,7 @@ export async function makeGreenhouseRequestNearby() {
 export async function makeGreenhouseRequestAll() {
      // todo: check if aspen-lida to use greenhouseUrl, otherwise use discoveryUrl
      const api = create({
-          baseURL: Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl,
+          baseURL: Constants.expoConfig.extra.greenhouseUrl,
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
      });

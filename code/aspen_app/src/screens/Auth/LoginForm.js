@@ -74,6 +74,7 @@ export const GetLoginForm = (props) => {
                     setPinValidationRules(result.library.pinValidationRules);
                     const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
                     if (validatedUser) {
+                         GLOBALS.appSessionId = validatedUser.session ?? '';
                          PATRON.language = validatedUser.lang ?? 'en';
                          updateLanguage(validatedUser.lang ?? 'en');
                          if (validatedUser.success) {
@@ -167,7 +168,7 @@ export const GetLoginForm = (props) => {
           await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
           await AsyncStorage.setItem('@pathUrl', patronsLibrary['baseUrl']);
           await SecureStore.setItemAsync('pathUrl', patronsLibrary['baseUrl']);
-          await AsyncStorage.setItem('@lastStoredVersion', Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version);
+          await AsyncStorage.setItem('@lastStoredVersion', Constants.expoConfig.version);
           await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
      };
 
