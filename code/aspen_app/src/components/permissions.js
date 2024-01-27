@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
-import * as SplashScreen from 'expo-splash-screen';
-import * as SecureStore from 'expo-secure-store';
+import { Updates } from '@expo/config-plugins';
+import Constants from 'expo-constants';
 import * as Location from 'expo-location';
-import { AuthContext } from './navigation';
+import * as SecureStore from 'expo-secure-store';
+import * as SplashScreen from 'expo-splash-screen';
+import { Component } from 'react';
 
 // TODO: Compare installed version to latest version and prompt user to update
 export default class Permissions extends Component {
@@ -79,12 +80,12 @@ async function getPermissions() {
 async function setAppDetails() {
      try {
           global.releaseChannel = Updates.releaseChannel;
-          global.version = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
-          global.build = Constants.nativeBuildVersion;
+          global.version = Constants.expoConfig.version;
+          global.build = Constants.expoConfig.nativeBuildVersion;
 
           try {
-               await SecureStore.setItemAsync('slug', Constants.manifest2?.extra?.expoClient?.slug ?? Constants.manifest.slug);
-               await SecureStore.setItemAsync('apiUrl', Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl);
+               await SecureStore.setItemAsync('slug', Constants.expoConfig.slug);
+               await SecureStore.setItemAsync('apiUrl', Constants.expoConfig.extra.apiUrl);
           } catch (e) {
                console.log(e);
           }

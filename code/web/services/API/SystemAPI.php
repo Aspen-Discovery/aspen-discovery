@@ -149,13 +149,17 @@ class SystemAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	public function getLocations(): array {
+		global $library;
 		$return = [
 			'success' => true,
 			'locations' => [],
 		];
 		$location = new Location();
+		if($library) {
+			$location->libraryId = $library->libraryId;
+		}
 		$location->showInLocationsAndHoursList = 1;
-		$location->orderBy('displayName');
+		$location->orderBy('isMainBranch DESC, displayName');
 		$location->find();
 		while ($location->fetch()) {
 			$return['locations'][$location->locationId] = $location->getApiInfo();

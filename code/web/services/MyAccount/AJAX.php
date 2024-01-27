@@ -4132,38 +4132,6 @@ class MyAccount_AJAX extends JSON_Action {
 			],
 		];
 
-		$tempDonation = [
-			'firstName' => $_REQUEST['firstName'],
-			'lastName' => $_REQUEST['lastName'],
-			'email' => $_REQUEST['emailAddress'],
-			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
-			'donateToLocationId' => $toLocation,
-			'donateToLocation' => $donateToLocation,
-			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
-			'shouldBeNotified' => isset($_REQUEST['shouldBeNotified']) ? 1 : 0,
-			'comments' => $comments,
-			'donationSettingId' => $_REQUEST['settingId'],
-		];
-
-		if ($tempDonation['isDedicated'] == 1) {
-			$tempDonation['dedication'] = [
-				'type' => $_REQUEST['dedicationType'],
-				'honoreeFirstName' => $_REQUEST['honoreeFirstName'],
-				'honoreeLastName' => $_REQUEST['honoreeLastName'],
-			];
-		}
-
-		if($tempDonation['shouldBeNotified'] == 1) {
-			$tempDonation['notification'] = [
-				'notificationFirstName' => $_REQUEST['notificationFirstName'],
-				'notificationLastName' => $_REQUEST['notificationLastName'],
-				'notificationAddress' => $_REQUEST['notificationAddress'],
-				'notificationCity' => $_REQUEST['notificationCity'],
-				'notificationState' => $_REQUEST['notificationState'],
-				'notificationZip' => $_REQUEST['notificationZip'],
-			];
-		}
-
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 		$payment = new UserPayment();
 		$payment->userId = $patronId;
@@ -4183,6 +4151,37 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$paymentId = $payment->insert();
+
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->paymentId = $payment->id;
+		$donation->firstName = $_REQUEST['firstName'];
+		$donation->lastName = $_REQUEST['lastName'];
+		$donation->email = $_REQUEST['emailAddress'];
+		$donation->anonymous = isset($_REQUEST['isAnonymous']) ? 1 : 0;
+		$donation->dedicate = isset($_REQUEST['isDedicated']) ? 1 : 0;
+		if ($donation->dedicate == 1) {
+			$donation->dedicateType = $_REQUEST['dedicationType'];
+			$donation->honoreeFirstName = $_REQUEST['honoreeFirstName'];
+			$donation->honoreeLastName = $_REQUEST['honoreeLastName'];
+		}
+		$donation->shouldBeNotified = isset($_REQUEST['shouldBeNotified']) ? 1 : 0;
+		if($donation->shouldBeNotified == 1) {
+			$donation->notificationFirstName = $_REQUEST['notificationFirstName'];
+			$donation->notificationLastName = $_REQUEST['notificationLastName'];
+			$donation->notificationAddress = $_REQUEST['notificationAddress'];
+			$donation->notificationCity = $_REQUEST['notificationCity'];
+			$donation->notificationState = $_REQUEST['notificationState'];
+			$donation->notificationZip = $_REQUEST['notificationZip'];
+		}
+		$donation->donateToLocationId = $toLocation;
+		$donation->donateToLocation = $donateToLocation;
+		$donation->comments = $comments;
+		$donation->donationSettingId = $_REQUEST['settingId'];
+		$donation->sendEmailToUser = 1;
+
+		$donation->insert();
+
 		$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
 		return [
@@ -4191,7 +4190,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment,
 			$purchaseUnits,
 			$patron,
-			$tempDonation,
+			$donation,
 		];
 
 	}
@@ -4632,10 +4631,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->orderId = $paymentResponse->id;
 			$payment->update();
 
-			if ($payment->transactionType == 'donation') {
-				$this->addDonation($payment, $tempDonation);
-			}
-
 			return [
 				'success' => true,
 				'orderInfo' => $paymentResponse,
@@ -4666,10 +4661,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id . '&donation=' . $donation->id);
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id);
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information
@@ -4765,13 +4760,25 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($transactionType == 'donation') {
 			$payment->completed = 1;
 			$payment->update();
-			$donation->sendReceiptEmail();
-			return [
-				'success' => true,
-				'isDonation' => true,
-				'paymentId' => $payment->id,
-				'donationId' => $donation->id,
-			];
+			$donation = new Donation();
+			$donation->paymentId = $payment->id;
+			if($donation->find(true)) {
+				$donation->sendReceiptEmail();
+				return [
+					'success' => true,
+					'isDonation' => true,
+					'paymentId' => $payment->id,
+					'donationId' => $donation->id,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Unable to find donation with provided id',
+					'isDonation' => true,
+					'paymentId' => $payment->id,
+					'donationId' => '',
+				];
+			}
 		} else {
 			if ($payment->completed) {
 				return [
@@ -4870,10 +4877,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id . '&donation=' . $donation->id);
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id);
+				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information
@@ -4941,13 +4948,26 @@ class MyAccount_AJAX extends JSON_Action {
 							$payment->transactionId = $paymentResults->id;
 							$payment->orderId = $paymentResults->order_id;
 							$payment->update();
-							$donation->sendReceiptEmail();
-							return [
-								'success' => true,
-								'isDonation' => true,
-								'paymentId' => $payment->id,
-								'donationId' => $donation->id,
-							];
+							$donation = new Donation();
+							$donation->paymentId = $payment->id;
+
+							if($donation->find(true)) {
+								$donation->sendReceiptEmail();
+								return [
+									'success' => true,
+									'isDonation' => true,
+									'paymentId' => $payment->id,
+									'donationId' => $donation->id,
+								];
+							} else {
+								return [
+									'success' => false,
+									'message' => 'Unable to find donation with provided id',
+									'isDonation' => true,
+									'paymentId' => $payment->id,
+									'donationId' => '',
+								];
+							}
 						} else {
 							if($payment->completed) {
 								return [
@@ -5053,12 +5073,12 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=stripe&payment=' . $payment->id . '&donation=' . $donation->id);
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				} else {
 					$stripeSettings = new StripeSetting();
 					$stripeSettings->id = $paymentLibrary->stripeSettingId;
 					if ($stripeSettings->find(true)) {
-						//header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=stripe&payment=' . $payment->id);
+						//header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id);
 						return $stripeSettings->submitTransaction(null, $payment, $paymentMethodId, $transactionType);
 					} else {
 						return [
@@ -5217,10 +5237,9 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if ($transactionType == 'donation') {
-					$donation = $this->addDonation($payment, $tempDonation);
 					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
-					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?payment=' . $payment->id);
-					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				} else {
 					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
 					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
@@ -5680,7 +5699,6 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 					$tempDonation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -5795,7 +5813,6 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 					$tempDonation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -5839,10 +5856,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id . '&donation=' . $donation->id);
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id);
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information

@@ -49,7 +49,7 @@ export const LoginScreen = () => {
           isCommunity = false;
      }
 
-     const logoImage = Constants.manifest2?.extra?.expoClient?.extra?.loginLogo ?? Constants.manifest.extra.loginLogo;
+     const logoImage = Constants.expoConfig.extra.loginLogo;
 
      useFocusEffect(
           React.useCallback(() => {

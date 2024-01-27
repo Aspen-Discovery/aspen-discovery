@@ -4769,6 +4769,7 @@ class UserAPI extends Action {
 				$user->disableAccountLinking = 1;
 				if($user->update()) {
 					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 
 					// Remove Managing Accounts
 					$userLink = new UserLink();
