@@ -1410,7 +1410,6 @@ public class EvergreenExportMain {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
 		String getBibUrl = baseUrl + "/opac/extras/unapi?id=tag::U2@bre/" + bibNumber + "{holdings_xml,acp,acpn,acpt}&format=marcxml";
-		//String getBibUrl = baseUrl + "/opac/extras/unapi?id=tag::U2@bre/" + bibNumber + "{holdings_xml,acp}&format=marcxml";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, reindexNow);
 		return response.numChanges;
 	}
@@ -1584,7 +1583,16 @@ public class EvergreenExportMain {
 																		break;
 																	case "copy_notes" :
 																		String copyNotes = curCopySubElement.getTextContent();
-																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), copyNotes));
+																		if (!copyNotes.isEmpty()) {
+																			curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), copyNotes));
+																		}
+																		break;
+																	case "copy_tags" :
+																		String copyTags = curCopySubElement.getTextContent();
+																		if (!copyTags.isEmpty()) {
+																			curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), copyTags));
+																		}
+																		break;
 																}
 															}
 														}
