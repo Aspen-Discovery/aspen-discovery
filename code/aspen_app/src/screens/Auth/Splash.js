@@ -1,9 +1,9 @@
-import { VStack, Image, Center, Spinner } from 'native-base';
 import Constants from 'expo-constants';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { Center, Image, Spinner, VStack } from 'native-base';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
-const splashImage = Constants.manifest2?.extra?.expoClient?.extra?.loginLogo ?? Constants.manifest.extra.loginLogo;
-const splashBackgroundColor = Constants.manifest2?.extra?.expoClient?.splash?.backgroundColor ?? Constants.manifest.extra.backgroundColor;
+const splashImage = Constants.expoConfig.extra.loginLogo;
+const splashBackgroundColor = Constants.expoConfig.splash.backgroundColor;
 
 export const SplashScreen = () => {
      return (
