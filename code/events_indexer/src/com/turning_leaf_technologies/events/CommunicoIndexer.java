@@ -328,7 +328,7 @@ class CommunicoIndexer {
 							try {
 								JSONObject curRegistrant = communicoEventRegistrants.getJSONObject(j);
 
-								if (!curRegistrant.getString("librarycard").isEmpty()){
+								if (!curRegistrant.isNull("librarycard") && !curRegistrant.getString("librarycard").isEmpty()){
 									uniqueBarcodesRegistered.add(curRegistrant.getString("librarycard"));
 								}
 							} catch (JSONException e) {
