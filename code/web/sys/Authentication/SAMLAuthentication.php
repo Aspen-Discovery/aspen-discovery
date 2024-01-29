@@ -285,6 +285,9 @@ class SAMLAuthentication{
 		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 			$findBy = 'email';
 		}
+		if($this->ssoAuthOnly) {
+			$findBy = 'username';
+		}
 		$user = UserAccount::findNewAspenUser($findBy, $username);
 
 		if(!$user instanceof User){
@@ -480,9 +483,14 @@ class SAMLAuthentication{
 		}
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
+		if($this->ssoAuthOnly) {
+			$tmpUser->source = 'admin_sso';
+		}
+
 		$tmpUser->created = date('Y-m-d');
 		if(!$tmpUser->insert()) {
 			global $logger;
+			$logger->log(print_r($tmpUser->getLastError(), true), Logger::LOG_ERROR);
 			$logger->log('Error creating Aspen ssoArray ' . print_r($this->searchArray($user, 'ssoUniqueAttribute'), true), Logger::LOG_ERROR);
 			return false;
 		}
