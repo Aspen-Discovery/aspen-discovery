@@ -1,6 +1,9 @@
 package com.turning_leaf_technologies.oai;
 
+import com.turning_leaf_technologies.dates.DateInfo;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.time.DateParser;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.util.Collections;
@@ -12,8 +15,8 @@ class OAISolrRecord {
 	private String identifier;
 	private String type;
 	private String title;
-	private String creator;
-	private String contributor;
+	private final HashSet<String> creators = new HashSet<>();
+	private final HashSet<String> contributors = new HashSet<>();
 	private final HashSet<String> subjects = new HashSet<>();
 	private String description;
 	private final HashSet<String> coverage = new HashSet<>();
@@ -22,6 +25,8 @@ class OAISolrRecord {
 	private String language;
 	private final HashSet<String> source = new HashSet<>();
 	private final HashSet<String> relation = new HashSet<>();
+
+	private final HashSet<String> locations = new HashSet<>();
 	private String rights;
 	private final HashSet<String> date = new HashSet<>();
 	private String id;
@@ -41,8 +46,8 @@ class OAISolrRecord {
 		this.title = title;
 	}
 
-	void setCreator(String creator) {
-		this.creator = creator;
+	void addCreator(String creator) {
+		this.creators.add(creator);
 	}
 
 	void setDescription(String description) {
@@ -57,8 +62,8 @@ class OAISolrRecord {
 		this.rights = rights;
 	}
 
-	void setContributor(String contributor) {
-		this.contributor = contributor;
+	void addContributor(String contributor) {
+		this.contributors.add(contributor);
 	}
 
 	void setScopesToInclude(HashSet<String> scopesToInclude) {
@@ -67,14 +72,23 @@ class OAISolrRecord {
 
 	Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
 
-	void addDates(String[] dates) {
+	void addDates(String[] dates, Logger logger) {
 		for (String date : dates) {
 			if (AspenStringUtils.isNumeric(date)) {
-				this.date.add(date);
+				this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
 			} else if (datePattern.matcher(date).matches()) {
-				this.date.add(date);
+				DateInfo dateInfo = new DateInfo(date);
+				if (!dateInfo.isNotSet()) {
+					this.date.add(dateInfo.getSolrDate());
+				} else {
+					logger.debug("Could not parse date " + date);
+				}
 			}
 		}
+	}
+
+	void addLocation(String location) {
+		locations.add(location);
 	}
 
 	SolrInputDocument getSolrDocument() {
@@ -86,8 +100,8 @@ class OAISolrRecord {
 		doc.addField("collection_name", collection_name);
 		doc.addField("last_indexed", new Date());
 		doc.addField("title", title);
-		doc.addField("creator", creator);
-		doc.addField("contributor", contributor);
+		doc.addField("creator", creators);
+		doc.addField("contributor", contributors);
 		doc.addField("subject", subjects);
 		doc.addField("description", description);
 		doc.addField("coverage", coverage);
@@ -98,6 +112,7 @@ class OAISolrRecord {
 		doc.addField("relation", relation);
 		doc.addField("rights", rights);
 		doc.addField("date", date);
+		doc.addField("geographic", locations);
 		doc.addField("scope_has_related_records", scopesToInclude);
 		return doc;
 	}

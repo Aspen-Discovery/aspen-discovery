@@ -68,7 +68,7 @@ class OpenArchives_OpenArchivesFacets extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'cataloging';
+		return 'open_archives';
 	}
 
 	function canView(): bool {

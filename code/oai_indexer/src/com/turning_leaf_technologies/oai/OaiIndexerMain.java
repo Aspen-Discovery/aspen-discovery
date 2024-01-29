@@ -20,6 +20,7 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -186,6 +187,8 @@ public class OaiIndexerMain {
 						long collectionId = collectionsRS.getLong("id");
 						String baseUrl = collectionsRS.getString("baseUrl");
 						String setName = collectionsRS.getString("setName");
+						boolean indexAllSets = collectionsRS.getBoolean("indexAllSets");
+						String metadataFormat = collectionsRS.getString("metadataFormat");
 						String subjectFilterString = collectionsRS.getString("subjectFilters");
 						boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
 						boolean deleted = collectionsRS.getBoolean("deleted");
@@ -222,7 +225,7 @@ public class OaiIndexerMain {
 							}
 						}
 
-						extractAndIndexOaiCollection(collectionName, collectionId, deleted, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
+						extractAndIndexOaiCollection(collectionName, collectionId, metadataFormat, deleted, subjectFilters, baseUrl, indexAllSets, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
 					}
 				}
 			}
@@ -231,7 +234,7 @@ public class OaiIndexerMain {
 		}
 	}
 
-	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
+	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String metadataFormat, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, boolean indexAllSets, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		if (!deleted) {
 			long startTime = new Date().getTime() / 1000;
 			//Get the existing records for the collection
@@ -243,7 +246,59 @@ public class OaiIndexerMain {
 
 			TreeSet<String> allExistingCollectionSubjects = new TreeSet<>();
 
-			String[] oaiSets = setNames.split(",");
+			ArrayList<String> oaiSets = new ArrayList<>();
+			if (indexAllSets) {
+				String listSetsUrl = baseUrl + "?verb=ListSets";
+
+				logger.info("Loading sets from " + listSetsUrl);
+				HashMap<String, String> headers = new HashMap<>();
+				headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+				headers.put("Accept-Encoding", "gzip");
+				headers.put("Accept-Language", "en-US");
+				headers.put("Pragma", "no-cache");
+
+				WebServiceResponse oaiResponse = NetworkUtils.getURL(listSetsUrl, logger, headers);
+
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				factory.setValidating(false);
+				factory.setIgnoringElementContentWhitespace(true);
+				DocumentBuilder builder = null;
+				try {
+					builder = factory.newDocumentBuilder();
+
+					byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
+					ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
+					//String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
+					InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
+
+					Document doc = builder.parse(soapResponseInputSource);
+
+					Element docElement = doc.getDocumentElement();
+					NodeList listSets = docElement.getElementsByTagName("ListSets");
+					if (listSets.getLength() > 0) {
+						Element listSetsElement = (Element) listSets.item(0);
+						NodeList allSets = listSetsElement.getElementsByTagName("set");
+						for (int i = 0; i < allSets.getLength(); i++) {
+							Node curSetNode = allSets.item(i);
+							if (curSetNode instanceof Element) {
+								NodeList children = curSetNode.getChildNodes();
+								for (int j = 0; j < children.getLength(); j++) {
+									Node curChild = children.item(j);
+									if (curChild instanceof Element && ((Element) curChild).getTagName().equals("setSpec")) {
+										oaiSets.add(curChild.getTextContent().trim());
+									}
+								}
+							}
+						}
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Exception loading setts", e);
+				}
+			}else{
+				String[] setsArray = setNames.split(",");
+				oaiSets.addAll(Arrays.asList(setsArray));
+			}
+
 			for (String oaiSet : oaiSets) {
 				logger.info("Loading set " + oaiSet);
 				//To improve performance, load records for a month at a time
@@ -260,7 +315,7 @@ public class OaiIndexerMain {
 							if (resumptionToken != null) {
 								oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, StandardCharsets.UTF_8);
 							} else {
-								oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc";
+								oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=" + metadataFormat;
 								if (loadOneMonthAtATime) {
 									String startDate = year + "-" + String.format("%02d", month) + "-01";
 									String endDate = year + "-" + String.format("%02d", month + 1) + "-01";
@@ -332,6 +387,13 @@ public class OaiIndexerMain {
 								logEntry.incErrors("Error parsing OAI data ", e);
 							}
 							logEntry.saveResults();
+						}
+						if (!fullReload) {
+							try {
+								updateServer.commit(true, true, false);
+							} catch (SolrServerException | IOException e) {
+								logEntry.incErrors("Error posting documents to Solr", e);
+							}
 						}
 						if (!loadOneMonthAtATime) {
 							break;
@@ -462,7 +524,7 @@ public class OaiIndexerMain {
 				NodeList metadataChildren = metadataElement.getChildNodes();
 				for (int metaDataChildCtr = 0; metaDataChildCtr < metadataChildren.getLength(); metaDataChildCtr++) {
 					Node curMetadataChild = metadataChildren.item(metaDataChildCtr);
-					if (curMetadataChild instanceof Element && ((Element) curMetadataChild).getTagName().equals("oai_dc:dc")) {
+					if (curMetadataChild instanceof Element && (((Element) curMetadataChild).getTagName().equals("oai_dc:dc") || ((Element) curMetadataChild).getTagName().equals("mods:mods"))) {
 						Element curMetadataChildElement = (Element) curMetadataChild;
 
 						NodeList metadataFields = curMetadataChildElement.getChildNodes();
@@ -471,12 +533,14 @@ public class OaiIndexerMain {
 							if (curNode instanceof Element) {
 								Element metadataFieldElement = (Element) curNode;
 								String metadataTag = metadataFieldElement.getTagName();
-								String textContent = metadataFieldElement.getTextContent();
+								String textContent = metadataFieldElement.getTextContent().trim();
 								switch (metadataTag) {
+									case "mods:titleInfo":
 									case "dc:title":
 										solrRecord.setTitle(textContent);
 										break;
 									case "dc:identifier":
+									case "mods:identifier":
 										String textContentLower = textContent.toLowerCase();
 										if (textContentLower.startsWith("http") && !textContentLower.endsWith(".jpg") && !textContentLower.endsWith(".mp3") && !textContentLower.endsWith(".pdf")) {
 											if (solrRecord.getIdentifier() == null || !solrRecord.getIdentifier().startsWith("http")) {
@@ -492,23 +556,31 @@ public class OaiIndexerMain {
 										}
 										break;
 									case "dc:creator":
-										solrRecord.setCreator(textContent);
+										solrRecord.addCreator(textContent);
 										break;
 									case "dc:contributor":
-										solrRecord.setContributor(textContent);
+										solrRecord.addContributor(textContent);
 										break;
 									case "dc:description":
+									case "mods:abstract":
 										solrRecord.setDescription(textContent);
 										break;
 									case "dc:type":
 										solrRecord.setType(textContent);
 										break;
 									case "dc:subject":
+									case "mods:subject":
+									case "mods:genre":
 										String[] subjects = textContent.split("\\s*;\\s*");
 										//Clean the subjects up
 										for (int subjectIdx = 0; subjectIdx < subjects.length; subjectIdx++) {
 											//noinspection RegExpRedundantEscape
 											subjects[subjectIdx] = subjects[subjectIdx].replaceAll("\\[info:.*?\\]", "").trim();
+											//MODS has geographic coordinates which show separated by a line feed, cut those off.
+											int lineFeedPos = subjects[subjectIdx].indexOf('\n');
+											if (lineFeedPos > 0) {
+												subjects[subjectIdx] = subjects[subjectIdx].substring(0, lineFeedPos);
+											}
 										}
 										solrRecord.addSubjects(subjects);
 										Collections.addAll(collectionSubjects, subjects);
@@ -520,12 +592,14 @@ public class OaiIndexerMain {
 										solrRecord.addPublisher(textContent);
 										break;
 									case "dc:format":
+									case "mods:typeOfResource":
 										solrRecord.addFormat(textContent);
 										break;
 									case "dc:source":
 										solrRecord.addSource(textContent);
 										break;
 									case "dc:language":
+									case "mods:language":
 										solrRecord.setLanguage(textContent);
 										break;
 									case "dc:relation":
@@ -535,30 +609,106 @@ public class OaiIndexerMain {
 										solrRecord.setRights(textContent);
 										break;
 									case "dc:date":
-										String[] dateRange;
-										if (textContent.contains(";")) {
-											dateRange = textContent.split(";");
-										} else if (textContent.contains(" -- ")) {
-											dateRange = textContent.split(" -- ");
-										} else {
-											textContent = textContent.trim();
-											textContent = textContent.replaceAll("ca.\\s+", "");
-											textContent = textContent.replaceAll("/", "-");
-											//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
-											if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
-												dateRange = new String[]{textContent};
-											}else{
-												logEntry.addNote("Unhandled date format " + textContent + " not loading date");
-												dateRange = new String[0];
+										addDatesToRecord(solrRecord, textContent, logEntry);
+										break;
+									case "mods:originInfo":
+										NodeList originInfoFields = metadataFieldElement.getChildNodes();
+										for (int k = 0; k < originInfoFields.getLength(); k++) {
+											Node curOriginInfoNode = originInfoFields.item(k);
+											if (curOriginInfoNode instanceof Element) {
+												Element originInfoFieldElement = (Element) curOriginInfoNode;
+												String originInfoTag = originInfoFieldElement.getTagName();
+												String originInfoTextContent = originInfoFieldElement.getTextContent().trim();
+
+												if (originInfoTag.equals("mods:publisher")) {
+													solrRecord.addPublisher(originInfoTextContent);
+												} else if (originInfoTag.equals("mods:dateCreated") || originInfoTag.equals("mods:dateIssued")) {
+													addDatesToRecord(solrRecord, originInfoTextContent, logEntry);
+												} else {
+													logger.warn("Unhandled origin info tag " + originInfoTag + " value = " + originInfoTextContent);
+												}
+
 											}
 										}
-										for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++) {
-											dateRange[tmpIndex] = dateRange[tmpIndex].trim();
-											dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("/", "-");
-											dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("ca.\\s+", "");
-										}
-										solrRecord.addDates(dateRange);
+										break;
+									case "mods:location":
+										NodeList locationFields = metadataFieldElement.getChildNodes();
+										for (int k = 0; k < locationFields.getLength(); k++) {
+											Node curLocationNode = locationFields.item(k);
+											if (curLocationNode instanceof Element) {
+												Element locationFieldElement = (Element) curLocationNode;
+												String locationTag = locationFieldElement.getTagName();
+												String locationTextContent = locationFieldElement.getTextContent().trim();
 
+												if (locationTag.equals("mods:physicalLocation")) {
+													solrRecord.addLocation(locationTextContent);
+												} else if (locationTag.equals("mods:url")) {
+													//Ignore for now
+												} else {
+													logger.warn("Unhandled location tag " + locationTag + " value = " + locationTextContent);
+												}
+
+											}
+										}
+										break;
+									case "mods:recordInfo":
+										NodeList recordInfoFields = metadataFieldElement.getChildNodes();
+										for (int k = 0; k < recordInfoFields.getLength(); k++) {
+											Node curRecordInfoNode = recordInfoFields.item(k);
+											if (curRecordInfoNode instanceof Element) {
+												Element recordInfoFieldElement = (Element) curRecordInfoNode;
+												String recordInfoTag = recordInfoFieldElement.getTagName();
+												String recordInfoTextContent = recordInfoFieldElement.getTextContent().trim();
+
+												if (recordInfoTag.equals("mods:recordContentSource")) {
+													solrRecord.addSource(recordInfoTextContent);
+												} else if (recordInfoTag.equals("mods:recordOrigin")) {
+													//Ignore for now
+												} else {
+													logger.warn("Unhandled location tag " + recordInfoTag + " value = " + recordInfoTextContent);
+												}
+
+											}
+										}
+										break;
+									case "mods:name":
+										NodeList nameFields = metadataFieldElement.getChildNodes();
+										String name = "";
+										String role = "";
+										for (int k = 0; k < nameFields.getLength(); k++) {
+											Node curNameNode = nameFields.item(k);
+											if (curNameNode instanceof Element) {
+												Element nameFieldElement = (Element) curNameNode;
+												String nameInfoTag = nameFieldElement.getTagName();
+												String nameInfoTextContent = nameFieldElement.getTextContent().trim();
+
+												if (nameInfoTag.equals("mods:namePart")) {
+													name = nameInfoTextContent;
+												} else if (nameInfoTag.equals("mods:role")) {
+													role = nameInfoTextContent;
+												} else {
+													logger.warn("Unhandled location tag " + nameInfoTag + " value = " + nameInfoTextContent);
+												}
+
+											}
+										}
+										if (!name.isEmpty()) {
+											if (role.equals("Creator") || role.equals("Photographer") || role.equals("Architect") || role.equals("Artist") || role.equals("Engraver")) {
+												solrRecord.addCreator(name);
+											}else if (role.equals("Contributor") || role.equals("Director") || role.equals("Translator") || role.equals("Addressee") || role.equals("First party") || role.equals("Second party")) {
+												solrRecord.addContributor(name);
+											//}else if (role.equals("Addressee")) {
+												//Ignore for now
+											}else{
+												logger.warn("Unhandled role " + role);
+											}
+										}
+										break;
+									case "mods:relatedItem":
+									case "mods:accessCondition":
+									case "mods:note":
+									case "mods:physicalDescription":
+										//Ignore this tag for now
 										break;
 									default:
 										logger.warn("Unhandled tag " + metadataTag + " value = " + textContent);
@@ -640,5 +790,31 @@ public class OaiIndexerMain {
 			logEntry.incErrors("I/O Error adding document to solr server", e);
 		}
 		return addedToIndex;
+	}
+
+	private static void addDatesToRecord(OAISolrRecord solrRecord, String textContent, OpenArchivesExtractLogEntry logEntry) {
+		String[] dateRange;
+		if (textContent.contains(";")) {
+			dateRange = textContent.split(";");
+		} else if (textContent.contains(" -- ")) {
+			dateRange = textContent.split(" -- ");
+		} else {
+			textContent = textContent.trim();
+			textContent = textContent.replaceAll("ca.\\s+", "");
+			textContent = textContent.replaceAll("[\\[/]\"]", "-");
+			//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
+			if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
+				dateRange = new String[]{textContent};
+			}else{
+				logEntry.addNote("Unhandled date format " + textContent + " not loading date");
+				dateRange = new String[0];
+			}
+		}
+		for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++) {
+			dateRange[tmpIndex] = dateRange[tmpIndex].trim();
+			dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("[\\[/]\"]", "-");
+			dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("ca.\\s+", "");
+		}
+		solrRecord.addDates(dateRange, logger);
 	}
 }

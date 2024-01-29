@@ -10,11 +10,13 @@ class OpenArchivesCollection extends DataObject {
 	public $name;
 	public $baseUrl;
 	public $setName;
+	public $indexAllSets;
 	public $subjects;
 	public $defaultCover;
 	public /** @noinspection PhpUnused */
 		$subjectFilters;
 	public $imageRegex;
+	public $metadataFormat;
 	public /** @noinspection PhpUnused */
 		$fetchFrequency;
 	public /** @noinspection PhpUnused */
@@ -63,9 +65,26 @@ class OpenArchivesCollection extends DataObject {
 			'setName' => [
 				'property' => 'setName',
 				'type' => 'text',
-				'label' => 'Set Name (separate multiple values with commas)',
-				'description' => 'The name of the set to harvest',
+				'label' => 'Set(s) To Index (separate multiple values with commas)',
+				'description' => 'The name of the set(s) to harvest',
 				'size' => '100',
+			],
+			'indexAllSets' => [
+				'property' => 'indexAllSets',
+				'type' => 'checkbox',
+				'label' => 'Index all Sets',
+				'description' => 'Index all Sets. This should be set or the list of sets to index should be provided.',
+				'default' => false,
+			],
+			'metadataFormat' => [
+				'property' => 'metadataFormat',
+				'type' => 'enum',
+				'values' => [
+					'oai_dc' => 'Dublin Core (works for most archives)',
+					'mods' => 'MODS',
+				],
+				'label' => 'Metadata Format',
+				'description' => 'The format of the metadata provided by the OAI collection',
 			],
 			'subjects' => [
 				'property' => 'subjects',

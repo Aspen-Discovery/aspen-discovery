@@ -19,6 +19,7 @@ import java.util.Date;
 
 
 import com.turning_leaf_technologies.cron.CronLogEntry;
+import com.turning_leaf_technologies.dates.DateInfo;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
@@ -65,7 +66,7 @@ public class GenealogyCleanup implements IProcessHandler {
 	private boolean doSolrUpdate(Section processSettings, String body) {
 		try {
 			String genealogyUrl = processSettings.get("genealogyIndex");
-			if (genealogyUrl == null || genealogyUrl.length() == 0) {
+			if (genealogyUrl == null || genealogyUrl.isEmpty()) {
 				System.out.println("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 				return false;
 			}
@@ -102,10 +103,10 @@ public class GenealogyCleanup implements IProcessHandler {
 
 			return true;
 		} catch (MalformedURLException e) {
-			System.out.println("Invalid url updating index " + e.toString());
+			System.out.println("Invalid url updating index " + e);
 			return false;
 		} catch (IOException e) {
-			System.out.println("IO Exception updating index " + e.toString());
+			System.out.println("IO Exception updating index " + e);
 			e.printStackTrace();
 			return false;
 		}
@@ -118,7 +119,7 @@ public class GenealogyCleanup implements IProcessHandler {
 			return;
 		}
 		String genealogyUrl = processSettings.get("genealogyIndex");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
+		if (genealogyUrl == null || genealogyUrl.isEmpty()) {
 			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 			return;
 		}
@@ -145,14 +146,14 @@ public class GenealogyCleanup implements IProcessHandler {
 			}
 			personRs.close();
 		} catch (SQLException e) {
-			System.out.println("Unable to load people to reindex " + e.toString());
+			System.out.println("Unable to load people to reindex " + e);
 			e.printStackTrace();
 		}
 	}
 
 	private void importFiles(Ini configIni, Section processSettings) {
 		String importFile = processSettings.get("importFile");
-		if (importFile == null || importFile.length() == 0) {
+		if (importFile == null || importFile.isEmpty()) {
 			processLog.incErrors("Skipping importing people because no importFile was specified.");
 			return;
 		}
@@ -245,8 +246,8 @@ public class GenealogyCleanup implements IProcessHandler {
 						DateInfo obit3Date = new DateInfo(nextLine[17]);
 						String obit3Page = nextLine[18];
 						String comments = nextLine[19];
-						comments += (birthDate.isNotSet() && birthDate.getOriginalDate().length() > 0 ? ", born: " + birthDate.getOriginalDate() : "");
-						comments += (deathDate.isNotSet() && deathDate.getOriginalDate().length() > 0 ? ", died: " + deathDate.getOriginalDate() : "");
+						comments += (birthDate.isNotSet() && !birthDate.getOriginalDate().isEmpty() ? ", born: " + birthDate.getOriginalDate() : "");
+						comments += (deathDate.isNotSet() && !deathDate.getOriginalDate().isEmpty() ? ", died: " + deathDate.getOriginalDate() : "");
 						// Check to see if the person already exists.
 						
 						st1.setString(1, firstName);
@@ -260,7 +261,7 @@ public class GenealogyCleanup implements IProcessHandler {
 							boolean foundMatch = false;
 							Integer personId = null;
 							if (personExistsRs.next()) {
-								// Check to see if we have a match of the birth date and/or death
+								// Check to see if we have a match of the birthdate and/or death
 								// date
 								foundMatch = true;
 								personId = personExistsRs.getInt("personId");
@@ -310,7 +311,7 @@ public class GenealogyCleanup implements IProcessHandler {
 							if (personId != null) {
 								deleteMarriagesStatement.setInt(1, personId);
 								deleteMarriagesStatement.execute();
-								if ((spouse1 != null && spouse1.length() > 0) || !marriageDate.isNotSet() || (marriageComment != null && marriageComment.length() > 0)) {
+								if ((spouse1 != null && !spouse1.isEmpty()) || !marriageDate.isNotSet() || (marriageComment != null && !marriageComment.isEmpty())) {
 									insertMarriageStmt.setInt(1, personId);
 									insertMarriageStmt.setString(2, spouse1);
 									insertMarriageStmt.setInt(3, marriageDate.getDay());
@@ -320,7 +321,7 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertMarriageStmt.executeUpdate();
 									// System.out.println("  Added first marriage");
 								}
-								if (spouse2 != null && spouse2.length() > 0) {
+								if (spouse2 != null && !spouse2.isEmpty()) {
 									insertMarriageStmt.setInt(1, personId);
 									insertMarriageStmt.setString(2, spouse2);
 									insertMarriageStmt.setInt(3, 0);
@@ -335,7 +336,7 @@ public class GenealogyCleanup implements IProcessHandler {
 
 								deleteObitsStatement.setInt(1, personId);
 								deleteObitsStatement.executeUpdate();
-								if (obit1Source.length() > 0 || !obit1Date.isNotSet() || obit1Page.length() > 0) {
+								if (!obit1Source.isEmpty() || !obit1Date.isNotSet() || !obit1Page.isEmpty()) {
 									insertObitStmt.setInt(1, personId);
 									insertObitStmt.setString(2, obit1Source);
 									insertObitStmt.setInt(3, obit1Date.getDay());
@@ -346,7 +347,7 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added first obit");
 								}
-								if (obit2Source.length() > 0 || !obit2Date.isNotSet() || obit2Page.length() > 0) {
+								if (!obit2Source.isEmpty() || !obit2Date.isNotSet() || !obit2Page.isEmpty()) {
 									insertObitStmt.setInt(1, personId);
 									insertObitStmt.setString(2, obit2Source);
 									insertObitStmt.setInt(3, obit2Date.getDay());
@@ -357,7 +358,7 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added second obit");
 								}
-								if (obit3Source.length() > 0 || !obit3Date.isNotSet() || obit3Page.length() > 0) {
+								if (!obit3Source.isEmpty() || !obit3Date.isNotSet() || !obit3Page.isEmpty()) {
 									insertObitStmt.setInt(1, personId);
 									insertObitStmt.setString(2, obit3Source);
 									insertObitStmt.setInt(3, obit3Date.getDay());
@@ -412,7 +413,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				StringBuilder keywords = new StringBuilder();
 				while (marriageRs.next()) {
 					String spouseName = getFieldForSolr(marriageRs, "spouseName");
-					if (spouseName.length() > 0) {
+					if (!spouseName.isEmpty()) {
 						marriageFields.append("<field name=\"spouseName\">").append(spouseName).append("</field>");
 					}
 					DateInfo marriageDate = new DateInfo(marriageRs.getInt("marriageDateDay"), marriageRs.getInt("marriageDateMonth"),
@@ -421,7 +422,7 @@ public class GenealogyCleanup implements IProcessHandler {
 						marriageFields.append("<field name=\"marriageDate\">").append(marriageDate.getSolrDate()).append("</field>");
 					}
 					String marriageComments = getFieldForSolr(marriageRs, "comments");
-					if (marriageComments.length() > 0) {
+					if (!marriageComments.isEmpty()) {
 						marriageFields.append("<field name=\"marriageComments\">").append(marriageComments).append("</field>");
 					}
 					keywords.append(marriageComments).append(" ");
@@ -433,7 +434,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				StringBuilder obitFields = new StringBuilder();
 				while (obitRs.next()) {
 					String source = getFieldForSolr(obitRs, "source");
-					if (source.length() > 0) {
+					if (!source.isEmpty()) {
 						obitFields.append("<field name=\"obituarySource\">").append(source).append("</field>");
 					}
 					DateInfo obitDate = new DateInfo(obitRs.getInt("dateDay"), obitRs.getInt("dateMonth"), obitRs.getInt("dateYear"));
@@ -441,7 +442,7 @@ public class GenealogyCleanup implements IProcessHandler {
 						obitFields.append("<field name=\"obituaryDate\">").append(obitDate.getSolrDate()).append("</field>");
 					}
 					String obituaryText = getFieldForSolr(obitRs, "contents");
-					if (obituaryText.length() > 0) {
+					if (!obituaryText.isEmpty()) {
 						obitFields.append("<field name=\"obituaryText\">").append(obituaryText).append("</field>");
 					}
 					keywords.append(obituaryText).append(" ");
@@ -464,31 +465,29 @@ public class GenealogyCleanup implements IProcessHandler {
 				String comments = getFieldForSolr(personRs, "comments");
 				String title = firstName + " " + lastName + " " + middleName + " " + otherName + " " + maidenName;
 				keywords.append(firstName).append(" ").append(lastName).append(" ").append(middleName).append(" ").append(otherName).append(" ").append(maidenName).append(" ").append(nickName).append(" ").append(cemeteryName).append(" ").append(cemeteryLocation).append(" ").append(mortuaryName).append(" ").append(comments);
-				if (title.length() > 0) {
-					updateBody.append("<field name=\"title\">").append(title).append("</field>");
-				}
-				if (comments.length() > 0) {
+				updateBody.append("<field name=\"title\">").append(title).append("</field>");
+				if (!comments.isEmpty()) {
 					updateBody.append("<field name=\"comments\">").append(comments).append("</field>");
 				}
 				if (keywords.length() > 0) {
 					updateBody.append("<field name=\"keywords\">").append(keywords).append("</field>");
 				}
-				if (firstName.length() > 0) {
+				if (!firstName.isEmpty()) {
 					updateBody.append("<field name=\"firstName\">").append(firstName).append("</field>");
 				}
-				if (lastName.length() > 0) {
+				if (!lastName.isEmpty()) {
 					updateBody.append("<field name=\"lastName\">").append(lastName).append("</field>");
 				}
-				if (middleName.length() > 0) {
+				if (!middleName.isEmpty()) {
 					updateBody.append("<field name=\"middleName\">").append(middleName).append("</field>");
 				}
-				if (maidenName.length() > 0) {
+				if (!maidenName.isEmpty()) {
 					updateBody.append("<field name=\"maidenName\">").append(maidenName).append("</field>");
 				}
-				if (otherName.length() > 0) {
+				if (!otherName.isEmpty()) {
 					updateBody.append("<field name=\"otherName\">").append(otherName).append("</field>");
 				}
-				if (nickName.length() > 0) {
+				if (!nickName.isEmpty()) {
 					updateBody.append("<field name=\"nickName\">").append(nickName).append("</field>");
 				}
 				DateInfo birthDate = new DateInfo(personRs.getInt("birthDateDay"), personRs.getInt("birthDateMonth"), personRs.getInt("birthDateYear"));
@@ -502,16 +501,16 @@ public class GenealogyCleanup implements IProcessHandler {
 					updateBody.append("<field name=\"deathYear\">").append(deathDate.getYear()).append("</field>");
 				}
 				String ageAtDeath = getFieldForSolr(personRs, "ageAtDeath");
-				if (ageAtDeath.length() > 0) {
+				if (!ageAtDeath.isEmpty()) {
 					updateBody.append("<field name=\"ageAtDeath\">").append(ageAtDeath).append("</field>");
 				}
-				if (cemeteryName.length() > 0) {
+				if (!cemeteryName.isEmpty()) {
 					updateBody.append("<field name=\"cemeteryName\">").append(cemeteryName).append("</field>");
 				}
-				if (cemeteryLocation.length() > 0) {
+				if (!cemeteryLocation.isEmpty()) {
 					updateBody.append("<field name=\"cemeteryLocation\">").append(getFieldForSolr(personRs, "cemeteryLocation")).append("</field>");
 				}
-				if (mortuaryName.length() > 0) {
+				if (!mortuaryName.isEmpty()) {
 					updateBody.append("<field name=\"mortuaryName\">").append(getFieldForSolr(personRs, "mortuaryName")).append("</field>");
 				}
 				updateBody.append(marriageFields);
@@ -532,7 +531,7 @@ public class GenealogyCleanup implements IProcessHandler {
 			personRs.close();
 			personStatement.close();
 		} catch (SQLException e) {
-			System.out.println("SQL error occurred updating index " + e.toString());
+			System.out.println("SQL error occurred updating index " + e);
 		}
 	}
 
@@ -544,7 +543,7 @@ public class GenealogyCleanup implements IProcessHandler {
 			}
 			return fieldValue;
 		} catch (SQLException e) {
-			System.out.println("Could not find field " + fieldName + " " + e.toString());
+			System.out.println("Could not find field " + fieldName + " " + e);
 			return "";
 		}
 	}
@@ -557,7 +556,7 @@ public class GenealogyCleanup implements IProcessHandler {
 		}
 
 		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
+		if (genealogyUrl == null || genealogyUrl.isEmpty()) {
 			processLog.incErrors("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 			return;
 		}

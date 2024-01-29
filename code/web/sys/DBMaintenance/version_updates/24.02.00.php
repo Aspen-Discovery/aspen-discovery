@@ -99,6 +99,22 @@ function getUpdates24_02_00(): array {
 				) ENGINE INNODB"
 			],
 		], //translatable_text_blocks
+		'open_archives_metadata_format' => [
+			'title' => 'Open Archives Metadata Format',
+			'description' => 'Add the ability to process Open Archives Collections in different formats',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE open_archives_collection ADD COLUMN metadataFormat VARCHAR(10) DEFAULT('oai_dc')"
+			],
+		],
+		'open_archives_index_all_sets' => [
+			'title' => 'Open Archives Index all sets',
+			'description' => 'Add the ability to index all sets for an open archives collection',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE open_archives_collection ADD COLUMN indexAllSets TINYINT(1) DEFAULT(0)"
+			],
+		],
 
 
 		//kirstien - ByWater

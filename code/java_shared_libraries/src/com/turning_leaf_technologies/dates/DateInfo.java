@@ -1,4 +1,4 @@
-package com.turning_leaf_technologies.cron.genealogy;
+package com.turning_leaf_technologies.dates;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.Date;
  * Parses a date and returns information about it.
  * This is NOT currently Thread Safe
  */
-class DateInfo {
+public class DateInfo {
 	private String originalDate;
 	private Calendar parsedDate = null;
 	private boolean daySet = false;
@@ -23,9 +23,10 @@ class DateInfo {
 	private static final SimpleDateFormat format4 = new SimpleDateFormat("MM/dd/yyyy H:mm:ss");
 	private static final SimpleDateFormat format5 = new SimpleDateFormat("M/d/yyyy H:mm:ss");
 	private static final SimpleDateFormat format6 = new SimpleDateFormat("M/d/yyyy");
+	private static final SimpleDateFormat format7 = new SimpleDateFormat("yyyy-MM");
 	private static final SimpleDateFormat solrFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
-	DateInfo(int day, int month, int year){
+	public DateInfo(int day, int month, int year){
 		if (day != 0 || month != 0 || year != 0) {
 			parsedDate = Calendar.getInstance();
 			if (day > 0){
@@ -43,7 +44,7 @@ class DateInfo {
 			notSet = false;
 		}
 	}
-	DateInfo(String originalDate){
+	public DateInfo(String originalDate){
 		this.originalDate = originalDate;
 		if (originalDate == null || originalDate.isEmpty() || originalDate.matches("NOT LISTED|NOT LSITED|NOT GIVEN|N/D")){
 			return;
@@ -119,6 +120,20 @@ class DateInfo {
 			//Ignore and check the next format.
 		}
 		try {
+			Date tmpDate = format7.parse(originalDate);
+			if (tmpDate != null){
+				parsedDate = Calendar.getInstance();
+				parsedDate.setTime(tmpDate);
+				daySet = false;
+				monthSet = true;
+				yearSet = true;
+				notSet = false;
+				return;
+			}
+		} catch (ParseException e) {
+			//Ignore and check the next format.
+		}
+		try {
 			Date tmpDate = format2.parse(originalDate);
 			if (tmpDate != null){
 				parsedDate = Calendar.getInstance();
@@ -129,37 +144,40 @@ class DateInfo {
 		} catch (ParseException e) {
 			//Ignore and check the next format.
 		}
+		if (notSet) {
+			return;
+		}
 	}
 
-	String getOriginalDate() {
+	public String getOriginalDate() {
 		return originalDate;
 	}
 
-	boolean isNotSet() {
+	public boolean isNotSet() {
 		return notSet;
 	}
-	int getDay(){
+	public int getDay(){
 		if (daySet) {
 			return parsedDate.get(Calendar.DATE);
 		}else{
 			return 0;
 		}
 	}
-	int getMonth(){
+	public int getMonth(){
 		if (monthSet) {
 			return parsedDate.get(Calendar.MONTH) + 1;
 		}else{
 			return 0;
 		}
 	}
-	int getYear(){
+	public int getYear(){
 		if (yearSet) {
 			return parsedDate.get(Calendar.YEAR);
 		}else{
 			return 0;
 		}
 	}
-	String getSolrDate(){
+	public String getSolrDate(){
 		return solrFormat.format(parsedDate.getTime());
 	}
 }

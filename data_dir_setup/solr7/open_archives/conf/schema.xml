@@ -37,6 +37,33 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
+		<fieldType name="searchable_text_minimal_stem" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
 		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
 			<analyzer>
@@ -79,16 +106,18 @@
 
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
 		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/>
-		<field name="creator" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="creator" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="creator_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="contributor" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="contributor" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="contributor_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>
 		<field name="coverage" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="publisher" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="publisher_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="format" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="source" type="unchanged_string" indexed="true" stored="true" multiValued="true" required="false"/>
@@ -116,6 +145,7 @@
 	<copyField source="publisher" dest="publisher_facet"/>
 	<copyField source="creator" dest="creator_facet"/>
 	<copyField source="contributor" dest="contributor_facet"/>
+	<copyField source="geographic" dest="geographic_facet"/>
 
 	<copyField source="title" dest="title_suggestions"/>
 	<copyField source="subject" dest="subject_suggestions"/>

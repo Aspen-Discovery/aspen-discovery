@@ -1432,6 +1432,22 @@ class BookCoverProcessor {
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			} elseif (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			} elseif (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
 			} else {
 				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
 				$sourceCollection = new OpenArchivesCollection();
