@@ -708,6 +708,7 @@ public class OaiIndexerMain {
 									case "mods:accessCondition":
 									case "mods:note":
 									case "mods:physicalDescription":
+									case "mods:tableOfContents":
 										//Ignore this tag for now
 										break;
 									default:
