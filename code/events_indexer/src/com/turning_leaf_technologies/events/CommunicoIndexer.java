@@ -328,8 +328,8 @@ class CommunicoIndexer {
 							try {
 								JSONObject curRegistrant = communicoEventRegistrants.getJSONObject(j);
 
-								if (!curRegistrant.getString("barcode").isEmpty()){
-									uniqueBarcodesRegistered.add(curRegistrant.getString("barcode"));
+								if (!curRegistrant.getString("librarycard").isEmpty()){
+									uniqueBarcodesRegistered.add(curRegistrant.getString("librarycard"));
 								}
 							} catch (JSONException e) {
 								logEntry.incErrors("Error getting JSON information ", e);
@@ -581,8 +581,8 @@ class CommunicoIndexer {
 					if (status.getStatusCode() == 200) {
 						String response = EntityUtils.toString(entity1);
 						JSONObject response2 = new JSONObject(response);
-						JSONArray registrants = response2.getJSONArray("entries");
-						eventRegistrations.put(registrants);
+						JSONObject data = response2.getJSONObject("data");
+						eventRegistrations = data.getJSONArray("entries");
 					}
 				} catch (Exception e) {
 					logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
