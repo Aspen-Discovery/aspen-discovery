@@ -47,7 +47,6 @@ RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 	&& sh -c 'echo "deb https://packages.sury.org/php/ buster main" > /etc/apt/sources.list.d/php.list'
 
 
-
 #Install php deps
 RUN apt -y update \
 	&& apt install -y \
@@ -65,13 +64,7 @@ RUN apt -y update \
 	&& rm -rf /var/lib/apt/lists/*
 
 #Adding entrypoint file
-
 COPY start.sh /start.sh
-
-#Adding tunnel directory
-COPY tunnel/ /root/.ssh/
-RUN cd /root/.ssh/ \
-    && chmod 700 config id_rsa.pub known_hosts
 
 # Load apache modules
 RUN a2enmod rewrite
@@ -110,11 +103,9 @@ RUN apt -y update \
 
 ENTRYPOINT ["/start.sh"]
 
-
 # Increase entropy
 #RUN cp /usr/local/aspen-discovery/install/limits.conf /etc/security/limits.conf \
 #    && cp /usr/local/aspen-discovery/install/rngd.service /etc/systemd/system/rngd.service \
 #    && systemctl daemon-reload \
 #    && systemctl start rngd
 
-# Estoy haciendo prueba para manejar versiones de docker
