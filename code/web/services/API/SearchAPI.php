@@ -2966,7 +2966,7 @@ class SearchAPI extends Action {
 				$options[$key]['hasApplied'] = $facet['hasApplied'];
 				$options[$key]['multiSelect'] = false;
 				if(isset($facet['multiSelect'])) {
-					$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+					$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
 				}
 				if (isset($facet['sortedList'])) {
 					foreach ($facet['sortedList'] as $item) {
