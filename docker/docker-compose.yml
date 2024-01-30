@@ -4,7 +4,7 @@ networks:
 services:
 
   backend:
-    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    image: aspen-discovery/aspen:${COMPOSE_ImageVersion}
     env_file:
       - .env
     ports:
@@ -13,44 +13,44 @@ services:
       - net-aspen
     tty: true
     volumes:
-      - $COMPOSE_ClientSrvPath:/mnt
+      - ~/${ASPEN_Instance}:/mnt
+    depends_on:
+      - db
 
   db:
     image: mariadb:10.3
+    restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=$COMPOSE_RootPwd
+      - MARIADB_ROOT_PASSWORD=${COMPOSE_RootPwd}
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - $COMPOSE_ClientSrvPath/mariadb_data:/var/lib/mysql
+      - ~/${ASPEN_Instance}/mariadb_data:/var/lib/mysql
     networks:
       - net-aspen
 
   solr:
-    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    image: aspen-discovery/solr:${COMPOSE_ImageVersion}
     env_file:
-      - .env   
+      - .env
+    ports:
+      - "${SITE_solrPort}:${SITE_solrPort}"
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - $COMPOSE_ClientSrvPath:/mnt
+      - ~/${ASPEN_Instance}/solr_data:/var/solr
     networks:
       - net-aspen
     depends_on:
       - backend
       
   tunnel:
-    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    image: aspen-discovery/tunnel:${COMPOSE_ImageVersion}
     env_file:
       - .env
-    environment:
-      - COMPOSE_Cron=off
-      - COMPOSE_Apache=off
-      - COMPOSE_Solr=off
     deploy:
       endpoint_mode: dnsrr
-    volumes:
-      - $COMPOSE_ClientSrvPath:/mnt
     networks:
       - net-aspen
-    entrypoint: ["/root/.ssh/tunnel.sh"]
+    depends_on:
+      - backend
