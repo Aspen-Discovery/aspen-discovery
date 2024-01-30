@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class RecordInfo {
 	private String source;
@@ -24,8 +25,6 @@ public class RecordInfo {
 
 	private boolean hasParentRecord;
 	private boolean hasChildRecord;
-
-	private boolean hasMarcHoldings;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
@@ -108,7 +107,7 @@ public class RecordInfo {
 	private String recordDetails = null;
 	String getDetails() {
 		if (recordDetails == null) {
-			//None of this changes by scope so we can just form it once and then return the previous value
+			//None of this changes by scope, so we can just form it once and then return the previous value
 			recordDetails = this.getFullIdentifier() + "|" +
 					getPrimaryFormat() + "|" +
 					getPrimaryFormatCategory() + "|" +
@@ -129,7 +128,7 @@ public class RecordInfo {
 			HashMap<String, Integer> relatedFormats = new HashMap<>();
 			HashMap<String, String> formatToFormatCategory = new HashMap<>();
 			for (ItemInfo curItem : relatedItems){
-				if (curItem.getFormat() != null && !curItem.getFormat().equals("")) {
+				if (curItem.getFormat() != null && !curItem.getFormat().isEmpty()) {
 					if (relatedFormats.containsKey(curItem.getFormat())){
 						relatedFormats.merge(curItem.getFormat(), 1, Integer::sum);
 					}else{
@@ -155,13 +154,13 @@ public class RecordInfo {
 
 			if (mostUsedFormat == null){
 				//If we have formats for the record, use that. We only get here if we have no item formats.
-				if (formats.size() > 0) {
+				if (!formats.isEmpty()) {
 					primaryFormat = formats.iterator().next();
 				}
 
 				//This might not be correct if we have multiple formats since the format category could be different
 				//for each.
-				if (formatCategories.size() > 0){
+				if (!formatCategories.isEmpty()){
 					primaryFormatCategory = formatCategories.iterator().next();
 				}
 			}else{
@@ -192,11 +191,7 @@ public class RecordInfo {
 					timesUsed = relatedFormats.get(curFormat);
 				}
 			}
-			if (mostUsedFormat == null) {
-				primaryFormatCategory = "Unknown";
-			}else{
-				primaryFormatCategory = mostUsedFormat;
-			}
+			primaryFormatCategory = Objects.requireNonNullElse(mostUsedFormat, "Unknown");
 		}
 		return primaryFormatCategory;
 	}
@@ -210,8 +205,26 @@ public class RecordInfo {
 		return formats;
 	}
 
+	String getFirstFormat() {
+		if (!formats.isEmpty()) {
+			for (String format : formats) {
+				return format;
+			}
+		}
+		return null;
+	}
+
 	HashSet<String> getFormatCategories() {
 		return formatCategories;
+	}
+
+	String getFirstFormatCategory() {
+		if (!formatCategories.isEmpty()) {
+			for (String formatCategory : formatCategories) {
+				return formatCategory;
+			}
+		}
+		return null;
 	}
 
 	int getNumCopiesOnOrder() {
@@ -226,7 +239,7 @@ public class RecordInfo {
 
 	String getFullIdentifier() {
 		String fullIdentifier;
-		if (subSource != null && subSource.length() > 0){
+		if (subSource != null && !subSource.isEmpty()){
 			fullIdentifier = source + ":" + subSource + ":" + recordIdentifier;
 		}else{
 			fullIdentifier = source + ":" + recordIdentifier;
@@ -278,10 +291,6 @@ public class RecordInfo {
 			values.add(curItem.getCallNumber());
 		}
 		return values;
-	}
-
-	void clearFormats(){
-		this.formats.clear();
 	}
 
 	void addFormats(HashSet<String> translatedFormats) {
@@ -377,15 +386,6 @@ public class RecordInfo {
 		return uniqueItemFormatCategories;
 	}
 
-	public String getFirstItemFormatCategory(){
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.getFormatCategory() != null){
-				return curItem.getFormatCategory();
-			}
-		}
-		return null;
-	}
-
 	public boolean hasParentRecord() {
 		return hasParentRecord;
 	}
@@ -400,14 +400,6 @@ public class RecordInfo {
 
 	public void setHasChildRecord(boolean hasChildRecord) {
 		this.hasChildRecord = hasChildRecord;
-	}
-
-	public void setHasMarcHoldings(boolean hasMarcHoldings) {
-		this.hasMarcHoldings = hasMarcHoldings;
-	}
-
-	public boolean getHasMarcHoldings() {
-		return hasMarcHoldings;
 	}
 
 }
