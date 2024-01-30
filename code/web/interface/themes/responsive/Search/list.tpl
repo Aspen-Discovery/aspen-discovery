@@ -140,6 +140,8 @@
 					{/if}
 				{/if}
 				{if !empty($excelLink)}<a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a>{/if}
+				{if !empty($risLink)}<a href="{$risLink|escape}">{translate text="Export To RIS" isPublicFacing=true}</a>{/if}
+
 			{/if}
 			{if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 				<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>

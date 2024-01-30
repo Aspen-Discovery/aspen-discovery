@@ -912,6 +912,9 @@ abstract class SearchObject_BaseSearcher {
 			} elseif ($_REQUEST['view'] == 'excel') {
 				// we don't want to store excel in the Session variable
 				$this->view = 'excel';
+			} elseif ($_REQUEST['view'] == 'ris') {
+				$this->view = 'ris';
+				$_SESSION['lastView'] = $this->view;
 			} else {
 				// store non-rss views in Session for persistence
 				$validViews = $this->getViewOptions();
@@ -2597,6 +2600,37 @@ abstract class SearchObject_BaseSearcher {
 	 * @param array|null $result
 	 */
 	public abstract function buildExcel($result = null);
+
+	public function getRisUrl() {
+		// Stash our old data for a minute
+		$oldView = $this->view;
+		$oldPage = $this->page;
+	
+		// Add the new view
+		$this->view = 'ris';
+	
+		// Remove page number
+		$this->page = 1;
+	
+		// Get the new URL
+		$url = $this->renderSearchUrl();
+	
+		// Restore the old data
+		$this->view = $oldView;
+		$this->page = $oldPage;
+	
+		// Return the URL
+		return $url;
+	}
+	
+	/**
+	 * Turn our results into an RIS feed
+	 *
+	 * @param array|null $result Existing result set (null to do a new search)
+	 * @return string RIS formatted data
+	 */
+	public abstract function buildRisExport($result = null);
+	
 
 	public abstract function getResultRecordSet();
 
