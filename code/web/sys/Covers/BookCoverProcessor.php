@@ -1409,76 +1409,95 @@ class BookCoverProcessor {
 			$matches = [];
 			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
+			if (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} elseif (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
+			if (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} elseif (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
+			if (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} elseif (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
+			if (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} elseif (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
+			if (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} else {
-				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
-				$sourceCollection = new OpenArchivesCollection();
-				$sourceCollection->id = $openArchivesRecord->sourceCollection;
-				if ($sourceCollection->find(true)) {
-					if (!empty($sourceCollection->imageRegex)) {
-						$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
-						foreach ($expressions as $expression) {
-							if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
-								$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
-								if ($this->processImageURL('open_archives', $bookcoverUrl, true)) {
-									return true;
-								}
-							}
-						}
-					}else if (!empty($sourceCollection->defaultCover)) {
-						//Build a cover based on the title of the page
-						require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-						$coverBuilder = new DefaultCoverImageBuilder();
-						require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+					return true;
+				}
+			}
 
-						$OAIRecordDriver = new OpenArchivesRecordDriver($id);
-						if ($OAIRecordDriver->isValid()) {
-							$title = $OAIRecordDriver->getTitle();
-							$author = null;
-
-							$image = ROOT_DIR . '/files/original/' . $sourceCollection->defaultCover;
-							$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
-							if ($this->processImageURL('open_archives',  $this->cacheFile, false)) {
+			//Create default image
+			require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
+			$sourceCollection = new OpenArchivesCollection();
+			$sourceCollection->id = $openArchivesRecord->sourceCollection;
+			if ($sourceCollection->find(true)) {
+				if (!empty($sourceCollection->imageRegex)) {
+					$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
+					foreach ($expressions as $expression) {
+						if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
+							$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
+							if ($this->processImageURL('open_archives', $bookcoverUrl, true)) {
 								return true;
 							}
+						}
+					}
+				}
+				if (!empty($sourceCollection->defaultCover)) {
+					//Build a cover based on the title of the page
+					require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+					$coverBuilder = new DefaultCoverImageBuilder();
+					require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+
+					$OAIRecordDriver = new OpenArchivesRecordDriver($id);
+					if ($OAIRecordDriver->isValid()) {
+						$title = $OAIRecordDriver->getTitle();
+						$author = null;
+
+						$image = ROOT_DIR . '/files/original/' . $sourceCollection->defaultCover;
+						$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
+						if ($this->processImageURL('open_archives',  $this->cacheFile, false)) {
+							return true;
 						}
 					}
 				}

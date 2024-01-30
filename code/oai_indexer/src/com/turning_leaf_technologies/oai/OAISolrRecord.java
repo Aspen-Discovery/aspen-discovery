@@ -76,7 +76,7 @@ class OAISolrRecord {
 		for (String date : dates) {
 			if (AspenStringUtils.isNumeric(date)) {
 				this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
-			} else if (datePattern.matcher(date).matches()) {
+			} else {
 				DateInfo dateInfo = new DateInfo(date);
 				if (!dateInfo.isNotSet()) {
 					this.date.add(dateInfo.getSolrDate());
