@@ -239,6 +239,7 @@ export default class Facet extends Component {
           this.setState({
                values: [],
           });
+          this.updateSearch();
      };
 
      actionButtons = () => {
