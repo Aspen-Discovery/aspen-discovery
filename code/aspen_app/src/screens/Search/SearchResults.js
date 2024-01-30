@@ -587,6 +587,7 @@ const CreateFilterButtonDefaults = () => {
 };
 
 const CreateFilterButton = () => {
+     const { currentSource } = React.useContext(SearchContext);
      const navigation = useNavigation();
      const appliedFacets = SEARCH.appliedFilters;
      const sort = _.find(appliedFacets['Sort By'], {
@@ -594,7 +595,7 @@ const CreateFilterButton = () => {
           value: 'relevance',
      });
 
-     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1)) {
+     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1) || (_.size(appliedFacets) > 1 && currentSource === 'events')) {
           return (
                <Button.Group size="sm" space={1} vertical variant="outline">
                     {_.map(appliedFacets, function (item, index, collection) {
