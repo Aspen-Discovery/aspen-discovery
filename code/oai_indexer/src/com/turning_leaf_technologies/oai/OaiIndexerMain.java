@@ -20,7 +20,6 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -262,7 +261,7 @@ public class OaiIndexerMain {
 				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 				factory.setValidating(false);
 				factory.setIgnoringElementContentWhitespace(true);
-				DocumentBuilder builder = null;
+				DocumentBuilder builder;
 				try {
 					builder = factory.newDocumentBuilder();
 
@@ -810,6 +809,8 @@ public class OaiIndexerMain {
 			textContent = textContent.replaceAll("[\\[/]\"]", "-");
 			//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
 			if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
+				dateRange = new String[]{textContent};
+			} else if (textContent.matches("(\\d{1,2}/)?(\\d{1,2}/)?\\d{2,4}")) {
 				dateRange = new String[]{textContent};
 			}else{
 				logEntry.addNote("Unhandled date format " + textContent + " not loading date");
