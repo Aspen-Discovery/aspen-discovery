@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
-import { Actionsheet, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
+import { Actionsheet, AlertDialog, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
 import React, { useState } from 'react';
 import { Platform, SafeAreaView } from 'react-native';
 
@@ -14,8 +14,9 @@ import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessages
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
+import { confirmRenewAllCheckouts, confirmRenewCheckout, renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import { getPatronCheckedOutItems } from '../../../util/api/user';
+import { stripHTML } from '../../../util/apiAuth';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyCheckouts = () => {
@@ -30,12 +31,19 @@ export const MyCheckouts = () => {
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const [filterByLibby, setFilterByLibby] = React.useState(false);
+
+     const [renewConfirmationIsOpen, setRenewConfirmationIsOpen] = React.useState(false);
+     const onRenewConfirmationClose = () => setRenewConfirmationIsOpen(false);
+     const renewConfirmationRef = React.useRef(null);
+     const [renewConfirmationResponse, setRenewConfirmationResponse] = React.useState('');
+     const [confirmingRenewal, setConfirmingRenewal] = React.useState(false);
 
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
           hoopla: 'Checked Out Titles for Hoopla',
-          overdrive: 'Checked Out Titles for OverDrive',
-          axis_360: 'Checked Out Titles for Axis 360',
+          overdrive: 'Checked Out Titles for Libby',
+          axis_360: 'Checked Out Titles for Boundless',
           cloud_library: 'Checked Out Titles for cloudLibrary',
           all: 'Checked Out Titles',
      });
@@ -93,7 +101,22 @@ export const MyCheckouts = () => {
                          setCheckoutBy(tmp);
                     }
 
-                    term = getTermFromDictionary(language, 'checkouts_for_overdrive');
+                    term = getTermFromDictionary(language, 'checkouts_for_libby');
+                    if (library.libbyReaderName) {
+                         term = await getTranslationsWithValues('checkouts_for_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0]) {
+                              term = term[0];
+                         }
+
+                         let filterTerm = await getTranslationsWithValues('filter_by_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (filterTerm[0]) {
+                              setFilterByLibby(filterTerm[0]);
+                         } else {
+                              filterTerm = getTermFromDictionary(language, 'filter_by_libby');
+                              setFilterByLibby(filterTerm);
+                         }
+                    }
+
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'overdrive', term);
                          setCheckoutBy(tmp);
@@ -111,7 +134,7 @@ export const MyCheckouts = () => {
                          setCheckoutBy(tmp);
                     }
 
-                    term = getTermFromDictionary(language, 'checkouts_for_axis_360');
+                    term = getTermFromDictionary(language, 'checkouts_for_boundless');
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'axis_360', term);
                          setCheckoutBy(tmp);
@@ -150,12 +173,6 @@ export const MyCheckouts = () => {
           queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
      };
 
-     const refreshCheckouts = async () => {
-          setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
-     };
-
      const actionButtons = () => {
           if (numCheckedOut > 0) {
                return (
@@ -168,8 +185,24 @@ export const MyCheckouts = () => {
                               colorScheme="primary"
                               onPress={() => {
                                    setRenewAll(true);
-                                   renewAllCheckouts(library.baseUrl).then((r) => {
-                                        refreshCheckouts();
+                                   renewAllCheckouts(library.baseUrl).then((result) => {
+                                        if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                             setRenewConfirmationResponse({
+                                                  message: result.api.message,
+                                                  title: result.api.title,
+                                                  confirmRenewalFee: result.confirmRenewalFee ?? false,
+                                                  recordId: record ?? null,
+                                                  action: result.api.action,
+                                                  renewType: 'all',
+                                             });
+                                        }
+
+                                        if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                             setRenewConfirmationIsOpen(true);
+                                        } else {
+                                             reloadCheckouts();
+                                        }
+
                                         setRenewAll(false);
                                    });
                               }}
@@ -198,10 +231,10 @@ export const MyCheckouts = () => {
                                    onValueChange={(itemValue) => toggleSource(itemValue)}>
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_overdrive') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_axis_360') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} />
+                                   {user.isValidForOverdrive ? <Select.Item label={filterByLibby + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
+                                   {user.isValidForHoopla ? <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} /> : null}
+                                   {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} /> : null}
+                                   {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} /> : null}
                               </Select>
                          </FormControl>
                     </HStack>
@@ -234,19 +267,66 @@ export const MyCheckouts = () => {
           return null;
      };
 
+     const decodeMessage = (string) => {
+          return stripHTML(string);
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
                     {showSystemMessage()}
                     <ScrollView horizontal>{actionButtons()}</ScrollView>
                </Box>
-               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+               <Center>
+                    <AlertDialog leastDestructiveRef={renewConfirmationRef} isOpen={renewConfirmationIsOpen} onClose={onRenewConfirmationClose}>
+                         <AlertDialog.Content>
+                              <AlertDialog.Header>{renewConfirmationResponse?.title ? renewConfirmationResponse.title : 'Unknown Error'}</AlertDialog.Header>
+                              <AlertDialog.Body>{renewConfirmationResponse?.message ? decodeMessage(renewConfirmationResponse.message) : 'Unable to renew checkout for unknown error. Please contact the library.'}</AlertDialog.Body>
+                              <AlertDialog.Footer>
+                                   <Button.Group space={3}>
+                                        <Button variant="outline" colorScheme="primary" onPress={() => setHoldConfirmationIsOpen(false)}>
+                                             {getTermFromDictionary(language, 'close_window')}
+                                        </Button>
+                                        <Button
+                                             isLoading={confirmingRenewal}
+                                             isLoadingText={getTermFromDictionary(language, 'renewing', true)}
+                                             onPress={async () => {
+                                                  setConfirmingRenewal(true);
+
+                                                  if (renewConfirmationResponse.renewType === 'all') {
+                                                       await confirmRenewAllCheckouts(library.baseUrl).then(async (result) => {
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
+
+                                                            setRenewConfirmationIsOpen(false);
+                                                            setConfirmingRenewal(false);
+                                                       });
+                                                  } else {
+                                                       await confirmRenewCheckout(renewConfirmationResponse.barcode, renewConfirmationResponse.recordId, renewConfirmationResponse.source, renewConfirmationResponse.itemId, library.baseUrl, renewConfirmationResponse.userId).then(async (result) => {
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
+
+                                                            setRenewConfirmationIsOpen(false);
+                                                            setConfirmingRenewal(false);
+                                                       });
+                                                  }
+                                             }}>
+                                             {renewConfirmationResponse?.action ? renewConfirmationResponse.action : 'Renew Item'}
+                                        </Button>
+                                   </Button.Group>
+                              </AlertDialog.Footer>
+                         </AlertDialog.Content>
+                    </AlertDialog>
+               </Center>
+               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} setRenewConfirmationIsOpen={setRenewConfirmationIsOpen} setRenewConfirmationResponse={setRenewConfirmationResponse} />
           </SafeAreaView>
      );
 };
 
 const Checkout = (props) => {
      const checkout = props.data;
+     const setRenewConfirmationIsOpen = props.setRenewConfirmationIsOpen;
+     const setRenewConfirmationResponse = props.setRenewConfirmationResponse;
      const reloadCheckouts = props.reloadCheckouts;
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
@@ -355,16 +435,17 @@ const Checkout = (props) => {
           renewMessage = checkout.renewError;
      }
 
-     const imageUrl = checkout.coverUrl;
+     const key = 'medium_' + checkout.source + '_' + checkout.groupedWorkId;
+     let url = library.baseUrl + '/bookcover.php?id=' + checkout.fullId + '&size=medium';
 
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
                     <CachedImage
-                         cacheKey={checkout.groupedWorkId}
+                         cacheKey={key}
                          alt={checkout.title}
                          source={{
-                              uri: `${imageUrl}`,
+                              uri: `${url}`,
                               expiresIn: 86400,
                          }}
                          style={{
@@ -407,6 +488,9 @@ const Checkout = (props) => {
                               <Text
                                    fontSize="18"
                                    color="gray.500"
+                                   maxW="100%"
+                                   flexWrap="wrap"
+                                   isTruncated
                                    _dark={{
                                         color: 'gray.300',
                                    }}>
@@ -423,6 +507,8 @@ const Checkout = (props) => {
                          </Actionsheet.Item>
                          {renewMessage ? (
                               <Actionsheet.Item
+                                   maxW="100%"
+                                   isTruncated
                                    isDisabled={canRenew}
                                    isLoading={renewing}
                                    isLoadingText={getTermFromDictionary(language, 'renewing', true)}
@@ -430,12 +516,33 @@ const Checkout = (props) => {
                                         setRenew(true);
                                         renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
                                              setRenew(false);
-                                             reloadCheckouts();
+
+                                             if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                                  setRenewConfirmationResponse({
+                                                       message: result.api.message,
+                                                       title: result.api.title,
+                                                       confirmRenewalFee: result.confirmRenewalFee ?? false,
+                                                       action: result.api.action,
+                                                       recordId: checkout.recordId ?? null,
+                                                       barcode: checkout.barcode ?? null,
+                                                       source: checkout.source ?? null,
+                                                       itemId: checkout.itemId ?? null,
+                                                       userId: checkout.userId ?? null,
+                                                       renewType: 'single',
+                                                  });
+                                             }
+
+                                             if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                                  setRenewConfirmationIsOpen(true);
+                                             } else {
+                                                  reloadCheckouts();
+                                             }
+
                                              toggle();
                                         });
                                    }}
                                    startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6" />}>
-                                   {renewMessage}
+                                   {stripHTML(renewMessage)}
                               </Actionsheet.Item>
                          ) : null}
                          {checkout.source === 'overdrive' ? (

@@ -8,7 +8,7 @@ import React from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
-import { getLibraryInfo, getLibraryLanguages, getSystemMessages } from '../../util/api/library';
+import { getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
@@ -41,7 +41,7 @@ export const LoadingScreen = () => {
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
 
      const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
-     const { library, updateLibrary } = React.useContext(LibrarySystemContext);
+     const { library, updateLibrary, updateMenu } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
@@ -63,12 +63,19 @@ export const LoadingScreen = () => {
           return unsubscribe;
      }, [navigation]);
 
-     const { status: languagesQueryStatus, data: languagesQuery } = useQuery(['languages', LIBRARY.url], () => getLibraryLanguages(LIBRARY.url), {
+     const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
           enabled: !!LIBRARY.url,
           onSuccess: (data) => {
                setProgress(10);
+               updateDictionary(translationsLibrary);
+               setLoadingText(getTermFromDictionary(PATRON.language ?? 'en', 'loading_1'));
+          },
+     });
+
+     const { status: languagesQueryStatus, data: languagesQuery } = useQuery(['languages', LIBRARY.url], () => getLibraryLanguages(LIBRARY.url), {
+          enabled: !!translationQuery,
+          onSuccess: (data) => {
                updateLanguages(data);
-               setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
           },
      });
 
@@ -100,6 +107,7 @@ export const LoadingScreen = () => {
      }, []);
 
      const { status: librarySystemQueryStatus, data: librarySystemQuery } = useQuery(['library_system', LIBRARY.url], () => getLibraryInfo(LIBRARY.url), {
+          enabled: !!languagesQuery,
           onSuccess: (data) => {
                setProgress(20);
                updateLibrary(data);
@@ -109,26 +117,34 @@ export const LoadingScreen = () => {
      const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => refreshProfile(LIBRARY.url), {
           enabled: !!librarySystemQuery,
           onSuccess: (data) => {
+               console.log(data);
                if (_.isUndefined(data) || _.isEmpty(data)) {
                     setHasError(true);
                } else {
-                    setProgress(40);
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
-                    setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+                    console.log(data);
+                    if (data.success === false || data.success === 'false') {
+                         setHasError(true);
+                    } else {
+                         setProgress(30);
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                         setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+                    }
                }
           },
      });
-     const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
-          enabled: !!userQuery,
+
+     const { status: libraryLinksQueryStatus, data: libraryLinksQuery } = useQuery(['library_links', LIBRARY.url], () => getLibraryLinks(LIBRARY.url), {
+          enabled: hasError === false && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(50);
-               updateDictionary(translationsLibrary);
+               updateMenu(data);
           },
      });
+
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
-          enabled: !!translationQuery,
+          enabled: hasError === false && !!libraryLinksQuery,
           onSuccess: (data) => {
                setProgress(60);
                updateBrowseCategories(data);
@@ -136,7 +152,7 @@ export const LoadingScreen = () => {
           },
      });
      const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
-          enabled: !!browseCategoryQuery,
+          enabled: hasError === false && !!browseCategoryQuery,
           onSuccess: (data) => {
                setProgress(70);
                updateBrowseCategoryList(data);
@@ -144,7 +160,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
-          enabled: !!browseCategoryListQuery,
+          enabled: hasError === false && !!browseCategoryListQuery,
           onSuccess: (data) => {
                setProgress(80);
                updateLocation(data);
@@ -152,7 +168,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
-          enabled: !!libraryBranchQuery,
+          enabled: hasError === false && !!userQuery && !!libraryBranchQuery,
           onSuccess: (data) => {
                setProgress(85);
                if (data.success) {
@@ -165,7 +181,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: linkedAccountQueryStatus, data: linkedAccountQuery } = useQuery(['linked_accounts', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
-          enabled: !!userQuery && !!librarySystemQuery && !!selfCheckQuery,
+          enabled: hasError === false && !!selfCheckQuery,
           onSuccess: (data) => {
                setProgress(90);
                updateLinkedAccounts(data.accounts);
@@ -175,7 +191,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
-          enabled: !!userQuery && !!librarySystemQuery && !!libraryBranchQuery && !!linkedAccountQuery,
+          enabled: hasError === false && !!linkedAccountQuery,
           onSuccess: (data) => {
                setProgress(100);
                updateSystemMessages(data);

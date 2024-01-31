@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 import java.io.StringWriter;
+import org.json.JSONWriter;
 
 /**
  * JSONStringer provides a quick and convenient way of producing JSON text.

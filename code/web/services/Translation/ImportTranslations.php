@@ -15,6 +15,13 @@ class Translation_ImportTranslations extends Admin_Admin {
 			set_time_limit(-1);
 			ini_set('memory_limit', '1G');
 
+			//Check mbstring extension is enabled
+			if (!extension_loaded('mbstring')) {
+				ini_set('mbstring.encoding_translation', 'On');
+				ini_set('mbstring.internal_encoding', 'UTF-8');
+				ini_set('mbstring.func_overload', 6);
+			}
+
 			$overrideExistingTranslations = isset($_REQUEST['overwriteExisting']);
 
 			$languagesToImport = [];
@@ -81,7 +88,13 @@ class Translation_ImportTranslations extends Admin_Admin {
 							//Make sure there is at least one translation for the term before importing it.
 							$hasTranslations = false;
 							foreach ($languagesToImport as $code => $columnIndex) {
-								$newValue = utf8_encode($curRow[$columnIndex]);
+								//Checks if each term is already utf8 encoded to avoid double encoding.
+								$isUTF8Encoded = mb_check_encoding($curRow[$columnIndex],'UTF-8');
+								if ($isUTF8Encoded){
+									$newValue = $curRow[$columnIndex];
+								} else{
+									$newValue = mb_convert_encoding($curRow[$columnIndex],'UTF-8');
+								}
 								if (!empty($newValue)) {
 									$hasTranslations = true;
 								}
@@ -93,7 +106,12 @@ class Translation_ImportTranslations extends Admin_Admin {
 									$translationTerm->insert();
 								}
 								foreach ($languagesToImport as $code => $columnIndex) {
-									$newValue = utf8_encode($curRow[$columnIndex]);
+									$isUTF8Encoded = mb_check_encoding($curRow[$columnIndex],'UTF-8');
+									if ($isUTF8Encoded){
+										$newValue = $curRow[$columnIndex];
+									} else{
+										$newValue = mb_convert_encoding($curRow[$columnIndex],'UTF-8');
+									}
 									if (!empty($newValue) && strcasecmp($newValue, 'null') != 0) {
 										$translation = new Translation();
 										$translation->languageId = $codeToLanguageId[$code];

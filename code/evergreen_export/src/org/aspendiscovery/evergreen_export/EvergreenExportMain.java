@@ -57,7 +57,7 @@ public class EvergreenExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -267,6 +267,8 @@ public class EvergreenExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void exportVolumes(Connection dbConn) {
@@ -408,8 +410,6 @@ public class EvergreenExportMain {
 
 	private static void updatePatronTypes(Connection dbConn, String staffToken) {
 		try {
-			//String params = "service=open-ils.pcrud&method=open-ils.pcrud.retrieve.pgt&param=%22" + staffToken + "%22";
-
 			HashMap<Integer, String> evergreenPTypes = new HashMap<>();
 			String[] pgtIdl = fetchIdl("pgt");
 
@@ -667,11 +667,10 @@ public class EvergreenExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 
-	private synchronized static String groupEvergreenRecord(Record marcRecord) {
+	private synchronized static String groupEvergreenRecord(org.marc4j.marc.Record marcRecord) {
 		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
@@ -698,7 +697,7 @@ public class EvergreenExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -741,7 +740,7 @@ public class EvergreenExportMain {
 		File latestFile = null;
 		long latestMarcFile = 0;
 		File fullExportFile = null;
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+		if (exportedMarcFiles != null){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				//Remove any files that are older than the last time we processed files.
 				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
@@ -764,7 +763,7 @@ public class EvergreenExportMain {
 		File[] largeXmlFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("xml"));
 		File latestXmlFile = null;
 		long latestXmlFileTime = 0;
-		if (largeXmlFiles != null && largeXmlFiles.length > 0){
+		if (largeXmlFiles != null){
 			for (File largeXmlFile : largeXmlFiles) {
 				//Remove any files that are older than the last time we processed files.
 				if (largeXmlFile.lastModified() / 1000 < lastUpdateFromMarc){
@@ -799,7 +798,7 @@ public class EvergreenExportMain {
 
 		//Process CSV Files
 		File[] exportedCsvFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("csv"));
-		if (exportedCsvFiles != null && exportedCsvFiles.length > 0) {
+		if (exportedCsvFiles != null) {
 			for (File exportedCsvFile : exportedCsvFiles) {
 				if (!exportedCsvFile.delete()) {
 					logEntry.incErrors("Could not delete - changed item csv file " + exportedCsvFile);
@@ -835,7 +834,7 @@ public class EvergreenExportMain {
 		}
 
 		File[] exportedDeletedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("incremental_deleted")));
-		if (exportedDeletedIdFiles != null && exportedDeletedIdFiles.length > 0){
+		if (exportedDeletedIdFiles != null){
 			//For now, we don't care about these since we process the all ids file, just delete them.
 			for (File exportedDeletedIdFile : exportedDeletedIdFiles) {
 				if (!exportedDeletedIdFile.delete()) {
@@ -874,7 +873,7 @@ public class EvergreenExportMain {
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
 		//Process all the threads, we will allow up to 10 concurrent threads to start
-		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(indexingProfile.getNumExtractionThreads());
 
 		for (String idToProcess : idsToProcess) {
 			es.execute(() -> {
@@ -899,7 +898,7 @@ public class EvergreenExportMain {
 		@SuppressWarnings("unused")
 		int numWorksReindexed = 0;
 		for (String idToProcess : idsToProcess) {
-			Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
+			org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
 			if (marcRecord != null) {
 				String groupedWorkId = groupEvergreenRecord(marcRecord);
 				if (groupedWorkId != null) {
@@ -971,7 +970,7 @@ public class EvergreenExportMain {
 			int numRestored = 0;
 			for (String restoredRecordId : restoredIds) {
 				indexer.markIlsRecordAsRestored(indexingProfile.getName(), restoredRecordId);
-				Record currentMarcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), restoredRecordId, logEntry);
+				org.marc4j.marc.Record currentMarcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), restoredRecordId, logEntry);
 				if (currentMarcRecord != null) {
 					String groupedWorkId = groupEvergreenRecord(currentMarcRecord);
 					if (groupedWorkId != null) {
@@ -1097,7 +1096,7 @@ public class EvergreenExportMain {
 			MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 			while (catalogReader.hasNext()) {
 				numRecordsRead++;
-				Record curBib = null;
+				org.marc4j.marc.Record curBib = null;
 				try {
 					curBib = catalogReader.next();
 				} catch (Exception e) {
@@ -1113,7 +1112,7 @@ public class EvergreenExportMain {
 							recordsInMarcWriter.write(",suppressed");
 						}
 						lastRecordProcessed = recordNumber;
-						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						recordNumber = recordNumber.replaceAll("\\D", "");
 						long recordNumberDigits = Long.parseLong(recordNumber);
 						if (recordNumberDigits > maxIdInExport) {
 							maxIdInExport = recordNumberDigits;
@@ -1127,6 +1126,11 @@ public class EvergreenExportMain {
 		} catch (Exception e) {
 			logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 			logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+			try {
+				recordsInMarcWriter.close();
+			}catch (Exception ioe){
+				logger.error("Error closing recordsInFullMarc.csv", ioe);
+			}
 			return totalChanges;
 		}
 		try {
@@ -1142,7 +1146,7 @@ public class EvergreenExportMain {
 				while (marcXmlReader.hasNext()) {
 					numRecordsRead++;
 					numRecordsInXmlFile++;
-					Record curBib = null;
+					org.marc4j.marc.Record curBib = null;
 					try {
 						curBib = marcXmlReader.next();
 					} catch (Exception e) {
@@ -1153,7 +1157,7 @@ public class EvergreenExportMain {
 						if (recordIdentifier != null) {
 							String recordNumber = recordIdentifier.getIdentifier();
 							lastRecordProcessed = recordNumber;
-							recordNumber = recordNumber.replaceAll("[^\\d]", "");
+							recordNumber = recordNumber.replaceAll("\\D", "");
 							long recordNumberDigits = Long.parseLong(recordNumber);
 							if (recordNumberDigits > maxIdInExport) {
 								maxIdInExport = recordNumberDigits;
@@ -1247,7 +1251,7 @@ public class EvergreenExportMain {
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
-						Record curBib = catalogReader.next();
+						org.marc4j.marc.Record curBib = catalogReader.next();
 						numRecordsRead++;
 						if (curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
 							logEntry.incSkipped();
@@ -1405,7 +1409,7 @@ public class EvergreenExportMain {
 	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, boolean reindexNow) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
-		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
+		String getBibUrl = baseUrl + "/opac/extras/unapi?id=tag::U2@bre/" + bibNumber + "{holdings_xml,acp,acpn,acpt}&format=marcxml";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, reindexNow);
 		return response.numChanges;
 	}
@@ -1420,7 +1424,8 @@ public class EvergreenExportMain {
 
 		int numTries = 0;
 		boolean successfulResponse = false;
-		while (numTries < 3 && !successfulResponse) {
+		int maxTries = indexingProfile.getNumRetriesForBibLookups() + 1;
+		while (numTries < maxTries && !successfulResponse) {
 			numTries++;
 			WebServiceResponse getBibsResponse = callEvergreenAPI(getBibsRequestUrl);
 			if (getBibsResponse.isSuccess()) {
@@ -1428,13 +1433,12 @@ public class EvergreenExportMain {
 					successfulResponse = true;
 
 					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
-					Element collectionsResult = (Element) getBibsDocument.getFirstChild();
 
-					NodeList recordNodes = collectionsResult.getElementsByTagName("record");
+					NodeList recordNodes = getBibsDocument.getElementsByTagName("record");
 					for (int i = 0; i < recordNodes.getLength(); i++){
 						boolean hasInvalidData = false;
 
-						Record marcRecord = marcFactory.newRecord();
+						org.marc4j.marc.Record marcRecord = marcFactory.newRecord();
 
 						Node curRecordNode = recordNodes.item(i);
 						for (int j = 0; j < curRecordNode.getChildNodes().getLength(); j++){
@@ -1577,6 +1581,18 @@ public class EvergreenExportMain {
 																			isOpacVisible = false;
 																		}
 																		break;
+																	case "copy_notes" :
+																		String copyNotes = curCopySubElement.getTextContent();
+																		if (!copyNotes.isEmpty()) {
+																			curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), copyNotes));
+																		}
+																		break;
+																	case "copy_tags" :
+																		String copyTags = curCopySubElement.getTextContent();
+																		if (!copyTags.isEmpty()) {
+																			curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), copyTags));
+																		}
+																		break;
 																}
 															}
 														}
@@ -1634,14 +1650,30 @@ public class EvergreenExportMain {
 						response.numChanges++;
 					}
 				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for get bibs response " + getBibsRequestUrl, e);
+					logEntry.incRecordsWithInvalidMarc("Unable to parse document for get bibs response " + getBibsRequestUrl);
 					response.doneLoading = true;
 				}
 			} else {
-				if (numTries == 3) {
+				if (getBibsResponse.getResponseCode() == 502 || getBibsResponse.getResponseCode() == 503) {
+					//We were rate limited, wait 1 second.
+					try {
+						Thread.sleep(2000);
+					}catch (Exception e) {
+						logEntry.addNote("Sleep was interrupted when pausing after being rate limited");
+					}
+				}
+				if (numTries == maxTries) {
 					logEntry.incErrors("Could not get bibs from " + getBibsRequestUrl + " " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
 					response.doneLoading = true;
 				}
+			}
+		}
+
+		if (indexingProfile.getNumMillisecondsToPauseAfterBibLookups() > 0) {
+			try {
+				Thread.sleep(indexingProfile.getNumMillisecondsToPauseAfterBibLookups());
+			}catch (Exception e) {
+				logEntry.addNote("Sleep was interrupted when pausing after fetching bib from Evergreen");
 			}
 		}
 
@@ -1723,7 +1755,7 @@ public class EvergreenExportMain {
 			if (translation == null) {
 				translation = value;
 			}
-			if (value.length() > 0) {
+			if (!value.isEmpty()) {
 				try {
 					insertTranslationStmt.setLong(1, translationMapId);
 					insertTranslationStmt.setString(2, value);

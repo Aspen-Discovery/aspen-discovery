@@ -13,8 +13,10 @@ class Authentication_SAML2 extends Action {
 			$logger->log('Starting SAML Authentication', Logger::LOG_ERROR);
 			$auth = new SAMLAuthentication();
 			$returnTo = $configArray['Site']['url'];
-			$followupAction = $_SESSION['returnToAction'] ?? strip_tags($_REQUEST['followupAction']);
-			$followupModule = $_SESSION['returnToModule'] ?? strip_tags($_REQUEST['followupModule']);
+			$action = $_REQUEST['followupAction'] ? strip_tags($_REQUEST['followupAction']) : 'Home';
+			$module = $_REQUEST['followupModule'] ? strip_tags($_REQUEST['followupModule']) :  'MyAccount';
+			$followupAction = $_SESSION['returnToAction'] ?? $action;
+			$followupModule = $_SESSION['returnToModule'] ?? $module;
 			$followupPageId = $_SESSION['returnToId'] ?? null;
 			if($followupModule && $followupAction) {
 				if($followupModule == 'WebBuilder' && $followupAction == 'PortalPage' && $followupPageId) {

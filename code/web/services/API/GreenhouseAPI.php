@@ -286,7 +286,7 @@ class GreenhouseAPI extends Action {
 
 				$version = $aspenSite->version;
 
-				if ($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
+				if ($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3 || ($aspenSite->appAccess == 2 && ($releaseChannel == 'alpha' || $releaseChannel == 'beta' || $releaseChannel == 'zeta'))) {
 					//See if we need to reload the cache
 					$reloadCache = false;
 
@@ -385,6 +385,18 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
+		// prep user location
+		if (isset($_GET['latitude'])) {
+			$userLatitude = $_GET['latitude'];
+		} else {
+			$userLatitude = 0;
+		}
+		if (isset($_GET['longitude'])) {
+			$userLongitude = $_GET['longitude'];
+		} else {
+			$userLongitude = 0;
+		}
+
 		$num = 0;
 		$enabledAccess = 0;
 		$releaseChannel = 0;
@@ -433,6 +445,8 @@ class GreenhouseAPI extends Action {
 						$longitude = 0;
 					}
 
+					$distance = $this->findDistance($userLongitude, $userLatitude, $location->longitude, $location->latitude, $location->unit);
+
 					//TODO: We will eventually want to be able to search individual library branches in the app.
 					// i.e. for schools
 					//$searchLocation = $location;
@@ -450,10 +464,10 @@ class GreenhouseAPI extends Action {
 					//get the theme for the location
 					$themeArray = [];
 					$theme = new Theme();
-					if (isset($location) && $location->theme != -1) {
-						$theme->id = $location->theme;
+					if (isset($location) && ($location->useLibraryThemes || empty($location->getThemes()))) {
+						$theme->id = $library->getPrimaryTheme()->themeId;
 					} else {
-						$theme->id = $library->theme;
+						$theme->id = $location->getPrimaryTheme()->themeId;
 					}
 					if ($theme->find(true)) {
 						$theme->applyDefaults();
@@ -479,8 +493,8 @@ class GreenhouseAPI extends Action {
 							'longitude' => $longitude,
 							'unit' => $location->unit,
 							'name' => $location->displayName,
-							'locationId' => $location->locationId,
-							'libraryId' => $library->libraryId,
+							'locationId' => (string)$location->locationId,
+							'libraryId' => (string)$library->libraryId,
 							'siteId' => $library->libraryId . '.' . $location->locationId,
 							'solrScope' => $solrScope,
 							'baseUrl' => $baseUrl,
@@ -488,6 +502,7 @@ class GreenhouseAPI extends Action {
 							'favicon' => $themeArray['favicon'],
 							'logo' => $themeArray['logo'],
 							'theme' => $themeArray,
+							'distance' => $distance,
 						];
 
 						$num = $num + 1;
@@ -508,8 +523,8 @@ class GreenhouseAPI extends Action {
 			'name' => $libraryLocation->name,
 			'version' => $aspenSite->version,
 			'librarySystem' => $aspenSite->name,
-			'libraryId' => $libraryLocation->libraryId,
-			'locationId' => $libraryLocation->locationId,
+			'libraryId' => (string)$libraryLocation->libraryId,
+			'locationId' => (string)$libraryLocation->locationId,
 			'baseUrl' => $libraryLocation->baseUrl,
 			'accessLevel' => $aspenSite->appAccess,
 			'distance' => $distance,

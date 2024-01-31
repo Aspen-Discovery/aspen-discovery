@@ -1,7 +1,8 @@
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import { Badge, Box, Button, Container, FormControl, HStack, Icon, Input, Pressable, ScrollView, Text } from 'native-base';
 import React from 'react';
@@ -10,14 +11,18 @@ import React from 'react';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { fetchSavedEvents } from '../../util/api/event';
 import { getLists } from '../../util/api/list';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { getLocations } from '../../util/api/location';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
+import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
-import { getDefaultFacets } from '../../util/search';
+import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
+import { ForceLogout } from '../Auth/ForceLogout';
 import DisplayBrowseCategory from './Category';
 
 let maxCategories = 5;
@@ -26,12 +31,15 @@ export const DiscoverHomeScreen = () => {
      const isFocused = useIsFocused();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
+     const [invalidSession, setInvalidSession] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
+     const [userLatitude, setUserLatitude] = React.useState(0);
+     const [userLongitude, setUserLongitude] = React.useState(0);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
+     const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location } = React.useContext(LibraryBranchContext);
+     const { location, updateLocations } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
@@ -39,6 +47,7 @@ export const DiscoverHomeScreen = () => {
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const [searchTerm, setSearchTerm] = React.useState('');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -85,18 +94,6 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               updateUser(data);
-               updateLanguage(data.interfaceLanguage ?? 'en');
-               PATRON.language = data.interfaceLanguage ?? 'en';
-          },
-          placeholderData: [],
-     });
-
      useQuery(['linked_accounts', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
@@ -133,10 +130,22 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useQuery(['locations', library.baseUrl, language, userLatitude, userLongitude], () => getLocations(library.baseUrl, language, userLatitude, userLongitude), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateLocations(data);
+          },
+     });
+
      useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
+          onSuccess: (data) => {
+               console.log(data);
+          },
      });
 
      useQuery(['reading_history', user.id, library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
@@ -145,6 +154,15 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
           onSuccess: (data) => {
                updateReadingHistory(data);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
           },
      });
 
@@ -157,11 +175,66 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
+          refetchInterval: 86400000,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (typeof data.result?.session !== 'undefined') {
+                    GLOBALS.appSessionId = data.result.session;
+               }
+          },
+     });
+
+     useQuery(['valid_user', library.baseUrl, user.id], () => revalidateUser(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (data === false || data === 'false') {
+                    setInvalidSession(true);
+               }
+          },
+     });
+
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (user) {
+                    if (data !== user) {
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                    }
+               } else {
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
+               }
+          },
+     });
+
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
+                    let latitude = await SecureStore.getItemAsync('latitude');
+                    let longitude = await SecureStore.getItemAsync('longitude');
+                    setUserLatitude(latitude);
+                    setUserLongitude(longitude);
+
+                    if (version >= '24.02.00') {
+                         updateCurrentIndex('Keyword');
+                         updateCurrentSource('local');
+                         await getSearchIndexes(library.baseUrl, language, 'local').then((result) => {
+                              updateIndexes(result);
+                         });
+                         await getSearchSources(library.baseUrl, language).then((result) => {
+                              updateSources(result);
+                         });
+                    }
+
                     if (version >= '22.11.00') {
-                         await getDefaultFacets(language);
+                         await getDefaultFacets(library.baseUrl, 5, language);
                     }
 
                     console.log('notificationOnboard: ' + notificationOnboard);
@@ -190,7 +263,12 @@ export const DiscoverHomeScreen = () => {
      };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: false });
+          navigateStack('BrowseTab', 'SearchResults', {
+               term: searchTerm,
+               type: 'catalog',
+               prevRoute: 'DiscoveryScreen',
+               scannerSearch: false,
+          });
           clearText();
      };
 
@@ -245,6 +323,8 @@ export const DiscoverHomeScreen = () => {
                isNew = item.isNew;
           }
 
+          const key = 'medium_' + item.id;
+
           return (
                <Pressable
                     ml={1}
@@ -266,7 +346,7 @@ export const DiscoverHomeScreen = () => {
                          </Container>
                     ) : null}
                     <CachedImage
-                         cacheKey={item.id}
+                         cacheKey={key}
                          alt={item.title_display}
                          source={{
                               uri: `${imageUrl}`,
@@ -357,16 +437,8 @@ export const DiscoverHomeScreen = () => {
           queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
      };
 
-     const onPressSettings = (url, patronId) => {
-          const version = formatDiscoveryVersion(library.discoveryVersion);
-          let screen = 'SettingsHomeScreen';
-          if (version >= '22.12.00') {
-               screen = 'SettingsBrowseCategories';
-          }
-          navigateStack('AccountScreenTab', screen, {
-               url,
-               patronId,
-          });
+     const onPressSettings = () => {
+          navigateStack('MoreTab', 'MyPreferences_ManageBrowseCategories', {});
      };
 
      const handleOnPressCategory = (label, key, source) => {
@@ -402,6 +474,14 @@ export const DiscoverHomeScreen = () => {
           return loadingSpinner();
      }
 
+     if (invalidSession === true || invalidSession === 'true') {
+          return <ForceLogout />;
+     }
+
+     const clearSearch = () => {
+          setSearchTerm('');
+     };
+
      return (
           <ScrollView>
                <Box safeArea={5}>
@@ -414,15 +494,35 @@ export const DiscoverHomeScreen = () => {
                               onChangeText={(term) => setSearchTerm(term)}
                               status="info"
                               placeholder={getTermFromDictionary(language, 'search')}
-                              clearButtonMode="while-editing"
                               onSubmitEditing={search}
                               value={searchTerm}
                               size="xl"
-                              InputLeftElement={<Icon as={<Ionicons name="search" />} size={5} ml="2" color="muted.800" />}
+                              _dark={{
+                                   color: 'muted.50',
+                                   borderColor: 'muted.50',
+                              }}
+                              InputLeftElement={
+                                   <Icon
+                                        as={<Ionicons name="search" />}
+                                        size={5}
+                                        ml="2"
+                                        color="muted.800"
+                                        _dark={{
+                                             color: 'muted.50',
+                                        }}
+                                   />
+                              }
                               InputRightElement={
-                                   <Pressable onPress={() => openScanner()}>
-                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
-                                   </Pressable>
+                                   <>
+                                        {searchTerm ? (
+                                             <Pressable onPress={() => clearSearch()}>
+                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={6} mr="2" />
+                                             </Pressable>
+                                        ) : null}
+                                        <Pressable onPress={() => openScanner()}>
+                                             <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
+                                        </Pressable>
+                                   </>
                               }
                          />
                     </FormControl>
@@ -466,7 +566,7 @@ const ButtonOptions = (props) => {
                          mt="3"
                          colorScheme="primary"
                          onPress={() => {
-                              onPressSettings(libraryUrl, patronId);
+                              onPressSettings();
                          }}
                          startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
                          {getTermFromDictionary(language, 'browse_categories_manage')}

@@ -51,7 +51,7 @@
 			{if !empty($userHasCatalogConnection)}
 				Globals.hasILSConnection = true;
 			{/if}
-			{if array_key_exists('Boundless', $enabledModules)}
+			{if array_key_exists('Axis 360', $enabledModules)}
 				Globals.hasAxis360Connection = true;
 			{/if}
 			{if array_key_exists('Cloud Library', $enabledModules)}
@@ -63,6 +63,9 @@
 			{if array_key_exists('OverDrive', $enabledModules)}
 				Globals.hasOverDriveConnection = true;
 			{/if}
+            {if array_key_exists('Palace Project', $enabledModules)}
+			Globals.hasPalaceProjectConnection = true;
+            {/if}
 			{if !empty($hasInterlibraryLoanConnection)}
 				Globals.hasInterlibraryLoanConnection = true;
 			{/if}

@@ -8,7 +8,7 @@ class eCARD extends Action {
 
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
-		if ($quipuECardSettings->find(true)) {
+		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasECard) {
 			$interface->assign('eCardSettings', $quipuECardSettings);
 		} else {
 			$interface->assign('eCardSettings', null);

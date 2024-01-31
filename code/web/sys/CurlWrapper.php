@@ -19,7 +19,7 @@ class CurlWrapper {
 				$gitBranch = substr($gitBranch, 0, -1);
 			}
 		} else {
-			$gitBranch = 'Master';
+			$gitBranch = 'Primary';
 		}
 
 		$header = [];

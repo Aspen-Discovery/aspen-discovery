@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.xml.parsers.SAXParser;
@@ -57,13 +58,13 @@ class CodeTable implements CodeTableInterface {
      */
     @Override
     public boolean isCombining(final int i, final int g0, final int g1) {
-        if (i <= 0x7E) {
-            final Vector<Integer> v = combining.get(g0);
-            return (v != null && v.contains(i));
-        } else {
-            final Vector<Integer> v = combining.get(g1);
-            return (v != null && v.contains(i));
-        }
+	    final Vector<Integer> v;
+	    if (i <= 0x7E) {
+		    v = combining.get(g0);
+	    } else {
+		    v = combining.get(g1);
+	    }
+	    return (v != null && v.contains(i));
     }
 
     /**
@@ -81,22 +82,13 @@ class CodeTable implements CodeTableInterface {
             final HashMap<Integer, Character> charset = charsets.get(mode);
 
             if (charset == null) {
-                // System.err.println("Hashtable not found: "
-                // + Integer.toHexString(mode));
                 return (char) c;
             } else {
                 Character ch = charset.get(c);
                 if (ch == null) {
-                    final int newc = (c < 0x80) ? c + 0x80 : c - 0x80;
-                    ch = charset.get(newc);
-                    if (ch == null) {
-                        // System.err.println("Character not found: "
-                        // + Integer.toHexString(c) + " in Code Table: "
-                        // + Integer.toHexString(mode));
-                        return (char) 0;
-                    } else {
-                        return ch;
-                    }
+                    final int newChar = (c < 0x80) ? c + 0x80 : c - 0x80;
+                    ch = charset.get(newChar);
+	                return Objects.requireNonNullElseGet(ch, () -> (char) 0);
                 } else {
                     return ch;
                 }
@@ -128,7 +120,7 @@ class CodeTable implements CodeTableInterface {
             while (changeMade) {
                 changeMade = false;
                 for (Integer mode : combining.keySet()){
-                    if (combining.get(mode).size() == 0){
+                    if (combining.get(mode).isEmpty()){
                         combining.remove(mode);
                         changeMade = true;
                         break;

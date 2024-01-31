@@ -30,12 +30,8 @@ public class MarcMultiplexReader implements MarcReader {
 
     @Override
     public boolean hasNext() {
-        boolean hasNext = false;
-        while (curReader == null || !(hasNext = curReader.hasNext())) {
+	    while (curReader == null || !curReader.hasNext()) {
             if (readerIterator.hasNext()) {
-//                final String readerName = nameIterator.hasNext() ? nameIterator.next()
-//                        : "" + readerCnt;
-                // logger.info("Switching to reader: "+readerName);
                 curReader = readerIterator.next();
                 readerCnt++;
             } else {
@@ -43,7 +39,7 @@ public class MarcMultiplexReader implements MarcReader {
                 return false;
             }
         }
-        return hasNext;
+        return true;
     }
 
     @Override

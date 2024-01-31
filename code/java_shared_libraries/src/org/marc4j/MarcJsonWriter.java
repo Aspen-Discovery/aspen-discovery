@@ -3,10 +3,9 @@ package org.marc4j;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 
-import org.apache.commons.lang3.StringUtils;
 import org.marc4j.converter.CharConverter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -77,11 +76,10 @@ public class MarcJsonWriter implements MarcWriter {
      * Creates a {@link MarcJsonWriter} with the supplied {@link OutputStream} using the specified {@link CharConverter}
      * to write using the specified JSON format.
      *
-     * @param os - the OutputStream to write to
      * @param conv - the Character converter to use to transform the data as it is being written out.
      * @param jsonFormat - whether to use the MARC_IN_JSON format (default) or the MARC_JSON format (1)
      */
-    public MarcJsonWriter(final OutputStream os, final CharConverter conv, final int jsonFormat) {
+    public MarcJsonWriter(final CharConverter conv, final int jsonFormat) {
         setConverter(conv);
         useJsonFormat = jsonFormat;
 
@@ -104,11 +102,11 @@ public class MarcJsonWriter implements MarcWriter {
 
         indent(buf, "\n    ");
 
-        buf.append(ql + "leader" + ql + ":\"").append(record.getLeader().toString()).append("\",");
+        buf.append(ql).append("leader").append(ql).append(":\"").append(record.getLeader().toString()).append("\",");
 
         indent(buf, "\n    ");
 
-        buf.append(ql + "controlfield" + ql + ":");
+        buf.append(ql).append("controlfield").append(ql).append(":");
 
         indent(buf, "\n    ");
 
@@ -126,8 +124,7 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n        ");
             }
 
-            buf.append("{ " + ql + "tag" + ql + " : \"" + cf.getTag() + "\", " + ql + "data" + ql + " : ")
-                    .append("\"" + unicodeEscape(cf.getData()) + "\" }");
+            buf.append("{ ").append(ql).append("tag").append(ql).append(" : \"").append(cf.getTag()).append("\", ").append(ql).append("data").append(ql).append(" : ").append("\"").append(unicodeEscape(cf.getData())).append("\" }");
         }
 
         indent(buf, "\n    ");
@@ -160,14 +157,13 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n            ");
             }
 
-            buf.append(ql + "tag" + ql + " : \"" + df.getTag() + "\", " + ql + "ind" + ql + " : \"" +
-                    df.getIndicator1() + df.getIndicator2() + "\",");
+            buf.append(ql).append("tag").append(ql).append(" : \"").append(df.getTag()).append("\", ").append(ql).append("ind").append(ql).append(" : \"").append(df.getIndicator1()).append(df.getIndicator2()).append("\",");
 
             if (indent) {
                 buf.append("\n            ");
             }
 
-            buf.append(ql + "subfield" + ql + " :");
+            buf.append(ql).append("subfield").append(ql).append(" :");
 
             if (indent) {
                 buf.append("\n            ");
@@ -187,8 +183,7 @@ public class MarcJsonWriter implements MarcWriter {
                     buf.append("\n                ");
                 }
 
-                buf.append("{ " + ql + "code" + ql + " : \"" + sf.getCode() + "\", " + ql + "data" + ql + " : \"" +
-                        unicodeEscape(sf.getData()) + "\" }");
+                buf.append("{ ").append(ql).append("code").append(ql).append(" : \"").append(sf.getCode()).append("\", ").append(ql).append("data").append(ql).append(" : \"").append(unicodeEscape(sf.getData())).append("\" }");
             }
 
             if (indent) {
@@ -226,17 +221,17 @@ public class MarcJsonWriter implements MarcWriter {
         final StringBuffer buf = new StringBuffer();
         buf.append("{");
 
-        indent(buf, "\n    ");;
+        indent(buf, "\n    ");
 
-        buf.append(ql + "leader" + ql + ":\"").append(record.getLeader().toString()).append("\",");
+	    buf.append(ql).append("leader").append(ql).append(":\"").append(record.getLeader().toString()).append("\",");
 
-        indent(buf, "\n    ");;
+        indent(buf, "\n    ");
 
-        buf.append(ql + "fields" + ql + ":");
+	    buf.append(ql).append("fields").append(ql).append(":");
 
-        indent(buf, "\n    ");;
+        indent(buf, "\n    ");
 
-        buf.append("[");
+	    buf.append("[");
         boolean firstField = true;
 
         for (final ControlField cf : record.getControlFields()) {
@@ -259,7 +254,7 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n            ");
             }
 
-            buf.append(ql + cf.getTag() + ql + ":").append("\"" + unicodeEscape(cf.getData()) + "\"");
+            buf.append(ql).append(cf.getTag()).append(ql).append(":").append("\"").append(unicodeEscape(cf.getData())).append("\"");
 
             if (indent) {
                 buf.append("\n        ");
@@ -288,7 +283,7 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n            ");
             }
 
-            buf.append(ql + df.getTag() + ql + ":");
+            buf.append(ql).append(df.getTag()).append(ql).append(":");
 
             if (indent) {
                 buf.append("\n                ");
@@ -296,7 +291,7 @@ public class MarcJsonWriter implements MarcWriter {
 
             buf.append("{");
             // if (indent) buf.append("\n                ");
-            buf.append(ql + "subfields" + ql + ":");
+            buf.append(ql).append("subfields").append(ql).append(":");
 
             if (indent) {
                 buf.append("\n                ");
@@ -322,7 +317,7 @@ public class MarcJsonWriter implements MarcWriter {
                     buf.append("\n                        ");
                 }
 
-                buf.append(ql + sf.getCode() + ql + ":\"" + unicodeEscape(sf.getData()) + "\"");
+                buf.append(ql).append(sf.getCode()).append(ql).append(":\"").append(unicodeEscape(sf.getData())).append("\"");
 
                 if (indent) {
                     buf.append("\n                    ");
@@ -341,13 +336,13 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n                ");
             }
 
-            buf.append(ql + "ind1" + ql + ":\"" + unicodeEscape(Character.toString(df.getIndicator1())) + "\",");
+            buf.append(ql).append("ind1").append(ql).append(":\"").append(unicodeEscape(Character.toString(df.getIndicator1()))).append("\",");
 
             if (indent) {
                 buf.append("\n                ");
             }
 
-            buf.append(ql + "ind2" + ql + ":\"" + unicodeEscape(Character.toString(df.getIndicator2())) + "\"");
+            buf.append(ql).append("ind2").append(ql).append(":\"").append(unicodeEscape(Character.toString(df.getIndicator2()))).append("\"");
 
             if (indent) {
                 buf.append("\n            ");
@@ -362,13 +357,13 @@ public class MarcJsonWriter implements MarcWriter {
             buf.append("}");
         }
 
-        indent(buf, "\n    ");;
+        indent(buf, "\n    ");
 
-        buf.append("]");
+	    buf.append("]");
 
-        indent(buf, "\n");;
+        indent(buf, "\n");
 
-        buf.append("}\n");
+	    buf.append("}\n");
 
         return (buf.toString());
     }
@@ -382,7 +377,7 @@ public class MarcJsonWriter implements MarcWriter {
             data = Normalizer.normalize(data, Normalizer.Form.NFC);
         }
 
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
 
         for (int i = 0; i < data.length(); i++) {
             final char c = data.charAt(i);
@@ -419,7 +414,7 @@ public class MarcJsonWriter implements MarcWriter {
                 default: {
                     if (c > 0xff || c < 0x1f) {
                         final String val = "0000" + Integer.toHexString(c);
-                        buffer.append("\\u" + val.substring(val.length() - 4, val.length()));
+                        buffer.append("\\u").append(val.substring(val.length() - 4));
                     } else {
                         buffer.append(c);
                     }
@@ -483,13 +478,11 @@ public class MarcJsonWriter implements MarcWriter {
         }
 
         try {
-            os.write(recordAsJson.getBytes("UTF-8"));
+            os.write(recordAsJson.getBytes(StandardCharsets.UTF_8));
             os.flush();
-        } catch (final UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (final IOException e) {
             // TODO Auto-generated catch block
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
         }
     }

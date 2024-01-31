@@ -6,11 +6,9 @@ import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -32,13 +30,13 @@ import java.util.TreeSet;
 class UserListIndexer {
 	private Connection dbConn;
 	private final Logger logger;
-	private ConcurrentUpdateSolrClient updateServer;
-	private SolrClient groupedWorkServer;
+	private ConcurrentUpdateHttp2SolrClient updateServer;
+	private Http2SolrClient groupedWorkServer;
 	private TreeSet<Scope> scopes;
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
-	private SolrClient openArchivesServer;
+	private Http2SolrClient openArchivesServer;
 	private PreparedStatement getListDisplayNameAndAuthorStmt;
 	private final String serverName;
 	private final String baseUrl;
@@ -60,17 +58,26 @@ class UserListIndexer {
 			logger.error("Error loading a list of users with the listPublisher role");
 		}
 
-		String solrPort = configIni.get("Reindex", "solrPort");
-		if (solrPort == null || solrPort.length() == 0) {
-			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
-			System.exit(1);
+		String solrPort = configIni.get("Index", "solrPort");
+		if (solrPort == null || solrPort.isEmpty()) {
+			solrPort = configIni.get("Reindex", "solrPort");
+			if (solrPort == null || solrPort.isEmpty()) {
+				solrPort = "8080";
+			}
+		}
+		String solrHost = configIni.get("Index", "solrHost");
+		if (solrHost == null || solrHost.isEmpty()) {
+			solrHost = configIni.get("Reindex", "solrHost");
+			if (solrHost == null || solrHost.isEmpty()) {
+				solrHost = "localhost";
+			}
 		}
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/lists");
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/lists", http2Client)
+				.withThreadCount(2)
+				.withQueueSize(100)
+				.build();
 		//Get the search version from system variables
 		int searchVersion = 1;
 		try {
@@ -82,14 +89,15 @@ class UserListIndexer {
 		}catch (Exception e){
 			logger.error("Error loading search version", e);
 		}
+		Http2SolrClient.Builder groupedWorkHttpBuilder;
 		if (searchVersion == 1) {
-			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			groupedWorkServer = groupedWorkHttpBuilder.build();
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
 		}else{
-			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
-			groupedWorkServer = groupedWorkHttpBuilder.build();
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
 		}
-		HttpSolrClient.Builder openArchivesHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
+		groupedWorkServer = groupedWorkHttpBuilder.build();
+
+		Http2SolrClient.Builder openArchivesHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives");
 		openArchivesServer = openArchivesHttpBuilder.build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
@@ -97,18 +105,13 @@ class UserListIndexer {
 
 	void close() {
 		this.dbConn = null;
-		try {
-			groupedWorkServer.close();
-			groupedWorkServer = null;
-		} catch (IOException e) {
-			logger.error("Could not close grouped work server", e);
-		}
-		try{
-			openArchivesServer.close();
-			openArchivesServer = null;
-		} catch (IOException e) {
-			logger.error("Could not close open archives server", e);
-		}
+
+		groupedWorkServer.close();
+		groupedWorkServer = null;
+
+		openArchivesServer.close();
+		openArchivesServer = null;
+
 		updateServer.close();
 		updateServer = null;
 		scopes = null;
@@ -177,7 +180,7 @@ class UserListIndexer {
 		return numListsProcessed;
 	}
 
-	private boolean updateSolrForList(boolean fullReindex, ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, long lastReindexTime, ListIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(boolean fullReindex, ConcurrentUpdateHttp2SolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, long lastReindexTime, ListIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(this);
 		long listId = allPublicListsRS.getLong("id");
 
@@ -208,13 +211,13 @@ class UserListIndexer {
 				}else{
 					userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
 				}
-				if (displayName != null && displayName.length() > 0){
+				if (displayName != null && !displayName.isEmpty()){
 					userListSolr.setAuthor(displayName);
 				}else{
 					if (firstName == null) firstName = "";
 					if (lastName == null) lastName = "";
 					String firstNameFirstChar = "";
-					if (firstName.length() > 0){
+					if (!firstName.isEmpty()){
 						firstNameFirstChar = firstName.charAt(0) + ". ";
 					}
 					userListSolr.setAuthor(firstNameFirstChar + lastName);
@@ -238,7 +241,7 @@ class UserListIndexer {
 					String source = allTitlesRS.getString("source");
 					String sourceId = allTitlesRS.getString("sourceId");
 					if (!allTitlesRS.wasNull()){
-						if (sourceId.length() > 0 && source.equals("GroupedWork")) {
+						if (!sourceId.isEmpty() && source.equals("GroupedWork")) {
 							// Skip archive object Ids
 							SolrQuery query = new SolrQuery();
 							query.setQuery("id:" + sourceId);
@@ -248,7 +251,7 @@ class UserListIndexer {
 								QueryResponse response = groupedWorkServer.query(query);
 								SolrDocumentList results = response.getResults();
 								//Should only ever get one response
-								if (results.size() >= 1) {
+								if (!results.isEmpty()) {
 									SolrDocument curWork = results.get(0);
 									userListSolr.addListTitle("grouped_work", sourceId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
 								}
@@ -265,7 +268,7 @@ class UserListIndexer {
 								QueryResponse response = openArchivesServer.query(query);
 								SolrDocumentList results = response.getResults();
 								//Should only ever get one response
-								if (results.size() >= 1) {
+								if (!results.isEmpty()) {
 									SolrDocument curWork = results.get(0);
 									userListSolr.addListTitle("open_archives", sourceId, curWork.getFieldValue("title"), curWork.getFieldValue("creator"));
 								}

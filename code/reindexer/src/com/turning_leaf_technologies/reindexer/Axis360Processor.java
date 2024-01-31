@@ -195,7 +195,7 @@ class Axis360Processor {
 	 * Load information based on subjects for the record
 	 *
 	 * @param groupedWork     The Grouped Work being updated
-	 * @param titleData JSON representing the raw data metadata from OverDrive
+	 * @param titleData JSON representing the raw data metadata from Libby
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
 	private void loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {

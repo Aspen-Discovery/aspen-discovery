@@ -267,6 +267,15 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 						require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 						$message .= $this->deleteAll('OverDriveStats');
 
+						require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectRecordUsage.php';
+						$message .= $this->deleteAll('PalaceProjectRecordUsage');
+
+						require_once ROOT_DIR . '/sys/PalaceProject/UserPalaceProjectUsage.php';
+						$message .= $this->deleteAll('UserPalaceProjectUsage');
+
+						require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectStats.php';
+						$message .= $this->deleteAll('PalaceProjectStats');
+
 						require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 						$message .= $this->deleteAll('APIUsage');
 
@@ -355,9 +364,6 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 
 						require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 						$message .= $this->deleteAll('WebBuilderCategory');
-
-						require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
-						$message .= $this->deleteAll('WebBuilderMenu');
 
 						require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 						$message .= $this->deleteAll('WebResource');

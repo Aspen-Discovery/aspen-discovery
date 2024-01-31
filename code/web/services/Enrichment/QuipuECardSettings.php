@@ -17,7 +17,7 @@ class QuipuECardSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Quipu eCARD Settings';
+		return 'Quipu Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -61,7 +61,7 @@ class QuipuECardSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
-		$breadcrumbs[] = new Breadcrumb('/Enrichment/QuipuECardSetting', 'Quipu eCARD Settings');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/QuipuECardSetting', 'Quipu Settings');
 		return $breadcrumbs;
 	}
 

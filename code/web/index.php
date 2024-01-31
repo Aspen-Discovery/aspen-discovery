@@ -1088,7 +1088,7 @@ function loadModuleActionId() {
 	}
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject";
 	foreach ($indexingProfiles as $profile) {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -1358,7 +1358,9 @@ function checkForMaliciouslyFormattedParameters(): void {
 		if (is_array($_REQUEST['page'])) {
 			$isMaliciousUrl = true;
 		} elseif (!is_numeric($_REQUEST['page'])) {
-			$isMaliciousUrl = true;
+			if ($_REQUEST['page'] != 'accountActivity') {
+				$isMaliciousUrl = true;
+			}
 		}
 	}
 	if (isset($_REQUEST['recordIndex']) && !empty($_REQUEST['recordIndex'])) {

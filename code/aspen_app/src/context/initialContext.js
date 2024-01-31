@@ -22,6 +22,10 @@ export const UserContext = React.createContext({
      language: [],
      updatePickupLocations: () => {},
      locations: [],
+     readingHistory: [],
+     updateReadingHistory: () => {},
+     savedEvents: [],
+     updateSavedEvents: () => {},
      cards: [],
      updateCards: () => {},
      notificationSettings: [],
@@ -41,6 +45,8 @@ export const LibrarySystemContext = React.createContext({
      library: [],
      version: '',
      url: '',
+     menu: [],
+     updateMenu: () => {},
      resetLibrary: () => {},
 });
 export const LibraryBranchContext = React.createContext({
@@ -53,6 +59,8 @@ export const LibraryBranchContext = React.createContext({
      updateEnableSelfCheck: () => {},
      selfCheckSettings: [],
      updateSelfCheckSettings: () => {},
+     locations: [],
+     updateLocations: () => {},
 });
 export const BrowseCategoryContext = React.createContext({
      updateBrowseCategories: () => {},
@@ -99,6 +107,24 @@ export const SystemMessagesContext = React.createContext({
      updateSystemMessages: () => {},
      systemMessages: [],
      resetSystemMessages: () => {},
+});
+
+export const SearchContext = React.createContext({
+     query: '',
+     currentIndex: 'Keyword',
+     currentSource: 'local',
+     sources: [],
+     indexes: [],
+     facets: [],
+     sort: 'relevance',
+     updateQuery: () => {},
+     updateCurrentIndex: () => {},
+     updateCurrentSource: () => {},
+     updateIndexes: () => {},
+     updateSources: () => {},
+     updateFacets: () => {},
+     updateSort: () => {},
+     resetSearch: () => {},
 });
 
 export const ThemeProvider = ({ children }) => {
@@ -154,6 +180,7 @@ export const LibrarySystemProvider = ({ children }) => {
      const [library, setLibrary] = useState();
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
+     const [menu, setMenu] = useState();
 
      const updateLibrary = (data) => {
           if (!_.isUndefined(data.discoveryVersion)) {
@@ -174,7 +201,13 @@ export const LibrarySystemProvider = ({ children }) => {
           setLibrary({});
           setVersion({});
           setUrl({});
+          setMenu({});
           console.log('reset LibrarySystemContext');
+     };
+
+     const updateMenu = (data) => {
+          setMenu(data);
+          console.log('updated menu in LibrarySystemContext');
      };
 
      return (
@@ -185,6 +218,8 @@ export const LibrarySystemProvider = ({ children }) => {
                     url,
                     updateLibrary,
                     resetLibrary,
+                    menu,
+                    updateMenu,
                }}>
                {children}
           </LibrarySystemContext.Provider>
@@ -196,6 +231,7 @@ export const LibraryBranchProvider = ({ children }) => {
      const [scope, setScope] = useState();
      const [enableSelfCheck, setEnableSelfCheck] = useState(false);
      const [selfCheckSettings, setSelfCheckSettings] = useState([]);
+     const [locations, setLocations] = useState();
 
      const updateLocation = (data) => {
           setLocation(data);
@@ -232,6 +268,11 @@ export const LibraryBranchProvider = ({ children }) => {
           console.log('updated self check settings in LibraryBranchContext');
      };
 
+     const updateLocations = (data) => {
+          setLocations(data);
+          console.log('updated locations in LibraryBranchContext');
+     };
+
      return (
           <LibraryBranchContext.Provider
                value={{
@@ -239,11 +280,13 @@ export const LibraryBranchProvider = ({ children }) => {
                     scope,
                     enableSelfCheck,
                     selfCheckSettings,
+                    locations,
                     updateLocation,
                     resetLocation,
                     updateScope,
                     updateEnableSelfCheck,
                     updateSelfCheckSettings,
+                    updateLocations,
                }}>
                {children}
           </LibraryBranchContext.Provider>
@@ -258,6 +301,7 @@ export const UserProvider = ({ children }) => {
      const [language, setLanguage] = useState('en');
      const [locations, setPickupLocations] = useState([]);
      const [readingHistory, setReadingHistory] = useState([]);
+     const [savedEvents, setSavedEvents] = useState([]);
      const [cards, setCards] = useState([]);
      const [notificationSettings, setNotificationSettings] = useState([]);
      const [notificationOnboard, setNotificationOnboard] = useState(0);
@@ -274,7 +318,11 @@ export const UserProvider = ({ children }) => {
           }
 
           if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
-               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en');
+               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en', data.onboardAppNotifications);
+          }
+
+          if (_.isObject(data) && !_.isUndefined(data.onboardAppNotifications)) {
+               updateNotificationOnboard(data.onboardAppNotifications);
           }
 
           setUser(data);
@@ -319,12 +367,17 @@ export const UserProvider = ({ children }) => {
           console.log('updated reading history in UserContext');
      };
 
+     const updateSavedEvents = (data) => {
+          setSavedEvents(data);
+          console.log('updated saved events in UserContext');
+     };
+
      const updateLibraryCards = (data) => {
           setCards(data);
           console.log('updated library cards in UserContext');
      };
 
-     const updateNotificationSettings = async (data, language) => {
+     const updateNotificationSettings = async (data, language, userOnboardStatus) => {
           if (Device.isDevice) {
                if (!_.isEmpty(data)) {
                     const device = Device.modelName;
@@ -363,7 +416,7 @@ export const UserProvider = ({ children }) => {
                          setAspenToken(true);
 
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (deviceSettings[0].onboardStatus) {
+                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
                          } else {
@@ -380,9 +433,13 @@ export const UserProvider = ({ children }) => {
 
                          const deviceSettings = _.filter(data, { device: 'Unknown' });
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (deviceSettings[0].onboardStatus) {
+                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
+                         }
+
+                         if (userOnboardStatus) {
+                              setNotificationOnboard(userOnboardStatus);
                          }
                     }
                } else {
@@ -435,6 +492,8 @@ export const UserProvider = ({ children }) => {
                     updatePickupLocations,
                     readingHistory,
                     updateReadingHistory,
+                    savedEvents,
+                    updateSavedEvents,
                     cards,
                     updateLibraryCards,
                     notificationSettings,
@@ -652,5 +711,84 @@ export const SystemMessagesProvider = ({ children }) => {
                }}>
                {children}
           </SystemMessagesContext.Provider>
+     );
+};
+
+export const SearchProvider = ({ children }) => {
+     const [currentIndex, setCurrentIndex] = useState();
+     const [currentSource, setCurrentSource] = useState();
+     const [indexes, setIndexes] = useState();
+     const [sources, setSources] = useState();
+     const [facets, setFacets] = useState();
+     const [sort, setSort] = useState();
+     const [query, setQuery] = useState();
+
+     const updateCurrentIndex = (data) => {
+          setCurrentIndex(data);
+          console.log('updated currentIndex in SearchContext');
+     };
+
+     const updateCurrentSource = (data) => {
+          setCurrentSource(data);
+          console.log('updated currentSource in SearchContext');
+     };
+
+     const updateIndexes = (data) => {
+          setIndexes(data);
+          console.log('updated indexes in SearchContext');
+     };
+
+     const updateSources = (data) => {
+          setSources(data);
+          console.log('updated sources in SearchContext');
+     };
+
+     const updateFacets = (data) => {
+          setFacets(data);
+          console.log('updated facets in SearchContext');
+     };
+
+     const updateSort = (data) => {
+          setSort(data);
+          console.log('updated sort in SearchContext');
+     };
+
+     const updateQuery = (data) => {
+          setQuery(data);
+          console.log('updated query in SearchContext');
+     };
+
+     const resetSearch = () => {
+          setCurrentIndex('Keyword');
+          setCurrentSource('local');
+          setIndexes({});
+          setSources({});
+          setQuery('');
+          setFacets({});
+          setSort('relevance');
+          console.log('reset SearchContext');
+     };
+
+     return (
+          <SearchContext.Provider
+               value={{
+                    currentIndex,
+                    updateCurrentIndex,
+                    currentSource,
+                    updateCurrentSource,
+                    indexes,
+                    updateIndexes,
+                    sources,
+                    updateSources,
+                    facets,
+                    updateFacets,
+                    query,
+                    updateQuery,
+                    sort,
+                    updateSort,
+                    resetSearch,
+               }}>
+               {children}
+          </SearchContext.Provider>
      );
 };

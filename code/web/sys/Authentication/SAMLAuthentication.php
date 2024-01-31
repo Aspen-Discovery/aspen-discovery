@@ -21,6 +21,7 @@ class SAMLAuthentication{
 
 	protected bool $ssoAuthOnly = false;
     protected bool $forceReAuth = false;
+	protected bool $updateAccount = false;
 
 	/**
 	 * @throws Exception
@@ -42,6 +43,8 @@ class SAMLAuthentication{
 			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
 				$this->uidAsEmail = true;
 			}
+
+			$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 			$metadata = [];
 			if($ssoSettings->ssoXmlUrl || $ssoSettings->ssoMetadataFilename) {
@@ -259,7 +262,9 @@ class SAMLAuthentication{
 		}
 
 		$user->update();
-		$user->updatePatronInfo(true);
+		if($this->updateAccount) {
+			$user->updatePatronInfo(true);
+		}
 		if(!empty($this->ilsUniqueAttribute)) {
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
@@ -279,6 +284,9 @@ class SAMLAuthentication{
 		$findBy = 'ils_username';
 		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 			$findBy = 'email';
+		}
+		if($this->ssoAuthOnly) {
+			$findBy = 'username';
 		}
 		$user = UserAccount::findNewAspenUser($findBy, $username);
 
@@ -447,18 +455,18 @@ class SAMLAuthentication{
 	private function selfRegisterAspenOnly($user) {
 		global $library;
 		$tmpUser = new User();
-		$tmpUser->email = $this->searchArray($user, $this->matchpoints['email']);
-		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
-		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
-		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
-		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->email = $this->searchArray($user,'ssoEmailAttr');
+		$tmpUser->firstname = $this->searchArray($user, 'ssoFirstnameAttr') ?? '';
+		$tmpUser->lastname = $this->searchArray($user, 'ssoLastnameAttr') ?? '';
+		$tmpUser->username = $this->searchArray($user, 'ssoEmailAttr');
+		$tmpUser->unique_ils_id = $this->searchArray($user, 'ssoUniqueAttribute');
 		$tmpUser->phone = '';
-		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
+		$tmpUser->displayName = $this->searchArray($user, 'ssoDisplayNameAttr') ?? '';
 
-		if($this->searchArray($user, $this->matchpoints['patronType'])) {
-			$patronType = $this->searchArray($user, $this->matchpoints['patronType']);
-		} elseif($this->matchpoints['patronType_fallback']) {
-			$patronType = $this->matchpoints['patronType_fallback'];
+		if($this->searchArray($user, 'ssoPatronTypeAttr')) {
+			$patronType = $this->searchArray($user, 'ssoPatronTypeAttr');
+		} elseif($this->searchArray($user, 'ssoCategoryIdFallback')) {
+			$patronType = $this->searchArray($user, 'ssoCategoryIdFallback');
 		} else {
 			$patronType = null;
 		}
@@ -475,14 +483,19 @@ class SAMLAuthentication{
 		}
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
+		if($this->ssoAuthOnly) {
+			$tmpUser->source = 'admin_sso';
+		}
+
 		$tmpUser->created = date('Y-m-d');
 		if(!$tmpUser->insert()) {
 			global $logger;
-			$logger->log('Error creating Aspen ssoArray ' . print_r($this->searchArray($user, $this->matchpoints['userId']), true), Logger::LOG_ERROR);
+			$logger->log(print_r($tmpUser->getLastError(), true), Logger::LOG_ERROR);
+			$logger->log('Error creating Aspen ssoArray ' . print_r($this->searchArray($user, 'ssoUniqueAttribute'), true), Logger::LOG_ERROR);
 			return false;
 		}
 
-		return UserAccount::findNewAspenUser('username', $this->searchArray($user, $this->matchpoints['userId']));
+		return UserAccount::findNewAspenUser('username', $this->searchArray($user, 'ssoUniqueAttribute'));
 	}
 
 	private function newSSOSession($id) {

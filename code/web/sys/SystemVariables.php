@@ -27,15 +27,17 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 	public $appScheme;
+	public $enableBrandedApp;
 	public $supportingCompany;
 	public $googleBucket;
 	public $trackIpAddresses;
 	public $allowScheduledUpdates;
 	public $doQuickUpdates;
+	public $monitorAntivirus;
 
 
 	static function getObjectStructure($context = ''): array {
-		return [
+		$objectStructure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -201,7 +203,7 @@ class SystemVariables extends DataObject {
 			'allowableHtmlTags' => [
 				'property' => 'allowableHtmlTags',
 				'type' => 'text',
-				'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)',
+				'label' => 'Allowable HTML Tags',
 				'description' => 'HTML Tags to allow in HTML and Markdown fields',
 				'maxLength' => 512,
 				'default' => 'p|em|i|strong|b|span|style|a|table|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|code|hr|table|tbody|tr|th|td|caption|img|br|div|span',
@@ -274,6 +276,13 @@ class SystemVariables extends DataObject {
 				'label' => 'App Scheme',
 				'description' => 'Scheme used for creating deep links into the app',
 			],
+			'enableBrandedApp' => [
+				'property' => 'enableBrandedApp',
+				'type' => 'checkbox',
+				'label' => 'Enable Branded App Settings',
+				'description' => 'Whether or not the library can configure branded Aspen LiDA',
+				'default' => false,
+			],
 			'supportingCompany' => [
 				'property' => 'supportingCompany',
 				'type' => 'text',
@@ -282,13 +291,30 @@ class SystemVariables extends DataObject {
 				'default' => 'ByWater Solutions',
 			],
 			'trackIpAddresses' => [
-						'property' => 'trackIpAddresses',
-						'type' => 'checkbox',
-						'label' => 'Track IP Addresses',
-						'description' => 'Determine if IP Addresses should be tracked for each page view',
-						'default' => false,
+				'property' => 'trackIpAddresses',
+				'type' => 'checkbox',
+				'label' => 'Track IP Addresses',
+				'description' => 'Determine if IP Addresses should be tracked for each page view',
+				'default' => false,
 			],
+			'monitorAntivirus' => [
+				'property' => 'monitorAntivirus',
+				'type' => 'checkbox',
+				'label' => 'Monitor Antivirus',
+				'description' => 'Determine whether or not Antivirus logs should be monitored',
+				'default' => true,
+			]
 		];
+
+		if (!UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			$objectStructure['indexingSection']['properties']['storeRecordDetailsInSolr']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
+			$objectStructure['enableBrandedApp']['type'] = 'hidden';
+		}
+
+		return $objectStructure;
 	}
 
 	public static function forceNightlyIndex() {

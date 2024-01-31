@@ -450,6 +450,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @access public
 	 */
 	public function getHolds(User $patron): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$holds = [
 			'available' => [],
@@ -531,6 +532,11 @@ class CarlX extends AbstractIlsDriver {
 					$curHold->status = $this->holdStatusCodes[$hold->ItemStatus];
 					$curHold->automaticCancellationDate = strtotime($expireDate); // use this for unavailable holds
 					$curHold->cancelable = true;
+					if ($curHold->status == 'In Transit') {
+						if (!$library->allowCancellingInTransitHolds) {
+							$curHold->cancelable = false;
+						}
+					}
 
 					if ($curHold->frozen) {
 						$curHold->reactivateDate = strtotime($hold->SuspendedUntilDate);
@@ -2262,7 +2268,7 @@ class CarlX extends AbstractIlsDriver {
         return false;
     }
 
-    public function getStudentReportData($location, $showOverdueOnly, $date) {
+    public function getStudentReportData($location, $showOverdueOnly, $date) : ?array {
         return false;
     }
 
@@ -2392,13 +2398,18 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {
+        if($this->accountProfile->carlXViewVersion == 'v2') {
+            $version = 'v2';
+        }else{
+            $version = 'v';
+        }
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlDialectInspection */
 		$sql = <<<EOT
 			select
 				newpatronid
-			from patronidchange_v p
+			from patronidchange_$version p
 			where oldpatronid = :searchpatronid
 			order by changetime desc 
 			-- fetch first 1 rows only

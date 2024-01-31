@@ -56,7 +56,7 @@ public class HooplaExportMain {
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -207,6 +207,7 @@ public class HooplaExportMain {
 			}
 		}
 
+		System.exit(0);
 	}
 
 	private static void processRecordsToReload(HooplaExtractLogEntry logEntry) {
@@ -400,7 +401,7 @@ public class HooplaExportMain {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
-						if (responseTitles != null && responseTitles.length() > 0) {
+						if (responseTitles != null && !responseTitles.isEmpty()) {
 							updateTitlesInDB(responseTitles, doFullReload);
 							logEntry.saveResults();
 						}
@@ -422,7 +423,7 @@ public class HooplaExportMain {
 								responseJSON = new JSONObject(response.getMessage());
 								if (responseJSON.has("titles")) {
 									responseTitles = responseJSON.getJSONArray("titles");
-									if (responseTitles != null && responseTitles.length() > 0) {
+									if (responseTitles != null && !responseTitles.isEmpty()) {
 										updateTitlesInDB(responseTitles, doFullReload);
 									}
 								}
@@ -521,7 +522,7 @@ public class HooplaExportMain {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
-						if (responseTitles != null && responseTitles.length() > 0) {
+						if (responseTitles != null && !responseTitles.isEmpty()) {
 							updateTitlesInDB(responseTitles, false);
 							logEntry.saveResults();
 						}
@@ -657,7 +658,6 @@ public class HooplaExportMain {
 		if (username == null || password == null){
 			logger.error("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
-			return null;
 		} else {
 			int numTries = 1;
 			while (numTries <= 3) {
@@ -685,8 +685,8 @@ public class HooplaExportMain {
 			}
 
 			logEntry.addNote("Could not get access token in 3 tries");
-			return null;
 		}
+		return null;
 	}
 
 	private static Connection connectToDatabase(){

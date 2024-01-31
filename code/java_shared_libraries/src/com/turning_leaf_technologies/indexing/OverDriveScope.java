@@ -7,6 +7,7 @@ public class OverDriveScope {
 	private boolean includeAdult;
 	private boolean includeTeen;
 	private boolean includeKids;
+	private String readerName;
 
 	public long getId() {
 		return id;
@@ -26,6 +27,14 @@ public class OverDriveScope {
 
 	public boolean isIncludeAdult() {
 		return includeAdult;
+	}
+
+	public String getReaderName() {
+		return readerName;
+	}
+
+	public void setReaderName(String readerName) {
+		this.readerName = readerName;
 	}
 
 	void setIncludeAdult(boolean includeAdult) {

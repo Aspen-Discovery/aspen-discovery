@@ -51,7 +51,7 @@
 </head>
 <body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
-	{if !empty($showTopOfPageButton)}
+	{if !empty($showTopOfPageButton) && empty($minimalInterface)}
 	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw"></i>
 		<span class="screen-reader-text">{translate text="Back to top" isPublicFacing=true}</span>
@@ -68,7 +68,7 @@
 				</div>
 			{/if}
 
-			{if !empty($messages)}
+			{if !empty($messages) && !minimalInterface}
 				{foreach from=$messages item="message"}
 				<div class="col-xs-12">
 					<div class="alert alert-{$message->messageLevel} alert-dismissable">
@@ -90,11 +90,16 @@
 		</div>
 
 		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-header">
-			<div id="header-wrapper" role="banner" class="row {if !empty($fullWidthTheme)}row-no-gutters fullWidth{/if}">
-				{include file='header_responsive.tpl'}
+			<div id="header-wrapper" role="banner" class="row {if !empty($fullWidthTheme) || !empty($minimalInterface)}row-no-gutters fullWidth{/if}">
+				{if empty($minimalInterface)}
+					{include file='header_responsive.tpl' minimalInterface=false}
+				{else}
+					{include file='header_responsive.tpl' minimalInterface=true}
+				{/if}
 			</div>
 		</div>
 
+		{if empty($minimalInterface)}
 		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-menu-bar">
 			<div id="{if !empty($fullWidthTheme)}horizontal-menu-bar-wrapper-fullWidth{else}horizontal-menu-bar-wrapper{/if}" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar {if !empty($fullWidthTheme)}fullWidth{/if}" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
@@ -109,7 +114,7 @@
 				</div>
 			</div>
 		</div>
-
+        {/if}
 	{if !empty($fullWidthTheme)}<div class="container {if !empty($showContentAsFullWidth)}full-width-container{/if}">{/if}
 		<div id="content-container">
 			<div class="row">
@@ -119,7 +124,7 @@
 						{include file="sidebar.tpl"}
 					</div>
 					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 {if !empty($fullWidthTheme) && !empty($showContentAsFullWidth)}col-lg-10{else}col-lg-9{/if}" id="main-content-with-sidebar">
-						{if !empty($showBreadcrumbs)}
+						{if !empty($showBreadcrumbs) && empty($minimalInterface)}
 							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
@@ -152,11 +157,13 @@
 		</div>
 	{if !empty($fullWidthTheme)}</div>{/if}
 
+		{if empty($minimalInterface)}
 		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-footer">
 			<div id="footer-container" role="contentinfo" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 				{include file="footer_responsive.tpl"}
 			</div>
 		</div>
+        {/if}
 
 	</div>
 	{include file="modal_dialog.tpl"}

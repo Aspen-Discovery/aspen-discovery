@@ -6,6 +6,8 @@ class QuipuECardSetting extends DataObject {
 	public $id;
 	public $server;
 	public $clientId;
+	public $hasECard;
+	public $hasERenew;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -19,7 +21,7 @@ class QuipuECardSetting extends DataObject {
 				'property' => 'server',
 				'type' => 'text',
 				'label' => 'Server',
-				'description' => 'The Name of the Server where eCard is installed',
+				'description' => 'The Name of the Server where eCARD/eRENEW is installed',
 			],
 			'clientId' => [
 				'property' => 'clientId',
@@ -27,6 +29,22 @@ class QuipuECardSetting extends DataObject {
 				'label' => 'Client ID',
 				'description' => 'The numeric client id for your instance',
 				'hideInLists' => true,
+			],
+			'hasECard' => [
+				'property' => 'hasECard',
+				'type' => 'checkbox',
+				'label' => 'Has eCARD',
+				'description' => 'Turn on if eCARD has been purchased from Quipu by the library',
+				'hideInLists' => true,
+				'default' => true
+			],
+			'hasERenew' => [
+				'property' => 'hasERenew',
+				'type' => 'checkbox',
+				'label' => 'Has eRENEW',
+				'description' => 'Turn on if eRENEW has been purchased from Quipu by the library',
+				'hideInLists' => true,
+				'default' => false
 			],
 		];
 	}

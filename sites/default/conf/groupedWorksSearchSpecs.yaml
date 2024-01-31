@@ -270,7 +270,7 @@ Keyword:
       - title_exact:
         - [localized_callnumber, 10000]
       - title_left:
-        - [text_left, 8000]
+        - [text_left, 4000]
       - title_proper:
         - [onephrase, 800]
         - [and, 500]

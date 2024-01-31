@@ -8,6 +8,7 @@ class SelfRegistrationForm extends DataObject {
 	public $name;
 	public $selfRegistrationBarcodePrefix;
 	public $selfRegBarcodeSuffixLength;
+	public $noDuplicateCheck;
 
 	private $_fields;
 	private $_libraries;
@@ -66,6 +67,12 @@ class SelfRegistrationForm extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Prompt For Parent Information',
 				'description' => 'Whether or not parent information should be requested if the person registering is a juvenile.',
+			],
+			'noDuplicateCheck' => [
+				'property' => 'noDuplicateCheck',
+				'type' => 'checkbox',
+				'label' => 'Turn Off Duplicate Checking',
+				'description' => 'Turn off checking for duplicate users in self registration.',
 			],
 			'cityStateField' => [
 				'property' => 'cityStateField',

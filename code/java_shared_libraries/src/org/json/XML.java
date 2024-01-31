@@ -27,6 +27,11 @@ SOFTWARE.
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Iterator;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.XMLTokener;
+import org.json.XMLParserConfiguration;
 
 /**
  * This provides static methods to convert an XML text into a JSONObject, and to

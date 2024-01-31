@@ -71,7 +71,7 @@
 						<td>
 						{if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.allowableTransports.sms)}
 							{if !empty($canSave)}
-								<input type="checkbox" id="sms{$messageTypeId}" name="{$messageTypeId}[]" value="sms" aria-label="Send SMS Message for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.sms)}checked="checked"{/if}>
+								<input type="checkbox" id="sms{$messageTypeId}" name="{$messageTypeId}[]" value="sms" aria-label="Send SMS Message for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false); return AspenDiscovery.Account.toggleKohaDigestCheckbox()" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.sms)}checked="checked"{/if}>
 							{else}
 								{if $messagingSettings.$messageTypeId.selectedTransports.sms} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
@@ -84,7 +84,7 @@
 						<td>
 						{if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.allowableTransports.phone)}
 							{if !empty($canSave)}
-								<input type="checkbox" id="phone{$messageTypeId}" name="{$messageTypeId}[]" value="phone" aria-label="Receive Phone Call for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.phone)}checked="checked"{/if}>
+								<input type="checkbox" id="phone{$messageTypeId}" name="{$messageTypeId}[]" value="phone" aria-label="Receive Phone Call for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false); return AspenDiscovery.Account.toggleKohaDigestCheckbox()" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.phone)}checked="checked"{/if}>
 							{else}
 								{if $messagingSettings.$messageTypeId.selectedTransports.phone} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
@@ -96,7 +96,7 @@
 					<td>
 					{if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.allowableTransports.email)}
 						{if !empty($canSave)}
-							<input type="checkbox" id="email{$messageTypeId}" name="{$messageTypeId}[]" value="email" aria-label="Send Email for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.email)}checked="checked"{/if}>
+							<input type="checkbox" id="email{$messageTypeId}" name="{$messageTypeId}[]" value="email" aria-label="Send Email for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false); return AspenDiscovery.Account.toggleKohaDigestCheckbox()" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.selectedTransports.email)}checked="checked"{/if}>
 						{else}
 							{if $messagingSettings.$messageTypeId.selectedTransports.email} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 						{/if}
@@ -107,7 +107,7 @@
 					<td>
 						{if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.allowDigests)}
 							{if !empty($canSave)}
-								<input type="checkbox" id="digest{$messageTypeId}" value="{$messageTypeId}" name="digest" aria-label="Send Message for {$messageType.label} as digest" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.wantsDigest)}checked="checked"{/if}>
+								<input type="checkbox" id="digest{$messageTypeId}" value="{$messageTypeId}" name="digest{$messageTypeId}" aria-label="Send Message for {$messageType.label} as digest" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.wantsDigest)}checked="checked"{else}disabled{/if}>
 							{else}
 								{if  $messagingSettings.$messageTypeId.allowDigests} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
@@ -182,6 +182,7 @@ $(document).ready(function(){
 			$("#rss"+newId).removeAttr("checked");
 		}
 	});
+	AspenDiscovery.Account.toggleKohaDigestCheckbox();
 });
 </script>
 {/literal}

@@ -119,7 +119,7 @@ class OverDriveExtractLogEntry implements BaseIndexingLogEntry {
 	}
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished OverDrive extraction");
+		this.addNote("Finished Libby extraction");
 		this.saveResults();
 	}
 	public void incErrors(String note) {

@@ -39,7 +39,9 @@ class SystemAPI extends Action {
 					'getVdxForm',
 					'getSelfCheckSettings',
 					'getSystemMessages',
-					'dismissSystemMessage'
+					'dismissSystemMessage',
+					'getLibraryLinks',
+					'getLocations'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -143,6 +145,38 @@ class SystemAPI extends Action {
 				'message' => 'id not provided',
 			];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getLocations(): array {
+		global $library;
+		$return = [
+			'success' => true,
+			'locations' => [],
+		];
+		$location = new Location();
+		if($library) {
+			$location->libraryId = $library->libraryId;
+		}
+		$location->showInLocationsAndHoursList = 1;
+		$location->orderBy('isMainBranch DESC, displayName');
+		$location->find();
+		while ($location->fetch()) {
+			$return['locations'][$location->locationId] = $location->getApiInfo();
+		}
+
+		$userLatitude = $_GET['latitude'] ?? null;
+		$userLongitude = $_GET['longitude'] ?? null;
+		require_once ROOT_DIR . '/services/API/GreenhouseAPI.php';
+		$greenhouseApi = new GreenhouseAPI();
+		foreach ($return['locations'] as $location) {
+			$return['locations'][$location['locationId']]['distance'] = null;
+			if($userLongitude && $userLatitude && $location['longitude'] !== 0 && $location['latitude'] !== 0) {
+				$return['locations'][$location['locationId']]['distance'] = $greenhouseApi->findDistance($userLongitude, $userLatitude, $location['longitude'], $location['latitude'], $location['unit']);
+			}
+		}
+
+		return $return;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1024,7 +1058,7 @@ class SystemAPI extends Action {
 						'style' => $message->messageStyle,
 						'dismissable' => (int)$message->dismissable,
 						'message' => $message->appMessage,
-						'showOn' => $message->showOn,
+						'showOn' => (string)$message->showOn,
 					];
 				}
 			}
@@ -1084,6 +1118,82 @@ class SystemAPI extends Action {
 				'message' => 'Login unsuccessful',
 			];
 		}
+	}
+
+	function getLibraryLinks() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			global $library;
+			global $configArray;
+			$links = $library->libraryLinks;
+			$libraryLinks = [];
+			/** @var LibraryLink $libraryLink */
+			foreach ($links as $libraryLink) {
+				if(!$libraryLink->isValidForDisplayForApp($user)) {
+					continue;
+				}
+
+				if (empty($libraryLink->category)) {
+					$libraryLink->category = 'none-' . $libraryLink->id;
+				}
+				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
+					$libraryLinks[$libraryLink->category] = [];
+				}
+
+				$url = $libraryLink->url;
+				if(!str_starts_with($url, 'http')) {
+					$libraryLink->url = $configArray['Site']['url'] . $url;
+				}
+
+				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+
+			}
+
+			return [
+				'success' => true,
+				'items' => $libraryLinks,
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword() {
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
+
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return [$username, $password];
+	}
+
+	/**
+	 * @return bool|User
+	 */
+	protected function getUserForApiCall() {
+		$user = false;
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user !== false && $user->source == 'admin') {
+			return false;
+		}
+		return $user;
 	}
 
 	function getBreadcrumbs(): array {

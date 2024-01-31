@@ -49,7 +49,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		return [];
 	}
 
-	function createActionsFromUrls($relatedUrls) {
+	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;

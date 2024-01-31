@@ -1738,6 +1738,34 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			return null;
 		}
 	}
+	public function getRelatedRecordForVariation($recordIdentifier, $variationId = '') {
+		$this->loadRelatedRecords();
+		$recordToLoad = $this->relatedRecords[$recordIdentifier];
+		$recordToLoadNotCS = $this->relatedRecords[strtolower($recordIdentifier)];
+		if (isset($recordToLoad)) {
+			if (($recordToLoad->variationId != $variationId) && $variationId != ''){
+				foreach ($recordToLoad->recordVariations as $variation){
+					if ($variation->databaseId == $variationId){
+						$records = $variation->getRecords();
+						return $records[0];
+					}
+				}
+			}
+			return $recordToLoad;
+		} elseif (isset($recordToLoadNotCS)) {
+			if (($recordToLoadNotCS->variationId != $variationId) && $variationId != ''){
+				foreach ($recordToLoadNotCS->recordVariations as $variation){
+					if ($variation->databaseId == $variationId){
+						$records = $variation->getRecords();
+						return $records[0];
+					}
+				}
+			}
+			return $recordToLoadNotCS;
+		} else {
+			return null;
+		}
+	}
 	public function getScrollerTitle($index, $scrollerName) {
 		global $interface;
 		$interface->assign('index', $index);
@@ -2137,6 +2165,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$this->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
 
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';
 	}

@@ -1,16 +1,15 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
+import { Button, CheckIcon, FormControl, Heading, Modal, Select } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
 import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { Button, Modal, Heading, FormControl, Select, CheckIcon } from 'native-base';
-import _ from 'lodash';
 import { completeAction } from '../../../screens/GroupedWork/Record';
-import { getPatronHolds, refreshProfile } from '../../../util/api/user';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { SelectVolume } from './SelectVolume';
-import { HoldNotificationPreferences } from './HoldNotificationPreferences';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { getCopies } from '../../../util/api/item';
+import { HoldNotificationPreferences } from './HoldNotificationPreferences';
 import { SelectItem } from './SelectItem';
+import { SelectVolume } from './SelectVolume';
 
 export const HoldPrompt = (props) => {
      const queryClient = useQueryClient();
@@ -51,7 +50,7 @@ export const HoldPrompt = (props) => {
      const { updateHolds } = React.useContext(HoldsContext);
 
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['copies', id, language, library.baseUrl],
+          queryKey: ['copies', id, variationId, language, library.baseUrl],
           queryFn: () => getCopies(id, language, variationId, library.baseUrl),
           enabled: holdTypeForFormat === 'item' || holdTypeForFormat === 'either',
      });
@@ -95,9 +94,13 @@ export const HoldPrompt = (props) => {
                typeOfHold = 'volume';
                promptForHoldType = true;
           }
-          if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes) || !volumeInfo.hasItemsWithoutVolumes === false) {
+          if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes)) {
                typeOfHold = 'volume';
                promptForHoldType = false;
+          }
+          if (volumeInfo.hasItemsWithoutVolumes) {
+               promptForHoldType = true;
+               typeOfHold = 'item';
           }
      }
 
@@ -107,14 +110,28 @@ export const HoldPrompt = (props) => {
 
      const [activeAccount, setActiveAccount] = React.useState(user.id ?? '');
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
+     }
+
      let pickupLocation = '';
-     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
-          pickupLocation = userPickupLocation[0];
+     if (_.size(locations) > 1) {
+          const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+          if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+               pickupLocation = userPickupLocation[0];
+               if (_.isObject(pickupLocation)) {
+                    pickupLocation = pickupLocation.code;
+               }
+          }
+     } else {
+          pickupLocation = locations[0];
           if (_.isObject(pickupLocation)) {
                pickupLocation = pickupLocation.code;
           }
      }
+
+     // console.log(pickupLocation);
 
      const [location, setLocation] = React.useState(pickupLocation);
 
@@ -215,8 +232,8 @@ export const HoldPrompt = (props) => {
                                                             queryClient.invalidateQueries({ queryKey: ['holds', activeAccount, library.baseUrl, language] });
                                                             queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                             /*await refreshProfile(library.baseUrl).then((profile) => {
-                                                                 updateUser(profile);
-                                                            });*/
+												 updateUser(profile);
+												 });*/
                                                        }
 
                                                        if (result?.confirmationNeeded && result.confirmationNeeded === true) {

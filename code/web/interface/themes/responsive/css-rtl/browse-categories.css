@@ -345,7 +345,7 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail img {
   width: 100%;
-  min-height: 158px;
+  min-height: 100px;
 }
 .browse-thumbnail-sorted {
   display: block;

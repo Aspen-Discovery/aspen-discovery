@@ -3,17 +3,19 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 import { enableScreens } from 'react-native-screens';
+import { LanguageContext } from '../../context/initialContext';
+import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 
 import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import Facet from '../../screens/Search/Facet';
+import { SearchIndexScreen } from '../../screens/Search/Facets/SearchIndex';
+import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
 import { FiltersScreen } from '../../screens/Search/Filters';
-import { LanguageContext } from '../../context/initialContext';
 import { SearchHome } from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
-import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
-import { EditionsModal } from './BrowseStackNavigator';
-import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { EditionsModal } from './BrowseStackNavigator';
 
 enableScreens();
 
@@ -150,6 +152,20 @@ const FilterModal = () => {
                          headerShown: true,
                          presentation: 'card',
                     })}
+               />
+               <FilterModalStack.Screen
+                    name="SearchSource"
+                    component={SearchSourceScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'search_in'),
+                    }}
+               />
+               <FilterModalStack.Screen
+                    name="SearchIndex"
+                    component={SearchIndexScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'search_by'),
+                    }}
                />
           </FilterModalStack.Navigator>
      );

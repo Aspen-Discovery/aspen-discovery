@@ -8,27 +8,25 @@ class Donations_DonationCompleted extends Action {
 		global $interface;
 		$error = '';
 		$message = '';
-		if (empty($_REQUEST['payment'])) {
+		if (empty($_REQUEST['id'])) {
 			$error = 'No Payment ID was provided, could not complete the payment';
 		} else {
-			$paymentId = $_REQUEST['payment'];
+			$paymentId = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$userPayment = new UserPayment();
-			require_once ROOT_DIR . '/sys/Donations/Donation.php';
-			$donation = new Donation();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)) {
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
 				$donation->paymentId = $userPayment->id;
 				if ($donation->find(true)) {
 					if ($userPayment->completed == true) {
 						$message = 'Your payment has been completed.';
-						$donation->sendReceiptEmail();
 					} else {
 						if (empty($userPayment->message)) {
 							$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
 						} else {
 							$error = $userPayment->message;
-							$donation->delete();
 						}
 					}
 				} else {

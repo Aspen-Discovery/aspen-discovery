@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
@@ -406,7 +405,6 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
-	@SuppressWarnings("RegExpUnnecessaryNonCapturingGroup")
 	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
@@ -1195,7 +1193,7 @@ public abstract class AbstractGroupedWorkSolr {
 		this.keywords.addAll(keywords);
 	}
 
-	void addDescription(String description, @NotNull String recordFormat, String formatCategory) {
+	void addDescription(String description, String recordFormat, String formatCategory) {
 		if (description == null || description.length() == 0) {
 			return;
 		}
@@ -1248,7 +1246,6 @@ public abstract class AbstractGroupedWorkSolr {
 		}
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	RecordInfo addRelatedRecord(String source, String subSource, String recordIdentifier) {
 		String recordIdentifierWithType = source + ":" + subSource + ":" + recordIdentifier;
 		if (relatedRecords.containsKey(recordIdentifierWithType)) {
@@ -1282,7 +1279,7 @@ public abstract class AbstractGroupedWorkSolr {
 		return targetAudience;
 	}
 
-	void addLanguage(@SuppressWarnings("SameParameterValue") String language) {
+	void addLanguage(String language) {
 		this.languages.add(language);
 	}
 

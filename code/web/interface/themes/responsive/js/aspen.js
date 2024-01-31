@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasPalaceProjectConnection: false,
 		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
@@ -4515,14 +4516,15 @@ var Globals = (function () {
 		modalCloseDestination: ''
 	}
 })(Globals || {});
+var aspenJQ = $;
 var AspenDiscovery = (function(){
-
+	
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
 		Globals.LeavingPage = true;
 	};
 
-	$(document).ready(function(){
+	aspenJQ(document).ready(function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
@@ -4530,26 +4532,26 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.autoOpenPanel();
 		AspenDiscovery.scrollToTopPage();
 
-		$("#modalDialog").modal({show:false});
-		$('[data-toggle="tooltip"]').tooltip();
-		$('[data-toggle="popover"]').popover();
+		aspenJQ("#modalDialog").modal({show:false});
+		aspenJQ('[data-toggle="tooltip"]').tooltip();
+		aspenJQ('[data-toggle="popover"]').popover();
 
-		$('.panel')
+		aspenJQ('.panel')
 				.on('show.bs.collapse', function () {
-					$(this).addClass('active');
+					aspenJQ(this).addClass('active');
 				})
 				.on('hide.bs.collapse', function () {
-					$(this).removeClass('active');
+					aspenJQ(this).removeClass('active');
 				});
 
-		$(window).on("popstate", function () {
+		aspenJQ(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
 			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
-				$(selecto1r).tab('show');
+				aspenJQ(selector1).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
 				var selector2 = '#holdsTab a[href="#' + history.state.source + '"]';
-				$(selector2).tab('show');
+				aspenJQ(selector2).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
 				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
 			}else if (history.state && history.state.page === "Browse") {
@@ -4576,12 +4578,12 @@ var AspenDiscovery = (function(){
 				url = url.replace(/page=\d+/, "page=1");
 			}
 			if (url.match(/[&?]pageSize=\d+/)) {
-				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
+				url = url.replace(/pageSize=\d+/, "pageSize=" + aspenJQ("#pageSize").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&pageSize=" + $("#pageSize").val();
+					url = url+ "&pageSize=" + aspenJQ("#pageSize").val();
 				}else{
-					url = url+ "?pageSize=" + $("#pageSize").val();
+					url = url+ "?pageSize=" + aspenJQ("#pageSize").val();
 				}
 			}
 			window.location.href = url;
@@ -4590,12 +4592,12 @@ var AspenDiscovery = (function(){
 		changePage: function(){
 			var url = window.location.href;
 			if (url.match(/[&?]page=\d+/)) {
-				url = url.replace(/page=\d+/, "page=" + $("#page").val());
+				url = url.replace(/page=\d+/, "page=" + aspenJQ("#page").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&page=" + $("#page").val();
+					url = url+ "&page=" + aspenJQ("#page").val();
 				}else{
-					url = url+ "?page=" + $("#page").val();
+					url = url+ "?page=" + aspenJQ("#page").val();
 				}
 			}
 			window.location.href = url;
@@ -4605,12 +4607,12 @@ var AspenDiscovery = (function(){
 		changeSort: function(){
 			var url = window.location.href;
 			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
-				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + $("#sort").val());
+				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + aspenJQ("#sort").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&sort=" + $("#sort").val();
+					url = url+ "&sort=" + aspenJQ("#sort").val();
 				}else{
-					url = url+ "?sort=" + $("#sort").val();
+					url = url+ "?sort=" + aspenJQ("#sort").val();
 				}
 			}
 			window.location.href = url;
@@ -4618,11 +4620,11 @@ var AspenDiscovery = (function(){
 		},
 
 		closeLightbox: function(callback){
-			var modalDialog = $("#modalDialog");
+			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
-				$('.modal-body').html("Loading...");
-				$(".modal-title").text("Loading...");
+				aspenJQ('.modal-body').html("Loading...");
+				aspenJQ(".modal-title").text("Loading...");
 
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
@@ -4634,18 +4636,18 @@ var AspenDiscovery = (function(){
 		},
 
 		goToAnchor: function(anchorName) {
-			$('html,body').animate({scrollTop: $("#" + anchorName).offset().top},'slow');
+			aspenJQ('html,body').animate({scrollTop: aspenJQ("#" + anchorName).offset().top},'slow');
 		},
 
 		initCarousels: function(carouselClass){
 			carouselClass = carouselClass || '.jcarousel';
-			var jcarousel = $(carouselClass);
+			var jcarousel = aspenJQ(carouselClass);
 			var wrapper   = jcarousel.parents('.jcarousel-wrapper');
 			// console.log('init Carousels called for ', jcarousel);
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
 
-				var Carousel	   = $(this);
+				var Carousel	   = aspenJQ(this);
 				var width		  = Carousel.innerWidth();
 				var liTags		 = Carousel.find('li');
 				if (liTags == null ||liTags.length === 0){
@@ -4690,11 +4692,11 @@ var AspenDiscovery = (function(){
 				Carousel.jcarousel('items').css('width', Math.floor(calcWidth) + 'px');// Set Width
 
 				if (numItemsToShow >= numCategories){
-					$(this).offsetParent().children('.jcarousel-control-prev').hide();
-					$(this).offsetParent().children('.jcarousel-control-next').hide();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-prev').hide();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-next').hide();
 				}else{
-					$(this).offsetParent().children('.jcarousel-control-prev').show();
-					$(this).offsetParent().children('.jcarousel-control-next').show();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-prev').show();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-next').show();
 				}
 
 			})
@@ -4703,25 +4705,25 @@ var AspenDiscovery = (function(){
 			});
 
 			// These Controls could possibly be replaced with data-api attributes
-			$('.jcarousel-control-prev', wrapper)
+			aspenJQ('.jcarousel-control-prev', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '-=1'
 					});
 
-			$('.jcarousel-control-next', wrapper)
+			aspenJQ('.jcarousel-control-next', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '+=1'
 					});
 
-			$('.jcarousel-pagination', wrapper)
+			aspenJQ('.jcarousel-pagination', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.on('jcarouselpagination:active', 'a', function() {
-						$(this).addClass('active');
+						aspenJQ(this).addClass('active');
 					})
 					.on('jcarouselpagination:inactive', 'a', function() {
-						$(this).removeClass('active');
+						aspenJQ(this).removeClass('active');
 					})
 					.on('click', function(e) {
 						e.preventDefault();
@@ -4740,15 +4742,15 @@ var AspenDiscovery = (function(){
 		},
 
 		initializeModalDialogs: function() {
-			$(".modalDialogTrigger").each(function(){
-				$(this).click(function(){
-					var trigger = $(this);
+			aspenJQ(".modalDialogTrigger").each(function(){
+				aspenJQ(this).click(function(){
+					var trigger = aspenJQ(this);
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					var dialogDestination = trigger.attr("href");
-					$("#myModalLabel").text(dialogTitle);
-					$(".modal-body").html('Loading.').load(dialogDestination);
-					$(".extraModalButton").hide();
-					$("#modalDialog").modal("show");
+					aspenJQ("#myModalLabel").text(dialogTitle);
+					aspenJQ(".modal-body").html('Loading.').load(dialogDestination);
+					aspenJQ(".extraModalButton").hide();
+					aspenJQ("#modalDialog").modal("show");
 					return false;
 				});
 			});
@@ -4780,24 +4782,24 @@ var AspenDiscovery = (function(){
 		},
 
 		getSelectedTitles: function(){
-			var selectedTitles = $("input.titleSelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedTitles = aspenJQ("input.titleSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedTitles.length === 0){
 				var ret = confirm('You have not selected any items, process all items?');
 				if (ret === true){
-					var titleSelect = $("input.titleSelect");
+					var titleSelect = aspenJQ("input.titleSelect");
 					titleSelect.attr('checked', 'checked');
 					selectedTitles = titleSelect.map(function() {
-						return $(this).attr('name') + "=" + $(this).val();
+						return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 					}).get().join("&");
 				}
 			}
 			return selectedTitles;
 		},
 		getSelectedLists: function(){
-			var selectedLists = $("input.listSelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedLists = aspenJQ("input.listSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedLists.length === 0){
 				var ret = confirm('No lists selected');
@@ -4805,8 +4807,8 @@ var AspenDiscovery = (function(){
 			return selectedLists;
 		},
 		getSelectedBrowseCategories: function(){
-			var selectedCategories = $("input.categorySelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedCategories = aspenJQ("input.categorySelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedCategories.length === 0){
 				var ret = confirm('No browse categories were selected');
@@ -4814,8 +4816,8 @@ var AspenDiscovery = (function(){
 			return selectedCategories;
 		},
 		getSelectedAspenSites: function(){
-			var selectedSites = $("input.siteSelect:checked ").map(function() {
-				return $(this).attr('name');
+			var selectedSites = aspenJQ("input.siteSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name');
 			}).get().join(",");
 			if (selectedSites.length === 0){
 				AspenDiscovery.showMessage("Error", "Please select at least one site to update");
@@ -4846,18 +4848,18 @@ var AspenDiscovery = (function(){
 		},
 
 		setupFieldSetToggles: function (){
-			$('legend.collapsible').each(function(){
-				$(this).siblings().hide()
+			aspenJQ('legend.collapsible').each(function(){
+				aspenJQ(this).siblings().hide()
 				.addClass("collapsed")
 				.click(function() {
-					$(this).toggleClass("expanded collapsed")
+					aspenJQ(this).toggleClass("expanded collapsed")
 					.siblings().slideToggle();
 					return false;
 				});
 			});
 
-			$('fieldset.fieldset-collapsible').each(function() {
-				var collapsible = $(this);
+			aspenJQ('fieldset.fieldset-collapsible').each(function() {
+				var collapsible = aspenJQ(this);
 				var legend = collapsible.find('legend:first');
 				legend.addClass('fieldset-collapsible-label').bind('click', {collapsible: collapsible}, function(event) {
 					var collapsible = event.data.collapsible;
@@ -4881,10 +4883,10 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			$("#myModalLabel").html(title);
-			$(".modal-body").html(body);
-			$('.modal-buttons').html('');
-			var modalDialog = $("#modalDialog");
+			aspenJQ("#myModalLabel").html(title);
+			aspenJQ(".modal-body").html(body);
+			aspenJQ('.modal-buttons').html('');
+			var modalDialog = aspenJQ("#modalDialog");
 			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
 			if (autoClose) {
@@ -4906,12 +4908,12 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			$("#myModalLabel").html(title);
-			$(".modal-body").html(body);
-			$('.modal-buttons').html(buttons);
+			aspenJQ("#myModalLabel").html(title);
+			aspenJQ(".modal-body").html(body);
+			aspenJQ('.modal-buttons').html(buttons);
 			if (closeDestination !== undefined) {
 				Globals.modalCloseDestination = closeDestination;
-				$(".modalClose").click(function () {
+				aspenJQ(".modalClose").click(function () {
 					if (Globals.modalCloseDestination.length > 0) {
 						document.location.href = Globals.modalCloseDestination
 						return false;
@@ -4920,9 +4922,9 @@ var AspenDiscovery = (function(){
 			}else{
 				Globals.modalCloseDestination = '';
 			}
-			$("#modalDialog").modal('show');
+			aspenJQ("#modalDialog").modal('show');
 			if (refreshAfterClose) {
-				$("#modalDialog").on('hide.bs.modal', function(){
+				aspenJQ("#modalDialog").on('hide.bs.modal', function(){
 					location.reload();
 				})
 			}
@@ -4940,15 +4942,15 @@ var AspenDiscovery = (function(){
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
-			var modalDialog = $("#modalDialog");
+			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
-				$(".modal-title").html(title);
-				var elementText = $(elementId).html();
-				var elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
-				$(".modal-body").html(elementText);
-				$('.modal-buttons').html(elementButtons);
+				aspenJQ(".modal-title").html(title);
+				var elementText = aspenJQ(elementId).html();
+				var elementButtons = buttonsElementId ? aspenJQ(buttonsElementId).html() : '';
+				aspenJQ(".modal-body").html(elementText);
+				aspenJQ('.modal-buttons').html(elementButtons);
 
 				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
@@ -4960,21 +4962,21 @@ var AspenDiscovery = (function(){
 			if (embedLocation === undefined) {
 				embedLocation = "";
 			}
-			var selectedId = $("#selectLibraryHours" + embedLocation).find(":selected").val();
-			$(".locationInfo" + embedLocation).hide();
-			$("#locationAddress" + embedLocation + selectedId).show();
+			var selectedId = aspenJQ("#selectLibraryHours" + embedLocation).find(":selected").val();
+			aspenJQ(".locationInfo" + embedLocation).hide();
+			aspenJQ("#locationAddress" + embedLocation + selectedId).show();
 			return false;
 		},
 
 		toggleCheckboxes: function (checkboxSelector, toggleSelector){
-			var toggle = $(toggleSelector);
+			var toggle = aspenJQ(toggleSelector);
 			var value = toggle.prop('checked');
-			$(checkboxSelector).prop('checked', value);
+			aspenJQ(checkboxSelector).prop('checked', value);
 		},
 
 		submitOnEnter: function(event, formToSubmit){
 			if (event.keyCode === 13){
-				$(formToSubmit).submit();
+				aspenJQ(formToSubmit).submit();
 			}
 		},
 
@@ -5010,7 +5012,7 @@ var AspenDiscovery = (function(){
 		},
 
 		saveLanguagePreferences:function(){
-			var preference = $("#searchPreferenceLanguage option:selected").val();
+			var preference = aspenJQ("#searchPreferenceLanguage option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'saveLanguagePreference',
@@ -5038,7 +5040,7 @@ var AspenDiscovery = (function(){
 		setLanguage: function(selectedLanguage) {
 			//Update the user interface with the selected language
 			if (selectedLanguage === undefined) {
-				selectedLanguage = $("#selected-language option:selected").val();
+				selectedLanguage = aspenJQ("#selected-language option:selected").val();
 			}
 			var curLocation = window.location.href;
 			var newParam = 'myLang=' + selectedLanguage;
@@ -5062,9 +5064,9 @@ var AspenDiscovery = (function(){
 		},
 
 		saveTranslation: function(){
-			var termId = $("#termId").val();
-			var translationId = $("#translationId").val();
-			var translation = $("#translation").val();
+			var termId = aspenJQ("#termId").val();
+			var translationId = aspenJQ("#translationId").val();
+			var translation = aspenJQ("#translation").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'saveTranslation',
@@ -5074,8 +5076,8 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
-						$(".term_" + termId ).html(translation);
-						$(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
+						aspenJQ(".term_" + termId ).html(translation);
+						aspenJQ(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
 						AspenDiscovery.closeLightbox();
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
@@ -5092,7 +5094,7 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
-						$("#term_" + termId ).hide();
+						aspenJQ("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
@@ -5103,60 +5105,60 @@ var AspenDiscovery = (function(){
 		},
 		toggleMenu: function() {
 			// fixed bootstrap account-menu toggle
-			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
-			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
-				$(this).addClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				aspenJQ(this).addClass('open');
 			});
-			$(document).on('click', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+			aspenJQ(document).on('click', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.accountMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
 				}
 			});
-			$(document).on('keyup', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+			aspenJQ(document).on('keyup', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.accountMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
 				}
 			});
 			// fixed bootstrap header-menu toggle
-			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
 
-			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
-				$(this).addClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				aspenJQ(this).addClass('open');
 			});
 
-			$(document).on('click', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+			aspenJQ(document).on('click', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.headerMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
 				}
 			});
 
-			$(document).on('keyup', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+			aspenJQ(document).on('keyup', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.headerMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
 				}
 			});
 			return false;
 		},
 		closeMenu: function(){
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
+			var headerMenu = aspenJQ('#header-menu');
+			var menuButton = aspenJQ('#menuToggleButton');
+			var menuButtonIcon = aspenJQ('#menuToggleButton > i');
 			headerMenu.slideUp('slow');
 			menuButtonIcon.addClass('fa-bars');
 			menuButtonIcon.removeClass('fa-times');
 			menuButton.removeClass('selected');
 		},
 		toggleMenuSection: function(categoryName) {
-			var menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
-			var menuSectionBody = $('#' + categoryName + "MenuSectionBody");
+			var menuSectionHeaderIcon = aspenJQ('#' + categoryName + "MenuSection > i");
+			var menuSectionBody = aspenJQ('#' + categoryName + "MenuSectionBody");
 			if (menuSectionBody.is(':visible')){
 				menuSectionBody.slideUp();
 				menuSectionHeaderIcon.addClass('fa-caret-right');
@@ -5171,13 +5173,13 @@ var AspenDiscovery = (function(){
 		},
 		showCustomMenu: function (menuName) {
 			// fixed bootstrap custom menu toggles
-			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
-			$(document).on('click', function (e) {
-				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+			aspenJQ(document).on('click', function (e) {
+				var trigger = aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu');
 				if(trigger !== event.target && !trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
 				}
 			});
 		},
@@ -5190,9 +5192,9 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.result.success) {
-						$(elementToUpdate).text(data.result.formattedValue);
+						aspenJQ(elementToUpdate).text(data.result.formattedValue);
 					} else {
-						$(elementToUpdate).text('Unable to format currency');
+						aspenJQ(elementToUpdate).text('Unable to format currency');
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -5206,11 +5208,11 @@ var AspenDiscovery = (function(){
 			if (hash) {
 				var requestedPanel = hash;
 				var element = '#'.concat(requestedPanel);
-				$(element).addClass('active');
+				aspenJQ(element).addClass('active');
 				var element2 = '#'.concat(requestedPanel, "Body");
-				$(element2).removeClass('collapse');
-				$(element2).addClass('in');
-				$(element2).css("height","auto");
+				aspenJQ(element2).removeClass('collapse');
+				aspenJQ(element2).addClass('in');
+				aspenJQ(element2).css("height","auto");
 			}
 		},
 		scrollToTopPage: function() {
@@ -5265,8 +5267,8 @@ var AspenDiscovery = (function(){
 		},
 
 		updateDisplaySettings: function () {
-			var preferredLanguage = $("#preferredLanguage option:selected").val();
-			var preferredTheme = $("#preferredTheme option:selected").val();
+			var preferredLanguage = aspenJQ("#preferredLanguage option:selected").val();
+			var preferredTheme = aspenJQ("#preferredTheme option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'updateDisplaySettings',
@@ -5316,10 +5318,18 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	return valid;
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
+jQuery.validator.addMethod("email2", function (value, element) {
+	if (this.optional(element)) {
+		return true;
+	}
+	var emailToMatch = aspenJQ("#email").val();
+	return value === emailToMatch;
+}, "Email addresses must match.");
+
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
 		var idOriginal = element.id.slice(0,-6);
-		var valueOriginal = $('#' + idOriginal).val();
+		var valueOriginal = aspenJQ('#' + idOriginal).val();
 		return value === valueOriginal;
 	}
 }, "Repeat fields do not match");
@@ -5539,6 +5549,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
 					label = 'Boundless Checkouts';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -5609,6 +5621,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
 					label = 'Boundless Holds';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -5788,6 +5802,23 @@ AspenDiscovery.Account = (function () {
 						if (data.summary.numAvailableHolds > 0) {
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
+						}
+					}
+				});
+			}
+			if (Globals.hasPalaceProjectConnection) {
+				var palaceProjectUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataPalaceProject&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(palaceProjectUrl, function (data) {
+					if (data.success) {
+						$(".palace_project-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".palace_project-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".palace_project-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".palace_project-available-holds").show();
 						}
 					}
 				});
@@ -6909,6 +6940,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentIframe;
 						} else if (paymentType === 'Square') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'Stripe') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -7025,6 +7058,10 @@ AspenDiscovery.Account = (function () {
 			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
 		},
 
+		createStripeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'Stripe', transactionType);
+		},
+
 		createPayPalPayflowOrder: function (userId, transactionType) {
 			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
 			if (result === false) {
@@ -7109,6 +7146,43 @@ AspenDiscovery.Account = (function () {
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		completeStripeOrder: function (patronId, transactionType, paymentId, paymentMethodId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeStripeOrder",
+				paymentId: paymentId,
+				paymentMethodId: paymentMethodId,
+				patronId: patronId,
+				type: transactionType,
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=stripee&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=stripe&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(function() {
+				const cardButton = document.getElementById('process-stripe-payment');
+				AspenDiscovery.ajaxFail();
+				cardButton.disabled = false;
+			})
 		},
 
 		updateFineTotal: function (finesFormId, userId, paymentType) {
@@ -7836,6 +7910,46 @@ AspenDiscovery.Account = (function () {
 				});
 			}
 			return false;
+		},
+		toggleKohaDigestCheckbox: function () {
+			var sms1 = $('#sms1');
+			var phone1 = $('#phone1');
+			var email1 = $('#email1');
+			var digest1 = $('#digest1');
+			if (sms1.is(":checked") || phone1.is(":checked") || email1.is(":checked")) {
+				digest1.prop('disabled', false);
+			} else {
+				digest1.prop('disabled', true);
+				if(digest1.is(":checked")) {
+					digest1.prop('checked', false);
+				}
+			}
+
+			var sms2 = $('#sms2');
+			var phone2 = $('#phone2');
+			var email2 = $('#email2');
+			var digest2 = $('#digest2');
+			if (sms2.is(":checked") || phone2.is(":checked") || email2.is(":checked")) {
+				digest2.prop('disabled', false);
+			} else {
+				digest2.prop('disabled', true);
+				if(digest2.is(":checked")) {
+					digest2.prop('checked', false);
+				}
+			}
+
+			var sms9 = $('#sms9');
+			var phone9 = $('#phone9');
+			var email9 = $('#email9');
+			var digest9 = $('#digest9');
+			if (sms9.is(":checked") || phone9.is(":checked") || email9.is(":checked")) {
+				digest9.prop('disabled', false);
+			} else {
+				digest9.prop('disabled', true);
+				if(digest9.is(":checked")) {
+					digest9.prop('checked', false);
+				}
+			}
 		},
 		logout: function () {
 			window.location = Globals.path + '/MyAccount/Logout';
@@ -9890,6 +10004,75 @@ AspenDiscovery.Admin = (function () {
 					AspenDiscovery.showMessage('An error occurred', data.message);
 				}
 			});
+			return false;
+		},
+
+		showCopyOptions: function(module, toolname, id) {
+			var url = Globals.path + '/' + module + '/' + toolname;
+			var params = {
+				id: id,
+				objectAction: 'getCopyOptions'
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
+		showCopyMenuLinksForm: function(libraryId) {
+			var url = Globals.path + '/Admin/AJAX';
+			var params = {
+				method: 'getCopyMenuLinksForm',
+				libraryId: libraryId
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
+		processCopyMenuLinksForm: function () {
+			var selectedMenuLinks = $('.menuLink:checked');
+			var selectedLibraries = $('.library:checked');
+			if (selectedMenuLinks.length >= 1) {
+				if (selectedLibraries.length >= 1) {
+					var url = Globals.path + "/Admin/AJAX";
+					var params = {
+						method: 'copyMenuLinks',
+						sourceLibraryId: $('#sourceLibraryId').val()
+					};
+					selectedMenuLinks.each(function () {
+						params[$(this).prop('name')] = 'on';
+					});
+					selectedLibraries.each(function () {
+						params[$(this).prop('name')] = 'on';
+					});
+					$.getJSON(url, params,
+						function (data) {
+							if (data.success) {
+								AspenDiscovery.showMessage(data.title, data.message, true, true);
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message);
+							}
+						}
+					).fail(AspenDiscovery.ajaxFail);
+					return false;
+				} else {
+					alert("Select at least one library to copy to");
+				}
+			} else {
+				alert("Select at least one menu link to copy");
+			}
 			return false;
 		}
 
@@ -13669,10 +13852,11 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		selectItemLink: function( recordId) {
+		selectItemLink: function( recordId, variationId) {
 			var url = Globals.path + '/Record/' + recordId + '/AJAX';
 			var params = {
-				method: 'showSelectItemToViewForm'
+				method: 'showSelectItemToViewForm',
+				variationId : variationId
 			};
 			$("accessOnline_" + recordId).enabled = false;
 			$.getJSON(url, params, function (data){
@@ -13682,13 +13866,14 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		viewItemLink: function () {
+		viewItemLink: function (variationId) {
 			var selectedItem = $('#selectedItem').val();
 			var id = $('#id').val();
 			var url = Globals.path + '/Record/' + id + '/AJAX';
 			var params = {
 				method: 'viewItem',
-				selectedItem: selectedItem
+				selectedItem: selectedItem,
+				variationId: variationId
 			};
 			$.getJSON(url, params, function (data){
 				if (data.success) {
@@ -14001,7 +14186,7 @@ AspenDiscovery.Searches = (function(){
 						select: function (event, ui) {
 							var form = $(searchTermSelector).closest('form');
 							$(searchTermSelector).val(ui.item.value);
-							form.submit();
+							if (form.attr('id') == 'searchForm') { form.submit() };
 							return false;
 						}
 					}).data('ui-autocomplete')._renderItem = function (ul, item) {
@@ -15051,7 +15236,7 @@ AspenDiscovery.IndexingClass = (function () {
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection', 'propertyRowsierraSection', 'propertyRoworderRecordsStatusesToInclude', 'propertyRowhideOrderRecordsForBibsWithPhysicalItems', 'propertyRoworderRecordsToSuppressByDate', 'propertyRowsierraFieldMappings', 'propertyRowcheckSierraMatTypeForFormat'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],
 				Polaris: [],
-				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection']
+				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection', 'propertyRownumRetriesForBibLookups', 'propertyRownumMillisecondsToPauseAfterBibLookups', 'propertyRownumExtractionThreads']
 			};
 
 			//Show rows for selected class
@@ -15241,3 +15426,251 @@ AspenDiscovery.CookieConsent = (function() {
 }(AspenDiscovery.CookieConsent));
 
 
+AspenDiscovery.PalaceProject = (function () {
+	return {
+
+		getStaffView: function (id) {
+			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data) {
+				if (!data.success) {
+					AspenDiscovery.showMessage('Error', data.message);
+				} else {
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
+		},
+
+		showPreview: function (palaceProjectId) {
+			var url = Globals.path + "/PalaceProject/" + palaceProjectId + "/AJAX?method=getPreview";
+			$.getJSON(url, function (data){
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage('Error', data.message);
+				}
+			});
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/PalaceProject/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		getCheckOutPrompts: function (id) {
+			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getCheckOutPrompts";
+			var result = false;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		checkOutTitle: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for checking out a title
+				var promptInfo = AspenDiscovery.PalaceProject.getCheckOutPrompts(id);
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.PalaceProject.doCheckOut(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.checkOutTitle(id);
+				});
+			}
+			return false;
+		},
+
+		doCheckOut: function (patronId, id) {
+			if (Globals.loggedIn) {
+				var ajaxUrl = Globals.path + "/PalaceProject/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							// noinspection JSUnresolvedVariable
+							if (data.noCopies === true) {
+								AspenDiscovery.closeLightbox(function (){
+									var ret = confirm(data.message);
+									if (ret === true) {
+										AspenDiscovery.PalaceProject.doHold(patronId, id);
+									}
+								});
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message, false);
+							}
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+						//alert("ajaxUrl = " + ajaxUrl);
+						AspenDiscovery.closeLightbox();
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.checkOutTitle(id);
+				}, false);
+			}
+			return false;
+		},
+
+		returnCheckout: function (patronId, recordId, encodedId) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true);
+						$(".palace_project_checkout_" + encodedId + "_" + patronId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+				}
+			});
+			return false;
+		},
+
+		placeHold: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for placing holds (email and format depending on the interface.
+				var promptInfo = AspenDiscovery.PalaceProject.getHoldPrompts(id, 'hold');
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.PalaceProject.doHold(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.placeHold(id);
+				});
+			}
+			return false;
+		},
+
+		getHoldPrompts: function (id) {
+			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getHoldPrompts";
+			var result = false;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		doHold: function (patronId, id) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					AspenDiscovery.closeLightbox(function (){
+						// noinspection JSUnresolvedVariable
+						if (data.availableForCheckout) {
+							AspenDiscovery.PalaceProject.doCheckOut(patronId, id);
+						} else {
+							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.Account.loadMenuData();
+						}
+					});
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+				}
+			});
+			return true;
+		},
+
+		cancelHold: function (patronId, id, encodedId) {
+			var url = Globals.path + "/PalaceProject/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						$(".palace_projectHold_" + id + "_" + patronId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		showUsageInstructions: function () {
+			var url = Globals.path + "/PalaceProject/AJAX?method=getUsageInstructions";
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message);
+					} else {
+						AspenDiscovery.showMessage("Error Loading Instructions", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Loading Instructions", "An error occurred loading instructions.  Please try again in a few minutes.", false);
+				}
+			});
+		}
+	}
+}(AspenDiscovery.PalaceProject || {}));

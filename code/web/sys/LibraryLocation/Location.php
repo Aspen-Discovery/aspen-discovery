@@ -51,6 +51,7 @@ class Location extends DataObject {
 	public $useLibraryThemes;
 	public $_themes;
 	public $showDisplayNameInHeader;
+	public $languageAndDisplayInHeader;
 	public $headerText;
 	public $address;
 	public $phone;
@@ -79,6 +80,8 @@ class Location extends DataObject {
 		$hooplaScopeId;
 	public /** @noinspection PhpUnused */
 		$axis360ScopeId;
+	public /** @noinspection PhpUnused */
+		$palaceProjectScopeId;
 	public $showHoldButton;
 	public $curbsidePickupInstructions;
 	public $repeatSearchOption;
@@ -117,7 +120,7 @@ class Location extends DataObject {
 		$defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
-	private $_hours;
+	protected $_hours;
 	private $_moreDetailsOptions;
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
@@ -135,6 +138,8 @@ class Location extends DataObject {
     //Facet Settings
     public $openArchivesFacetSettingId;
     public $websiteIndexingFacetSettingId;
+
+	public $locationImage;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -260,6 +265,17 @@ class Location extends DataObject {
 			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
 		}
 
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		$palaceProjectScope = new PalaceProjectScope();
+		$palaceProjectScope->orderBy('name');
+		$palaceProjectScopes = [];
+		$palaceProjectScope->find();
+		$palaceProjectScopes[-2] = 'None';
+		$palaceProjectScopes[-1] = 'Use Library Setting';
+		while ($palaceProjectScope->fetch()) {
+			$palaceProjectScopes[$palaceProjectScope->id] = $palaceProjectScope->name;
+		}
+
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
 		$overDriveScope = new OverDriveScope();
 		$overDriveScope->orderBy('name');
@@ -316,6 +332,9 @@ class Location extends DataObject {
 		while ($appSelfCheckSetting->fetch()) {
 			$appSelfCheckSettings[$appSelfCheckSetting->id] = $appSelfCheckSetting->name;
 		}
+
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 
 		$structure = [
 			'locationId' => [
@@ -374,6 +393,18 @@ class Location extends DataObject {
 				'canBatchUpdate' => false,
 				'editPermissions' => ['Location Domain Settings'],
 			],
+			'locationImage' => [
+				'property' => 'locationImage',
+				'type' => 'image',
+				'label' => 'Location Image',
+				'description' => '',
+				'required' => false,
+				'thumbWidth' => 400,
+				'maxWidth' => 1170,
+				'maxHeight' => 400,
+				'hideInLists' => true,
+				'affectsLiDA' => true,
+			],
 			'createSearchInterface' => [
 				'property' => 'createSearchInterface',
 				'type' => 'checkbox',
@@ -427,15 +458,6 @@ class Location extends DataObject {
 				'canAddNew' => true,
 				'canDelete' => true,
 				'editPermissions' => ['Location Theme Configuration'],
-			],
-			'showDisplayNameInHeader' => [
-				'property' => 'showDisplayNameInHeader',
-				'type' => 'checkbox',
-				'label' => 'Show Display Name in Header',
-				'description' => 'Whether or not the display name should be shown in the header next to the logo',
-				'hideInLists' => true,
-				'default' => false,
-				'permissions' => ['Location Theme Configuration'],
 			],
 			'libraryId' => [
 				'property' => 'libraryId',
@@ -593,6 +615,24 @@ class Location extends DataObject {
 				'label' => 'Basic Display',
 				'hideInLists' => true,
 				'properties' => [
+					'showDisplayNameInHeader' => [
+						'property' => 'showDisplayNameInHeader',
+						'type' => 'checkbox',
+						'label' => 'Show Display Name in Header',
+						'description' => 'Whether or not the display name should be shown in the header next to the logo',
+						'hideInLists' => true,
+						'default' => false,
+						'permissions' => ['Location Theme Configuration'],
+					],
+					'languageAndDisplayInHeader' => [
+						'property' => 'languageAndDisplayInHeader',
+						'type' =>'checkbox',
+						'label' => 'Show language and display settings in page header',
+						'description' => 'Whether or not to display the language and display settings in the page header',
+						'hideInLists' => true,
+						'default' => true,
+						'permissions' => ['Location Theme Configuration'],
+					],
 					[
 						'property' => 'homeLink',
 						'type' => 'text',
@@ -1071,7 +1111,7 @@ class Location extends DataObject {
 			'overdriveSection' => [
 				'property' => 'overdriveSection',
 				'type' => 'section',
-				'label' => 'OverDrive',
+				'label' => "$readerName",
 				'hideInLists' => true,
 				'renderAsHeading' => true,
 				'permissions' => ['Location Records included in Catalog'],
@@ -1080,8 +1120,29 @@ class Location extends DataObject {
 						'property' => 'overDriveScopeId',
 						'type' => 'enum',
 						'values' => $overDriveScopes,
-						'label' => 'OverDrive Scope',
-						'description' => 'The OverDrive scope to use',
+						'label' => "$readerName Scope",
+						'description' => "The $readerName scope to use",
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => true,
+					],
+				],
+			],
+
+			'palaceProjectSection' => [
+				'property' => 'palaceProjectSection',
+				'type' => 'section',
+				'label' => 'Palace Project',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Location Records included in Catalog'],
+				'properties' => [
+					'palaceProjectScopeId' => [
+						'property' => 'palaceProjectScopeId',
+						'type' => 'enum',
+						'values' => $palaceProjectScopes,
+						'label' => 'Palace Project Scope',
+						'description' => 'The Palace Project scope to use',
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,
@@ -1713,65 +1774,15 @@ class Location extends DataObject {
 		if ($name == "hours") {
 			return $this->getHours();
 		} elseif ($name == "moreDetailsOptions") {
-			if (!isset($this->_moreDetailsOptions) && $this->libraryId) {
-				$this->_moreDetailsOptions = [];
-				$moreDetailsOptions = new LocationMoreDetails();
-				$moreDetailsOptions->locationId = $this->locationId;
-				$moreDetailsOptions->orderBy('weight');
-				$moreDetailsOptions->find();
-				while ($moreDetailsOptions->fetch()) {
-					$this->_moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
-				}
-			}
-			return $this->_moreDetailsOptions;
+			return $this->getMoreDetailsOptions();
 		} elseif ($name == 'recordsToInclude') {
-			if (!isset($this->_recordsToInclude) && $this->locationId) {
-				$this->_recordsToInclude = [];
-				$object = new LocationRecordToInclude();
-				$object->locationId = $this->locationId;
-				$object->orderBy('weight');
-				$object->find();
-				while ($object->fetch()) {
-					$this->_recordsToInclude[$object->id] = clone($object);
-				}
-			}
-			return $this->_recordsToInclude;
+			return $this->getRecordsToInclude();
 		} elseif ($name == 'sideLoadScopes') {
-			if (!isset($this->_sideLoadScopes) && $this->locationId) {
-				$this->_sideLoadScopes = [];
-				$object = new LocationSideLoadScope();
-				$object->locationId = $this->locationId;
-				$object->find();
-				while ($object->fetch()) {
-					$this->_sideLoadScopes[$object->id] = clone($object);
-				}
-			}
-			return $this->_sideLoadScopes;
+			return $this->getSideLoadScopes();
 		} elseif ($name == 'combinedResultSections') {
-			if (!isset($this->_combinedResultSections) && $this->locationId) {
-				$this->_combinedResultSections = [];
-				$combinedResultSection = new LocationCombinedResultSection();
-				$combinedResultSection->locationId = $this->locationId;
-				$combinedResultSection->orderBy('weight');
-				if ($combinedResultSection->find()) {
-					while ($combinedResultSection->fetch()) {
-						$this->_combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
-					}
-				}
-				return $this->_combinedResultSections;
-			}
+			return $this->getCombinedResultSections();
 		} elseif ($name == 'cloudLibraryScopes') {
-			if (!isset($this->_cloudLibraryScopes) && $this->locationId) {
-				$this->_combinedResultSections = [];
-				$cloudLibraryScope = new LocationCloudLibraryScope();
-				$cloudLibraryScope->locationId = $this->locationId;
-				if ($cloudLibraryScope->find()) {
-					while ($cloudLibraryScope->fetch()) {
-						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
-					}
-				}
-				return $this->_cloudLibraryScopes;
-			}
+			return $this->getCloudLibraryScopes();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
 		} else {
@@ -1851,11 +1862,47 @@ class Location extends DataObject {
 		return $ret;
 	}
 
+	public function getMoreDetailsOptions() {
+		if (!isset($this->_moreDetailsOptions)) {
+			$this->_moreDetailsOptions = [];
+			if (!empty($this->locationId)) {
+				$moreDetailsOptions = new LocationMoreDetails();
+				$moreDetailsOptions->locationId = $this->locationId;
+				$moreDetailsOptions->orderBy('weight');
+				$moreDetailsOptions->find();
+				while ($moreDetailsOptions->fetch()) {
+					$this->_moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
+				}
+			}
+		}
+		return $this->_moreDetailsOptions;
+	}
+
 	public function saveMoreDetailsOptions() {
 		if (isset ($this->_moreDetailsOptions) && is_array($this->_moreDetailsOptions)) {
 			$this->saveOneToManyOptions($this->_moreDetailsOptions, 'locationId');
 			unset($this->_moreDetailsOptions);
 		}
+	}
+
+	/**
+	 * @return LocationCombinedResultSection[]
+	 */
+	public function getCombinedResultSections() : array {
+		if (!isset($this->_combinedResultSections)) {
+			$this->_combinedResultSections = [];
+			if (!empty($this->locationId)) {
+				$combinedResultSection = new LocationCombinedResultSection();
+				$combinedResultSection->locationId = $this->locationId;
+				$combinedResultSection->orderBy('weight');
+				if ($combinedResultSection->find()) {
+					while ($combinedResultSection->fetch()) {
+						$this->_combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
+					}
+				}
+			}
+		}
+		return $this->_combinedResultSections;
 	}
 
 	public function saveCombinedResultSections() {
@@ -1870,6 +1917,25 @@ class Location extends DataObject {
 			$this->saveOneToManyOptions($this->_hours, 'locationId');
 			unset($this->_hours);
 		}
+	}
+
+	/**
+	 * @return LocationCloudLibraryScope[];
+	 */
+	public function getCloudLibraryScopes() : array {
+		if (!isset($this->_cloudLibraryScopes)) {
+			$this->_cloudLibraryScopes = [];
+			if (!empty($this->locationId)) {
+				$cloudLibraryScope = new LocationCloudLibraryScope();
+				$cloudLibraryScope->locationId = $this->locationId;
+				if ($cloudLibraryScope->find()) {
+					while ($cloudLibraryScope->fetch()) {
+						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+					}
+				}
+			}
+		}
+		return $this->_cloudLibraryScopes;
 	}
 
 	public function saveCloudLibraryScopes() {
@@ -1914,7 +1980,7 @@ class Location extends DataObject {
 					$openHours[$ctr] = [
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
-						'closed' => $hours->closed ? true : false,
+						'closed' => (bool)$hours->closed,
 						'openFormatted' => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 						'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close))),
 					];
@@ -1939,7 +2005,7 @@ class Location extends DataObject {
 		return null;
 	}
 
-	public static function getLibraryHoursMessage(int $locationId): string {
+	public static function getLibraryHoursMessage(int $locationId, bool $simpleOutput = false): string {
 		$today = time();
 		$location = new Location();
 		$location->locationId = $locationId;
@@ -1963,16 +2029,33 @@ class Location extends DataObject {
 					$nextDayOfWeek = strftime('%a', $nextDay);
 					if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true) {
 						if (isset($closureReason)) {
-							$libraryHoursMessage = translate([
-								'text' => "%1% is closed today for %2%.",
-								1 => $location->displayName,
-								2 => $closureReason,
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed today for %1%',
+									1 => $closureReason,
+									'isPublicFacing' => true,
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% is closed today for %2%.',
+									1 => $location->displayName,
+									2 => $closureReason,
+									'isPublicFacing' => true
+								]);
+							}
 						} else {
-							$libraryHoursMessage = translate([
-								'text' => "%1% is closed today.",
-								1 => $location->displayName,
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed today',
+									'isPublicFacing' => true
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% is closed today.',
+									1 => $location->displayName,
+									'isPublicFacing' => true
+								]);
+							}
 						}
 					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
@@ -2004,11 +2087,20 @@ class Location extends DataObject {
 						$closeHour = 24;
 					}
 					if ($currentHour < $openHour) {
-						$libraryHoursMessage = translate([
-							'text' => "%1% will be open today from %2%",
-							1 => $location->displayName,
-							2 => Location::getOpenHoursMessage($todaysLibraryHours),
-						]);
+						if($simpleOutput) {
+							$libraryHoursMessage = translate([
+								'text' => 'Open until %1%',
+								1 => Location::getOpenHoursMessage($todaysLibraryHours, true),
+								'isPublicFacing' => true
+							]);
+						} else {
+							$libraryHoursMessage = translate([
+								'text' => '%1% will be open today from %2%',
+								1 => $location->displayName,
+								2 => Location::getOpenHoursMessage($todaysLibraryHours),
+								'isPublicFacing' => true
+							]);
+						}
 					} elseif ($currentHour > $closeHour) {
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
@@ -2028,19 +2120,37 @@ class Location extends DataObject {
 							}
 
 						} else {
-							$libraryHoursMessage = translate([
-								'text' => "%1% will be open tomorrow from %2%",
-								1 => $location->displayName,
-								2 => Location::getOpenHoursMessage($tomorrowsLibraryHours),
-								'isPublicFacing' => true,
-							]);
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed until tomorrow %2%',
+									1 => $location->displayName,
+									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours, true, true),
+									'isPublicFacing' => true,
+								]);
+							} else {
+								$libraryHoursMessage = translate([
+									'text' => '%1% will be open tomorrow from %2%',
+									1 => $location->displayName,
+									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours),
+									'isPublicFacing' => true,
+								]);
+							}
 						}
 					} else {
-						$libraryHoursMessage = translate([
-							'text' => "%1% is open today from %2%",
-							1 => $location->displayName,
-							2 => Location::getOpenHoursMessage($todaysLibraryHours),
-						]);
+						if($simpleOutput) {
+							$libraryHoursMessage = translate([
+								'text' => 'Open until %1%',
+								1 => Location::getOpenHoursMessage($todaysLibraryHours, true),
+								'isPublicFacing' => true
+							]);
+						} else {
+							$libraryHoursMessage = translate([
+								'text' => '%1% is open today from %2%',
+								1 => $location->displayName,
+								2 => Location::getOpenHoursMessage($todaysLibraryHours),
+								'isPublicFacing' => true
+							]);
+						}
 					}
 				}
 			} else {
@@ -2052,7 +2162,7 @@ class Location extends DataObject {
 		return $libraryHoursMessage;
 	}
 
-	public static function getOpenHoursMessage($hours): string {
+	public static function getOpenHoursMessage($hours, $simpleOutput = false, $openTomorrow = false): string {
 		$formattedMessage = '';
 		if (empty($hours)) {
 			return $formattedMessage;
@@ -2067,14 +2177,46 @@ class Location extends DataObject {
 					'isPublicFacing' => true,
 				]);
 			}
-			$formattedMessage .= translate([
-				'text' => '%1% to %2%',
-				1 => $hours[$i]['openFormatted'],
-				2 => $hours[$i]['closeFormatted'],
-				'isPublicFacing' => true,
-			]);
+			if($simpleOutput) {
+				if(!$openTomorrow) {
+					$formattedMessage .= translate([
+						'text' => '%1%',
+						1 => $hours[$i]['closeFormatted'],
+						'isPublicFacing' => true,
+					]);
+				} else {
+					$formattedMessage .= translate([
+						'text' => '%1%',
+						1 => $hours[$i]['openFormatted'],
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				$formattedMessage .= translate([
+					'text' => '%1% to %2%',
+					1 => $hours[$i]['openFormatted'],
+					2 => $hours[$i]['closeFormatted'],
+					'isPublicFacing' => true,
+				]);
+			}
 		}
 		return $formattedMessage;
+	}
+
+	public function getRecordsToInclude() {
+		if (!isset($this->_recordsToInclude)) {
+			$this->_recordsToInclude = [];
+			if (!empty($this->locationId)) {
+				$object = new LocationRecordToInclude();
+				$object->locationId = $this->locationId;
+				$object->orderBy('weight');
+				$object->find();
+				while ($object->fetch()) {
+					$this->_recordsToInclude[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_recordsToInclude;
 	}
 
 	public function saveRecordsToInclude() {
@@ -2082,6 +2224,24 @@ class Location extends DataObject {
 			$this->saveOneToManyOptions($this->_recordsToInclude, 'locationId');
 			unset($this->_recordsToInclude);
 		}
+	}
+
+	/**
+	 * @return LocationSideLoadScope[]
+	 */
+	public function getSideLoadScopes() : array {
+		if (!isset($this->_sideLoadScopes)) {
+			$this->_sideLoadScopes = [];
+			if (!empty($this->locationId)) {
+				$object = new LocationSideLoadScope();
+				$object->locationId = $this->locationId;
+				$object->find();
+				while ($object->fetch()) {
+					$this->_sideLoadScopes[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_sideLoadScopes;
 	}
 
 	public function saveSideLoadScopes() {
@@ -2099,7 +2259,6 @@ class Location extends DataObject {
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();
-			$apiKey = null;
 			if ($googleSettings->find(true)) {
 				if (!empty($googleSettings->googleMapsKey)) {
 					$apiKey = $googleSettings->googleMapsKey;
@@ -2116,6 +2275,7 @@ class Location extends DataObject {
 						$this->latitude = $data->results[0]->geometry->location->lat;
 						$components = $data->results[0]->address_components;
 
+						$country = '';
 						foreach ($components as $component) {
 							if ($component->type[0] == 'country') {
 								$country = $component->short_name;
@@ -2448,24 +2608,26 @@ class Location extends DataObject {
 	}
 
 	public function getApiInfo(): array {
+		global $configArray;
 		$parentLibrary = $this->getParentLibrary();
 		$apiInfo = [
-			'locationId' => $this->locationId,
+			'locationId' => (int)$this->locationId,
 			'isMainBranch' => (bool)$this->isMainBranch,
 			'displayName' => $this->displayName,
 			'address' => $this->address,
-			'latitude' => $this->latitude,
-			'longitude' => $this->longitude,
+			'latitude' => floatval($this->latitude),
+			'longitude' => floatval($this->longitude),
 			'phone' => $this->phone,
             'secondaryPhone' => $this->secondaryPhoneNumber,
 			'tty' => $this->tty,
 			'description' => $this->description,
-			'vdxFormId' => $this->vdxFormId,
+			'vdxFormId' => (int)$this->vdxFormId,
 			'vdxLocation' => $this->vdxLocation,
-			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
+			'showInLocationsAndHoursList' => (string)$this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => [],
-			'code' => $this->code
+			'code' => $this->code,
+			'unit' => $this->unit,
 		];
 		if ($this->theme == "-1") {
 			$apiInfo['theme'] = $parentLibrary->getPrimaryTheme();
@@ -2490,6 +2652,7 @@ class Location extends DataObject {
 		} else {
 			$apiInfo['email'] = $this->contactEmail;
 		}
+		unset($this->_hours);
 		$hours = $this->getHours();
 		foreach ($hours as $hour) {
 			$apiInfo['hours'][] = [
@@ -2519,6 +2682,84 @@ class Location extends DataObject {
 		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
 		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
 
+		$apiInfo['locationImage'] = null;
+		if(isset($this->locationImage)) {
+			$apiInfo['locationImage'] = $configArray['Site']['url'] . '/files/original/' . $this->locationImage;
+		}
+
 		return $apiInfo;
+	}
+
+	public function loadCopyableSubObjects() {
+		if (empty($_REQUEST['aspenLida'])) {
+			$this->lidaLocationSettingId = -1;
+			$this->lidaSelfCheckSettingId = -1;
+		}
+		if (!empty($_REQUEST['combinedResults'])) {
+			$this->getCombinedResultSections();
+			$index = -1;
+			foreach ($this->_combinedResultSections as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['eContent'])) {
+			$this->axis360ScopeId = -1;
+			$this->hooplaScopeId = -1;
+			$this->overDriveScopeId = -1;
+			$this->palaceProjectScopeId = -1;
+		}else{
+			$this->getCloudLibraryScopes();
+			$index = -1;
+			foreach ($this->_cloudLibraryScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+			$this->getSideLoadScopes();
+			$index = -1;
+			foreach ($this->_sideLoadScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['moreDetails'])) {
+			$this->getMoreDetailsOptions();
+			$index = -1;
+			foreach ($this->_moreDetailsOptions as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['hours'])) {
+			$this->getHours();
+			$index = -1;
+			foreach ($this->_hours as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['recordsToInclude'])) {
+			$this->getRecordsToInclude();
+			$index = -1;
+			foreach ($this->_recordsToInclude as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['themes'])) {
+			$this->getThemes();
+			$index = -1;
+			foreach ($this->_themes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
 	}
 }

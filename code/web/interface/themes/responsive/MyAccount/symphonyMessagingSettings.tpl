@@ -36,7 +36,7 @@
 						<th>{translate text="Phone Label (ex. my cell)" isPublicFacing=true}</th>
 						<th>{translate text="Phone Number" isPublicFacing=true}</th>
 						<th>{translate text="Country Code" isPublicFacing=true}</th>
-						<th>{translate text="Alerts to Receive" isPublicFacing=true}</th>
+						<th class="symphony-alerts-column">{translate text="Alerts to Receive" isPublicFacing=true}</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -61,7 +61,7 @@
 								{$phone.countryCode}
 							{/if}
 						</td>
-						<td>
+						<td class="symphony-alerts-column">
 							<div><label for="billNotices_{$phoneIndex}"><input type="checkbox" name="billNotices[{$phoneIndex}]" id="billNotices_{$phoneIndex}" {if !empty($phone.billNotices)}checked{/if}>{translate text="Bill Notices" isPublicFacing=true}</label></div>
 							<div><label for="overdueNotices_{$phoneIndex}"><input type="checkbox" name="overdueNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if !empty($phone.overdueNotices)}checked{/if}>{translate text="Overdue Notices" isPublicFacing=true}</label></div>
 							<div><label for="holdPickupNotices_{$phoneIndex}"><input type="checkbox" name="holdPickupNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if !empty($phone.holdPickupNotices)}checked{/if}>{translate text="Hold Pickup Notices" isPublicFacing=true}</label></div>

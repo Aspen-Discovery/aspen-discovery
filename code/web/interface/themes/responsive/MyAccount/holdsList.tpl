@@ -48,6 +48,8 @@
 					{include file="MyAccount/cloudLibraryHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{elseif $record->type == 'axis360'}
 					{include file="MyAccount/axis360Hold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+				{elseif $record->type == 'palace_project'}
+					{include file="MyAccount/palaceProjectHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{elseif $record->type == 'interlibrary_loan' && $record->source == 'vdx'}
 					{include file="MyAccount/vdxRequest.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{else}

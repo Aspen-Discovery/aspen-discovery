@@ -21,7 +21,7 @@
 	<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
 {/if}
 
-{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
+{include file="RecordDrivers/GroupedWork/grouping-information.tpl" readerName = $readerName}
 
 {if !empty($details)}
 	<h4>{translate text="Solr Details" isAdminFacing="true"}</h4>

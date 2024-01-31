@@ -1,9 +1,11 @@
 package com.turning_leaf_technologies.oai;
 
+import com.turning_leaf_technologies.dates.DateInfo;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.time.DateParser;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 
-import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -13,19 +15,21 @@ class OAISolrRecord {
 	private String identifier;
 	private String type;
 	private String title;
-	private String creator;
-	private String contributor;
-	private HashSet<String> subjects = new HashSet<>();
+	private final HashSet<String> creators = new HashSet<>();
+	private final HashSet<String> contributors = new HashSet<>();
+	private final HashSet<String> subjects = new HashSet<>();
 	private String description;
 	private HashSet<String> coverage = new HashSet<>();
 	private HashSet<String> publisher = new HashSet<>();
 	private HashSet<String> placeOfPublication = new HashSet<>();
 	private HashSet<String> format = new HashSet<>();
 	private String language;
-	private HashSet<String> source = new HashSet<>();
-	private HashSet<String> relation = new HashSet<>();
+	private final HashSet<String> source = new HashSet<>();
+	private final HashSet<String> relation = new HashSet<>();
+
+	private final HashSet<String> locations = new HashSet<>();
 	private String rights;
-	private HashSet<String> date = new HashSet<>();
+	private final HashSet<String> date = new HashSet<>();
 	private String id;
 	private String collection_name;
 	private long collection_id;
@@ -43,8 +47,8 @@ class OAISolrRecord {
 		this.title = title;
 	}
 
-	void setCreator(String creator) {
-		this.creator = creator;
+	void addCreator(String creator) {
+		this.creators.add(creator);
 	}
 
 	void setDescription(String description) {
@@ -59,8 +63,8 @@ class OAISolrRecord {
 		this.rights = rights;
 	}
 
-	void setContributor(String contributor) {
-		this.contributor = contributor;
+	void addContributor(String contributor) {
+		this.contributors.add(contributor);
 	}
 
 	void setScopesToInclude(HashSet<String> scopesToInclude) {
@@ -69,14 +73,23 @@ class OAISolrRecord {
 
 	Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
 
-	void addDates(String[] dates) {
+	void addDates(String[] dates, Logger logger) {
 		for (String date : dates) {
 			if (AspenStringUtils.isNumeric(date)) {
-				this.date.add(date);
-			} else if (datePattern.matcher(date).matches()) {
-				this.date.add(date);
+				this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
+			} else {
+				DateInfo dateInfo = new DateInfo(date);
+				if (!dateInfo.isNotSet()) {
+					this.date.add(dateInfo.getSolrDate());
+				} else {
+					logger.debug("Could not parse date " + date);
+				}
 			}
 		}
+	}
+
+	void addLocation(String location) {
+		locations.add(location);
 	}
 
 	SolrInputDocument getSolrDocument() {
@@ -88,8 +101,8 @@ class OAISolrRecord {
 		doc.addField("collection_name", collection_name);
 		doc.addField("last_indexed", new Date());
 		doc.addField("title", title);
-		doc.addField("creator", creator);
-		doc.addField("contributor", contributor);
+		doc.addField("creator", creators);
+		doc.addField("contributor", contributors);
 		doc.addField("subject", subjects);
 		doc.addField("description", description);
 		doc.addField("coverage", coverage);
@@ -101,6 +114,7 @@ class OAISolrRecord {
 		doc.addField("relation", relation);
 		doc.addField("rights", rights);
 		doc.addField("date", date);
+		doc.addField("geographic", locations);
 		doc.addField("scope_has_related_records", scopesToInclude);
 		return doc;
 	}
@@ -143,10 +157,6 @@ class OAISolrRecord {
 
 	void setId(String id) {
 		this.id = id;
-	}
-
-	String getId() {
-		return this.id;
 	}
 
 	void setCollectionName(String collection_name) {

@@ -11,10 +11,14 @@
 		<div id="eCardParent">
 			<!-- The following script tags can be placed in the library's <head> or <body> tag -->
 			<script src="https://{$eCardSettings->server}/js/eCARDEmbed.js"></script>
-			<script>loadQGeCARD({$eCardSettings->clientId})</script>
+			<script>
+				$(document).ready(function () {ldelim}
+					loadQGeCARD({$eCardSettings->clientId});
+				{rdelim});
+			</script>
 
 			<!-- The following <div> tag should be placed on the web page where you the library would like the registration form to display -->
-			<div id="eCARD" data-language="{$userLang->code}" data-branchid=""></div>
+			<div id="eCARD" data-language="{$userLang->code}" data-branchid="">{translate text="Loading..." isPublicFacing=true}</div>
 		</div>
 	{else}
 		{translate text="eCARD functionality is not properly configured." isPublicFacing=true}

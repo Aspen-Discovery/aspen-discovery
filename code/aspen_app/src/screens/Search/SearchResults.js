@@ -3,16 +3,18 @@ import { CommonActions, useNavigation, useRoute } from '@react-navigation/native
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
+import moment from 'moment';
 
-import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
+import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
@@ -30,6 +32,7 @@ export const SearchResults = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
+     const { currentIndex, currentSource, updateCurrentIndex, updateCurrentSource, updateIndexes, updateSources } = React.useContext(SearchContext);
      const url = library.baseUrl;
 
      const queryClient = useQueryClient();
@@ -62,8 +65,8 @@ export const SearchResults = () => {
      }
 
      const { status, data, error, isFetching, isPreviousData } = useQuery({
-          queryKey: ['searchResults', url, page, term, scope, params, type, id, language],
-          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language),
+          queryKey: ['searchResults', url, page, term, scope, params, type, id, language, currentIndex, currentSource],
+          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language, currentIndex, currentSource),
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
@@ -82,7 +85,7 @@ export const SearchResults = () => {
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, term, scope, params, language],
+          queryKey: ['totalPages', url, page, term, scope, params, language, currentIndex, currentSource],
           queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
           enabled: !!data,
      });
@@ -168,7 +171,7 @@ export const SearchResults = () => {
      const NoResults = () => {
           return (
                <>
-                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
                          <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
@@ -184,7 +187,7 @@ export const SearchResults = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
@@ -205,23 +208,47 @@ const DisplayResult = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const { language } = React.useContext(LanguageContext);
+     const { currentIndex, currentSource } = React.useContext(SearchContext);
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
      const handlePressItem = () => {
-          if (version >= '23.01.00') {
-               navigate('GroupedWorkScreen', {
-                    id: item.key,
-                    title: getCleanTitle(item.title),
-                    url: library.baseUrl,
-                    libraryContext: library,
-               });
+          if (currentSource === 'events') {
+               let eventSource = item.source;
+               if (item.source === 'lc') {
+                    eventSource = 'library_calendar';
+               }
+               if (item.source === 'libcal' || item.source === 'springshare_libcal') {
+                    eventSource = 'springshare';
+               }
+
+               if (item.bypass) {
+                    openURL(item.url);
+               } else {
+                    navigate('EventScreen', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         source: eventSource,
+                    });
+               }
           } else {
-               navigate('GroupedWorkScreen221200', {
-                    id: item.key,
-                    title: getCleanTitle(item.title),
-                    url: library.baseUrl,
-                    userContext: user,
-                    libraryContext: library,
-               });
+               if (version >= '23.01.00') {
+                    navigate('GroupedWorkScreen', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         libraryContext: library,
+                    });
+               } else {
+                    navigate('GroupedWorkScreen221200', {
+                         id: item.key,
+                         title: getCleanTitle(item.title),
+                         url: library.baseUrl,
+                         userContext: user,
+                         libraryContext: library,
+                    });
+               }
           }
      };
 
@@ -235,17 +262,126 @@ const DisplayResult = (data) => {
           );
      }
 
+     const openURL = async (url) => {
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+          WebBrowser.openBrowserAsync(url, browserParams);
+     };
+
      const imageUrl = item.image;
+
+     const key = 'medium_' + item.key;
+     let url = library.baseUrl + '/bookcover.php?id=' + item.key + '&size=medium';
+
+     if (currentSource === 'events') {
+          //console.log(item);
+          url = imageUrl;
+          let registrationRequired = false;
+          if (!_.isUndefined(item.registration_required)) {
+               registrationRequired = item.registration_required;
+          }
+
+          const startTime = item.start_date.date;
+          const endTime = item.end_date.date;
+
+          let time1 = startTime.split(' ');
+          let day = time1[0];
+          let time2 = endTime.split(' ');
+
+          let time1arr = time1[1].split(':');
+          let time2arr = time2[1].split(':');
+
+          let displayDay = moment(day);
+          let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
+          let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
+
+          displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
+          displayStartTime = moment(displayStartTime).format('h:mm A');
+          displayEndTime = moment(displayEndTime).format('h:mm A');
+
+          return (
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
+                    <HStack space={3}>
+                         <VStack maxW="35%">
+                              <CachedImage
+                                   cacheKey={key}
+                                   alt={item.title}
+                                   source={{
+                                        uri: `${url}`,
+                                        expiresIn: 86400,
+                                   }}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   resizeMode="cover"
+                                   placeholderContent={
+                                        <Box
+                                             bg="warmGray.50"
+                                             _dark={{
+                                                  bgColor: 'coolGray.800',
+                                             }}
+                                             width={{
+                                                  base: 100,
+                                                  lg: 200,
+                                             }}
+                                             height={{
+                                                  base: 150,
+                                                  lg: 250,
+                                             }}
+                                        />
+                                   }
+                              />
+                              <AddToList source="Events" itemId={item.key} btnStyle="sm" />
+                         </VStack>
+                         <VStack w="65%">
+                              <Text
+                                   _dark={{ color: 'warmGray.50' }}
+                                   color="coolGray.800"
+                                   bold
+                                   fontSize={{
+                                        base: 'md',
+                                        lg: 'lg',
+                                   }}>
+                                   {item.title}
+                              </Text>
+                              {item.start_date && item.end_date ? (
+                                   <>
+                                        <Text>{displayDay}</Text>
+                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                             {displayStartTime} - {displayEndTime}
+                                        </Text>
+                                   </>
+                              ) : null}
+                              {registrationRequired ? (
+                                   <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                        <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                                             {getTermFromDictionary(language, 'registration_required')}
+                                        </Badge>
+                                   </Stack>
+                              ) : null}
+                         </VStack>
+                    </HStack>
+               </Pressable>
+          );
+     }
 
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
                     <VStack maxW="35%">
                          <CachedImage
-                              cacheKey={item.key}
+                              cacheKey={key}
                               alt={item.title}
                               source={{
-                                   uri: `${imageUrl}`,
+                                   uri: `${url}`,
                                    expiresIn: 86400,
                               }}
                               style={{
@@ -271,19 +407,21 @@ const DisplayResult = (data) => {
                                    />
                               }
                          />
-                         <Badge
-                              mt={1}
-                              _text={{
-                                   fontSize: 10,
-                                   color: 'coolGray.600',
-                              }}
-                              bgColor="warmGray.200"
-                              _dark={{
-                                   bgColor: 'coolGray.900',
-                                   _text: { color: 'warmGray.400' },
-                              }}>
-                              {item.language}
-                         </Badge>
+                         {item.language ? (
+                              <Badge
+                                   mt={1}
+                                   _text={{
+                                        fontSize: 10,
+                                        color: 'coolGray.600',
+                                   }}
+                                   bgColor="warmGray.200"
+                                   _dark={{
+                                        bgColor: 'coolGray.900',
+                                        _text: { color: 'warmGray.400' },
+                                   }}>
+                                   {item.language}
+                              </Badge>
+                         ) : null}
                          <AddToList itemId={item.key} btnStyle="sm" />
                     </VStack>
                     <VStack w="65%">
@@ -449,6 +587,7 @@ const CreateFilterButtonDefaults = () => {
 };
 
 const CreateFilterButton = () => {
+     const { currentSource } = React.useContext(SearchContext);
      const navigation = useNavigation();
      const appliedFacets = SEARCH.appliedFilters;
      const sort = _.find(appliedFacets['Sort By'], {
@@ -456,7 +595,7 @@ const CreateFilterButton = () => {
           value: 'relevance',
      });
 
-     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1)) {
+     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1) || (_.size(appliedFacets) > 1 && currentSource === 'events')) {
           return (
                <Button.Group size="sm" space={1} vertical variant="outline">
                     {_.map(appliedFacets, function (item, index, collection) {
@@ -503,7 +642,8 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url, type, id, language) {
+async function fetchSearchResults(term, page, scope, url, type, id, language, index, source) {
+     console.log(SEARCH.appendedParams);
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
@@ -518,6 +658,8 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
                id: id,
                language: language,
                includeSortList: true,
+               source: source,
+               searchIndex: index,
           },
      });
 
@@ -545,6 +687,8 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
           curPage: data.result?.page_current ?? 0,
           totalPages: data.result?.page_total ?? 0,
           hasMore: morePages,
+          source: data?.result?.searchSource ?? 'local',
+          index: data?.result?.searchIndex ?? 'Keyword',
           term: term,
           message: data.data?.message ?? null,
           error: data.data?.error?.message ?? false,

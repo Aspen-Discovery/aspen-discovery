@@ -49,6 +49,9 @@ class Checkout extends CircEntry {
 	public $accessOnlineUrl;
 	public $transactionId;
 
+	//For Palace Project
+	public $earlyReturnUrl;
+
 	//Calculate in realtime
 	public $_overdue = null;
 	public $_daysUntilDue = null;
@@ -126,6 +129,8 @@ class Checkout extends CircEntry {
 			$checkout['checkoutSource'] = 'CloudLibrary';
 		} elseif ($checkout['type'] == 'axis360') {
 			$checkout['checkoutSource'] = 'Axis360';
+		} elseif ($checkout['type'] == 'palace_project') {
+			$checkout['checkoutSource'] = 'Palace Project';
 		} elseif ($checkout['type'] == 'hoopla') {
 			$checkout['checkoutSource'] = 'Hoopla';
 			$checkout['hooplaId'] = $checkout['sourceId'];

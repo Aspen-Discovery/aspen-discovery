@@ -16,6 +16,11 @@
 {if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete || $canFetchFromCommunity}
 <form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
+	{if !empty($hiddenFields)}
+		{foreach from=$hiddenFields item=fieldValue key=fieldName}
+			<input type="hidden" name="{$fieldName}" value="{$fieldValue}">
+		{/foreach}
+	{/if}
 	{if !empty($canSort) && count($sortableFields) > 0}
 		<div class="row">
 			<div class="col-xs-12">
@@ -202,7 +207,7 @@
 			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All' isAdminFacing=true}</button>
 		</div>
 	{/if}
-	{if !empty($canExportToCSV)}
+	{if !empty($canExportToCSV) && !empty($dataList)}
 		<div class="btn-group">
 			<input type='submit' name='exportToCSV' value="{translate text='Export Selected to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportSelectedToCSV');" />
 			<input type='submit' name='exportToCSV' value="{translate text='Export to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportToCSV');" />

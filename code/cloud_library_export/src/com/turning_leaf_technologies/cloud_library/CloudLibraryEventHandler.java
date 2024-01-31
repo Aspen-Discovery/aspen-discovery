@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.zip.CRC32;
 
 class CloudLibraryEventHandler extends DefaultHandler {
-	private CloudLibraryExporter exporter;
+	private final CloudLibraryExporter exporter;
 	private PreparedStatement updateCloudLibraryAvailabilityStmt;
 	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
 
@@ -22,11 +22,9 @@ class CloudLibraryEventHandler extends DefaultHandler {
 	private final Logger logger;
 	private final CloudLibraryExtractLogEntry logEntry;
 	private final long startTimeForLogging;
-
-	private int numDocuments = 0;
 	private String nodeContents = "";
 
-	private static CRC32 checksumCalculator = new CRC32();
+	private static final CRC32 checksumCalculator = new CRC32();
 
 	CloudLibraryEventHandler(CloudLibraryExporter exporter, boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
 		this.exporter = exporter;
@@ -58,7 +56,6 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	public void endElement(String uri, String localName, String qName) {
 		if (qName.equals("ItemId")){
-			numDocuments++;
 			updateAvailabilityForTitle(nodeContents.trim());
 		}
 		nodeContents = "";

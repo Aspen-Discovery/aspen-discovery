@@ -77,12 +77,12 @@ public class ControlFieldImpl extends VariableFieldImpl implements ControlField 
         this.data = data;
     }
 
-    @Override
     /**
      * Returns the {@link ControlField} data.
      * 
      * @return Returns the {@link ControlField} data.
      */
+    @Override
     public String getData() {
         return data;
     }

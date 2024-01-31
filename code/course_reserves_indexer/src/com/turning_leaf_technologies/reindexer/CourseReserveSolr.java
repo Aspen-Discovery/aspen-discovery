@@ -58,7 +58,7 @@ class CourseReserveSolr {
 		int numValidScopes = 0;
 		HashSet<String> relevantScopes = new HashSet<>();
 		for (Scope scope: courseReservesIndexer.getScopes()) {
-			boolean okToInclude = scope.isCourseReserveLibaryIncluded(courseLibrary);
+			boolean okToInclude = scope.isCourseReserveLibraryIncluded(courseLibrary);
 			if (okToInclude) {
 				numValidScopes++;
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAddedForDate(dateAdded));

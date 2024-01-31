@@ -45,11 +45,6 @@ public class MarcJsonReader implements MarcReader {
                         JsonParser.OPT_UNQUOTED_KEYWORDS |
                         JsonParser.OPT_SINGLE_QUOTE_STRINGS);
         parser.setInput("MarcInput", new InputStreamReader(is), false);
-        // if(System.getProperty("org.marc4j.marc.MarcFactory") == null)
-        // {
-        // System.setProperty("org.marc4j.marc.MarcFactory",
-        // "org.marc4j.marc.impl.NoSortMarcFactoryImpl");
-        // }
         factory = MarcFactory.newInstance();
     }
 
@@ -61,11 +56,6 @@ public class MarcJsonReader implements MarcReader {
     public MarcJsonReader(final Reader in) {
         parser = new JsonParser(0);
         parser.setInput("MarcInput", in, false);
-        // if(System.getProperty("org.marc4j.marc.MarcFactory") == null)
-        // {
-        // System.setProperty("org.marc4j.marc.MarcFactory",
-        // "org.marc4j.marc.impl.NoSortMarcFactoryImpl");
-        // }
         factory = MarcFactory.newInstance();
     }
 
@@ -108,15 +98,15 @@ public class MarcJsonReader implements MarcReader {
         int inArray = NO_ARRAY;
 
         while (true) {
-            final String mname = parser.getMemberName();
+            final String memberName= parser.getMemberName();
 
             switch (code) {
                 case JsonParser.EVT_OBJECT_BEGIN:
                     if (parserLevel == 0) {
                         record = factory.newRecord();
-                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(memberName).matches()) {
                         df = factory.newDataField();
-                        df.setTag(mname);
+                        df.setTag(memberName);
                     }
 
                     parserLevel++;
@@ -125,41 +115,51 @@ public class MarcJsonReader implements MarcReader {
                     parserLevel--;
                     if (parserLevel == 0) {
                         return record;
-                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
-                        record.addVariableField(df);
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(memberName).matches()) {
+	                    assert record != null;
+	                    record.addVariableField(df);
                         df = null;
-                    } else if (inArray == DATAFIELD_ARRAY && mname.equals("datafield")) {
-                        record.addVariableField(df);
+                    } else if (inArray == DATAFIELD_ARRAY && memberName.equals("datafield")) {
+	                    assert record != null;
+	                    record.addVariableField(df);
                         df = null;
                     }
 
                     break;
                 case JsonParser.EVT_ARRAY_BEGIN:
-                    if (mname.equals("fields")) {
-                        inArray = FIELDS_ARRAY;
-                    } else if (mname.equals("subfields")) {
-                        inArray = SUBFIELDS_ARRAY;
-                    } else if (mname.equals("controlfield")) {
-                        inArray = CONTROLFIELD_ARRAY;
-                    } else if (mname.equals("datafield")) {
-                        inArray = DATAFIELD_ARRAY;
-                    } else if (mname.equals("subfield")) {
-                        inArray = SUBFIELD_ARRAY;
-                    }
+	                switch (memberName) {
+		                case "fields":
+			                inArray = FIELDS_ARRAY;
+			                break;
+		                case "subfields":
+			                inArray = SUBFIELDS_ARRAY;
+			                break;
+		                case "controlfield":
+			                inArray = CONTROLFIELD_ARRAY;
+			                break;
+		                case "datafield":
+			                inArray = DATAFIELD_ARRAY;
+			                break;
+		                case "subfield":
+			                inArray = SUBFIELD_ARRAY;
+			                break;
+	                }
 
                     break;
                 case JsonParser.EVT_ARRAY_ENDED:
-                    if (mname.equals("fields")) {
-                        inArray = NO_ARRAY;
-                    } else if (mname.equals("subfields")) {
-                        inArray = FIELDS_ARRAY;
-                    } else if (mname.equals("controlfield")) {
-                        inArray = NO_ARRAY;
-                    } else if (mname.equals("datafield")) {
-                        inArray = NO_ARRAY;
-                    } else if (mname.equals("subfield")) {
-                        inArray = DATAFIELD_ARRAY;
-                    }
+	                switch (memberName) {
+		                case "fields":
+		                case "controlfield":
+		                case "datafield":
+			                inArray = NO_ARRAY;
+			                break;
+		                case "subfields":
+			                inArray = FIELDS_ARRAY;
+			                break;
+		                case "subfield":
+			                inArray = DATAFIELD_ARRAY;
+			                break;
+	                }
 
                     break;
                 case JsonParser.EVT_OBJECT_MEMBER:
@@ -170,36 +170,47 @@ public class MarcJsonReader implements MarcReader {
 
                     value = forwardSlash.matcher(value).replaceAll("/");
 
-                    if (mname.equals("ind1")) {
-                        df.setIndicator1(value.length() >= 1 ? value.charAt(0) : ' ');
-                    } else if (mname.equals("ind2")) {
-                        df.setIndicator2(value.length() >= 1 ? value.charAt(0) : ' ');
-                    } else if (mname.equals("leader")) {
-                        record.setLeader(factory.newLeader(value));
-                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
-                        cf = factory.newControlField(mname, value);
-                        record.addVariableField(cf);
-                    } else if (inArray == SUBFIELDS_ARRAY && singleAlphaNumeric.matcher(mname).matches()) {
-                        sf = factory.newSubfield(mname.charAt(0), value);
-                        df.addSubfield(sf);
-                    } else if (inArray == CONTROLFIELD_ARRAY && mname.equals("tag")) {
+	                char ind1 = !value.isEmpty() ? value.charAt(0) : ' ';
+	                if (memberName.equals("ind1")) {
+	                    assert df != null;
+	                    df.setIndicator1(ind1);
+                    } else if (memberName.equals("ind2")) {
+	                    assert df != null;
+	                    df.setIndicator2(ind1);
+                    } else if (memberName.equals("leader")) {
+	                    assert record != null;
+	                    record.setLeader(factory.newLeader(value));
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(memberName).matches()) {
+                        cf = factory.newControlField(memberName, value);
+	                    assert record != null;
+	                    record.addVariableField(cf);
+                    } else if (inArray == SUBFIELDS_ARRAY && singleAlphaNumeric.matcher(memberName).matches()) {
+                        sf = factory.newSubfield(memberName.charAt(0), value);
+	                    assert df != null;
+	                    df.addSubfield(sf);
+                    } else if (inArray == CONTROLFIELD_ARRAY && memberName.equals("tag")) {
                         cf = factory.newControlField();
                         cf.setTag(value);
-                    } else if (inArray == CONTROLFIELD_ARRAY && mname.equals("data")) {
-                        cf.setData(value);
-                        record.addVariableField(cf);
-                    } else if (inArray == DATAFIELD_ARRAY && mname.equals("tag")) {
+                    } else if (inArray == CONTROLFIELD_ARRAY && memberName.equals("data")) {
+	                    assert cf != null;
+	                    cf.setData(value);
+	                    assert record != null;
+	                    record.addVariableField(cf);
+                    } else if (inArray == DATAFIELD_ARRAY && memberName.equals("tag")) {
                         df = factory.newDataField();
                         df.setTag(value);
-                    } else if (inArray == DATAFIELD_ARRAY && mname.equals("ind")) {
-                        df.setIndicator1(value.length() >= 1 ? value.charAt(0) : ' ');
+                    } else if (inArray == DATAFIELD_ARRAY && memberName.equals("ind")) {
+	                    assert df != null;
+	                    df.setIndicator1(ind1);
                         df.setIndicator2(value.length() > 1 ? value.charAt(1) : ' ');
-                    } else if (inArray == SUBFIELD_ARRAY && mname.equals("code")) {
+                    } else if (inArray == SUBFIELD_ARRAY && memberName.equals("code")) {
                         sf = factory.newSubfield();
                         sf.setCode(value.charAt(0));
-                    } else if (inArray == SUBFIELD_ARRAY && mname.equals("data")) {
-                        sf.setData(value);
-                        df.addSubfield(sf);
+                    } else if (inArray == SUBFIELD_ARRAY && memberName.equals("data")) {
+	                    assert sf != null;
+	                    sf.setData(value);
+	                    assert df != null;
+	                    df.addSubfield(sf);
                     }
 
                     break;

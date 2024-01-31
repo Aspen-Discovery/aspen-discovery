@@ -8,7 +8,7 @@ yum -y install wget
 yum -y install httpd
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 yum -y install yum-utils
-yum-config-manager --enable remi-php80
+yum-config-manager --enable remi-php83
 yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo php-soap
 yum -y install php-xml
 yum -y install bind-utils
@@ -32,7 +32,7 @@ mv /etc/my.cnf /etc/my.cnf.old
 cp my.cnf /etc/my.cnf
 systemctl start mariadb
 systemctl enable mariadb
-yum -y install java-1.8.0-openjdk
+yum -y install java-11-openjdk
 yum -y install unzip
 yum -y install strace
 yum -y install mytop
@@ -60,7 +60,7 @@ yum -y install epel-release
 yum -y install certbot python2-certbot-apache
 
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
-mysql_secure_installation
+mariadb-secure-installation
 #echo "Setting timezone to Mountain Time, update as necessary with timedatectl set-timezone timezone"
 echo "Enter the timezone of the server"
 read timezone

@@ -25,7 +25,6 @@ import java.util.Vector;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -40,16 +39,16 @@ public class ReverseCodeTableHandler extends DefaultHandler {
 
     private Hashtable<Character, Hashtable<Integer, char[]>> charsets;
 
-    private Vector<Character> combiningchars;
+    private Vector<Character> combiningChars;
 
     /** Data element identifier */
-    private Integer isocode;
+    private Integer isoCode;
 
     private char[] marc;
 
     private Character ucs;
 
-    private Character altucs;
+    private Character altUcs;
 
     private boolean combining;
 
@@ -74,7 +73,7 @@ public class ReverseCodeTableHandler extends DefaultHandler {
      * @return The combining characters
      */
     public Vector<Character> getCombiningChars() {
-        return combiningchars;
+        return combiningChars;
     }
 
     /**
@@ -90,26 +89,27 @@ public class ReverseCodeTableHandler extends DefaultHandler {
     }
 
     @Override
-    public void startElement(final String uri, final String name, final String qName, final Attributes atts)
-            throws SAXParseException {
-        if (name.equals("characterSet")) {
-            isocode = Integer.valueOf(atts.getValue("ISOcode"), 16);
-        } else if (name.equals("marc")) {
-            data = new StringBuffer();
-        } else if (name.equals("codeTables")) {
-            charsets = new Hashtable<Character, Hashtable<Integer, char[]>>();
-            combiningchars = new Vector<Character>();
-        } else if (name.equals("ucs")) {
-            data = new StringBuffer();
-        } else if (name.equals("alt")) {
-            data = new StringBuffer();
-        } else if (name.equals("code")) {
-            ucs = null;
-            altucs = null;
-            combining = false;
-        } else if (name.equals("isCombining")) {
-            data = new StringBuffer();
-        }
+    public void startElement(final String uri, final String name, final String qName, final Attributes attributes) {
+	    switch (name) {
+		    case "characterSet":
+			    isoCode = Integer.valueOf(attributes.getValue("ISOcode"), 16);
+			    break;
+		    case "marc":
+		    case "ucs":
+		    case "alt":
+		    case "isCombining":
+			    data = new StringBuffer();
+			    break;
+		    case "codeTables":
+			    charsets = new Hashtable<>();
+			    combiningChars = new Vector<>();
+			    break;
+		    case "code":
+			    ucs = null;
+			    altUcs = null;
+			    combining = false;
+			    break;
+	    }
     }
 
     @Override
@@ -120,68 +120,74 @@ public class ReverseCodeTableHandler extends DefaultHandler {
     }
 
     @Override
-    public void endElement(final String uri, final String name, final String qName) throws SAXParseException {
-        if (name.equals("marc")) {
-            final String marcstr = data.toString();
+    public void endElement(final String uri, final String name, final String qName) {
+	    switch (name) {
+		    case "marc":
+			    final String marcString = data.toString();
 
-            if (marcstr.length() == 6) {
-                marc = new char[3];
-                marc[0] = (char) Integer.parseInt(marcstr.substring(0, 2), 16);
-                marc[1] = (char) Integer.parseInt(marcstr.substring(2, 4), 16);
-                marc[2] = (char) Integer.parseInt(marcstr.substring(4, 6), 16);
-            } else {
-                marc = new char[1];
-                marc[0] = (char) Integer.parseInt(marcstr, 16);
-            }
-        } else if (name.equals("ucs")) {
-            if (data.length() > 0) {
-                ucs = new Character((char) Integer.parseInt(data.toString(), 16));
-            }
-        } else if (name.equals("alt")) {
-            if (data.length() > 0) {
-                altucs = new Character((char) Integer.parseInt(data.toString(), 16));
-            }
-        } else if (name.equals("code")) {
-            if (combining) {
-                if (ucs != null) {
-                    combiningchars.add(ucs);
-                }
+			    if (marcString.length() == 6) {
+				    marc = new char[3];
+				    marc[0] = (char) Integer.parseInt(marcString.substring(0, 2), 16);
+				    marc[1] = (char) Integer.parseInt(marcString.substring(2, 4), 16);
+				    marc[2] = (char) Integer.parseInt(marcString.substring(4, 6), 16);
+			    } else {
+				    marc = new char[1];
+				    marc[0] = (char) Integer.parseInt(marcString, 16);
+			    }
+			    break;
+		    case "ucs":
+			    if (data.length() > 0) {
+				    ucs = (char) Integer.parseInt(data.toString(), 16);
+			    }
+			    break;
+		    case "alt":
+			    if (data.length() > 0) {
+				    altUcs = (char) Integer.parseInt(data.toString(), 16);
+			    }
+			    break;
+		    case "code":
+			    if (combining) {
+				    if (ucs != null) {
+					    combiningChars.add(ucs);
+				    }
 
-                if (altucs != null) {
-                    combiningchars.add(altucs);
-                }
-            }
+				    if (altUcs != null) {
+					    combiningChars.add(altUcs);
+				    }
+			    }
 
-            if (ucs != null) {
-                if (charsets.get(ucs) == null) {
-                    final Hashtable<Integer, char[]> h = new Hashtable<Integer, char[]>(1);
-                    h.put(isocode, marc);
-                    charsets.put(ucs, h);
-                } else {
-                    final Hashtable<Integer, char[]> h = charsets.get(ucs);
-                    h.put(isocode, marc);
-                }
-            }
+			    if (ucs != null) {
+				    if (charsets.get(ucs) == null) {
+					    final Hashtable<Integer, char[]> h = new Hashtable<>(1);
+					    h.put(isoCode, marc);
+					    charsets.put(ucs, h);
+				    } else {
+					    final Hashtable<Integer, char[]> h = charsets.get(ucs);
+					    h.put(isoCode, marc);
+				    }
+			    }
 
-            if (altucs != null) {
-                if (charsets.get(altucs) == null) {
-                    final Hashtable<Integer, char[]> h = new Hashtable<Integer, char[]>(1);
+			    if (altUcs != null) {
+				    if (charsets.get(altUcs) == null) {
+					    final Hashtable<Integer, char[]> h = new Hashtable<>(1);
 
-                    h.put(isocode, marc);
-                    charsets.put(altucs, h);
-                } else {
-                    final Hashtable<Integer, char[]> h = charsets.get(altucs);
+					    h.put(isoCode, marc);
+					    charsets.put(altUcs, h);
+				    } else {
+					    final Hashtable<Integer, char[]> h = charsets.get(altUcs);
 
-                    if (!h.containsKey(isocode)) {
-                        h.put(isocode, marc);
-                    }
-                }
-            }
-        } else if (name.equals("isCombining")) {
-            if (data.toString().equals("true")) {
-                combining = true;
-            }
-        }
+					    if (!h.containsKey(isoCode)) {
+						    h.put(isoCode, marc);
+					    }
+				    }
+			    }
+			    break;
+		    case "isCombining":
+			    if (data.toString().equals("true")) {
+				    combining = true;
+			    }
+			    break;
+	    }
 
         data = null;
     }

@@ -24,7 +24,6 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -32,10 +31,10 @@ import java.util.regex.Pattern;
 import org.marc4j.converter.CharConverter;
 import org.marc4j.converter.impl.AnselToUnicode;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
-import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
+import org.marc4j.marc.Leader;
+import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.VariableField;
 
 /**
@@ -64,11 +63,11 @@ public class Mrk8StreamReader implements MarcReader {
 
     private final MarcFactory factory;
 
-    private boolean toUTF8;
+    private final boolean toUTF8;
 
     private String lastLineRead;
 
-    private Pattern nonAsciiChar = Pattern.compile("[^\\u0020-\\u007F]");
+    private final Pattern nonAsciiChar = Pattern.compile("[^\\u0020-\\u007F]");
 
     private CharConverter Marc8ToUTF8 = null;
 
@@ -88,7 +87,7 @@ public class Mrk8StreamReader implements MarcReader {
      * @param toUtf8 - true if the record returned should be converted to UTF-8
      */
     public Mrk8StreamReader(final InputStream input, boolean toUtf8) {
-        this.input = new Scanner(new BufferedInputStream(input), StandardCharsets.UTF_8.name());
+        this.input = new Scanner(new BufferedInputStream(input), StandardCharsets.UTF_8);
         this.factory = MarcFactory.newInstance();
         this.toUTF8 = toUtf8;
     }
@@ -110,7 +109,7 @@ public class Mrk8StreamReader implements MarcReader {
      */
     @Override
     public Record next() {
-        final List<String> lines = new ArrayList<String>();
+        final List<String> lines = new ArrayList<>();
         if (!this.hasNext()) {
             return null;
         }
@@ -122,18 +121,18 @@ public class Mrk8StreamReader implements MarcReader {
         while (this.input.hasNextLine()) {
             final String line = this.input.nextLine();
 
-            if (line.trim().length() == 0) {
+            if (line.trim().isEmpty()) {
                 // this is a blank line. We do not need it
                 continue;
             }
-            if (line.substring(1, 4).equalsIgnoreCase("LDR") && lines.size() > 0) {
+            if (line.substring(1, 4).equalsIgnoreCase("LDR") && !lines.isEmpty()) {
                 // we have reached the next record... break for parsing;
                 this.lastLineRead = line;
                 break;
             }
 
             lines.add(line);
-            if (hasHiBitCharacters == false && nonAsciiChar.matcher(line).find()) {
+            if (!hasHiBitCharacters && nonAsciiChar.matcher(line).find()) {
                 hasHiBitCharacters = true;
             }
         }
@@ -148,7 +147,7 @@ public class Mrk8StreamReader implements MarcReader {
         final Record record = this.factory.newRecord();
 
         for (final String line : lines) {
-            if (line.trim().length() == 0) {
+            if (line.trim().isEmpty()) {
                 continue;
             }
 
@@ -159,7 +158,7 @@ public class Mrk8StreamReader implements MarcReader {
             } else {
                 final VariableField field;
                 if (this.isControlField(tag)) {
-                    field = this.factory.newControlField(tag, unescapeFieldValue(line.substring(6)));;
+                    field = this.factory.newControlField(tag, unescapeFieldValue(line.substring(6)));
                 } else {
                     // this is obviously a data field
                     final String data = line.substring(6);
@@ -173,7 +172,7 @@ public class Mrk8StreamReader implements MarcReader {
 
                     field = this.factory.newDataField(tag, indicator1, indicator2);
 
-                    final List<String> subs = Arrays.asList(data.substring(3).split("\\$"));
+                    final String[] subs = data.substring(3).split("\\$");
 
                     for (String sub : subs) {
                         String subData;
@@ -194,6 +193,7 @@ public class Mrk8StreamReader implements MarcReader {
         return record;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean isValidIndicator(final char indicator) {
         return (indicator == ' ' || (indicator >= '0' && indicator <= '9'));
     }

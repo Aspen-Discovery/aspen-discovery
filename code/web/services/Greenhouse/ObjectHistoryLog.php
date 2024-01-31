@@ -17,7 +17,7 @@ class Greenhouse_ObjectHistoryLog extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Object History Log';
+		return 'Object History Log (previous 90 days)';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {

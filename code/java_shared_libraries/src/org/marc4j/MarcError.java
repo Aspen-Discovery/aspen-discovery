@@ -67,8 +67,7 @@ public class MarcError {
     @Override
     public String toString() {
         final String severityMsg = getSeverityMsg(severity);
-        final String ret = severityMsg + " : " + message + " --- [ " + curField + " : " + curSubfield + " ]";
-        return ret;
+	    return severityMsg + " : " + message + " --- [ " + curField + " : " + curSubfield + " ]";
     }
 
     /**

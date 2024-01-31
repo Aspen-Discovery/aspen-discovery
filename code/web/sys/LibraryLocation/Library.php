@@ -63,6 +63,7 @@ class Library extends DataObject {
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $showDisplayNameInHeader;
+	public $languageAndDisplayInHeader;
 	public $headerText;
 	public $footerText;
 	public $systemMessage;
@@ -92,6 +93,7 @@ class Library extends DataObject {
 	public $showMessagingSettings;
 	public $allowChangingPickupLocationForAvailableHolds;
 	public $allowCancellingAvailableHolds;
+	public $allowCancellingInTransitHolds;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -130,6 +132,7 @@ class Library extends DataObject {
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $squareSettingId;
+	public $stripeSettingId;
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
@@ -152,6 +155,7 @@ class Library extends DataObject {
 		$hooplaScopeId;
 	public /** @noinspection PhpUnused */
 		$axis360ScopeId;
+	public $palaceProjectScopeId;
 	public /** @noinspection PhpUnused */
 		$systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
@@ -172,6 +176,11 @@ class Library extends DataObject {
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
+
+	public $enableCardRenewal;
+	public $showCardRenewalWhenExpirationIsClose;
+	public $cardRenewalUrl;
+
 	public $promptForBirthDateInSelfReg;
 	public $promptForParentInSelfReg;
 	public $promptForSMSNoticesInSelfReg;
@@ -431,11 +440,33 @@ class Library extends DataObject {
 	public $cookieStorageConsent;
 	public $cookiePolicyHTML;
 
+	/** @var MaterialsRequestFormFields[] */
+	private $_materialsRequestFormFields;
+	/** @var MaterialsRequestFieldsToDisplay[] */
+	private $_materialsRequestFieldsToDisplay;
+	/** @var MaterialsRequestFormats[] */
+	private $_materialsRequestFormats;
+
+
+	/** @var Holiday[] */
+	private $_holidays;
+	/** @var LibrarySideLoadScope[] */
+	private $_sideLoadScopes;
+	/** @var LibraryCloudLibraryScope[] */
 	private $_cloudLibraryScopes;
+	/** @var ILLItemType[] */
+	private $_interLibraryLoanItemTypes;
+	/** @var LibraryLink[] */
 	private $_libraryLinks;
+	/** @var LibraryRecordToInclude[] */
+	private $_recordsToInclude;
+
+	/** @var LibraryCombinedResultSection[] */
+	private $_combinedResultSections;
 
 	public function getNumericColumnNames(): array {
 		return [
+			'accountProfileId',
 			'compriseSettingId',
 			'proPaySettingId',
 			'worldPaySettingId',
@@ -444,12 +475,20 @@ class Library extends DataObject {
 			'invoiceCloudSettingId',
 			'deluxeCertifiedPaymentsSettingId',
 			'paypalPayflowSettingId',
-			'squareSettingId'
+			'squareSettingId',
+			'sripteSettingId'
+		];
+	}
+
+
+	public function getUniquenessFields(): array {
+		return [
+			'libraryId',
+			'subdomain',
 		];
 	}
 
 	static function getObjectStructure($context = ''): array {
-		global $serverName;
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure($context);
 
@@ -663,6 +702,16 @@ class Library extends DataObject {
 			$squareSettings[$squareSetting->id] = $squareSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+		$stripeSetting = new StripeSetting();
+		$stripeSetting->orderBy('name');
+		$stripeSettings = [];
+		$stripeSetting->find();
+		$stripeSettings[-1] = 'none';
+		while ($stripeSetting->fetch()) {
+			$stripeSettings[$stripeSetting->id] = $stripeSetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -681,6 +730,16 @@ class Library extends DataObject {
 		$axis360Scopes[-1] = 'none';
 		while ($axis360Scope->fetch()) {
 			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
+		}
+
+		require_once  ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		$palaceProjectScope = new PalaceProjectScope();
+		$palaceProjectScope->orderBy('name');
+		$palaceProjectScopes = [];
+		$palaceProjectScope->find();
+		$palaceProjectScopes[-1] = 'none';
+		while ($palaceProjectScope->fetch()) {
+			$palaceProjectScopes[$palaceProjectScope->id] = $palaceProjectScope->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
@@ -761,6 +820,9 @@ class Library extends DataObject {
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
 			'CODE128' => 'CODE128 (automatic mode switching)',
@@ -783,10 +845,20 @@ class Library extends DataObject {
 		];
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
-		if ($quipuECardSettings->find(true)) {
+		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasECard) {
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
+		$validCardRenewalOptions = [
+			0 => 'No Card Renewal',
+			//1 => 'ILS Based Card Renewal',
+			2 => 'Redirect to Card Renewal URL',
+		];
+		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+		$quipuECardSettings = new QuipuECardSetting();
+		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+			$validCardRenewalOptions[3] = 'Quipu eRenewal';
+		}
 
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
@@ -844,15 +916,6 @@ class Library extends DataObject {
 				'description' => 'Account Profile to apply to this interface',
 				'permissions' => ['Administer Account Profiles'],
 			],
-			'showDisplayNameInHeader' => [
-				'property' => 'showDisplayNameInHeader',
-				'type' => 'checkbox',
-				'label' => 'Show Display Name in Header',
-				'description' => 'Whether or not the display name should be shown in the header next to the logo',
-				'hideInLists' => true,
-				'default' => false,
-				'permissions' => ['Library Theme Configuration'],
-			],
 			'isConsortialCatalog' => [
 				'property' => 'isConsortialCatalog',
 				'type' => 'checkbox',
@@ -895,6 +958,24 @@ class Library extends DataObject {
 				'label' => 'Basic Display',
 				'hideInLists' => true,
 				'properties' => [
+					'showDisplayNameInHeader' => [
+						'property' => 'showDisplayNameInHeader',
+						'type' => 'checkbox',
+						'label' => 'Show Display Name in Header',
+						'description' => 'Whether or not the display name should be shown in the header next to the logo',
+						'hideInLists' => true,
+						'default' => false,
+						'permissions' => ['Library Theme Configuration'],
+					],
+					'languageAndDisplayInHeader'=> [
+						'property' => 'languageAndDisplayInHeader',
+						'type' => 'checkbox',
+						'label' => 'Show Language and Display Settings in Page Header',
+						'description' => 'Whether to display the language and display settings in the page header',
+						'hideInLists' => true,
+						'default' => true,
+						'permissions' => ['Library Theme Configuration'],
+					],
 					'themes' => [
 						'property' => 'themes',
 						'type' => 'oneToMany',
@@ -1513,7 +1594,7 @@ class Library extends DataObject {
 								'property' => 'minBarcodeLength',
 								'type' => 'integer',
 								'label' => 'Min Barcode Length',
-								'description' => 'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.',
+								'description' => 'A minimum length the patron barcode is expected to be. Leave as 0 to avoid extra processing of barcodes.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -1521,7 +1602,7 @@ class Library extends DataObject {
 								'property' => 'maxBarcodeLength',
 								'type' => 'integer',
 								'label' => 'Max Barcode Length',
-								'description' => 'The maximum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.',
+								'description' => 'The maximum length the patron barcode is expected to be. Leave as 0 to avoid extra processing of barcodes.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -1941,6 +2022,16 @@ class Library extends DataObject {
 								'note' => 'Applies to Polaris Only',
 								'permissions' => ['Library ILS Connection'],
 							],
+							'allowCancellingInTransitHolds' => [
+								'property' => 'allowCancellingInTransitHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Cancelling In Transit Holds',
+								'description' => 'Whether or not the user can cancel in transit holds.',
+								'hideInLists' => true,
+								'default' => 1,
+								'note' => 'Applies to CARL.X Only',
+								'permissions' => ['Library ILS Connection'],
+							],
 							'allowFreezeHolds' => [
 								'property' => 'allowFreezeHolds',
 								'type' => 'checkbox',
@@ -2354,6 +2445,38 @@ class Library extends DataObject {
 							],
 						]
 					],
+					'cardRenewalSection' => [
+						'property' => 'cardRenewalSection',
+						'type' => 'section',
+						'label' => 'Card Renewal',
+						'hideInLists' => true,
+						'permissions' => ['Library Registration'],
+						'properties' => [
+							'enableCardRenewal' => [
+								'property' => 'enableCardRenewal',
+								'type' => 'enum',
+								'values' => $validCardRenewalOptions,
+								'label' => 'Enable Card Renewal',
+								'description' => 'Whether or not patrons can renew their library card',
+								'hideInLists' => true,
+							],
+							'showCardRenewalWhenExpirationIsClose' => [
+								'property' => 'showCardRenewalWhenExpirationIsClose',
+								'type' => 'checkbox',
+								'label' => 'Show Card Renewal when expiration is close',
+								'description' => 'Indicates if card renewal can be done before the card is expired',
+								'hideInLists' => true,
+								'default' => 1
+							],
+							'cardRenewalUrl' => [
+								'property' => 'cardRenewalUrl',
+								'type' => 'url',
+								'label' => 'Card Renewal URL',
+								'description' => 'An external URL where users can renew their card',
+								'hideInLists' => true,
+							],
+						],
+					],
 					'masqueradeModeSection' => [
 						'property' => 'masqueradeModeSection',
 						'type' => 'section',
@@ -2422,7 +2545,8 @@ class Library extends DataObject {
 							9 => 'InvoiceCloud',
 							10 => 'Certified Payments by Deluxe',
 							11 => 'PayPal Payflow',
-							12 => 'Square'
+							12 => 'Square',
+							13 => 'Stripe'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2587,6 +2711,15 @@ class Library extends DataObject {
 						'values' => $squareSettings,
 						'label' => 'Square Settings',
 						'description' => 'The Square settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'stripeSettingId' => [
+						'property' => 'stripeSettingId',
+						'type' => 'enum',
+						'values' => $stripeSettings,
+						'label' => 'Stripe Settings',
+						'description' => 'The Stripe settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
@@ -3393,7 +3526,7 @@ class Library extends DataObject {
 			'overdriveSection' => [
 				'property' => 'overdriveSection',
 				'type' => 'section',
-				'label' => 'OverDrive',
+				'label' => "$readerName",
 				'hideInLists' => true,
 				'renderAsHeading' => true,
 				'permissions' => ['Library Records included in Catalog'],
@@ -3402,8 +3535,28 @@ class Library extends DataObject {
 						'property' => 'overDriveScopeId',
 						'type' => 'enum',
 						'values' => $overDriveScopes,
-						'label' => 'OverDrive Scope',
-						'description' => 'The OverDrive scope to use',
+						'label' => "$readerName Scope",
+						'description' => "The $readerName scope to use",
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => true,
+					],
+				],
+			],
+			'palaceProjectSection' => [
+				'property' => 'palaceProjectSection',
+				'type' => 'section',
+				'label' => 'Palace Project',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Library Records included in Catalog'],
+				'properties' => [
+					'palaceProjectScopeId' => [
+						'property' => 'palaceProjectScopeId',
+						'type' => 'enum',
+						'values' => $palaceProjectScopes,
+						'label' => 'Palace Project Scope',
+						'description' => 'The Palace Project scope to use',
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,
@@ -3582,6 +3735,12 @@ class Library extends DataObject {
 				'permissions' => ['Library Menu'],
 				'canAddNew' => true,
 				'canDelete' => true,
+				'additionalOneToManyActions' => [
+					'copyMenuLinks' => [
+						'text' => 'Copy Menu Links',
+						'onclick' => 'AspenDiscovery.Admin.showCopyMenuLinksForm($id);',
+					],
+				]
 			],
 
 			'recordsToInclude' => [
@@ -3925,98 +4084,27 @@ class Library extends DataObject {
 
 	public function __get($name) {
 		if ($name == "holidays") {
-			if (!isset($this->holidays) && $this->libraryId) {
-				$this->holidays = [];
-				$holiday = new Holiday();
-				$holiday->libraryId = $this->libraryId;
-				$holiday->orderBy('date');
-				$holiday->find();
-				while ($holiday->fetch()) {
-					$this->holidays[$holiday->id] = clone($holiday);
-				}
-			}
-			return $this->holidays;
+			return $this->getHolidays();
 		} elseif ($name == 'libraryLinks') {
-			if (!isset($this->_libraryLinks) && $this->libraryId) {
-				$this->_libraryLinks = [];
-				$libraryLink = new LibraryLink();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while ($libraryLink->fetch()) {
-					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
-				}
-			}
-			return $this->_libraryLinks;
+			return $this->getLibraryLinks();
 		} elseif ($name == 'recordsToInclude') {
-			if (!isset($this->recordsToInclude) && $this->libraryId) {
-				$this->recordsToInclude = [];
-				$object = new LibraryRecordToInclude();
-				$object->libraryId = $this->libraryId;
-				$object->orderBy('weight');
-				$object->find();
-				while ($object->fetch()) {
-					$this->recordsToInclude[$object->id] = clone($object);
-				}
-			}
-			return $this->recordsToInclude;
+			return $this->getRecordsToInclude();
 		} elseif ($name == 'sideLoadScopes') {
-			if (!isset($this->sideLoadScopes) && $this->libraryId) {
-				$this->sideLoadScopes = [];
-				$object = new LibrarySideLoadScope();
-				$object->libraryId = $this->libraryId;
-				$object->find();
-				while ($object->fetch()) {
-					$this->sideLoadScopes[$object->id] = clone($object);
-				}
-			}
-			return $this->sideLoadScopes;
+			return $this->getSideLoadScopes();
 		} elseif ($name == 'materialsRequestFieldsToDisplay') {
-			if (!isset($this->materialsRequestFieldsToDisplay) && $this->libraryId) {
-				$this->materialsRequestFieldsToDisplay = [];
-				$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
-				$materialsRequestFieldsToDisplay->libraryId = $this->libraryId;
-				$materialsRequestFieldsToDisplay->orderBy('weight');
-				if ($materialsRequestFieldsToDisplay->find()) {
-					while ($materialsRequestFieldsToDisplay->fetch()) {
-						$this->materialsRequestFieldsToDisplay[$materialsRequestFieldsToDisplay->id] = clone $materialsRequestFieldsToDisplay;
-					}
-				}
-				return $this->materialsRequestFieldsToDisplay;
-			}
+			return $this->getMaterialsRequestFieldsToDisplay();
 		} elseif ($name == 'materialsRequestFormats') {
 			return $this->getMaterialsRequestFormats();
 		} elseif ($name == 'materialsRequestFormFields') {
 			return $this->getMaterialsRequestFormFields();
 		} elseif ($name == 'combinedResultSections') {
-			if (!isset($this->combinedResultSections) && $this->libraryId) {
-				$this->combinedResultSections = [];
-				$combinedResultSection = new LibraryCombinedResultSection();
-				$combinedResultSection->libraryId = $this->libraryId;
-				$combinedResultSection->orderBy('weight');
-				if ($combinedResultSection->find()) {
-					while ($combinedResultSection->fetch()) {
-						$this->combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
-					}
-				}
-				return $this->combinedResultSections;
-			}
+			return $this->getCombinedResultSections();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
 		} elseif ($name == 'interLibraryLoanItemTypes') {
-			if (!isset($this->interLibraryLoanItemTypes) && $this->libraryId) {
-				$this->interLibraryLoanItemTypes = [];
-				$interLibraryLoanItemType = new ILLItemType();
-				$interLibraryLoanItemType->libraryId = $this->libraryId;
-				$interLibraryLoanItemType->orderBy('code');
-				$interLibraryLoanItemType->find();
-				while ($interLibraryLoanItemType->fetch()) {
-					$this->interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
-				}
-			}
-			return $this->interLibraryLoanItemTypes;
+			return $this->getILLItemTypes();
 		} else {
 			return parent::__get($name);
 		}
@@ -4024,26 +4112,21 @@ class Library extends DataObject {
 
 	public function __set($name, $value) {
 		if ($name == "holidays") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->holidays = $value;
+			$this->_holidays = $value;
 		} elseif ($name == 'libraryLinks') {
 			$this->_libraryLinks = $value;
 		} elseif ($name == 'recordsToInclude') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->recordsToInclude = $value;
+			$this->_recordsToInclude = $value;
 		} elseif ($name == 'sideLoadScopes') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->sideLoadScopes = $value;
+			$this->_sideLoadScopes = $value;
 		} elseif ($name == 'materialsRequestFieldsToDisplay') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFieldsToDisplay = $value;
+			$this->_materialsRequestFieldsToDisplay = $value;
 		} elseif ($name == 'materialsRequestFormats') {
 			$this->_materialsRequestFormats = $value;
 		} elseif ($name == 'materialsRequestFormFields') {
 			$this->_materialsRequestFormFields = $value;
 		} elseif ($name == 'combinedResultSections') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->combinedResultSections = $value;
+			$this->_combinedResultSections = $value;
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
@@ -4087,15 +4170,7 @@ class Library extends DataObject {
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
-		$ret = false;
-		// We process the SSO additional work before the DB is updated because we set
-		// a value on this object which needs to be persisted to the DB
-		$ssoOk = $this->processSso();
-		if ($ssoOk instanceof AspenError) {
-			$this->setLastError($ssoOk->getMessage());
-		} else {
-			$ret = parent::update();
-		}
+		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
 			$this->saveRecordsToInclude();
@@ -4162,7 +4237,6 @@ class Library extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
-			$this->processSso();
 			$this->saveILLItemTypes();
 		}
 		return $ret;
@@ -4175,24 +4249,72 @@ class Library extends DataObject {
 		}
 	}
 
-	public function saveRecordsToInclude() {
-		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)) {
-			$this->saveOneToManyOptions($this->recordsToInclude, 'libraryId');
-			unset($this->recordsToInclude);
+	public function getRecordsToInclude() {
+		if (!isset($this->_recordsToInclude)) {
+			$this->_recordsToInclude = [];
+			if (!empty($this->libraryId)) {
+				$object = new LibraryRecordToInclude();
+				$object->libraryId = $this->libraryId;
+				$object->orderBy('weight');
+				$object->find();
+				while ($object->fetch()) {
+					$this->_recordsToInclude[$object->id] = clone($object);
+				}
+			}
 		}
+		return $this->_recordsToInclude;
+	}
+
+	public function saveRecordsToInclude() {
+		if (isset ($this->_recordsToInclude) && is_array($this->_recordsToInclude)) {
+			$this->saveOneToManyOptions($this->_recordsToInclude, 'libraryId');
+			unset($this->_recordsToInclude);
+		}
+	}
+
+	public function getSideLoadScopes() {
+		if (!isset($this->_sideLoadScopes)) {
+			$this->_sideLoadScopes = [];
+			if (!empty($this->libraryId)) {
+				$object = new LibrarySideLoadScope();
+				$object->libraryId = $this->libraryId;
+				$object->find();
+				while ($object->fetch()) {
+					$this->_sideLoadScopes[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_sideLoadScopes;
 	}
 
 	public function saveSideLoadScopes() {
-		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)) {
-			$this->saveOneToManyOptions($this->sideLoadScopes, 'libraryId');
-			unset($this->sideLoadScopes);
+		if (isset ($this->_sideLoadScopes) && is_array($this->_sideLoadScopes)) {
+			$this->saveOneToManyOptions($this->_sideLoadScopes, 'libraryId');
+			unset($this->_sideLoadScopes);
 		}
 	}
 
+	public function getMaterialsRequestFieldsToDisplay() {
+		if (!isset($this->_materialsRequestFieldsToDisplay)) {
+			$this->_materialsRequestFieldsToDisplay = [];
+			if (!empty($this->libraryId)) {
+				$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
+				$materialsRequestFieldsToDisplay->libraryId = $this->libraryId;
+				$materialsRequestFieldsToDisplay->orderBy('weight');
+				if ($materialsRequestFieldsToDisplay->find()) {
+					while ($materialsRequestFieldsToDisplay->fetch()) {
+						$this->_materialsRequestFieldsToDisplay[$materialsRequestFieldsToDisplay->id] = clone $materialsRequestFieldsToDisplay;
+					}
+				}
+			}
+		}
+		return $this->_materialsRequestFieldsToDisplay;
+	}
+
 	public function saveMaterialsRequestFieldsToDisplay() {
-		if (isset ($this->materialsRequestFieldsToDisplay) && is_array($this->materialsRequestFieldsToDisplay)) {
-			$this->saveOneToManyOptions($this->materialsRequestFieldsToDisplay, 'libraryId');
-			unset($this->materialsRequestFieldsToDisplay);
+		if (isset ($this->_materialsRequestFieldsToDisplay) && is_array($this->_materialsRequestFieldsToDisplay)) {
+			$this->saveOneToManyOptions($this->_materialsRequestFieldsToDisplay, 'libraryId');
+			unset($this->_materialsRequestFieldsToDisplay);
 		}
 	}
 
@@ -4228,16 +4350,37 @@ class Library extends DataObject {
 	}
 
 	/**
+	 * @return LibraryLink[]
+	 */
+	public function getLibraryLinks() : array {
+		if (!isset($this->_libraryLinks)) {
+			$this->_libraryLinks = [];
+			if (!empty($this->libraryId)) {
+				$libraryLink = new LibraryLink();
+				$libraryLink->libraryId = $this->libraryId;
+				$libraryLink->orderBy('weight');
+				$libraryLink->find();
+				while ($libraryLink->fetch()) {
+					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
+				}
+			}
+		}
+		return $this->_libraryLinks;
+	}
+
+	/**
 	 * @return LibraryCloudLibraryScope[]|null
 	 */
 	public function getCloudLibraryScopes(): ?array {
-		if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
+		if (!isset($this->_cloudLibraryScopes)) {
 			$this->_cloudLibraryScopes = [];
-			$cloudLibraryScope = new LibraryCloudLibraryScope();
-			$cloudLibraryScope->libraryId = $this->libraryId;
-			if ($cloudLibraryScope->find()) {
-				while ($cloudLibraryScope->fetch()) {
-					$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+			if (!empty($this->libraryId)) {
+				$cloudLibraryScope = new LibraryCloudLibraryScope();
+				$cloudLibraryScope->libraryId = $this->libraryId;
+				if ($cloudLibraryScope->find()) {
+					while ($cloudLibraryScope->fetch()) {
+						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+					}
 				}
 			}
 		}
@@ -4257,7 +4400,7 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @return LibraryTheme[]|null
+	 * @return LibraryTheme[]
 	 */
 	public function getThemes(): ?array {
 		if (!isset($this->_themes)) {
@@ -4281,7 +4424,9 @@ class Library extends DataObject {
 			foreach($this->_themes as $obj) {
 				/** @var DataObject $obj */
 				if($obj->_deleteOnSave) {
-					$obj->delete();
+					if ($obj->getPrimaryKeyValue() > 0) {
+						$obj->delete();
+					}
 				} else {
 					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
 						if($obj->{$obj->__primaryKey} <= 0) {
@@ -4325,23 +4470,75 @@ class Library extends DataObject {
 	}
 
 	public function saveCombinedResultSections() {
-		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)) {
-			$this->saveOneToManyOptions($this->combinedResultSections, 'libraryId');
-			unset($this->combinedResultSections);
+		if (isset ($this->_combinedResultSections) && is_array($this->_combinedResultSections)) {
+			$this->saveOneToManyOptions($this->_combinedResultSections, 'libraryId');
+			unset($this->_combinedResultSections);
 		}
+	}
+
+	/**
+	 * @return LibraryCombinedResultSection[]
+	 */
+	public function getCombinedResultSections() : array {
+		if (!isset($this->_combinedResultSections)) {
+			$this->_combinedResultSections = [];
+			if (!empty($this->libraryId)) {
+				$combinedResultSection = new LibraryCombinedResultSection();
+				$combinedResultSection->libraryId = $this->libraryId;
+				$combinedResultSection->orderBy('weight');
+				if ($combinedResultSection->find()) {
+					while ($combinedResultSection->fetch()) {
+						$this->_combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
+					}
+				}
+			}
+		}
+		return $this->_combinedResultSections;
+	}
+
+	public function getHolidays() {
+		if (!isset($this->_holidays)) {
+			$this->_holidays = [];
+			if (!empty($this->libraryId)) {
+				$holiday = new Holiday();
+				$holiday->libraryId = $this->libraryId;
+				$holiday->orderBy('date');
+				$holiday->find();
+				while ($holiday->fetch()) {
+					$this->_holidays[$holiday->id] = clone($holiday);
+				}
+			}
+		}
+		return $this->_holidays;
 	}
 
 	public function saveHolidays() {
-		if (isset ($this->holidays) && is_array($this->holidays)) {
-			$this->saveOneToManyOptions($this->holidays, 'libraryId');
-			unset($this->holidays);
+		if (isset ($this->_holidays) && is_array($this->_holidays)) {
+			$this->saveOneToManyOptions($this->_holidays, 'libraryId');
+			unset($this->_holidays);
 		}
 	}
 
+	public function getILLItemTypes() {
+		if (!isset($this->_interLibraryLoanItemTypes)) {
+			$this->_interLibraryLoanItemTypes = [];
+			if (!empty($this->libraryId)) {
+				$interLibraryLoanItemType = new ILLItemType();
+				$interLibraryLoanItemType->libraryId = $this->libraryId;
+				$interLibraryLoanItemType->orderBy('code');
+				$interLibraryLoanItemType->find();
+				while ($interLibraryLoanItemType->fetch()) {
+					$this->_interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
+				}
+			}
+		}
+		return $this->_interLibraryLoanItemTypes;
+	}
+
 	public function saveILLItemTypes() {
-		if (isset ($this->interLibraryLoanItemTypes) && is_array($this->interLibraryLoanItemTypes)) {
-			$this->saveOneToManyOptions($this->interLibraryLoanItemTypes, 'libraryId');
-			unset($this->interLibraryLoanItemTypes);
+		if (isset ($this->_interLibraryLoanItemTypes) && is_array($this->_interLibraryLoanItemTypes)) {
+			$this->saveOneToManyOptions($this->_interLibraryLoanItemTypes, 'libraryId');
+			unset($this->_interLibraryLoanItemTypes);
 		}
 	}
 
@@ -4398,7 +4595,7 @@ class Library extends DataObject {
 
     protected $_eventFacetSettings = null;
 
-    /** @return EventsFacetGroup */
+    /** @return LibraryEventsSetting */
     public function getEventFacetSettings() {
         if ($this->_eventFacetSettings == null) {
             try {
@@ -4548,9 +4745,6 @@ class Library extends DataObject {
 		return $this->_overdriveScope;
 	}
 
-
-	private $_materialsRequestFormFields;
-
 	public function setMaterialsRequestFormFields($value) {
 		$this->_materialsRequestFormFields = $value;
 	}
@@ -4572,8 +4766,6 @@ class Library extends DataObject {
 		}
 		return $this->_materialsRequestFormFields;
 	}
-
-	private $_materialsRequestFormats;
 
 	public function setMaterialsRequestFormats($value) {
 		$this->_materialsRequestFormats = $value;
@@ -4643,68 +4835,6 @@ class Library extends DataObject {
 		return $settings;
 	}
 
-
-// If the URL of the XML metadata has changed in any way, and is populated,
-// we need to use it to fetch the metadata and store the metadata's filename
-// in the DB, otherwise we delete the file
-	public function processSso() {
-		if (is_array($this->_changedFields) && in_array('ssoXmlUrl', $this->_changedFields)) {
-			$filename = $this->fetchAndStoreSsoMetadata();
-			if (!$filename instanceof AspenError) {
-				// Update the ssoMetadataFilename in the DB
-				$this->ssoMetadataFilename = $filename;
-			}
-			return $filename;
-		} else {
-			return false;
-		}
-	}
-
-	// Fetch the XML metadata from an IdP (using the URL specified in the config)
-	// and store it
-	public function fetchAndStoreSsoMetadata() {
-		global $logger;
-		global $configArray;
-		global $serverName;
-		$ssoXmlDataPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/';
-		$url = trim($this->ssoXmlUrl);
-		if (strlen($url) > 0) {
-			// We've got a new or updated URL
-			// First try and retrieve the metadata
-			$curlWrapper = new CurlWrapper();
-			$curlWrapper->setTimeout(10);
-			$xml = $curlWrapper->curlGetPage($url);
-			if (strlen($xml) > 0) {
-				// Check it's a valid SAML message
-				try {
-					require_once '/usr/share/simplesamlphp/lib/_autoload.php';
-					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
-				} catch (Exception $e) {
-					$logger->log($e, Logger::LOG_ERROR);
-					return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
-				}
-				$fileName = $serverName . '.xml';
-				$ssoMetadataFilename = $ssoXmlDataPath . $fileName;
-				$written = file_put_contents($ssoMetadataFilename, $xml);
-				if ($written === false) {
-					$logger->log('Failed to write SSO metadata to ' . $ssoMetadataFilename . ' for site ' . $configArray['Site']['title'], Logger::LOG_ERROR);
-					return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
-				} else {
-					chmod($ssoMetadataFilename, 0764);
-				}
-			} else {
-				$logger->log('Failed to retrieve any SSO metadata from ' . $url . ' for site ' . $configArray['Site']['title'], Logger::LOG_ERROR);
-				return new AspenError('Unable to use SSO IdP metadata, did not receive any metadata, please check "URL of service metadata XML"');
-			}
-			return $fileName;
-		} else {
-			// The URL has been removed
-			// We don't remove the metadata file because
-			// another site may use it
-			return '';
-		}
-	}
-
 	public function getApiInfo(): array {
 		global $configArray;
 		global $interface;
@@ -4714,6 +4844,7 @@ class Library extends DataObject {
 			'baseUrl' => $this->baseUrl,
 			'displayName' => $this->displayName,
 			'homeLink' => $this->homeLink,
+			'languageAndDisplayInHeader' => $this->languageAndDisplayInHeader,
 			'twitterLink' => $this->twitterLink,
 			'facebookLink' => $this->facebookLink,
 			'youtubeLink' => $this->youtubeLink,
@@ -4724,10 +4855,10 @@ class Library extends DataObject {
 			'generalContactLink' => $this->generalContactLink,
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
-			'allowLinkedAccounts' => $this->allowLinkedAccounts,
-			'allowUserLists' => $this->showFavorites,
+			'allowLinkedAccounts' => (string)$this->allowLinkedAccounts,
+			'allowUserLists' => (string)$this->showFavorites,
 			'showHoldButton' => $this->showHoldButton,
-			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'allowFreezeHolds' => (string)$this->allowFreezeHolds,
 			'maxDaysToFreeze' => $this->maxDaysToFreeze,
 			'showCardExpiration' => $this->showCardExpirationDate,
 			'showCardExpirationWarnings' => $this->showExpirationWarnings,
@@ -4742,6 +4873,7 @@ class Library extends DataObject {
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
 			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number',
 			'code' => $this->ilsCode,
+			'finePaymentType' => (int)$this->finePaymentType,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -4833,8 +4965,15 @@ class Library extends DataObject {
 		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
 		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
 
+		$readerName = new OverDriveDriver();
+		$apiInfo['libbyReaderName'] = $readerName->getReaderName();
+
+		$apiInfo['showFines'] = $configArray['Catalog']['showFines'];
+
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
+
+		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
 
 		return $apiInfo;
 	}
@@ -4849,5 +4988,121 @@ class Library extends DataObject {
 		], $thirdPartyRegistrationLocations);
 		$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
 		return $structure;
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->isDefault = 0;
+		if (empty($_REQUEST['aspenLida'])) {
+			$this->lidaGeneralSettingId = -1;
+			$this->lidaNotificationSettingId = -1;
+		}
+		if (!empty($_REQUEST['combinedResults'])) {
+			$this->getCombinedResultSections();
+			$index = -1;
+			foreach ($this->_combinedResultSections as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['eContent'])) {
+			$this->axis360ScopeId = -1;
+			$this->hooplaLibraryID = 0;
+			$this->hooplaScopeId = -1;
+			$this->overDriveScopeId = -1;
+			$this->palaceProjectScopeId = -1;
+		}else{
+			$this->getCloudLibraryScopes();
+			$index = -1;
+			foreach ($this->_cloudLibraryScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$this->getSideLoadScopes();
+			$index = -1;
+			foreach ($this->_sideLoadScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['holidays'])) {
+			$this->getHolidays();
+			$index = -1;
+			foreach ($this->_holidays as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['illItemTypes'])) {
+			$this->getILLItemTypes();
+			$index = -1;
+			foreach ($this->_interLibraryLoanItemTypes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['materialsRequest'])) {
+			$this->getMaterialsRequestFieldsToDisplay();
+			$this->getMaterialsRequestFormats();
+			$this->getMaterialsRequestFormFields();
+			$index = -1;
+			foreach ($this->_materialsRequestFieldsToDisplay as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$index = -1;
+			foreach ($this->_materialsRequestFormats as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$index = -1;
+			foreach ($this->_materialsRequestFormFields as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['menuLinks'])) {
+			$this->getLibraryLinks();
+			$index = -1;
+			foreach ($this->_libraryLinks as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['messagingSettings'])) {
+			$this->twilioSettingId = -1;
+		}
+		if (empty($_REQUEST['novelist'])) {
+			$this->novelistSettingId = -1;
+		}
+		if (!empty($_REQUEST['recordsToInclude'])) {
+			$this->getRecordsToInclude();
+			$index = -1;
+			foreach ($this->_recordsToInclude as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['singleSignOn'])) {
+			$this->ssoSettingId = -1;
+		}
+		if (!empty($_REQUEST['themes'])) {
+			$this->getThemes();
+			$index = -1;
+			foreach ($this->_themes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
 	}
 }

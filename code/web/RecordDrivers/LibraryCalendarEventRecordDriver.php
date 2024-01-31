@@ -361,4 +361,40 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 
 		return $result;
 	}
+
+	public function getBypassSetting() {
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		$eventSettings = new LMLibraryCalendarSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->bypassAspenEventPages;
+		}
+
+		return false;
+	}
+
+	public function getSummaryInformation() {
+		return [
+			'id' => $this->getUniqueID(),
+			'shortId' => $this->getIdentifier(),
+			'recordtype' => 'event',
+			'image' => $this->getBookcoverUrl('medium'),
+			'title' => $this->getTitle(),
+			'description' => strip_tags($this->getDescription()),
+			'isAllDay' => $this->isAllDayEvent(),
+			'start_date' => $this->getStartDate(),
+			'end_date' => $this->getEndDate(),
+			'registration_required' => $this->isRegistrationRequired(),
+			'bypass' => $this->getBypassSetting(),
+			'url' => $this->getExternalUrl(),
+			'source' => 'library_calendar',
+			'author' => null,
+			'format' => null,
+			'ratingData' => null,
+			'language' => null,
+			'publisher' => '',
+			'length' => '',
+			'titleURL' => null,
+		];
+	}
 }

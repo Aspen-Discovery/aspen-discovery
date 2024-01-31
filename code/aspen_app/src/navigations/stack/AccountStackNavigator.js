@@ -1,28 +1,30 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
+import React from 'react';
+import { LanguageContext } from '../../context/initialContext';
+import { EventScreen } from '../../screens/Event/Event';
+import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 
 import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
+import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
+import { MyEvents } from '../../screens/MyAccount/Events/Events';
+import { MyList } from '../../screens/MyAccount/Lists/MyList';
+import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
 import { MyProfile } from '../../screens/MyAccount/Profile';
+import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import { MySavedSearch } from '../../screens/MyAccount/SavedSearches/MySavedSearch';
+import { MySavedSearches } from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
 import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
-import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
-import Preferences, { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
-import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
-import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
-import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
-import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
-import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
-import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
-import { EditionsModal } from './BrowseStackNavigator';
-import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
-import { LanguageContext } from '../../context/initialContext';
+import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
+import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
+import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { MySavedSearches } from '../../screens/MyAccount/SavedSearches/MySavedSearches';
+import { EditionsModal } from './BrowseStackNavigator';
 
 const AccountStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -42,7 +44,7 @@ const AccountStackNavigator = () => {
                     <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                </Stack.Group>
                <Stack.Group>
-                    <Stack.Screen name="MyProfile" component={MyProfile} options={{ title: getTermFromDictionary(language, 'profile') }} />
+                    <Stack.Screen name="MyProfile" component={MyProfile} options={{ title: getTermFromDictionary(language, 'contact_information') }} />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen name="MyLinkedAccounts" component={MyLinkedAccounts} options={{ title: getTermFromDictionary(language, 'linked_accounts') }} />
@@ -113,6 +115,14 @@ const AccountStackNavigator = () => {
                          initialParams={{ prevRoute: 'MyList' }}
                     />
                     <Stack.Screen
+                         name="ListItemEvent"
+                         component={EventScreen}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
+                         })}
+                         initialParams={{ prevRoute: 'MyList' }}
+                    />
+                    <Stack.Screen
                          name="ListItem221200"
                          component={GroupedWork221200}
                          options={({ route }) => ({
@@ -178,6 +188,23 @@ const AccountStackNavigator = () => {
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyReadingHistory' }}
+                    />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="MyEvents"
+                         component={MyEvents}
+                         options={{
+                              title: getTermFromDictionary(language, 'my_events'),
+                         }}
+                    />
+                    <Stack.Screen
+                         name="EventDetails"
+                         component={EventScreen}
+                         initialParams={{ prevRoute: 'MyEvents' }}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
+                         })}
                     />
                </Stack.Group>
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />

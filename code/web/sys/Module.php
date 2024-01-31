@@ -42,7 +42,7 @@ class Module extends DataObject {
 				'label' => 'Index Name',
 				'description' => 'The name of the associated solr index if any',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 			'backgroundProcess' => [
 				'property' => 'backgroundProcess',
@@ -50,7 +50,7 @@ class Module extends DataObject {
 				'label' => 'Background Process',
 				'description' => 'The name of the background process being run if any',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 			'logClassPath' => [
 				'property' => 'logClassPath',
@@ -58,7 +58,7 @@ class Module extends DataObject {
 				'label' => 'Log Class Path',
 				'description' => 'The path to the class where logs are stored',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 			'logClassName' => [
 				'property' => 'logClassName',
@@ -66,7 +66,7 @@ class Module extends DataObject {
 				'label' => 'Log Class Name',
 				'description' => 'The name of the class that does logging',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 			'settingsClassPath' => [
 				'property' => 'settingsClassPath',
@@ -74,7 +74,7 @@ class Module extends DataObject {
 				'label' => 'Settings Class Path',
 				'description' => 'The path of the class that stores settings for the module',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 			'settingsClassName' => [
 				'property' => 'settingsClassName',
@@ -82,7 +82,7 @@ class Module extends DataObject {
 				'label' => 'Settings Class Name',
 				'description' => 'The name of the class that stores settings for the module',
 				'canBatchUpdate' => false,
-				'readOnly' => true,
+				'readOnly' => !UserAccount::getActiveUserObj()->isAspenAdminUser(),
 			],
 		];
 	}

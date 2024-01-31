@@ -329,6 +329,16 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getEndDate(): ?object {
+		try {
+			$endDate = new DateTime($this->fields['end_date']);
+			$endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $endDate;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
 	public function getEndDateString() {
 		try {
 			return $this->fields['end_date'];
@@ -387,5 +397,41 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}else{
 			return false;
 		}
+	}
+
+	public function getBypassSetting() {
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting();
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->bypassAspenEventPages;
+		}
+
+		return false;
+	}
+
+	public function getSummaryInformation() {
+		return [
+			'id' => $this->getUniqueID(),
+			'shortId' => $this->getPermanentId(),
+			'recordtype' => 'event',
+			'image' => $this->getBookcoverUrl('medium'),
+			'title' => $this->getTitle(),
+			'description' => strip_tags($this->getDescription()),
+			'isAllDay' => $this->isAllDayEvent(),
+			'start_date' => $this->getStartDate(),
+			'end_date' => $this->getEndDate(),
+			'registration_required' => $this->isRegistrationRequired(),
+			'bypass' => $this->getBypassSetting(),
+			'url' => $this->getExternalUrl(),
+			'source' => 'springshare',
+			'author' => null,
+			'format' => null,
+			'ratingData' => null,
+			'language' => null,
+			'publisher' => '',
+			'length' => '',
+			'titleURL' => null,
+		];
 	}
 }

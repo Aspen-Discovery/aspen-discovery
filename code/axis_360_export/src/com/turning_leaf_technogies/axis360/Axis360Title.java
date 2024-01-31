@@ -1,13 +1,11 @@
 package com.turning_leaf_technogies.axis360;
 
-import java.util.HashSet;
-
 class Axis360Title {
-	private long id;
-	private String axis360Id;
-	private long checksum;
+	private final long id;
+	private final String axis360Id;
+	private final long checksum;
 	private boolean processed;
-	private boolean deleted;
+	private final boolean deleted;
 
 	Axis360Title(long id, String axis360Id, long checksum, boolean deleted) {
 		this.id = id;

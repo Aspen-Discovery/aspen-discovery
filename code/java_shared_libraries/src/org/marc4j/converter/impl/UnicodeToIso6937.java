@@ -44,22 +44,21 @@ public class UnicodeToIso6937 extends CharConverter {
      * @return {@link String}- the ISO 6937 data
      */
     @Override
-    public String convert(final char data[]) {
-        final StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < data.length; i++) {
-            final char c = data[i];
-            if (c < 128) {
-                sb.append(c);
-            } else {
-                final int d = convert(c);
-                if (d < 256) {
-                    sb.append((char) d);
-                } else {
-                    sb.append((char) (d / 256));
-                    sb.append((char) (d % 256));
-                }
-            }
-        }
+    public String convert(final char[] data) {
+        final StringBuilder sb = new StringBuilder();
+	    for (final char c : data) {
+		    if (c < 128) {
+			    sb.append(c);
+		    } else {
+			    final int d = convert(c);
+			    if (d < 256) {
+				    sb.append((char) d);
+			    } else {
+				    sb.append((char) (d / 256));
+				    sb.append((char) (d % 256));
+			    }
+		    }
+	    }
         return sb.toString();
     }
 
@@ -94,7 +93,7 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x00AD:
                 return 0xFF; // 15/15 SOFT HYPHEN
             case 0x00AE:
-                return 0xD4; // 13/04 TRADE MARK SIGN
+                return 0xD4; // 13/04 TRADEMARK SIGN
             case 0x00B0:
                 return 0xB0; // 11/00 DEGREE SIGN
             case 0x00B1:
@@ -108,6 +107,7 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x00B5:
                 return 0xB5; // 11/05 MICRO SIGN
             case 0x00B6:
+                //noinspection SpellCheckingInspection
                 return 0xB6; // 11/06 PILCROW SIGN
             case 0x00B7:
                 return 0xB7; // 11/07 MIDDLE DOT
@@ -262,8 +262,10 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x0103:
                 return 0xC661; // LATIN SMALL LETTER A WITH BREVE
             case 0x0104:
+                //noinspection SpellCheckingInspection
                 return 0xCE41; // LATIN CAPITAL LETTER A WITH OGONEK
             case 0x0105:
+                //noinspection SpellCheckingInspection
                 return 0xCE61; // LATIN SMALL LETTER A WITH OGONEK
             case 0x0106:
                 return 0xC243; // LATIN CAPITAL LETTER C WITH ACUTE
@@ -298,8 +300,10 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x0117:
                 return 0xC765; // LATIN SMALL LETTER E WITH DOT ABOVE
             case 0x0118:
+                //noinspection SpellCheckingInspection
                 return 0xCE45; // LATIN CAPITAL LETTER E WITH OGONEK
             case 0x0119:
+                //noinspection SpellCheckingInspection
                 return 0xCE65; // LATIN SMALL LETTER E WITH OGONEK
             case 0x011A:
                 return 0xCF45; // LATIN CAPITAL LETTER E WITH CARON
@@ -337,8 +341,10 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x012B:
                 return 0xC569; // LATIN SMALL LETTER I WITH MACRON
             case 0x012E:
+                //noinspection SpellCheckingInspection
                 return 0xCE49; // LATIN CAPITAL LETTER I WITH OGONEK
             case 0x012F:
+                //noinspection SpellCheckingInspection
                 return 0xCE69; // LATIN SMALL LETTER I WITH OGONEK
             case 0x0130:
                 return 0xC749; // LATIN CAPITAL LETTER I WITH DOT ABOVE
@@ -470,8 +476,10 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x0171:
                 return 0xCD75; // LATIN SMALL LETTER U WITH DOUBLE ACUTE
             case 0x0172:
+                //noinspection SpellCheckingInspection
                 return 0xCE55; // LATIN CAPITAL LETTER U WITH OGONEK
             case 0x0173:
+                //noinspection SpellCheckingInspection
                 return 0xCE75; // LATIN SMALL LETTER U WITH OGONEK
             case 0x0174:
                 return 0xC357; // LATIN CAPITAL LETTER W WITH CIRCUMFLEX
@@ -504,6 +512,7 @@ public class UnicodeToIso6937 extends CharConverter {
             case 0x02DA:
                 return 0xCA20; // RING ABOVE
             case 0x02DB:
+                //noinspection SpellCheckingInspection
                 return 0xCE20; // ogonek
             case 0x2015:
                 return 0xD0; // 13/00 HORIZONTAL BAR

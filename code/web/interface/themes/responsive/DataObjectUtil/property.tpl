@@ -233,6 +233,8 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {$property.affectsLiDA}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+		{elseif $property.type == 'email2'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email2 {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'email_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->email})}{$user->email}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'barcode_prefill'}
@@ -241,6 +243,16 @@
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->firstname}) && !empty({$user->lastname})}{$user->firstname} {$user->lastname}{elseif !empty({$user->firstname})}{$user->firstname}{elseif !empty({$user->lastname})}{$user->lastname}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'phone_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->phone})}{$user->phone}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+		{elseif  $property.type == 'address_prefill'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->_address1})}{$user->_address1}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+		{elseif  $property.type == 'address2_prefill'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->_address2})}{$user->_address2}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+		{elseif  $property.type == 'city_prefill'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->_city})}{$user->_city}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+		{elseif  $property.type == 'state_prefill'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->_state})}{$user->_state}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+		{elseif  $property.type == 'zip_prefill'}
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->_zip})}{$user->_zip}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
@@ -443,6 +455,7 @@
 				</div>
 			{/if}
             {if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+            {if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			<script type="application/javascript">
 				{literal}
 				$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
@@ -481,6 +494,46 @@
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{elseif $property.type == 'portalRow'}
 			{include file="DataObjectUtil/portalRows.tpl"}
+		{elseif $property.type == 'translatableTextBlock'}
+			<ul class="nav nav-tabs" role="tablist" id="{$propName}_language_tab">
+				<li role="presentation"class="active"><a href="#{$propName}_default_tab" aria-controls="{$propName}_default_tab" role="tab" data-toggle="tab">{translate text="Default" isAdminFacing=true}</a></li>
+				{foreach from=$validLanguages key=languageCode item=language}
+					{if $languageCode != 'ubb' && $languageCode != 'pig'}
+						<li role="presentation"><a href="#{$propName}_{$languageCode}_tab" aria-controls="{$propName}_{$languageCode}_tab" role="tab" data-toggle="tab">{$language->displayName}</a></li>
+					{/if}
+				{/foreach}
+			</ul>
+			<div class="tab-content" id="{$propName}_languages">
+				{assign var='localPropName' value="`$propName`_default"}
+				{assign var='localPropValue' value=$object->getTextBlockTranslation($property.property,'default')}
+				{if empty($property.readOnly)}
+					{assign var='localReadOnly' value=false}
+				{else}
+					{assign var='localReadOnly' value=$property.readOnly}
+				{/if}
+				<div role="tabpanel" class="tab-pane active" id="{$propName}_default_tab">
+					{append var='property' value=true index='readOnly'}
+					{include file="DataObjectUtil/textarea.tpl" propName=$localPropName propValue=$localPropValue}
+					{append var='property' value=$localReadOnly index='readOnly'}
+				</div>
+				{foreach from=$validLanguages key=languageCode item=language}
+					{if $languageCode != 'ubb' && $languageCode != 'pig'}
+						{assign var='localPropName' value="`$propName`_`$languageCode`"}
+						{assign var='localPropValue' value=$object->getTextBlockTranslation($property.property,$languageCode,false)}
+						<div role="tabpanel" class="tab-pane" id="{$propName}_{$languageCode}_tab">
+							<div class="form-group">
+								{include file="DataObjectUtil/textarea.tpl" propName=$localPropName propValue=$localPropValue}
+							</div>
+							<div class="form-group">
+								<div class="btn-group btn-group-sm">
+									<a class="btn btn-sm btn-default" onclick="tinyMCE.get('{$localPropName}').setContent(tinyMCE.get('{$propName}_default').getContent());return false;">{translate text="Copy From Default" isAdminFacing=true}</a>
+									<a class="btn btn-sm btn-danger" onclick="tinyMCE.get('{$localPropName}').setContent('');return false;">{translate text="Clear" isAdminFacing=true}</a>
+								</div>
+							</div>
+						</div>
+					{/if}
+				{/foreach}
+			</div>
 		{/if}
 
 	</div>

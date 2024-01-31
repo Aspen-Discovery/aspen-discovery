@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
-import com.turning_leaf_technologies.config.ConfigUtil;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -30,6 +29,8 @@ public class DatabaseCleanup implements IProcessHandler {
 		optimizeSearchTable(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
+
+		removeOldObjectHistory(dbConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveResults();
@@ -100,12 +101,15 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			int rowsRemoved = removeOldExternalRequestsStmt.executeUpdate();
 
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE external_request_log");
+			optimizeStmt.execute();
+
 			processLog.addNote("Removed " + rowsRemoved + " external request log entries");
 			processLog.incUpdated();
 
 			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors("Unable to delete old cached objects. ", e);
+			processLog.incErrors("Unable to delete old external requests. ", e);
 		}
 	}
 
@@ -140,6 +144,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			removeOldCachedObjectsStmt.setLong(1, now);
 
 			int rowsRemoved = removeOldCachedObjectsStmt.executeUpdate();
+
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE cached_values");
+			optimizeStmt.execute();
 
 			processLog.addNote("Removed " + rowsRemoved + " long searches");
 			processLog.incUpdated();
@@ -310,6 +317,28 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to delete spammy searches. ", e);
+		}
+	}
+
+	private void removeOldObjectHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try {
+			long now = new Date().getTime() / 1000;
+			//Remove anything more than 90 days hours old
+			long removalTime = now - 90 * 24 * 60 * 60;
+			PreparedStatement removeOldObjectHistoryStmt = dbConn.prepareStatement("DELETE from object_history where changeDate <= ?");
+			removeOldObjectHistoryStmt.setLong(1, removalTime);
+
+			int rowsRemoved = removeOldObjectHistoryStmt.executeUpdate();
+
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE object_history");
+			optimizeStmt.execute();
+
+			processLog.addNote("Removed " + rowsRemoved + " rows from object history");
+			processLog.incUpdated();
+
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to delete old object history. ", e);
 		}
 	}
 

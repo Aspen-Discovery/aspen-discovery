@@ -54,7 +54,6 @@ class UserListSolr {
 		Date dateAdded = new Date(created * 1000);
 		doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
 
-		//Do things based on scoping
 		int numValidScopes = 0;
 		HashSet<String> relevantScopes = new HashSet<>();
 		for (Scope scope: userListIndexer.getScopes()) {
@@ -78,9 +77,6 @@ class UserListSolr {
 				numValidScopes++;
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAddedForDate(dateAdded));
 				doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));
-				//doc.addField("format_" + scope.getScopeName(), "list");
-				//doc.addField("format_category_" + scope.getScopeName(), "list");
-				// doc.addField("place_of_publication" + scope.getScopeName(), "list");
 				relevantScopes.add(scope.getScopeName());
 			}
 		}

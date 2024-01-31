@@ -255,16 +255,16 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                value: getTermFromDictionary(language, 'physical_materials'),
           },
           {
-               key: 'titles_on_hold_for_overdrive',
-               value: getTermFromDictionary(language, 'overdrive'),
+               key: 'titles_on_hold_for_libby',
+               value: getTermFromDictionary(language, 'libby'),
           },
           {
                key: 'titles_on_hold_for_cloud_library',
                value: getTermFromDictionary(language, 'cloud_library'),
           },
           {
-               key: 'titles_on_hold_for_axis_360',
-               value: getTermFromDictionary(language, 'axis_360'),
+               key: 'titles_on_hold_for_boundless',
+               value: getTermFromDictionary(language, 'boundless'),
           },
      ];
      const checkouts = [
@@ -273,8 +273,8 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                value: getTermFromDictionary(language, 'physical_materials'),
           },
           {
-               key: 'checkouts_for_overdrive',
-               value: getTermFromDictionary(language, 'overdrive'),
+               key: 'checkouts_for_libby',
+               value: getTermFromDictionary(language, 'libby'),
           },
           {
                key: 'checkouts_for_hoopla',
@@ -285,8 +285,8 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                value: getTermFromDictionary(language, 'cloud_library'),
           },
           {
-               key: 'checkouts_for_axis_360',
-               value: getTermFromDictionary(language, 'axis_360'),
+               key: 'checkouts_for_boundless',
+               value: getTermFromDictionary(language, 'boundless'),
           },
      ];
      const filterBy = [
@@ -295,8 +295,8 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                value: getTermFromDictionary(language, 'physical_materials'),
           },
           {
-               key: 'filter_by_overdrive',
-               value: getTermFromDictionary(language, 'overdrive'),
+               key: 'filter_by_libby',
+               value: getTermFromDictionary(language, 'libby'),
           },
           {
                key: 'filter_by_hoopla',
@@ -307,8 +307,8 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                value: getTermFromDictionary(language, 'cloud_library'),
           },
           {
-               key: 'filter_by_axis_360',
-               value: getTermFromDictionary(language, 'axis_360'),
+               key: 'filter_by_boundless',
+               value: getTermFromDictionary(language, 'boundless'),
           },
           {
                key: 'filter_by_all',
@@ -389,16 +389,16 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
                     value: getTermFromDictionary(language, 'physical_materials'),
                },
                {
-                    key: 'titles_on_hold_for_overdrive',
-                    value: getTermFromDictionary(language, 'overdrive'),
+                    key: 'titles_on_hold_for_libby',
+                    value: getTermFromDictionary(language, 'libby'),
                },
                {
                     key: 'titles_on_hold_for_cloud_library',
                     value: getTermFromDictionary(language, 'cloud_library'),
                },
                {
-                    key: 'titles_on_hold_for_axis_360',
-                    value: getTermFromDictionary(language, 'axis_360'),
+                    key: 'titles_on_hold_for_boundless',
+                    value: getTermFromDictionary(language, 'boundless'),
                },
           ];
           const checkouts = [
@@ -407,8 +407,8 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
                     value: getTermFromDictionary(language, 'physical_materials'),
                },
                {
-                    key: 'checkouts_for_overdrive',
-                    value: getTermFromDictionary(language, 'overdrive'),
+                    key: 'checkouts_for_libby',
+                    value: getTermFromDictionary(language, 'libby'),
                },
                {
                     key: 'checkouts_for_hoopla',
@@ -419,8 +419,8 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
                     value: getTermFromDictionary(language, 'cloud_library'),
                },
                {
-                    key: 'checkouts_for_axis_360',
-                    value: getTermFromDictionary(language, 'axis_360'),
+                    key: 'checkouts_for_boundless',
+                    value: getTermFromDictionary(language, 'boundless'),
                },
           ];
           const filterBy = [
@@ -429,8 +429,8 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
                     value: getTermFromDictionary(language, 'physical_materials'),
                },
                {
-                    key: 'filter_by_overdrive',
-                    value: getTermFromDictionary(language, 'overdrive'),
+                    key: 'filter_by_libby',
+                    value: getTermFromDictionary(language, 'libby'),
                },
                {
                     key: 'filter_by_hoopla',
@@ -441,8 +441,8 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
                     value: getTermFromDictionary(language, 'cloud_library'),
                },
                {
-                    key: 'filter_by_axis_360',
-                    value: getTermFromDictionary(language, 'axis_360'),
+                    key: 'filter_by_boundless',
+                    value: getTermFromDictionary(language, 'boundless'),
                },
                {
                     key: 'filter_by_all',

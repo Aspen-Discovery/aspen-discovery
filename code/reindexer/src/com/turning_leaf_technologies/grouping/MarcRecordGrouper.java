@@ -111,7 +111,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 
-	private String getFormatFromItems(Record record, char formatSubfield) {
+	private String getFormatFromItems(org.marc4j.marc.Record record, char formatSubfield) {
 		List<DataField> itemFields = getDataFields(record, itemTagInt);
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
@@ -132,7 +132,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return null;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
+	public String processMarcRecord(org.marc4j.marc.Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
@@ -142,7 +142,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			if (profile.isProcessRecordLinking()){
 				//Check to see if we have any 773 fields which identify the
 				HashSet<String> parentRecords = getParentRecordIds(marcRecord);
-				if (parentRecords.size() > 0){
+				if (!parentRecords.isEmpty()){
 					String firstParentRecordId = null;
 					//Add the parent records to the database
 					try {
@@ -206,7 +206,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 					//if the record does have a parent, we're going to cheat a bit and use the info for the parent record when grouping
 					if (firstParentRecordId != null) {
-						Record parentMarcRecord = indexer.loadMarcRecordFromDatabase(profile.getName(), firstParentRecordId, logEntry);
+						org.marc4j.marc.Record parentMarcRecord = indexer.loadMarcRecordFromDatabase(profile.getName(), firstParentRecordId, logEntry);
 						if (parentMarcRecord == null) {
 							indexer.forceRecordReindex(primaryIdentifier.getType(), primaryIdentifier.getIdentifier());
 						} else {
@@ -224,7 +224,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		}
 	}
 
-	protected String setGroupingCategoryForWork(Record marcRecord, GroupedWork workForTitle) {
+	protected String setGroupingCategoryForWork(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
 		String groupingFormat;
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
@@ -243,7 +243,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return groupingFormat;
 	}
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, IndexingProfile indexingProfile){
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(org.marc4j.marc.Record marcRecord, IndexingProfile indexingProfile){
 		RecordIdentifier identifier = super.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 
 		if (indexingProfile.isDoAutomaticEcontentSuppression()) {
@@ -274,7 +274,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					allItemsSuppressed = false;
 				}
 				if (allItemsSuppressed && identifier != null) {
-					//Don't return a primary identifier for this record (we will suppress the bib and just use OverDrive APIs)
+					//Don't return a primary identifier for this record (we will suppress the bib and just use Libby APIs)
 					identifier.setSuppressed();
 				}
 			} else {
@@ -283,7 +283,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					List<DataField> linkFields = getDataFields(marcRecord, 856);
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
-							//Check the url to see if it is from OverDrive
+							//Check the url to see if it is from Libby
 							//TODO: Suppress other eContent records as well?
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (MarcRecordGrouper.overdrivePattern.matcher(linkData).matches()) {
@@ -313,7 +313,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		}
 	}
 
-	protected String getFormatFromBib(Record record) {
+	protected String getFormatFromBib(org.marc4j.marc.Record record) {
 		//Check to see if the title is eContent based on the 989 field
 		if (useEContentSubfield) {
 			List<DataField> itemFields = getDataFields(record, itemTag);
@@ -345,7 +345,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			}else{
 				originalGroupedWorkId = "false";
 			}
-			Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+			org.marc4j.marc.Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 			if (marcRecord != null) {
 				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
 				String groupedWorkId = processMarcRecord(marcRecord, false, null, indexer);
@@ -369,7 +369,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		logEntry.saveResults();
 	}
 
-	public HashSet<String> getParentRecordIds(Record record) {
+	public HashSet<String> getParentRecordIds(org.marc4j.marc.Record record) {
 		List<DataField> analyticFields = record.getDataFields(773);
 		HashSet<String> parentRecords = new HashSet<>();
 		for (DataField analyticField : analyticFields){

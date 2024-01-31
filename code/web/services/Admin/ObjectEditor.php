@@ -9,6 +9,9 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	function launch() {
 		global $interface;
+		global $activeLanguage;
+
+		$interface->assign('activeLanguage', $activeLanguage);
 
 		$user = UserAccount::getActiveUserObj();
 		if (!empty($user->updateMessage)) {
@@ -25,6 +28,18 @@ abstract class ObjectEditor extends Admin_Admin {
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
+		$interface->assign('hasCopyOptions', $this->hasCopyOptions());
+		if ($this->canCopy() && $objectAction == 'copy') {
+			$copyNoteTemplate = $this->getCopyNotes();
+			if (empty($copyNoteTemplate) || !file_exists(ROOT_DIR . $copyNoteTemplate)) {
+				$interface->assign('copyNotes', '');
+			}else {
+				require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+				$parsedown = AspenParsedown::instance();
+				$copyNotes = $parsedown->parse(file_get_contents(ROOT_DIR . $copyNoteTemplate));
+				$interface->assign('copyNotes', $copyNotes);
+			}
+		}
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('canSort', $this->canSort());
@@ -50,7 +65,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list') {
 			$this->viewExistingObjects($structure);
-		} elseif ($objectAction == 'save' || $objectAction == 'delete') {
+		} elseif ($objectAction == 'save' || $objectAction == 'saveCopy' || $objectAction == 'delete') {
 			$this->editObject($objectAction, $structure);
 		} elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
@@ -58,6 +73,8 @@ abstract class ObjectEditor extends Admin_Admin {
 			$this->showHistory();
 		} elseif ($objectAction == 'copy') {
 			$this->copyObject($structure);
+		} elseif ($objectAction == 'getCopyOptions') {
+			$this->getCopyOptions($structure);
 		} elseif ($objectAction == 'shareForm') {
 			$this->showShareForm($structure);
 		} elseif ($objectAction == 'shareToCommunity') {
@@ -220,6 +237,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$filterFields = $this->getFilterFields($structure);
 		$interface->assign('filterFields', $filterFields);
 		$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
+		$interface->assign('hiddenFields', $this->getHiddenFields());
 
 		$numObjects = $this->getNumObjects();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -266,42 +284,90 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	function copyObject($structure) {
 		global $interface;
-		//Viewing an individual record, get the id to show
-		if (isset($_SERVER['HTTP_REFERER'])) {
-			$_SESSION['redirect_location'] = $_SERVER['HTTP_REFERER'];
-		} else {
-			unset($_SESSION['redirect_location']);
-		}
-		if (isset($_REQUEST['sourceId'])) {
-			$id = $_REQUEST['sourceId'];
-			$existingObject = $this->getExistingObjectById($id);
-			if ($existingObject != null) {
-				if ($existingObject->canActiveUserEdit()) {
-					$interface->assign('objectName', $existingObject->__toString());
-					$existingObject->unsetUniquenessFields();
-					if (method_exists($existingObject, 'label')) {
-						$interface->assign('objectName', $existingObject->label());
+		if ($this->canCopy()) {
+			//Viewing an individual record, get the id to show
+			if (isset($_SERVER['HTTP_REFERER'])) {
+				$_SESSION['redirect_location'] = $_SERVER['HTTP_REFERER'];
+			} else {
+				unset($_SESSION['redirect_location']);
+			}
+			if (isset($_REQUEST['sourceId'])) {
+				$id = $_REQUEST['sourceId'];
+				$existingObject = $this->getExistingObjectById($id);
+				if ($existingObject != null) {
+					if ($existingObject->canActiveUserEdit()) {
+						$existingObject->loadCopyableSubObjects();
+						$interface->assign('objectName', $existingObject->__toString());
+						$existingObject->unsetUniquenessFields();
+						if (method_exists($existingObject, 'label')) {
+							$interface->assign('objectName', $existingObject->label());
+						}
+						$this->activeObject = $existingObject;
+						$interface->assign('sourceId', $id);
+					} else {
+						$interface->setTemplate('../Admin/noPermission.tpl');
+						return;
 					}
-					$this->activeObject = $existingObject;
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate('../Admin/invalidObject.tpl');
 					return;
 				}
 			} else {
 				$interface->setTemplate('../Admin/invalidObject.tpl');
 				return;
 			}
-		} else {
-			$interface->setTemplate('../Admin/invalidObject.tpl');
-			return;
-		}
-		$interface->assign('object', $existingObject);
-		//Check to see if the request should be multipart/form-data
-		$contentType = DataObjectUtil::getFormContentType($structure);
-		$interface->assign('contentType', $contentType);
+			$interface->assign('object', $existingObject);
+			//Check to see if the request should be multipart/form-data
+			$contentType = DataObjectUtil::getFormContentType($structure);
+			$interface->assign('contentType', $contentType);
 
-		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
-		$interface->setTemplate('../Admin/objectEditor.tpl');
+			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
+			$interface->setTemplate('../Admin/objectEditor.tpl');
+		}else {
+			$interface->setTemplate('../Admin/noPermission.tpl');
+		}
+	}
+
+	function getCopyOptions() {
+		global $interface;
+		if ($this->canCopy()) {
+			header('Content-type: application/json');
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+			$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+			if (empty($id) || $id < 0) {
+
+			}else{
+				$curObject = $this->getExistingObjectById($id);
+				$copyOptions = $this->getCopyOptionsFormStructure($curObject);
+
+				$interface->assign('id', '');
+				$interface->assign('sourceId', $id);
+				$interface->assign('submitUrl', "/{$this->getModule()}/{$this->getToolName()}?objectAction=copy&sourceId=$id");
+				$interface->assign('structure', $copyOptions);
+				$interface->assign('ajaxFormId', 'copyOptions');
+
+				$optionsForm = $interface->fetch('DataObjectUtil/ajaxForm.tpl');
+
+				$results = [
+					'success' => true,
+					'title' => translate([
+						'text' => "Copy Options",
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $optionsForm,
+					'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return $(\'#copyOptions\').submit();">' . translate([
+							'text' => 'Continue',
+							'isPublicFacing' => true,
+						]) . '</a>',
+				];
+				echo json_encode($results);
+				die();
+			}
+
+		}else{
+			$interface->setTemplate('../Admin/noPermission.tpl');
+		}
 	}
 
 	function showShareForm($structure) {
@@ -559,6 +625,12 @@ abstract class ObjectEditor extends Admin_Admin {
 				$errorOccurred = true;
 			}
 		}
+		if (!empty($id) && $objectAction == 'saveCopy') {
+			if (!empty($_REQUEST['sourceId'])) {
+				$sourceId = $_REQUEST['sourceId'];
+				$curObject->finishCopy($sourceId);
+			}
+		}
 		if (empty($id) && $errorOccurred) {
 			if ($this->canAddNew()) {
 				header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
@@ -606,6 +678,10 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function canCopy() {
+		return false;
+	}
+
+	public function hasCopyOptions() {
 		return false;
 	}
 
@@ -1130,5 +1206,17 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		}
 		return $structure;
+	}
+
+	public function getCopyNotes() {
+		return ''
+;	}
+
+	public function getCopyOptionsFormStructure($activeObject) {
+		return [];
+	}
+
+	function getHiddenFields() {
+		return [];
 	}
 }

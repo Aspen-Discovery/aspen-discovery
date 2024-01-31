@@ -69,6 +69,10 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
 		$interface->assign('axis360Extract', $this->axis360RawMetadata);
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/Axis360/staff-view.tpl';
 	}
 

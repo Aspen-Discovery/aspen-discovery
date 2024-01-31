@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -72,11 +73,9 @@ import org.marc4j.marc.impl.Verifier;
  */
 public class MarcStreamReader implements MarcReader {
 
-    private DataInputStream input = null;
+    private final DataInputStream input;
 
-    private Record record;
-
-    private final MarcFactory factory;
+	private final MarcFactory factory;
 
     private String encoding = "ISO8859_1";
 
@@ -132,7 +131,7 @@ public class MarcStreamReader implements MarcReader {
      */
     @Override
     public Record next() {
-        record = factory.newRecord();
+	    Record record = factory.newRecord();
 
         try {
 
@@ -147,7 +146,7 @@ public class MarcStreamReader implements MarcReader {
         } catch (final EOFException e) {
             throw new MarcException("Premature end of file encountered", e);
         } catch (final IOException e) {
-            throw new MarcException("an error occured reading input", e);
+            throw new MarcException("an error occurred reading input", e);
         }
     }
 
@@ -159,18 +158,16 @@ public class MarcStreamReader implements MarcReader {
 
         ldr = factory.newLeader();
         ldr.setRecordLength(recordLength);
-        int directoryLength = 0;
+        int directoryLength;
 
         try {
             parseLeader(ldr, byteArray);
             directoryLength = ldr.getBaseAddressOfData() - (24 + 1);
-        } catch (final IOException e) {
-            throw new MarcException("error parsing leader with data: " + new String(byteArray), e);
-        } catch (final MarcException e) {
+        } catch (final IOException | MarcException e) {
             throw new MarcException("error parsing leader with data: " + new String(byteArray), e);
         }
 
-        // if MARC 21 then check encoding
+	    // if MARC 21 then check encoding
         switch (ldr.getCharCodingScheme()) {
             case ' ':
                 if (!override) {
@@ -189,13 +186,13 @@ public class MarcStreamReader implements MarcReader {
             throw new MarcException("invalid directory");
         }
 
-        final DataInputStream inputrec = new DataInputStream(new ByteArrayInputStream(recordBuf));
+        final DataInputStream inputRecord = new DataInputStream(new ByteArrayInputStream(recordBuf));
         final int size = directoryLength / 12;
 
         final String[] tags = new String[size];
         final int[] lengths = new int[size];
         final int[] starts = new int[size];
-        final HashMap<Integer, Integer> unsortedStartIndex = new HashMap<Integer, Integer>();
+        final HashMap<Integer, Integer> unsortedStartIndex = new HashMap<>();
 
         final byte[] tag = new byte[3];
         final byte[] length = new byte[4];
@@ -205,15 +202,15 @@ public class MarcStreamReader implements MarcReader {
 
         try {
             for (int i = 0; i < size; i++) {
-                inputrec.readFully(tag);
+                inputRecord.readFully(tag);
                 tmp = new String(tag);
                 tags[i] = tmp;
 
-                inputrec.readFully(length);
+                inputRecord.readFully(length);
                 tmp = new String(length);
                 lengths[i] = Integer.parseInt(tmp);
 
-                inputrec.readFully(start);
+                inputRecord.readFully(start);
 
                 tmp = new String(start);
                 starts[i] = Integer.parseInt(tmp);
@@ -223,21 +220,21 @@ public class MarcStreamReader implements MarcReader {
             // Sort starting character positions
             Arrays.sort(starts);
 
-            if (inputrec.read() != Constants.FT) {
+            if (inputRecord.read() != Constants.FT) {
                 throw new MarcException("expected field terminator at end of directory");
             }
 
-            int i = 0;
+            int i;
             for (int s = 0; s < size; s++) {
-                i = unsortedStartIndex.get(starts[s]).intValue();
+                i = unsortedStartIndex.get(starts[s]);
 
-                getFieldLength(inputrec);
+                getFieldLength(inputRecord);
 
                 if (Verifier.isControlField(tags[i])) {
                     byteArray = new byte[lengths[i] - 1];
-                    inputrec.readFully(byteArray);
+                    inputRecord.readFully(byteArray);
 
-                    if (inputrec.read() != Constants.FT) {
+                    if (inputRecord.read() != Constants.FT) {
                         throw new MarcException("expected field terminator at end of field");
                     }
 
@@ -247,7 +244,7 @@ public class MarcStreamReader implements MarcReader {
                     record.addVariableField(field);
                 } else {
                     byteArray = new byte[lengths[i]];
-                    inputrec.readFully(byteArray);
+                    inputRecord.readFully(byteArray);
 
                     try {
                         record.addVariableField(parseDataField(tags[i], byteArray));
@@ -258,18 +255,18 @@ public class MarcStreamReader implements MarcReader {
                 }
             }
 
-            if (inputrec.read() != Constants.RT) {
+            if (inputRecord.read() != Constants.RT) {
                 throw new MarcException("expected record terminator");
             }
         } catch (final IOException e) {
-            throw new MarcException("an error occured reading input", e);
+            throw new MarcException("an error occurred reading input", e);
         }
     }
 
     private DataField parseDataField(final String tag, final byte[] field) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(field);
-        final char ind1 = (char) bais.read();
-        final char ind2 = (char) bais.read();
+        final ByteArrayInputStream byteInputStream = new ByteArrayInputStream(field);
+        final char ind1 = (char) byteInputStream.read();
+        final char ind2 = (char) byteInputStream.read();
 
         final DataField dataField = factory.newDataField();
         dataField.setTag(tag);
@@ -282,22 +279,23 @@ public class MarcStreamReader implements MarcReader {
         byte[] data;
         Subfield subfield;
         while (true) {
-            readByte = bais.read();
+            readByte = byteInputStream.read();
             if (readByte < 0) {
                 break;
             }
             switch (readByte) {
                 case Constants.US:
-                    code = bais.read();
+                    code = byteInputStream.read();
                     if (code < 0) {
                         throw new IOException("unexpected end of data field");
                     }
                     if (code == Constants.FT) {
                         break;
                     }
-                    size = getSubfieldLength(bais);
+                    size = getSubfieldLength(byteInputStream);
                     data = new byte[size];
-                    bais.read(data);
+                    //noinspection ResultOfMethodCallIgnored
+                    byteInputStream.read(data);
                     subfield = factory.newSubfield();
                     subfield.setCode((char) code);
                     subfield.setData(getDataAsString(data));
@@ -310,16 +308,17 @@ public class MarcStreamReader implements MarcReader {
         return dataField;
     }
 
-    private int getFieldLength(final DataInputStream bais) throws IOException {
-        bais.mark(9999);
+    @SuppressWarnings("UnusedReturnValue")
+    private int getFieldLength(final DataInputStream byteInputStream) throws IOException {
+        byteInputStream.mark(9999);
         int bytesRead = 0;
         while (true) {
-            switch (bais.read()) {
+            switch (byteInputStream.read()) {
                 case Constants.FT:
-                    bais.reset();
+                    byteInputStream.reset();
                     return bytesRead;
                 case -1:
-                    bais.reset();
+                    byteInputStream.reset();
                     throw new IOException("Field not terminated");
                 case Constants.US:
                 default:
@@ -328,17 +327,17 @@ public class MarcStreamReader implements MarcReader {
         }
     }
 
-    private int getSubfieldLength(final ByteArrayInputStream bais) throws IOException {
-        bais.mark(9999);
+    private int getSubfieldLength(final ByteArrayInputStream byteInputStream) throws IOException {
+        byteInputStream.mark(9999);
         int bytesRead = 0;
         while (true) {
-            switch (bais.read()) {
+            switch (byteInputStream.read()) {
                 case Constants.US:
                 case Constants.FT:
-                    bais.reset();
+                    byteInputStream.reset();
                     return bytesRead;
                 case -1:
-                    bais.reset();
+                    byteInputStream.reset();
                     throw new IOException("subfield not terminated");
                 default:
                     bytesRead++;
@@ -347,40 +346,45 @@ public class MarcStreamReader implements MarcReader {
     }
 
     private int parseRecordLength(final byte[] leaderData) throws IOException {
-        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
-        int length = -1;
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), StandardCharsets.ISO_8859_1);
+        int length;
         char[] tmp = new char[5];
+        //noinspection ResultOfMethodCallIgnored
         isr.read(tmp);
         try {
             length = Integer.parseInt(new String(tmp));
         } catch (final NumberFormatException e) {
             throw new MarcException("unable to parse record length", e);
         }
-        tmp = null;
         isr.close();
         return length;
     }
 
     private void parseLeader(final Leader ldr, final byte[] leaderData) throws IOException {
-        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), StandardCharsets.ISO_8859_1);
         char[] tmp = new char[5];
+        //noinspection ResultOfMethodCallIgnored
         isr.read(tmp);
         // Skip over bytes for record length, If we get here, its already been
         // computed.
         ldr.setRecordStatus((char) isr.read());
         ldr.setTypeOfRecord((char) isr.read());
         tmp = new char[2];
+        //noinspection ResultOfMethodCallIgnored
         isr.read(tmp);
         ldr.setImplDefined1(tmp);
         ldr.setCharCodingScheme((char) isr.read());
         final char indicatorCount = (char) isr.read();
         final char subfieldCodeLength = (char) isr.read();
-        char baseAddr[] = new char[5];
-        isr.read(baseAddr);
+        char[] baseAddress = new char[5];
+        //noinspection ResultOfMethodCallIgnored
+        isr.read(baseAddress);
         tmp = new char[3];
+        //noinspection ResultOfMethodCallIgnored
         isr.read(tmp);
         ldr.setImplDefined2(tmp);
         tmp = new char[4];
+        //noinspection ResultOfMethodCallIgnored
         isr.read(tmp);
         ldr.setEntryMap(tmp);
         isr.close();
@@ -395,34 +399,24 @@ public class MarcStreamReader implements MarcReader {
             throw new MarcException("unable to parse subfield code length", e);
         }
         try {
-            ldr.setBaseAddressOfData(Integer.parseInt(new String(baseAddr)));
+            ldr.setBaseAddressOfData(Integer.parseInt(new String(baseAddress)));
         } catch (final NumberFormatException e) {
             throw new MarcException("unable to parse base address of data", e);
         }
-        tmp = null;
-        baseAddr = null;
-        isr.close();
+	    isr.close();
     }
 
     private String getDataAsString(final byte[] bytes) {
         String dataElement = null;
         if (encoding.equals("UTF-8") || encoding.equals("UTF8")) {
-            try {
-                dataElement = new String(bytes, "UTF8");
-            } catch (final UnsupportedEncodingException e) {
-                throw new MarcException("unsupported encoding", e);
-            }
+	        dataElement = new String(bytes, StandardCharsets.UTF_8);
         } else if (encoding.equals("MARC-8") || encoding.equals("MARC8")) {
             if (converterAnsel == null) {
                 converterAnsel = new AnselToUnicode();
             }
             dataElement = converterAnsel.convert(bytes);
         } else if (encoding.equals("ISO-8859-1") || encoding.equals("ISO8859_1") || encoding.equals("ISO_8859_1")) {
-            try {
-                dataElement = new String(bytes, "ISO-8859-1");
-            } catch (final UnsupportedEncodingException e) {
-                throw new MarcException("unsupported encoding", e);
-            }
+	        dataElement = new String(bytes, StandardCharsets.ISO_8859_1);
         } else if (override) {
             try {
                 dataElement = new String(bytes, encoding);

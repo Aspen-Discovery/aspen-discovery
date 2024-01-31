@@ -714,7 +714,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 											}
 										}
 										if($record->_eContentSource == "OverDrive"){
-											$output[] = $format . "::" . "OverDrive";
+											$readerName = new OverDriveDriver();
+											$readerName = $readerName->getReaderName();
+											$output[] = $format . "::" . $readerName;
 											$output = array_unique($output);
 											$output = array_slice($output, 0, 3);
 										}

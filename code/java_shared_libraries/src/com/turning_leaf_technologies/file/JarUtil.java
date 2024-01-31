@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.file;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.zip.CRC32;
@@ -14,7 +13,6 @@ public class JarUtil {
 		try {
 			CRC32 checksumCalculator = new CRC32();
 			File myJar = new File(jarPath);
-			FileReader myJarReader = new FileReader(myJar);
 
 			checksumCalculator.update(Files.readAllBytes(myJar.toPath()));
 			checksumValue = checksumCalculator.getValue();

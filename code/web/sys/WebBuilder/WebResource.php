@@ -24,9 +24,10 @@ class WebResource extends DB_LibraryLinkedObject {
 	public $description;
 	public $lastUpdate;
 
-	protected $_libraries;
 	protected $_audiences;
 	protected $_categories;
+
+	protected $_libraries;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -400,5 +401,20 @@ class WebResource extends DB_LibraryLinkedObject {
 			$result = true;
 		}
 		return $result;
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->getCategories();
+		$index = -1;
+		foreach ($this->_categories as $subObject) {
+			$subObject->id = $index;
+			$index--;
+		}
+		$this->getAudiences();
+		$index = -1;
+		foreach ($this->_audiences as $subObject) {
+			$subObject->id = $index;
+			$index--;
+		}
 	}
 }

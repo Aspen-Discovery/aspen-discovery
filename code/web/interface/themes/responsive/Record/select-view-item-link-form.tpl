@@ -1,5 +1,5 @@
 {strip}
-	<form enctype="multipart/form-data" name="viewItem" id="viewItem" method="post" onsubmit="return AspenDiscovery.Record.viewItemLink();">
+	<form enctype="multipart/form-data" name="viewItem" id="viewItem" method="post" onsubmit="return AspenDiscovery.Record.viewItemLink({$variationId});">
 		<input type="hidden" name="id" id="id" value="{$id}"/>
 		<div class="form-group">
 			<div class="form-group">

@@ -1,5 +1,4 @@
 package com.turning_leaf_technologies.horizon;
-import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +13,6 @@ import org.marc4j.marc.Subfield;
 
 import java.io.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -78,6 +76,8 @@ public class HorizonExportMain {
 
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Horizon Export");
+
+		System.exit(0);
 	}
 
 	/**

@@ -95,6 +95,9 @@ class RecordDriverFactory {
 				$logger->log("Unable to load record driver for hoopla record $recordId", Logger::LOG_WARNING);
 				$recordDriver = null;
 			}
+		} elseif ($recordType == 'palace_project') {
+			require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+			$recordDriver = new PalaceProjectRecordDriver($recordId, $groupedWork);
 		} elseif ($recordType == 'open_archives') {
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			$recordDriver = new OpenArchivesRecordDriver($recordId);

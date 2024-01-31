@@ -33,41 +33,41 @@ public interface VariableField extends Serializable, Comparable<VariableField> {
      * Sets the identifier.
      * <p>
      * The purpose of this identifier is to provide an identifier for
-     * persistency.
+     * persistence.
      *
      * @param id the identifier
      */
-    public void setId(Long id);
+    void setId(Long id);
 
     /**
      * Gets the identifier.
      * <p>
      * The purpose of this identifier is to provide an identifier for
-     * persistency.
+     * persistence.
      *
      * @return The identifier
      */
-    public Long getId();
+    Long getId();
 
     /**
      * Returns the tag name.
      *
      * @return String - the tag name
      */
-    public String getTag();
+    String getTag();
 
     /**
      * Returns the tag as an integer
      * @return int - the tag as an integer
      */
-    public int getNumericTag();
+    int getNumericTag();
 
     /**
      * Sets the tag name.
      *
      * @param tag the tag name
      */
-    public void setTag(String tag);
+    void setTag(String tag);
 
     /**
      * Returns true if the given regular expression matches a subsequence of a
@@ -80,6 +80,6 @@ public interface VariableField extends Serializable, Comparable<VariableField> {
      * @param pattern the regular expression
      * @return true if the pattern matches, false othewise
      */
-    public abstract boolean find(String pattern);
+    boolean find(String pattern);
 
 }

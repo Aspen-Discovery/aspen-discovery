@@ -27,6 +27,9 @@ class Hold extends CircEntry {
 	public $isIll;
 	public $pendingCancellation;
 
+	//For Palace Project
+	public $cancellationUrl;
+
 	//Try to get rid of
 	public $_freezeError;
 
@@ -68,6 +71,8 @@ class Hold extends CircEntry {
 			$hold['holdSource'] = 'CloudLibrary';
 		} elseif ($hold['type'] == 'axis360') {
 			$hold['holdSource'] = 'Axis360';
+		} elseif ($hold['type'] == 'palace_project') {
+			$hold['holdSource'] = 'Palace Project';
 		} elseif ($hold['type'] == 'overdrive') {
 			global $configArray;
 			$hold['holdSource'] = 'OverDrive';
@@ -104,12 +109,13 @@ class Hold extends CircEntry {
 		$hold['freezable'] = (boolean)$this->canFreeze;
 		$hold['canFreeze'] = (boolean)$this->canFreeze;
 		if ($this->pickupLocationId != null) {
-			$hold['currentPickupId'] = $this->pickupLocationId;
+			$hold['pickupLocationId'] = (string)$this->pickupLocationId;
+			$hold['currentPickupId'] = (string)$this->pickupLocationId;
 			$hold['currentPickupName'] = $this->pickupLocationName;
 			$location = new Location();
 			$location->locationId = $this->pickupLocationId;
 			if ($location->find(true)) {
-				$hold['currentPickupId'] = $location->code;
+				$hold['currentPickupId'] = (string)$location->code;
 				$hold['location'] = $location->code;
 			}
 		}

@@ -112,24 +112,34 @@ const app_config = {
           infoPlist: {
                NSLocationAlwaysAndWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
                NSLocationWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
-               LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
+               LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta', 'itms-apps'],
                CFBundleAllowMixedLocalizations: true,
                NSCameraUsageDescription: 'This app uses your camera to scan barcodes when searching for items in the library catalog',
                NSMicrophoneUsageDescription: 'This app uses your microphone when scanning barcodes when searching for items in the library catalog',
+               NSCalendarsUsageDescription: 'This app can add library events to your calendar',
+               NSRemindersUsageDescription: 'This app can add library events to your reminders',
           },
           jsEngine: 'jsc',
+          config: {
+               googleMapsApiKey: owner['googleApiKeyApple'],
+          },
      },
      android: {
           allowBackup: false,
           package: app['reverseDns'],
           versionCode: versionAsInt,
-          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM', 'CAMERA'],
+          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM', 'CAMERA', 'READ_CALENDAR', 'WRITE_CALENDAR'],
           adaptiveIcon: {
                foregroundImage: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
                backgroundColor: app['background'],
           },
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
           googleServicesFile: './google-services.json',
+          config: {
+               googleMaps: {
+                    apiKey: owner['googleApiKeyAndroid'],
+               },
+          },
      },
      notification: {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appNotification&slug=' + app['slug'],
@@ -146,8 +156,8 @@ const app_config = {
           eas: {
                projectId: app['easId'],
           },
-          iosStoreUrl: 'https://apps.apple.com/us/app/id' + app['ascAppId'],
-          androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns'],
+          iosStoreUrl: 'itms-apps://apps.apple.com/id/app/' + app['slug'] + '/id' + app['ascAppId'],
+          androidStoreUrl: 'market://details?id=' + app['reverseDns'],
           patch: version['patch'],
      },
      hooks: {
@@ -177,6 +187,7 @@ const app_config = {
                     locationAlwaysAndWhenInUsePermission: 'This app uses your location to find nearby libraries to make logging in easier',
                },
           ],
+          ['expo-calendar', { calendarPermission: 'This app can add library events to your calendar' }],
      ],
 };
 

@@ -1,20 +1,20 @@
 import { CommonActions } from '@react-navigation/native';
-import { Center, Button, Box, Badge, Text, FlatList, Heading, Stack, HStack, VStack, Pressable, Image, Container } from 'native-base';
-import React, { Component } from 'react';
 import CachedImage from 'expo-cached-image';
+import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Pressable, Stack, Text, VStack } from 'native-base';
+import React, { Component } from 'react';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
+import { LibrarySystemContext } from '../../context/initialContext';
 import { userContext } from '../../context/user';
+import { getCleanTitle } from '../../helpers/item';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getLists } from '../../util/api/list';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getFormats, savedSearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
-import { getLists } from '../../util/api/list';
-import { LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { navigateStack } from '../../helpers/RootNavigator';
-import { getCleanTitle } from '../../helpers/item';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export default class SearchBySavedSearch extends Component {
      constructor() {
@@ -137,6 +137,8 @@ export default class SearchBySavedSearch extends Component {
      renderItem = (item, library, lastListUsed) => {
           //console.log(item);
           const imageUrl = this.props.route.params.url + item.image;
+          const key = 'medium_' + item.id;
+
           let formats = [];
           if (item.format) {
                formats = getFormats(item.format);
@@ -159,7 +161,7 @@ export default class SearchBySavedSearch extends Component {
                                    </Container>
                               ) : null}
                               <CachedImage
-                                   cacheKey={item.id}
+                                   cacheKey={key}
                                    alt={item.title}
                                    source={{
                                         uri: `${imageUrl}`,
@@ -237,17 +239,17 @@ export default class SearchBySavedSearch extends Component {
      };
 
      /*	getFormats = (data) => {
-  let formats = [];
+	 let formats = [];
 
-  data.map((item) => {
-  let thisFormat = item.split("#");
-  thisFormat = thisFormat[thisFormat.length - 1];
-  formats.push(thisFormat);
-  });
+	 data.map((item) => {
+	 let thisFormat = item.split("#");
+	 thisFormat = thisFormat[thisFormat.length - 1];
+	 formats.push(thisFormat);
+	 });
 
-  formats = _.uniq(formats);
-  return formats;
-  }*/
+	 formats = _.uniq(formats);
+	 return formats;
+	 }*/
 
      // handles the on press action
      onPressItem = (item, library, title) => {

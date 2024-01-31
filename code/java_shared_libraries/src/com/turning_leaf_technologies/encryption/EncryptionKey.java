@@ -5,7 +5,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 public class EncryptionKey {
-	private String cipher;
+	private final String cipher;
 	private byte[] key;
 
 	public EncryptionKey(String cipher, String key, BaseLogEntry logEntry){

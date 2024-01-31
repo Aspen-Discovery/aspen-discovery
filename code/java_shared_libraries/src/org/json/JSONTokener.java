@@ -31,6 +31,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * A JSONTokener takes a source string and extracts characters and tokens from
  * it. It is used by the JSONObject and JSONArray constructors to parse

@@ -27,7 +27,7 @@ class APIUsage extends DataObject {
 			$apiUsage->year = date('Y');
 			$apiUsage->month = date('n');
 			global $aspenUsage;
-			$apiUsage->instance = $aspenUsage->instance;
+			$apiUsage->instance = $aspenUsage->getInstance();
 			$apiUsage->module = $module;
 			$apiUsage->method = $method;
 			if ($apiUsage->find(true)) {

@@ -632,7 +632,7 @@ abstract class Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation) {
+	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchTerm, $searchLocation, $searchIndex) {
 		return [];
 	}
 
@@ -668,11 +668,13 @@ abstract class Solr {
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
+				$values['single_word'] = null;
 			} else {
+				$values['proximal'] = null;
 				if (!array_key_exists(0, $tokenized)) {
-					$values['proximal'] = '';
+					$values['single_word'] = '';
 				} else {
-					$values['proximal'] = $tokenized[0];
+					$values['single_word'] = $tokenized[0];
 				}
 			}
 
@@ -712,6 +714,7 @@ abstract class Solr {
 				':',
 				'/',
 			], ' ', $noWildCardLookFor);
+			$values['text_left_word'] = $values['text_left'] . ' ';
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
@@ -730,6 +733,7 @@ abstract class Solr {
 				'and' => $cleanedQuery,
 				'or' => $cleanedQuery,
 				'proximal' => $cleanedQuery,
+				'single_word' => $cleanedQuery,
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
 				'localized_callnumber' => str_replace([
@@ -743,6 +747,7 @@ abstract class Solr {
 					'/',
 				], ' ', $cleanedQuery),
 			];
+			$values['text_left_word'] = $values['text_left'] . ' ';
 		}
 
 		// Apply custom munge operations if necessary
@@ -1148,7 +1153,7 @@ abstract class Solr {
 		$searchLocation = Location::getSearchLocation($this->searchSource);
 
 		//Apply automatic boosting for queries
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, $query, $handler);
 		if (!empty($boostFactors)) {
 			if (isset($options['qt']) && $options['qt'] == 'dismax') {
 				$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";

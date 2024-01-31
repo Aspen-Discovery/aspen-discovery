@@ -14,9 +14,7 @@ class MyAccount_EmailResetPin extends Action {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		if (isset($_REQUEST['submit'])) {
 			$emailResult = $catalog->processEmailResetPinForm();
-
-			$interface->assign('result', $emailResult);
-			$this->display($catalog->getEmailResetPinResultsTemplate(), 'Email to Reset Pin', '');
+			header('Location: /MyAccount/EmailResetPinResults?success=' . $emailResult['success'] . '&error=' . urlencode($emailResult['error']) ?? '');
 		} else {
 			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'), '');
 		}

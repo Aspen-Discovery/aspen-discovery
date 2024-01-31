@@ -63,7 +63,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -121,82 +121,89 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			global $library;
 			if ($library->bypassReviewQueueWhenUpdatingProfile) {
+				$patronUpdateForm = $this->getPatronUpdateForm($patron);
+				global $interface;
+				$patronUpdateFields = $interface->getVariable('structure');
+				require_once ROOT_DIR . '/sys/Utils/FormUtils.php';
+				$validFieldsToUpdate = FormUtils::getModifiableFieldKeys($patronUpdateFields);
+
 				//This method does not use the review queue
 				//Load required fields from Koha here to make sure we don't wipe them out
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
-				$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
+				$sql = "SELECT address, city, surname FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 				$results = mysqli_query($this->dbConnection, $sql);
 				$address = '';
 				$city = '';
+				$lastname = $patron->lastname;
 				if ($results !== false && $results != null) {
 					while ($curRow = $results->fetch_assoc()) {
 						$address = $curRow['address'];
 						$city = $curRow['city'];
+						$lastname = $curRow['surname'];
 					}
 				}
 
 				$postVariables = [
-					'surname' => $patron->lastname,
+					'surname' => $lastname,
 					'address' => $address,
 					'city' => $city,
 					'library_id' => $patron->getHomeLocationCode(),
 					'category_id' => $patron->patronType,
 				];
 
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address2', 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address2', 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_city', 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_country', 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_email', 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address2', 'borrower_address2', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address2', 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_city', 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_country', 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_email', 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				//altaddress_notes
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_postal_code', 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_state', 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_postal_code', 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_state', 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				//altaddress_street_number
 				//altaddress_street_type
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address', 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address2', 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_city', 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_country', 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_firstname', 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_postal_code', 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_state', 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_surname', 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'city', 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'country', 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
-				if (isset($_REQUEST['borrower_dateofbirth'])) {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address', 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address2', 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_city', 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_country', 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_firstname', 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_postal_code', 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_state', 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_surname', 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'city', 'borrower_city', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'country', 'borrower_country', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				if (isset($_REQUEST['borrower_dateofbirth']) && array_key_exists('borrower_dateofbirth', $validFieldsToUpdate)) {
 					$postVariables['date_of_birth'] = $this->aspenDateToKohaApiDate($_REQUEST['borrower_dateofbirth']);
 				}
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'email', 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
-				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1) {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'email', 'borrower_email', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1) {
 					$postVariables['library_id'] = $patron->getHomeLocation()->code;
 				} else {
-					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				}
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'postal_code', 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_email', 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'postal_code', 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_email', 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 
 				if($this->getKohaVersion() >= 22.11) {
 					//TODO: Should this be capitalized? This does not seem to save to Koha
-					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
-					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				}
 
 				// Patron extended attributes
@@ -204,7 +211,7 @@ class Koha extends AbstractIlsDriver {
 					$extendedAttributes = $this->setExtendedAttributes();
 					if (!empty($extendedAttributes)) {
 						foreach ($extendedAttributes as $attribute) {
-							$postVariables = $this->setPostFieldWithDifferentName($postVariables, "borrower_attribute_" . $attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+							$postVariables = $this->setPostFieldWithDifferentName($postVariables, "borrower_attribute_" . $attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 						}
 					}
 				}
@@ -217,7 +224,7 @@ class Koha extends AbstractIlsDriver {
 					]);
 				} else {
 
-					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 					$postParams = json_encode($postVariables);
 
 					$this->apiCurlWrapper->addCustomHeaders([
@@ -414,6 +421,7 @@ class Koha extends AbstractIlsDriver {
 		}
 		$timer->logTime("Loaded borrower preference for autorenew_checkouts");
 
+		/** @noinspection SqlResolve */
 		$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
 		$patronIsExpired = false;
@@ -510,7 +518,7 @@ class Koha extends AbstractIlsDriver {
 				$circulationRulesForCheckout = [];
 				/** @noinspection SqlResolve */
 				/** @noinspection SqlDialectInspection */
-				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
+				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
 				$circulationRulesRS = mysqli_query($this->dbConnection, $circulationRulesSql);
 				if ($circulationRulesRS !== false) {
 					while ($circulationRulesRow = $circulationRulesRS->fetch_assoc()) {
@@ -524,7 +532,7 @@ class Koha extends AbstractIlsDriver {
 
 			foreach ($circulationRulesForCheckout as $circulationRule) {
 				if ($circulationRule['rule_name'] == 'auto_renew') {
-					$curCheckout->autoRenew = (int)$circulationRulesRow['rule_value'];
+					$curCheckout->autoRenew = (int)$circulationRule['rule_value'];
 					break;
 				}
 			}
@@ -717,24 +725,21 @@ class Koha extends AbstractIlsDriver {
 			if ($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
-			} else {
-				/** @noinspection SqlResolve */
-				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
-			}
-			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeResults !== false) { //This is false if Koha does not support volumes
-				while ($volumeRow = $volumeResults->fetch_assoc()) {
-					$itemId = $volumeRow['item_id'];
-					foreach ($checkouts as $curCheckout) {
-						if ($curCheckout->itemId == $itemId) {
-							$curCheckout->volume = $volumeRow['description'];
-							break;
+				$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+				if ($volumeResults !== false) { //This is false if Koha does not support volumes
+					while ($volumeRow = $volumeResults->fetch_assoc()) {
+						$itemId = $volumeRow['item_id'];
+						foreach ($checkouts as $curCheckout) {
+							if ($curCheckout->itemId == $itemId) {
+								$curCheckout->volume = $volumeRow['description'];
+								break;
+							}
 						}
 					}
+					$volumeResults->close();
 				}
-				$volumeResults->close();
+				$timer->logTime("Load volume info");
 			}
-			$timer->logTime("Load volume info");
 		}
 
 		return $checkouts;
@@ -757,7 +762,7 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
+						$logger->log("\t $error->message", Logger::LOG_ERROR);
 					}
 					return false;
 				} else {
@@ -803,7 +808,7 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
+						$logger->log("\t $error->message", Logger::LOG_ERROR);
 					}
 					return false;
 				} else {
@@ -1374,7 +1379,7 @@ class Koha extends AbstractIlsDriver {
 				global $logger;
 				$logger->log("Unable to authenticate with the ILS from doReadingHistoryAction", Logger::LOG_ERROR);
 			} else {
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 				$postParams = json_encode($postVariables);
 
 				$this->apiCurlWrapper->addCustomHeaders([
@@ -1425,16 +1430,9 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
-		//So assume that it is on if we don't get a good response
+		//So assume that it is on
 		/** @noinspection SqlResolve */
-		$sql = "select disable_reading_history from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
-		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
-		if ($historyEnabledRS) {
-			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
-			$historyEnabled = !$historyEnabledRow['disable_reading_history'];
-		} else {
-			$historyEnabled = true;
-		}
+		$historyEnabled = true;
 
 		// Update patron's setting in Aspen if the setting has changed in Koha
 		if ($historyEnabled != $patron->trackReadingHistory) {
@@ -1604,7 +1602,7 @@ class Koha extends AbstractIlsDriver {
 	 *
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param null|string $cancelDate The date the hold should be automatically cancelled
 	 * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return a AspenError
@@ -2014,7 +2012,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
 	 * @param string $itemId The id of the item to hold
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
@@ -2341,7 +2339,7 @@ class Koha extends AbstractIlsDriver {
 					$itemType = $curRow['itype'];
 					$checkoutBranch = $curRow['branchcode'];
 					/** @noinspection SqlResolve */
-					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 					if ($issuingRulesRS !== false) {
 						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
@@ -2352,6 +2350,7 @@ class Koha extends AbstractIlsDriver {
 						$issuingRulesRS->close();
 					}
 
+					/** @noinspection SqlResolve */
 					$isPendingCancellationSql = "SELECT * FROM hold_cancellation_requests WHERE hold_id={$curRow['reserve_id']}";
 					$isPendingCancellationRS = mysqli_query($this->dbConnection, $isPendingCancellationSql);
 					if ($isPendingCancellationRS !== false) {
@@ -2365,6 +2364,7 @@ class Koha extends AbstractIlsDriver {
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
 				if($this->getKohaVersion() >= 22.11) {
+					/** @noinspection SpellCheckingInspection */
 					if(strpos($allowUserToChangeBranch, 'intransit') !== false) {
 						$curHold->locationUpdateable = true;
 					}
@@ -2554,6 +2554,7 @@ class Koha extends AbstractIlsDriver {
 					// Store result for API or app use
 					$result['api'] = [];
 
+					/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 					$result = [
 						'success' => false,
 						'message' => 'Unknown error canceling hold.',
@@ -2597,7 +2598,7 @@ class Koha extends AbstractIlsDriver {
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
 						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 						if ($this->apiCurlWrapper->getResponseCode() !== 204 && $this->apiCurlWrapper->getResponseCode() !== 202) {
-							$cancel_response = json_decode($response, false);
+							$cancel_response = json_decode($response);
 							$allCancelsSucceed = false;
 							if (isset($cancel_response->error)) {
 								$result['message'] = translate([
@@ -2637,8 +2638,8 @@ class Koha extends AbstractIlsDriver {
 			}
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
+			$result['title'] = $titles;
 			if ($allCancelsSucceed) {
-				$result['title'] = $titles;
 				$result['success'] = true;
 				$result['message'] = translate([
 					'text' => 'Cancelled %1% hold(s) successfully.',
@@ -2655,9 +2656,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			} else {
-				$result['title'] = $titles;
 				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Some holds could not be cancelled.  Please try again later or see your librarian.',
@@ -2673,12 +2672,12 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			}
+			return $result;
 		} else {
+			$result['title'] = $titles;
+			$result['success'] = false;
 			if ($locationId) {
-				$result['title'] = $titles;
-				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Changing location for a hold is not supported.',
 					'isPublicFacing' => true,
@@ -2693,10 +2692,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			} else {
-				$result['title'] = $titles;
-				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Freezing and thawing holds is not supported.',
 					'isPublicFacing' => true,
@@ -2711,8 +2707,8 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			}
+			return $result;
 		}
 	}
 
@@ -2821,7 +2817,7 @@ class Koha extends AbstractIlsDriver {
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					'Accept-Encoding: gzip, deflate',
 				], true);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', null);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST');
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 				if ($responseCode == 201) {
@@ -2842,8 +2838,8 @@ class Koha extends AbstractIlsDriver {
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfCheckouts();
 				} else {
+					$result['success'] = false;
 					if ($responseCode == 403) {
-						$result['success'] = false;
 						$result['api']['title'] = translate([
 							'text' => 'Unable to renew checkout',
 							'isPublicFacing' => true,
@@ -2871,7 +2867,6 @@ class Koha extends AbstractIlsDriver {
 							}
 						}
 					} else {
-						$result['success'] = false;
 						$result['message'] = translate([
 							'text' => "Error (%1%) renewing this title.",
 							1 => $responseCode,
@@ -2884,10 +2879,10 @@ class Koha extends AbstractIlsDriver {
 			$this->initDatabaseConnection();
 			if($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
-				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = {$itemId} limit 1";
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = $itemId limit 1";
 			} else {
 				/** @noinspection SqlResolve */
-				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = {$itemId} limit 1";
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = $itemId limit 1";
 			}
 
 			$renewResults = mysqli_query($this->dbConnection, $renewSql);
@@ -2899,7 +2894,7 @@ class Koha extends AbstractIlsDriver {
 				'item_id' => $itemId,
 			];
 
-			require_once ROOT_DIR . '/sys/User/Checkout.php';;
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 			$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 			ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
@@ -2917,7 +2912,7 @@ class Koha extends AbstractIlsDriver {
 						$renewCount = $curRow['renewals'] + 1;
 					}
 					/** @noinspection SqlResolve */
-					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 					if ($issuingRulesRS !== false) {
 						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
@@ -3643,15 +3638,19 @@ class Koha extends AbstractIlsDriver {
 				asort($pickupLocations);
 			}
 		} else {
-			$patron = UserAccount::getActiveUserObj();
-			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-			$pickupLocations = [];
-			foreach ($userPickupLocations as $key => $location) {
-				if ($location instanceof Location) {
-					$pickupLocations[$location->code] = $location->displayName;
-				} else {
-					if ($key == '0default') {
-						$pickupLocations[-1] = $location;
+			if (UserAccount::isLoggedIn()) {
+				$patron = UserAccount::getActiveUserObj();
+				if (!empty($patron)) {
+					$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+					$pickupLocations = [];
+					foreach ($userPickupLocations as $key => $location) {
+						if ($location instanceof Location) {
+							$pickupLocations[$location->code] = $location->displayName;
+						} else {
+							if ($key == '0default') {
+								$pickupLocations[-1] = $location;
+							}
+						}
 					}
 				}
 			}
@@ -3678,6 +3677,7 @@ class Koha extends AbstractIlsDriver {
 				'required' => true,
 			];
 		} else {
+			$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
 			$fields['librarySection'] = [
 				'property' => 'librarySection',
 				'type' => 'section',
@@ -3692,6 +3692,7 @@ class Koha extends AbstractIlsDriver {
 						'description' => 'Please choose the Library location you would prefer to use',
 						'values' => $pickupLocations,
 						'required' => true,
+						'readOnly' => !$allowHomeLibraryUpdates,
 					],
 				],
 			];
@@ -4584,7 +4585,7 @@ class Koha extends AbstractIlsDriver {
 	private function postSelfRegistrationToKoha($postVariables) : array {
 		$result = ['success' => false,];
 
-		$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
+		$autoBarcode = $this->getKohaSystemPreference('autoMemberNum');
 		$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
 
 		$oauthToken = $this->getOAuthToken();
@@ -4635,7 +4636,7 @@ class Koha extends AbstractIlsDriver {
 				if ($verificationRequired != "0") {
 					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 				} else {
-					if ($autobarcode == "1") {
+					if ($autoBarcode == "1") {
 						$result['barcode'] = $jsonResponse->cardnumber;
 						$patronId = $jsonResponse->patron_id;
 						if (isset($_REQUEST['borrower_password'])) {
@@ -4908,6 +4909,7 @@ class Koha extends AbstractIlsDriver {
 					]),
 				];
 			} else {
+				/** @noinspection SpellCheckingInspection */
 				$postFields = [
 					'title' => $_REQUEST['title'],
 					'author' => $_REQUEST['author'],
@@ -5083,7 +5085,7 @@ class Koha extends AbstractIlsDriver {
 				if (!$response) {
 					return $result;
 				} else {
-					$materialRequests = json_decode($response, false);
+					$materialRequests = json_decode($response);
 					foreach ($materialRequests as $materialRequest) {
 						$managedBy = $materialRequest->managed_by;
 						/** @noinspection SqlResolve */
@@ -5133,10 +5135,14 @@ class Koha extends AbstractIlsDriver {
 			while ($curRow = $results->fetch_assoc()) {
 				$managedBy = $curRow['managedby'];
 				/** @noinspection SqlResolve */
-				$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
-				$userResults = mysqli_query($this->dbConnection, $userSql);
-				if ($userResults && $userResult = $userResults->fetch_assoc()) {
-					$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+				if (!empty($managedBy)) {
+					$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+					$userResults = mysqli_query($this->dbConnection, $userSql);
+					if ($userResults && $userResult = $userResults->fetch_assoc()) {
+						$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+					} else {
+						$managedByStr = '';
+					}
 				} else {
 					$managedByStr = '';
 				}
@@ -5194,7 +5200,7 @@ class Koha extends AbstractIlsDriver {
 				];
 			} else {
 				$suggestionId = $_REQUEST['delete_field'];
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/{$suggestionId}";
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/$suggestionId";
 				$this->delApiCurlWrapper->addCustomHeaders([
 					'Authorization: Bearer ' . $oauthToken,
 					'User-Agent: Aspen Discovery',
@@ -5389,6 +5395,9 @@ class Koha extends AbstractIlsDriver {
 					if (array_key_exists('borrower_surname', $patronUpdateFields['identitySection']['properties'])) {
 						$patronUpdateFields['identitySection']['properties']['borrower_surname']['readOnly'] = true;
 					}
+					if (array_key_exists('borrower_middle_name', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_middle_name']['readOnly'] = true;
+					}
 					if (array_key_exists('borrower_firstname', $patronUpdateFields['identitySection']['properties'])) {
 						$patronUpdateFields['identitySection']['properties']['borrower_firstname']['readOnly'] = true;
 					}
@@ -5503,7 +5512,7 @@ class Koha extends AbstractIlsDriver {
 			$currentListTitles = $newList->getListTitles();
 
 			/** @noinspection SqlResolve */
-			$listContentsSql = "SELECT * FROM virtualshelfcontents where shelfnumber = {$shelfNumber}";
+			$listContentsSql = "SELECT * FROM virtualshelfcontents where shelfnumber = $shelfNumber";
 			$listContentResults = mysqli_query($this->dbConnection, $listContentsSql);
 			while ($curTitle = $listContentResults->fetch_assoc()) {
 				$bibNumber = $curTitle['biblionumber'];
@@ -5682,8 +5691,11 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $stripNonNumericCharacters
 	 * @return array
 	 */
-	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, $convertToUpperCase = false, $stripNonNumericCharacters = false): array {
+	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, $convertToUpperCase = false, $stripNonNumericCharacters = false, $validFieldsToUpdate = []): array {
 		if (isset($_REQUEST[$requestFieldName])) {
+			if (!empty($validFieldsToUpdate) && !array_key_exists($requestFieldName, $validFieldsToUpdate)) {
+				return $postFields;
+			}
 			$field = $_REQUEST[$requestFieldName];
 			if ($stripNonNumericCharacters) {
 				$field = preg_replace('/[^0-9]/', '', $field);
@@ -5731,6 +5743,7 @@ class Koha extends AbstractIlsDriver {
 		/** @noinspection SqlResolve */
 		if (!empty($patronBarcode)) {
 			//search by barcode
+			/** @noinspection SqlResolve */
 			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $patronBarcode) . "'";
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -5744,6 +5757,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}else{
 			//search by username
+			/** @noinspection SqlResolve */
 			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where userId = '" . mysqli_escape_string($this->dbConnection, $patronUsername) . "'";
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -6006,6 +6020,7 @@ class Koha extends AbstractIlsDriver {
 			$catalogUrl = $this->accountProfile->vendorOpacUrl;
 			$updateMessageUrl = "$catalogUrl/cgi-bin/koha/opac-messaging.pl?";
 			$getParams = [];
+			$digestParams = '';
 			foreach ($params as $key => $value) {
 				//Koha is using non standard HTTP functionality
 				//where array values are being passed without array bracket values
@@ -6017,7 +6032,12 @@ class Koha extends AbstractIlsDriver {
 					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
 						/** @noinspection RegExpRedundantEscape */
-						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-Z]/', '', $value));
+					} elseif (str_starts_with($key, 'digest')) {
+						if(strlen($digestParams > 0)) {
+							$digestParams .= '&';
+						}
+						$digestParams .= 'digest=' . $value;
 					} else {
 						$getParams[] = urlencode($key) . '=' . urlencode($value);
 					}
@@ -6031,6 +6051,9 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$updateMessageUrl .= implode('&', $getParams);
+
+			$updateMessageUrl .= '&' . $digestParams;
+
 			$result = $this->getKohaPage($updateMessageUrl);
 			if (strpos($result, 'Settings updated') !== false) {
 				$result = [
@@ -6176,7 +6199,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 			], true);
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}/account/credits";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id/account/credits";
 			if (count($accountLinesPaid) > 0) {
 				$postVariables = [
 					'account_lines_ids' => $accountLinesPaid,
@@ -6292,7 +6315,7 @@ class Koha extends AbstractIlsDriver {
 		if ($accountSummary->isExpired()) {
 			//Check the patron category as well
 			/** @noinspection SqlResolve */
-			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '{$patron->patronType}'";
+			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '$patron->patronType'";
 			$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
 			$useSystemPreference = true;
 			$blockExpiredPatronOpacActions = true;
@@ -6392,7 +6415,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -6534,7 +6557,7 @@ class Koha extends AbstractIlsDriver {
 	 * @return array
 	 */
 	protected function resetPinInKoha($borrowerNumber, string $newPin, string $oauthToken): array {
-		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/password";
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/password";
 		$postParams = [];
 		$postParams['password'] = $newPin;
 		$postParams['password_2'] = $newPin;
@@ -6618,7 +6641,7 @@ class Koha extends AbstractIlsDriver {
 	 */
 	protected function updateExtendedAttributesInKoha($borrowerNumber, array $extendedAttributes, string $oauthToken): array {
 
-		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
 
 		$postVariables = [];
 		foreach ($extendedAttributes as $extendedAttribute) {
@@ -6687,7 +6710,7 @@ class Koha extends AbstractIlsDriver {
 		$extendedAttributes = [];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken != false) {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
 
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -6744,7 +6767,7 @@ class Koha extends AbstractIlsDriver {
 	public function getPluginStatus(string $pluginName) {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM plugin_data WHERE plugin_class LIKE '%{$pluginName}';";
+		$sql = "SELECT * FROM plugin_data WHERE plugin_class LIKE '%$pluginName';";
 		$results = mysqli_query($this->dbConnection, $sql);
 
 		if ($results !== false) {
@@ -6844,7 +6867,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -7045,8 +7068,9 @@ class Koha extends AbstractIlsDriver {
 
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='{$locationCode}';";
+		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='$locationCode';";
 		$results = mysqli_query($this->dbConnection, $sql);
+		$curbsidePolicyId = null;
 
 		if ($results !== false) {
 			while ($curRow = $results->fetch_assoc()) {
@@ -7056,74 +7080,139 @@ class Koha extends AbstractIlsDriver {
 					$result['enabled'] = $curRow['enabled'];
 					$result['interval'] = $curRow['pickup_interval'];
 					$result['maxPickupsPerInterval'] = $curRow['patrons_per_interval'];
-					$result['disabledDays'] = [];
-
-					if (isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
-						$result['pickupTimes']['Sun']['startTime'] = date("H:i", strtotime($curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']));
-						$result['pickupTimes']['Sun']['endTime'] = date("H:i", strtotime($curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']));
-						$result['pickupTimes']['Sun']['available'] = true;
-					} else {
+					if($this->getKohaVersion() >= 22.11) {
+						// pickup scheduling slots moved to its own table, set everything as disabled and enable them as we find matches below
+						$curbsidePolicyId = $curRow['id'];
 						$result['pickupTimes']['Sun']['available'] = false;
 						$result['disabledDays'][] = 0;
-					}
-
-					if (isset($curRow['monday_start_hour']) && isset($curRow['monday_start_minute']) && isset($curRow['monday_end_hour']) && isset($curRow['monday_end_minute'])) {
-						$result['pickupTimes']['Mon']['startTime'] = date("H:i", strtotime($curRow['monday_start_hour'] . ':' . $curRow['monday_start_minute']));
-						$result['pickupTimes']['Mon']['endTime'] = date("H:i", strtotime($curRow['monday_end_hour'] . ':' . $curRow['monday_end_minute']));
-						$result['pickupTimes']['Mon']['available'] = true;
-					} else {
 						$result['pickupTimes']['Mon']['available'] = false;
 						$result['disabledDays'][] = 1;
-					}
-
-					if (isset($curRow['tuesday_start_hour']) && isset($curRow['tuesday_start_minute']) && isset($curRow['tuesday_end_hour']) && isset($curRow['tuesday_end_minute'])) {
-						$result['pickupTimes']['Tue']['startTime'] = date("H:i", strtotime($curRow['tuesday_start_hour'] . ':' . $curRow['tuesday_start_minute']));
-						$result['pickupTimes']['Tue']['endTime'] = date("H:i", strtotime($curRow['tuesday_end_hour'] . ':' . $curRow['tuesday_end_minute']));
-						$result['pickupTimes']['Tue']['available'] = true;
-					} else {
 						$result['pickupTimes']['Tue']['available'] = false;
 						$result['disabledDays'][] = 2;
-					}
-
-					if (isset($curRow['wednesday_start_hour']) && isset($curRow['wednesday_start_minute']) && isset($curRow['wednesday_end_hour']) && isset($curRow['wednesday_end_minute'])) {
-						$result['pickupTimes']['Wed']['startTime'] = date("H:i", strtotime($curRow['wednesday_start_hour'] . ':' . $curRow['wednesday_start_minute']));
-						$result['pickupTimes']['Wed']['endTime'] = date("H:i", strtotime($curRow['wednesday_end_hour'] . ':' . $curRow['wednesday_end_minute']));
-						$result['pickupTimes']['Wed']['available'] = true;
-					} else {
 						$result['pickupTimes']['Wed']['available'] = false;
 						$result['disabledDays'][] = 3;
-					}
-
-					if (isset($curRow['thursday_start_hour']) && isset($curRow['thursday_start_minute']) && isset($curRow['thursday_end_hour']) && isset($curRow['thursday_end_minute'])) {
-						$result['pickupTimes']['Thu']['startTime'] = date("H:i", strtotime($curRow['thursday_start_hour'] . ':' . $curRow['thursday_start_minute']));
-						$result['pickupTimes']['Thu']['endTime'] = date("H:i", strtotime($curRow['thursday_end_hour'] . ':' . $curRow['thursday_end_minute']));
-						$result['pickupTimes']['Thu']['available'] = true;
-					} else {
 						$result['pickupTimes']['Thu']['available'] = false;
 						$result['disabledDays'][] = 4;
-					}
-
-					if (isset($curRow['friday_start_hour']) && isset($curRow['friday_start_minute']) && isset($curRow['friday_end_hour']) && isset($curRow['friday_end_minute'])) {
-						$result['pickupTimes']['Fri']['startTime'] = date("H:i", strtotime($curRow['friday_start_hour'] . ':' . $curRow['friday_start_minute']));
-						$result['pickupTimes']['Fri']['endTime'] = date("H:i", strtotime($curRow['friday_end_hour'] . ':' . $curRow['friday_end_minute']));
-						$result['pickupTimes']['Fri']['available'] = true;
-					} else {
 						$result['pickupTimes']['Fri']['available'] = false;
 						$result['disabledDays'][] = 5;
-					}
-
-					if (isset($curRow['saturday_start_hour']) && isset($curRow['saturday_start_minute']) && isset($curRow['saturday_end_hour']) && isset($curRow['saturday_end_minute'])) {
-						$result['pickupTimes']['Sat']['startTime'] = date("H:i", strtotime($curRow['saturday_start_hour'] . ':' . $curRow['saturday_start_minute']));
-						$result['pickupTimes']['Sat']['endTime'] = date("H:i", strtotime($curRow['saturday_end_hour'] . ':' . $curRow['saturday_end_minute']));
-						$result['pickupTimes']['Sat']['available'] = true;
-					} else {
 						$result['pickupTimes']['Sat']['available'] = false;
 						$result['disabledDays'][] = 6;
-					}
+					} else {
+						$result['disabledDays'] = [];
+						if (isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
+							$result['pickupTimes']['Sun']['startTime'] = date('H:i', strtotime($curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']));
+							$result['pickupTimes']['Sun']['endTime'] = date('H:i', strtotime($curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']));
+							$result['pickupTimes']['Sun']['available'] = true;
+						} else {
+							$result['pickupTimes']['Sun']['available'] = false;
+							$result['disabledDays'][] = 0;
+						}
 
+						if (isset($curRow['monday_start_hour']) && isset($curRow['monday_start_minute']) && isset($curRow['monday_end_hour']) && isset($curRow['monday_end_minute'])) {
+							$result['pickupTimes']['Mon']['startTime'] = date('H:i', strtotime($curRow['monday_start_hour'] . ':' . $curRow['monday_start_minute']));
+							$result['pickupTimes']['Mon']['endTime'] = date('H:i', strtotime($curRow['monday_end_hour'] . ':' . $curRow['monday_end_minute']));
+							$result['pickupTimes']['Mon']['available'] = true;
+						} else {
+							$result['pickupTimes']['Mon']['available'] = false;
+							$result['disabledDays'][] = 1;
+						}
+
+						if (isset($curRow['tuesday_start_hour']) && isset($curRow['tuesday_start_minute']) && isset($curRow['tuesday_end_hour']) && isset($curRow['tuesday_end_minute'])) {
+							$result['pickupTimes']['Tue']['startTime'] = date('H:i', strtotime($curRow['tuesday_start_hour'] . ':' . $curRow['tuesday_start_minute']));
+							$result['pickupTimes']['Tue']['endTime'] = date('H:i', strtotime($curRow['tuesday_end_hour'] . ':' . $curRow['tuesday_end_minute']));
+							$result['pickupTimes']['Tue']['available'] = true;
+						} else {
+							$result['pickupTimes']['Tue']['available'] = false;
+							$result['disabledDays'][] = 2;
+						}
+
+						if (isset($curRow['wednesday_start_hour']) && isset($curRow['wednesday_start_minute']) && isset($curRow['wednesday_end_hour']) && isset($curRow['wednesday_end_minute'])) {
+							$result['pickupTimes']['Wed']['startTime'] = date('H:i', strtotime($curRow['wednesday_start_hour'] . ':' . $curRow['wednesday_start_minute']));
+							$result['pickupTimes']['Wed']['endTime'] = date('H:i', strtotime($curRow['wednesday_end_hour'] . ':' . $curRow['wednesday_end_minute']));
+							$result['pickupTimes']['Wed']['available'] = true;
+						} else {
+							$result['pickupTimes']['Wed']['available'] = false;
+							$result['disabledDays'][] = 3;
+						}
+
+						if (isset($curRow['thursday_start_hour']) && isset($curRow['thursday_start_minute']) && isset($curRow['thursday_end_hour']) && isset($curRow['thursday_end_minute'])) {
+							$result['pickupTimes']['Thu']['startTime'] = date('H:i', strtotime($curRow['thursday_start_hour'] . ':' . $curRow['thursday_start_minute']));
+							$result['pickupTimes']['Thu']['endTime'] = date('H:i', strtotime($curRow['thursday_end_hour'] . ':' . $curRow['thursday_end_minute']));
+							$result['pickupTimes']['Thu']['available'] = true;
+						} else {
+							$result['pickupTimes']['Thu']['available'] = false;
+							$result['disabledDays'][] = 4;
+						}
+
+						if (isset($curRow['friday_start_hour']) && isset($curRow['friday_start_minute']) && isset($curRow['friday_end_hour']) && isset($curRow['friday_end_minute'])) {
+							$result['pickupTimes']['Fri']['startTime'] = date('H:i', strtotime($curRow['friday_start_hour'] . ':' . $curRow['friday_start_minute']));
+							$result['pickupTimes']['Fri']['endTime'] = date('H:i', strtotime($curRow['friday_end_hour'] . ':' . $curRow['friday_end_minute']));
+							$result['pickupTimes']['Fri']['available'] = true;
+						} else {
+							$result['pickupTimes']['Fri']['available'] = false;
+							$result['disabledDays'][] = 5;
+						}
+
+						if (isset($curRow['saturday_start_hour']) && isset($curRow['saturday_start_minute']) && isset($curRow['saturday_end_hour']) && isset($curRow['saturday_end_minute'])) {
+							$result['pickupTimes']['Sat']['startTime'] = date('H:i', strtotime($curRow['saturday_start_hour'] . ':' . $curRow['saturday_start_minute']));
+							$result['pickupTimes']['Sat']['endTime'] = date('H:i', strtotime($curRow['saturday_end_hour'] . ':' . $curRow['saturday_end_minute']));
+							$result['pickupTimes']['Sat']['available'] = true;
+						} else {
+							$result['pickupTimes']['Sat']['available'] = false;
+							$result['disabledDays'][] = 6;
+						}
+					}
 				}
 			}
 			$results->close();
+
+			if($curbsidePolicyId && $this->getKohaVersion() >= 22.11) {
+				$this->initDatabaseConnection();
+				/** @noinspection SqlResolve */
+				$sql = "SELECT * FROM curbside_pickup_opening_slots WHERE curbside_pickup_policy_id='$curbsidePolicyId'";
+				$results = mysqli_query($this->dbConnection, $sql);
+				if ($results !== false) {
+					while ($curRow = $results->fetch_assoc()) {
+						if($curRow['day'] == 0) {
+							$result['pickupTimes']['Sun']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Sun']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Sun']['available'] = true;
+							unset($result['disabledDays'][0]);
+						}elseif ($curRow['day'] == 1) {
+							$result['pickupTimes']['Mon']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Mon']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Mon']['available'] = true;
+							unset($result['disabledDays'][1]);
+						} elseif ($curRow['day'] == 2) {
+							$result['pickupTimes']['Tue']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Tue']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Tue']['available'] = true;
+							unset($result['disabledDays'][2]);
+						} elseif ($curRow['day'] == 3) {
+							$result['pickupTimes']['Wed']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Wed']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Wed']['available'] = true;
+							unset($result['disabledDays'][3]);
+						} elseif ($curRow['day'] == 4){
+							$result['pickupTimes']['Thu']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Thu']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Thu']['available'] = true;
+							unset($result['disabledDays'][4]);
+						} elseif ($curRow['day'] == 5) {
+							$result['pickupTimes']['Fri']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Fri']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Fri']['available'] = true;
+							unset($result['disabledDays'][5]);
+						} elseif ($curRow['day'] == 6) {
+							$result['pickupTimes']['Sat']['startTime'] = date('H:i', strtotime($curRow['start_hour'] . ':' . $curRow['start_minute']));
+							$result['pickupTimes']['Sat']['endTime'] = date('H:i', strtotime($curRow['end_hour'] . ':' . $curRow['end_minute']));
+							$result['pickupTimes']['Sat']['available'] = true;
+							unset($result['disabledDays'][6]);
+						}
+					}
+				}
+				$results->close();
+			}
 		} else {
 			global $logger;
 			$logger->log("Error loading plugins " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
@@ -7791,7 +7880,7 @@ class Koha extends AbstractIlsDriver {
 			$postVariables = $this->setPostField($postVariables, 'email', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostField($postVariables, 'phone', $library->useAllCapsWhenUpdatingProfile);
 
-			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');;
+			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 			if ($addressValidated) {
 				if ($library->thirdPartyPTypeAddressValidated > 0) {
 					$pTypeToSet = $library->thirdPartyPTypeAddressValidated;

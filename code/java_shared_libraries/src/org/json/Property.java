@@ -26,6 +26,8 @@ SOFTWARE.
 
 import java.util.Enumeration;
 import java.util.Properties;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Converts a Property file data into JSONObject and back.

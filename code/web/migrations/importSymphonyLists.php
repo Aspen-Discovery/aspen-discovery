@@ -59,7 +59,8 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	while ($patronListRow = fgetcsv($listsfHnd, 0, '|')) {
 		$numImports++;
 
-		if (sizeof($patronListRow) != 10) {
+		if (sizeof($patronListRow) != 12) {
+			echo("Skipping row because it has the wrong number of columns");
 			//We got a bad export, likely
 			continue;
 		}
@@ -71,10 +72,12 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			$userBarcode = $patronIdToBarcode[$userBarcode];
 		}
 		$userKey = $patronListRow[2];
-		$listName = $patronListRow[3];
-		$listId = $patronListRow[4];
-		$myListOrder = $patronListRow[5];
-		$originalTime = $patronListRow[6];
+		//last activity
+		//email
+		$listName = $patronListRow[5];
+		$listId = $patronListRow[6];
+		$myListOrder = $patronListRow[7];
+		$originalTime = $patronListRow[8];
 		$dateAddedToList = strtotime($originalTime);
 		if ($dateAddedToList == false) {
 			$firstDot = strpos($originalTime, '.');
@@ -89,9 +92,9 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			$timeWithHoursAndMinutes = str_replace('.', ':', $timeWithHoursAndMinutes);
 			$dateAddedToList = strtotime($timeWithHoursAndMinutes);
 		}
-		$documentId = $patronListRow[7];
-		$title = $patronListRow[8];
-		$titleOrder = $patronListRow[9];
+		$documentId = $patronListRow[9];
+		$title = $patronListRow[10];
+		$titleOrder = $patronListRow[11];
 
 		//Figure out the user for the list
 		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers, $usersWithSearchPermissions);
@@ -124,7 +127,11 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		$userListId = $existingLists[$listId];
 
 		//Get the grouped work id for the bib record
-		$bibNumber = 'a' . str_replace('ent://SD_ILS/0/SD_ILS:', '', $documentId);
+		if (strpos($documentId, 'SD_ILS') !== false) {
+			$bibNumber = 'a' . str_replace('ent://SD_ILS/0/SD_ILS:', '', $documentId);
+		}else{
+			$bibNumber = $documentId;
+		}
 		$groupedWorkForRecordId = getGroupedWorkForRecordId($bibNumber, $validRecords, $invalidRecords);
 		if ($groupedWorkForRecordId != null) {
 			$listEntry = new UserListEntry();

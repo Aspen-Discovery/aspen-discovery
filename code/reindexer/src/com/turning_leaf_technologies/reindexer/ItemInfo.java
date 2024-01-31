@@ -91,17 +91,14 @@ public class ItemInfo{
 		this.locationCode = locationCode;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentUrl() {
 		return eContentUrl;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentUrl(String eContentUrl) {
 		this.eContentUrl = eContentUrl;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentFilename(String eContentFilename) {
 		this.eContentFilename = eContentFilename;
 	}
@@ -163,7 +160,9 @@ public class ItemInfo{
 			} else {
 				primaryFormat = recordInfo.getPrimaryFormat();
 			}
-			primaryFormatUppercase = primaryFormat.toUpperCase();
+			if (primaryFormat != null) {
+				primaryFormatUppercase = primaryFormat.toUpperCase();
+			}
 		}
 		return primaryFormat;
 	}
@@ -186,7 +185,7 @@ public class ItemInfo{
 	}
 
 	int getNumCopies() {
-		//Deal with OverDrive always available
+		//Deal with Libby always available
 		if (numCopies > 1000){
 			return 1;
 		}else {
@@ -278,7 +277,6 @@ public class ItemInfo{
 		this.trimmedIType = AspenStringUtils.trimTrailingPunctuation(IType);
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentSource() {
 		return eContentSource;
 	}
@@ -287,7 +285,6 @@ public class ItemInfo{
 		return trimmedEContentSource;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
 		this.trimmedEContentSource = AspenStringUtils.trimTrailingPunctuation(eContentSource);

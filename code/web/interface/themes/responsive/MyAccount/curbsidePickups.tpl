@@ -54,7 +54,9 @@
                 </div>
             {else}
                 {if !empty($showScheduleButton)}
-                    <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$location.id}')">{translate text="Schedule a pickup at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
+                    <div class="col-xs-12">
+                        <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$userHomePickupLocation->locationId}')">{translate text="Schedule a pickup at %1%" 1=$userHomePickupLocation->displayName isPublicFacing=true inAttribute=true}</button>
+                    </div>
                 {/if}
             {/if}
         </div>

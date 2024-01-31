@@ -7,9 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -26,29 +23,33 @@ public class UnzipUtility {
 
 	/**
 	 * Extracts a zip file specified by the zipFilePath to a directory specified by
-	 * destDirectory (will be created if does not exists)
+	 * destinationDirectory (will be created if it does not exist)
 	 *
-	 * @param zipFilePath
-	 * @param destDirectory
-	 * @throws IOException
+	 * @param zipFilePath The path to the zip file
+	 * @param destinationDirectory The destination where the zip should be extracted
+	 * @throws IOException an exception if the file cannot be read
 	 */
-	public static void unzip(String zipFilePath, String destDirectory) throws IOException {
-		File destDir = new File(destDirectory);
-		if (!destDir.exists()) {
-			destDir.mkdir();
+	public static void unzip(String zipFilePath, String destinationDirectory) throws IOException {
+		File destinationDir = new File(destinationDirectory);
+		if (!destinationDir.exists()) {
+			if (!destinationDir.mkdir()) {
+				return;
+			}
 		}
 		ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
 		ZipEntry entry = zipIn.getNextEntry();
 		// iterates over entries in the zip file
 		while (entry != null) {
-			String filePath = destDirectory + File.separator + entry.getName();
+			String filePath = destinationDirectory + File.separator + entry.getName();
 			if (!entry.isDirectory()) {
 				// if the entry is a file, extracts it
 				extractFile(zipIn, filePath);
 			} else {
 				// if the entry is a directory, make the directory
 				File dir = new File(filePath);
-				dir.mkdir();
+				if (!dir.mkdir()){
+					return;
+				}
 			}
 			zipIn.closeEntry();
 			entry = zipIn.getNextEntry();
@@ -59,14 +60,14 @@ public class UnzipUtility {
 	/**
 	 * Extracts a zip entry (file entry)
 	 *
-	 * @param zipIn
-	 * @param filePath
-	 * @throws IOException
+	 * @param zipIn The zip input stream being processed
+	 * @param filePath The path to extract to
+	 * @throws IOException An exception if the file cannot be processed
 	 */
 	private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
 		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
 		byte[] bytesIn = new byte[BUFFER_SIZE];
-		int read = 0;
+		int read;
 		while ((read = zipIn.read(bytesIn)) != -1) {
 			bos.write(bytesIn, 0, read);
 		}
@@ -79,12 +80,10 @@ public class UnzipUtility {
 		     FileOutputStream fos = new FileOutputStream(target)) {
 			// copy GZIPInputStream to FileOutputStream
 			byte[] buffer = new byte[BUFFER_SIZE];
-			int read = 0;
+			int read;
 			while ((read = gis.read(buffer)) != -1) {
 				fos.write(buffer, 0, read);
 			}
-			fos.close();
-			gis.close();
 		}
 	}
 }

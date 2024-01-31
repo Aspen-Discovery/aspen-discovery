@@ -26,10 +26,13 @@
 					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive" isPublicFacing=true} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{$readerName} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
 					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla" isPublicFacing=true} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+				{if $user->isValidForEContentSource('palace_project')}
+					<li role="presentation"{if $tab=='palace_project'} class="active"{/if}><a href="#palace_project" aria-controls="palace_project" role="tab" data-toggle="tab">{translate text="Palace Project" isPublicFacing=true} <span class="badge"><span class="palace_project-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
@@ -49,17 +52,20 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive" isPublicFacing=true}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from %1%" 1=$readerName isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
 					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla" isPublicFacing=true}</div></div>
 				{/if}
+				{if $user->isValidForEContentSource('palace_project')}
+					<div role="tabpanel" class="tab-pane{if $tab=='palace_project'} active{/if}" id="palace_project" aria-label="Palace Project Checkouts List"><div id="palace_projectCheckoutsPlaceholder">{translate text="Loading checkouts from Palace Project" isPublicFacing=true}</div></div>
+				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="cloudLibrary Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from cloudLibrary" isPublicFacing=true}</div></div>
 				{/if}
-                {if $user->isValidForEContentSource('axis360')}
+				{if $user->isValidForEContentSource('axis360')}
 					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Boundless Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Boundless" isPublicFacing=true}</div></div>
-                {/if}
+				{/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
@@ -81,6 +87,9 @@
 					});
 					$("a[href='#axis360']").on('show.bs.tab', function () {
 						AspenDiscovery.Account.loadCheckouts('axis360');
+					});
+					$("a[href='#palace_project']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('palace_project');
 					});
 					{/literal}
 					AspenDiscovery.Account.loadCheckouts('{$tab}');

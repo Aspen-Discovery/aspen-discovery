@@ -11,7 +11,7 @@ class Help_IP extends Action {
 
 		if (IPAddress::showDebuggingInformation()) {
 			global $aspenUsage;
-			$interface->assign('instanceName', $aspenUsage->instance);
+			$interface->assign('instanceName', $aspenUsage->getInstance());
 			$interface->assign('validServerNames', getValidServerNames());
 		}
 

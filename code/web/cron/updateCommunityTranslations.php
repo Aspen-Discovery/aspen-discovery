@@ -23,28 +23,30 @@ foreach($languages as $languageId) {
 			$translationTerm->whereAdd('isMetadata = 0');
 			$translationTerm->whereAdd('isAdminEnteredData = 0');
 			$translationTerm->whereAdd('isPublicFacing = 1 OR isAdminFacing = 1');
-			$translationTerms = $translationTerm->fetchAll();
+			$translationTerm->find();
 			$allTermsToTranslate = [];
 
-			foreach($translationTerms as $obj) {
+			while ($translationTerm->fetch()) {
 				$translation = new Translation();
-				$translation->termId = $obj->id;
+				$translation->termId = $translationTerm->id;
 				$translation->languageId = $language->id;
 				//Needs to be fetched from community if we haven't gotten a translation yet
 				if ($translation->find(true)){
 					if (!$translation->translated) {
-						$allTermsToTranslate[$obj->id] = $obj->term;
+						$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
 						$translation->lastCheckInCommunity = time();
 						$translation->update();
 					}
 				} else {
-					$allTermsToTranslate[$obj->id] = $obj->term;
+					$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
 					$translation->lastCheckInCommunity = time();
 					$translation->update();
 				}
 				$translation->__destruct();
 				$translation = null;
 			}
+			$translationTerm->__destruct();
+			$translationTerm = null;
 
 			$terms = array_chunk($allTermsToTranslate, 100, true);
 			foreach ($terms as $batch) {

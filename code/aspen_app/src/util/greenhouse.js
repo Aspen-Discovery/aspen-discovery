@@ -1,13 +1,12 @@
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
-import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import _ from 'lodash';
+import { Platform } from 'react-native';
 
 import { popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, problemCodeMap } from './apiAuth';
-import { GLOBALS, LOGIN_DATA } from './globals';
-import _ from 'lodash';
+import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
 
 /**
@@ -17,7 +16,7 @@ export async function makeGreenhouseRequest(method, fetchAll = false) {
      const slug = GLOBALS.slug;
      let greenhouseUrl;
      if (slug === 'aspen-lida') {
-          greenhouseUrl = Constants.manifest2?.extra?.expoClient?.extra?.greenhouse ?? Constants.manifest.extra.greenhouse;
+          greenhouseUrl = Constants.expoConfig.extra.greenhouse;
      } else {
           greenhouseUrl = GLOBALS.url;
      }
@@ -56,9 +55,9 @@ export async function makeGreenhouseRequest(method, fetchAll = false) {
  * @param {date} updateDate
  **/
 export async function updateAspenLiDABuild(updateId, updateChannel, updateDate) {
-     const greenhouseUrl = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
-     const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
-     const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
+     const greenhouseUrl = Constants.expoConfig.extra.greenhouseUrl;
+     const iOSDist = Constants.expoConfig.ios.buildNumber;
+     const androidDist = Constants.expoConfig.android.versionCode;
 
      const api = create({
           baseURL: greenhouseUrl + 'API',
@@ -66,8 +65,8 @@ export async function updateAspenLiDABuild(updateId, updateChannel, updateDate) 
           headers: getHeaders(),
           auth: createAuthTokens(),
           params: {
-               app: Constants.manifest2?.extra?.expoClient?.name ?? Constants.manifest.name,
-               version: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
+               app: Constants.expoConfig.name,
+               version: Constants.expoConfig.version,
                build: Platform.OS === 'android' ? androidDist : iOSDist,
                channel: __DEV__ ? 'development' : updateChannel,
                platform: Platform.OS,
@@ -88,18 +87,24 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           channel = 'any';
      }
      let method = 'getLibraries';
-     let url = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
+     let url = Constants.expoConfig.extra.greenhouseUrl;
      let latitude,
           longitude = 0;
      if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
           method = 'getLibrary';
-          url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
+          url = Constants.expoConfig.extra.apiUrl;
      }
      if (GLOBALS.slug === 'aspen-lida-bws') {
           method = 'getLibrary';
-          url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
+          url = Constants.expoConfig.extra.apiUrl;
      }
-     if (GLOBALS.slug === 'aspen-lida-alpha' || GLOBALS.slug === 'aspen-lida-beta' || GLOBALS.slug === 'aspen-lida-zeta' || GLOBALS.slug === 'aspen-lida-bws') {
+     if (GLOBALS.slug === 'aspen-lida-alpha') {
+          channel = 'alpha';
+     } else if (GLOBALS.slug === 'aspen-lida-beta') {
+          channel = 'beta';
+     } else if (GLOBALS.slug === 'aspen-lida-zeta') {
+          channel = 'zeta';
+     } else if (GLOBALS.slug === 'aspen-lida-bws') {
           channel = 'any';
      }
      if (_.isNull(PATRON.coords.lat) && _.isNull(PATRON.coords.long)) {
@@ -160,10 +165,21 @@ export async function fetchAllLibrariesFromGreenhouse() {
      if (channel === 'DEV' || 'alpha' || 'beta' || 'internal') {
           channel = 'any';
      }
-     let url = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
+     let url = Constants.expoConfig.extra.greenhouseUrl;
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
-          url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
+          url = Constants.expoConfig.extra.apiUrl;
      }
+
+     if (GLOBALS.slug === 'aspen-lida-alpha') {
+          channel = 'alpha';
+     } else if (GLOBALS.slug === 'aspen-lida-beta') {
+          channel = 'beta';
+     } else if (GLOBALS.slug === 'aspen-lida-zeta') {
+          channel = 'zeta';
+     } else if (GLOBALS.slug === 'aspen-lida-bws') {
+          channel = 'any';
+     }
+
      const api = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,

@@ -1,24 +1,23 @@
-
 package org.marc4j;
 
-/**
- * Copyright (C) 2004 Bas Peters
- *
- * This file is part of MARC4J
- *
- * MARC4J is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * MARC4J is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with MARC4J; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+/*
+  Copyright (C) 2004 Bas Peters
+
+  This file is part of MARC4J
+
+  MARC4J is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  MARC4J is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with MARC4J; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 import java.util.List;
@@ -47,7 +46,7 @@ public class MarcFilteredReader implements MarcReader {
 
     final String[][] includeRecordIfFieldsMissing;
 
-    final String includeRecordIfFieldDoesntContain;
+    final String includeRecordIfFieldDoesNotContain;
 
     Record currentRecord = null;
 
@@ -62,8 +61,8 @@ public class MarcFilteredReader implements MarcReader {
     public MarcFilteredReader(final MarcReader reader, final String ifFieldPresent, final String ifFieldMissing) {
 
         if (ifFieldPresent != null) {
-            final String present[] = ifFieldPresent.split("/", 2);
-            final String tagPlus[] = present[0].split(":");
+            final String[] present = ifFieldPresent.split("/", 2);
+            final String[] tagPlus = present[0].split(":");
             includeRecordIfFieldsPresent = new String[tagPlus.length][2];
             for (int i = 0; i < includeRecordIfFieldsPresent.length; i++) {
                 includeRecordIfFieldsPresent[i][0] = tagPlus[i].substring(0, 3);
@@ -80,21 +79,21 @@ public class MarcFilteredReader implements MarcReader {
         }
 
         if (ifFieldMissing != null) {
-            final String missing[] = ifFieldMissing.split("/", 2);
-            final String tagPlus[] = missing[0].split(":");
+            final String[] missing = ifFieldMissing.split("/", 2);
+            final String[] tagPlus = missing[0].split(":");
             includeRecordIfFieldsMissing = new String[tagPlus.length][2];
             for (int i = 0; i < includeRecordIfFieldsMissing.length; i++) {
                 includeRecordIfFieldsMissing[i][0] = tagPlus[i].substring(0, 3);
                 includeRecordIfFieldsMissing[i][1] = tagPlus[i].substring(3);
             }
             if (missing.length > 1) {
-                includeRecordIfFieldDoesntContain = missing[1];
+                includeRecordIfFieldDoesNotContain = missing[1];
             } else {
-                includeRecordIfFieldDoesntContain = null;
+                includeRecordIfFieldDoesNotContain = null;
             }
         } else {
             includeRecordIfFieldsMissing = null;
-            includeRecordIfFieldDoesntContain = null;
+            includeRecordIfFieldDoesNotContain = null;
         }
         this.reader = reader;
     }
@@ -117,7 +116,7 @@ public class MarcFilteredReader implements MarcReader {
      * @return the next marc file in the iteration
      */
     @Override
-    public Record next() {
+    public Record next() throws MarcException {
 
         if (currentRecord != null) {
             final Record tmp = currentRecord;
@@ -129,15 +128,11 @@ public class MarcFilteredReader implements MarcReader {
             if (!reader.hasNext()) {
                 return null;
             }
-            Record rec = null;
+            Record rec;
 
-            try {
-                rec = reader.next();
-            } catch (final MarcException me) {
-                throw me;
-            }
+	        rec = reader.next();
 
-            if (rec != null && includeRecordIfFieldsPresent != null) {
+	        if (rec != null && includeRecordIfFieldsPresent != null) {
                 for (final String[] tagAndSf : includeRecordIfFieldsPresent) {
                     final List<VariableField> fields = rec.getVariableFields(tagAndSf[0]);
 
@@ -174,25 +169,25 @@ public class MarcFilteredReader implements MarcReader {
 
                     for (final VariableField vf : fields) {
                         if (vf instanceof ControlField) {
-                            if (includeRecordIfFieldDoesntContain == null || ((ControlField) vf)
-                                    .getData().contains(includeRecordIfFieldDoesntContain)) {
+                            if (includeRecordIfFieldDoesNotContain == null || ((ControlField) vf)
+                                    .getData().contains(includeRecordIfFieldDoesNotContain)) {
                                 useRecord = false;
                                 break;
                             }
                         } else {
-                            if (includeRecordIfFieldDoesntContain == null || ((DataField) vf)
+                            if (includeRecordIfFieldDoesNotContain == null || ((DataField) vf)
                                     .getSubfieldsAsString(tagAndSf[1]).contains(
-                                            includeRecordIfFieldDoesntContain)) {
+                                            includeRecordIfFieldDoesNotContain)) {
                                 useRecord = false;
                                 break;
                             }
                         }
                     }
-                    if (useRecord == false) {
+                    if (!useRecord) {
                         break;
                     }
                 }
-                if (useRecord == true) {
+                if (useRecord) {
                     currentRecord = rec;
                 }
 

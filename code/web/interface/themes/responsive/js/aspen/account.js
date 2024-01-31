@@ -205,6 +205,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
 					label = 'Boundless Checkouts';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -275,6 +277,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
 					label = 'Boundless Holds';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -454,6 +458,23 @@ AspenDiscovery.Account = (function () {
 						if (data.summary.numAvailableHolds > 0) {
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
+						}
+					}
+				});
+			}
+			if (Globals.hasPalaceProjectConnection) {
+				var palaceProjectUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataPalaceProject&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(palaceProjectUrl, function (data) {
+					if (data.success) {
+						$(".palace_project-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".palace_project-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".palace_project-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".palace_project-available-holds").show();
 						}
 					}
 				});
@@ -1575,6 +1596,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentIframe;
 						} else if (paymentType === 'Square') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'Stripe') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -1691,6 +1714,10 @@ AspenDiscovery.Account = (function () {
 			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
 		},
 
+		createStripeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'Stripe', transactionType);
+		},
+
 		createPayPalPayflowOrder: function (userId, transactionType) {
 			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
 			if (result === false) {
@@ -1775,6 +1802,43 @@ AspenDiscovery.Account = (function () {
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		completeStripeOrder: function (patronId, transactionType, paymentId, paymentMethodId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeStripeOrder",
+				paymentId: paymentId,
+				paymentMethodId: paymentMethodId,
+				patronId: patronId,
+				type: transactionType,
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=stripee&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=stripe&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(function() {
+				const cardButton = document.getElementById('process-stripe-payment');
+				AspenDiscovery.ajaxFail();
+				cardButton.disabled = false;
+			})
 		},
 
 		updateFineTotal: function (finesFormId, userId, paymentType) {
@@ -2502,6 +2566,46 @@ AspenDiscovery.Account = (function () {
 				});
 			}
 			return false;
+		},
+		toggleKohaDigestCheckbox: function () {
+			var sms1 = $('#sms1');
+			var phone1 = $('#phone1');
+			var email1 = $('#email1');
+			var digest1 = $('#digest1');
+			if (sms1.is(":checked") || phone1.is(":checked") || email1.is(":checked")) {
+				digest1.prop('disabled', false);
+			} else {
+				digest1.prop('disabled', true);
+				if(digest1.is(":checked")) {
+					digest1.prop('checked', false);
+				}
+			}
+
+			var sms2 = $('#sms2');
+			var phone2 = $('#phone2');
+			var email2 = $('#email2');
+			var digest2 = $('#digest2');
+			if (sms2.is(":checked") || phone2.is(":checked") || email2.is(":checked")) {
+				digest2.prop('disabled', false);
+			} else {
+				digest2.prop('disabled', true);
+				if(digest2.is(":checked")) {
+					digest2.prop('checked', false);
+				}
+			}
+
+			var sms9 = $('#sms9');
+			var phone9 = $('#phone9');
+			var email9 = $('#email9');
+			var digest9 = $('#digest9');
+			if (sms9.is(":checked") || phone9.is(":checked") || email9.is(":checked")) {
+				digest9.prop('disabled', false);
+			} else {
+				digest9.prop('disabled', true);
+				if(digest9.is(":checked")) {
+					digest9.prop('checked', false);
+				}
+			}
 		},
 		logout: function () {
 			window.location = Globals.path + '/MyAccount/Logout';

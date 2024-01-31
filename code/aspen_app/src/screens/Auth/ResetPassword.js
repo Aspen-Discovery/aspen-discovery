@@ -1,14 +1,15 @@
-import React from 'react';
-import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
-import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
-import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders, postData, stripHTML } from '../../util/apiAuth';
 import _ from 'lodash';
-import { LIBRARY } from '../../util/loadLibrary';
-import { LibrarySystemContext } from '../../context/initialContext';
-import { useKeyboard } from '../../util/useKeyboard';
+import { Button, Center, FormControl, Input, Modal, Text } from 'native-base';
+import React from 'react';
 import { Platform } from 'react-native';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
+import { createAuthTokens, getHeaders, postData, stripHTML } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { LIBRARY } from '../../util/loadLibrary';
+import { useKeyboard } from '../../util/useKeyboard';
+
 export const ResetPassword = (props) => {
      const isKeyboardOpen = useKeyboard();
      const { library } = React.useContext(LibrarySystemContext);
@@ -53,12 +54,17 @@ export const ResetPassword = (props) => {
                     await getTranslationsWithValues('request_pin_reset', passwordLabel, language, libraryUrl).then((result) => {
                          setModalButtonLabel(_.toString(result));
                     });
+               } else if (ils === 'symphony') {
+                    await getTranslationsWithValues('symphony_password_reset_body', _.lowerCase(usernameLabel), language, libraryUrl).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
                } else {
                     await getTranslationsWithValues('aspen_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
                }
           }
+
           fetchTranslations();
      }, [language, libraryUrl]);
 
@@ -86,6 +92,8 @@ export const ResetPassword = (props) => {
                               <EvergreenResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'millennium' && forgotPasswordType === 'emailResetLink' ? (
                               <MillenniumResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                         ) : ils === 'symphony' && forgotPasswordType === 'emailResetLink' ? (
+                              <SymphonyResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : forgotPasswordType === 'emailAspenResetLink' ? (
                               <AspenResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : null}
@@ -566,6 +574,113 @@ const EvergreenResetPassword = (props) => {
      );
 };
 
+const SymphonyResetPassword = (props) => {
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
+     const [username, setUsername] = React.useState('');
+
+     const [showResults, setShowResults] = React.useState(false);
+     const [results, setResults] = React.useState('');
+
+     const closeWindow = () => {
+          setShowForgotPasswordModal(false);
+          setIsProcessing(false);
+          setShowResults(false);
+          setResults('');
+     };
+     const initiateResetPassword = async () => {
+          setIsProcessing(true);
+          await resetPassword(username, '', false, 'symphony', libraryUrl).then((data) => {
+               setResults(data);
+               setShowResults(true);
+          });
+          setIsProcessing(false);
+     };
+
+     const resetWindow = () => {
+          setShowResults(false);
+          setResults('');
+     };
+
+     if (results && showResults) {
+          if (_.isEmpty(results.success) && results.error) {
+               return (
+                    <>
+                         <Modal.Body>
+                              <Text>{stripHTML(results.error)}</Text>
+                         </Modal.Body>
+                         <Modal.Footer>
+                              <Button.Group space={2}>
+                                   <Button variant="ghost" onPress={closeWindow}>
+                                        {getTermFromDictionary('en', 'button_ok')}
+                                   </Button>
+                                   <Button colorScheme="primary" onPress={resetWindow}>
+                                        {getTermFromDictionary('en', 'try_again')}
+                                   </Button>
+                              </Button.Group>
+                         </Modal.Footer>
+                    </>
+               );
+          } else if (!_.isEmpty(results.message)) {
+               return (
+                    <>
+                         <Modal.Body>
+                              <Text>{stripHTML(results.message)}</Text>
+                         </Modal.Body>
+                         <Modal.Footer>
+                              <Button.Group space={2}>
+                                   <Button variant="ghost" onPress={closeWindow}>
+                                        {getTermFromDictionary('en', 'cancel')}
+                                   </Button>
+                              </Button.Group>
+                         </Modal.Footer>
+                    </>
+               );
+          } else {
+               return (
+                    <>
+                         <Modal.Body>
+                              <Text>{getTermFromDictionary('en', 'password_reset_success_body_1')}</Text>
+                              <Text>{getTermFromDictionary('en', 'password_reset_success_body_2')}</Text>
+                         </Modal.Body>
+                         <Modal.Footer>
+                              <Button.Group space={2}>
+                                   <Button variant="ghost" onPress={closeWindow}>
+                                        {getTermFromDictionary('en', 'button_ok')}
+                                   </Button>
+                              </Button.Group>
+                         </Modal.Footer>
+                    </>
+               );
+          }
+     }
+
+     return (
+          <>
+               <Modal.Body>
+                    <Text>{resetBody}</Text>
+                    <FormControl.Label
+                         _text={{
+                              fontSize: 'sm',
+                              fontWeight: 600,
+                         }}>
+                         {usernameLabel}
+                    </FormControl.Label>
+                    <Input id="username" variant="filled" autoCorrect={false} autoCapitalize="none" size="xl" returnKeyType="done" enterKeyHint="done" onChangeText={(text) => setUsername(text)} onSubmitEditing={() => initiateResetPassword()} textContentType="username" />
+               </Modal.Body>
+               <Modal.Footer>
+                    <Button.Group space={2}>
+                         <Button variant="ghost" onPress={closeWindow}>
+                              {getTermFromDictionary('en', 'cancel')}
+                         </Button>
+                         <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
+                              {modalButtonLabel}
+                         </Button>
+                    </Button.Group>
+               </Modal.Footer>
+          </>
+     );
+};
+
 const MillenniumResetPassword = (props) => {
      const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [username, setUsername] = React.useState('');
@@ -662,6 +777,10 @@ async function resetPassword(username = '', email = '', resendEmail = false, ils
                resendEmail: resendEmail,
           };
      } else if (ils === 'millennium') {
+          params = {
+               barcode: username,
+          };
+     } else if (ils === 'symphony') {
           params = {
                barcode: username,
           };

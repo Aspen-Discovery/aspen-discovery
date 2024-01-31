@@ -10,7 +10,7 @@
 				{include file='systemMessages.tpl' messages=$accountMessages}
 			{/if}
 
-			<h1>{translate text='OverDrive Options' isPublicFacing=true}</h1>
+			<h1>{$readerName}</h1>
 			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
@@ -21,11 +21,11 @@
 				<form action="" method="post">
 					<input type="hidden" name="updateScope" value="overdrive">
 					<div class="form-group propertyRow">
-						<label for="overdriveEmail" class="control-label">{translate text='OverDrive Hold email' isPublicFacing=true}</label>
+						<label for="overdriveEmail" class="control-label">{translate text='%1% Hold email' 1=$readerName isPublicFacing=true}</label>
 						{if $edit == true}<input name="overdriveEmail" id="overdriveEmail" class="form-control" value='{$profile->overdriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overdriveEmail|escape}{/if}
 					</div>
 					<div class="form-group propertyRow">
-						<label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for OverDrive email' isPublicFacing=true}</label>&nbsp;
+						<label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for %1% email' 1=$readerName isPublicFacing=true}</label>&nbsp;
                         {if $edit == true}
 							<input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail" {if $profile->promptForOverdriveEmail==1}checked='checked'{/if} data-switch="">
                         {else}

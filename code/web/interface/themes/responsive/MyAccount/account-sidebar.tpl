@@ -43,7 +43,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=overdrive" id="checkedOutOverDrive" title="View checkouts from OverDrive">
-												{translate text="OverDrive" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="overdrive-checkouts-placeholder">??</span></span>{/if}
+												{$readerName}{if empty($offline)}<span class="badge"><span class="overdrive-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -52,6 +52,14 @@
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla" title="View checkouts from Hoopla">
 												{translate text="Hoopla" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
+									{if $user->isValidForEContentSource('palace_project')}
+										<li class="myAccountLink">
+										&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/CheckedOut?tab=palace_project" id="checkedOutPalaceProject" title="View checkouts from Palace Project">
+												{translate text="Palace Project" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="palace_project-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -99,7 +107,15 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive" title="View holds from OverDrive">
-												{translate text="OverDrive" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+												{$readerName}{if empty($offline)}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+											</a>
+										</li>
+									{/if}
+									{if $user->isValidForEContentSource('palace_project')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=palace_project" id="holdsPalaceProject" title="View holds from Palace Project">
+                                                {translate text="Palace Project" isPublicFacing=true}{if empty($offline)}<span class="badge"><span class="palace_project-holds-placeholder">??</span></span> <span class="palace_project-available-holds" style="display: none"> <span class="label label-success"><span class="palace_project-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -229,7 +245,7 @@
 									<div class="myAccountLink" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 								{/if}
 								{if $user->isValidForEContentSource('overdrive') && $showUserCirculationModules}
-									<div class="myAccountLink"><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
+									<div class="myAccountLink"><a href="/MyAccount/OverDriveOptions">{translate text='%1% Options' 1=$readerName isPublicFacing=true}</a></div>
 								{/if}
 								{if $user->isValidForEContentSource('hoopla') && $showUserCirculationModules}
 									<div class="myAccountLink"><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>

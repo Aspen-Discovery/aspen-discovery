@@ -23,6 +23,7 @@ class OAuthAuthentication extends Action {
 	private $curlWrapper;
 
 	protected bool $ssoAuthOnly = false;
+	protected bool $updateAccount = false;
 
 	public function __construct() {
 		parent::__construct();
@@ -40,6 +41,7 @@ class OAuthAuthentication extends Action {
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
 			$this->staffPTypeAttr = $ssoSettings->oAuthStaffPTypeAttr ?? null;
 			$this->staffPTypeAttrValue = $ssoSettings->oAuthStaffPTypeAttrValue ?? null;
+			$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 			if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 				$this->staffPType = $ssoSettings->oAuthStaffPType;
@@ -236,7 +238,9 @@ class OAuthAuthentication extends Action {
 				$user->oAuthAccessToken = $this->accessToken;
 				$user->oAuthRefreshToken = $this->refreshToken;
 				$user->update();
-				$user->updatePatronInfo(true);
+				if($this->updateAccount) {
+					$user->updatePatronInfo(true);
+				}
 				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			}
 			return $this->login($user);

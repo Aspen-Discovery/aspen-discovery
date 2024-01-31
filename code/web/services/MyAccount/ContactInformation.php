@@ -56,6 +56,7 @@ class MyAccount_ContactInformation extends MyAccount {
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
 			$interface->assign('passwordLabel', $passwordLabel);
 			$interface->assign('showPreferredNameInProfile', $user->showPreferredNameInProfile());
+			$interface->assign('allowUpdatesOfPreferredName', $user->allowUpdatesOfPreferredName());
 
 			// Determine Pickup Locations
 			$pickupLocations = $user->getValidPickupBranches($user->getAccountProfile()->recordSource);

@@ -8,7 +8,6 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.marc.Record;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,7 +77,6 @@ public class CloudLibraryExporter {
 		if (!settings.isDoFullReload()) {
 			long lastExtractTime = Math.max(settings.getLastExtractTime(), settings.getLastExtractTimeAll());
 
-			//noinspection SpellCheckingInspection
 			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 			startDate = dateFormatter.format(new Date(lastExtractTime * 1000));
@@ -100,7 +98,7 @@ public class CloudLibraryExporter {
 			for (int curTry = 1; curTry <= 4; curTry++) {
 				WebServiceResponse response = callCloudLibrary(apiPath);
 				if (response == null) {
-					//Something really bad happened, we're done.
+					//Something bad happened, we're done.
 					return numChanges;
 				} else if (!response.isSuccess()) {
 					if (response.getResponseCode() != 502) {
@@ -149,7 +147,7 @@ public class CloudLibraryExporter {
 			for (int curTry = 1; curTry <= 4; curTry++) {
 				WebServiceResponse response = callCloudLibrary(eventsApiPath);
 				if (response == null) {
-					//Something really bad happened, we're done.
+					//Something bad happened, we're done.
 					return numChanges;
 				} else if (!response.isSuccess()) {
 					if (response.getResponseCode() != 502) {
@@ -290,8 +288,8 @@ public class CloudLibraryExporter {
 							//Delete the work from solr and the database
 							getGroupedWorkIndexer().deleteRecord(result.permanentId);
 						}
-					//}else{
-						//We need to reindex the record to make sure that the availability changes.
+					//else
+						//We need to reindex the record to make sure that the availability changes?.
 					}
 
 					numDeleted++;
@@ -353,7 +351,7 @@ public class CloudLibraryExporter {
 					String format = getItemDetailsForRecordRS.getString("format");
 					RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 
-					Record cloudLibraryRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase("cloud_library", cloudLibraryId, logEntry);
+					org.marc4j.marc.Record cloudLibraryRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase("cloud_library", cloudLibraryId, logEntry);
 					if (cloudLibraryRecord != null) {
 						String primaryLanguage = getRecordGroupingProcessor().getLanguageBasedOnMarcRecord(cloudLibraryRecord);
 
@@ -432,6 +430,37 @@ public class CloudLibraryExporter {
 		return availability;
 	}
 
+	CloudLibraryAvailabilityType loadAvailabilityTypeForRecord(String cloudLibraryId) {
+		CloudLibraryAvailabilityType availabilityType = new CloudLibraryAvailabilityType();
+		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/circulation/item/" + cloudLibraryId;
+
+		WebServiceResponse response = callCloudLibrary(apiPath);
+		if (response == null) {
+			//Something really bad happened, we're done.
+			return null;
+		} else if (!response.isSuccess()) {
+			if (response.getResponseCode() != 500) {
+				logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+			}
+			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
+			return null;
+		} else {
+			availabilityType.setRawResponse(response.getMessage());
+			CloudLibraryAvailabilityTypeHandler handler = new CloudLibraryAvailabilityTypeHandler(availabilityType);
+
+			try {
+				SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+				SAXParser saxParser = saxParserFactory.newSAXParser();
+				saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
+			} catch (SAXException | ParserConfigurationException | IOException e) {
+				logger.error("Error parsing response", e);
+				logEntry.addNote("Error parsing response: " + e);
+			}
+		}
+
+		return availabilityType;
+	}
+
 	private WebServiceResponse callCloudLibrary(String apiPath) {
 		String bookUrl = settings.getBaseUrl() + apiPath;
 		HashMap<String, String> headers = new HashMap<>();
@@ -460,7 +489,6 @@ public class CloudLibraryExporter {
 		return NetworkUtils.getURL(bookUrl, logger, headers);
 	}
 
-	@SuppressWarnings("unused")
 	public long getSettingsId(){
 		return settings.getSettingsId();
 	}

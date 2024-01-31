@@ -6,7 +6,7 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,12 +23,11 @@ import org.marc4j.MarcWriter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
-import org.marc4j.marc.Record;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryMarcHandler extends DefaultHandler {
-	private CloudLibraryExporter exporter;
+	private final CloudLibraryExporter exporter;
 	private PreparedStatement updateCloudLibraryItemStmt;
 	private PreparedStatement updateCloudLibraryAvailabilityStmt;
 	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
@@ -44,7 +43,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	private final long settingId;
 
 	private int numDocuments = 0;
-	private Record marcRecord;
+	private org.marc4j.marc.Record marcRecord;
 	private String nodeContents = "";
 	private String tag = "";
 	private DataField dataField;
@@ -71,14 +70,15 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 							"ON DUPLICATE KEY UPDATE title = VALUES(title), subTitle = VALUES(subTitle), author = VALUES(author), format = VALUES(format), " +
 							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
-			getExistingCloudLibraryAvailabilityStmt = dbConn.prepareStatement("SELECT id, rawChecksum from cloud_library_availability WHERE cloudLibraryId = ?");
+			getExistingCloudLibraryAvailabilityStmt = dbConn.prepareStatement("SELECT id, rawChecksum, typeRawChecksum from cloud_library_availability WHERE cloudLibraryId = ?");
 			updateCloudLibraryAvailabilityStmt = dbConn.prepareStatement(
 					"INSERT INTO cloud_library_availability " +
-							"(cloudLibraryId, settingId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange) " +
-							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+							"(cloudLibraryId, settingId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange, availabilityType, typeRawChecksum, typeRawResponse) " +
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 							"ON DUPLICATE KEY UPDATE totalCopies = VALUES(totalCopies), sharedCopies = VALUES(sharedCopies), " +
 							"totalLoanCopies = VALUES(totalLoanCopies), totalHoldCopies = VALUES(totalHoldCopies), sharedLoanCopies = VALUES(sharedLoanCopies), " +
-							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
+							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), " +
+							"availabilityType = VALUES(availabilityType), typeRawChecksum = VALUES(typeRawChecksum), typeRawResponse = VALUES(typeRawResponse)");
 		} catch (Exception e) {
 			logger.error("Error connecting to aspen database", e);
 			System.exit(1);
@@ -100,12 +100,12 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				tag = attributes.getValue("tag");
 				String indicator1 = attributes.getValue("ind1");
 				char ind1 = ' ';
-				if (indicator1.length() > 0) {
+				if (!indicator1.isEmpty()) {
 					ind1 = indicator1.charAt(0);
 				}
 				String indicator2 = attributes.getValue("ind2");
 				char ind2 = ' ';
-				if (indicator2.length() > 0) {
+				if (!indicator2.isEmpty()) {
 					ind2 = indicator2.charAt(0);
 				}
 				dataField = marcFactory.newDataField(tag, ind1, ind2);
@@ -113,7 +113,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			case "marc:subfield":
 				String subfieldCodeStr = attributes.getValue("code");
 				subfieldCode = ' ';
-				if (subfieldCodeStr.length() > 0) {
+				if (!subfieldCodeStr.isEmpty()) {
 					subfieldCode = subfieldCodeStr.charAt(0);
 				}
 				break;
@@ -151,12 +151,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		MarcWriter writer = new MarcStreamWriter(stream, "UTF-8", true);
 		writer.write(marcRecord);
 		String marcAsString;
-		try {
-			marcAsString = stream.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			logger.error("Wrong encoding", e);
-			return;
-		}
+		marcAsString = stream.toString(StandardCharsets.UTF_8);
 		checksumCalculator.reset();
 		checksumCalculator.update(marcAsString.getBytes());
 		long itemChecksum = checksumCalculator.getValue();
@@ -185,10 +180,14 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 		//Get availability for the title
 		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
+		CloudLibraryAvailabilityType availabilityType = exporter.loadAvailabilityTypeForRecord(cloudLibraryId);
 		if (availability == null) {
 			logEntry.addNote("Did not load availability for " + title + " by " + author + " id " + cloudLibraryId);
 			return;
 		}
+
+		boolean availabilityChanged = false;
+		//Check availability checksum
 		checksumCalculator.reset();
 		String rawAvailabilityResponse = availability.getRawResponse();
 		if (rawAvailabilityResponse == null) {
@@ -196,7 +195,6 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 		checksumCalculator.update(rawAvailabilityResponse.getBytes());
 		long availabilityChecksum = checksumCalculator.getValue();
-		boolean availabilityChanged = false;
 		try {
 			getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
 			ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
@@ -213,6 +211,31 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading availability", e);
+		}
+		//Same thing for availability type checksum
+		checksumCalculator.reset();
+		String rawAvailabilityTypeResponse = availabilityType.getRawResponse();
+		if (rawAvailabilityTypeResponse == null) {
+			rawAvailabilityTypeResponse = "";
+		}
+		checksumCalculator.update(rawAvailabilityTypeResponse.getBytes());
+		long availabilityTypeChecksum = checksumCalculator.getValue();
+		try {
+			getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
+			ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
+			if (getExistingAvailabilityRS.next()) {
+				long existingTypeChecksum = getExistingAvailabilityRS.getLong("typeRawChecksum");
+				logger.debug("Availability type already exists");
+				if (existingTypeChecksum != availabilityTypeChecksum) {
+					logger.debug("Updating availability type details");
+					availabilityChanged = true;
+				}
+			} else {
+				logger.debug("Adding availability type for " + cloudLibraryId);
+				availabilityChanged = true;
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading availability type", e);
 		}
 
 		Set<String> formatFields = MarcUtil.getFieldList(marcRecord, "538a");
@@ -273,6 +296,9 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				updateCloudLibraryAvailabilityStmt.setLong(8, availabilityChecksum);
 				updateCloudLibraryAvailabilityStmt.setString(9, rawAvailabilityResponse);
 				updateCloudLibraryAvailabilityStmt.setLong(10, startTimeForLogging);
+				updateCloudLibraryAvailabilityStmt.setLong(11, availabilityType.getAvailabilityType());
+				updateCloudLibraryAvailabilityStmt.setLong(12, availabilityTypeChecksum);
+				updateCloudLibraryAvailabilityStmt.setString(13, rawAvailabilityTypeResponse);
 				updateCloudLibraryAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error saving availability", e);

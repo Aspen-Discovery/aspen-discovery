@@ -292,7 +292,14 @@ if (!$siteOnWindows) {
 }
 
 //Import the database
-$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\" --port \"{$variables['aspenDBPort']}\"";
+if ($runningOnWindows) {
+	$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+}else{
+	$mysqlConnectionCommand = "mariadb -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+}
+if ($variables['aspenDBPort'] != "3306") {
+	$mysqlConnectionCommand .= " --port \"{$variables['aspenDBPort']}\"";
+}
 if ($clearExisting) {
 	echo("Removing existing database\r\n");
 	exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
@@ -381,6 +388,7 @@ if (!$siteOnWindows){
 //Setup solr
 if (!$siteOnWindows){
 	exec('chown -R solr:solr ' . $installDir . '/sites/default/solr-7.6.0');
+	exec('chown -R solr:solr ' . $installDir . '/sites/default/solr-8.11.2');
 	exec('chown -R solr:solr ' . $dataDir . '/solr7');
 }
 

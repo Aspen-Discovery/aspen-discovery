@@ -52,9 +52,9 @@ class AspenSite extends DataObject {
 	];
 	public static $_appAccess = [
 		0 => 'None',
-		1 => 'LiDA Only',
-		2 => 'Whitelabel Only',
-		3 => 'LiDA + Whitelabel',
+		1 => 'Community Only',
+		2 => 'Branded Only',
+		3 => 'Community + Branded',
 	];
 	public static $_validIls = [
 		0 => 'Not Set',

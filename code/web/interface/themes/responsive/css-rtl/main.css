@@ -8037,7 +8037,7 @@ hr.menu {
   margin-right: 2em;
 }
 .header-menu-option.languageSelected {
-  margin-right: 0.5em;
+  margin-right: 1.5em;
 }
 #library-name-header {
   font-size: 26px;
@@ -9302,7 +9302,7 @@ a.placard-link {
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: center;
-  min-height: 200px;
+  min-height: 125px;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {

@@ -13,8 +13,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,18 +42,18 @@ import static java.util.Calendar.YEAR;
 
 class CommunicoIndexer {
 	private final Logger logger;
-	private long settingsId;
-	private String name;
+	private final long settingsId;
+	private final String name;
 	private String baseUrl;
-	private String clientId;
-	private String clientSecret;
-	private int numberOfDaysToIndex;
+	private final String clientId;
+	private final String clientSecret;
+	private final int numberOfDaysToIndex;
 
-	private Connection aspenConn;
-	private EventsIndexerLogEntry logEntry;
-	private HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
-	private HashSet<String> librariesToShowFor = new HashSet<>();
-	private static CRC32 checksumCalculator = new CRC32();
+	private final Connection aspenConn;
+	private final EventsIndexerLogEntry logEntry;
+	private final HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
+	private final HashSet<String> librariesToShowFor = new HashSet<>();
+	private final static CRC32 checksumCalculator = new CRC32();
 
 	//Communico API Info
 	private String communicoAPIToken;
@@ -66,10 +66,9 @@ class CommunicoIndexer {
 	private PreparedStatement deleteRegistrantStmt;
 
 
-	private ConcurrentUpdateSolrClient solrUpdateServer;
-	private boolean doFullReload = true;
+	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
-	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -104,6 +103,7 @@ class CommunicoIndexer {
 		}
 
 		try {
+			//noinspection SpellCheckingInspection
 			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
 			deleteRegistrantStmt = aspenConn.prepareStatement("DELETE FROM user_events_registrations WHERE userId = ? AND sourceId = ?");
 		} catch (Exception e) {
@@ -143,10 +143,10 @@ class CommunicoIndexer {
 		return existingRegistrations;
 	}
 
-	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
-	private SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
-	private SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
+	private final SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private final SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
+	private final SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
 
 	void indexEvents() {
 		GregorianCalendar nextYear = new GregorianCalendar();
@@ -157,20 +157,19 @@ class CommunicoIndexer {
 			logEntry.incErrors("Did not get any events returned from the Communico API");
 			return;
 		}
-		if (doFullReload) {
-			try {
-				solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
-				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logEntry.incErrors("Solr is not running properly, try restarting " + rse.toString());
-				System.exit(-1);
-			} catch (Exception e) {
-				logEntry.incErrors("Error deleting from index ", e);
-			}
+
+		try {
+			solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
+			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
+			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
+			System.exit(-1);
+		} catch (Exception e) {
+			logEntry.incErrors("Error deleting from index ", e);
 		}
 
 		Date lastDateToIndex = new Date();
-		long numberOfDays = numberOfDaysToIndex * 24;
+		long numberOfDays = numberOfDaysToIndex * 24L;
 		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
 
 		logEntry.incNumEvents(communicoEvents.length());
@@ -182,146 +181,139 @@ class CommunicoIndexer {
 				checksumCalculator.update(rawResponse.getBytes());
 				long checksum = checksumCalculator.getValue();
 
-				Integer eventIdRaw = curEvent.getInt("eventId");
+				int eventIdRaw = curEvent.getInt("eventId");
 				String eventId = Integer.toString(eventIdRaw);
-				boolean eventExists = false;
-				boolean eventChanged = false;
-				if (existingEvents.containsKey(eventId)){
-					eventExists = true;
-					if (checksum != existingEvents.get(eventId).getRawChecksum()){
-						eventChanged = true;
-					}
-				}
+
+				boolean eventExists = existingEvents.containsKey(eventId);
+
 				String sourceId = "communico_" + settingsId + "_" + eventId;
 
-				if (doFullReload || !eventExists || eventChanged){
-					//Add the event to solr
-					try {
-						SolrInputDocument solrDocument = new SolrInputDocument();
-						solrDocument.addField("id", sourceId);
-						solrDocument.addField("identifier", eventId);
-						solrDocument.addField("type", "event_communico");
-						solrDocument.addField("source", settingsId);
-						solrDocument.addField("url", baseUrl + "/" + eventId);
-						int boost = 1;
+				//Add the event to solr
+				try {
+					SolrInputDocument solrDocument = new SolrInputDocument();
+					solrDocument.addField("id", sourceId);
+					solrDocument.addField("identifier", eventId);
+					solrDocument.addField("type", "event_communico");
+					solrDocument.addField("source", settingsId);
+					solrDocument.addField("url", baseUrl + "/" + eventId);
+					int boost = 1;
 
-						solrDocument.addField("last_indexed", new Date());
+					solrDocument.addField("last_indexed", new Date());
 
-						//Make sure the start date is within the range of dates we are indexing
-						Date startDate = getDateForKey(curEvent,"eventStart");
-						solrDocument.addField("start_date", startDate);
-						if (startDate.after(lastDateToIndex)) {
-							continue;
-						}
+					//Make sure the start date is within the range of dates we are indexing
+					Date startDate = getDateForKey(curEvent,"eventStart");
+					solrDocument.addField("start_date", startDate);
+					if (startDate == null || startDate.after(lastDateToIndex)) {
+						continue;
+					}
 
-						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
-						Date endDate = getDateForKey(curEvent,"eventEnd");
-						solrDocument.addField("end_date", endDate);
+					solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
+					Date endDate = getDateForKey(curEvent,"eventEnd");
+					solrDocument.addField("end_date", endDate);
 
-						//Only add events for the next year
-						if (startDate.after(nextYear.getTime())){
-							continue;
-						}
-						HashSet<String> eventDays = new HashSet<>();
-						HashSet<String> eventMonths = new HashSet<>();
-						HashSet<String> eventYears = new HashSet<>();
-						Date tmpDate = (Date)startDate.clone();
+					//Only add events for the next year
+					if (startDate.after(nextYear.getTime())){
+						continue;
+					}
+					HashSet<String> eventDays = new HashSet<>();
+					HashSet<String> eventMonths = new HashSet<>();
+					HashSet<String> eventYears = new HashSet<>();
+					Date tmpDate = (Date)startDate.clone();
 
-						if (tmpDate.equals(endDate) || tmpDate.after(endDate)){
+					if (tmpDate.equals(endDate) || tmpDate.after(endDate)){
+						eventDays.add(eventDayFormatter.format(tmpDate));
+						eventMonths.add(eventMonthFormatter.format(tmpDate));
+						eventYears.add(eventYearFormatter.format(tmpDate));
+					}else {
+						while (tmpDate.before(endDate)) {
 							eventDays.add(eventDayFormatter.format(tmpDate));
 							eventMonths.add(eventMonthFormatter.format(tmpDate));
 							eventYears.add(eventYearFormatter.format(tmpDate));
-						}else {
-							while (tmpDate.before(endDate)) {
-								eventDays.add(eventDayFormatter.format(tmpDate));
-								eventMonths.add(eventMonthFormatter.format(tmpDate));
-								eventYears.add(eventYearFormatter.format(tmpDate));
-								tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
-							}
+							tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
 						}
-						//Boost based on start date, we will give preference to anything in the next 30 days
-						Date today = new Date();
-						if (startDate.before(today) || startDate.equals(today)){
-							boost += 30;
-						}else{
-							long daysInFuture = (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-							if (daysInFuture > 30){
-								daysInFuture = 30;
-							}
-							boost += (30 - daysInFuture);
-						}
-						solrDocument.addField("event_day", eventDays);
-						solrDocument.addField("event_month", eventMonths);
-						solrDocument.addField("event_year", eventYears);
-
-						if (curEvent.getString("subTitle").isEmpty() || curEvent.isNull("subTitle")){
-							solrDocument.addField("title", curEvent.getString("title"));
-						}else {
-							//Important info is kept in subtitle, concat main title and subtitle to keep the important info
-							String fullTitle = curEvent.getString("title") + ": " + curEvent.getString("subTitle");
-							solrDocument.addField("title", fullTitle);
-						}
-
-						solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("locationName")));
-
-						if (curEvent.isNull("eventType")) {
-							solrDocument.addField("event_type", "Undefined");
-						} else {
-							solrDocument.addField("event_type", curEvent.getString("eventType"));
-						}
-
-						//roomName returns null instead of empty string, need to check if null
-						if (curEvent.isNull("roomName")){
-							solrDocument.addField("room", "");
-						}else{
-							solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("roomName")));
-						}
-
-						solrDocument.addField("age_group", getNameStringsForKeyCommunico(curEvent, "ages"));
-						solrDocument.addField("program_type", getNameStringsForKeyCommunico(curEvent, "types"));
-						//solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
-
-						solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
-
-						solrDocument.addField("description", curEvent.getString("shortDescription"));
-
-						//eventImage returns null instead of empty string, need to check if null
-						if (curEvent.isNull("eventImage")){
-							solrDocument.addField("image_url", "");
-						}else {
-							solrDocument.addField("image_url", curEvent.getString("eventImage"));
-						}
-
-						solrDocument.addField("library_scopes", librariesToShowFor);
-
-						if (boost < 1){
-							boost = 1;
-						}
-						solrDocument.addField("boost", boost);
-
-						solrUpdateServer.add(solrDocument);
-					} catch (SolrServerException | IOException e) {
-						logEntry.incErrors("Error adding event to solr ", e);
 					}
-
-					//Add the event to the database
-					try {
-						addEventStmt.setLong(1, settingsId);
-						addEventStmt.setString(2, eventId);
-						addEventStmt.setString(3, curEvent.getString("title"));
-						addEventStmt.setLong(4, checksum);
-						addEventStmt.setString(5, rawResponse);
-						addEventStmt.executeUpdate();
-					} catch (SQLException e) {
-						logEntry.incErrors("Error adding event to database " , e);
-					}
-
-					if (eventExists){
-						existingEvents.remove(eventId);
-						logEntry.incUpdated();
+					//Boost based on start date, we will give preference to anything in the next 30 days
+					Date today = new Date();
+					if (startDate.before(today) || startDate.equals(today)){
+						boost += 30;
 					}else{
-						logEntry.incAdded();
+						long daysInFuture = (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+						if (daysInFuture > 30){
+							daysInFuture = 30;
+						}
+						boost += (int) (30 - daysInFuture);
 					}
+					solrDocument.addField("event_day", eventDays);
+					solrDocument.addField("event_month", eventMonths);
+					solrDocument.addField("event_year", eventYears);
+
+					if (curEvent.getString("subTitle").isEmpty() || curEvent.isNull("subTitle")){
+						solrDocument.addField("title", curEvent.getString("title"));
+					}else {
+						//Important info is kept in subtitle, concat main title and subtitle to keep the important info
+						String fullTitle = curEvent.getString("title") + ": " + curEvent.getString("subTitle");
+						solrDocument.addField("title", fullTitle);
+					}
+
+					solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("locationName")));
+
+					if (curEvent.isNull("eventType")) {
+						solrDocument.addField("event_type", "Undefined");
+					} else {
+						solrDocument.addField("event_type", curEvent.getString("eventType"));
+					}
+
+					//roomName returns null instead of empty string, need to check if null
+					if (curEvent.isNull("roomName")){
+						solrDocument.addField("room", "");
+					}else{
+						solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("roomName")));
+					}
+
+					solrDocument.addField("age_group", getNameStringsForKeyCommunico(curEvent, "ages"));
+					solrDocument.addField("program_type", getNameStringsForKeyCommunico(curEvent, "types"));
+					//solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
+
+					solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
+
+					solrDocument.addField("description", curEvent.getString("shortDescription"));
+
+					//eventImage returns null instead of empty string, need to check if null
+					if (curEvent.isNull("eventImage")){
+						solrDocument.addField("image_url", "");
+					}else {
+						solrDocument.addField("image_url", curEvent.getString("eventImage"));
+					}
+
+					solrDocument.addField("library_scopes", librariesToShowFor);
+
+					if (boost < 1){
+						boost = 1;
+					}
+					solrDocument.addField("boost", boost);
+
+					solrUpdateServer.add(solrDocument);
+				} catch (SolrServerException | IOException e) {
+					logEntry.incErrors("Error adding event to solr ", e);
+				}
+
+				//Add the event to the database
+				try {
+					addEventStmt.setLong(1, settingsId);
+					addEventStmt.setString(2, eventId);
+					addEventStmt.setString(3, curEvent.getString("title"));
+					addEventStmt.setLong(4, checksum);
+					addEventStmt.setString(5, rawResponse);
+					addEventStmt.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error adding event to database " , e);
+				}
+
+				if (eventExists){
+					existingEvents.remove(eventId);
+					logEntry.incUpdated();
+				}else{
+					logEntry.incAdded();
 				}
 
 				logger.warn("Fetching registration info for event " + eventId);
@@ -336,8 +328,8 @@ class CommunicoIndexer {
 							try {
 								JSONObject curRegistrant = communicoEventRegistrants.getJSONObject(j);
 
-								if (!curRegistrant.getString("barcode").isEmpty()){
-									uniqueBarcodesRegistered.add(curRegistrant.getString("barcode"));
+								if (!curRegistrant.isNull("librarycard") && !curRegistrant.getString("librarycard").isEmpty()){
+									uniqueBarcodesRegistered.add(curRegistrant.getString("librarycard"));
 								}
 							} catch (JSONException e) {
 								logEntry.incErrors("Error getting JSON information ", e);
@@ -516,50 +508,56 @@ class CommunicoIndexer {
 					.setConnectTimeout(timeout * 1000)
 					.setConnectionRequestTimeout(timeout * 1000)
 					.setSocketTimeout(timeout * 1000).build();
-				CloseableHttpClient httpclient =  HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+				try (CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).build()) {
 
-				LocalDate today = LocalDate.now();
-				for (int m = 0; m < 13; m++) {
-					LocalDate firstOfMonth;
-					if (m == 0) {
-						firstOfMonth = today;
-					} else {
-						firstOfMonth = today.plusMonths(m).with(TemporalAdjusters.firstDayOfMonth());
-					}
-					LocalDate endOfMonth = today.plusMonths(m).with(TemporalAdjusters.lastDayOfMonth());
-					//a limit of 2000 should return all results for the month
-					String apiEventsURL = "https://api.communico.co/v3/attend/events";
-					apiEventsURL += "?limit=2000";
-					apiEventsURL += "&startDate=" + firstOfMonth;
-					apiEventsURL += "&endDate=" + endOfMonth;
-					//Need to request the fields we want as many are "optional" and aren't returned unless asked for
-					apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,privateEvent,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
-					HttpGet apiRequest = new HttpGet(apiEventsURL);
-					apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
-					logEntry.addNote("Loading events from " + apiEventsURL);
-					logEntry.saveResults();
-					try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
-						StatusLine status = response1.getStatusLine();
-						HttpEntity entity1 = response1.getEntity();
-						if (status.getStatusCode() == 200) {
-							String response = EntityUtils.toString(entity1);
-							JSONObject response2 = new JSONObject(response);
-							JSONObject data = response2.getJSONObject("data");
-							JSONArray events1 = data.getJSONArray("entries");
-							for (int i = 0; i < events1.length(); i++) {
-								JSONObject event = events1.getJSONObject(i);
-								if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))){
-									events.put(events1.get(i));
-								}
-							}
+					LocalDate today = LocalDate.now();
+					for (int m = 0; m < 13; m++) {
+
+						LocalDate firstOfMonth;
+						if (m == 0) {
+							firstOfMonth = today;
 						} else {
-							logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+							firstOfMonth = today.plusMonths(m).with(TemporalAdjusters.firstDayOfMonth());
 						}
-					} catch (Exception e) {
-						logEntry.incErrors("Error getting events from " + apiEventsURL, e);
+						LocalDate endOfMonth = today.plusMonths(m).with(TemporalAdjusters.lastDayOfMonth());
+						//a limit of 2000 should return all results for the month
+						String apiEventsURL = "https://api.communico.co/v3/attend/events";
+						apiEventsURL += "?limit=2000";
+						apiEventsURL += "&startDate=" + firstOfMonth;
+						apiEventsURL += "&endDate=" + endOfMonth;
+
+						//Need to request the fields we want as many are "optional" and aren't returned unless asked for
+						//noinspection SpellCheckingInspection
+						apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,privateEvent,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
+						HttpGet apiRequest = new HttpGet(apiEventsURL);
+						apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+						logEntry.addNote("Loading events from " + apiEventsURL);
+						logEntry.saveResults();
+						try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+							StatusLine status = response1.getStatusLine();
+							HttpEntity entity1 = response1.getEntity();
+							if (status.getStatusCode() == 200) {
+								String response = EntityUtils.toString(entity1);
+								JSONObject response2 = new JSONObject(response);
+								JSONObject data = response2.getJSONObject("data");
+								JSONArray events1 = data.getJSONArray("entries");
+								for (int i = 0; i < events1.length(); i++) {
+									JSONObject event = events1.getJSONObject(i);
+									if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))) {
+										events.put(events1.get(i));
+									}
+								}
+							} else {
+								logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+							}
+						} catch (Exception e) {
+							logEntry.incErrors("Error getting events from " + apiEventsURL, e);
+						}
+						logEntry.addNote("Finished loading events");
+						logEntry.saveResults();
 					}
-					logEntry.addNote("Finished loading events");
-					logEntry.saveResults();
+				} catch (Exception e) {
+					logEntry.incErrors("Error creating HTTP client", e);
 				}
 				return events;
 			}
@@ -572,22 +570,26 @@ class CommunicoIndexer {
 	private JSONArray getRegistrations(Integer eventId) {
 		try {
 			JSONArray eventRegistrations = new JSONArray();
-			CloseableHttpClient httpclient = HttpClients.createDefault();
+			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 
-			String apiRegistrationsURL = "https://api.communico.co/v3/attend/events" + eventId + "/registrants";
-			HttpGet apiRequest = new HttpGet(apiRegistrationsURL);
-			apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
-			try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
-				StatusLine status = response1.getStatusLine();
-				HttpEntity entity1 = response1.getEntity();
-				if (status.getStatusCode() == 200) {
-					String response = EntityUtils.toString(entity1);
-					JSONObject response2 = new JSONObject(response);
-					JSONArray registrants = response2.getJSONArray("entries");
-					eventRegistrations.put(registrants);
+				String apiRegistrationsURL = "https://api.communico.co/v3/attend/events/" + eventId + "/registrants";
+				HttpGet apiRequest = new HttpGet(apiRegistrationsURL);
+				apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+				try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+					StatusLine status = response1.getStatusLine();
+					HttpEntity entity1 = response1.getEntity();
+					if (status.getStatusCode() == 200) {
+						String response = EntityUtils.toString(entity1);
+						JSONObject response2 = new JSONObject(response);
+						JSONObject data = response2.getJSONObject("data");
+						eventRegistrations = data.getJSONArray("entries");
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+					return null;
 				}
-			} catch (Exception e) {
-				logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+			}catch (Exception e) {
+				logEntry.incErrors("Error creating HTTP Client defaults", e);
 				return null;
 			}
 			return eventRegistrations;

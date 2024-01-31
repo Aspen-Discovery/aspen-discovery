@@ -20,8 +20,6 @@
 
 package org.marc4j.marc;
 
-import org.marc4j.MarcReader;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +73,7 @@ public abstract class MarcFactory {
                 loader = MarcFactory.class.getClassLoader();
             }
 
-            String className = null;
+            String className;
             int count = 0;
 
             do {
@@ -90,6 +88,7 @@ public abstract class MarcFactory {
                     } catch (final ClassNotFoundException e) {
                         className = null;
                     } catch (final Exception e) {
+                        //Ignore error
                     }
                 }
             } while (className == null && count < 3);
@@ -134,10 +133,12 @@ public abstract class MarcFactory {
                         return ret;
                     }
                 } catch (final IOException e) {
+                    //Ignore error
                 } finally {
                     try {
                         if (in != null) in.close();
                     } catch (IOException e) {
+                        //Ignore error
                     }
                 }
                 return null;

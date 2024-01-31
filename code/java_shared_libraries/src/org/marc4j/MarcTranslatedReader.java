@@ -1,21 +1,21 @@
 
 package org.marc4j;
 
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 
 import java.text.Normalizer;
@@ -68,17 +68,23 @@ public class MarcTranslatedReader implements MarcReader {
         reader = r;
         convert = new AnselToUnicode();
 
-        if (unicodeNormalizeStr.equals("KC")) {
-            unicodeNormalize = Form.NFKC;
-        } else if (unicodeNormalizeStr.equals("KD")) {
-            unicodeNormalize = Form.NFKD;
-        } else if (unicodeNormalizeStr.equals("C")) {
-            unicodeNormalize = Form.NFC;
-        } else if (unicodeNormalizeStr.equals("D")) {
-            unicodeNormalize = Form.NFD;
-        } else {
-            unicodeNormalize = null;
-        }
+	    switch (unicodeNormalizeStr) {
+		    case "KC":
+			    unicodeNormalize = Form.NFKC;
+			    break;
+		    case "KD":
+			    unicodeNormalize = Form.NFKD;
+			    break;
+		    case "C":
+			    unicodeNormalize = Form.NFC;
+			    break;
+		    case "D":
+			    unicodeNormalize = Form.NFD;
+			    break;
+		    default:
+			    unicodeNormalize = null;
+			    break;
+	    }
     }
 
     /**
@@ -96,13 +102,9 @@ public class MarcTranslatedReader implements MarcReader {
     public Record next() {
         final Record rec = reader.next();
         final Leader l = rec.getLeader();
-        boolean is_utf_8 = false;
+        boolean is_utf_8 = l.getCharCodingScheme() == 'a';
 
-        if (l.getCharCodingScheme() == 'a') {
-            is_utf_8 = true;
-        }
-
-        if (is_utf_8 && unicodeNormalize == null) {
+	    if (is_utf_8 && unicodeNormalize == null) {
             return (rec);
         }
 

@@ -8,10 +8,10 @@ class Donations_DonationCancelled extends Action {
 		global $interface;
 		$error = '';
 		$message = '';
-		if (empty($_REQUEST['payment'])) {
+		if (empty($_REQUEST['id'])) {
 			$error = 'No Payment ID was provided, could not cancel the payment';
 		} else {
-			$paymentId = $_REQUEST['payment'];
+			$paymentId = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;

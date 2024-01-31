@@ -349,11 +349,15 @@ class Polaris extends AbstractIlsDriver {
 
 				// Result for API or app use
 				$renewResult['api']['title'] = translate([
-					'text' => 'Unable to renew title',
+					'text' => 'Confirm Renewal',
 					'isPublicFacing' => true,
 				]);
 				$renewResult['api']['message'] = translate([
 					'text' => $message,
+					'isPublicFacing' => true,
+				]);
+				$renewResult['api']['action'] = translate([
+					'text' => 'Renew Items',
 					'isPublicFacing' => true,
 				]);
 			} else {
@@ -461,11 +465,15 @@ class Polaris extends AbstractIlsDriver {
 
 					// Result for API or app use
 					$result['api']['title'] = translate([
-						'text' => 'Unable to renew title',
+						'text' => 'Confirm Renewal',
 						'isPublicFacing' => true,
 					]);
 					$result['api']['message'] = translate([
 						'text' => $message,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['action'] =translate([
+						'text' => 'Renew Item',
 						'isPublicFacing' => true,
 					]);
 					$result['api']['confirmRenewalFee'] = translate([

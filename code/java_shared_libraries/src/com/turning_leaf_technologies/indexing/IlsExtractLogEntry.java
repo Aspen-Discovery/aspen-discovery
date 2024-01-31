@@ -6,13 +6,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
-	private String indexingProfile;
-	private Date startTime;
+	private final String indexingProfile;
+	private final Date startTime;
 	private Date endTime;
 	private int numRegrouped = 0;
 	private int numChangedAfterGrouping = 0;
@@ -24,10 +23,10 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
-	private int numSkipped = 0;
+	private long numSkipped = 0;
 	private int numInvalidRecords = 0;
-	private Logger logger;
-	private StringBuilder notesText = new StringBuilder();
+	private final Logger logger;
+	private final StringBuilder notesText = new StringBuilder();
 	private boolean maxNoteTextLengthReached = false;
 
 	public IlsExtractLogEntry(Connection dbConn, String indexingProfile, Logger logger){
@@ -43,7 +42,7 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 		notesText.append("<ol class='cronNotes'>");
 		this.saveResults();
 	}
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -64,18 +63,18 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 			notesText.append(cleanedNote);
 		}else{
 			cleanedNote = "<li>Additional Notes truncated</li>";
+			notesText.append(cleanedNote);
 			maxNoteTextLengthReached = true;
 		}
 	}
 
 	private String getNotesHtml() {
-		return notesText.toString() + "</ol>";
+		return notesText + "</ol>";
 	}
 	
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
 	@Override
-	@SuppressWarnings("UnusedReturnValue")
 	public synchronized boolean saveResults() {
 		try {
 			if (logEntryId == null){
@@ -104,7 +103,7 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 				updateLogEntry.setInt(++curCol, numAdded);
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
-				updateLogEntry.setInt(++curCol, numSkipped);
+				updateLogEntry.setLong(++curCol, numSkipped);
 				updateLogEntry.setString(++curCol, currentId);
 				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);

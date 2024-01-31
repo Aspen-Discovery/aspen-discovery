@@ -37,13 +37,13 @@ class Evergreen extends AbstractIlsDriver {
 
 		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
-			//Get a list of holds
+			//Get a list of circulations
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = [
 				'Content-Type: application/x-www-form-urlencoded',
 			];
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$request = 'service=open-ils.actor&method=open-ils.actor.user.checked_out';
+			$request = 'service=open-ils.circ&method=open-ils.circ.actor.user.checked_out';
 			$request .= '&param=' . json_encode($authToken);
 			$request .= '&param=' . $patron->unique_ils_id;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
@@ -53,23 +53,39 @@ class Evergreen extends AbstractIlsDriver {
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0])) {
-					//Process out titles
-					foreach ($apiResponse->payload[0]->out as $checkoutId) {
-						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
-						if ($checkout != null) {
-							$index++;
-							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
-							$checkedOutTitles[$sortKey] = $checkout;
+					//Process circulations
+					foreach ($apiResponse->payload as $payload) {
+						$mappedCheckout = $this->mapEvergreenFields($payload->circ->__p, $this->fetchIdl('circ'));
+						$mappedRecord = $this->mapEvergreenFields($payload->record->__p, $this->fetchIdl('mvr'));
+						$mappedCopy = $this->mapEvergreenFields($payload->copy->__p, $this->fetchIdl('acp'));
+						$checkout = new Checkout();
+						$checkout->type = 'ils';
+						$checkout->source = $this->getIndexingProfile()->name;
+						$checkout->sourceId = $mappedCheckout['target_copy'];
+						$checkout->userId = $patron->id;
+						$checkout->itemId = $mappedCopy['id'];
+						$checkout->barcode = $mappedCopy['barcode'];
+						$checkout->dueDate = strtotime($mappedCheckout['due_date']);
+						$checkout->checkoutDate = strtotime($mappedCheckout['create_time']);
+						if ($mappedCheckout['auto_renewal'] == 't') {
+							$checkout->autoRenew = true;
 						}
-					}
-					//Process overdue titles
-					foreach ($apiResponse->payload[0]->overdue as $checkoutId) {
-						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
-						if ($checkout != null) {
-							$index++;
-							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
-							$checkedOutTitles[$sortKey] = $checkout;
+						$checkout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
+						$checkout->maxRenewals = $mappedCheckout['renewal_remaining'];
+						$checkout->renewalId = $mappedCheckout['target_copy'];
+						$checkout->renewIndicator = $mappedCheckout['target_copy'];
+						$checkout->recordId = $mappedRecord['doc_id'];
+						$checkout->title = $mappedRecord['title'];
+						$checkout->author = $mappedRecord['author'];
+						$checkout->callNumber = $this->getCallNumberForCopy($mappedCopy, $authToken);
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver((string)$checkout->recordId);
+						if ($recordDriver->isValid()) {
+							$checkout->updateFromRecordDriver($recordDriver);
 						}
+						$index++;
+						$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+						$checkedOutTitles[$sortKey] = $checkout;
 					}
 				}
 			}
@@ -153,6 +169,44 @@ class Evergreen extends AbstractIlsDriver {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Load call number label based on a mapped item object
+	 *
+	 * @param array $mappedCopy a mapped Evergreen copy object
+	 * @param $authtoken
+	 * @return string call number label associated with the copy
+	 */
+	private function getCallNumberForCopy(array $mappedCopy, $authtoken) {
+		$label = '';
+		$flesh = ["flesh"=>1,"flesh_fields"=>["acn"=>["prefix","suffix"]]];
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.pcrud&method=open-ils.pcrud.retrieve.acn';
+		$request .= '&param=' . json_encode($authtoken);
+		$request .= '&param=' . $mappedCopy["call_number"];
+		$request .= '&param=' . json_encode($flesh);
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		ExternalRequestLogEntry::logRequest('evergreen.getCallNumberForCopy', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+				$obj = $apiResponse->payload[0];
+				$callno = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				$label = $callno["label"];
+				$obj = $callno["prefix"];
+				$prefix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				$obj = $callno["suffix"];
+				$suffix = $this->mapEvergreenFields($obj->__p, $this->fetchIdl($obj->__c));
+				if ($prefix["label"]) {
+					$label = $prefix["label"] . " " . $label;
+				}
+				if ($suffix["label"]) {
+					$label = $label . " " . $suffix["label"];
+				}
+			}
+		}
+		return $label;
 	}
 
 	/**
@@ -397,6 +451,8 @@ class Evergreen extends AbstractIlsDriver {
 			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on') {
 				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0) {
 					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				} elseif (isset($patron->phone) && strlen($patron->phone) > 0) {
+					$namedParams['phone_notify'] = $patron->phone;
 				}
 			}
 			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on') {
@@ -1049,6 +1105,8 @@ class Evergreen extends AbstractIlsDriver {
 			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on') {
 				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0) {
 					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				} elseif (isset($patron->phone) && strlen($patron->phone) > 0) {
+					$namedParams['phone_notify'] = $patron->phone;
 				}
 			}
 			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on') {
@@ -1120,7 +1178,7 @@ class Evergreen extends AbstractIlsDriver {
 							return $hold_result;
 						}
 					} else {
-						$hold_result['message'] = "Holds cannot be placed on this title";
+						$hold_result['message'] = translate(['text'=>"This hold cannot be placed at this time. If you feel that this is in error, please contact your library for more information.",'isPublicFacing'=>true]);
 						return $hold_result;
 					}
 				}
@@ -1174,6 +1232,10 @@ class Evergreen extends AbstractIlsDriver {
 		return null;
 	}
 
+	public function showDateInFines(): bool {
+		return true;
+	}
+
 	public function getFines(User $patron, $includeMessages = false): array {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1191,7 +1253,7 @@ class Evergreen extends AbstractIlsDriver {
 
 		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
-			//Get a list of holds
+			//Get a list of fines/fees
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = [
 				'Content-Type: application/x-www-form-urlencoded',
@@ -1207,16 +1269,38 @@ class Evergreen extends AbstractIlsDriver {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload)) {
 					foreach ($apiResponse->payload[0] as $transactionObj) {
-						$transaction = $transactionObj->transaction->__p;
+						$transactionRaw = $transactionObj->transaction->__p;
+						$record = null;
+						if (!empty($transactionObj->record)) {
+							$record =  $transactionObj->record->__p;
+						}
+						$circ = null;
+						if (!empty($transactionObj->circ)) {
+							$circ =  $transactionObj->circ->__p;
+						}
 						/** @noinspection SpellCheckingInspection */
-						$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
+						$transactionObj = $this->mapEvergreenFields($transactionRaw, $this->fetchIdl('mbts'));
+						if ($record != null) {
+							$recordObject = $this->mapEvergreenFields($record, $this->fetchIdl('mvr'));
+							$reason = $recordObject['title'] . ' - ' . $recordObject['author'];
+//							if ($circ != null) {
+//								$circObject = $this->mapEvergreenFields($circ, $this->fetchIdl('circ'));
+//								if (!empty($circObject['stop_fines_time'])) {
+//									$reason .= " (" .  date('M j, Y', strtotime($circObject['stop_fines_time']) . ")";
+//								}
+//
+//							}
+						} else {
+							$reason = $transactionObj['last_billing_note'];
+						}
+
 						/** @noinspection SpellCheckingInspection */
 						$curFine = [
 							'fineId' => $transactionObj['id'],
-							'date' => strtotime($transactionObj['xact_start']),
+							'date' => date('M j, Y', strtotime($transactionObj['xact_start'])),
 							'type' => $transactionObj['xact_type'],
 							'reason' => $transactionObj['last_billing_type'],
-							'message' => $transactionObj['last_billing_note'],
+							'message' => $reason,
 							'amountVal' => $transactionObj['total_owed'],
 							'amountOutstandingVal' => $transactionObj['balance_owed'],
 							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
@@ -1438,6 +1522,14 @@ class Evergreen extends AbstractIlsDriver {
 
 		$firstName = $userData['first_given_name'];
 		$lastName = $userData['family_name'];
+
+		//Handle preferred name
+		if (!empty($userData['pref_first_given_name'])) {
+			$firstName = $userData['pref_first_given_name'];
+		}
+		if (!empty($userData['pref_family_name'])) {
+			$lastName = $userData['pref_family_name'];
+		}
 		$user->_fullname = $lastName . ',' . $firstName;
 		$forceDisplayNameUpdate = false;
 		if ($user->firstname != $firstName) {
@@ -2239,5 +2331,107 @@ class Evergreen extends AbstractIlsDriver {
 	// therefore we will disable masquerade with just  username.
 	public function supportsLoginWithUsername() : bool {
 		return false;
+	}
+
+	public function showPreferredNameInProfile(): bool {
+		return true;
+	}
+
+	public function allowUpdatesOfPreferredName(User $patron) : bool {
+		return false;
+	}
+
+	public function loadContactInformation(User $user) {
+		$staffSessionInfo = $this->getStaffUserInfo();
+		if ($staffSessionInfo !== false) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+			$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+			$request .= '&param=' . json_encode($user->getBarcode());
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+					if ($apiResponse->payload[0]->__c == 'au') { //class
+						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
+
+						$primaryAddress = reset($mappedPatronData['addresses']);
+						if (!empty($primaryAddress)) {
+							$primaryAddress = $this->mapEvergreenFields($primaryAddress->__p, $this->fetchIdl($primaryAddress->__c));
+							$user->_address1 = $primaryAddress['street1'];
+							$user->_address2 = $primaryAddress['street2'];
+							$user->_city = $primaryAddress['city'];
+							$user->_state = $primaryAddress['state'];
+							$user->_zip = $primaryAddress['post_code'];
+						}
+
+						$user->_preferredName = '';
+						if (!empty($mappedPatronData['pref_prefix'])) {
+							$user->_preferredName .= $mappedPatronData['pref_prefix'] . ' ';
+						}elseif (!empty($mappedPatronData['prefix'])) {
+							$user->_preferredName .= $mappedPatronData['prefix'] . ' ';
+						}
+						if (!empty($mappedPatronData['pref_first_given_name'])) {
+							$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
+						}elseif (!empty($mappedPatronData['first_given_name'])) {
+							$user->_preferredName .= $mappedPatronData['first_given_name'];
+						}
+						if (!empty($mappedPatronData['pref_second_given_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_second_given_name'];
+						}elseif (!empty($mappedPatronData['second_given_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['second_given_name'];
+						}
+						if (!empty($mappedPatronData['pref_family_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_family_name'];
+						}elseif (!empty($mappedPatronData['family_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['family_name'];
+						}
+						if (!empty($mappedPatronData['pref_suffix'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_suffix'];
+						}elseif (!empty($mappedPatronData['suffix'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['suffix'];
+						}
+						$user->_preferredName = trim($user->_preferredName);
+
+						if (!empty($mappedPatronData['prefix'])) {
+							$user->_fullname .= $mappedPatronData['prefix'] . ' ';
+						}
+						$user->_fullname .= $mappedPatronData['first_given_name'];
+						if (!empty($mappedPatronData['second_given_name'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['second_given_name'];
+						}
+						if (!empty($mappedPatronData['family_name'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['family_name'];
+						}
+						if (!empty($mappedPatronData['suffix'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['suffix'];
+						}
+						$user->_fullname = trim($user->_fullname);
+
+						if (!empty($mappedPatronData['expire_date'])) {
+							$expireTime = $mappedPatronData['expire_date'];
+							$expireTime = strtotime($expireTime);
+							$user->_expires = date('n-j-Y', $expireTime);
+							if (!empty($user->_expires)) {
+								$timeNow = time();
+								$timeToExpire = $expireTime - $timeNow;
+								if ($timeToExpire <= 30 * 24 * 60 * 60) {
+									if ($timeToExpire <= 0) {
+										$user->_expired = 1;
+									}
+									$user->_expireClose = 1;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

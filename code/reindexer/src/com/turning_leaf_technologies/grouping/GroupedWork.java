@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,9 +18,9 @@ import java.util.regex.Pattern;
  * 1) Normalize diacritics using NFKC to all diacritics are handled consistently regardless of input
  * 2) Add trimming of "with illustrations" to title normalization
  * 3) Add trimming dates and parenthetical information to authors
- * 4) Group title and sub title at the same time
+ * 4) Group title and subtitle at the same time
  */
-class GroupedWork implements Cloneable {
+public class GroupedWork implements Cloneable {
 	private final static Logger logger = LogManager.getLogger(GroupedWork.class);
 	protected BaseIndexingLogEntry logEntry;
 
@@ -41,8 +40,7 @@ class GroupedWork implements Cloneable {
 	private static final Pattern apostropheStrip = Pattern.compile("'s");
 	private static final Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
 	private static final Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
-	@SuppressWarnings("RegExpRedundantEscape")
-	private static final Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
+	private static final Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)]");
 
 	GroupedWork(RecordGroupingProcessor processor) {
 		this.processor = processor;
@@ -55,23 +53,19 @@ class GroupedWork implements Cloneable {
 			try {
 				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
 				String fullTitle = getAuthoritativeTitle();
-				if (fullTitle.length() == 0){
+				if (fullTitle.isEmpty()){
 					idGenerator.update("--null--".getBytes());
 				}else{
 					idGenerator.update(fullTitle.getBytes());
 				}
 
-				if (author.length() == 0){
+				if (author.isEmpty()){
 					idGenerator.update("--null--".getBytes());
 				}else{
 					String authoritativeAuthor = getAuthoritativeAuthor();
-					//TODO: Delete this if block
-//					if (!authoritativeAuthor.equals(this.author)){
-//						logger.debug("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
-//					}
 					idGenerator.update(authoritativeAuthor.getBytes());
 				}
-				if (groupingCategory.equals("")){
+				if (groupingCategory.isEmpty()){
 					idGenerator.update("--null--".getBytes());
 				}else{
 					idGenerator.update(groupingCategory.getBytes());
@@ -159,7 +153,7 @@ class GroupedWork implements Cloneable {
 			groupingTitle = groupingTitle.substring(0, titleEnd);
 		}
 		groupingTitle = groupingTitle.trim();
-		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
+		if (groupingTitle.isEmpty() && !titleBeforeRemovingSubtitles.isEmpty()){
 			logger.info("Title " + fullTitle + " was normalized to nothing, reverting to " + titleBeforeRemovingSubtitles);
 			groupingTitle = titleBeforeRemovingSubtitles.trim();
 		}
@@ -235,10 +229,10 @@ class GroupedWork implements Cloneable {
 		//Remove any bracketed parts of the title
 		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
 		//Make sure we don't strip the entire title
-		if (tmpTitle.length() > 0){
+		if (!tmpTitle.isEmpty()){
 			//And make sure we don't have just special characters
 			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
-			if (tmpTitle.length() > 0) {
+			if (!tmpTitle.isEmpty()) {
 				groupingTitle = tmpTitle;
 			//}else{
 			//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
@@ -255,11 +249,10 @@ class GroupedWork implements Cloneable {
 	}
 
 	public GroupedWork clone() {
-
 		try {
 			return (GroupedWork)super.clone();
 		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			logEntry.incErrors("Could not clone grouped work", e);
 			return null;
 		}
 	}
@@ -269,14 +262,14 @@ class GroupedWork implements Cloneable {
 	}
 
 	public void setTitle(String title, int numNonFilingCharacters, String subtitle, String partInformation) {
-		if (subtitle != null && subtitle.length() > 0){
+		if (subtitle != null && !subtitle.isEmpty()){
 			title = normalizePassedInSubtitle(title, subtitle);
 		}else{
 			//Check for a subtitle within the main title
 			title = normalizeSubtitleWithinMainTitle(title);
 		}
 		title = normalizeTitle(title, numNonFilingCharacters);
-		if (partInformation != null && partInformation.length() > 0){
+		if (partInformation != null && !partInformation.isEmpty()){
 			title += " " + normalizePartInformation(partInformation);
 		}
 		this.fullTitle = title.trim();
@@ -294,9 +287,9 @@ class GroupedWork implements Cloneable {
 		if (!title.endsWith(subtitle)){
 			//Remove any complex subtitles since we know the beginning of the string
 			String newSubtitle = cleanTitleCharacters(subtitle);
-			if (newSubtitle.length() > 0) {
+			if (!newSubtitle.isEmpty()) {
 				newSubtitle = removeComplexSubtitles(newSubtitle);
-				if (newSubtitle.length() > 0) {
+				if (!newSubtitle.isEmpty()) {
 					title += " " + newSubtitle;
 				//} else {
 				//	logger.debug("Removed subtitle " + subtitle);
@@ -323,7 +316,7 @@ class GroupedWork implements Cloneable {
 			String newSubtitle = cleanTitleCharacters(subtitleFromTitle);
 			String mainTitle = title.substring(0, colonIndex).trim();
 			newSubtitle = removeComplexSubtitles(newSubtitle);
-			if (newSubtitle.length() > 0) {
+			if (!newSubtitle.isEmpty()) {
 				title =  mainTitle + " " + newSubtitle;
 			//} else{
 			//	logger.debug("Removed subtitle " + subtitleFromTitle);

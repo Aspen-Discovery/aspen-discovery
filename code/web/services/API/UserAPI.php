@@ -84,7 +84,11 @@ class UserAPI extends Action {
 					'updateNotificationOnboardingStatus',
 					'resetPassword',
 					'disableAccountLinking',
-					'enableAccountLinking'
+					'enableAccountLinking',
+					'validateSession',
+					'prepareSharedSession',
+					'updateScreenBrightnessStatus',
+					'validateUserCredentials'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -266,14 +270,19 @@ class UserAPI extends Action {
 						'success' => false,
 						'message' => 'Unknown authentication method',
 						'session' => false,
+						'validUntil' => null,
 					];
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					$_REQUEST['rememberMe'] = "true";
+					UserAccount::updateSession($validatedUser);
 					return [
 						'success' => true,
 						'message' => 'User is valid',
 						'session' => session_id(),
+						'validUntil' => strtotime('+2 weeks'),
+						'lang' => $validatedUser->interfaceLanguage ?? 'en',
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
@@ -285,6 +294,8 @@ class UserAPI extends Action {
 							'resetToken' => $invalidUser['resetToken'] ?? null,
 							'userId' => $invalidUser['userId'] ?? null,
 							'session' => false,
+							'validUntil' => null,
+							'lang' => 'en',
 						];
 					}
 				}
@@ -512,6 +523,77 @@ class UserAPI extends Action {
 	}
 
 	/**
+	 * Validate if the session is still valid
+	 * If the user is valid, but the session has expired, then start a new session.
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function validateSession() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError))  {
+			$sessionId = $this->getLiDASession() ?? null;
+			if($sessionId) {
+				$session = new Session();
+				$session->setSessionId($sessionId);
+				if($session->find(true)) {
+					return ['success' => true];
+				} else {
+					return $this->loginToLiDA();
+				}
+			}
+		}
+		return ['success' => false, 'message' => 'Unable to validate user'];
+	}
+
+	/**
+	 * Returns if the provided user credentials are still valid, i.e. after a password or barcode has been changed in the ILS or on Aspen Discovery.
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function validateUserCredentials() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			return ['valid' => true];
+		}
+		return ['valid' => false];
+	}
+
+
+	/**
+	 * Validate the user for the incoming shared session
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function prepareSharedSession() {
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
+			// validate the incoming request
+			$validSession = $this->validateSession();
+			if($validSession['success'] && $this->getLiDAUserAgent()) {
+				$data = random_bytes(16);
+				assert(strlen($data) == 16);
+				$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+				$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+				$uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+
+				require_once ROOT_DIR . '/sys/Session/SharedSession.php';
+				$sharedSession = new SharedSession();
+				$sharedSession->setSessionId($uuid);
+				$sharedSession->setUserId($user->id);
+				$sharedSession->setCreated(strtotime('now'));
+				if($sharedSession->insert()) {
+					return [
+						'success' => true,
+						'session' => $uuid,
+					];
+				}
+			}
+		}
+		return ['success' => false];
+	}
+
+	/**
 	 * Load patron profile information for a user based on username and password.
 	 * Includes information about print titles and eContent titles that the user has checked out.
 	 * Does not include information about OverDrive titles since tat
@@ -621,7 +703,11 @@ class UserAPI extends Action {
 						}
 					}
 				} else {
-					$userData->$key = $value;
+					if ($key == 'trackReadingHistory') {
+						$userData->$key = (string)$value;
+					}else{
+						$userData->$key = $value;
+					}
 				}
 			}
 
@@ -852,6 +938,8 @@ class UserAPI extends Action {
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->onboardAppNotifications = $user->onboardAppNotifications;
+			$userData->shouldAskBrightness = $user->shouldAskBrightness;
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
@@ -859,6 +947,8 @@ class UserAPI extends Action {
 			if($promptForHoldNotifications) {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
+
+			$userData->numSavedEvents = $user->getNumSavedEvents('upcoming');
 
 			$userData->summaryFines = translate([
 				'text' => 'Your accounts have %1% in fines',
@@ -1578,6 +1668,18 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
 				$result = $user->renewCheckout($user, $itemBarcode);
+
+				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
+					$action = $result['api']['action'] ?? null;
+					return [
+						'success' => $result['success'],
+						'title' => $result['api']['title'],
+						'message' => $result['api']['message'],
+						'action' => $action,
+						'confirmRenewalFee' => $result['confirmRenewalFee'],
+					];
+				}
+
 				if ($result['success']) {
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
@@ -1647,6 +1749,18 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
+
+			if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
+				$action = $result['api']['action'] ?? null;
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+					'action' => $action,
+					'confirmRenewalFee' => $result['confirmRenewalFee'],
+				];
+			}
+
 			if ($result['Renewed'] == 0) {
 				$result['success'] = false;
 			}
@@ -1964,7 +2078,10 @@ class UserAPI extends Action {
 				$pickupLocations = [];
 				foreach ($tmpPickupLocations as $pickupLocation) {
 					if (!is_string($pickupLocation)) {
-						$pickupLocations[] = $pickupLocation->toArray();
+						$pickupLocationArray = $pickupLocation->toArray();
+						$pickupLocationArray['locationId'] = (string)$pickupLocationArray['locationId'];
+						$pickupLocationArray['libraryId'] = (string)$pickupLocationArray['libraryId'];
+						$pickupLocations[] = $pickupLocationArray;
 					}
 				}
 				return [
@@ -4227,6 +4344,39 @@ class UserAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function updateScreenBrightnessStatus(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$newStatus = $_REQUEST['status'] ?? null;
+			if($newStatus) {
+				if ($newStatus == 'false' || !$newStatus) {
+					$user->shouldAskBrightness = 0;
+					$user->update();
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Updated user screen brightness prompt status'
+					];
+				} else {
+					// no update to the status since it defaults to 1
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'New status not provided',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function getUserByBarcode(): array {
 		$results = [
 			'success' => false,
@@ -4306,6 +4456,27 @@ class UserAPI extends Action {
 			}
 		}
 		return 0;
+	}
+
+	function getLiDASession() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
+				$sessionId = explode(' ', $value);
+				return $sessionId[0];
+			}
+		}
+		return false;
+	}
+
+	function getLiDAUserAgent() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'User-Agent' || $name == 'user-agent') {
+				if(str_contains($value, 'Aspen LiDA') || str_contains($value, 'aspen lida')) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	function getLinkedAccounts() {
@@ -4437,7 +4608,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4451,7 +4622,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4463,7 +4634,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4475,7 +4646,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4490,7 +4661,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => 'Unable to link accounts',
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4504,10 +4675,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4526,7 +4694,7 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => 'Accounts no longer linked',
+						'text' => 'Linked Account Removed',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4538,11 +4706,11 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => 'Unable to unlink accounts',
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
-						'text' => 'Sorry, we could remove that account.',
+						'text' => "Sorry, this account link has already been removed or doesn't exist.",
 						'isPublicFacing' => true,
 					]),
 				];
@@ -4551,10 +4719,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4573,11 +4738,11 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => 'Accounts no longer linked',
+						'text' => 'Linked Account Removed',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
-						'text' => 'Successfully removed linked account.',
+						'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account.',
 						'isPublicFacing' => true,
 					]),
 				];
@@ -4586,10 +4751,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4607,6 +4769,7 @@ class UserAPI extends Action {
 				$user->disableAccountLinking = 1;
 				if($user->update()) {
 					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 
 					// Remove Managing Accounts
 					$userLink = new UserLink();
@@ -4642,18 +4805,21 @@ class UserAPI extends Action {
 
 					return [
 						'success' => true,
-						'title' => 'Linking Disabled',
-						'message' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+						'title' => translate([
+							'text' => 'Linking Disabled',
+							'isPublicFacing' => true,
+							]),
+						'message' => translate([
+							'text' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+							'isPublicFacing' => true
+						])
 					];
 				} else {
 					// failed to update
 					return [
 						'success' => false,
 						'title' => translate([
-							'text' => translate([
-								'text' => 'Error',
-								'isPublicFacing' => true,
-							]),
+							'text' => 'Error',
 							'isPublicFacing' => true,
 						]),
 						'message' => translate([
@@ -4667,10 +4833,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4683,10 +4846,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4706,10 +4866,7 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Linking Enabled',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Linking Enabled',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4722,10 +4879,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4739,10 +4893,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4755,10 +4906,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4803,10 +4951,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -5354,6 +5499,11 @@ class UserAPI extends Action {
 					$session = new MySQLSession();
 					$session->init();
 					$_SESSION['activeUserId'] = $user->id;
+
+					if($user->isLoggedInViaSSO) {
+						$_SESSION['rememberMe'] = false;
+						$_SESSION['loggedInViaSSO'] = true;
+					}
 
 					return ['success' => true];
 				} else {

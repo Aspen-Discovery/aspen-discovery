@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { Button, FormControl, Modal, Select, CheckIcon, Heading } from 'native-base';
+import { Button, CheckIcon, FormControl, Heading, Modal, Select } from 'native-base';
 import React, { useState } from 'react';
 import { Platform } from 'react-native';
-import { completeAction } from './Record';
 import { HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { refreshProfile } from '../../util/api/user';
-import { SelectVolume } from './SelectVolume';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { refreshProfile } from '../../util/api/user';
+import { completeAction } from './Record';
+import { SelectVolume } from './SelectVolume';
 
 const SelectPickupLocation = (props) => {
      const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, language } = props;
@@ -40,14 +40,28 @@ const SelectPickupLocation = (props) => {
 
      const [holdType, setHoldType] = React.useState(typeOfHold);
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
+     }
+
      let pickupLocation = '';
-     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
-          pickupLocation = userPickupLocation[0];
+     if (_.size(locations) > 1) {
+          const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+          if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+               pickupLocation = userPickupLocation[0];
+               if (_.isObject(pickupLocation)) {
+                    pickupLocation = pickupLocation.code;
+               }
+          }
+     } else {
+          pickupLocation = locations[0];
           if (_.isObject(pickupLocation)) {
                pickupLocation = pickupLocation.code;
           }
      }
+
+     //console.log(pickupLocation);
 
      const [location, setLocation] = React.useState(pickupLocation);
 

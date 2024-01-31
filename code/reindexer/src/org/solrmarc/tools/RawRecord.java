@@ -131,13 +131,12 @@ public class RawRecord implements MarcReader {
 	}
 
 	public Record getAsRecord(boolean permissive, boolean toUtf8, String combinePartials, String defaultEncoding) {
-		ByteArrayInputStream bais = new ByteArrayInputStream(rawRecordData);
-		MarcPermissiveStreamReader reader = new MarcPermissiveStreamReader(bais, permissive, toUtf8, defaultEncoding);
+		ByteArrayInputStream byteArrayStream = new ByteArrayInputStream(rawRecordData);
+		MarcPermissiveStreamReader reader = new MarcPermissiveStreamReader(byteArrayStream, permissive, toUtf8, defaultEncoding);
 		Record next = reader.next();
 		if (combinePartials != null) {
 			while (reader.hasNext()) {
 				Record nextNext = reader.next();
-				@SuppressWarnings("unchecked")
 				List<VariableField> fieldsAll = (List<VariableField>) nextNext.getVariableFields();
 				Iterator<VariableField> fieldIter = fieldsAll.iterator();
 				while (fieldIter.hasNext()) {

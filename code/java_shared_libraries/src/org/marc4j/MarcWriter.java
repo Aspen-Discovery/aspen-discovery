@@ -39,25 +39,25 @@ public interface MarcWriter {
      * 
      * @param record the Record object
      */
-    public void write(Record record);
+    void write(Record record);
 
     /**
      * Sets the character converter.
      * 
      * @param converter the character converter
      */
-    public void setConverter(CharConverter converter);
+    void setConverter(CharConverter converter);
 
     /**
      * Returns the character converter.
      * 
      * @return CharConverter the character converter
      */
-    public CharConverter getConverter();
+    CharConverter getConverter();
 
     /**
      * Closes the writer.
      */
-    public void close();
+    void close();
 
 }

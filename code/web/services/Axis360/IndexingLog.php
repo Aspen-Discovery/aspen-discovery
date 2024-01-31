@@ -17,7 +17,7 @@ class Axis360_IndexingLog extends Admin_IndexingLog {
 	}
 
 	function getModule(): string {
-		return 'Boundless';
+		return 'Axis360';
 	}
 
 	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {

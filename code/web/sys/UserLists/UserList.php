@@ -185,9 +185,9 @@ class UserList extends DataObject {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
-		if ($forLiDA){
+		/*if ($forLiDA){
 			$listEntry->whereAdd("source <> 'Events'");
-		}
+		}*/
 
 		$entryPosition = 0;
 		$zeroCount = 0;

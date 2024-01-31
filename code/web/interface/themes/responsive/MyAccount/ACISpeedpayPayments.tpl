@@ -37,11 +37,10 @@
 					<input type="text" data-aci-speedpay="account-postal-code" class="form-control" minlength="5" maxlength="10" />
 				</div>
 			</div>
-
-			<input type="hidden" data-aci-speedpay="account-country-code" value="US" />
-			<input type="hidden" data-aci-speedpay="single-use" value="true" />
-
-			<input type="button" id="card-submit-button" class="btn btn-primary" value="{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}" data-aci-speedpay="card-submit-button"/>
+			<label style="display:none">
+				<input type="checkbox" data-aci-speedpay="single-use" checked />
+			</label>
+			<input type="button" id="process-payment" class="btn btn-primary" value="{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}"/>
 
 			{literal}
 			<script>
@@ -97,14 +96,13 @@
 					},
                     (onError = function(event) {
                             AspenDiscovery.Account.handleACIError(event.message.default);
-                    })
+                    }),
                 );
 
-                var cardButton = document.getElementById('card-submit-button');
+                var cardButton = document.getElementById('process-payment');
                 cardButton.addEventListener("click", function(event) {
 	                cardButton.disabled = true;
 	                cardButton.value = "Submitting Payment...";
-	                console.log('Creating token..');
                     fundingAccountGatewayResult.then((handler) =>
                     {
                         handler.createToken()

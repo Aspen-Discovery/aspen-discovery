@@ -776,7 +776,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)) {
 			global $aspenUsage;
-			$recordUsage->instance = $aspenUsage->instance;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -802,7 +802,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)) {
 			global $aspenUsage;
-			$recordUsage->instance = $aspenUsage->instance;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
 import { AlertDialog, Box, Button, Center, HStack, Icon, Image, ScrollView, Text, useToken } from 'native-base';
 import React, { Component, useEffect } from 'react';
@@ -19,7 +20,7 @@ import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { getLinkedAccounts } from '../../util/api/user';
 import { getGroupedWork } from '../../util/api/work';
-import { decodeHTML } from '../../util/apiAuth';
+import { decodeHTML, urldecode } from '../../util/apiAuth';
 import { getPickupLocations } from '../../util/loadLibrary';
 import { PATRON } from '../../util/loadPatron';
 import { getGroupedWork221200, getItemDetails } from '../../util/recordActions';
@@ -91,7 +92,7 @@ export const GroupedWorkScreen = () => {
                ) : (
                     <>
                          <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />
-                         {systemMessages ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+                         {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                          <DisplayGroupedWork data={data.results} initialFormat={data.format} updateFormat={data.format} />
                     </>
                )}
@@ -129,10 +130,12 @@ const DisplayGroupedWork = (payload) => {
           }),
      });
 
+     const key = 'large_' + groupedWork.id;
+
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
+                    <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: urldecode(groupedWork.cover), expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>

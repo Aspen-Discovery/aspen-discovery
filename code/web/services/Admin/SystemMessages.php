@@ -102,4 +102,8 @@ class Admin_SystemMessages extends ObjectEditor {
 			'Administer All System Messages',
 		]);
 	}
+
+	function canCopy() {
+		return $this->canAddNew();
+	}
 }

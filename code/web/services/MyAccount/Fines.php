@@ -11,7 +11,7 @@ class MyAccount_Fines extends MyAccount {
 
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
-			$interface->assign($user->showDateInFines());
+			$interface->assign('showDate', $user->showDateInFines());
 
 			$interface->setFinesRelatedTemplateVariables();
 
@@ -40,6 +40,7 @@ class MyAccount_Fines extends MyAccount {
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);
 
+				//PayPal
 				if ($userLibrary->finePaymentType == 2) {
 					require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 					$settings = new PayPalSetting();
@@ -229,6 +230,19 @@ class MyAccount_Fines extends MyAccount {
 
 						//require_once ROOT_DIR . '/sys/CurlWrapper.php';
 						//$serviceAccountAuthorization = new CurlWrapper();
+					}
+				}
+
+				// Stripe
+				if($userLibrary->finePaymentType == 13) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+					$stripeSetting = new StripeSetting();
+					$stripeSetting->id = $library->stripeSettingId;
+					if($stripeSetting->find(true)) {
+						//$baseUrl = 'https://api.stripe.com';
+						$interface->assign('stripePublicKey', $stripeSetting->stripePublicKey);
+						$interface->assign('stripeSecretKey', $stripeSetting->stripeSecretKey);
 					}
 				}
 

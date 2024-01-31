@@ -32,10 +32,12 @@ class SideFacets implements RecommendationInterface {
 
 		$this->facetSettings = $searchObject->getFacetConfig();
 		$this->mainFacets = [];
-		foreach ($this->facetSettings as $facetName => $facet) {
-			if (!$facet->showAboveResults) {
-				$this->mainFacets[$facetName] = $facet->displayName;
-				$this->facets[$facet->facetName] = $facet;
+		if (!empty($this->facetSettings)) {
+			foreach ($this->facetSettings as $facetName => $facet) {
+				if (!$facet->showAboveResults) {
+					$this->mainFacets[$facetName] = $facet->displayName;
+					$this->facets[$facet->facetName] = $facet;
+				}
 			}
 		}
 	}

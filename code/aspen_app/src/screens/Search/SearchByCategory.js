@@ -1,20 +1,20 @@
 import { CommonActions } from '@react-navigation/native';
-import { Center, Button, Box, Badge, Text, FlatList, Heading, Stack, HStack, VStack, Pressable, Image } from 'native-base';
+import CachedImage from 'expo-cached-image';
+import { Badge, Box, Button, Center, FlatList, Heading, HStack, Pressable, Stack, Text, VStack } from 'native-base';
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native';
-import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { userContext } from '../../context/user';
+import { getCleanTitle } from '../../helpers/item';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getLists } from '../../util/api/list';
+import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
 import { categorySearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
-import { getLists } from '../../util/api/list';
-import { navigateStack } from '../../helpers/RootNavigator';
-import { getCleanTitle } from '../../helpers/item';
-import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
-import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -134,12 +134,13 @@ export default class SearchByCategory extends Component {
 
      renderItem = (item, url, user, lastListUsed) => {
           const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=grouped_work';
+          const key = 'medium_' + item.id;
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
                     <HStack space={3}>
                          <VStack maxW="35%">
                               <CachedImage
-                                   cacheKey={item.id}
+                                   cacheKey={key}
                                    alt={item.title_display}
                                    source={{
                                         uri: `${imageUrl}`,

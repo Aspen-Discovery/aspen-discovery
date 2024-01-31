@@ -84,7 +84,7 @@ abstract class MarcRecordProcessor {
 			logEntry.incErrors("Error loading suppression information for record", e);
 		}
 		if (!isSuppressed) {
-			Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
+			org.marc4j.marc.Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
 			if (record == null) {
 				record = loadMarcRecordFromDisk(identifier, logEntry);
 				if (record != null) {
@@ -111,7 +111,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier, BaseIndexingLogEntry logEntry) {
+	private org.marc4j.marc.Record loadMarcRecordFromDisk(String identifier, BaseIndexingLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
 		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}
@@ -133,7 +133,7 @@ abstract class MarcRecordProcessor {
 		return basePath + "/" + shortId + ".mrc";
 	}
 
-	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
+	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record){
 		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690, 691});
 
 		HashSet<String> subjects = new HashSet<>();
@@ -391,7 +391,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
 		loadTitles(groupedWork, record, format, formatCategory, hasParentRecord);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
@@ -498,7 +498,7 @@ abstract class MarcRecordProcessor {
 	private static boolean loggedCustomMarcError = false;
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
-	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, Record record) {
+	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, 521);
 		for (DataField targetAudience : targetAudiences){
 			Subfield subfieldA = targetAudience.getSubfield('a');
@@ -526,7 +526,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadFountasPinnell(AbstractGroupedWorkSolr groupedWork, Record record) {
+	private void loadFountasPinnell(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
 		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudience : targetAudiences){
 			if (targetAudience.startsWith("Guided reading level: ")){
@@ -538,7 +538,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAwards(AbstractGroupedWorkSolr groupedWork, Record record){
+	private void loadAwards(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record){
 		Set<String> awardFields = MarcUtil.getFieldList(record, "586a");
 		HashSet<String> awards = new HashSet<>();
 		for (String award : awardFields){
@@ -565,9 +565,9 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier);
+	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier);
 
-	void loadEditions(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadEditions(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
 		if (editions.size() > 0) {
 			String edition = editions.iterator().next();
@@ -578,7 +578,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addEditions(editions);
 	}
 
-	void loadPhysicalDescription(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadPhysicalDescription(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
 		if (physicalDescriptions.size() > 0){
 			String physicalDescription = physicalDescriptions.iterator().next();
@@ -589,7 +589,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addPhysical(physicalDescriptions);
 	}
 
-	private String getCallNumberSubject(Record record) {
+	private String getCallNumberSubject(org.marc4j.marc.Record record) {
 		String val = MarcUtil.getFirstFieldVal(record, "090a:050a");
 
 		if (val != null) {
@@ -601,7 +601,7 @@ abstract class MarcRecordProcessor {
 		return null;
 	}
 
-	private String getMpaaRating(Record record) {
+	private String getMpaaRating(org.marc4j.marc.Record record) {
 		String val = MarcUtil.getFirstFieldVal(record, "521a");
 
 		if (val != null) {
@@ -634,12 +634,12 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
 	}
 
 	@SuppressWarnings("unused")
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -702,7 +702,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}
 
-	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		//Now get literary forms from the subjects, these don't need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
@@ -884,7 +884,6 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
 		for (String elementToAdd : elementsToAdd) {
 			addToMapWithCount(map, elementToAdd, numberToAdd);
@@ -903,7 +902,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadClosedCaptioning(Record record, HashSet<RecordInfo> ilsRecords){
+	void loadClosedCaptioning(org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords){
 		//Based on the 546 fields determine if the record is closed captioned
 		Pattern closedCaptionPattern = Pattern.compile("\\b(closed?[- ]caption|hearing impaired)", Pattern.CASE_INSENSITIVE);
 		Set<String> languageNoteFields = MarcUtil.getFieldList(record, "546a");
@@ -934,7 +933,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadPublicationDetails(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadPublicationDetails(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
 		groupedWork.addPublishers(publishers);
@@ -955,16 +954,15 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		//load places of publication
-		Set<String> placesOfPublication = this.getPlacesOfPublication(record);
-		groupedWork.addPlacesOfPublication(placesOfPublication);
-		if (placesOfPublication.size() > 0){
-			String placeOfPublication = placesOfPublication.iterator().next();
-			for(RecordInfo ilsRecord : ilsRecords) {
-				ilsRecord.setPlaceOfPublication(placeOfPublication);
+			//load places of publication
+			Set<String> placesOfPublication = this.getPlacesOfPublication(record);
+			groupedWork.addPlacesOfPublication(placesOfPublication);
+			if (placesOfPublication.size() > 0){
+				String placeOfPublication = placesOfPublication.iterator().next();
+				for(RecordInfo ilsRecord : ilsRecords) {
+					ilsRecord.setPlaceOfPublication(placeOfPublication);
+				}
 			}
-		}
-
 	}
 
 	private Set<String> getPublicationDates(Record record) {
@@ -1041,7 +1039,7 @@ abstract class MarcRecordProcessor {
 
 	String languageFields = "008[35-37]";
 
-	void loadLanguageDetails(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+	void loadLanguageDetails(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		Set <String> languages = MarcUtil.getFieldList(record, languageFields);
 		HashSet<String> translatedLanguages = new HashSet<>();
 		boolean isFirstLanguage = true;
@@ -1099,7 +1097,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	@SuppressWarnings("unused")
-	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 		//MDN 2/6/2016 - Do not use 710 because it is not truly the author.  This has the potential
@@ -1142,14 +1140,13 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory, boolean hasParentRecord) {
+	private void loadTitles(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String format, String formatCategory, boolean hasParentRecord) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
 		DataField titleField = record.getDataField(245);
 		String authorInTitleField = null;
 		if (titleField != null) {
-			@SuppressWarnings("SpellCheckingInspection")
 			String subTitle = titleField.getSubfieldsAsString("bfgnp");
 			if (!hasParentRecord) {
 				//noinspection SpellCheckingInspection
@@ -1178,7 +1175,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}
 
-	private void loadBibCallNumbers(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadBibCallNumbers(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		groupedWork.setCallNumberA(MarcUtil.getFirstFieldVal(record, "099a:090a:050a"));
 		String firstCallNumber = MarcUtil.getFirstFieldVal(record, "099a[0]:090a[0]:050a[0]");
 		if (firstCallNumber != null){
@@ -1190,7 +1187,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadEContentUrl(Record record, ItemInfo itemInfo) {
+	void loadEContentUrl(org.marc4j.marc.Record record, ItemInfo itemInfo) {
 		List<DataField> urlFields = MarcUtil.getDataFields(record, 856);
 		for (DataField urlField : urlFields){
 			//load url into the item
@@ -1217,14 +1214,13 @@ abstract class MarcRecordProcessor {
 	 *         with non-filing characters omitted. Null returned if no title can
 	 *         be found.
 	 */
-	private String getSortableTitle(Record record) {
+	private String getSortableTitle(org.marc4j.marc.Record record) {
 		DataField titleField = record.getDataField(245);
 		if (titleField == null || titleField.getSubfield('a') == null)
 			return "";
 
 		int nonFilingInt = getInd2AsInt(titleField);
 
-		@SuppressWarnings("SpellCheckingInspection")
 		String title = titleField.getSubfieldsAsString("abfgnp");
 		if (title == null){
 			return "";
@@ -1256,7 +1252,7 @@ abstract class MarcRecordProcessor {
 		return result;
 	}
 
-	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
+	LinkedHashSet<String> getFormatsFromBib(org.marc4j.marc.Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 
 		String leader = record.getLeader().toString();
@@ -1290,10 +1286,10 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		if (printFormats.size() == 0 && fallbackFormatField != null && fallbackFormatField.length() > 0){
+		if (printFormats.isEmpty() && fallbackFormatField != null && !fallbackFormatField.isEmpty()){
 			getFormatFromFallbackField(record, printFormats);
 		}
-		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			if (printFormats.size() == 1 && printFormats.contains("Book")){
 				printFormats.clear();
 			}
@@ -1303,7 +1299,7 @@ abstract class MarcRecordProcessor {
 			if (printFormats.size() > 1){
 				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
 			}
-			if (printFormats.size() == 0 || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+			if (printFormats.isEmpty() || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
@@ -1311,7 +1307,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		if (printFormats.size() == 0) {
+		if (printFormats.isEmpty()) {
 			logger.debug("Did not get any formats for print record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 			printFormats.add("Book");
 //		}else if (printFormats.size() > 1){
@@ -1334,13 +1330,13 @@ abstract class MarcRecordProcessor {
 		return printFormats;
 	}
 
-	protected void getFormatFromFallbackField(Record record, LinkedHashSet<String> printFormats) {
+	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
 		//Do nothing by default, this is overridden in IlsRecordProcessor
 	}
 
 	private final HashSet<String> formatsToFilter = new HashSet<>();
 
-	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
+	private void getFormatFromDigitalFileCharacteristics(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
 		for (String curField : fields){
 			if (curField.equalsIgnoreCase("Blu-Ray")){
@@ -1572,7 +1568,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void getFormatFromTitle(Record record, Set<String> printFormats) {
+	private void getFormatFromTitle(org.marc4j.marc.Record record, Set<String> printFormats) {
 		String titleMedium = MarcUtil.getFirstFieldVal(record, "245h");
 		if (titleMedium != null){
 			titleMedium = titleMedium.toLowerCase();
@@ -1634,7 +1630,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void getFormatFromPublicationInfo(Record record, Set<String> result) {
+	private void getFormatFromPublicationInfo(org.marc4j.marc.Record record, Set<String> result) {
 		// check for playaway in 260|b
 		List<DataField> publicationFields = record.getDataFields(new int[]{260, 264});
 		for (DataField publicationInfo : publicationFields) {
@@ -1649,7 +1645,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void getFormatFromEdition(Record record, Set<String> result) {
+	private void getFormatFromEdition(org.marc4j.marc.Record record, Set<String> result) {
 		List<DataField> allEditions = record.getDataFields(250);
 		for (DataField edition : allEditions) {
 			if (edition.getSubfield('a') != null) {
@@ -1693,7 +1689,7 @@ abstract class MarcRecordProcessor {
 	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages|v\\.|volume|volumes).*$");
 	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages|v\\.|volume|volumes)\\b.*");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
-	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
+	private void getFormatFromPhysicalDescription(org.marc4j.marc.Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
 		for (DataField field : physicalDescriptions) {
 			List<Subfield> subFields = field.getSubfields();
@@ -1763,7 +1759,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	private final Pattern voxPattern = Pattern.compile(".*(vox books|vox reader|vox audio).*");
-	private void getFormatFromNotes(Record record, Set<String> result) {
+	private void getFormatFromNotes(org.marc4j.marc.Record record, Set<String> result) {
 		// Check for formats in the 538 field
 		List<DataField> sysDetailsNotes2 = record.getDataFields(538);
 		for (DataField sysDetailsNote2 : sysDetailsNotes2) {
@@ -1895,7 +1891,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void getFormatFromSubjects(Record record, Set<String> result) {
+	private void getFormatFromSubjects(org.marc4j.marc.Record record, Set<String> result) {
 		List<DataField> topicalTerm = MarcUtil.getDataFields(record, 650);
 		if (topicalTerm != null) {
 			Iterator<DataField> fieldIterator = topicalTerm.iterator();
@@ -2016,7 +2012,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void getFormatFrom007(Record record, Set<String> result) {
+	private void getFormatFrom007(org.marc4j.marc.Record record, Set<String> result) {
 		Set<String> resultsFrom007 = new HashSet<>();
 		char formatCode;// check the 007 - this is a repeating field
 		List<ControlField> formatFields = record.getControlFields(7);
@@ -2293,7 +2289,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	public HashSet<String> getParentRecordIds(Record record) {
+	public HashSet<String> getParentRecordIds(org.marc4j.marc.Record record) {
 		List<DataField> analyticFields = record.getDataFields(773);
 		HashSet<String> parentRecords = new HashSet<>();
 		for (DataField analyticField : analyticFields){

@@ -16,6 +16,7 @@ class LDAPAuthentication extends Action {
 	protected $ssoAuthOnly = false;
 	protected $message = "";
 	protected $matchpoints = [];
+	protected $updateAccount = false;
 
 	public function __construct() {
 		parent::__construct();
@@ -53,6 +54,8 @@ class LDAPAuthentication extends Action {
 						$this->ssoAuthOnly = $ssoSettings->ssoAuthOnly;
 					}
 				}
+
+				$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 				$this->ldap_client = @ldap_connect($this->ldap_config['host']);
 				@ldap_set_option($this->ldap_client, LDAP_OPT_DEBUG_LEVEL, 7);
@@ -166,7 +169,9 @@ class LDAPAuthentication extends Action {
 		}
 
 		$user->update();
-		$user->updatePatronInfo(true);
+		if($this->updateAccount) {
+			$user->updatePatronInfo(true);
+		}
 		$user = $catalogConnection->findNewUser($user, $username);
 		return $this->login($user, $username);
 	}

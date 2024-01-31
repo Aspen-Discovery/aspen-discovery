@@ -5,7 +5,6 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -24,7 +23,6 @@ public class GroupedReindexMain {
 
 	//General configuration
 	private static String serverName;
-	@SuppressWarnings("FieldCanBeLocal")
 	private static final String processName = "grouped_reindex";
 	private static boolean fullReindex = false;
 	private static boolean clearIndex = false;
@@ -150,6 +148,8 @@ public class GroupedReindexMain {
 
 		logEntry.addNote("Finished Reindex for " + serverName);
 		logEntry.setFinished();
+
+		System.exit(0);
 	}
 
 	private static void initializeReindex() {
@@ -191,15 +191,10 @@ public class GroupedReindexMain {
 		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 		baseLogPath = configIni.get("Site", "baseLogPath");
-		String solrPort = configIni.get("Reindex", "solrPort");
-		if (solrPort == null || solrPort.length() == 0) {
-			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
-			System.exit(1);
-		}
 
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}

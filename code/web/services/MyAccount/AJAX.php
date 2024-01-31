@@ -2470,6 +2470,24 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($interface->getVariable('expirationNearMessage')) {
 					$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
 				}
+
+				$showRenewalLink = $user->showRenewalLink($ilsSummary);
+				$interface->assign('showRenewalLink', $showRenewalLink);
+				if ($showRenewalLink) {
+					$userLibrary = $user->getHomeLibrary();
+					if ($userLibrary->enableCardRenewal == 2) {
+						if (!empty($userLibrary->cardRenewalUrl)) {
+							$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
+						}
+					} elseif ($userLibrary->enableCardRenewal == 3) {
+						require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+						$quipuECardSettings = new QuipuECardSetting();
+						if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+							$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
+						}
+					}
+				}
+
 				$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
 				$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
 
@@ -2626,9 +2644,10 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$readerName = $driver->getReaderName();
 			if ($user->isValidForEContentSource('overdrive')) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
 				$overDriveSummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
@@ -2639,13 +2658,55 @@ class MyAccount_AJAX extends JSON_Action {
 						$overDriveSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 					}
 				}
-				$timer->logTime("Loaded OverDrive Summary for User and linked users");
+				$timer->logTime("Loaded " . $readerName . " Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $overDriveSummary->toArray(),
 				];
 			} else {
-				$result['message'] = 'Invalid for OverDrive';
+				$result['message'] = 'Invalid for ' . $readerName;
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getMenuDataPalaceProject() {
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->isValidForEContentSource('palace_project')) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				$palaceProjectSummary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$palaceProjectSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$palaceProjectSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						$palaceProjectSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+					}
+				}
+				$timer->logTime("Loaded Palace Project Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $palaceProjectSummary->toArray(),
+				];
+			} else {
+				$result['message'] = translate([
+					'text' => 'Unknown Error',
+					'isPublicFacing' => true,
+				]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -3299,6 +3360,11 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['message'] = "";
 				$result['checkoutInfoLastLoaded'] = $user->getFormattedCheckoutInfoLastLoaded();
+
+				$readerName = new OverDriveDriver();
+				$readerName = $readerName->getReaderName();
+				$interface->assign('readerName', $readerName);
+
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
 		} else {
@@ -3325,7 +3391,6 @@ class MyAccount_AJAX extends JSON_Action {
 
 		global $offlineMode;
 		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
-			global $configArray;
 			global $library;
 
 			$source = $_REQUEST['source'];
@@ -3438,6 +3503,11 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['message'] = "";
 				$result['holdInfoLastLoaded'] = $user->getFormattedHoldInfoLastLoaded();
+
+				$readerName = new OverDriveDriver();
+				$readerName = $readerName->getReaderName();
+				$interface->assign('readerName', $readerName);
+
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
 			}
 		} else {
@@ -4062,38 +4132,6 @@ class MyAccount_AJAX extends JSON_Action {
 			],
 		];
 
-		$tempDonation = [
-			'firstName' => $_REQUEST['firstName'],
-			'lastName' => $_REQUEST['lastName'],
-			'email' => $_REQUEST['emailAddress'],
-			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
-			'donateToLocationId' => $toLocation,
-			'donateToLocation' => $donateToLocation,
-			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
-			'shouldBeNotified' => isset($_REQUEST['shouldBeNotified']) ? 1 : 0,
-			'comments' => $comments,
-			'donationSettingId' => $_REQUEST['settingId'],
-		];
-
-		if ($tempDonation['isDedicated'] == 1) {
-			$tempDonation['dedication'] = [
-				'type' => $_REQUEST['dedicationType'],
-				'honoreeFirstName' => $_REQUEST['honoreeFirstName'],
-				'honoreeLastName' => $_REQUEST['honoreeLastName'],
-			];
-		}
-
-		if($tempDonation['shouldBeNotified'] == 1) {
-			$tempDonation['notification'] = [
-				'notificationFirstName' => $_REQUEST['notificationFirstName'],
-				'notificationLastName' => $_REQUEST['notificationLastName'],
-				'notificationAddress' => $_REQUEST['notificationAddress'],
-				'notificationCity' => $_REQUEST['notificationCity'],
-				'notificationState' => $_REQUEST['notificationState'],
-				'notificationZip' => $_REQUEST['notificationZip'],
-			];
-		}
-
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 		$payment = new UserPayment();
 		$payment->userId = $patronId;
@@ -4113,6 +4151,37 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$paymentId = $payment->insert();
+
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->paymentId = $payment->id;
+		$donation->firstName = $_REQUEST['firstName'];
+		$donation->lastName = $_REQUEST['lastName'];
+		$donation->email = $_REQUEST['emailAddress'];
+		$donation->anonymous = isset($_REQUEST['isAnonymous']) ? 1 : 0;
+		$donation->dedicate = isset($_REQUEST['isDedicated']) ? 1 : 0;
+		if ($donation->dedicate == 1) {
+			$donation->dedicateType = $_REQUEST['dedicationType'];
+			$donation->honoreeFirstName = $_REQUEST['honoreeFirstName'];
+			$donation->honoreeLastName = $_REQUEST['honoreeLastName'];
+		}
+		$donation->shouldBeNotified = isset($_REQUEST['shouldBeNotified']) ? 1 : 0;
+		if($donation->shouldBeNotified == 1) {
+			$donation->notificationFirstName = $_REQUEST['notificationFirstName'];
+			$donation->notificationLastName = $_REQUEST['notificationLastName'];
+			$donation->notificationAddress = $_REQUEST['notificationAddress'];
+			$donation->notificationCity = $_REQUEST['notificationCity'];
+			$donation->notificationState = $_REQUEST['notificationState'];
+			$donation->notificationZip = $_REQUEST['notificationZip'];
+		}
+		$donation->donateToLocationId = $toLocation;
+		$donation->donateToLocation = $donateToLocation;
+		$donation->comments = $comments;
+		$donation->donationSettingId = $_REQUEST['settingId'];
+		$donation->sendEmailToUser = 1;
+
+		$donation->insert();
+
 		$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
 		return [
@@ -4121,7 +4190,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment,
 			$purchaseUnits,
 			$patron,
-			$tempDonation,
+			$donation,
 		];
 
 	}
@@ -4421,6 +4490,9 @@ class MyAccount_AJAX extends JSON_Action {
 				if($paymentType == 'square') {
 					$payment->squareToken = $_REQUEST['token'];
 				}
+				if($paymentType == 'stripe'){
+					$payment->stripeToken = $_REQUEST['token'];
+				}
 			}
 
 			$paymentId = $payment->insert();
@@ -4559,10 +4631,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->orderId = $paymentResponse->id;
 			$payment->update();
 
-			if ($payment->transactionType == 'donation') {
-				$this->addDonation($payment, $tempDonation);
-			}
-
 			return [
 				'success' => true,
 				'orderInfo' => $paymentResponse,
@@ -4593,10 +4661,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id . '&donation=' . $donation->id);
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id);
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information
@@ -4692,12 +4760,25 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($transactionType == 'donation') {
 			$payment->completed = 1;
 			$payment->update();
-			return [
-				'success' => true,
-				'isDonation' => true,
-				'paymentId' => $payment->id,
-				'donationId' => $donation->id,
-			];
+			$donation = new Donation();
+			$donation->paymentId = $payment->id;
+			if($donation->find(true)) {
+				$donation->sendReceiptEmail();
+				return [
+					'success' => true,
+					'isDonation' => true,
+					'paymentId' => $payment->id,
+					'donationId' => $donation->id,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Unable to find donation with provided id',
+					'isDonation' => true,
+					'paymentId' => $payment->id,
+					'donationId' => '',
+				];
+			}
 		} else {
 			if ($payment->completed) {
 				return [
@@ -4796,10 +4877,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id . '&donation=' . $donation->id);
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id);
+				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information
@@ -4848,7 +4929,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentId = $payment->id;
 				$paymentAmount = $payment->totalPaid;
 				$body = [
-					'idempotency_key' => $paymentId,
+					'idempotency_key' => strval($paymentId), // Square needs this to be a string, so guarantee it
 					'amount_money' => [
 						'amount' => (int)round($payment->totalPaid * 100),
 						'currency' => 'USD'
@@ -4867,12 +4948,26 @@ class MyAccount_AJAX extends JSON_Action {
 							$payment->transactionId = $paymentResults->id;
 							$payment->orderId = $paymentResults->order_id;
 							$payment->update();
-							return [
-								'success' => true,
-								'isDonation' => true,
-								'paymentId' => $payment->id,
-								'donationId' => $donation->id,
-							];
+							$donation = new Donation();
+							$donation->paymentId = $payment->id;
+
+							if($donation->find(true)) {
+								$donation->sendReceiptEmail();
+								return [
+									'success' => true,
+									'isDonation' => true,
+									'paymentId' => $payment->id,
+									'donationId' => $donation->id,
+								];
+							} else {
+								return [
+									'success' => false,
+									'message' => 'Unable to find donation with provided id',
+									'isDonation' => true,
+									'paymentId' => $payment->id,
+									'donationId' => '',
+								];
+							}
 						} else {
 							if($payment->completed) {
 								return [
@@ -4906,6 +5001,127 @@ class MyAccount_AJAX extends JSON_Action {
 						'message' => $error->detail,
 					];
 				}
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createStripeOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('stripe');
+		} else {
+			$result = $this->createGenericOrder('stripe');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			return [
+				'success' => true,
+				'paymentId' => $payment->id,
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function completeStripeOrder() {
+		global $configArray;
+
+		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
+		$paymentId = $_REQUEST['paymentId'];
+		$paymentMethodId = $_REQUEST['paymentMethodId'];
+
+		global $library;
+		$paymentLibrary = $library;
+
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+
+		if ($transactionType == 'donation') {
+			//Get the order information
+			$payment = new UserPayment();
+			$payment->id = $paymentId;
+			$payment->transactionType = 'donation';
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if (!$donation->find(true)) {
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
+				} else {
+					$stripeSettings = new StripeSetting();
+					$stripeSettings->id = $paymentLibrary->stripeSettingId;
+					if ($stripeSettings->find(true)) {
+						//header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id);
+						return $stripeSettings->submitTransaction(null, $payment, $paymentMethodId, $transactionType);
+					} else {
+						return [
+							'success' => false,
+							'message' => 'Could not complete donation. Stripe is not setup for this library.'
+						];
+					}
+				}
+			}
+		} else {
+			//Get the order information
+			$payment = new UserPayment();
+			$payment->id = $paymentId;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+
+				$stripeSettings = new StripeSetting();
+				$stripeSettings->id = $paymentLibrary->stripeSettingId;
+				if ($stripeSettings->find(true)) {
+					return $stripeSettings->submitTransaction($patron, $payment, $paymentMethodId, $transactionType);
+				} else {
+					return [
+						'success' => false,
+						'message' => 'Could not complete payment. Stripe is not setup for this library.'
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Unable to find payment in system to complete.'
+				];
 			}
 		}
 	}
@@ -5021,10 +5237,9 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if ($transactionType == 'donation') {
-					$donation = $this->addDonation($payment, $tempDonation);
 					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
-					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?payment=' . $payment->id);
-					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				} else {
 					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
 					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
@@ -5484,7 +5699,6 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 					$tempDonation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -5599,7 +5813,6 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 					$tempDonation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -5643,10 +5856,10 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation = new Donation();
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
-					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id . '&donation=' . $donation->id);
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 				}
 			} else {
-				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id);
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 			}
 		} else {
 			//Get the order information

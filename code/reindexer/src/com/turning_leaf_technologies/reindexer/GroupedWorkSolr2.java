@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -42,6 +43,12 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("title_display", displayTitle);
 			//This is set lower now with additional titles added with formats
 			//doc.addField("title_full", fullTitles);
+			HashSet<String> startOfTitle = new HashSet<>();
+			startOfTitle.add(fullTitle);
+			String sortableTitle = AspenStringUtils.makeValueSortable(fullTitle);
+			startOfTitle.add(sortableTitle);
+			startOfTitle.add(titleSort);
+			doc.addField("title_left", startOfTitle);
 
 			doc.addField("subtitle_display", subTitle);
 			doc.addField("title_short", title);
@@ -66,10 +73,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			//language related fields
 			//Check to see if we have Unknown plus a valid value
-			if (languages.size() > 1 || groupedWorkIndexer.getTreatUnknownLanguageAs().length() != 0) {
+			if (languages.size() > 1 || !groupedWorkIndexer.getTreatUnknownLanguageAs().isEmpty()) {
 				languages.remove("Unknown");
 			}
-			if (languages.size() == 0) {
+			if (languages.isEmpty()) {
 				languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 			}
 			doc.addField("language", languages);
@@ -87,8 +94,11 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("physical", physicals);
 			doc.addField("edition", editions);
 			doc.addField("dateSpan", dateSpans);
+			series.values().removeAll(GroupedWorkIndexer.hideSeries);
 			doc.addField("series", series.values());
+			series2.values().removeAll(GroupedWorkIndexer.hideSeries);
 			doc.addField("series2", series2.values());
+			seriesWithVolume.values().removeAll(GroupedWorkIndexer.hideSeries);
 			doc.addField("series_with_volume", seriesWithVolume.values());
 
 			doc.addField("topic", topics);
@@ -138,7 +148,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				targetAudienceFull.remove("No Attempt To Code");
 				targetAudienceFull.remove("Other");
 			}
-			if (targetAudienceFull.size() == 0) {
+			if (targetAudienceFull.isEmpty()) {
 				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience_full", targetAudienceFull);
@@ -148,7 +158,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (targetAudience.size() > 1) {
 				targetAudience.remove("Other");
 			}
-			if (targetAudience.size() == 0) {
+			if (targetAudience.isEmpty()) {
 				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience", targetAudience);
@@ -160,6 +170,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//Check to see if all items are on order.  If so, add on order keywords
 			boolean allItemsOnOrder = true;
 			int numItems = 0;
+			HashSet<String> uniqueFormatCategories = new HashSet<>();
+			HashSet<String> uniqueFormats = new HashSet<>();
 			for (RecordInfo record : relatedRecords.values()) {
 				for (ItemInfo item : record.getRelatedItems()) {
 					numItems++;
@@ -167,9 +179,24 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						allItemsOnOrder = false;
 					}
 				}
-				if (record.getFormatCategories().size() > 0) {
-					fullTitles.add(fullTitle + " " + record.getFormatCategories().toString());
+				if (!record.getFormatCategories().isEmpty()) {
+					uniqueFormatCategories.addAll(record.getFormatCategories());
 				}
+				if (record.hasItemFormats()) {
+					uniqueFormats.addAll(record.getUniqueItemFormats());
+					uniqueFormats.addAll(record.getUniqueItemFormatsCategories());
+				}
+				if (!record.getFormats().isEmpty()) {
+					uniqueFormats.addAll(record.getFormats());
+				}
+			}
+			if (!uniqueFormatCategories.isEmpty()) {
+				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormatCategories, ", "));
+				addKeywords(uniqueFormatCategories);
+			}
+			if (!uniqueFormats.isEmpty()) {
+				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormats, ", "));
+				addKeywords(uniqueFormats);
 			}
 			doc.addField("title_full", fullTitles);
 
@@ -208,15 +235,15 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//Awards and ratings
 			doc.addField("mpaa_rating", mpaaRatings);
 			doc.addField("awards_facet", awards);
-			if (lexileScore.length() == 0) {
+			if (lexileScore.isEmpty()) {
 				doc.addField("lexile_score", -1);
 			} else {
 				doc.addField("lexile_score", lexileScore);
 			}
-			if (lexileCode.length() > 0) {
+			if (!lexileCode.isEmpty()) {
 				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
-			if (fountasPinnell.length() > 0) {
+			if (!fountasPinnell.isEmpty()) {
 				doc.addField("fountas_pinnell", fountasPinnell);
 			}
 			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
@@ -337,7 +364,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				Scope curScope = null;
 				String scopeFacetLabel = null;
 				GroupedWorkDisplaySettings scopeDisplaySettings = null;
-				if (itemsWithScopingInfoForActiveScope.size() > 0) {
+				if (!itemsWithScopingInfoForActiveScope.isEmpty()) {
 					curScope = itemsWithScopingInfoForActiveScope.get(0).getScope();
 					scopeFacetLabel = curScope.getFacetLabel();
 					scopeDisplaySettings  = curScope.getGroupedWorkDisplaySettings();
@@ -354,11 +381,16 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					HashSet<String> availableAtForItem = new HashSet<>();
 					availabilityToggleForItem.reset();
 
+					String readerName = "Libby";
+
+					if ((scopingInfo.getScope().getOverDriveScope()) != null){
+						readerName = scopingInfo.getScope().getOverDriveScope().getReaderName();
+					}
 					ItemInfo curItem = scopingInfo.getItem();
 					try {
 						formatsForItem = curItem.getFormatsForIndexing();
 						formatsCategoriesForItem = curItem.getFormatCategoriesForIndexing();
-						loadScopedFormatInfo(formats, formatCategories, scopePrefix, formatsForItem, formatsCategoriesForItem, curItem);
+						loadScopedFormatInfo(formats, formatCategories, scopePrefix, formatsForItem, formatsCategoriesForItem);
 
 						boolean addAllOwningLocations = false;
 						boolean addAllOwningLocationsToAvailableAt = false;
@@ -368,6 +400,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						boolean isEContent = curItem.isEContent();
 						if (isEContent) {
 							String trimmedEContentSource = curItem.getTrimmedEContentSource();
+							if (trimmedEContentSource.equals("overdrive")){
+								trimmedEContentSource = readerName;
+							}
 							addAvailabilityToggle(locallyOwned || libraryOwned, scopeDisplaySettings.isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable, availabilityToggleForItem);
 							owningLibraries.add(scopePrefix + trimmedEContentSource);
 							if (isAvailable) {
@@ -376,6 +411,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							eContentSources.add(scopePrefix + trimmedEContentSource);
 						} else { //physical materials
 							if (locallyOwned) {
+								//noinspection ConstantValue
 								addAvailabilityToggle(locallyOwned, isAvailable, false, availabilityToggleForItem);
 								if (isAvailable) {
 									availableAtForItem.add(scopeFacetLabel);
@@ -393,6 +429,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							}
 							if (libraryOwned) {
 								if (curScope.isLibraryScope() || (curScope.isLocationScope() && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
+									//noinspection ConstantValue
 									addAvailabilityToggle(libraryOwned, isAvailable, false, availabilityToggleForItem);
 								}
 								if (isAvailable) {
@@ -532,6 +569,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		doc.addField("shelf_location", shelfLocations);
 		doc.addField("itype", iTypes);
 		doc.addField("econtent_source", eContentSources);
+
 		doc.addField("availability_toggle", availabilityToggleValues);
 		doc.addField("available_at", availableAt);
 
@@ -592,7 +630,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		return daysSinceAdded;
 	}
 
-	private void loadScopedFormatInfo(HashSet<String> scopedFormats, HashSet<String> scopedFormatCategories, String scopePrefix, HashSet<String> formatsForItem, HashSet<String> formatsCategoriesForItem, ItemInfo curItem) {
+	private void loadScopedFormatInfo(HashSet<String> scopedFormats, HashSet<String> scopedFormatCategories, String scopePrefix, HashSet<String> formatsForItem, HashSet<String> formatsCategoriesForItem) {
 		for (String format : formatsForItem) {
 			scopedFormats.add(scopePrefix + format);
 		}

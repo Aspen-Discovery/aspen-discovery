@@ -6,6 +6,7 @@
 ###################################################################
 tmp
 sites/*/backup
+sites/*.localhost
 sites/*/conf/log4j.*.properties
 sites/*/conf/passkey
 !sites/default/conf/log4j.properties
@@ -18,6 +19,8 @@ sites/default/solr5/tmp/*
 sites/default/solr5/server/logs/*
 sites/default/solr5/server/tmp/*
 sites/default/solr5/server/solr/configsets/*
+sites/default/solr-8.11.2/server/logs/*
+sites/default/solr-8.11.2/server/tmp/*
 code/aspen_app/.expo/**
 code/aspen_app/.expo-shared/**
 code/aspen_app/node_modules/**
@@ -226,3 +229,4 @@ code/web/.idea/dataSources.local.xml
 code/aspen_app/startTestApp.sh
 code/aspen_app/updateEASTestApps.sh
 code/aspen_app/updateTestApps.sh
+code/cron/.idea/misc.xml

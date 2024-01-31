@@ -42,8 +42,8 @@ public class Iso6937ToUnicode extends CharConverter {
      * @return {@link String}- the UCS/Unicode data
      */
     @Override
-    public String convert(final char data[]) {
-        final StringBuffer sb = new StringBuffer();
+    public String convert(final char[] data) {
+        final StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < data.length; i++) {
             final char c = data[i];
@@ -69,27 +69,15 @@ public class Iso6937ToUnicode extends CharConverter {
     }
 
     private boolean hasNext(final int pos, final int len) {
-        if (pos < (len - 1)) {
-            return true;
-        }
-
-        return false;
+	    return pos < (len - 1);
     }
 
     private boolean isAscii(final int i) {
-        if (i >= 0x00 && i <= 0x7F) {
-            return true;
-        }
-
-        return false;
+	    return i >= 0x00 && i <= 0x7F;
     }
 
     private boolean isCombining(final int i) {
-        if (i >= 0xC0 && i <= 0xDF) {
-            return true;
-        }
-
-        return false;
+	    return i >= 0xC0 && i <= 0xDF;
     }
 
     /**
@@ -184,7 +172,7 @@ public class Iso6937ToUnicode extends CharConverter {
             case 0xD3:
                 return 0x00A9; // 13/03 COPYRIGHT SIGN
             case 0xD4:
-                return 0x00AE; // 13/04 TRADE MARK SIGN
+                return 0x00AE; // 13/04 TRADEMARK SIGN
             case 0xD5:
                 return 0x266A; // 13/05 EIGHTH NOTE
             case 0xD6:

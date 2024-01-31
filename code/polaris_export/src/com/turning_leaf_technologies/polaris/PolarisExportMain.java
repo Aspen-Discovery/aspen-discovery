@@ -39,7 +39,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -99,7 +98,7 @@ public class PolarisExportMain {
 		boolean extractSingleWork = false;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -295,6 +294,8 @@ public class PolarisExportMain {
 				}
 			}
 		} //Infinite loop
+
+		System.exit(0);
 	}
 
 	private static void loadPolarisVersion() {
@@ -414,7 +415,7 @@ public class PolarisExportMain {
 
 						//Add to the location map
 						if (!existingLocationMapValues.containsKey(Long.toString(ilsId))){
-							if (libraryDisplayName.length() > 0){
+							if (!libraryDisplayName.isEmpty()){
 								try {
 									insertTranslationStmt.setLong(1, locationMapId);
 									insertTranslationStmt.setLong(2, ilsId);
@@ -486,7 +487,7 @@ public class PolarisExportMain {
 					long collectionId = curCollection.getLong("ID");
 					String collectionName = curCollection.getString("Name");
 					if (!existingCollections.containsKey(Long.toString(collectionId))){
-						if (collectionName.length() > 0){
+						if (!collectionName.isEmpty()){
 							try {
 								insertTranslationStmt.setLong(1, collectionMapId);
 								insertTranslationStmt.setLong(2, collectionId);
@@ -513,7 +514,7 @@ public class PolarisExportMain {
 					long shelfLocationId = curShelfLocation.getLong("ID");
 					String shelfLocationName = curShelfLocation.getString("Description");
 					if (!existingShelfLocations.containsKey(Long.toString(shelfLocationId))){
-						if (shelfLocationName.length() > 0){
+						if (!shelfLocationName.isEmpty()){
 							try {
 								insertTranslationStmt.setLong(1, shelfLocationMapId);
 								insertTranslationStmt.setLong(2, shelfLocationId);
@@ -526,7 +527,7 @@ public class PolarisExportMain {
 						}
 					}
 					//For shelf locations, we also get the text version so pull that too
-					if (shelfLocationName.length() > 0){
+					if (!shelfLocationName.isEmpty()){
 						if (!existingShelfLocations.containsKey(shelfLocationName.toLowerCase())){
 							try {
 								insertTranslationStmt.setLong(1, shelfLocationMapId);
@@ -554,7 +555,7 @@ public class PolarisExportMain {
 					long materialTypeId = curMaterialType.getLong("MaterialTypeID");
 					String materialTypeName = curMaterialType.getString("Description");
 					if (!existingITypes.containsKey(Long.toString(materialTypeId))){
-						if (materialTypeName.length() > 0){
+						if (!materialTypeName.isEmpty()){
 							try {
 								insertTranslationStmt.setLong(1, iTypeMapId);
 								insertTranslationStmt.setLong(2, materialTypeId);
@@ -568,7 +569,7 @@ public class PolarisExportMain {
 					}
 
 					//For material types, we also get the text version so pull that too
-					if (materialTypeName.length() > 0){
+					if (!materialTypeName.isEmpty()){
 						if (!existingITypes.containsKey(materialTypeName.toLowerCase())){
 							try {
 								insertTranslationStmt.setLong(1, iTypeMapId);
@@ -633,7 +634,7 @@ public class PolarisExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -763,7 +764,7 @@ public class PolarisExportMain {
 		return totalChanges;
 	}
 
-	private static int extractDeletedBibs(long lastExtractTime) throws UnsupportedEncodingException {
+	private static int extractDeletedBibs(long lastExtractTime) {
 		int numChanges = 0;
 		String lastId = "0";
 		DateTimeFormatter dateFormatter;
@@ -777,7 +778,7 @@ public class PolarisExportMain {
 		boolean doneLoading = false;
 		while (!doneLoading) {
 			@SuppressWarnings("SpellCheckingInspection")
-			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate, "UTF-8") + "&nrecs=100";
+			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate, StandardCharsets.UTF_8) + "&nrecs=100";
 			int numTries = 0;
 			boolean successfulResponse = false;
 			while (numTries < 3 && !successfulResponse){
@@ -827,7 +828,7 @@ public class PolarisExportMain {
 		return numChanges;
 	}
 
-	private static int updateBibsFromPolaris(long lastExtractTime) throws UnsupportedEncodingException {
+	private static int updateBibsFromPolaris(long lastExtractTime) {
 		int numChanges = 0;
 
 		bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
@@ -852,7 +853,7 @@ public class PolarisExportMain {
 			logEntry.incSkipped(indexingProfile.getLastChangeProcessed());
 			logEntry.addNote("Starting processing at bib " + lastId);
 		}
-		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, "UTF-8");
+		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, StandardCharsets.UTF_8);
 		String formattedTimeNow = dateFormatter.format(Instant.now());
 
 		//Get the highest bib from Polaris
@@ -878,11 +879,13 @@ public class PolarisExportMain {
 				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
 				if (use7_4DateFormatFunctionality()) {
+					//noinspection SpellCheckingInspection
 					getBibsUrl += "&enddatecreated=" + formattedTimeNow;
 				}
 				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
 				if (use7_4DateFormatFunctionality()) {
+					//noinspection SpellCheckingInspection
 					getBibsUrl += "&enddatemodified=" + formattedTimeNow;
 				}
 			}
@@ -915,7 +918,8 @@ public class PolarisExportMain {
 
 			//Get a list of any bibs that have been replaced.
 			DateTimeFormatter dateReplacedFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-			String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
+			String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
+			//noinspection SpellCheckingInspection
 			String getBibReplacedUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/replacementids?startdate=" + formattedLastItemExtractDate;
 			WebServiceResponse bibsReplaced = callPolarisAPI(getBibReplacedUrl, null, "GET", "application/json", accessSecret);
 			if (bibsReplaced.isSuccess()){
@@ -949,7 +953,7 @@ public class PolarisExportMain {
 			} else {
 				itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 			}
-			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
+			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
 
@@ -974,8 +978,9 @@ public class PolarisExportMain {
 				}else{
 					itemDeleteDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 				}
-				String formattedItemDeleteDate = URLEncoder.encode(itemDeleteDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
+				String formattedItemDeleteDate = URLEncoder.encode(itemDeleteDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
 
+				//noinspection SpellCheckingInspection
 				String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedItemDeleteDate;
 				WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
 				int bibsToUpdateBasedOnDeletedItems = 0;
@@ -1035,7 +1040,7 @@ public class PolarisExportMain {
 							JSONObject response = pagedItems.getJSONResponse();
 							JSONArray allItems = response.getJSONArray("ItemIDListRows");
 
-							if (allItems.length() == 0) {
+							if (allItems.isEmpty()) {
 								doneLoading = true;
 							}
 							for (int i = 0; i < allItems.length(); i++) {
@@ -1263,7 +1268,7 @@ public class PolarisExportMain {
 				String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
 				//bibRecordXML = StringEscapeUtils.unescapeXml(bibRecordXML);
 				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
-				Record marcRecord = marcXmlReader.next();
+				org.marc4j.marc.Record marcRecord = marcXmlReader.next();
 
 				if (marcRecord != null) {
 					//Get Items from the API
@@ -1312,7 +1317,7 @@ public class PolarisExportMain {
 			Subfield volumeSubfield = curItem.getSubfield(indexingProfile.getVolume());
 			if (volumeSubfield != null) {
 				String volume = volumeSubfield.getData();
-				if (volume != null && volume.trim().length() > 0) {
+				if (volume != null && !volume.trim().isEmpty()) {
 					volume = volume.trim();
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
 					if (volumeInfo == null) {
@@ -1341,7 +1346,7 @@ public class PolarisExportMain {
 		//Save the volumes to the database
 		try {
 
-			if (volumesForRecord.size() == 0){
+			if (volumesForRecord.isEmpty()){
 				deleteAllVolumesStmt.setString(1, fullIdentifier);
 				deleteAllVolumesStmt.executeUpdate();
 			}else {
@@ -1425,7 +1430,7 @@ public class PolarisExportMain {
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
 							String callNumber = getItemFieldData(curItem, "CallNumber").trim();
 							String designation = getItemFieldData(curItem, "Designation").trim();
-							if (designation.length() > 0){
+							if (!designation.isEmpty()){
 								callNumber = callNumber + " " + designation;
 							}
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
@@ -1437,7 +1442,7 @@ public class PolarisExportMain {
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
 							String circDate = getItemFieldData(curItem, "LastCircDate").trim();
-							if (circDate.length() > 0 && lastCheckInPattern.matcher(circDate).matches()){
+							if (!circDate.isEmpty() && lastCheckInPattern.matcher(circDate).matches()){
 								SimpleDateFormat lastCheckInParser = new SimpleDateFormat("MMM dd yyy");
 								Date lastCheckInDate = lastCheckInParser.parse(circDate);
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLastCheckinDateSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckInDate)));
@@ -1463,7 +1468,7 @@ public class PolarisExportMain {
 							}
 							if (indexingProfile.getDateCreatedSubfield() != ' ') {
 								String dateCreated = getItemFieldData(curItem, "FirstAvailableDate");
-								if (dateCreated.length() > 0) {
+								if (!dateCreated.isEmpty()) {
 									Matcher dateCreatedMatcher = polarisDatePattern.matcher(dateCreated);
 									if (dateCreatedMatcher.matches()){
 										Date dateCreatedTime = new Date(Long.parseLong(dateCreatedMatcher.group(1)));
@@ -1509,7 +1514,7 @@ public class PolarisExportMain {
 			if (getItemResponse.isSuccess()) {
 				successfulResponse = true;
 				JSONArray itemInfoRows = getItemResponse.getJSONResponse().getJSONArray("ItemGetRows");
-				if (itemInfoRows.length() > 0) {
+				if (!itemInfoRows.isEmpty()) {
 					JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 					bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 				} else {
@@ -1572,7 +1577,6 @@ public class PolarisExportMain {
 			}
 		} catch (Exception e) {
 			System.out.println("Error closing aspen connection: " + e);
-			e.printStackTrace();
 		}
 	}
 

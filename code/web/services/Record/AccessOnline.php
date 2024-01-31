@@ -9,6 +9,7 @@ class Record_AccessOnline extends Action {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
+		$variationId = strip_tags($_REQUEST['variationId']);
 		$interface->assign('id', $id);
 
 		if (strpos($id, ':')) {
@@ -27,9 +28,14 @@ class Record_AccessOnline extends Action {
 
 		if ($this->recordDriver->isValid()) {
 
-			$relatedRecord = $this->recordDriver->getRelatedRecord();
+			if ($variationId != 'any'){
+				$relatedRecord = $this->recordDriver->getRelatedRecordForVariation($variationId);
+			}else{
+				$relatedRecord = $this->recordDriver->getRelatedRecord();
+			}
+
 			if ($relatedRecord != null) {
-				$recordActions = $relatedRecord->getActions();
+				$recordActions = $relatedRecord->getActions($variationId);
 
 				$actionIndex = $_REQUEST['index'];
 				$selectedAction = $recordActions[$actionIndex];
@@ -60,7 +66,7 @@ class Record_AccessOnline extends Action {
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
 		global $aspenUsage;
-		$recordUsage->instance = $aspenUsage->instance;
+		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -78,7 +84,7 @@ class Record_AccessOnline extends Action {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
 		global $aspenUsage;
-		$userUsage->instance = $aspenUsage->instance;
+		$userUsage->instance = $aspenUsage->getInstance();
 		if (UserAccount::getActiveUserId() == false) {
 			//User is not logged in
 			$userUsage->userId = -1;

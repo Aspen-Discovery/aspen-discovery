@@ -229,7 +229,7 @@ export const MyReadingHistory = () => {
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onClose}>
-                                                  {getTermFromDictionary(language, 'close')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              <Button isLoading={optingOut} isLoadingText={getTermFromDictionary(language, 'updating', true)} colorScheme="danger" onPress={optOut} ref={cancelRef}>
                                                   {getTermFromDictionary(language, 'button_ok')}
@@ -248,7 +248,7 @@ export const MyReadingHistory = () => {
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onCloseDeleteAll}>
-                                                  {getTermFromDictionary(language, 'close')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              <Button isLoading={deleting} isLoadingText={getTermFromDictionary(language, 'deleting', true)} colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
                                                   {getTermFromDictionary(language, 'button_ok')}
@@ -325,7 +325,7 @@ export const MyReadingHistory = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
                          <Button onPress={optIn} isLoading={optingIn} isLoadingText={getTermFromDictionary(language, 'updating', true)}>
@@ -384,15 +384,18 @@ const Item = (data) => {
      };
 
      const imageUrl = library.baseUrl + encodeURI(item.coverUrl);
+     ///bookcover.php?id=af5d146c-d9d8-130b-9857-03d4126be9fd-eng&size=small&type=grouped_work&category=Books"
+     const key = 'medium_' + item.permanentId;
+     let url = library.baseUrl + '/bookcover.php?id=' + item.permanentId + '&size=medium';
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3}>
                     <VStack maxW="30%">
                          <CachedImage
-                              cacheKey={item.permanentId}
+                              cacheKey={key}
                               alt={item.title}
                               source={{
-                                   uri: `${imageUrl}`,
+                                   uri: `${url}`,
                                    expiresIn: 86400,
                               }}
                               style={{

@@ -31,10 +31,16 @@ export async function refreshProfile(url) {
      if (response.ok) {
           if (response.data?.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**
@@ -58,10 +64,16 @@ export async function reloadProfile(url) {
      if (response.ok) {
           if (response.data.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**
@@ -109,24 +121,47 @@ export async function validateUser(username, password, url) {
 }
 
 /**
- * Checks if the user has an active Aspen Discovery session
+ * Validates the given session to see if still valid in Discovery.
  * @param {string} url
  **/
-export async function isLoggedIn(url) {
+export async function validateSession(url) {
      const postBody = await postData();
-     const discovery = create({
-          baseURL: url,
+     const api = create({
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}isLoggedIn`, postBody);
+     const response = await api.post('/UserAPI?method=validateSession', postBody);
      if (response.ok) {
-          return response.data.result;
+          if (response?.data?.result) {
+               return response.data.result;
+          }
      } else {
           console.log(response);
-          return false;
      }
+     return [];
+}
+
+/**
+ * Revalidates the stored user details.
+ * @param {string} url
+ **/
+export async function revalidateUser(url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=validateUserCredentials', postBody);
+     if (response.ok) {
+          if (response?.data?.result?.valid) {
+               return response.data.result.valid;
+          }
+     }
+     return false;
 }
 
 /**
@@ -875,6 +910,43 @@ export async function updateNotificationOnboardingStatus(status, token, url, lan
           },
      });
      const response = await discovery.post('/UserAPI?method=updateNotificationOnboardingStatus', postBody);
+     if (response.ok) {
+          let wasUpdated = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               wasUpdated = response.data.result.success;
+               if (wasUpdated === true || wasUpdated === 'true') {
+                    return true;
+               }
+          }
+          return false;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/** *******************************************************************
+ * Screen Brightness
+ ******************************************************************* **/
+/**
+ * Update the status on if the user should be prompted for providing screen brightness permissions
+ * @param {boolean} status
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function updateScreenBrightnessStatus(status, url, language = 'en') {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               status,
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=updateScreenBrightnessStatus', postBody);
      if (response.ok) {
           let wasUpdated = false;
           if (!_.isUndefined(response.data.result.success)) {

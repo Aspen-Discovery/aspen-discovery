@@ -9,7 +9,7 @@ import { Platform, SafeAreaView, SectionList } from 'react-native';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
 import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getPatronHolds } from '../../../util/api/user';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import { ManageAllHolds, ManageSelectedHolds, MyHold } from './MyHold';
@@ -41,6 +41,9 @@ export const MyHolds = () => {
           expiration: 'Sort by Expiration Date',
      });
 
+     const [filterByLibby, setFilterByLibby] = React.useState(false);
+     const [filterByLibbyTitle, setFilterByLibbyTitle] = React.useState(false);
+
      React.useLayoutEffect(() => {
           navigation.setOptions({
                headerLeft: () => <Box />,
@@ -49,7 +52,9 @@ export const MyHolds = () => {
 
      useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
-               updateHolds(data);
+               if (data !== holds) {
+                    updateHolds(data);
+               }
                setLoading(false);
           },
      });
@@ -76,11 +81,11 @@ export const MyHolds = () => {
                if (value === 'ils') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_ils') });
                } else if (value === 'overdrive') {
-                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_overdrive') });
+                    navigation.setOptions({ title: filterByLibbyTitle });
                } else if (value === 'cloud_library') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
                } else if (value === 'axis360') {
-                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_axis_360') });
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_boundless') });
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
@@ -154,6 +159,23 @@ export const MyHolds = () => {
                          tmp = _.set(tmp, 'expiration', term);
                          setSortBy(tmp);
                     }
+
+                    let libbyTitle = getTermFromDictionary(language, 'titles_on_hold_for_libby');
+                    let libbyFilterLabel = getTermFromDictionary(language, 'filter_by_libby');
+                    if (library.libbyReaderName) {
+                         term = await getTranslationsWithValues('titles_on_hold_for_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0] && !term[0].includes('%1%')) {
+                              libbyTitle = term[0];
+                         }
+
+                         term = await getTranslationsWithValues('filter_by_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0] && !term[0].includes('%1%')) {
+                              libbyFilterLabel = term[0];
+                         }
+                    }
+
+                    setFilterByLibbyTitle(libbyTitle);
+                    setFilterByLibby(libbyFilterLabel);
 
                     setLoading(false);
                };
@@ -357,11 +379,11 @@ export const MyHolds = () => {
                                              endIcon: <CheckIcon size="5" />,
                                         }}
                                         onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_overdrive') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_axis_360') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={4} />
+                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numHolds ?? 0) + ')'} value="all" key={0} />
+                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numHoldsIls ?? 0) + ')'} value="ils" key={1} />
+                                        {user.isValidForOverdrive ? <Select.Item label={filterByLibby + ' (' + (user.numHoldsOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
+                                        {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numHolds_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} /> : null}
+                                        {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numHolds_axis360 ?? 0) + ')'} value="axis360" key={4} /> : null}
                                    </Select>
                               </FormControl>
                          </HStack>

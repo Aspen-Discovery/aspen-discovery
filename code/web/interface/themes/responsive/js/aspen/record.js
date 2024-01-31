@@ -570,10 +570,11 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		selectItemLink: function( recordId) {
+		selectItemLink: function( recordId, variationId) {
 			var url = Globals.path + '/Record/' + recordId + '/AJAX';
 			var params = {
-				method: 'showSelectItemToViewForm'
+				method: 'showSelectItemToViewForm',
+				variationId : variationId
 			};
 			$("accessOnline_" + recordId).enabled = false;
 			$.getJSON(url, params, function (data){
@@ -583,13 +584,14 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		viewItemLink: function () {
+		viewItemLink: function (variationId) {
 			var selectedItem = $('#selectedItem').val();
 			var id = $('#id').val();
 			var url = Globals.path + '/Record/' + id + '/AJAX';
 			var params = {
 				method: 'viewItem',
-				selectedItem: selectedItem
+				selectedItem: selectedItem,
+				variationId: variationId
 			};
 			$.getJSON(url, params, function (data){
 				if (data.success) {

@@ -40,13 +40,20 @@ class OverDrive_AspenData extends Admin_Admin {
 			$interface->assign('overDriveId', '');
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
+		$interface->assign('readerName', $readerName);
+
 		$this->display('overdriveAspenData.tpl', 'OverDrive Aspen Data');
 	}
 
 	function getBreadcrumbs(): array {
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', $readerName);
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/AspenData', 'Aspen Information');
 		return $breadcrumbs;
 	}

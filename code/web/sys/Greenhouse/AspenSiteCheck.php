@@ -41,6 +41,8 @@ class AspenSiteCheck extends DataObject {
 			return $site->baseUrl . "/Hoopla/IndexingLog";
 		} elseif ($checkType == 'cloud_library') {
 			return $site->baseUrl . "/CloudLibrary/IndexingLog";
+		} elseif ($checkType == 'palace_project') {
+			return $site->baseUrl . "/PalaceProject/IndexingLog";
 		} elseif ($checkType == 'web_indexer' || $checkType == 'web_builder') {
 			return $site->baseUrl . "/Websites/IndexingLog";
 		} elseif ($checkType == 'events') {

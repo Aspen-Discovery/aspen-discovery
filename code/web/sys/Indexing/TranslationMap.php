@@ -100,7 +100,6 @@ class TranslationMap extends DataObject {
 
 	public function __set($name, $value) {
 		if ($name == "translationMapValues") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_translationMapValues = $value;
 		} else {
 			parent::__set($name, $value);

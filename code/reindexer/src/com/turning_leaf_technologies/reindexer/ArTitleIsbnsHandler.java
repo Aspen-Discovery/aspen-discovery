@@ -24,7 +24,6 @@ class ArTitleIsbnsHandler extends DefaultHandler {
 		this.logger = logger;
 	}
 
-	@SuppressWarnings("RedundantThrows")
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		if (qName.equals("z:row")/*|| qName.equals("Table")*/) {
 			String bookId = attributes.getValue("iBookID");

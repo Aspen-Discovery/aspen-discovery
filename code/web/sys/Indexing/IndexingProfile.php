@@ -192,6 +192,10 @@ class IndexingProfile extends DataObject {
 	public $customFacet3ValuesToInclude;
 	public $customFacet3ValuesToExclude;
 
+	public $numRetriesForBibLookups;
+	public $numMillisecondsToPauseAfterBibLookups;
+	public $numExtractionThreads;
+
 	private $_translationMaps;
 	private $_timeToReshelve;
 	private $_sierraFieldMappings;
@@ -959,7 +963,7 @@ class IndexingProfile extends DataObject {
 						'values' => [
 							'bib' => 'Bib Record',
 							'item' => 'Item Record',
-							'specified' => 'Specified Value',
+							//'specified' => 'Specified Value',
 						],
 						'default' => 'bib',
 						'forcesReindex' => true,
@@ -1427,6 +1431,54 @@ class IndexingProfile extends DataObject {
 						'description' => 'How the schema of org units should be read by Aspen when setting up default libraries and locations',
 						'forcesReindex' => true,
 						'default' => 1
+					],
+					'numRetriesForBibLookups' => [
+						'property' => 'numRetriesForBibLookups',
+						'type' => 'enum',
+						'label' => 'Num Retries for failed bib lookups',
+						'values' => [
+							0 => 'No Retries',
+							1 => '1 retry',
+							2 => '2 retries',
+						],
+						'description' => 'Controls how many retries are performed after bib lookups fail',
+						'forcesReindex' => false,
+						'default' => 3
+					],
+					'numMillisecondsToPauseAfterBibLookups' => [
+						'property' => 'numMillisecondsToPauseAfterBibLookups',
+						'type' => 'enum',
+						'label' => 'Num Milliseconds to pause after Bib Lookups',
+						'values' => [
+							0 => '0 milliseconds',
+							25 => '25 milliseconds',
+							50 => '50 milliseconds',
+							100 => '100 milliseconds',
+							250 => '250 milliseconds',
+							500 => '500 milliseconds',
+							1000 => '1000 milliseconds',
+							1500 => '1500 milliseconds',
+							2000 => '2000 milliseconds',
+						],
+						'description' => 'Controls how long Aspen pauses after each ',
+						'forcesReindex' => false,
+						'default' => 0
+					],
+					'numExtractionThreads' => [
+						'property' => 'numExtractionThreads',
+						'type' => 'enum',
+						'label' => 'Number of Extraction Threads',
+						'values' => [
+							1 => '1',
+							2 => '2',
+							3 => '3',
+							5 => '5',
+							7 => '7',
+							10 => '10',
+						],
+						'description' => 'Controls the number of concurrent threads that can be used while extracting bibs from Evergreen ',
+						'forcesReindex' => false,
+						'default' => 10
 					],
 				],
 			],

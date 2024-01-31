@@ -1,6 +1,7 @@
 
 package org.marc4j;
 
+import java.util.Objects;
 import java.util.Properties;
 
 public class MarcReaderConfig {
@@ -60,19 +61,17 @@ public class MarcReaderConfig {
         return permissiveReader;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setPermissiveReader(boolean permissiveReader) {
         this.permissiveReader = permissiveReader;
         return this;
     }
 
     public String getDefaultEncoding() {
-        if (defaultEncoding == null) {
-            return (isPermissiveReader()) ? "BESTGUESS" : "MARC8";
-        } else {
-            return defaultEncoding;
-        }
+	    return Objects.requireNonNullElseGet(defaultEncoding, () -> (isPermissiveReader()) ? "BESTGUESS" : "MARC8");
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setDefaultEncoding(final String defaultEncoding) {
         if (defaultEncoding == null) {
             this.defaultEncoding = null;
@@ -86,6 +85,7 @@ public class MarcReaderConfig {
         return to_utf_8;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setToUtf8(boolean to_utf_8) {
         this.to_utf_8 = to_utf_8;
         return this;
@@ -108,7 +108,7 @@ public class MarcReaderConfig {
             final String rightField) {
         this.combineConsecutiveRecordsFields = combineConsecutiveRecordsFields;
 
-        if (combineConsecutiveRecordsFields != null && combineConsecutiveRecordsFields.length() == 0) {
+        if (combineConsecutiveRecordsFields != null && combineConsecutiveRecordsFields.isEmpty()) {
             this.combineConsecutiveRecordsFields = null;
         }
         combineRecordsLeftField = leftField;
@@ -117,15 +117,16 @@ public class MarcReaderConfig {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setCombineConsecutiveRecordsFields(final String combineConsecutiveRecordsFieldsStr) {
         if (combineConsecutiveRecordsFieldsStr == null ||
             combineConsecutiveRecordsFieldsStr.isEmpty() ) {
             return(setCombineConsecutiveRecordsFields(null, null, null));
         }
-        String combineParms[] = combineConsecutiveRecordsFieldsStr.split("::",3);
-        String fieldList =  combineParms.length >= 1 ? combineParms[0] : null;
-        String leftField =  combineParms.length >= 2 ? combineParms[1] : null;
-        String rightField = combineParms.length >= 3 ? combineParms[2] : null;
+        String[] combineParameters = combineConsecutiveRecordsFieldsStr.split("::",3);
+        String fieldList =  combineParameters.length >= 1 ? combineParameters[0] : null;
+        String leftField =  combineParameters.length >= 2 ? combineParameters[1] : null;
+        String rightField = combineParameters.length >= 3 ? combineParameters[2] : null;
         return(setCombineConsecutiveRecordsFields(fieldList, leftField, rightField));
     }
 
@@ -134,12 +135,13 @@ public class MarcReaderConfig {
     }
 
     /**
-     * Map the allowed  parm (unicodeNormalize2) is not null compare it against
-     * the valid values and return the correct value to use as the parm
+     * Map the allowed  parameter (unicodeNormalize2) is not null compare it against
+     * the valid values and return the correct value to use as the parameter
      * @param unicodeNormalizeStr - String specifying the type of normalization to perform
      *         null or any undefined str value will indicate no normalization
      * @return the MarcReaderConfig object for chaining purposes.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setUnicodeNormalize(final String unicodeNormalizeStr) {
         if (unicodeNormalizeStr == null) {
             unicodeNormalize = null;
@@ -153,7 +155,7 @@ public class MarcReaderConfig {
                 .equalsIgnoreCase("Decompose")) {
             unicodeNormalize = "D";
         } else if (unicodeNormalizeStr.equalsIgnoreCase("KD") || unicodeNormalizeStr
-                .equalsIgnoreCase("CompatibiltyDecompose")) {
+                .equalsIgnoreCase("CompatibilityDecompose")) {
             unicodeNormalize = "KD";
         } else {
             unicodeNormalize = null;
@@ -173,6 +175,7 @@ public class MarcReaderConfig {
         return (includeIfPresent != null || includeIfMissing != null);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setFilterParams(final String ifPresent, final String ifMissing) {
         includeIfPresent = ifPresent;
         includeIfMissing = ifMissing;
@@ -183,6 +186,7 @@ public class MarcReaderConfig {
         return (marcDeleteSubfields);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setDeleteSubfieldSpec(final String marcDeleteSubfields) {
         if (marcDeleteSubfields != null) {
             if (marcDeleteSubfields.equals("nomap")) {
@@ -200,6 +204,7 @@ public class MarcReaderConfig {
         return (marcRemapFile);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarcReaderConfig setMarcRemapFilename(final String marcRemapFile) {
         if (marcRemapFile != null) {
             if (marcRemapFile.equals("nomap")) {

@@ -1,17 +1,15 @@
 import { create } from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
-import i18n from 'i18n-js';
-import moment from 'moment';
-import React from 'react';
 import _ from 'lodash';
+import moment from 'moment';
 
 // custom components and helper files
 import { popAlert, popToast } from '../components/loadError';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
 import { getBrowseCategories, LIBRARY } from './loadLibrary';
-import { getPatronBrowseCategories, PATRON } from './loadPatron';
-import { getTermFromDictionary } from '../translations/TranslationService';
+import { getPatronBrowseCategories } from './loadPatron';
 
 export async function isLoggedIn(pathUrl) {
      const postBody = await postData();
@@ -61,6 +59,62 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
           const result = fetchedData.result;
 
           if (source === 'ils') {
+               if (result.confirmRenewalFee) {
+                    return result;
+               }
+
+               if (result.success === true) {
+                    popAlert(result.title, result.message, 'success');
+                    //await reloadCheckedOutItems();
+               } else {
+                    popAlert(result.title, result.message, 'error');
+               }
+          } else {
+               if (result.success === true) {
+                    popAlert(result.title, result.message, 'success');
+                    //await reloadCheckedOutItems();
+               } else {
+                    popAlert(result.title, result.message, 'error');
+               }
+          }
+     } else {
+          console.log(response);
+     }
+}
+
+export async function confirmRenewCheckout(barcode, recordId, source, itemId, libraryUrl, userId) {
+     let validId;
+     if (itemId == null) {
+          validId = barcode;
+     } else {
+          validId = itemId;
+     }
+
+     const postBody = await postData();
+     const api = create({
+          baseURL: libraryUrl + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          params: {
+               itemBarcode: validId,
+               recordId,
+               itemSource: source,
+               userId,
+               confirmedRenewal: true,
+          },
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=renewItem', postBody);
+
+     if (response.ok) {
+          const fetchedData = response.data;
+          const result = fetchedData.result;
+
+          if (source === 'ils') {
+               if (result.confirmRenewalFee) {
+                    return result;
+               }
+
                if (result.success === true) {
                     popAlert(result.title, result.message, 'success');
                     //await reloadCheckedOutItems();
@@ -93,6 +147,43 @@ export async function renewAllCheckouts(url) {
      if (response.ok) {
           const fetchedData = response.data;
           const result = fetchedData.result;
+
+          if (result.confirmRenewalFee) {
+               return result;
+          }
+
+          if (result.success === true) {
+               popAlert(result.title, result.renewalMessage[0], 'success');
+               //await reloadCheckedOutItems();
+          } else {
+               popAlert(result.title, result.renewalMessage[0], 'error');
+          }
+     } else {
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          console.log(response);
+     }
+}
+
+export async function confirmRenewAllCheckouts(url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          params: {
+               confirmedRenewal: true,
+          },
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=renewAll', postBody);
+     //console.log(response);
+     if (response.ok) {
+          const fetchedData = response.data;
+          const result = fetchedData.result;
+
+          if (result.confirmRenewalFee) {
+               return result;
+          }
 
           if (result.success === true) {
                popAlert(result.title, result.renewalMessage[0], 'success');

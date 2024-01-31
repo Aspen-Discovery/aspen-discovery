@@ -54,6 +54,7 @@ class User extends DataObject {
 	public $checkoutInfoLastLoaded;
 
 	public $onboardAppNotifications;
+	public $shouldAskBrightness;
 
 	/** @var Role[] */
 	private $_roles;
@@ -589,7 +590,9 @@ class User extends DataObject {
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					return array_key_exists('Boundless', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+				} elseif ($source == 'palace_project') {
+					return array_key_exists('Palace Project', $enabledModules) && ($userHomeLibrary->palaceProjectScopeId > 0);
 				}
 			}
 		}
@@ -681,8 +684,8 @@ class User extends DataObject {
 				$this->linkedUsers[] = clone($linkedUser);
 
 				/* Send all the things to the user who was linked to */
-				$this->newLinkMessage(); // Display alert in Aspen Discovery
-				$this->sendNewLinkNotification($linkedUser); // Send Aspen LiDA notification
+				$linkedUser->newLinkMessage(); // Display alert in Aspen Discovery to the linked user
+				$linkedUser->sendNewLinkNotification($this); // Send Aspen LiDA notification to the linked user
 
 				return true;
 			}
@@ -719,9 +722,18 @@ class User extends DataObject {
 		$userLink->primaryAccountId = $managingAccount;
 		$userLink->linkedAccountId = $this->id;
 		if($userLink->delete(true)) {
-			/* Send all the things to the managing account that the user removed the link from */
-			$this->removeManagingAccountMessage($managingAccount); // Display alert in Aspen Discovery
-			$this->sendRemoveManagingLinkNotification($managingAccount); // Send Aspen LiDA notification
+
+			$managingUser = new User();
+			$managingUser->id = $managingAccount;
+			if($managingUser->find(true)) {
+				/* Send all the things to the managing account that the user removed the link from */
+				$managingUser->removeManagingAccountMessage($this); // Display alert in Aspen Discovery
+				$managingUser->sendRemoveManagingLinkNotification($this); // Send Aspen LiDA notification
+
+				// Force a reload of data
+				$managingUser->linkedUsers = null;
+				$managingUser->getLinkedUsers();
+			}
 
 			// Force a reload of data
 			$this->linkedUsers = null;
@@ -981,6 +993,14 @@ class User extends DataObject {
 				$this->getCatalogDriver()->loadContactInformation($this);
 			}
 			$this->_contactInformationLoaded = true;
+		}
+	}
+
+	public function allowUpdatesOfPreferredName() : bool {
+		if ($this->getCatalogDriver()) {
+			return $this->getCatalogDriver()->allowUpdatesOfPreferredName($this);
+		}else{
+			return false;
 		}
 	}
 
@@ -1327,6 +1347,17 @@ class User extends DataObject {
 				}
 			}
 
+			if ($this->isValidForEContentSource('palace_project')) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$palaceProjectDriver = new PalaceProjectDriver();
+				$palaceProjectCheckedOutItems = $palaceProjectDriver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $palaceProjectCheckedOutItems);
+				$timer->logTime("Loaded transactions from Palace Project. {$this->id}");
+				if ($source == 'all' || $source == 'palace_project') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $palaceProjectCheckedOutItems);
+				}
+			}
+
 			//Delete all existing checkouts
 			$checkout = new Checkout();
 			$checkout->userId = $this->id;
@@ -1469,6 +1500,17 @@ class User extends DataObject {
 					$axis360Holds = $driver->getHolds($this);
 					$allHolds = array_merge_recursive($allHolds, $axis360Holds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
+				}
+			}
+
+			//Get holds from Palace Project
+			if ($source == 'all' || $source == 'palace_project') {
+				if ($this->isValidForEContentSource('palace_project')) {
+					require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+					$driver = new PalaceProjectDriver();
+					$palaceProjectHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $palaceProjectHolds);
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
 				}
 			}
 
@@ -2767,7 +2809,7 @@ class User extends DataObject {
 	 * Sends an Aspen LiDA notification when a user has been linked to.
 	 **/
 	function sendNewLinkNotification(User $initiatingUser): void {
-		if ($initiatingUser->canReceiveNotifications($initiatingUser, 'notifyAccount')) {
+		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
@@ -2777,7 +2819,7 @@ class User extends DataObject {
 				$appScheme = $systemVariables->appScheme;
 			}
 			$notificationToken = new UserNotificationToken();
-			$notificationToken->userId = $initiatingUser->id;
+			$notificationToken->userId = $this->id;
 			$notificationToken->find();
 			while ($notificationToken->fetch()) {
 				$body = [
@@ -2797,11 +2839,11 @@ class User extends DataObject {
 	/**
 	 * Displays an alert in Aspen Discovery to the managing account when a user removes the link.
 	 **/
-	function removeManagingAccountMessage($managingAccount) {
+	function removeManagingAccountMessage(User $unlinkedUser) {
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $this->id;
+		$userMessage->userId = $unlinkedUser->id;
 		$userMessage->isDismissed = '0';
 		$userMessage->find();
 		while ($userMessage->fetch()) {
@@ -2810,44 +2852,40 @@ class User extends DataObject {
 		}
 
 		$userMessage = new UserMessage();
-		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
-		$userMessage->userId = $managingAccount;
+		$userMessage->messageType = 'linked_acct_notify_removed_' . $unlinkedUser->id;
+		$userMessage->userId = $this->id;
 		$userMessage->isDismissed = '0';
-		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
+		$userMessage->message = "An account you were previously linked to, $unlinkedUser->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 		$userMessage->update();
 	}
 
 	/**
 	 * Sends an Aspen LiDA notification to the managing account when a user removes the link.
 	 **/
-	function sendRemoveManagingLinkNotification($managingUserId): void {
-		$managingUser = new User();
-		$managingUser->id = $managingUserId;
-		if($managingUser->find(true)) {
-			if ($managingUser->canReceiveNotifications($managingUser, 'notifyAccount')) {
-				require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
-				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
-				$appScheme = 'aspen-lida';
-				require_once ROOT_DIR . '/sys/SystemVariables.php';
-				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables && !empty($systemVariables->appScheme)) {
-					$appScheme = $systemVariables->appScheme;
-				}
-				$notificationToken = new UserNotificationToken();
-				$notificationToken->userId = $managingUser->id;
-				$notificationToken->find();
-				while ($notificationToken->fetch()) {
-					$body = [
-						'to' => $notificationToken->pushToken,
-						'title' => 'Account link removed',
-						'body' => 'An account you were previously linked to, ' . $this->displayName . ', has removed the link to your account ' . $managingUser->displayName . '. Learn more about account linking at your library.',
-						'categoryId' => 'accountAlert',
-						'channelId' => 'accountAlert',
-						'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
-					];
-					$expoNotification = new ExpoNotification();
-					$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
-				}
+	function sendRemoveManagingLinkNotification(User $unlinkedUser): void {
+		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$appScheme = 'aspen-lida';
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && !empty($systemVariables->appScheme)) {
+				$appScheme = $systemVariables->appScheme;
+			}
+			$notificationToken = new UserNotificationToken();
+			$notificationToken->userId = $this->id;
+			$notificationToken->find();
+			while ($notificationToken->fetch()) {
+				$body = [
+					'to' => $notificationToken->pushToken,
+					'title' => 'Account link removed',
+					'body' => 'An account you were previously linked to, ' . $unlinkedUser->displayName . ', has removed the link to your account ' . $this->displayName . '. Learn more about account linking at your library.',
+					'categoryId' => 'accountAlert',
+					'channelId' => 'accountAlert',
+					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+				];
+				$expoNotification = new ExpoNotification();
+				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
 			}
 		}
 	}
@@ -3266,7 +3304,8 @@ class User extends DataObject {
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
-		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Subject Facets');
+        $sections['cataloging']->addAction(new AdminAction('Hidden Series', 'Edit series to be excluded from the Series facet and Series Display Information', '/Admin/HideSeriess'), 'Hide Metadata');
+		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
 
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
@@ -3318,7 +3357,7 @@ class User extends DataObject {
 		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist API Information', 'View API information for Novelist.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
-		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu eCARD Settings', 'Define settings for integrating Quipu eCARD within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu Settings', 'Define settings for integrating Quipu eCARD & eRENEW within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Rosen LevelUP Settings', 'Define settings for allowing students and parents to register for Rosen LevelUP.', '/Rosen/RosenLevelUPSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
@@ -3343,6 +3382,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('Certified Payments by Deluxe Settings', 'Define Settings for Certified Payments by Deluxe.', '/Admin/CertifiedPaymentsByDeluxeSettings'), 'Administer Certified Payments by Deluxe');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
 		$sections['ecommerce']->addAction(new AdminAction('Square Settings', 'Define Settings for Square.', '/Admin/SquareSettings'), 'Administer Square');
+		$sections['ecommerce']->addAction(new AdminAction('Stripe Settings', 'Define Settings for Stripe.', '/Admin/StripeSettings'), 'Administer Stripe');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['email'] = new AdminSection('Email');
@@ -3409,7 +3449,7 @@ class User extends DataObject {
 			'View All Collection Reports',
 		]);
 
-		if (array_key_exists('Boundless', $enabledModules)) {
+		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['boundless'] = new AdminSection('Boundless');
 			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Boundless and Aspen Discovery.', '/Axis360/Settings');
 			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
@@ -3485,24 +3525,45 @@ class User extends DataObject {
 		}
 
 		if (array_key_exists('OverDrive', $enabledModules)) {
-			$sections['overdrive'] = new AdminSection('OverDrive');
-			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between OverDrive and Aspen Discovery.', '/OverDrive/Settings');
+			$readerName = new OverDriveDriver();
+			$readerName = $readerName->getReaderName();
+			$sections['overdrive'] = new AdminSection($readerName);
+			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between ' . $readerName . ' and Aspen Discovery.', '/OverDrive/Settings');
 			$overDriveScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/OverDrive/Scopes');
-			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'Administer OverDrive')) {
-				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'Administer OverDrive');
+			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'Administer Libby/Sora')) {
+				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'Administer Libby/Sora');
 			} else {
-				$sections['overdrive']->addAction($overDriveScopesAction, 'Administer OverDrive');
+				$sections['overdrive']->addAction($overDriveScopesAction, 'Administer Libby/Sora');
 			}
-			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), [
+			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ' . $readerName . '.', '/OverDrive/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
-			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), [
+			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ' . $readerName . ' integration.', '/OverDrive/Dashboard'), [
 				'View Dashboards',
 				'View System Reports',
 			]);
-			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
-			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for ' . $readerName . ' integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an ' . $readerName . ' product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+		}
+
+		if (array_key_exists('Palace Project', $enabledModules)) {
+			$sections['palace_project'] = new AdminSection('Palace Project');
+			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
+			$palaceProjectScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/PalaceProject/Scopes');
+			if ($sections['palace_project']->addAction($palaceProjectSettingsAction, 'Administer Palace Project')) {
+				$palaceProjectSettingsAction->addSubAction($palaceProjectScopesAction, 'Administer Palace Project');
+			} else {
+				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
+			}
+			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+			$sections['palace_project']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Palace Project integration.', '/PalaceProject/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
@@ -3620,7 +3681,9 @@ class User extends DataObject {
 				'Send Notifications to Home Location',
 				'Send Notifications to Home Library Locations',
 			]);
-			$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
+			if (SystemVariables::getSystemVariables()->enableBrandedApp) {
+				$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
+			}
 			$sections['aspen_lida']->addAction(new AdminAction('Self-Check Settings', 'Define settings for self-check in Aspen LiDA.', '/AspenLiDA/SelfCheckSettings'), 'Administer Aspen LiDA Self-Check Settings');
 		}
 
@@ -4014,23 +4077,30 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function canReceiveNotifications($user, $alertType): bool {
-		$userLibrary = Library::getPatronHomeLibrary($user);
-		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
-		$settings = new NotificationSetting();
-		$settings->id = $userLibrary->lidaNotificationSettingId;
-		if ($settings->find(true)) {
-			if ($settings->$alertType == 1 || $settings->$alertType == "1") {
-				if ($settings->sendTo == 2 || $settings->sendTo == '2') {
-					return true;
-				} elseif ($settings->sendTo == 1 || $settings->sendTo == '1') {
-					$isStaff = 0;
-					$patronType = $this->getPTypeObj();
-					if (!empty($patronType)) {
-						$isStaff = $patronType->isStaff;
-					}
-					if ($isStaff == 1 || $isStaff == '1') {
-						return true;
+	public function canReceiveNotifications($alertType): bool {
+		$userHomeLocation = $this->homeLocationId;
+		$userLocation = new Location();
+		$userLocation->locationId = $this->homeLocationId;
+		if($userLocation->find(true)) {
+			$userLibrary = $userLocation->getParentLibrary();
+			if($userLibrary) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+				$settings = new NotificationSetting();
+				$settings->id = $userLibrary->lidaNotificationSettingId;
+				if ($settings->find(true)) {
+					if ($settings->$alertType == 1 || $settings->$alertType == '1') {
+						if ($settings->sendTo == 2 || $settings->sendTo == '2') {
+							return true;
+						} elseif ($settings->sendTo == 1 || $settings->sendTo == '1') {
+							$isStaff = 0;
+							$patronType = $this->getPTypeObj();
+							if (!empty($patronType)) {
+								$isStaff = $patronType->isStaff;
+							}
+							if ($isStaff == 1 || $isStaff == '1') {
+								return true;
+							}
+						}
 					}
 				}
 			}
@@ -4130,8 +4200,9 @@ class User extends DataObject {
 		$obj->pushToken = $token;
 		if ($obj->find(true)) {
 			$obj->$option = $newValue;
-			$obj->update();
-			return true;
+			if($obj->update()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -4142,8 +4213,9 @@ class User extends DataObject {
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
 		if ($pushToken->find(true)) {
-			$pushToken->delete();
-			return true;
+			if($pushToken->delete()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -4333,6 +4405,31 @@ class User extends DataObject {
 
 	public function isAspenAdminUser() : bool {
 		return $this->source == 'admin' && $this->username == 'aspen_admin';
+	}
+
+	public function showRenewalLink(AccountSummary $ilsAccountSummary) : bool {
+		$showRenewalLink = false;
+		if ($ilsAccountSummary->isExpirationClose()) {
+			$pType = $this->getPTypeObj();
+			if ($pType->canRenewOnline) {
+				$userLibrary = $this->getHomeLibrary();
+				if ($userLibrary->enableCardRenewal == 2) {
+					if (!empty($userLibrary->cardRenewalUrl)) {
+						$showRenewalLink = true;
+					}
+				} elseif ($userLibrary->enableCardRenewal == 3) {
+					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+					$quipuECardSettings = new QuipuECardSetting();
+					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+						$showRenewalLink = true;
+					}
+				}
+				if (!$ilsAccountSummary->isExpired() && !$userLibrary->showCardRenewalWhenExpirationIsClose) {
+					$showRenewalLink = false;
+				}
+			}
+		}
+		return $showRenewalLink;
 	}
 }
 

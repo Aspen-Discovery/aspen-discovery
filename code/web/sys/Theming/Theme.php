@@ -35,9 +35,11 @@ class Theme extends DataObject {
 	public $libraryWebsiteImage;
 	public $historyArchivesImage;
 
+	public static $defaultHeaderBackgroundColor = '#f1f1f1';
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$headerBackgroundColorDefault;
+	public static $defaultHeaderForegroundColor = '#303030';
 	public $headerForegroundColor;
 	public /** @noinspection PhpUnused */
 		$headerForegroundColorDefault;
@@ -46,41 +48,53 @@ class Theme extends DataObject {
 	public $headerBackgroundImageSize;
 	public $headerBackgroundImageRepeat;
 
+	public static $defaultPageBackgroundColor = '#ffffff';
 	public $pageBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$pageBackgroundColorDefault;
+	public static $defaultBodyBackgroundColor = '#ffffff';
 	public $bodyBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$bodyBackgroundColorDefault;
+	public static $defaultBodyTextColor = '#6B6B6B';
 	public $bodyTextColor;
 	public /** @noinspection PhpUnused */
 		$bodyTextColorDefault;
+	public static $defaultLinkColor = '#3174AF';
 	public $linkColor;
 	public /** @noinspection PhpUnused */
 		$linkColorDefault;
+	public static $defaultLinkHoverColor = '#265a87';
 	public $linkHoverColor;
 	public /** @noinspection PhpUnused */
 		$linkHoverColorDefault;
+	public static $defaultResultLabelColor = '#44484a';
 	public $resultLabelColor;
 	public /** @noinspection PhpUnused */
 		$resultLabelColorDefault;
+	public static $defaultResultValueColor = '#6B6B6B';
 	public $resultValueColor;
 	public /** @noinspection PhpUnused */
 		$resultValueColorDefault;
 
+	public static $defaultBreadcrumbsBackgroundColor = '#f5f5f5';
 	public $breadcrumbsBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$breadcrumbsBackgroundColorDefault;
+	public static $defaultBreadcrumbsForegroundColor = '#6B6B6B';
 	public $breadcrumbsForegroundColor;
 	public /** @noinspection PhpUnused */
 		$breadcrumbsForegroundColorDefault;
 
+	public static $defaultSearchToolsBackgroundColor = '#f5f5f5';
 	public $searchToolsBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$searchToolsBackgroundColorDefault;
+	public static $defaultSearchToolsBorderColor = '#e3e3e3';
 	public $searchToolsBorderColor;
 	public /** @noinspection PhpUnused */
 		$searchToolsBorderColorDefault;
+	public static $defaultSearchToolsForegroundColor = '#6B6B6B';
 	public $searchToolsForegroundColor;
 	public /** @noinspection PhpUnused */
 		$searchToolsForegroundColorDefault;
@@ -88,31 +102,39 @@ class Theme extends DataObject {
 	public $footerLogo;
 	public $footerLogoLink;
 	public $footerLogoAlt;
+	public static $defaultFooterBackgroundColor = '#f1f1f1';
 	public $footerBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$footerBackgroundColorDefault;
+	public static $defaultFooterForegroundColor = '#303030';
 	public $footerForegroundColor;
 	public /** @noinspection PhpUnused */
 		$footerForegroundColorDefault;
 
 	//Primary color is used for the search bar
+	public static $defaultPrimaryBackgroundColor = '#0a7589';
 	public $primaryBackgroundColor;
 	public $primaryBackgroundColorDefault;
+	public static $defaultPrimaryForegroundColor = '#ffffff';
 	public $primaryForegroundColor;
 	public /** @noinspection PhpUnused */
 		$primaryForegroundColorDefault;
 
 	//Secondary color is used for selections like browse category
+	public static $defaultSecondaryBackgroundColor = '#de9d03';
 	public $secondaryBackgroundColor;
 	public $secondaryBackgroundColorDefault;
+	public static $defaultSecondaryForegroundColor = '#303030';
 	public $secondaryForegroundColor;
 	public /** @noinspection PhpUnused */
 		$secondaryForegroundColorDefault;
 
 	//Tertiary color is used for selections like browse category
+	public static $defaultTertiaryBackgroundColor = '#F76E5E';
 	public $tertiaryBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$tertiaryBackgroundColorDefault;
+	public static $defaultTertiaryForegroundColor = '#000000';
 	public $tertiaryForegroundColor;
 	public /** @noinspection PhpUnused */
 		$tertiaryForegroundColorDefault;
@@ -331,61 +353,79 @@ class Theme extends DataObject {
 		$dangerButtonHoverBorderColorDefault;
 
 	//Top Menu
+	public static $defaultMenubarBackgroundColor = '#f1f1f1';
 	public $menubarBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$menubarBackgroundColorDefault;
+	public static $defaultMenubarForegroundColor = '#303030';
 	public $menubarForegroundColor;
 	public /** @noinspection PhpUnused */
 		$menubarForegroundColorDefault;
+	public static $defaultMenubarHighlightBackgroundColor = '#f1f1f1';
 	public $menubarHighlightBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$menubarHighlightBackgroundColorDefault;
+	public static $defaultMenubarHighlightForegroundColor = '#265a87';
 	public $menubarHighlightForegroundColor;
 	public /** @noinspection PhpUnused */
 		$menubarHighlightForegroundColorDefault;
+	public static $defaultMenuDropdownBackgroundColor = '#ededed';
 	public $menuDropdownBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$menuDropdownBackgroundColorDefault;
+	public static $defaultMenuDropdownForegroundColor = '#404040';
 	public $menuDropdownForegroundColor;
 	public /** @noinspection PhpUnused */
 		$menuDropdownForegroundColorDefault;
 
 	//Modal dialog
+	public static $defaultModalDialogHeaderFooterBackgroundColor = '#ffffff';
 	public $modalDialogHeaderFooterBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterBackgroundColorDefault;
+	public static $defaultModalDialogHeaderFooterForegroundColor = '#333333';
 	public $modalDialogHeaderFooterForegroundColor;
 	public /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterForegroundColorDefault;
+	public static $defaultModalDialogBackgroundColor = '#ffffff';
 	public $modalDialogBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$modalDialogBackgroundColorDefault;
+	public static $defaultModalDialogForegroundColor = '#333333';
 	public $modalDialogForegroundColor;
 	public /** @noinspection PhpUnused */
 		$modalDialogForegroundColorDefault;
+	public static $defaultModalDialogHeaderFooterBorderColor = '#e5e5e5';
 	public $modalDialogHeaderFooterBorderColor;
 	public /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterBorderColorDefault;
 
 	//Browse Category Colors
+	public static $defaultBrowseCategoryPanelColor = '#d7dce3';
 	public $browseCategoryPanelColor;
 	public /** @noinspection PhpUnused */
 		$browseCategoryPanelColorDefault;
+	public static $defaultSelectedBrowseCategoryBackgroundColor = '#005C75';
 	public $selectedBrowseCategoryBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$selectedBrowseCategoryBackgroundColorDefault;
+	public static $defaultSelectedBrowseCategoryForegroundColor = '#ffffff';
 	public $selectedBrowseCategoryForegroundColor;
 	public /** @noinspection PhpUnused */
 		$selectedBrowseCategoryForegroundColorDefault;
+	public static $defaultSelectedBrowseCategoryBorderColor = '#0087AB';
 	public $selectedBrowseCategoryBorderColor;
 	public /** @noinspection PhpUnused */
 		$selectedBrowseCategoryBorderColorDefault;
+	public static $defaultDeselectedBrowseCategoryBackgroundColor = '#005C75';
 	public $deselectedBrowseCategoryBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryBackgroundColorDefault;
+	public static $defaultDeselectedBrowseCategoryForegroundColor = '#ffffff';
 	public $deselectedBrowseCategoryForegroundColor;
 	public /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryForegroundColorDefault;
+	public static $defaultDeselectedBrowseCategoryBorderColor = '#0087AB';
 	public $deselectedBrowseCategoryBorderColor;
 	public /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryBorderColorDefault;
@@ -394,35 +434,45 @@ class Theme extends DataObject {
 	public $browseImageLayout;
 
 	//Panel Colors
+	public static $defaultClosedPanelBackgroundColor = '#e7e7e7';
 	public $closedPanelBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$closedPanelBackgroundColorDefault;
+	public static $defaultClosedPanelForegroundColor = '#333333';
 	public $closedPanelForegroundColor;
 	public /** @noinspection PhpUnused */
 		$closedPanelForegroundColorDefault;
+	public static $defaultOpenPanelBackgroundColor = '#ffffff';
 	public $openPanelBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$openPanelBackgroundColorDefault;
+	public static $defaultOpenPanelForegroundColor = '#404040';
 	public $openPanelForegroundColor;
 	public /** @noinspection PhpUnused */
 		$openPanelForegroundColorDefault;
+	public static $defaultPanelBodyBackgroundColor = '#ffffff';
 	public $panelBodyBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$panelBodyBackgroundColorDefault;
+	public static $defaultPanelBodyForegroundColor = '#404040';
 	public $panelBodyForegroundColor;
 	public /** @noinspection PhpUnused */
 		$panelBodyForegroundColorDefault;
 
 	//Tab Colors
+	public static $defaultInactiveTabBackgroundColor = '#ffffff';
 	public $inactiveTabBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$inactiveTabBackgroundColorDefault;
+	public static $defaultInactiveTabForegroundColor = '#6B6B6B';
 	public $inactiveTabForegroundColor;
 	public /** @noinspection PhpUnused */
 		$inactiveTabForegroundColorDefault;
+	public static $defaultActiveTabBackgroundColor = '#e7e7e7';
 	public $activeTabBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$activeTabBackgroundColorDefault;
+	public static $defaultActiveTabForegroundColor = '#333333';
 	public $activeTabForegroundColor;
 	public /** @noinspection PhpUnused */
 		$activeTabForegroundColorDefault;
@@ -446,30 +496,37 @@ class Theme extends DataObject {
 	public $generatedCss;
 
 	//Cookie Consent Themeing Options
+	public static $defaultCookieConsentBackgroundColor = '#1D7FF0';
 	public $cookieConsentBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentBackgroundColorDefault;
 
+	public static $defaultCookieConsentButtonColor = '#1D7FF0';
 	public $cookieConsentButtonColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentButtonColorDefault;
-	
+
+	public static $defaultCookieConsentButtonHoverColor = '#FF0000';
 	public $cookieConsentButtonHoverColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentButtonHoverColorDefault;
 
+	public static $defaultCookieConsentTextColor = '#FFFFFF';
 	public $cookieConsentTextColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentTextColorDefault;
 
+	public static $defaultCookieConsentButtonTextColor = '#FFFFFF';
 	public $cookieConsentButtonTextColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentButtonTextColorDefault;
 
+	public static $defaultCookieConsentButtonHoverTextColor = '#FFFFFF';
 	public $cookieConsentButtonHoverTextColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentButtonHoverTextColorDefault;
-	
+
+	public static $defaultCookieConsentButtonBorderColor = '#FFFFFF';
 	public $cookieConsentButtonBorderColor;
 	public /** @noinspection PhpUnused */
 		$cookieConsentButtonBorderColorDefault;
@@ -477,6 +534,15 @@ class Theme extends DataObject {
 
 	private $_libraries;
 	private $_locations;
+
+	public function getNumericColumnNames(): array {
+		return [
+			'additionalCssType',
+			'capitalizeBrowseCategories',
+			'browseCategoryImageSize',
+			'browseImageLayout',
+		];
+	}
 
 	static function getObjectStructure($context = ''): array {
 		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
@@ -2345,6 +2411,32 @@ class Theme extends DataObject {
 
 		$this->applyDefaults();
 
+		$prevColors = false;
+		if($this->id && $this->id !== -1) {
+			$theme = new Theme();
+			$theme->id = $this->id;
+			if ($theme->find(true)) {
+				$prevColors = $theme;
+			}
+		} else if (strlen($this->extendsTheme) != 0) {
+			$prevColors = $this->getParentTheme();
+		}
+
+		foreach($this as $index => $item) {
+			if(strpos($index, 'Color') >= 0) {
+				if(is_null($item)) {
+					if($prevColors) {
+						if ($prevColors->$index) {
+							// Locked fields contain null values, so we'll grab the previous value in order to check contrast
+							$this->$index = $prevColors->$index;
+						}
+					} else {
+						$defaultColor =  'default' . ucfirst($index);
+						$this->$index = Theme::$$defaultColor;
+					}
+				}
+			}
+		}
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$bodyContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->bodyTextColor);
 		if ($bodyContrast < $minContrastRatio) {
@@ -2570,58 +2662,58 @@ class Theme extends DataObject {
 	public function applyDefaults() {
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$appliedThemes = $this->getAllAppliedThemes();
-		$this->getValueForPropertyUsingDefaults('pageBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('linkHoverColor', '#265a87', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('resultLabelColor', '#44484a', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('resultValueColor', '#6B6B6B', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('breadcrumbsBackgroundColor', '#f5f5f5', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('breadcrumbsForegroundColor', '#6B6B6B', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('searchToolsBackgroundColor', '#f5f5f5', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('searchToolsBorderColor', '#e3e3e3', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('searchToolsForegroundColor', '#6B6B6B', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('footerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('primaryBackgroundColor', '#0a7589', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', '#de9d03', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#F76E5E', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#000000', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menubarHighlightBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', '#265a87', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', '#ededed', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', '#404040', $appliedThemes);
-//		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', '#ffffff', $appliedThemes);
-//		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', '#333333', $appliedThemes);
-//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', '#ffffff', $appliedThemes);
-//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
-//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('pageBackgroundColor', Theme::$defaultPageBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', Theme::$defaultBodyBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('bodyTextColor', Theme::$defaultBodyTextColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('linkColor', Theme::$defaultLinkColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('linkHoverColor', Theme::$defaultLinkHoverColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultLabelColor', Theme::$defaultResultLabelColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultValueColor', Theme::$defaultResultValueColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', Theme::$defaultHeaderBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('headerForegroundColor', Theme::$defaultHeaderForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsBackgroundColor', Theme::$defaultBreadcrumbsBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsForegroundColor', Theme::$defaultBreadcrumbsForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBackgroundColor', Theme::$defaultSearchToolsBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBorderColor', Theme::$defaultSearchToolsBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsForegroundColor', Theme::$defaultSearchToolsForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('footerBackgroundColor', Theme::$defaultFooterBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('footerForegroundColor', Theme::$defaultFooterForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('primaryBackgroundColor', Theme::$defaultPrimaryBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', Theme::$defaultPrimaryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', Theme::$defaultSecondaryBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', Theme::$defaultSecondaryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', Theme::$defaultTertiaryBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', Theme::$defaultTertiaryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', Theme::$defaultMenubarBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', Theme::$defaultMenubarForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightBackgroundColor', Theme::$defaultMenubarHighlightBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', Theme::$defaultMenubarHighlightForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', Theme::$defaultMenuDropdownBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', Theme::$defaultMenuDropdownForegroundColor, $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', Theme::$defaultModalDialogHeaderFooterBackgroundColor, $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', Theme::$defaultModalDialogHeaderFooterForegroundColor, $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', Theme::$defaultModalDialogBackgroundColor, $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', Theme::$defaultModalDialogForegroundColor, $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', Theme::$defaultModalDialogHeaderFooterBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', Theme::$defaultBrowseCategoryPanelColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', Theme::$defaultSelectedBrowseCategoryBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', Theme::$defaultSelectedBrowseCategoryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBorderColor', Theme::$defaultSelectedBrowseCategoryBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', Theme::$defaultDeselectedBrowseCategoryBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryForegroundColor', Theme::$defaultDeselectedBrowseCategoryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBorderColor', Theme::$defaultDeselectedBrowseCategoryBorderColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('badgeBackgroundColor', Theme::$defaultBadgeBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('badgeForegroundColor', Theme::$defaultBadgeForegroundColor, $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('closedPanelBackgroundColor', '#e7e7e7', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('closedPanelForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('closedPanelBackgroundColor', Theme::$defaultClosedPanelBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('closedPanelForegroundColor', Theme::$defaultClosedPanelForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('openPanelBackgroundColor', $this->secondaryBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('openPanelForegroundColor', $this->secondaryForegroundColor, $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('panelBodyBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('panelBodyForegroundColor', '#404040', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('inactiveTabBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('inactiveTabForegroundColor', '#6B6B6B', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('activeTabBackgroundColor', '#e7e7e7', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('activeTabForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('panelBodyBackgroundColor', Theme::$defaultPanelBodyBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('panelBodyForegroundColor', Theme::$defaultPanelBodyForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('inactiveTabBackgroundColor', Theme::$defaultInactiveTabBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('inactiveTabForegroundColor', Theme::$defaultInactiveTabForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('activeTabBackgroundColor', Theme::$defaultActiveTabBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('activeTabForegroundColor', Theme::$defaultActiveTabForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBackgroundColor', Theme::$defaultDefaultButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonForegroundColor', Theme::$defaultDefaultButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBorderColor', Theme::$defaultDefaultButtonBorderColor, $appliedThemes);
@@ -2670,13 +2762,13 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverBackgroundColor', Theme::$defaultDangerButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverForegroundColor', Theme::$defaultDangerButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverBorderColor', Theme::$defaultDangerButtonHoverBorderColor, $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentBackgroundColor', '#1D7FF0', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentButtonColor', '#1D7FF0', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverColor', '#FF0000', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentTextColor', '#FFFFFF', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentButtonTextColor', '#FFFFFF', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverTextColor', '#FFFFFF', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('cookieConsentButtonBorderColor', '#FFFFFF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentBackgroundColor', Theme::$defaultCookieConsentBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonColor', Theme::$defaultCookieConsentButtonColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverColor', Theme::$defaultCookieConsentButtonHoverColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentTextColor', Theme::$defaultCookieConsentTextColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonTextColor', Theme::$defaultCookieConsentButtonTextColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverTextColor', Theme::$defaultCookieConsentButtonHoverTextColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonBorderColor', Theme::$defaultCookieConsentButtonBorderColor, $appliedThemes);
 	}
 
 	public function getValueForPropertyUsingDefaults($propertyName, $defaultValue, $appliedThemes) {

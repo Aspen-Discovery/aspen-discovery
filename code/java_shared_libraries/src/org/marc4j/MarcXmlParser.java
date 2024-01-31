@@ -78,7 +78,7 @@ public class MarcXmlParser {
 
     private void parse(final ContentHandler handler, final InputSource input) {
         final SAXParserFactory spf = SAXParserFactory.newInstance();
-        XMLReader reader = null;
+        XMLReader reader;
         try {
             reader = spf.newSAXParser().getXMLReader();
             reader.setFeature("http://xml.org/sax/features/namespaces", true);

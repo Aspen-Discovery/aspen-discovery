@@ -70,7 +70,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		boolean changesMade = false;
 		if (settings.getNoteSubfield() != ' ') {
 			List<DataField> items = record.getDataFields(settings.getItemTagInt());
@@ -146,7 +146,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
-	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasTangibleItems){
 		//On Order items for Symphony are currently handled with item records with On Order status
 	}
 }

@@ -261,6 +261,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('uploadedSupplementalFiles', $this->getUploadedSupplementalFiles());
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 
@@ -1124,7 +1128,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 
-				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls));
+				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls, $variationId));
 
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -1354,7 +1358,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->_actions[$variationId];
 	}
 
-	function createActionsFromUrls($relatedUrls) {
+	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;
@@ -1367,7 +1371,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$actions[] = [
 				'title' => $title,
 				'url' => '',
-				'onclick' => "return AspenDiscovery.Record.selectItemLink('{$this->getId()}');",
+				'onclick' => "return AspenDiscovery.Record.selectItemLink('{$this->getId()}', '{$variationId}');",
 				'requireLogin' => false,
 				'type' => 'access_online',
 				'id' => "accessOnline_{$this->getId()}",
@@ -1382,7 +1386,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				'isPublicFacing' => true,
 			]);
 			$alt = 'Available online from ' . $urlInfo['source'];
-			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i&variationId=$variationId";
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
 			if (strlen($fileOrUrl) > 0) {
 				if (strlen($fileOrUrl) >= 3) {
@@ -2447,7 +2451,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 				krsort($copies);
-				//Group holdings under the issue issue summary that is related.
+				//Group holdings under the issue summary that is related.
 				foreach ($copies as $key => $holding) {
 					//Have issue summary = false
 					$haveIssueSummary = false;
@@ -2632,6 +2636,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
+	public function getRelatedRecordForVariation($variationId = '') {
+		if ($this->getGroupedWorkDriver()->isValid()) {
+			return $this->getGroupedWorkDriver()->getRelatedRecordForVariation($this->getIdWithSource(), $variationId);
+		}else{
+			return null;
+		}
+	}
+
 	public function getContinuesRecords() {
 		$continuesRecords = [];
 		$marcRecord = $this->getMarcRecord();
@@ -2749,7 +2761,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 				global $library;
 				$location = new Location();
-				//$location->libraryId = $library->libraryId;
+				$location->libraryId = $library->libraryId;
 				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
 
 				$indexingProfile = $this->getIndexingProfile();

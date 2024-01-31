@@ -44,7 +44,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		try{
 			HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 			RecordInfo recordInfo = loadEContentRecord(groupedWork, identifier, record);
@@ -80,13 +80,13 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		}
 	}
 
-	private void scopeItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
+	private void scopeItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 			loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
@@ -114,12 +114,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		groupedWork.addPopularity(0);
 	}
 
-	private RecordInfo loadEContentRecord(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
+	private RecordInfo loadEContentRecord(AbstractGroupedWorkSolr groupedWork, String identifier, org.marc4j.marc.Record record){
 		//We will always have a single record
 		return getEContentIlsRecord(groupedWork, record, identifier);
 	}
 
-	private RecordInfo getEContentIlsRecord(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+	private RecordInfo getEContentIlsRecord(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
@@ -150,7 +150,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	private void loadEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (formatSource.equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
 			translatedFormats.add(specifiedFormat);

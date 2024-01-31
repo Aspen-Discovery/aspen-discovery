@@ -62,7 +62,7 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Hide Subject Facets');
+		return UserAccount::userHasPermission('Hide Metadata');
 	}
 
 	function getInitializationJs(): string {

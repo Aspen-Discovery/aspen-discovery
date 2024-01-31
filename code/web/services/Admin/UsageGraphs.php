@@ -83,6 +83,15 @@ class Admin_UsageGraphs extends Admin_Admin {
 			case 'errors':
 				$title .= ' - Errors';
 				break;
+			case 'emailSending':
+				$title .= ' - Email Sending';
+				break;
+			case 'emailsSent':
+				$title .= ' - Emails Sent';
+				break;
+			case 'failedEmails':
+				$title .= ' - Failed Emails';
+				break;
 		}
 
 		//General Usage Stats
@@ -250,6 +259,23 @@ class Admin_UsageGraphs extends Admin_Admin {
 			];
 			$userUsage->selectAdd('SUM(timedOutSearchesWithHighLoad) as sumTimedOutSearchesWithHighLoad');
 		}
+		if ($stat == 'emailsSent' || $stat == 'emailSending') {
+			$dataSeries['Emails Sent'] = [
+				'borderColor' => 'rgba(120, 10 244, 1)',
+				'backgroundColor' => 'rgba(120, 10, 244, 0.2)',
+				'data' => [],
+			];
+			$userUsage->selectAdd('SUM(emailsSent) as sumEmailsSent');
+		}
+		if ($stat == 'failedEmails' || $stat == 'emailSending') {
+			$dataSeries['Failed Emails'] = [
+				'borderColor' => 'rgba(154, 10, 120, 1)',
+				'backgroundColor' => 'rgba(154, 10, 120, 0.2)',
+				'data' => [],
+			];
+			$userUsage->selectAdd('SUM(emailsFailed) as sumFailedEmails');
+		}
+
 
 
 		//Collect results
@@ -337,6 +363,14 @@ class Admin_UsageGraphs extends Admin_Admin {
 			if ($stat == 'searchesWithErrors' || $stat == 'exceptionsReport') {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Searches with Errors']['data'][$curPeriod] = $userUsage->sumSearchesWithErrors;
+			}
+			if ($stat == 'emailsSent' || $stat == 'emailSending') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Emails Sent']['data'][$curPeriod] = $userUsage->sumEmailsSent;
+			}
+			if ($stat == 'failedEmails' || $stat == 'emailSending') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Failed Emails']['data'][$curPeriod] = $userUsage->sumFailedEmails;
 			}
 		}
 

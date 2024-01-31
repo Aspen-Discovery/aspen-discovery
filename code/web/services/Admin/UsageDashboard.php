@@ -77,6 +77,8 @@ class Admin_UsageDashboard extends Admin_Dashboard {
 			'totalTimedOutSearches' => $usage->totalTimedOutSearches,
 			'totalTimedOutSearchesWithHighLoad' => $usage->totalTimedOutSearchesWithHighLoad,
 			'totalSearchesWithErrors' => $usage->totalSearchesWithErrors,
+			'totalEmailsSent' => $usage->totalEmailsSent,
+			'totalFailedEmails' => $usage->totalFailedEmails,
 		];
 	}
 

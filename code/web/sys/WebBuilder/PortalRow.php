@@ -127,6 +127,10 @@ class PortalRow extends DataObject {
 		}
 	}
 
+	public function setCells($value) {
+		$this->_cells = $value;
+	}
+
 	/**
 	 * Override the update functionality to save related objects
 	 *
@@ -150,18 +154,20 @@ class PortalRow extends DataObject {
 	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
-			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
-			$portalCell = new PortalCell();
-			$portalCell->portalRowId = $this->id;
-			$portalCell->weight = 0;
-			$portalCell->widthTiny = 12;
-			$portalCell->widthXs = 12;
-			$portalCell->widthSm = 12;
-			$portalCell->widthMd = 12;
-			$portalCell->widthLg = 12;
-			$portalCell->insert();
+			if ($context != 'finishCopy') {
+				require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+				$portalCell = new PortalCell();
+				$portalCell->portalRowId = $this->id;
+				$portalCell->weight = 0;
+				$portalCell->widthTiny = 12;
+				$portalCell->widthXs = 12;
+				$portalCell->widthSm = 12;
+				$portalCell->widthMd = 12;
+				$portalCell->widthLg = 12;
+				$portalCell->insert();
 
-			$this->saveCells();
+				$this->saveCells();
+			}
 		}
 		return $ret;
 	}

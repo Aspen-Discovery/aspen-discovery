@@ -10,7 +10,7 @@ import java.net.URL;
 public class FileFinderUtil {
 
     public static InputStream getFileInputStream(String propertyFileURLStr) throws IOException {
-        InputStream in = null;
+        InputStream in;
         URL url = new URL(propertyFileURLStr);
         in = url.openStream();
 
@@ -38,9 +38,10 @@ public class FileFinderUtil {
             try {
                 fullPathNameToReturn = file.toURI().toURL().toExternalForm();
             } catch (MalformedURLException e) {
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
-        } else if (directoryPaths != null && directoryPaths.length != 0) {
+        } else if (directoryPaths != null) {
             for (String pathPrefix : directoryPaths) {
                 file = new File(pathPrefix, fileName);
                 if (file.exists() && file.isFile() && file.canRead()) {
@@ -56,6 +57,7 @@ public class FileFinderUtil {
                 fullPathNameToReturn = fileToReturn.toURI().toURL().toExternalForm();
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }

@@ -791,4 +791,8 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 			'itemData' => $item ?? [],
 		];
 	}
+
+	public function allowUpdatesOfPreferredName(User $patron) : bool {
+		return false;
+	}
 }
