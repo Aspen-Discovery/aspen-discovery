@@ -240,7 +240,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 		String targetAudiences = MarcUtil.getFirstFieldVal(marcRecord, "650a");
 		String targetAudience = "Adult";
-		if (targetAudiences.contains("JUVENILE")) {
+		if (targetAudiences != null && targetAudiences.contains("JUVENILE")) {
 			targetAudience = "Juvenile";
 		}
 
