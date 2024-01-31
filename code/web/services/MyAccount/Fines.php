@@ -11,7 +11,7 @@ class MyAccount_Fines extends MyAccount {
 
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
-			$interface->assign($user->showDateInFines());
+			$interface->assign('showDate', $user->showDateInFines());
 
 			$interface->setFinesRelatedTemplateVariables();
 

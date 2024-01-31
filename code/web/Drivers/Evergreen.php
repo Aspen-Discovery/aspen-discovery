@@ -1232,6 +1232,10 @@ class Evergreen extends AbstractIlsDriver {
 		return null;
 	}
 
+	public function showDateInFines(): bool {
+		return true;
+	}
+
 	public function getFines(User $patron, $includeMessages = false): array {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1249,7 +1253,7 @@ class Evergreen extends AbstractIlsDriver {
 
 		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
-			//Get a list of holds
+			//Get a list of fines/fees
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = [
 				'Content-Type: application/x-www-form-urlencoded',
@@ -1265,16 +1269,38 @@ class Evergreen extends AbstractIlsDriver {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload)) {
 					foreach ($apiResponse->payload[0] as $transactionObj) {
-						$transaction = $transactionObj->transaction->__p;
+						$transactionRaw = $transactionObj->transaction->__p;
+						$record = null;
+						if (!empty($transactionObj->record)) {
+							$record =  $transactionObj->record->__p;
+						}
+						$circ = null;
+						if (!empty($transactionObj->circ)) {
+							$circ =  $transactionObj->circ->__p;
+						}
 						/** @noinspection SpellCheckingInspection */
-						$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
+						$transactionObj = $this->mapEvergreenFields($transactionRaw, $this->fetchIdl('mbts'));
+						if ($record != null) {
+							$recordObject = $this->mapEvergreenFields($record, $this->fetchIdl('mvr'));
+							$reason = $recordObject['title'] . ' - ' . $recordObject['author'];
+//							if ($circ != null) {
+//								$circObject = $this->mapEvergreenFields($circ, $this->fetchIdl('circ'));
+//								if (!empty($circObject['stop_fines_time'])) {
+//									$reason .= " (" .  date('M j, Y', strtotime($circObject['stop_fines_time']) . ")";
+//								}
+//
+//							}
+						} else {
+							$reason = $transactionObj['last_billing_note'];
+						}
+
 						/** @noinspection SpellCheckingInspection */
 						$curFine = [
 							'fineId' => $transactionObj['id'],
-							'date' => strtotime($transactionObj['xact_start']),
+							'date' => date('M j, Y', strtotime($transactionObj['xact_start'])),
 							'type' => $transactionObj['xact_type'],
 							'reason' => $transactionObj['last_billing_type'],
-							'message' => $transactionObj['last_billing_note'],
+							'message' => $reason,
 							'amountVal' => $transactionObj['total_owed'],
 							'amountOutstandingVal' => $transactionObj['balance_owed'],
 							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
