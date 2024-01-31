@@ -145,6 +145,9 @@ class Admin_AJAX extends JSON_Action {
 		} elseif ($source == 'lists') {
 			require_once ROOT_DIR . '/sys/UserLists/ListIndexingLogEntry.php';
 			$extractLog = new ListIndexingLogEntry();
+        } elseif ($source == 'course_reserves') {
+            require_once ROOT_DIR . '/sys/CourseReserves/CourseReservesIndexingLogEntry.php';
+            $extractLog = new CourseReservesIndexingLogEntry();
 		} elseif ($source == 'nyt_updates') {
 			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 			$extractLog = new NYTUpdateLogEntry();
