@@ -75,7 +75,7 @@ class DonationsSetting extends DataObject {
 			'requiresAddressInfo' => [
 				'property' => 'requiresAddressInfo',
 				'type' => 'checkbox',
-				'label' => 'Requests users to add their address information for donation.',
+				'label' => 'Require users to enter their address when making a donation.',
 				'description' => 'Whether or not users have to add address information to make a donation.',
 				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
 			],
