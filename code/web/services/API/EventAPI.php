@@ -285,13 +285,21 @@ class EventAPI extends Action {
 					'message' => 'You must provide an event id, source, and vendor to save this event.'
 				];
 			}
+
+			$success = false;
+			$title = translate([
+				'text' => 'Unable to save',
+				'isPublicFacing' => true,
+			]);
+			$message = translate(['text' => 'Unable to save this event to your events.',
+				'isPublicFacing' => true,]);
 			
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = $user->id;
 			$userEventsEntry->sourceId = $id;
 
-			$regRequired = false;
+			$regRequired = 0;
 			$regModal = null;
 			$externalUrl = null;
 			if(str_starts_with($id, 'communico')) {
@@ -303,7 +311,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -319,7 +327,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -335,7 +343,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -353,27 +361,33 @@ class EventAPI extends Action {
 			$userEventsEntry->dateAdded = time();
 
 			if($userEventsEntry->find(true)) {
-				$userEventsEntry->update();
-			} else {
-				$userEventsEntry->insert();
+				if($userEventsEntry->update()) {
+					$success = true;
+				}
+ 			} else {
+				if($userEventsEntry->insert()) {
+					$success = true;
+				}
 			}
 
-			$message = translate(['text' => 'This event was saved to your events successfully.',
-				'isPublicFacing' => true,]);
-
-			if($regRequired) {
-				$message = translate([
-					'text' => 'This event was saved to your events successfully. Saving an event to your events is not the same as registering.',
+			if($success) {
+				$message = translate(['text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,]);
+				$title = translate([
+					'text' => 'Added Successfully',
 					'isPublicFacing' => true,
 				]);
+				if($regRequired) {
+					$message = translate([
+						'text' => 'This event was saved to your events successfully. Saving an event to your events is not the same as registering.',
+						'isPublicFacing' => true,
+					]);
+				}
 			}
 
 			return [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Added Successfully',
-					'isPublicFacing' => true,
-				]),
+				'success' => $success,
+				'title' => $title,
 				'message' => $message,
 				'registrationRequired' => $regRequired,
 				'regBody' => $regModal,

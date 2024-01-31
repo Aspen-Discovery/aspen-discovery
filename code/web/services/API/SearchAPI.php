@@ -2847,6 +2847,13 @@ class SearchAPI extends Action {
 					if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
 						$registrationRequired = true;
 					}
+
+					$locationInfo = null;
+					if($record['branch']) {
+						require_once ROOT_DIR . '/services/API/EventAPI.php';
+						$eventApi = new EventAPI();
+						$locationInfo = $eventApi->getDiscoveryBranchDetails($record['branch'][0]);
+					}
 					$items[$recordKey]['key'] = $record['id'];
 					$items[$recordKey]['source'] = $eventSource;
 					$items[$recordKey]['title'] = $record['title'];
@@ -2856,6 +2863,8 @@ class SearchAPI extends Action {
 					$items[$recordKey]['summary'] = strip_tags($record['description']);
 					$items[$recordKey]['registration_required'] = $registrationRequired;
 					$items[$recordKey]['event_day'] = $record['event_day'];
+					$items[$recordKey]['location'] = $locationInfo;
+					$items[$recordKey]['room'] = $record['room'] ?? null;
 
 					$startDate = new DateTime($record['start_date']);
 					$items[$recordKey]['start_date'] = $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));

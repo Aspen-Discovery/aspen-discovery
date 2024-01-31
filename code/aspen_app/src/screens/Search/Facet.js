@@ -11,6 +11,7 @@ import { getTermFromDictionary } from '../../translations/TranslationService';
 import { LIBRARY } from '../../util/loadLibrary';
 import { addAppliedFilter, buildParamsForUrl, removeAppliedFilter, SEARCH, searchAvailableFacets } from '../../util/search';
 import Facet_Checkbox from './Facets/Checkbox';
+import { Facet_Date } from './Facets/Date';
 import Facet_RadioGroup from './Facets/RadioGroup';
 import Facet_Rating from './Facets/Rating';
 import Facet_Slider from './Facets/Slider';
@@ -277,6 +278,17 @@ export default class Facet extends Component {
                          <ScrollView>
                               <Box safeArea={5}>
                                    <Facet_Year category={category} updater={this.updateLocalValues} data={facets} language={this.state.language} />
+                              </Box>
+                         </ScrollView>
+                         {this.actionButtons()}
+                    </View>
+               );
+          } else if (category === 'start_date') {
+               return (
+                    <View style={{ flex: 1 }}>
+                         <ScrollView>
+                              <Box safeArea={5}>
+                                   <Facet_Date category={category} updater={this.updateLocalValues} data={facets} />
                               </Box>
                          </ScrollView>
                          {this.actionButtons()}
