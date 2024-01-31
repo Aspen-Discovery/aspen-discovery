@@ -25,7 +25,8 @@ class Donations_NewDonation extends Action {
 				$donation->lastName = $user->lastname;
 				$donation->email = $user->email;
 				//Let's populate fields if donation form requires address information
-				if ($donationSettings->requiresAddressInfo){
+				if ($donationSettings->requiresAddressInfo) {
+					$user->loadContactInformation();
 					$donation->address = $user->_address1;
 					$donation->address2 = $user->_address2;
 					$donation->city = $user->_city;
@@ -140,7 +141,7 @@ class Donations_NewDonation extends Action {
 			}
 
 			// Get the fields to display for the form
-			$donationFormFields = $donation->getDonationFormFields($donationSettings->id);
+			$donationFormFields = $donation->getDonationFormFields($donationSettings);
 			$interface->assign('donationFormFields', $donationFormFields);
 
 			// Get the value options to display for the form

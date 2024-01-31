@@ -1280,6 +1280,30 @@ class Koha extends AbstractIlsDriver {
 		return $userExistsInDB;
 	}
 
+	function loadContactInformation(User $user) {
+		$this->initDatabaseConnection();
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->unique_ils_id) . "';";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+		if ($lookupUserResult) {
+			$userFromDb = $lookupUserResult->fetch_assoc();
+			$lookupUserResult->close();
+
+			if (empty($userFromDb)) {
+				return;
+			}
+
+			$user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
+			$user->_address2 = $userFromDb['address2'];
+			$user->_city = $userFromDb['city'];
+			$user->_state = $userFromDb['state'];
+			$user->_zip = $userFromDb['zipcode'];
+			$user->phone = $userFromDb['phone'];
+
+			$user->_web_note = $userFromDb['opacnote'];
+		}
+	}
+
 	function initDatabaseConnection() {
 		if ($this->dbConnection == null) {
 			$port = empty($this->accountProfile->databasePort) ? '3306' : $this->accountProfile->databasePort;
