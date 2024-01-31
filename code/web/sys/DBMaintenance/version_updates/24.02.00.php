@@ -115,7 +115,14 @@ function getUpdates24_02_00(): array {
 				"ALTER TABLE open_archives_collection ADD COLUMN indexAllSets TINYINT(1) DEFAULT(0)"
 			],
 		],
-
+		'summon_password_length' => [
+			'title' => 'Summon Password Length',
+			'description' => 'Increase the length of the Summon password to account for encryption',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE summon_settings CHANGE COLUMN summonApiPassword summonApiPassword VARCHAR(256)"
+			],
+		],
 
 		//kirstien - ByWater
 		'add_branded_app_privacy_policy_contact' => [
