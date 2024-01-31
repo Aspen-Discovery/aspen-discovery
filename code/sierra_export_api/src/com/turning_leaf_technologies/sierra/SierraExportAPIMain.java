@@ -140,9 +140,8 @@ public class SierraExportAPIMain {
 						exportHolds(sierraConn, dbConn);
 						exportVolumes(sierraConn, dbConn);
 					}
+					getBibsWithHoldings(sierraConn);
 				}
-
-				getBibsWithHoldings(sierraConn);
 
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
@@ -166,7 +165,9 @@ public class SierraExportAPIMain {
 					}
 
 					//Get a list of all active bibs, so we can see what needs to be deleted.
-					checkForDeletedBibsInSierra(sierraConn);
+					if (sierraInstanceInformation.sierraConnection != null) {
+						checkForDeletedBibsInSierra(sierraConn);
+					}
 
 					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
