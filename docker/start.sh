@@ -56,16 +56,10 @@ if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE
 	#Genero el sitio nuevo
 	php createSite.php createSiteTemplate.ini
 
-	#Doy permisos de ejecucion al ejecutable de solr
-	chmod 755 /usr/local/aspen-discovery/sites/$SITE_sitename/$SITE_sitename.sh
-
 	#Elimino sitio por defecto de apache
 	unlink /etc/apache2/sites-enabled/000-default.conf
 	unlink /etc/apache2/sites-enabled/httpd-$SITE_sitename.conf
 	cp /etc/apache2/sites-available/httpd-$SITE_sitename.conf  /etc/apache2/sites-enabled/httpd-$SITE_sitename.conf
-
-	#Correcion del arranque de solr
-	sed -i "s/start -m/start -force -m/g" /usr/local/aspen-discovery/sites/$SITE_sitename/$SITE_sitename.sh
 
 	#Cambio prioridad para ingreso de aspen
 	mysql -u$ASPEN_DBUser -p$ASPEN_DBPwd -h$ASPEN_DBHost -P$ASPEN_DBPort $ASPEN_DBName -e "update account_profiles set weight=0 where name='admin'; update account_profiles set weight=1 where name='ils';"
@@ -110,13 +104,6 @@ fi
 if [ $COMPOSE_Cron == "on" ]; then
 	service cron start 
 	php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php $SITE_sitename &
-fi
-
-#Arranque de Solr
-if [ $COMPOSE_Solr == "on" ]; then
-	sleep 10;
-	mkdir -p /data/aspen-discovery/$SITE_sitename/solr7
-	/usr/local/aspen-discovery/sites/$SITE_sitename/$SITE_sitename.sh start &
 fi
 
 #Asigno 'owner' correcto sobre distintos directorios dentro de Aspen
