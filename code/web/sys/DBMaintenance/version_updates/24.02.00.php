@@ -189,6 +189,19 @@ function getUpdates24_02_00(): array {
 			],
 		], //cloud_library_availability_changes
 
+		'usps_settings' => [
+			'title' => 'USPS Address Verification',
+			'description' => 'Adds settings for USPS API address verification',
+			'sql' => [
+				"CREATE TABLE `usps_settings` (
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `clientId` varchar(255) DEFAULT NULL,
+				  `clientSecret` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+			],
+		], //usps_settings
+
 		//lucas - Theke
 		 'requires_address_info' => [
 			 'title' => 'Requires address information',

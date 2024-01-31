@@ -21,9 +21,52 @@ class SelfReg extends Action {
 				if (!$recaptchaValid) {
 					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 				} else {
-					//Submit the form to ILS
-					$result = $catalog->selfRegister();
-					$interface->assign('selfRegResult', $result);
+					require_once ROOT_DIR . '/sys/Administration/USPS.php';
+					$uspsInfo = USPS::getUSPSInfo();
+
+					//if there's no USPS info, don't bother trying to validate
+					if ($uspsInfo){
+						$streetAddress = '';
+						$city = '';
+						$state = '';
+						$zip = '';
+
+						//get the correct _REQUEST names as they differ across ILSes
+						foreach ($_REQUEST as $selfRegValue => $val){
+							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)){
+								$streetAddress = $val;
+							}
+							elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
+								$city = $val;
+							}
+							elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
+								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+								if (strlen($val) == 2){
+									$state = $val;
+								}
+							}
+							elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
+								$zip = $val;
+							}
+						}
+
+						require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+						//Submit form to ILS if address is validated
+						if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)){
+							$result = $catalog->selfRegister();
+							$interface->assign('selfRegResult', $result);
+						} else {
+							$addressMessage = translate([
+								'text' => 'Unable to verify your address. Please check your address and try again.',
+								'isPublicFacing' => true
+							]);
+							$interface->assign('addressMessage', $addressMessage);
+						}
+					} else {
+						$result = $catalog->selfRegister();
+						$interface->assign('selfRegResult', $result);
+					}
+
 				}
 
 				// Pre-fill form with user supplied data
