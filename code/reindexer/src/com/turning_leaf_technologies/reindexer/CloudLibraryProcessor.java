@@ -87,7 +87,9 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
 					loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 
-					//TODO: cloudLibrary does not code target audience.  Load from subjects
+					//get target audience from Marc
+					String targetAudience = productRS.getString("targetAudience");
+					groupedWork.addTargetAudience(targetAudience);
 				} else {
 					logEntry.incErrors("Error getting MARC record for cloudLibrary record from database");
 				}
