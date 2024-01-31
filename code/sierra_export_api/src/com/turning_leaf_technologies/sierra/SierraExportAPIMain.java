@@ -1372,8 +1372,9 @@ public class SierraExportAPIMain {
 		}
 		//Connect to the API to get our token
 		HttpURLConnection conn;
+		String getTokenUrl = baseUrl + "/token";
 		try {
-			URL emptyIndexURL = new URL(baseUrl + "/token");
+			URL emptyIndexURL = new URL(getTokenUrl);
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
@@ -1432,7 +1433,7 @@ public class SierraExportAPIMain {
 			}
 
 		} catch (Exception e) {
-			logger.error("Error connecting to sierra API", e );
+			logger.error("Error connecting to sierra API " + getTokenUrl, e );
 			return false;
 		}
 		return true;
