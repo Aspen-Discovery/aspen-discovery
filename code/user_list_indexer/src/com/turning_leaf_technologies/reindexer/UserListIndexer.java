@@ -305,7 +305,17 @@ class UserListIndexer {
 									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
 								}
 							}
-						}else{
+						} else if (source.equals("Summon")) {
+							//Get title and authoe with a JSON request
+							URL getTitleAuthorUrl = new URL(baseUrl + "/Summon/JSON?methos=getTitleAuthor&id=" + sourceId);
+							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
+							if (titleAuthorRaw instanceof InputStream) {
+								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
+								if (titleAuthorResult.getBoolean("success")){
+									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
+								}
+						} else{
 							logEntry.incErrors("Unhandled source " + source);
 						}
 						//TODO: Handle other types of objects within a User List
