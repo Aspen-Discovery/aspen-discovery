@@ -54,4 +54,52 @@ class SystemUtils {
 			return false;
 		}
 	}
+
+	static function validateAddress($streetAddress, $city, $state, $zip): bool {
+		$baseUrl = 'https://api.usps.com';
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+
+		//GET OAUTH TOKEN
+		$getOauthToken = new CurlWrapper();
+		$getOauthToken->addCustomHeaders([
+			'Content-Type: application/x-www-form-urlencoded',
+			'Accept: application/json',
+		], false);
+
+		require_once ROOT_DIR . '/sys/Administration/USPS.php';
+		$uspsInfo = USPS::getUSPSInfo();
+		$postParams = [
+			'grant_type'=>'client_credentials',
+			'client_id'=>$uspsInfo->clientId,
+			'client_secret'=>$uspsInfo->clientSecret,
+		];
+
+		$url = $baseUrl . '/oauth2/v3/token';
+		$accessTokenResults = $getOauthToken->curlPostPage($url, $postParams);
+		$accessToken = "";
+		if ($accessTokenResults) {
+			$jsonResponse = json_decode($accessTokenResults);
+			if (isset($jsonResponse->access_token)) {
+				$accessToken = $jsonResponse->access_token;
+			}
+		}
+
+		//ADDRESS VALIDATION
+		$validateAddress = new CurlWrapper();
+		$validateAddress->addCustomHeaders([
+			'Authorization: Bearer ' . $accessToken,
+			'Content-Type: application/x-www-form-urlencoded',
+			'Accept: application/json',
+		], true);
+
+		$url = $baseUrl . '/addresses/v3/address?streetAddress=' . urlencode($streetAddress) . '&city=' . $city . '&state=' . $state . '&ZIPCode=' . $zip;
+		$validateAddressResults = $validateAddress->curlGetPage($url);
+		ExternalRequestLogEntry::logRequest('usps.validateAddress', 'GET', $url, $validateAddress->getHeaders(), '', $validateAddress->getResponseCode(), $validateAddressResults, []);
+
+		if ($validateAddress->getResponseCode() == 200){
+			return true;
+		}
+
+		return false;
+	}
 }
