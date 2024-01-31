@@ -1076,7 +1076,7 @@ public class SierraExportAPIMain {
 				}
 			}else{
 				//Log this as an invalid record, so we can continue, but return true, so we don't log an error.
-				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
+				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API, could not connect to API");
 				return true;
 			}
 		}catch (Exception e){
@@ -1433,7 +1433,7 @@ public class SierraExportAPIMain {
 			}
 
 		} catch (Exception e) {
-			logger.error("Error connecting to sierra API " + getTokenUrl, e );
+			logger.error("Error connecting to sierra API - " + getTokenUrl, e );
 			return false;
 		}
 		return true;
@@ -1584,6 +1584,8 @@ public class SierraExportAPIMain {
 			} catch (Exception e) {
 				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) ", e );
 			}
+		}else {
+			logger.error("Could not connect to api when fetching " + sierraUrl);
 		}
 		return null;
 	}
