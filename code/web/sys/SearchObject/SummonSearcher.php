@@ -160,7 +160,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	*/
 	private function getSettings() {
 		global $library;
-		if (!str_contains( $library->summonSettingsId, -1 )) {
+		if ($library->summonSettingsId != -1) {
 			$summonSettings = new SummonSettings();
 			$summonSettings->id = $library->summonSettingsId;
 			if (!$summonSettings->find(true)) {

@@ -67,7 +67,6 @@
 	<div class="search_tools well small">
 		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if !empty($showSearchTools)}
-			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 			{if !empty($enableSavedSearches)}
 				{if !empty($savedSearch)}
