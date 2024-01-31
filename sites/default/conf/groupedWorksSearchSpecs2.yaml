@@ -1,0 +1,459 @@
+---
+# Listing of search types and their component parts and weights.
+#
+# Format is:
+#  searchType:
+#    # CustomMunge is an optional section to define custom pre-processing of
+#    #     user input.  See below for details of munge actions.
+#    CustomMunge:
+#      MungeName1:
+#        - [action1, actionParams]
+#        - [action2, actionParams]
+#        - [action3, actionParams]
+#      MungeName2:
+#        - [action1, actionParams]
+#    # QueryFields define the fields we are searching
+#    QueryFields:
+#      - SolrField:
+#        - [howToMungeSearchString, weight]
+#        - [differentMunge, weight]
+#      - DifferentSolrField:
+#        - [howToMunge, weight]
+#    # The optional FilterQuery section allows you to AND a static query to the
+#    #     dynamic query generated using the QueryFields; see JournalTitle below
+#    #     for an example.
+#    FilterQuery: (optional Lucene filter query)
+# 
+# ...etc.
+#
+#-----------------------------------------------------------------------------------
+#
+# Within the QueryFields area, fields are OR'd together, unless they're in an 
+# anonymous array, in which case the first element is a two-value array that tells 
+# us what the type (AND or OR) and weight of the whole group should be.
+#
+# So, given:
+#
+# test:
+#   QueryFields:
+#     - A:
+#       - [onephrase, 500]
+#       - [and, 200]
+#     - B:
+#       - [and, 100]   
+#       - [or, 50]  
+#     # Start an anonymous array to group; first element indicates AND grouping 
+#     #     and a weight of 50
+#     -
+#       - [AND, 50]                 
+#       - C:
+#         - [onephrase, 200]
+#       - D:
+#         - [onephrase, 300]
+#       # Note the "not" attached to the field name as a minus, and the use of ~ 
+#       #     to mean null ("no special weight")
+#       - -E:
+#         - [or, ~]
+#     - D:
+#       - [or, 100]
+# 
+#  ...and the search string 
+#
+#      test "one two"
+#
+#  ...we'd get
+#   
+#   (A:"test one two"^500 OR 
+#    A:(test AND "one two")^ 200 OR
+#    B:(test AND "one two")^100 OR
+#    B:(test OR "one two")^50
+#    (
+#      C:("test one two")^200 AND
+#      D:"test one two"^300 AND
+#      -E:(test OR "one two")
+#    )^50 OR
+#    D:(test OR "one two")^100
+#   )
+#
+#-----------------------------------------------------------------------------------
+#
+# Munge types are based on the original Solr.php code, and consist of:
+#
+# onephrase: eliminate all quotes and do it as a single phrase. 
+#   testing "one two"
+#    ...becomes ("testing one two")
+#
+# and: AND the terms together
+#  testing "one two"
+#   ...becomes (testing AND "one two")
+#
+# or: OR the terms together
+#  testing "one two"
+#   ...becomes (testing OR "one two")
+#
+# Additional Munge types can be defined in the CustomMunge section.  Each array
+# entry under CustomMunge defines a new named munge type.  Each array entry under
+# the name of the munge type specifies a string manipulation operation.  Operations
+# will be applied in the order listed, and different operations take different
+# numbers of parameters.
+#
+# Munge operations:
+#
+# [append, text] - Append text to the end of the user's search string
+# [lowercase] - Convert string to lowercase
+# [preg_replace, pattern, replacement] - Perform a regular expression replace
+#                                        using the preg_replace() PHP function
+# [uppercase] - Convert string to uppercase
+#
+# See the CallNumber search below for an example of custom munging in action.
+#-----------------------------------------------------------------------------------
+
+Author:
+  QueryFields:
+    - author_exact:
+      - [localized_callnumber, 2200]
+    - author_left:
+      - [text_left, 1400]
+    - author:
+      - [onephrase, 350]
+      - [proximal, 200]
+    - author2:
+      - [onephrase, 25]
+      - [proximal, 1]
+    - author_additional:
+      - [onephrase, 25]
+      - [proximal, 1]
+
+AuthorProper:
+  QueryFields:
+    - author_exact:
+      - [exact, 2200]
+    - auth_author:
+      - [onephrase, 350]
+    - auth_author2:
+      - [onephrase, 100]
+    - author2:
+      - [ onephrase, 25 ]
+    - author_additional:
+      - [onephrase, 25]
+
+ISN:
+  QueryFields:
+    - issn:
+      - [and, 100]
+      - [or, ~]
+    - isbn:
+      - [and, 100]
+      - [or, ~]
+    - upc:
+      - [and, 100]
+      - [or, ~]
+
+Subject:
+  QueryFields:
+    - topic_proper:
+      - [onephrase, 600]
+      - [and, 100]
+    - subject:
+      - [onephrase, 500]
+      - [and, 100]
+    - topic:
+      - [onephrase, 500]
+      - [and, 100]
+    - geographic:
+      - [onephrase, 300]
+      - [and, 100]
+    - genre:
+      - [onephrase, 300]
+      - [and, 100]
+    - era:
+      - [onephrase, 300]
+      - [and, 100]
+
+SubjectProper:
+  QueryFields:
+    - subject_proper:
+      - [onephrase, 500]
+    - topic_proper:
+      - [onephrase, 500]
+    - geographic_proper:
+      - [onephrase, 300]
+    - genre_proper:
+      - [onephrase, 300]
+    - era_proper:
+      - [onephrase, 300]
+
+Title:
+  QueryFields:
+    - title_exact:
+      - [localized_callnumber, 10000]
+    - title_left:
+      - [text_left_word, 5000]
+      - [text_left, 400]
+    - title_proper:
+      - [exact, 800]
+    - title_proper:
+      - [onephrase, 500]
+    - title_proper:
+      - [and, 200]
+    - title_proper:
+      - [single_word_removal, 1]
+    - title:
+      - [onephrase, 200]
+    - title:
+      - [and, 125]
+    - title_alt:
+      - [and, 100]
+    - title_new:
+      - [and, 50]
+    - series_proper:
+      - [exact, 200]
+    - series_proper:
+      - [onephrase, 100]
+    - series_proper:
+      - [and, 25]
+    - series:
+      - [exact, 100]
+    - series:
+      - [onephrase, 50]
+    - series:
+      - [and, 10]
+    - series2:
+      - [and, 10]
+
+TitleProper:
+  QueryFields:
+    - title_exact:
+      - [localized_callnumber, 2400]
+    - title_proper:
+      - [onephrase, 850]
+    - series_proper:
+      - [onephrase, 100]
+
+StartOfTitle:
+  QueryFields:
+    - title_left:
+      - [text_left, 1]
+
+Series:
+  QueryFields:
+    - series_proper:
+      - [localized_callnumber, 2400]
+      - [text_left, 750]
+      - [onephrase, 500]
+    - series:
+      - [text_left, 1000]
+      - [onephrase, 500]
+      - [and, 100]
+    - series2:
+      - [onephrase, 50]
+      - [and, 50]
+
+SeriesProper:
+  QueryFields:
+    - series_proper:
+      - [localized_callnumber, 2400]
+      - [onephrase, 500]
+    - series2:
+      - [onephrase, 750]
+      - [exact, 250]
+    - series:
+      - [onephrase, 1000]
+      - [exact, 400]
+
+# This is proving slow based of the number of things we are searching.
+# Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
+Keyword:
+  QueryFields:
+    - author:
+      - [proximal, 8000]
+      - [single_word, 250]
+    - title_exact:
+      - [localized_callnumber, 6000]
+    - title_left:
+      - [ text_left_word, 2500 ]
+    - title_proper:
+      - [ exact, 800 ]
+      - [ onephrase, 500 ]
+      - [single_word_removal, 1]
+    - series_proper:
+      - [ proximal, 7000 ]
+      - [ single_word, 100]
+      - [ onephrase, 50 ]
+    - id:
+      - [exact, 500]
+    - alternate_ids:
+      - [exact, 500]
+    - barcode:
+      - [onephrase, 500]
+    - local_callnumber_exact:
+      - [localized_callnumber, 400]
+    - local_callnumber_left:
+      - [text_left, 300]
+    - subject:
+      - [onephrase, 800]
+    - title:
+      - [onephrase, 200]
+    - topic:
+      - [onephrase, 125]
+    - title_alt:
+      - [onephrase, 100]
+    - issn:
+      - [and, 100]
+    - isbn:
+      - [and, 100]
+    - upc:
+      - [and, 100]
+    - geographic:
+      - [onephrase, 75]
+    - genre:
+      - [onephrase, 75]
+    - era:
+      - [onephrase, 75]
+    - target_audience:
+      - [onephrase, 75]
+    - literary_form_full:
+      - [onephrase, 75]
+    - series:
+      - [ exact, 50 ]
+      - [ onephrase, 10 ]
+    - author2:
+      - [proximal, 25]
+    - author_additional:
+      - [proximal, 25]
+    - table_of_contents:
+      - [onephrase, 20]
+    - description:
+      - [onephrase, 15]
+    - keywords:
+      - [onephrase, 10]
+    - title_full:
+      - [single_word_removal, 1]
+    - issn:
+      - [or, ~]
+    - isbn:
+      - [or, ~]
+    - upc:
+      - [or, ~]
+    - local_callnumber:
+      - [onephrase, ~]
+    - keywords:
+      - [and, ~]
+
+KeywordProper:
+  QueryFields:
+    - title_exact:
+      - [localized_callnumber, 2400]
+    - author_exact:
+      - [localized_callnumber, 2200]
+    - title_proper:
+      - [onephrase, 850]
+    - series_proper:
+      - [onephrase, 500]
+    - auth_author:
+      - [onephrase, 300]
+    - auth_author2:
+      - [onephrase, 300]
+    - table_of_contents_proper:
+      - [onephrase, 10]
+    - topic_proper:
+      - [onephrase, 500]
+    - geographic_proper:
+      - [onephrase, 300]
+    - genre_proper:
+      - [onephrase, 300]
+    - keywords_proper:
+      - [onephrase, ~]
+    - issn:
+      - [and, 100]
+    - issn:
+      - [or, ~]
+    - isbn:
+      - [and, 100]
+    - isbn:
+      - [or, ~]
+    - upc:
+      - [and, 100]
+    - upc:
+      - [or, ~]
+    - oclc:
+      - [and, 100]
+    - oclc:
+      - [or, ~]
+    - callnumber-subject:
+      - [onephrase, ~]
+    - callnumber-subject:
+      - [exact, ~]
+    - id:
+      - [exact, ~]
+    - alternate_ids:
+      - [exact, ~]
+    - local_callnumber_exact:
+      - [localized_callnumber, 800]
+    - local_callnumber_left:
+      - [text_left, 300]
+    - barcode:
+      - [onephrase, ~]
+
+id:
+  QueryFields:
+    - id:
+      - [exact, ~]
+      - [or, ~]
+    - alternate_ids:
+      - [exact, ~]
+      - [or, ~]
+
+LocalCallNumber:
+  QueryFields:
+    - local_callnumber_exact:
+      - [localized_callnumber, 800]
+    - local_callnumber_left:
+      - [text_left, 300]
+    - local_callnumber:
+      - [exact, ~]
+
+publisher:
+  QueryFields:
+    - publisher:
+      - [and, 100]
+
+year:
+  QueryFields:
+    - publishDate:
+      - [and, 100]
+
+language:
+  QueryFields:
+    - language:
+      - [and, ~]
+
+toc:
+  QueryFields:
+    - table_of_contents:
+      - [and, 100]
+
+topic:
+  QueryFields:
+    - topic:
+      - [and, 50]
+    - topic_facet:
+      - [and, ~]
+
+geographic:
+  QueryFields:
+    - geographic:
+      - [and, 50]
+    - geographic_facet:
+      - [and ~]
+
+genre:
+  QueryFields:
+    - genre:
+      - [and, 50]
+    - genre_facet:
+      - [and, ~]
+
+era:
+  QueryFields:
+    - era:

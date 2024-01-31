@@ -743,8 +743,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 
 	public function buildRisExport($result = null) {
-		global $solrScope;
-		global $configArray;
 		try {
 			// First, get the search results if none were provided
 			if (is_null($result)) {
