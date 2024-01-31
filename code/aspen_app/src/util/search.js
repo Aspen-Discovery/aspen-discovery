@@ -409,7 +409,7 @@ export function buildParamsForUrl() {
                          } else {
                               params = params.concat('&sort=' + facet);
                          }
-                    } else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
+                    } else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level' || field === 'start_date') {
                          facet = facet.replaceAll(' ', '+');
                          params = params.concat('&filter[]=' + field + ':' + facet);
                     } else {
