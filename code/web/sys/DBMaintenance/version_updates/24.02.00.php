@@ -209,6 +209,14 @@ function getUpdates24_02_00(): array {
 			],
 		], //usps_settings
 
+		'cloud_library_target_audience' => [
+			'title' => 'Cloud Library Target Audience',
+			'description' => 'Adds column for target audience for Cloud Library items.',
+			'sql' => [
+				"ALTER TABLE cloud_library_title ADD targetAudience VARCHAR(25) DEFAULT 'ADULT' AFTER format;"
+			],
+		],
+
 		//lucas - Theke
 		 'requires_address_info' => [
 			 'title' => 'Requires address information',
