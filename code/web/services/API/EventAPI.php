@@ -120,12 +120,15 @@ class EventAPI extends Action {
 			$itemData['pastEvent'] = $today >= $eventDay;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($libraryCalendarDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($libraryCalendarDriver->getSource());
 			}
+
 
 			return $itemData;
 		}
@@ -158,6 +161,7 @@ class EventAPI extends Action {
 			$itemData['programTypes'] = $communicoDriver->getProgramTypes();
 			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			// check if event has passed
 			$difference = $communicoDriver->getStartDate()->diff(new DateTime());;
@@ -168,6 +172,7 @@ class EventAPI extends Action {
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($communicoDriver->getSource());
 			}
 
 			return $itemData;
@@ -202,11 +207,13 @@ class EventAPI extends Action {
 			$itemData['room'] = null;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($springshareDriver->getSource());
 			}
 
 			return $itemData;
