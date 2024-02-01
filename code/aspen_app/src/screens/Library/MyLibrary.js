@@ -85,8 +85,10 @@ export const MyLibrary = () => {
 
      const key = 'location_' + location.locationId;
 
+     console.log(key + ':' + location.locationImage);
+
      const selectLocations = () => {
-          navigate('AllLocations', {});
+          navigate('AllLocations');
      };
 
      return (

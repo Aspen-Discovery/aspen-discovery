@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
 import { Badge, Box, Button, FlatList, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
@@ -209,9 +210,12 @@ const DisplayResult = (data) => {
 
 async function fetchSearchResults(id, page, url, language) {
      let listId = id;
-     if (listId.includes('system_user_list')) {
-          const myArray = id.split('_');
-          listId = myArray[myArray.length - 1];
+     console.log(listId);
+     if (_.isString(listId)) {
+          if (listId.includes('system_user_list')) {
+               const myArray = id.split('_');
+               listId = myArray[myArray.length - 1];
+          }
      }
 
      const { data } = await axios.get('/SearchAPI?method=getListResults', {

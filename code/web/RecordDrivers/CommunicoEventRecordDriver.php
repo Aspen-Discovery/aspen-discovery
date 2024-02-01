@@ -387,6 +387,17 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		return false;
 	}
 
+	public function getAllowInListsSetting() {
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting();
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->eventsInLists;
+		}
+
+		return false;
+	}
+
 	public function getSummaryInformation() {
 		return [
 			'id' => $this->getUniqueID(),

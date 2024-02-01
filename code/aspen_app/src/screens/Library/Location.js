@@ -86,9 +86,10 @@ export const Location = () => {
      }
 
      const key = 'location_' + location.locationId;
+     console.log(key + ':' + location.locationImage);
 
      const selectLocations = () => {
-          navigate('AllLocations', {});
+          navigate('AllLocations');
      };
 
      if (!location) {

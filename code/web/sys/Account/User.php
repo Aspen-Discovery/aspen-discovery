@@ -1711,6 +1711,50 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function isAllowedToAddEventsToList($vendor): bool {
+		$activeLibrary = $this->getHomeLibrary();
+		if ($activeLibrary == null) {
+			global $library;
+			$activeLibrary = $library;
+		}
+
+		$eventsSetting = new LibraryEventsSetting();
+		$eventsSetting->libraryId = $activeLibrary->libraryId;
+		$eventsSetting->settingSource = $vendor;
+		if($eventsSetting->find(true)) {
+			if($vendor == 'communico') {
+				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+				$settings = new CommunicoSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			} elseif ($vendor == 'springshare') {
+				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+				$settings = new SpringshareLibCalSetting;
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			} elseif ($vendor == 'library_market') {
+				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+				$settings = new LMLibraryCalendarSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function isRecordOnHold($source, $recordId) {
 		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";

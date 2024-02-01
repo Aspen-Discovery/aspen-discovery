@@ -578,7 +578,18 @@ const Events = () => {
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
-     if (version >= '24.02.00') {
+     const [savedEventsSummary, setSavedEventsSummary] = React.useState('');
+     React.useEffect(() => {
+          async function fetchTranslations() {
+               await getTranslationsWithValues('num_saved_events_upcoming', user.numSavedEventsUpcoming ?? 0, language, library.baseUrl).then((result) => {
+                    setSavedEventsSummary(result);
+               });
+          }
+
+          fetchTranslations();
+     }, [language]);
+
+     if (version >= '24.02.00' && library.hasEventSettings) {
           return (
                <Pressable
                     px="2"
@@ -598,6 +609,13 @@ const Events = () => {
                               </Text>
                          </VStack>
                     </HStack>
+                    {user.numSavedEventsUpcoming > 0 ? (
+                         <Container>
+                              <Badge colorScheme="info" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+                                   {savedEventsSummary}
+                              </Badge>
+                         </Container>
+                    ) : null}
                </Pressable>
           );
      }

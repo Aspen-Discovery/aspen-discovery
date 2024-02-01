@@ -483,6 +483,7 @@
   "no_events_past": "You have no saved past events.",
   "no_events_all": "You have not saved any events yet.",
   "added_successfully": "Added Successfully",
+  "removed_successfully": "Removed Successfully",
   "event_added_to_calendar": "Event added to your device calendar",
   "event_no_permissions": "We're unable to add events to your calendar without permissions.",
   "add_to_calendar": "Add to Calendar",
@@ -492,5 +493,6 @@
   "a_to_z": "A to Z",
   "distance": "Distance",
   "locations": "Locations",
-  "view_all_locations": "View All Locations"
+  "view_all_locations": "View All Locations",
+  "num_saved_events_upcoming": "%1% Upcoming"
 }

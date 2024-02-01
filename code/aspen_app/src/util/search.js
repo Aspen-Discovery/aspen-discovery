@@ -343,9 +343,11 @@ export async function listofListSearchResults(searchId, limit = 25, page, url, l
 
 export async function savedSearchResults(searchId, limit = 25, page, url, language) {
      let id = searchId;
-     if (searchId.includes('system_saved_search')) {
-          const myArray = searchId.split('_');
-          id = myArray[3];
+     if (_.isString(searchId)) {
+          if (searchId.includes('system_saved_search')) {
+               const myArray = searchId.split('_');
+               id = myArray[3];
+          }
      }
 
      const postBody = await postData();
