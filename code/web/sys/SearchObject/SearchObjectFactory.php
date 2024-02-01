@@ -68,6 +68,9 @@ class SearchObjectFactory {
 			case 'ebsco_eds' :
 				$engine = 'EbscoEds';
 				break;
+			case 'summon' :
+				$engine = 'Summon';
+				break;
 			default:
 				$systemVariables = SystemVariables::getSystemVariables();
 				if ($systemVariables->searchVersion == 1) {
@@ -130,6 +133,9 @@ class SearchObjectFactory {
 				break;
 			case 'ebscohost' :
 				$source = 'Ebscohost';
+				break;
+			case 'summon':
+				$source = 'Summon';
 				break;
 			default:
 				$source = 'GroupedWork';

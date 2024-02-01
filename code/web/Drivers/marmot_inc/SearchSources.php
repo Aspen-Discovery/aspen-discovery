@@ -15,6 +15,9 @@ class SearchSources {
 			case 'ebsco_eds':
 				$searchObject = SearchObjectFactory::initSearchObject('EbscoEds');
 				break;
+			case 'summon':
+				$searchObject = SearchObjectFactory::initSearchObject('Summon');
+				break;
 			case 'events':
 				$searchObject = SearchObjectFactory::initSearchObject('Events');
 				break;
@@ -83,6 +86,7 @@ class SearchSources {
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchEbscoEDS = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
 		$searchEbscohost = array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSearchSettingId != -1;
+		$searchSummon = array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 		$searchCourseReserves = $library->enableCourseReserves == 2;
 
@@ -195,6 +199,24 @@ class SearchSources {
 				'hasAdvancedSearch' => false,
 			];
 		}
+
+		if ($searchSummon) {
+			$searchOptions['summon'] = [
+				'name' => 'Articles & Databases',
+				'description' => 'Summon - Articles and Database',
+				'catalogType' => 'summon',
+				'hasAdvancedSearch' => false,
+			];
+		}
+
+		// if ($searchSummon) {
+		// 	$searchOptions['summon'] = [
+		// 		'name' => 'Articles & Databases',
+		// 		'description' => 'Summon - Articles and Database',
+		// 		'catalogType' => 'summon',
+		// 		'hasAdvancedSearch' => false,
+		// 	];
+		// }
 
 		if (array_key_exists('Events', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';

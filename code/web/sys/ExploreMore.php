@@ -61,6 +61,11 @@ class ExploreMore {
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
 
+		$aummonMatches = $this->loadSummonOptions('', [], $searchTerm);
+		if (count($summonMatches) > 0) {
+			$interface->assign('relatedArticles', $summonMatches);
+		}
+
 		if ($activeSection != 'catalog') {
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedCatalogContent);
 			if ($relatedWorks['numFound'] > 0) {
@@ -124,6 +129,10 @@ class ExploreMore {
 		} elseif (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
 			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
+
+		if (array_key_exists('Summon', $enabledModules)) {
+			$exploreMoreOptions = $this->loadSummonOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
+		};
 
 		if (array_key_exists('Events', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
@@ -707,6 +716,54 @@ class ExploreMore {
 							];
 						}
 					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
+
+		/**
+	 * @param $activeSection
+	 * @param $searchTerm
+	 * @param $exploreMoreOptions
+	 * @return array
+	 */
+	public function loadSummonOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
+		global $library;
+		global $enabledModules;
+		if (!empty($searchTerm) && array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1 && $activeSection != 'summon') {
+			//Load Summon Options
+			/** @var Search_Object_SummonSearcher $summonSearcher */
+			$summonSearcher = SearchObjectFactory::initSearchObject('Summon');
+			$summonSearcher->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index' => 'Everything',
+			]);
+			$summonResults = $summonSearcher->sendRequest();
+			if ($summonResults != null) {
+				$exploreMoreOptions['sampleRecords']['summon'] = [];
+				$numMatches = $summonResults['recordCount'];
+				if ($numMatches > 1) {
+					if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
+						//TODO path to image files
+					} else {
+						//TODO inset path to default image
+					}
+					$exploreMoreOptions['searchLinks'][] = [
+						'label' => translate([
+							'text' => "All Summon Results (%1%)",
+							1 => $numMatches,
+							'isPublicFacing' => true,
+						]),
+						'description' => translate([
+							'text' => "All Results in Summon related to %1%",
+							1 => $searchTerm,
+							'isPublicFacing' => true,
+						]),
+						//'image' => $image,
+						//'link' => TODO,
+						'openInNewWindow' => false,
+					];
 				}
 			}
 		}

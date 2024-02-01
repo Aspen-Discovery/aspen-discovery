@@ -91,7 +91,7 @@ class OpenArchives_Results extends ResultsAction {
 			if ($error !== false) {
 				// If it's a parse error or the user specified an invalid field, we
 				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])) {
+				if (!empty($error['msg']) && (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg']))) {
 					$interface->assign('parseError', $error['msg']);
 
 					if (preg_match('/^undefined field/', $error['msg'])) {

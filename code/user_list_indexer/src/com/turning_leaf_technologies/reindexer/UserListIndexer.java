@@ -189,10 +189,10 @@ class UserListIndexer {
 		int isSearchable = allPublicListsRS.getInt("searchable");
 		long userId = allPublicListsRS.getLong("user_id");
 		boolean indexed = false;
-		if (!fullReindex && (deleted == 1 || isPublic == 0 || isSearchable == 0)){
+		if (!fullReindex && (deleted == 1 || isPublic == 0 || isSearchable == 0)) {
 			updateServer.deleteByQuery("id:" + listId);
 			logEntry.incDeleted();
-		}else{
+		} else {
 			logger.info("Processing list " + listId + " " + allPublicListsRS.getString("title"));
 			userListSolr.setId(listId);
 			userListSolr.setTitle(allPublicListsRS.getString("title"));
@@ -208,23 +208,23 @@ class UserListIndexer {
 
 				if (userName.equalsIgnoreCase("nyt_user")) {
 					userListSolr.setOwnerCanShareListsInSearchResults(true);
-				}else{
+				} else {
 					userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
 				}
-				if (displayName != null && !displayName.isEmpty()){
+				if (displayName != null && !displayName.isEmpty()) {
 					userListSolr.setAuthor(displayName);
-				}else{
+				} else {
 					if (firstName == null) firstName = "";
 					if (lastName == null) lastName = "";
 					String firstNameFirstChar = "";
-					if (!firstName.isEmpty()){
+					if (!firstName.isEmpty()) {
 						firstNameFirstChar = firstName.charAt(0) + ". ";
 					}
 					userListSolr.setAuthor(firstNameFirstChar + lastName);
 				}
 
 				long patronHomeLibrary = allPublicListsRS.getLong("homeLocationId");
-				if (librariesByHomeLocation.containsKey(patronHomeLibrary)){
+				if (librariesByHomeLocation.containsKey(patronHomeLibrary)) {
 					userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
 				} else {
 					//Don't know the owning library for some reason, most likely this is an admin user.
@@ -240,7 +240,7 @@ class UserListIndexer {
 				while (allTitlesRS.next()) {
 					String source = allTitlesRS.getString("source");
 					String sourceId = allTitlesRS.getString("sourceId");
-					if (!allTitlesRS.wasNull()){
+					if (!allTitlesRS.wasNull()) {
 						if (!sourceId.isEmpty() && source.equals("GroupedWork")) {
 							// Skip archive object Ids
 							SolrQuery query = new SolrQuery();
@@ -258,7 +258,7 @@ class UserListIndexer {
 							} catch (Exception e) {
 								logger.error("Error loading information about title " + sourceId);
 							}
-						}else if (source.equals("OpenArchives")){
+						} else if (source.equals("OpenArchives")) {
 							// Skip archive object Ids
 							SolrQuery query = new SolrQuery();
 							query.setQuery("id:" + sourceId);
@@ -275,72 +275,82 @@ class UserListIndexer {
 							} catch (Exception e) {
 								logger.error("Error loading information about title " + sourceId);
 							}
-						}else if (source.equals("Lists")){
+						} else if (source.equals("Lists")) {
 							getListDisplayNameAndAuthorStmt.setString(1, sourceId);
 							ResultSet listDisplayNameAndAuthorRS = getListDisplayNameAndAuthorStmt.executeQuery();
-							if (listDisplayNameAndAuthorRS.next()){
+							if (listDisplayNameAndAuthorRS.next()) {
 								String decryptedName = EncryptionUtils.decryptString(listDisplayNameAndAuthorRS.getString("displayName"), serverName, logEntry);
 								userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), decryptedName);
 							}
 							listDisplayNameAndAuthorRS.close();
-						}else if (source.equals("EbscoEds")){
+						} else if (source.equals("EbscoEds")) {
 							//Get title and author with a JSON request
 							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCO/JSON?method=getTitleAuthor&id=" + sourceId);
 							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
 							if (titleAuthorRaw instanceof InputStream) {
 								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
 								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
-								if (titleAuthorResult.getBoolean("success")){
+								if (titleAuthorResult.getBoolean("success")) {
 									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
 								}
 							}
-						}else if (source.equals("Ebscohost")){
+						} else if (source.equals("Ebscohost")) {
 							//Get title and author with a JSON request
 							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCOhost/JSON?method=getTitleAuthor&id=" + sourceId);
 							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
 							if (titleAuthorRaw instanceof InputStream) {
 								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
 								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
-								if (titleAuthorResult.getBoolean("success")){
+								if (titleAuthorResult.getBoolean("success")) {
 									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
 								}
 							}
-						}else{
-							logEntry.incErrors("Unhandled source " + source);
+						} else if (source.equals("Summon")) {
+							//Get title and authoe with a JSON request
+							URL getTitleAuthorUrl = new URL(baseUrl + "/Summon/JSON?method=getTitleAuthor&id=" + sourceId);
+							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
+							if (titleAuthorRaw instanceof InputStream) {
+								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
+								if (titleAuthorResult.getBoolean("success")) {
+									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
+								}
+							} else {
+								logEntry.incErrors("Unhandled source " + source);
+							}
+							//TODO: Handle other types of objects within a User List
+							//people, etc.
 						}
-						//TODO: Handle other types of objects within a User List
-						//people, etc.
 					}
-				}
-				if (userListSolr.getNumTitles() >= 3) {
-					// Index in the solr catalog
-					SolrInputDocument document = userListSolr.getSolrDocument();
-					if (document != null){
-						updateServer.add(document);
-						if (created > lastReindexTime){
-							logEntry.incAdded();
-						}else{
-							logEntry.incUpdated();
+					if (userListSolr.getNumTitles() >= 3) {
+						// Index in the solr catalog
+						SolrInputDocument document = userListSolr.getSolrDocument();
+						if (document != null) {
+							updateServer.add(document);
+							if (created > lastReindexTime) {
+								logEntry.incAdded();
+							} else {
+								logEntry.incUpdated();
+							}
+							indexed = true;
+						} else {
+							updateServer.deleteByQuery("id:" + listId);
+							logEntry.incSkipped();
 						}
-						indexed = true;
-					}else{
+					} else {
 						updateServer.deleteByQuery("id:" + listId);
 						logEntry.incSkipped();
 					}
-				} else {
-					updateServer.deleteByQuery("id:" + listId);
-					logEntry.incSkipped();
 				}
-			}catch (Exception e){
+			} catch (Exception e) {
 				updateServer.deleteByQuery("id:" + listId);
 				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e);
 				logEntry.incSkipped();
 			}
-		}
 
+		}
 		return indexed;
 	}
-
 	TreeSet<Scope> getScopes() {
 		return this.scopes;
 	}
