@@ -395,7 +395,6 @@
 	<copyField source="auth_author2" dest="auth_author2Str"/>
 	<copyField source="author_additional" dest="author_additionalStr"/>
 	<copyField source="publisher" dest="publisherStr"/>
-	<copyField source="placeOfPublication" dest="placeOfPublication"/>
 	<copyField source="series" dest="series_facet"/>
 
 	<!-- CopyFields for Proper (Unstemmed) searching -->

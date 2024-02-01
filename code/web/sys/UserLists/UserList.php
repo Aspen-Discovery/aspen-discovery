@@ -1167,16 +1167,7 @@ class UserList extends DataObject {
 		}
 	}
 
-		function getISBNs($text) {
-		$pattern = '/\b(?:ISBN(?:-10)?:?\s*|ISBN-13:?\s*|)(?=[0-9X]{10,13})(?=(?:[0-9]+[-\s]?){4})(?!00000)[0-9-]{10,13}\b/i';
-
-		preg_match_all($pattern, $text, $matches);
-		return $matches[0];
-		}
-	
-
 	public function buildRIS() {
-		// require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		
 		try {
 			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for export, not just a page's worth
@@ -1326,7 +1317,6 @@ class UserList extends DataObject {
 		 $risFields[] = "TY  - ".$format;
 		}	
 			//RIS Tag: AU - Author
-
 			$authors = array();
 			$primaryAuthor = $curDoc->getPrimaryAuthor();
 			if (!empty($primaryAuthor)) {
@@ -1377,10 +1367,8 @@ class UserList extends DataObject {
 				if(!empty($placesOfPublication)) {
 					$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
 					$risFields[] = "CY  - ".$placesOfPublicationClean;
-					// $risFields[] = "CY  - ".$placesOfPublication;
 				}
 			}
-
 
 		// //RIS Tag: ET - Editions
 				$editions = $curDoc->getEdition();
@@ -1411,7 +1399,6 @@ class UserList extends DataObject {
 				}
 			}
 
-
 			//RIS Tag: N2 - Notes
 			$description = $curDoc->getDescription();
 			if(!empty($description)) {
@@ -1435,16 +1422,9 @@ class UserList extends DataObject {
 			$ISBN = $curDoc->getPrimaryIsbn();
 			if(!empty($ISBN)){
 				$risFields[] = "SN  - ".$ISBN;
-			} else {
-				$ISBN = $curDoc->getISBNs();
-				if(!empty($ISBN)) {
-					$risFields[] = "SN  - ".$ISBN;
-				}
 			}
 
 			//RIS Tag: AV
-			
-
 			$risFields[] = "ER  -";
 
 			return implode("\n", $risFields);

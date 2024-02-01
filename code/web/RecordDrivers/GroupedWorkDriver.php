@@ -2,8 +2,8 @@
 
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/File/MARC.php';
-require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
+// require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 
 
 class GroupedWorkDriver extends IndexRecordDriver {
@@ -13,7 +13,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	/** @var SearchObject_AbstractGroupedWorkSearcher */
 	private static $recordLookupSearcher = null;
 
-	private $marcRecordDriver;
+	// private $marcRecordDriver;
 
 	public function __construct($indexFields) {
 		if (is_string($indexFields)) {
@@ -21,7 +21,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$id = $indexFields;
 			$id = str_replace('groupedWork:', '', $id);
 			$this->permanentId = $id;
-			$this->marcRecordDriver = new MarcRecordDriver($indexFields);
 
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
@@ -592,7 +591,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			'authors' => $authors,
 			'title' => $this->getShortTitle(),
 			'subtitle' => $this->getSubtitle(),
-			'placeOfPublication' => $this->getPlacesOfPublication(),
+			'placeOfPublication' => $this->getPlaceOfPublication(),
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition' => $this->getEditions(),
@@ -787,7 +786,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 				if($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
 					$summPlaceOfPublication= $alwaysShowMainDetails ? translate([
-						'text' => 'See individual formats and editions',
+						'text' => 'Varies, see individual formats and editions',
 						'isPublicFacing' => true,
 					]) : null;
 				}
