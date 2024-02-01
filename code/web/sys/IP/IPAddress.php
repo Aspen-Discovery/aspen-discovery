@@ -58,7 +58,7 @@ class IPAddress extends DataObject {
 				'property' => 'ip',
 				'type' => 'text',
 				'label' => 'IP Address',
-				'description' => 'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask',
+				'description' => 'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask, xxx.xxx.xxx.xxx, or xxx.xxx.xxx.xxx-xxx.xxx.xxx.xxx',
 				'serverValidation' => 'validateIPAddress',
 			],
 			'location' => [
