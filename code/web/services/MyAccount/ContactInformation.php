@@ -104,7 +104,7 @@ class MyAccount_ContactInformation extends MyAccount {
 							$user->update();
 						} else {
 							$user->updateMessage = translate([
-								'text' => 'Unable to verify your address. Please check your address and try again.',
+								'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
 								'isPublicFacing' => true
 							]);
 							$user->updateMessageIsError = true;

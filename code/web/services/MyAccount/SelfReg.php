@@ -57,7 +57,7 @@ class SelfReg extends Action {
 							$interface->assign('selfRegResult', $result);
 						} else {
 							$addressMessage = translate([
-								'text' => 'Unable to verify your address. Please check your address and try again.',
+								'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
 								'isPublicFacing' => true
 							]);
 							$interface->assign('addressMessage', $addressMessage);
