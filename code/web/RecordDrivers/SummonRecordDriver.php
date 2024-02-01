@@ -242,6 +242,9 @@ class SummonRecordDriver extends RecordInterface {
 	public function getTitle() {
 		if (isset($this->record['Title'])) {
 			$title=$this->record['Title'][0];
+			if (isset($this->record['Subtitle'])) {
+				$title .= ': ' . $this->record['Subtitle'][0];
+			}
 		} else {
 			$title='Unknown Title';
 		}
