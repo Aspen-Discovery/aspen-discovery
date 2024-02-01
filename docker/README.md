@@ -1,46 +1,39 @@
 (README UNDER CONSTRUCTION)
-### 1) Installing Docker-Compose
+### 0) Introduction
 
-Install docker :
+### 1) Install Docker & Docker-Compose
 
-```
-   sudo apt update
-   sudo apt install apt-transport-https ca-certificates curl software-properties-common
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-   sudo apt update
-   sudo apt install docker-ce
-   systemctl enable docker
-   systemctl status docker
-```
+Only these components are necessary before proceeding with the installation of Aspen:
 
-### 2) Preparing host
+* Docker ([install instructions](https://docs.docker.com/engine/install/))
+* Docker Compose ([install instructions](https://docs.docker.com/compose/install/#install-compose-on-linux-systems))
 
-It will be necessary to create the directory where Aspen will be installed and those directories which will be used for all services, otherwise Docker will rise an error
+### 2) Prepare host
 
-Also, the necessary permissions must be given in a recursive way.
+It will be necessary to create: 
+* The directory where Aspen containers are going to run.
+* Those directories which will be used for the persistence of data.
 
 ```
-export ASPEN_Instance=
-mkdir -p ~/${ASPEN_Instance}/mariadb_data
-mkdir -p ~/${ASPEN_Instance}/solr_data
+ASPEN_Instance=nameOfYourInstance
+export ASPEN_Repo=~/aspen-repos/${ASPEN_Instance}
+mkdir -p ${ASPEN_Repo}/mariadb_data ${ASPEN_Repo}/solr_data
+cd ${ASPEN_Repo}
+git clone https://github.com/mdnoble73/aspen-discovery.git
+cp aspen-discovery/docker/docker-compose.yml .
 ```
+### 3.0) Copy env file and set environment variables (mandatory)
 
-### 3) Build a new stack
-
-Create a file docker-compose.yml with these settings, if you're working with traefik (this case) or any other reverse-proxy you should probably need to uncomment deploy label on backend service.
-
-
-An .env file must be created where the 'environment variables' that will be used later by the docker-compose.yml will be stored.
-
-The variables to use are :
-
-NOTE : These variables need to be setted with all data corresponded to your instance.
-
+With any text editor, the user must set the values for each variable in the **env** file.
+```
+cp aspen-discovery/docker/.env .
+vim .env
+```
+Example : 
 * Site :
 
 ```
-SITE_sitename=test.localhost   <-- Example
+SITE_sitename=test.localhost   
 SITE_operatingSystem=debian
 SITE_library=Test Library
 SITE_title=Test Library
@@ -55,8 +48,7 @@ SITE_timezone=America/Argentina/Cordoba
 * Aspen :
 
 ```
-ASPEN_Instance=testaspen
-ASPEN_DBHost=db           <-- Example
+ASPEN_DBHost=db           
 ASPEN_DBPort=3306
 ASPEN_DBName=aspen
 ASPEN_DBUser=aspen
@@ -67,7 +59,7 @@ ASPEN_aspenAdminPwd=password
 * Ils :
 
 ```
-ILS_ilsDriver=Koha              <-- Example
+ILS_ilsDriver=Koha              
 ILS_ilsUrl=test.koha.theke.io
 ILS_staffUrl=test-admin.koha.theke.io
 ```
@@ -75,7 +67,7 @@ ILS_staffUrl=test-admin.koha.theke.io
 * Koha :
 
 ```
-KOHA_DBHost=tunnel              <-- Example
+KOHA_DBHost=tunnel              
 KOHA_DBName=koha_dbname
 KOHA_DBUser=koha_dbuser
 KOHA_DBPwd=password
@@ -95,42 +87,40 @@ COMPOSE_Apache=on
 COMPOSE_Cron=on
 COMPOSE_Dirs=/etc/apache2/sites-enabled /etc/apache2/sites-available /etc/cron.d /etc/php/8.0/apache2 /usr/local/aspen-discovery/sites/dev.aspen.theke.io /usr/local/aspen-discovery/code/web/files /usr/local/aspen-discovery/code/web/images /data /home /var/log/aspen-discovery
 ```
-
 Observation: COMPOSE_Dirs variable saves all DIRECTORIES ( it doesn't support path files) inside Aspen that users want to be persistant on host server, like images, footers, covers, php settings and all data that shouldn't lost if you want to reset your containers.
-
-* Backup :
-
-  ```
-  BACKUP_Folder          <-- Example
-  BACKUP_AccountId
-  BACKUP_ApplicationKey
-  BACKUP_Bucket
-  BACKUP_UserDB
-  BACKUP_PassDB
-  BACKUP_DB
-  BACKUP_Sitename
-  BACKUP_HostDB
-  
-  
-  ```
-
-Observation : These variables response to a backup service called "BackBlaze". The user needs to search for appropriate setted variables if another backup service is being used.
 
 * Tunnel :
 
-  ```
-  TUNNEL_LocalPort=3306      <-- Example
-  TUNNEL_RemotePort=3306
-  TUNNEL_RemoteHost=127.0.0.1
-  TUNNEL_JumpServer=test.koha.theke.io
-  ```
+```
+TUNNEL_LocalPort=3306      
+TUNNEL_RemotePort=3306
+TUNNEL_RemoteHost=127.0.0.1
+TUNNEL_JumpServer=test.koha.theke.io
+```
 
-### 4) Initialize services
+### 3.1)
+* Backup :
+
+```
+BACKUP_Folder=          
+BACKUP_AccountId=
+BACKUP_ApplicationKey=
+BACKUP_Bucket=
+BACKUP_UserDB=
+BACKUP_PassDB=
+BACKUP_DB=
+BACKUP_Sitename=
+BACKUP_HostDB=
+  ```
+Observation : These variables response to a backup service called "BackBlaze". The user needs to search for appropriate setted variables if another backup service is being used.
+
+  
+### 4) Create and start containers
 
 We go to the directory where the docker-compose.yml is located and execute :
 
 ```
-docker-compose up
+docker-compose up -d
 ```
 
 ### 5) Check Aspen instance is up
