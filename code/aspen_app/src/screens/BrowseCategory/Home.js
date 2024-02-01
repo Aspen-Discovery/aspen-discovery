@@ -158,7 +158,25 @@ export const DiscoverHomeScreen = () => {
      });
 
      useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
-          refetchInterval: 60 * 1000 * 30,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'past'], () => fetchSavedEvents(1, 25, 'past', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           placeholderData: [],
           onSuccess: (data) => {
@@ -365,6 +383,8 @@ export const DiscoverHomeScreen = () => {
 
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
+               console.log('type: ' + type);
+               console.log('key: ' + key);
                if (type === 'List' || type === 'list') {
                     navigateStack('BrowseTab', 'SearchByList', {
                          id: key,
