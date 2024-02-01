@@ -185,6 +185,10 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			logEntry.addNote("Did not load availability for " + title + " by " + author + " id " + cloudLibraryId);
 			return;
 		}
+		if (availabilityType == null) {
+			logEntry.addNote("Did not load availability type for " + title + " by " + author + " id " + cloudLibraryId);
+			return;
+		}
 
 		boolean availabilityChanged = false;
 		//Check availability checksum
@@ -214,29 +218,34 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 		//Same thing for availability type checksum
 		checksumCalculator.reset();
-		String rawAvailabilityTypeResponse = availabilityType.getRawResponse();
-		if (rawAvailabilityTypeResponse == null) {
-			rawAvailabilityTypeResponse = "";
-		}
-		checksumCalculator.update(rawAvailabilityTypeResponse.getBytes());
-		long availabilityTypeChecksum = checksumCalculator.getValue();
-		try {
-			getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
-			ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
-			if (getExistingAvailabilityRS.next()) {
-				long existingTypeChecksum = getExistingAvailabilityRS.getLong("typeRawChecksum");
-				logger.debug("Availability type already exists");
-				if (existingTypeChecksum != availabilityTypeChecksum) {
-					logger.debug("Updating availability type details");
+		String rawAvailabilityTypeResponse = null;
+		long availabilityTypeChecksum = 0;
+		if (availabilityType != null) {
+			rawAvailabilityTypeResponse = availabilityType.getRawResponse();
+			if (rawAvailabilityTypeResponse == null) {
+				rawAvailabilityTypeResponse = "";
+			}
+			checksumCalculator.update(rawAvailabilityTypeResponse.getBytes());
+			availabilityTypeChecksum = checksumCalculator.getValue();
+			try {
+				getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
+				ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
+				if (getExistingAvailabilityRS.next()) {
+					long existingTypeChecksum = getExistingAvailabilityRS.getLong("typeRawChecksum");
+					logger.debug("Availability type already exists");
+					if (existingTypeChecksum != availabilityTypeChecksum) {
+						logger.debug("Updating availability type details");
+						availabilityChanged = true;
+					}
+				} else {
+					logger.debug("Adding availability type for " + cloudLibraryId);
 					availabilityChanged = true;
 				}
-			} else {
-				logger.debug("Adding availability type for " + cloudLibraryId);
-				availabilityChanged = true;
+			} catch (SQLException e) {
+				logEntry.incErrors("Error loading availability type", e);
 			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error loading availability type", e);
 		}
+
 
 		String targetAudiences = MarcUtil.getFirstFieldVal(marcRecord, "650a");
 		String targetAudience = "Adult";
