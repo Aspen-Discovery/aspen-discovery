@@ -3404,4 +3404,232 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		return $locations;
 	}
+
+	public function formatGroupedWorkCitation($curDoc) {
+		// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+			
+		if ($curDoc->isValid()) {
+			// Initialize an array to store the RIS-formatted citation fields
+			$risFields = array();
+
+			// RIS TY - Format
+			$format = $curDoc->getFormat() ;
+			if(is_array($format) && count($format) > 0) {
+				$format = implode(', ', $format);
+
+			switch ($format) {
+				case 'book': 
+					$format = 'BOOK';
+					break;
+				case 'BOOK':
+					$format = 'BOOK';
+					break;
+				case 'BOOKS':
+					$format = 'BOOK';
+					break;
+				case 'Book':
+					$format = 'BOOK';
+					break;
+				case 'books':
+					$format = 'BOOK';
+					break;
+				case 'BK':
+					$format = 'BOOK';
+					break;
+				case 'Books':
+					$format = 'BOOK';
+					break;
+				case 'JOURNAL':
+					$format = 'BOOK';
+					break;
+				case 'Journal Article':
+					$format = 'JOUR';
+					break;
+				case 'JOURNAL ARTICLE':
+					$format = 'JOUR';
+					break;
+				case 'Journal':
+					$format = 'BOOK';
+					break;
+				case 'Audio-Visual':
+					$format = 'SOUND';
+					break;
+				case 'AudioBook':
+					$format = 'SOUND';
+					break;
+				case 'Catalog':
+					$format = 'CTLG';
+					break;
+				case 'Dictionary':
+					$format = 'DICT';
+					break;
+				case 'Electronic Article':
+					$format = 'EJOUR';
+					break;
+				case 'Electronic Book':
+					$format = 'EBOOK';
+					break;
+				case 'E-Book':
+					$format = 'EBOOK';
+					break;
+				case 'Magazine':
+					$format = 'MGZN';
+					break;
+				case 'Magazine Article':
+					$format = 'MGZN';
+					break;
+				case 'Music':
+					$format = 'MUSIC';
+					break;
+				case 'MUSIC':
+					$format = 'MUSIC';
+					break;
+				case 'Newspaper':
+					$format = 'NEWS';
+					break;
+				case 'Newspaper Article':
+					$format = 'NEWS';
+					break;
+				case 'Web Page':
+					$format = 'ELEC';
+					break;
+				case 'Visual Materials':
+					$format = 'VIDEO';
+					break;
+				case 'Movie':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- DVD':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- VHS':
+					$format = 'VIDEO';
+					break;
+				case 'Electronic Database':
+					$format = 'EBOOK';
+						break;
+				case 'Reference':
+					$format = 'BOOK';
+					break;
+			}
+
+		 $risFields[] = "TY  - ".$format;
+		}	
+			//RIS Tag: AU - Author
+			$authors = array();
+			$primaryAuthor = $curDoc->getPrimaryAuthor();
+			if (!empty($primaryAuthor)) {
+				$authors[] = $primaryAuthor;
+			}
+
+			$contributors = $curDoc->getContributors();
+			if(is_array($contributors) && count($contributors) > 0) {
+				$authors = array_merge($authors, $contributors);
+			}
+
+			if (!empty($authors)) {
+				foreach ($authors as $author){
+				$risFields[] = "AU - " . $author;
+				}
+		}
+
+			// RIS Tag: TI - Title
+			$title = $curDoc->getTitle();
+			if (!empty($title)) {
+				$risFields[] = "TI  - " . $title;
+			}
+
+			// RIS Tag: PB - Publisher
+			$publishers = $curDoc->getPublishers();
+			if (is_array($publishers) && count($publishers) > 0) {
+				$publishers = implode(', ', $publishers);
+				$risFields[] = "PB  - " . $publishers;
+			}
+
+			// RIS Tag: PY - Publication Year(s)
+			$publishDates = $curDoc->getPublicationDates();
+			if (!is_array($publishDates)) {
+				$publishDates = [$publishDates];
+			}
+			foreach ($publishDates as $publishDate) {
+				if (!empty($publishDate)) {
+					$risFields[] = "PY  - " . $publishDate;
+				}
+			}
+
+			$placesOfPublication = $curDoc->getPlaceOfPublication();
+			if(is_array($placesOfPublication) && count($placesOfPublication) > 0) {
+				$placesOfPublicationClean = implode(', ', $placesOfPublication);
+				$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+				$risFields[] = "CY  - ".$placesOfPublicationClean;
+			} else {
+				if(!empty($placesOfPublication)) {
+					$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+					$risFields[] = "CY  - ".$placesOfPublicationClean;
+				}
+			}
+
+		// //RIS Tag: ET - Editions
+				$editions = $curDoc->getEdition();
+				if(is_array($editions) && count($editions) > 0) {
+					$editions = implode(', ', $editions);
+					$risFields[] = "ET  - ".$editions;
+				} else {
+					if(!empty($editions)) {
+						$risFields[] = "ET  - ".$editions;
+					}
+				}
+
+				//RIS UR - URL
+				$url = $curDoc->getRecordUrl();
+				if(is_array($url) && count($url) > 0) {
+					$url = implode(', ', $url);
+					$risFields[] = "UR  - ".$url;
+				}
+
+			//RIS Tag: N1 - Info
+			$notes = $curDoc->getTableOfContentsNotes();
+			if(is_array($notes) && count($notes) > 0) {
+				$notes = implode(', ', $notes);
+				$risFields[] = "N1  - ".$notes;
+			}else{
+			if(!empty($notes)) {
+				$risFields[] = "N1  - ".$notes;
+				}
+			}
+
+			//RIS Tag: N2 - Notes
+			$description = $curDoc->getDescription();
+			if(!empty($description)) {
+				$risFields[] = "N2  - ".$description;
+			}
+
+			//RIS T2 - Series
+			$series = $curDoc->getSeries();
+			if(is_array($series) && count($series) >0){
+				$series = implode(', ', $series);
+				$risFields[] = "T2  - ".$series;
+			}
+
+			//RIS ST - Short Title
+			$shortTilte = $curDoc->getShortTitle();
+			if(!empty($shortTilte)) {
+				$risFields[] = "ST  - ".$shortTilte;
+			}
+
+			// RIS Tag: SN - ISBN 
+			$ISBN = $curDoc->getPrimaryIsbn();
+			if(!empty($ISBN)){
+				$risFields[] = "SN  - ".$ISBN;
+			}
+
+			//RIS Tag: AV
+			$risFields[] = "ER  -";
+
+			return implode("\n", $risFields);
+		} else {
+			return '';
+		}
+	}
 }

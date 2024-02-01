@@ -21,7 +21,6 @@ class UserListSolr {
 	private long owningLibrary;
 	private String owningLocation;
 	private boolean ownerCanShareListsInSearchResults = false;
-	// private String placeOfPublication;
 
 	UserListSolr(UserListIndexer userListIndexer) {
 		this.userListIndexer = userListIndexer;
