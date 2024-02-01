@@ -2412,7 +2412,7 @@ class Theme extends DataObject {
 		$this->applyDefaults();
 
 		$prevColors = false;
-		if($this->id && $this->id !== -1) {
+		if(!empty($this->id) && $this->id !== -1) {
 			$theme = new Theme();
 			$theme->id = $this->id;
 			if ($theme->find(true)) {
@@ -2423,7 +2423,7 @@ class Theme extends DataObject {
 		}
 
 		foreach($this as $index => $item) {
-			if(strpos($index, 'Color') >= 0) {
+			if(strpos($index, 'Color') != false) {
 				if(is_null($item)) {
 					if($prevColors) {
 						if ($prevColors->$index) {
