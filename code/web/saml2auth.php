@@ -41,7 +41,7 @@ if($ssoSettings->find(true)) {
 
 	if($ssoSettings->ssoILSUniqueAttribute) {
 		$ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
-	} elseif(strpos($ssoSettings->ssoUniqueAttribute, 'email') >= 0) {
+	} elseif(strpos($ssoSettings->ssoUniqueAttribute, 'email') !== false) {
 		$uidAsEmail = true;
 	}
 

@@ -1180,7 +1180,7 @@ class CarlX extends AbstractIlsDriver {
 					if (!empty($result->ResponseStatuses->ResponseStatus->LongMessage)) {
 						$errorMessage .= "... " . $result->ResponseStatuses->ResponseStatus->LongMessage;
 					}
-					if (strpos($errorMessage, 'A patron with that id already exists') >= 0) {
+					if (strpos($errorMessage, 'A patron with that id already exists')  !== false) {
 						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
 						// Increment the temp patron id number.

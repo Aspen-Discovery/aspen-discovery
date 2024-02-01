@@ -2482,7 +2482,7 @@ class SearchAPI extends Action {
 				];
 			}
 			$id = $_REQUEST['id'];
-			if(strpos($_REQUEST['id'], '_') >= 0) {
+			if(strpos($_REQUEST['id'], '_')  !== false) {
 				$label = explode('_', $_REQUEST['id']);
 				$id = $label[3];
 			}
