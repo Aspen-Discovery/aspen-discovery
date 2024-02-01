@@ -1996,6 +1996,9 @@ class SearchAPI extends Action {
 											'title' => $listEntry->title,
 										];
 										$count++;
+									} elseif ($listEntry->source == 'Events') {
+										// just to make sure events don't sneak in
+										$categoryResponse['records'] = [];
 									} else {
 										if ($listEntry->sourceId) {
 											$categoryResponse['records'][] = [
