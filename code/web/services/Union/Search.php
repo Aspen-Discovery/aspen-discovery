@@ -97,6 +97,14 @@ class Union_Search extends ResultsAction {
 			$interface->assign('action', $action);
 			$this->searchResultsAction = new EBSCOhost_Results();
 			$this->searchResultsAction->launch();
+		} elseif ($searchSource == 'summon') {
+			require_once(ROOT_DIR . '/services/Summon/Results.php');
+			$module = 'Summon';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$this->searchResultsAction = new Summon_Results();
+			$this->searchResultsAction->launch();
 		} elseif ($searchSource == 'combined') {
 			require_once(ROOT_DIR . '/services/Union/CombinedResults.php');
 			$module = 'Union';
