@@ -302,16 +302,7 @@ class Donation extends DataObject {
 
 	function getDonationFormFields(DonationsSetting $donationSettings) {
 		require_once ROOT_DIR . '/sys/Donations/DonationFormFields.php';
-		$formFields = new DonationFormFields();
-		$formFields->donationSettingId = $donationSettings->id;
-
-		/** @var DonationFormFields[] $fieldsToSortByCategory */
-		$fieldsToSortByCategory = $formFields->fetchAll();
-
-		// If no values set get the defaults.
-		if (empty($fieldsToSortByCategory)) {
-			$fieldsToSortByCategory = $donationSettings->getDefaultFormFields();
-		}
+		$fieldsToSortByCategory = $donationSettings->getDefaultFormFields();
 
 		$donationFormFields = [];
 		if ($fieldsToSortByCategory) {

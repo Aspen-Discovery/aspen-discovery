@@ -26,9 +26,6 @@ class DonationsSetting extends DataObject {
 		$donationsValuesStructure = DonationValue::getObjectStructure($context);
 		unset($donationsValuesStructure['donationSettingId']);
 
-		$donationsFormFieldsStructure = DonationFormFields::getObjectStructure($context);
-		unset($donationsFormFieldsStructure['donationSettingId']);
-
 		$donationsEarmarksStructure = DonationEarmark::getObjectStructure($context);
 		unset($donationsEarmarksStructure['donationSettingId']);
 
@@ -175,8 +172,6 @@ class DonationsSetting extends DataObject {
 				}
 			}
 			return $this->_libraries;
-		} elseif ($name == 'donationFormFields') {
-			return $this->getDonationFormFields();
 		} elseif ($name == 'donationValues') {
 			return $this->getDonationValues();
 		} elseif ($name == 'donationEarmarks') {
@@ -191,8 +186,6 @@ class DonationsSetting extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		} elseif ($name == 'donationFormFields') {
-			$this->_donationFormFields = $value;
 		} elseif ($name == 'donationValues') {
 			$this->_donationValues = $value;
 		} elseif ($name == 'donationEarmarks') {
@@ -208,7 +201,6 @@ class DonationsSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
-			$this->saveDonationFormFields();
 			$this->saveDonationValues();
 			$this->saveDonationEarmarks();
 			$this->saveDonationDedicationTypes();
@@ -220,7 +212,6 @@ class DonationsSetting extends DataObject {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
-			$this->saveDonationFormFields();
 			$this->saveDonationValues();
 			$this->saveDonationEarmarks();
 			$this->saveDonationDedicationTypes();
@@ -251,31 +242,6 @@ class DonationsSetting extends DataObject {
 			}
 			unset($this->_libraries);
 		}
-	}
-
-	private $_donationFormFields;
-
-	public function setDonationFormFields($value) {
-		$this->_donationFormFields = $value;
-	}
-
-	/**
-	 * @return array|null
-	 */
-	public function getDonationFormFields() {
-		if (!isset($this->_donationFormFields) && $this->id) {
-			$this->_donationFormFields = [];
-
-			$donationFormFields = new DonationFormFields();
-			$donationFormFields->donationSettingId = $this->id;
-			if ($donationFormFields->find()) {
-				while ($donationFormFields->fetch()) {
-					$this->_donationFormFields[$donationFormFields->id] = clone $donationFormFields;
-				}
-			}
-
-		}
-		return $this->_donationFormFields;
 	}
 
 	private $_donationValues;
@@ -367,7 +333,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'valueList';
 		$defaultField->type = 'select';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -377,7 +342,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'earmarkList';
 		$defaultField->type = 'select';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -387,7 +351,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'locationList';
 		$defaultField->type = 'select';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -397,7 +360,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'shouldBeDedicated';
 		$defaultField->type = 'checkbox';
 		$defaultField->required = 1;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -407,7 +369,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'dedicationType';
 		$defaultField->type = 'radio';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -417,7 +378,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'honoreeFirstName';
 		$defaultField->type = 'text';
 		$defaultField->required = 1;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -427,7 +387,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'honoreeLastName';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -437,7 +396,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'shouldBeNotified';
 		$defaultField->type = 'checkbox';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -447,7 +405,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationFirstName';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -457,7 +414,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationLastName';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -467,7 +423,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationAddress';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -477,7 +432,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationCity';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -487,7 +441,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationState';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -497,7 +450,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'notificationZip';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		// User Information
@@ -508,7 +460,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'firstName';
 		$defaultField->type = 'text';
 		$defaultField->required = 1;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -518,7 +469,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'lastName';
 		$defaultField->type = 'text';
 		$defaultField->required = 1;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -528,7 +478,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->textId = 'makeAnonymous';
 		$defaultField->type = 'checkbox';
 		$defaultField->required = 0;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new DonationFormFields();
@@ -539,7 +488,6 @@ class DonationsSetting extends DataObject {
 		$defaultField->type = 'text';
 		$defaultField->note = 'Your receipt will be emailed here';
 		$defaultField->required = 1;
-		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		if ($this->requiresAddressInfo) {
@@ -550,7 +498,6 @@ class DonationsSetting extends DataObject {
 			$defaultField->textId = 'address';
 			$defaultField->type = 'text';
 			$defaultField->required = 0;
-			$defaultField->insert();
 			$defaultFieldsToDisplay[] = $defaultField;
 
 			$defaultField = new DonationFormFields();
@@ -560,7 +507,6 @@ class DonationsSetting extends DataObject {
 			$defaultField->textId = 'address2';
 			$defaultField->type = 'text';
 			$defaultField->required = 0;
-			$defaultField->insert();
 			$defaultFieldsToDisplay[] = $defaultField;
 
 			$defaultField = new DonationFormFields();
@@ -570,7 +516,6 @@ class DonationsSetting extends DataObject {
 			$defaultField->textId = 'city';
 			$defaultField->type = 'text';
 			$defaultField->required = 0;
-			$defaultField->insert();
 			$defaultFieldsToDisplay[] = $defaultField;
 
 			$defaultField = new DonationFormFields();
@@ -580,7 +525,6 @@ class DonationsSetting extends DataObject {
 			$defaultField->textId = 'state';
 			$defaultField->type = 'text';
 			$defaultField->required = 0;
-			$defaultField->insert();
 			$defaultFieldsToDisplay[] = $defaultField;
 
 			$defaultField = new DonationFormFields();
@@ -590,19 +534,11 @@ class DonationsSetting extends DataObject {
 			$defaultField->textId = 'zip';
 			$defaultField->type = 'text';
 			$defaultField->required = 0;
-			$defaultField->insert();
 			$defaultFieldsToDisplay[] = $defaultField;
 		}
 
 		return $defaultFieldsToDisplay;
 
-	}
-
-	public function saveDonationFormFields() {
-		if (isset ($this->_donationFormFields) && is_array($this->_donationFormFields)) {
-			$this->saveOneToManyOptions($this->_donationFormFields, 'donationSettingId');
-			unset($this->_donationFormFields);
-		}
 	}
 
 	public function saveDonationValues() {
@@ -643,16 +579,6 @@ class DonationsSetting extends DataObject {
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationForm() {
-		$defaultFieldsToDisplay = DonationFormFields::getDefaults($this->id);
-		$this->clearDonationFormFields();
-		$this->setDonationFormFields($defaultFieldsToDisplay);
-		$this->update();
-		header("Location: /Admin/DonationsSettings?objectAction=edit&id=" . $this->id);
-		die();
-	}
-
-	/** @noinspection PhpUnused */
 	function defaultDonationValues() {
 		$defaultValuesToDisplay = DonationValue::getDefaults($this->id);
 		$this->setDonationValues($defaultValuesToDisplay);
@@ -677,12 +603,6 @@ class DonationsSetting extends DataObject {
 		$this->update();
 		header("Location: /Admin/DonationsSettings?objectAction=edit&id=" . $this->id);
 		die();
-	}
-
-	public function clearDonationFormFields() {
-		$this->clearOneToManyOptions('DonationsFormFields', 'donationSettingId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->donationFormFields = [];
 	}
 
 	function getEditLink($context): string {

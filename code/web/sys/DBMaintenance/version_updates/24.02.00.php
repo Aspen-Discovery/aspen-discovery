@@ -123,6 +123,14 @@ function getUpdates24_02_00(): array {
 				"ALTER TABLE summon_settings CHANGE COLUMN summonApiPassword summonApiPassword VARCHAR(256)"
 			],
 		],
+		'remove_donation_form_fields_table' => [
+			'title' => 'Remove Donation Form Fields table',
+			'description' => 'Remove Donation Form Fields table because the fields are predefined and configured with switches',
+			'continueOnError' => true,
+			'sql' => [
+				"DROP TABLE donations_form_fields"
+			],
+		],
 
 		//kirstien - ByWater
 		'add_branded_app_privacy_policy_contact' => [
