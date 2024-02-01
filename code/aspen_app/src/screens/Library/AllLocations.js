@@ -6,9 +6,8 @@ import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Button, Divider, FlatList, HStack, Icon, Pressable, Text, VStack } from 'native-base';
+import { Box, Button, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Text, VStack } from 'native-base';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
@@ -44,6 +43,13 @@ export const AllLocations = () => {
                setLoading(false);
           },
           onSettle: (data) => {
+               if (sort === 'distance') {
+                    const tmpSortedLocations = _.sortBy(data, ['distance', 'displayName']);
+                    setSortedLocations(tmpSortedLocations);
+               } else {
+                    const tmpSortedLocations = _.sortBy(data, ['displayName']);
+                    setSortedLocations(tmpSortedLocations);
+               }
                setLoading(false);
           },
           placeholderData: [],
@@ -100,6 +106,11 @@ export const AllLocations = () => {
           return null;
      };
 
+     const updateSort = (sort) => {
+          setLoading(true);
+          setSort(sort);
+     };
+
      const getActionButtons = () => {
           return (
                <Box
@@ -113,10 +124,10 @@ export const AllLocations = () => {
                     }}
                     borderColor="coolGray.200">
                     <Button.Group alignItems="center" isAttached colorScheme="secondary">
-                         <Button variant={sort === 'alphabetical' ? 'solid' : 'outline'} onPress={() => setSort('alphabetical')}>
+                         <Button variant={sort === 'alphabetical' ? 'solid' : 'outline'} onPress={() => updateSort('alphabetical')}>
                               {getTermFromDictionary(language, 'a_to_z')}
                          </Button>
-                         <Button variant={sort === 'distance' ? 'solid' : 'outline'} onPress={() => setSort('distance')}>
+                         <Button variant={sort === 'distance' ? 'solid' : 'outline'} onPress={() => updateSort('distance')}>
                               {getTermFromDictionary(language, 'distance')}
                          </Button>
                     </Button.Group>
@@ -124,8 +135,12 @@ export const AllLocations = () => {
           );
      };
 
+     if (isLoading) {
+          return loadingSpinner();
+     }
+
      return (
-          <SafeAreaView style={{ flex: 1 }}>
+          <ScrollView style={{ flex: 1 }}>
                {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {getActionButtons()}
                {status === 'loading' || isFetching ? (
@@ -137,7 +152,7 @@ export const AllLocations = () => {
                          <FlatList data={Object.keys(sortedLocations)} renderItem={({ item }) => <DisplayLocation data={sortedLocations[item]} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                     </Box>
                )}
-          </SafeAreaView>
+          </ScrollView>
      );
 };
 
@@ -211,13 +226,15 @@ const DisplayLocation = (data) => {
           });
      };
 
+     console.log(key + ':' + location.locationImage);
+
      return (
           <>
                <Pressable onPress={goToLocation}>
                     <HStack justifyContent="space-between" alignItems="center">
                          {location.locationImage ? (
                               <Box width="30%" mr={2}>
-                                   <CachedImage cacheKey={key} alt={location.displayName} source={{ uri: location.locationImage, expiresIn: 86400 }} resizeMode="cover" style={{ width: '100%', height: 90, borderRadius: 4 }} />
+                                   <CachedImage cacheKey={key} alt={location.displayName} source={{ uri: location.locationImage, expiresIn: 1 }} resizeMode="cover" style={{ width: '100%', height: 90, borderRadius: 4 }} />
                               </Box>
                          ) : null}
                          <VStack width={location.locationImage ? '60%' : '85%'}>
