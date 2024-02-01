@@ -384,6 +384,10 @@ public class PalaceProjectExportMain {
 					logEntry.incAdded();
 				}
 
+				if (title.length() > 750) {
+					title = title.substring(0, 750);
+				}
+
 				if (existingTitle == null){
 					addPalaceProjectTitleToDbStmt.setString(1, palaceProjectId);
 					addPalaceProjectTitleToDbStmt.setString(2, title);

@@ -499,7 +499,7 @@ class EventAPI extends Action {
 				}
 			}
 
-			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			/** @var SearchObject_EventsSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Events');
 			$eventRecords = $searchObject->getRecords(array_keys($savedEvents));
 
