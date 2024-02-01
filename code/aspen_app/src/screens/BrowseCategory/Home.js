@@ -57,7 +57,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
@@ -65,6 +65,9 @@ export const DiscoverHomeScreen = () => {
                     setUnlimitedCategories(true);
                }
                updateBrowseCategories(data);
+               setLoading(false);
+          },
+          onSettle: (data) => {
                setLoading(false);
           },
           placeholderData: [],
@@ -490,7 +493,7 @@ export const DiscoverHomeScreen = () => {
           return null;
      };
 
-     if (loading === true) {
+     if (loading === true || isFetching) {
           return loadingSpinner();
      }
 
