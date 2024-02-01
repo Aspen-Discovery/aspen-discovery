@@ -108,11 +108,13 @@ class UserList extends DataObject {
 		return $listEntry->count();
 	}
 
-	function numValidListItemsForLiDA() {
+	function numValidListItemsForLiDA($version) {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
-		$listEntry->whereAdd("source <> 'Events'");
+		if ($version < 24.02) {
+			$listEntry->whereAdd("source <> 'Events'");
+		}
 
 		return $listEntry->count();
 	}
@@ -179,14 +181,16 @@ class UserList extends DataObject {
 	 * @param null $sort optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
-	function getListEntries($sort = null, $forLiDA = false) {
+	function getListEntries($sort = null, $forLiDA = false, $appVersion = 0) {
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
-		/*if ($forLiDA){
-			$listEntry->whereAdd("source <> 'Events'");
-		}*/
+		if ($forLiDA){
+			if($appVersion < 24.02) {
+				$listEntry->whereAdd("source <> 'Events'");
+			}
+		}
 
 		$entryPosition = 0;
 		$zeroCount = 0;
@@ -389,14 +393,16 @@ class UserList extends DataObject {
 	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
 	 * @param string $citationFormat How citations should be formatted
 	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
+	 * @param boolean $forLiDA Whether or not the records are being requested by Aspen LiDA
+	 * @param float $appVersion If LiDA, include the version to ensure proper filtering when needed
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null, $forLiDA = false): array {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null, $forLiDA = false, $appVersion = 0): array {
 		//Get all entries for the list
 		if ($sortName == null) {
 			$sortName = $this->defaultSort;
 		}
-		$listEntryInfo = $this->getListEntries($sortName, $forLiDA);
+		$listEntryInfo = $this->getListEntries($sortName, $forLiDA, $appVersion);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0) {
