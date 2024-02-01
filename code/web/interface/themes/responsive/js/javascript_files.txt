@@ -48,6 +48,7 @@ aspen/responsive.js
 aspen/results-list.js
 aspen/searches.js
 aspen/sideloads.js
+aspen/summon.js
 aspen/title-scroller.js
 aspen/web-builder.js
 aspen/websites.js
