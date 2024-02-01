@@ -93,11 +93,11 @@ export const Facet_Date = (props) => {
                     <FormControl mb={2}>
                          <HStack space={3} alignItems="center" justifyContent="center">
                               <Button variant="outline" onPress={() => toggleFromDatePicker()}>
-                                   {fromFacet !== '*' ? moment(fromValue).format('MM/DD/YYYY') : fromFacet}
+                                   {moment(fromValue).format('MM/DD/YYYY')}
                               </Button>
                               <Text>to</Text>
                               <Button variant="outline" onPress={() => toggleToDatePicker()}>
-                                   {toFacet !== '*' ? moment(toValue).format('MM/DD/YYYY') : toFacet}
+                                   {toFacet === '*' ? 'MM/DD/YYYY' : moment(toValue).format('MM/DD/YYYY')}
                               </Button>
                          </HStack>
                     </FormControl>

@@ -410,6 +410,17 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		return false;
 	}
 
+	public function getAllowInListsSetting() {
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting();
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->eventsInLists;
+		}
+
+		return false;
+	}
+
 	public function getSummaryInformation() {
 		return [
 			'id' => $this->getUniqueID(),

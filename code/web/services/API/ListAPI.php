@@ -583,11 +583,15 @@ class ListAPI extends Action {
 				}
 			}
 
+			$appVersion = null;
 			$isLida = $this->checkIfLiDA();
+			if($isLida) {
+				$appVersion = $this->getLiDAVersion();
+			}
 
 			//if LiDA we don't want to include events list entries in the list count
 			if ($isLida){
-				$totalRecords = $list->numValidListItemsForLiDA();
+				$totalRecords = $list->numValidListItemsForLiDA($appVersion);
 			}else {
 				$totalRecords = $list->numValidListItems();
 			}
@@ -602,7 +606,7 @@ class ListAPI extends Action {
 			];
 			$pager = new Pager($options);
 
-			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort, $isLida);
+			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort, $isLida, $appVersion);
 
 			foreach ($titles as $title) {
 				if ($isLida){ //if LiDA don't look at events - filtered out in getListEntries()
@@ -693,6 +697,17 @@ class ListAPI extends Action {
 			}
 		}
 		return false;
+	}
+
+	function getLiDAVersion() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'version' || $name == 'Version') {
+				$version = explode(' ', $value);
+				$version = substr($version[0], 1); // remove starting 'v'
+				return floatval($version);
+			}
+		}
+		return 0;
 	}
 
 	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null) {

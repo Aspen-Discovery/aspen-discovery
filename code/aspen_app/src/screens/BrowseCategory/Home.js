@@ -57,7 +57,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
@@ -65,6 +65,9 @@ export const DiscoverHomeScreen = () => {
                     setUnlimitedCategories(true);
                }
                updateBrowseCategories(data);
+               setLoading(false);
+          },
+          onSettle: (data) => {
                setLoading(false);
           },
           placeholderData: [],
@@ -158,7 +161,25 @@ export const DiscoverHomeScreen = () => {
      });
 
      useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
-          refetchInterval: 60 * 1000 * 30,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'past'], () => fetchSavedEvents(1, 25, 'past', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           placeholderData: [],
           onSuccess: (data) => {
@@ -365,6 +386,8 @@ export const DiscoverHomeScreen = () => {
 
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
+               console.log('type: ' + type);
+               console.log('key: ' + key);
                if (type === 'List' || type === 'list') {
                     navigateStack('BrowseTab', 'SearchByList', {
                          id: key,
@@ -470,7 +493,7 @@ export const DiscoverHomeScreen = () => {
           return null;
      };
 
-     if (loading === true) {
+     if (loading === true || isFetching) {
           return loadingSpinner();
      }
 

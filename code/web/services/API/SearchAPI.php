@@ -1996,6 +1996,9 @@ class SearchAPI extends Action {
 											'title' => $listEntry->title,
 										];
 										$count++;
+									} elseif ($listEntry->source == 'Events') {
+										// just to make sure events don't sneak in
+										$categoryResponse['records'] = [];
 									} else {
 										if ($listEntry->sourceId) {
 											$categoryResponse['records'][] = [
@@ -2336,6 +2339,16 @@ class SearchAPI extends Action {
 			$username,
 			$password,
 		];
+	}
+
+	protected function getUserForApiCall() {
+		$user = false;
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user !== false && $user->source == 'admin') {
+			return false;
+		}
+		return $user;
 	}
 
 	/** @noinspection PhpUnused */
@@ -2720,6 +2733,9 @@ class SearchAPI extends Action {
 		$lmBypass = false;
 		$commmunicoBypass = false;
 		$springshareBypass = false;
+		$lmAddToList = false;
+		$communicoAddToList = false;
+		$springshareAddToList = false;
 		$libraryEventSettings = [];
 		if($searchEngine == 'Events') {
 			$searchLibrary = Library::getSearchLibrary(null);
@@ -2737,6 +2753,7 @@ class SearchAPI extends Action {
 					$eventSetting->id = $id;
 					if($eventSetting->find(true)) {
 						$lmBypass = $eventSetting->bypassAspenEventPages;
+						$lmAddToList = $eventSetting->eventsInLists;
 					}
 				} else if ($source == 'communico') {
 					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
@@ -2744,6 +2761,7 @@ class SearchAPI extends Action {
 					$eventSetting->id = $id;
 					if($eventSetting->find(true)) {
 						$commmunicoBypass = $eventSetting->bypassAspenEventPages;
+						$commmunicoBypass = $eventSetting->eventsInLists;
 					}
 				} else if ($source == 'springshare') {
 					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
@@ -2751,6 +2769,7 @@ class SearchAPI extends Action {
 					$eventSetting->id = $id;
 					if($eventSetting->find(true)) {
 						$springshareBypass = $eventSetting->bypassAspenEventPages;
+						$springshareBypass = $eventSetting->eventsInLists;
 					}
 				} else {
 					// invalid event source
@@ -2832,15 +2851,19 @@ class SearchAPI extends Action {
 					if(str_starts_with($record['id'], 'lc')) {
 						$eventSource = 'library_calendar';
 						$bypass = $lmBypass;
+						$addToList = $lmAddToList;
 					} else if (str_starts_with($record['id'], 'communico')) {
 						$eventSource = 'communico';
 						$bypass = $commmunicoBypass;
+						$addToList = $communicoAddToList;
 					} else if (str_starts_with($record['id'], 'libcal')) {
 						$eventSource = 'springshare_libcal';
 						$bypass = $springshareBypass;
+						$addToList = $springshareAddToList;
 					} else {
 						$eventSource = 'unknown';
 						$bypass = false;
+						$addToList = false;
 					}
 
 					$registrationRequired = false;
@@ -2873,6 +2896,17 @@ class SearchAPI extends Action {
 
 					$items[$recordKey]['url'] = $record['url'];
 					$items[$recordKey]['bypass'] = $bypass;
+					$items[$recordKey]['canAddToList'] = false;
+
+					$user = $this->getUserForApiCall();
+					if ($user && !($user instanceof AspenError)) {
+						$source = $eventSource;
+						if($eventSource == 'springshare_libcal') {
+							$source = 'springshare';
+						}
+						$items[$recordKey]['canAddToList'] = $user->isAllowedToAddEventsToList($source);
+					}
+
 					$items[$recordKey]['itemList'] = [];
 				} else {
 					$items[$recordKey]['key'] = $record['id'];

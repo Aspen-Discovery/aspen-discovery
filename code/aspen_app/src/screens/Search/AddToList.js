@@ -38,7 +38,7 @@ export const AddToList = (props) => {
 
      const updateLastListUsed = async (id) => {
           queryClient.invalidateQueries({ queryKey: ['list', id] });
-          queryClient.invalidAddateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           PATRON.listLastUsed = id;
           setListId(id);

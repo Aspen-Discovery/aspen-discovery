@@ -7,20 +7,22 @@ import { BrowseCategoryContext, LanguageContext, LibrarySystemContext } from '..
 import { getBrowseCategoryListForUser, updateBrowseCategoryStatus } from '../../../util/loadPatron';
 
 export const Settings_BrowseCategories = () => {
-     const [loading, setLoading] = React.useState(true);
+     const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { list, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
 
-     useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
+     const { status, data, error, isFetching } = useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
           onSuccess: (data) => {
                updateBrowseCategoryList(data);
+          },
+          onSettle: (data) => {
                setLoading(false);
           },
           placeholderData: [],
      });
 
-     if (loading) {
+     if (loading || isFetching) {
           return loadingSpinner();
      }
 
