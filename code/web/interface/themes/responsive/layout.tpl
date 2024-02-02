@@ -68,7 +68,7 @@
 				</div>
 			{/if}
 
-			{if !empty($messages) && !minimalInterface}
+			{if !empty($messages) && !$minimalInterface}
 				{foreach from=$messages item="message"}
 				<div class="col-xs-12">
 					<div class="alert alert-{$message->messageLevel} alert-dismissable">
