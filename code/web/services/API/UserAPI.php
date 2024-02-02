@@ -4306,10 +4306,8 @@ class UserAPI extends Action {
 				$token->pushToken = $userToken;
 				$token->userId = $user->id;
 				if($token->find(true)) {
-					if ($newStatus == 'false' || !$newStatus) {
-						$token->onboardAppNotifications = 0;
-						$user->onboardAppNotifications = 0;
-					}
+					$token->onboardAppNotifications = 0;
+					$user->onboardAppNotifications = 0;
 					$token->update();
 					$user->update();
 					return [
@@ -4319,7 +4317,7 @@ class UserAPI extends Action {
 					];
 				} else {
 					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
-					if ($newStatus == 'false' || !$newStatus) {
+					if ($user->onboardAppNotifications == 1) {
 						$user->onboardAppNotifications = 0;
 						$user->update();
 					}
