@@ -4186,6 +4186,11 @@ class MyAccount_AJAX extends JSON_Action {
 		$donation->comments = $comments;
 		$donation->donationSettingId = $_REQUEST['settingId'];
 		$donation->sendEmailToUser = 1;
+		$donation->address = $_REQUEST['address'];
+		$donation->address2 = $_REQUEST['address2'];
+		$donation->city = $_REQUEST['city'];
+		$donation->state = $_REQUEST['state'];
+		$donation->zip = $_REQUEST['zip'];
 
 		$donation->insert();
 

@@ -1537,6 +1537,11 @@ AspenDiscovery.Account = (function () {
 				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
 				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
 				params.settingId = $(finesFormId + " input[name=settingId]").val();
+				params.address = $(finesFormId + " input[name=address]").val();
+				params.address2 = $(finesFormId + " input[name=address2]").val();
+				params.city = $(finesFormId + " input[name=city]").val();
+				params.state = $(finesFormId + " input[name=state]").val();
+				params.zip = $(finesFormId + " input[name=zip]").val();
 			}
 
 			if(paymentType === 'PayPalPayflow') {
