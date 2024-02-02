@@ -117,12 +117,14 @@ export const Settings_NotificationOptions = () => {
           setLoading(false);
      };
 
+     const updateStatus = async () => {};
+
      if (isLoading) {
           return loadingSpinner();
      }
 
      if (shouldRequestPermissions) {
-          return <PermissionsPrompt promptTitle="permissions_notifications_title" promptBody="permissions_notifications_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
+          return <PermissionsPrompt promptTitle="permissions_notifications_title" promptBody="permissions_notifications_body" setShouldRequestPermissions={setShouldRequestPermissions} updateStatus={updateStatus} />;
      }
 
      return (

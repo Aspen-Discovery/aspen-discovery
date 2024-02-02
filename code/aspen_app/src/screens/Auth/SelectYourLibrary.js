@@ -42,8 +42,10 @@ export const SelectYourLibrary = (payload) => {
           });
      }
 
+     const updateStatus = async () => {};
+
      if (shouldRequestPermissions && showModal) {
-          return <PermissionsPrompt promptTitle="permissions_location_title" promptBody="permissions_location_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
+          return <PermissionsPrompt promptTitle="permissions_location_title" promptBody="permissions_location_body" setShouldRequestPermissions={setShouldRequestPermissions} updateStatus={updateStatus} />;
      }
 
      const clearSearch = () => {
