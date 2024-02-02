@@ -5,11 +5,11 @@ import { LanguageContext } from '../context/initialContext';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const PermissionsPrompt = (data) => {
-     const { promptTitle, promptBody, setShouldRequestPermissions, updatePermissionStatus } = data;
+     const { promptTitle, promptBody, setShouldRequestPermissions, updateStatus } = data;
      const { language } = React.useContext(LanguageContext);
      const [isOpen, setIsOpen] = React.useState(true);
      const onClose = () => {
-          updatePermissionStatus();
+          updateStatus();
           setShouldRequestPermissions(false);
           setIsOpen(false);
      };
