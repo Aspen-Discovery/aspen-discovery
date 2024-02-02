@@ -402,7 +402,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getPlacesOfPublication() {
-		$placesOfPublication =  $this->getFieldArray('260', ['a']);
+		$marcRecord = $this->getMarcRecord();
+		if ($marcRecord != null) {
+			$placesOfPublication =  $this->getFieldArray('260', ['a']);
+			/** @var File_MARC_Data_Field[] $rdaPublisherFields */
+			$rdaPublisherFields = $marcRecord->getFields('264');
+			foreach ($rdaPublisherFields as $rdaPublisherField) {
+				if (($rdaPublisherField->getIndicator(2) == 1 || $rdaPublisherField->getIndicator(2) == ' ') && $rdaPublisherField->getSubfield('a') != null) {
+					$placesOfPublication[] = $rdaPublisherField->getSubfield('a')->getData();
+				}
+			}
+			foreach ($placesOfPublication as $key => $placeOfPublication) {
+				$placeOfPublication[$key] = preg_replace('/[.,]$/', '', $placeOfPublication);
+			}
+		}
 		return $placesOfPublication;
 
 	}

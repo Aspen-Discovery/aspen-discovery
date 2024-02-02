@@ -1544,7 +1544,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @return  array              Array of elements in the table of contents
 	 */
 	public function getTableOfContentsNotes() {
-		$tableOfContents = [];
+		$tableOfContentsNotes = [];
 		foreach ($this->getRelatedRecords() as $record) {
 			if ($record->getDriver()) {
 				$driver = $record->getDriver();
