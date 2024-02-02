@@ -1669,13 +1669,13 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCompleted?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
 						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
 					}
 				} else {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCancelled?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCancelled?id=' + data.paymentId;
 					} else {
 						var message;
 						if (data.message) {
@@ -1745,13 +1745,13 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
 						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCancelled?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCancelled?id=' + data.paymentId;
 					} else {
 						var message;
 						if (data.message) {
@@ -1783,13 +1783,13 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCompleted?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
 						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCancelled?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCancelled?id=' + data.paymentId;
 					} else {
 						var message;
 						if (data.message) {
@@ -1816,13 +1816,13 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCompleted?type=stripee&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
 						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if (data.isDonation) {
-						window.location.href = Globals.path + '/Donations/DonationCancelled?type=stripe&payment=' + data.paymentId + '&donation=' + data.donationId;
+						window.location.href = Globals.path + '/Donations/DonationCancelled?id=' + data.paymentId;
 					} else {
 						var message;
 						if (data.message) {

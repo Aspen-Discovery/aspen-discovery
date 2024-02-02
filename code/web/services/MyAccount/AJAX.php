@@ -4020,7 +4020,7 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$donateToLocation = $_REQUEST['toLocation'];
-		$toLocation = 'None';
+		$toLocation = -1;
 		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
@@ -5172,7 +5172,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
 			if ($transactionType == 'donation') {
-				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=msb&payment=' . $payment->id . '&donation=' . $donation->id;
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id;
 			} else {
 				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
 			}
