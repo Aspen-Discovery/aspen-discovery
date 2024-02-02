@@ -4321,8 +4321,8 @@ class UserAPI extends Action {
 					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
 					if ($newStatus == 'false' || !$newStatus) {
 						$user->onboardAppNotifications = 0;
+						$user->update();
 					}
-					$user->update();
 					return [
 						'success' => true,
 						'title' => 'Success',
