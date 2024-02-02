@@ -120,7 +120,7 @@
 				{/if}
 
 				{if !empty($showPlaceOfPublication) && $showPlaceOfPublication}
-					{if $alwaysShowSearchResultsMainDetails || $summPubPlace}
+					{if $alwaysShowSearchResultsMainDetails || $summPubPlaces}
 						<div class="result-label col-sm-4 col-xs-12">{translate text="Pub. Places" isPublicFacing=true} </div>
 							<div class="result-value col-sm-8 col-xs-12">
 								{if !empty($summPubPlaces)}

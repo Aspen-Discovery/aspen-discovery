@@ -104,7 +104,6 @@ class GroupedWorkDisplaySetting extends DataObject {
 	static $showInMainDetailsOptions = [
 		'showSeries' => 'Series',
 		'showPublicationDetails' => 'Published',
-		'showPlaceOfPublication' => 'Place of Publication',
 		'showFormats' => 'Formats',
 		'showEditions' => 'Editions',
 		'showPhysicalDescriptions' => 'Physical Descriptions',

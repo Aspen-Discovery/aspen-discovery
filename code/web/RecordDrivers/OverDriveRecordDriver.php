@@ -783,11 +783,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getPlacesOfPublication() {
-		$placesOfPublication = [];
-		if (isset($this->getOverDriveMetaData()->getDecodedRawData()->placesOfPublicationText)) {
-			$placesOfPublication = $this->getOverDriveMetaData()->getDecodedRawData()->placesOfPublicationText;
-		}
-		return $placesOfPublication;
+		return [];
 	}
 
 	/**

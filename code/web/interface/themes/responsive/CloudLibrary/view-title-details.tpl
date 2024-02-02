@@ -13,13 +13,11 @@
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
-	{* {if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()} *}
-		{if !empty($showPlacesOfPublication) && $recordDriver->getPlacesOfPublication()}
+	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
-				{* {implode subject=$recordDriver->getPublicationDetails() glue=", "} *}
-				{implode subject=$recordDriver->getPlacesOfPublication() glue=", "}
+				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
 		</div>
 	{/if}

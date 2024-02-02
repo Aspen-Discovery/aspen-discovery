@@ -163,9 +163,6 @@ class AnodeAPI extends Action {
 				if (isset($groupedWorkRecord['publisher'])) {
 					$groupedWork['publisher'] = $groupedWorkRecord['publisher'];
 				}
-				if (isset($groupedWorkRecord['placeOfPublication'])) {
-					$groupedWork['placeOfPublication'] = $groupedWorkRecord['placeOfPublication'];
-				}
 				if (isset($groupedWorkRecord['language'])) {
 					$groupedWork['language'] = $groupedWorkRecord['language'];
 				}

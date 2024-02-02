@@ -595,8 +595,6 @@ public class OaiIndexerMain {
 									case "dc:publisher":
 										solrRecord.addPublisher(textContent);
 										break;
-									case "dc:placeOfPublication":
-										solrRecord.addPlaceOfPublication(textContent);
 									case "dc:format":
 									case "mods:typeOfResource":
 										solrRecord.addFormat(textContent);
