@@ -4311,6 +4311,7 @@ class UserAPI extends Action {
 						$user->onboardAppNotifications = 0;
 					}
 					$token->update();
+					$user->update();
 					return [
 						'success' => true,
 						'title' => 'Success',
