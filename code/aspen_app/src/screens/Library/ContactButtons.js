@@ -35,7 +35,7 @@ const ContactButtons = (data) => {
 
           const browserParams = {
                enableDefaultShareMenuItem: false,
-               presentationStyle: 'popover',
+               presentationStyle: 'automatic',
                showTitle: false,
                toolbarColor: backgroundColor,
                controlsColor: textColor,

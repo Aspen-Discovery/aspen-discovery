@@ -99,7 +99,6 @@ export function getHeaders(isPost = false, language = 'en') {
  * @param {string} textColor
  **/
 export async function passUserToDiscovery(url, redirectTo, userId, backgroundColor, textColor) {
-     console.log(backgroundColor);
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -113,7 +112,7 @@ export async function passUserToDiscovery(url, redirectTo, userId, backgroundCol
 
           const browserParams = {
                enableDefaultShareMenuItem: false,
-               presentationStyle: 'popover',
+               presentationStyle: 'automatic',
                showTitle: false,
                toolbarColor: backgroundColor,
                controlsColor: textColor,
@@ -122,6 +121,11 @@ export async function passUserToDiscovery(url, redirectTo, userId, backgroundCol
 
           if (sessionId && userId) {
                const accessUrl = url + '/Authentication/LiDA?init&session=' + sessionId + '&user=' + userId + '&goTo=' + redirectTo + '&minimalInterface=true';
+               try {
+                    await WebBrowser.openBrowserAsync(accessUrl, browserParams);
+               } catch (e) {
+                    console.log(e);
+               }
                await WebBrowser.openBrowserAsync(accessUrl, browserParams)
                     .then((res) => {
                          console.log(res);
@@ -149,11 +153,13 @@ export async function passUserToDiscovery(url, redirectTo, userId, backgroundCol
                               }
                          } else {
                               popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              console.log(err);
                          }
                     });
           } else {
                // unable to validate the user
                popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+               console.log('unable to validate user');
           }
      } else {
           popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');

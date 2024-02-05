@@ -416,8 +416,11 @@ export const UserProvider = ({ children }) => {
                          setAspenToken(true);
 
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
-                                   setNotificationOnboard(deviceSettings[0].onboardStatus);
+                              if (_.isObject(deviceSettings[0])) {
+                                   const settings = deviceSettings[0];
+                                   if (!_.isUndefined(settings.onboardStatus)) {
+                                        setNotificationOnboard(settings.onboardStatus);
+                                   }
                               }
                          } else {
                               // probably connecting to a Discovery version earlier than 23.07.00
@@ -433,8 +436,11 @@ export const UserProvider = ({ children }) => {
 
                          const deviceSettings = _.filter(data, { device: 'Unknown' });
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
-                                   setNotificationOnboard(deviceSettings[0].onboardStatus);
+                              if (_.isObject(deviceSettings[0])) {
+                                   const settings = deviceSettings[0];
+                                   if (!_.isUndefined(settings.onboardStatus)) {
+                                        setNotificationOnboard(settings.onboardStatus);
+                                   }
                               }
                          }
 

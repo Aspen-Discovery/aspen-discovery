@@ -265,7 +265,7 @@ const DisplayResult = (data) => {
      const openURL = async (url) => {
           const browserParams = {
                enableDefaultShareMenuItem: false,
-               presentationStyle: 'popover',
+               presentationStyle: 'automatic',
                showTitle: false,
                toolbarColor: backgroundColor,
                controlsColor: textColor,

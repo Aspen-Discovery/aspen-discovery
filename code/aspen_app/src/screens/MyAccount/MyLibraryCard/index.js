@@ -58,6 +58,7 @@ export const MyLibraryCard = () => {
 
      const updateStatus = async () => {
           await updateScreenBrightnessStatus(false, library.baseUrl, language);
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      React.useEffect(() => {
