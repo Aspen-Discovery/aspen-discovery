@@ -575,7 +575,7 @@ class EventAPI extends Action {
 					$events[$event->sourceId]['endDate'] = null;
 					$events[$event->sourceId]['bypass'] = 0;
 					$events[$event->sourceId]['url'] = null;
-					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;;
+					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;
 					$events[$event->sourceId]['registrationRequired'] = null;
 					$events[$event->sourceId]['userIsRegistered'] = $registration;
 					$events[$event->sourceId]['pastEvent'] = $hasPassed;
