@@ -514,6 +514,18 @@ class EventAPI extends Action {
 				$_REQUEST['id'] = $eventId;
 				$registration = $user->isRegistered($event->sourceId);
 				$source = 'unknown';
+
+				$hasPassed = false;
+				$today = new DateTime();
+				$today->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$eventDate = date('c', $event->eventDate);
+				$eventDate = new DateTime($eventDate);
+				$eventDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+
+				if($today > $eventDate) {
+					$hasPassed = true;
+				}
+
 				if(str_starts_with($eventId, 'lc')) {
 					$source = 'lc';
 				} else if(str_starts_with($eventId, 'communico')) {
@@ -551,16 +563,11 @@ class EventAPI extends Action {
 						$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
 						$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
 						$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
-						$events[$event->sourceId]['pastEvent'] = $details['pastEvent'];
 						$events[$event->sourceId]['location'] = $details['location'];
-						$events[$event->sourceId]['pastEvent'] = $filter == 'past';
+						$events[$event->sourceId]['pastEvent'] = $hasPassed;
 						$events[$event->sourceId]['source'] = $source;
 					}
 				} else {
-					$eventDate = date('c', $event->eventDate);
-					$eventDate = new DateTime($eventDate);
-					$eventDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-					
 					$events[$event->sourceId]['id'] = $event->id;
 					$events[$event->sourceId]['sourceId'] = $event->sourceId;
 					$events[$event->sourceId]['title'] = $event->title;
@@ -571,7 +578,7 @@ class EventAPI extends Action {
 					$events[$event->sourceId]['cover'] = null;
 					$events[$event->sourceId]['registrationRequired'] = null;
 					$events[$event->sourceId]['userIsRegistered'] = $registration;
-					$events[$event->sourceId]['pastEvent'] = $filter == 'past';
+					$events[$event->sourceId]['pastEvent'] = $hasPassed;
 					$events[$event->sourceId]['source'] = $source;
 				}
 			}
