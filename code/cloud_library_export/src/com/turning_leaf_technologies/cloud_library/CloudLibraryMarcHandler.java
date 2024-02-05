@@ -66,10 +66,10 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		try {
 			updateCloudLibraryItemStmt = dbConn.prepareStatement(
 					"INSERT INTO cloud_library_title " +
-							"(cloudLibraryId, title, subTitle, author, format, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
-							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+							"(cloudLibraryId, title, subTitle, author, format, targetAudience, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 							"ON DUPLICATE KEY UPDATE title = VALUES(title), subTitle = VALUES(subTitle), author = VALUES(author), format = VALUES(format), " +
-							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
+							"targetAudience = VALUES(targetAudience), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
 			getExistingCloudLibraryAvailabilityStmt = dbConn.prepareStatement("SELECT id, rawChecksum, typeRawChecksum from cloud_library_availability WHERE cloudLibraryId = ?");
 			updateCloudLibraryAvailabilityStmt = dbConn.prepareStatement(
 					"INSERT INTO cloud_library_availability " +
@@ -185,6 +185,10 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			logEntry.addNote("Did not load availability for " + title + " by " + author + " id " + cloudLibraryId);
 			return;
 		}
+		if (availabilityType == null) {
+			logEntry.addNote("Did not load availability type for " + title + " by " + author + " id " + cloudLibraryId);
+			return;
+		}
 
 		boolean availabilityChanged = false;
 		//Check availability checksum
@@ -214,28 +218,39 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 		//Same thing for availability type checksum
 		checksumCalculator.reset();
-		String rawAvailabilityTypeResponse = availabilityType.getRawResponse();
-		if (rawAvailabilityTypeResponse == null) {
-			rawAvailabilityTypeResponse = "";
-		}
-		checksumCalculator.update(rawAvailabilityTypeResponse.getBytes());
-		long availabilityTypeChecksum = checksumCalculator.getValue();
-		try {
-			getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
-			ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
-			if (getExistingAvailabilityRS.next()) {
-				long existingTypeChecksum = getExistingAvailabilityRS.getLong("typeRawChecksum");
-				logger.debug("Availability type already exists");
-				if (existingTypeChecksum != availabilityTypeChecksum) {
-					logger.debug("Updating availability type details");
+		String rawAvailabilityTypeResponse = null;
+		long availabilityTypeChecksum = 0;
+		if (availabilityType != null) {
+			rawAvailabilityTypeResponse = availabilityType.getRawResponse();
+			if (rawAvailabilityTypeResponse == null) {
+				rawAvailabilityTypeResponse = "";
+			}
+			checksumCalculator.update(rawAvailabilityTypeResponse.getBytes());
+			availabilityTypeChecksum = checksumCalculator.getValue();
+			try {
+				getExistingCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
+				ResultSet getExistingAvailabilityRS = getExistingCloudLibraryAvailabilityStmt.executeQuery();
+				if (getExistingAvailabilityRS.next()) {
+					long existingTypeChecksum = getExistingAvailabilityRS.getLong("typeRawChecksum");
+					logger.debug("Availability type already exists");
+					if (existingTypeChecksum != availabilityTypeChecksum) {
+						logger.debug("Updating availability type details");
+						availabilityChanged = true;
+					}
+				} else {
+					logger.debug("Adding availability type for " + cloudLibraryId);
 					availabilityChanged = true;
 				}
-			} else {
-				logger.debug("Adding availability type for " + cloudLibraryId);
-				availabilityChanged = true;
+			} catch (SQLException e) {
+				logEntry.incErrors("Error loading availability type", e);
 			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error loading availability type", e);
+		}
+
+
+		String targetAudiences = MarcUtil.getFirstFieldVal(marcRecord, "650a");
+		String targetAudience = "Adult";
+		if (targetAudiences != null && targetAudiences.contains("JUVENILE")) {
+			targetAudience = "Juvenile";
 		}
 
 		Set<String> formatFields = MarcUtil.getFieldList(marcRecord, "538a");
@@ -269,10 +284,11 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				updateCloudLibraryItemStmt.setString(3, AspenStringUtils.trimTo(255, subtitle));
 				updateCloudLibraryItemStmt.setString(4, AspenStringUtils.trimTo(255, author));
 				updateCloudLibraryItemStmt.setString(5, format);
-				updateCloudLibraryItemStmt.setLong(6, itemChecksum);
-				updateCloudLibraryItemStmt.setString(7, marcAsString);
-				updateCloudLibraryItemStmt.setLong(8, startTimeForLogging);
+				updateCloudLibraryItemStmt.setString(6, targetAudience);
+				updateCloudLibraryItemStmt.setLong(7, itemChecksum);
+				updateCloudLibraryItemStmt.setString(8, marcAsString);
 				updateCloudLibraryItemStmt.setLong(9, startTimeForLogging);
+				updateCloudLibraryItemStmt.setLong(10, startTimeForLogging);
 				int result = updateCloudLibraryItemStmt.executeUpdate();
 				if (result == 1) {
 					//A result of 1 indicates a new row was inserted

@@ -1568,6 +1568,13 @@ class MyAccount_AJAX extends JSON_Action {
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						} elseif ($userListEntry->source == 'Summon') {
+							require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+							$recordDriver = new SummonRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
 						$userListEntry->insert();
 					}
@@ -4013,7 +4020,7 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$donateToLocation = $_REQUEST['toLocation'];
-		$toLocation = 'None';
+		$toLocation = -1;
 		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
@@ -4179,6 +4186,11 @@ class MyAccount_AJAX extends JSON_Action {
 		$donation->comments = $comments;
 		$donation->donationSettingId = $_REQUEST['settingId'];
 		$donation->sendEmailToUser = 1;
+		$donation->address = $_REQUEST['address'];
+		$donation->address2 = $_REQUEST['address2'];
+		$donation->city = $_REQUEST['city'];
+		$donation->state = $_REQUEST['state'];
+		$donation->zip = $_REQUEST['zip'];
 
 		$donation->insert();
 
@@ -5165,7 +5177,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
 			if ($transactionType == 'donation') {
-				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=msb&payment=' . $payment->id . '&donation=' . $donation->id;
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id;
 			} else {
 				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
 			}
@@ -6437,7 +6449,7 @@ class MyAccount_AJAX extends JSON_Action {
 				]),
 				'body' => $body,
 				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
-						'text' => 'Take Me To Event Registration',
+						'text' => 'Go to Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
 			];
@@ -6449,7 +6461,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
-						'text' => 'Take Me To Event Registration',
+						'text' => 'Go to Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
 			];
@@ -6759,8 +6771,14 @@ class MyAccount_AJAX extends JSON_Action {
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						} elseif ($userListEntry->source == 'Summon') {
+							require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+							$recordDriver = new SummonRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
-
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
 							$existingEntry = true;

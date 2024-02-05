@@ -36,6 +36,12 @@ public class EventsIndexerMain {
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
+			//Check to see if the jar has changes before processing records, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				logger.warn("Ending because the checksum for the jar changed");
+				break;
+			}
+
 			Date startTime = new Date();
 			logger.info("Starting " + processName + ": " + startTime);
 

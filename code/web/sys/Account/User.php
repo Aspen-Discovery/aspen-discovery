@@ -1711,6 +1711,50 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function isAllowedToAddEventsToList($vendor): bool {
+		$activeLibrary = $this->getHomeLibrary();
+		if ($activeLibrary == null) {
+			global $library;
+			$activeLibrary = $library;
+		}
+
+		$eventsSetting = new LibraryEventsSetting();
+		$eventsSetting->libraryId = $activeLibrary->libraryId;
+		$eventsSetting->settingSource = $vendor;
+		if($eventsSetting->find(true)) {
+			if($vendor == 'communico') {
+				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+				$settings = new CommunicoSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			} elseif ($vendor == 'springshare') {
+				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+				$settings = new SpringshareLibCalSetting;
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			} elseif ($vendor == 'library_market') {
+				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+				$settings = new LMLibraryCalendarSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function isRecordOnHold($source, $recordId) {
 		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";
@@ -3173,6 +3217,7 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
 		$sections['system_admin']->addAction(new AdminAction('Optional Updates', 'Recommended updates that can be optionally applied when new versions of Aspen Discovery are released.', '/Admin/OptionalUpdates'), 'Run Optional Updates');
 		$sections['system_admin']->addAction(new AdminAction('Twilio Settings', 'Settings to allow Aspen Discovery to send texts via Twilio.', '/Admin/TwilioSettings'), 'Administer Twilio');
+		$sections['system_admin']->addAction(new AdminAction('USPS Settings', 'Settings to allow Aspen Discovery to validate addresses via USPS API.', '/Admin/USPS'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
 
@@ -3500,6 +3545,15 @@ class User extends DataObject {
 			$sections['ebscohost'] = new AdminSection('EBSCOhost');
 			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCOhost Settings');
 			$sections['ebscohost']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCOhost integration.', '/EBSCOhost/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
+		}
+
+		if (array_key_exists('Summon', $enabledModules)) {
+			$sections['summon'] = new AdminSection('Summon');
+			$sections['summon']->addAction(new AdminAction('Settings', 'Define connection information between Summon and Aspen Discovery.', '/Summon/SummonSettings'),['View Dashboards']);
+			$sections['summon']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Summon integration.', '/Summon/SummonDashboard'), [
 				'View Dashboards',
 				'View System Reports',
 			]);
@@ -4169,9 +4223,9 @@ class User extends DataObject {
 		if(empty($preferences)) {
 			$preference['device'] = 'Unknown';
 			$preference['token'] = 'Unknown';
-			$preference['notifySavedSearch'] = '0';
-			$preference['notifyCustom'] = '0';
-			$preference['notifyAccount'] = '0';
+			$preference['notifySavedSearch'] = 0;
+			$preference['notifyCustom'] = 0;
+			$preference['notifyAccount'] = 0;
 			$preference['onboardStatus'] = 1;
 
 			$preferences[] = $preference;

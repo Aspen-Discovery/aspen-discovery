@@ -1,13 +1,14 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
-import { Badge, Box, Button, Center, FlatList, HStack, Pressable, ScrollView, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
+import { Badge, Box, Button, Center, FlatList, HStack, Icon, Pressable, ScrollView, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { loadError } from '../../../components/loadError';
+import { loadError, popAlert } from '../../../components/loadError';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../../components/Notifications';
@@ -15,8 +16,7 @@ import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserConte
 import { getCleanTitle } from '../../../helpers/item';
 import { navigate } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { fetchSavedEvents } from '../../../util/api/event';
-import AddToList from '../../Search/AddToList';
+import { fetchSavedEvents, removeSavedEvent } from '../../../util/api/event';
 
 export const MyEvents = () => {
      const navigation = useNavigation();
@@ -154,7 +154,7 @@ export const MyEvents = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <FlatList data={Object.keys(savedEvents)} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={savedEvents[item]} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                         <FlatList data={Object.keys(savedEvents)} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={savedEvents[item]} filterBy={filterBy} setLoading={setLoading} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                     </>
                )}
           </SafeAreaView>
@@ -162,49 +162,68 @@ export const MyEvents = () => {
 };
 
 const Item = (data) => {
+     const filterBy = data.filterBy;
+     const setLoading = data.setLoading;
      const event = data.data;
-     if (_.isUndefined(event.invalid)) {
-          const { language } = React.useContext(LanguageContext);
-          const { library } = React.useContext(LibrarySystemContext);
-          const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-          const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+     const queryClient = useQueryClient();
+     const { user } = React.useContext(UserContext);
+     const { language } = React.useContext(LanguageContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
-          const coverUrl = event.cover;
+     let coverUrl = event.cover;
+     if (_.isNull(event.cover)) {
+          coverUrl = library.baseUrl + '/bookcover.php?size=medium&id=' + event.sourceId;
+     }
 
-          let registrationRequired = false;
-          if (!_.isUndefined(event.registrationRequired)) {
-               registrationRequired = event.registrationRequired;
-          }
+     let registrationRequired = false;
+     if (!_.isUndefined(event.registrationRequired)) {
+          registrationRequired = event.registrationRequired;
+     }
 
-          const startTime = event.startDate.date;
-          const endTime = event.endDate.date;
+     const start = event.startDate ?? null;
+     const end = event.endDate ?? null;
+     let displayDay = false;
+     let displayStartTime = false;
+     let displayEndTime = false;
+     let day = '';
+     let time1arr = '';
+     let time2arr = '';
+     let startTime = null;
+     let endTime = null;
 
+     if (start) {
+          startTime = start.date;
           let time1 = startTime.split(' ');
-          let day = time1[0];
-          let time2 = endTime.split(' ');
-
-          let time1arr = time1[1].split(':');
-          let time2arr = time2[1].split(':');
-
-          let displayDay = moment(day);
-          let displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
-          let displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
-
+          day = time1[0];
+          time1arr = time1[1].split(':');
+          displayDay = moment(day);
+          displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
           displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
           displayStartTime = moment(displayStartTime).format('h:mm A');
+     }
+
+     if (end) {
+          endTime = end.date;
+          let time2 = endTime.split(' ');
+          time2arr = time2[1].split(':');
+          displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
           displayEndTime = moment(displayEndTime).format('h:mm A');
+     }
 
-          const key = 'medium_' + event.sourceId;
+     const key = 'medium_' + event.sourceId;
 
-          let source = event.source;
-          if (event.source === 'lc') {
-               source = 'library_calendar';
-          }
-          if (event.source === 'libcal') {
-               source = 'springshare';
-          }
+     let source = event.source;
+     if (event.source === 'lc') {
+          source = 'library_calendar';
+     }
+     if (event.source === 'libcal') {
+          source = 'springshare';
+     }
 
-          const openEvent = () => {
+     const openEvent = () => {
+          if (!event.pastEvent && event.endDate) {
                if (event.bypass) {
                     openURL(event.url);
                } else {
@@ -215,23 +234,40 @@ const Item = (data) => {
                          source: source,
                     });
                }
-          };
+          }
+     };
 
-          const openURL = async (url) => {
-               const browserParams = {
-                    enableDefaultShareMenuItem: false,
-                    presentationStyle: 'popover',
-                    showTitle: false,
-                    toolbarColor: backgroundColor,
-                    controlsColor: textColor,
-                    secondaryToolbarColor: backgroundColor,
-               };
-               WebBrowser.openBrowserAsync(url, browserParams);
+     const openURL = async (url) => {
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
           };
+          WebBrowser.openBrowserAsync(url, browserParams);
+     };
 
-          return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={openEvent}>
-                    <HStack space={3}>
+     const removeEvent = async () => {
+          setLoading(true);
+          await removeSavedEvent(event.sourceId, language, library.baseUrl).then((result) => {
+               setLoading(false);
+               queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, filterBy] });
+               queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+               queryClient.invalidateQueries({ queryKey: ['event', event.sourceId, source, language, library.baseUrl] });
+               if (result.success || result.success === 'true') {
+                    popAlert(getTermFromDictionary(language, 'removed_successfully'), result.message, 'success');
+               } else {
+                    popAlert(getTermFromDictionary(language, 'error'), result.message, 'error');
+               }
+          });
+     };
+
+     return (
+          <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={openEvent}>
+               <HStack space={3}>
+                    {event.cover ? (
                          <VStack maxW="35%">
                               <CachedImage
                                    cacheKey={key}
@@ -263,39 +299,59 @@ const Item = (data) => {
                                         />
                                    }
                               />
-                              <AddToList itemId={event.sourceId} btnStyle="sm" />
-                         </VStack>
-                         <VStack w="65%">
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {event.title}
-                              </Text>
-                              {event.startDate && event.endDate ? (
-                                   <>
-                                        <Text>{displayDay}</Text>
-                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                             {displayStartTime} - {displayEndTime}
-                                        </Text>
-                                   </>
-                              ) : null}
-                              {registrationRequired ? (
-                                   <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                                        <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                             {getTermFromDictionary(language, 'registration_required')}
-                                        </Badge>
-                                   </Stack>
-                              ) : null}
-                         </VStack>
-                    </HStack>
-               </Pressable>
-          );
-     }
 
-     return null;
+                              <Button size="sm" variant="ghost" colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs" mr="-1" />} style={{ flex: 1, flexWrap: 'wrap' }} onPress={() => removeEvent()}>
+                                   {getTermFromDictionary(language, 'remove')}
+                              </Button>
+                         </VStack>
+                    ) : null}
+
+                    <VStack w={event.cover ? '65%' : '100%'}>
+                         <Text
+                              _dark={{ color: 'warmGray.50' }}
+                              color="coolGray.800"
+                              bold
+                              fontSize={{
+                                   base: 'md',
+                                   lg: 'lg',
+                              }}>
+                              {event.title}
+                         </Text>
+                         {event.startDate && event.endDate ? (
+                              <>
+                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                        {displayDay}
+                                   </Text>
+                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                        {displayStartTime} - {displayEndTime}
+                                   </Text>
+                              </>
+                         ) : event.startDate && !event.endDate ? (
+                              <>
+                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                        {displayDay}
+                                   </Text>
+                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                        {displayStartTime}
+                                   </Text>
+                              </>
+                         ) : null}
+                         {!event.cover ? (
+                              <Box alignItems="start" pt={2}>
+                                   <Button padding={0} size="sm" variant="ghost" colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs" mr="-1" />} onPress={() => removeEvent()}>
+                                        {getTermFromDictionary(language, 'remove')}
+                                   </Button>
+                              </Box>
+                         ) : null}
+                         {registrationRequired ? (
+                              <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                   <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                                        {getTermFromDictionary(language, 'registration_required')}
+                                   </Badge>
+                              </Stack>
+                         ) : null}
+                    </VStack>
+               </HStack>
+          </Pressable>
+     );
 };

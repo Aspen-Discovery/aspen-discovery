@@ -40,7 +40,7 @@ class SAMLAuthentication{
 
 			if(!empty($ssoSettings->ssoILSUniqueAttribute)) {
 				$this->ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
-			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
+			} elseif(strpos($ssoSettings->ssoUniqueAttribute, 'mail') != false ) {
 				$this->uidAsEmail = true;
 			}
 

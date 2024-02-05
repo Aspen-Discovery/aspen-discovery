@@ -300,18 +300,9 @@ class Donation extends DataObject {
 		return $currencySymbol;
 	}
 
-	function getDonationFormFields($donationSettingId) {
+	function getDonationFormFields(DonationsSetting $donationSettings) {
 		require_once ROOT_DIR . '/sys/Donations/DonationFormFields.php';
-		$formFields = new DonationFormFields();
-		$formFields->donationSettingId = $donationSettingId;
-
-		/** @var DonationFormFields[] $fieldsToSortByCategory */
-		$fieldsToSortByCategory = $formFields->fetchAll();
-
-		// If no values set get the defaults.
-		if (empty($fieldsToSortByCategory)) {
-			$fieldsToSortByCategory = $formFields::getDefaults($donationSettingId);
-		}
+		$fieldsToSortByCategory = $donationSettings->getDefaultFormFields();
 
 		$donationFormFields = [];
 		if ($fieldsToSortByCategory) {

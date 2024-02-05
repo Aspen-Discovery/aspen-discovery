@@ -115,7 +115,22 @@ function getUpdates24_02_00(): array {
 				"ALTER TABLE open_archives_collection ADD COLUMN indexAllSets TINYINT(1) DEFAULT(0)"
 			],
 		],
-
+		'summon_password_length' => [
+			'title' => 'Summon Password Length',
+			'description' => 'Increase the length of the Summon password to account for encryption',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE summon_settings CHANGE COLUMN summonApiPassword summonApiPassword VARCHAR(256)"
+			],
+		],
+		'remove_donation_form_fields_table' => [
+			'title' => 'Remove Donation Form Fields table',
+			'description' => 'Remove Donation Form Fields table because the fields are predefined and configured with switches',
+			'continueOnError' => true,
+			'sql' => [
+				"DROP TABLE donations_form_fields"
+			],
+		],
 
 		//kirstien - ByWater
 		'add_branded_app_privacy_policy_contact' => [
@@ -188,6 +203,27 @@ function getUpdates24_02_00(): array {
 				'ALTER TABLE cloud_library_availability ADD COLUMN typeRawResponse MEDIUMTEXT',
 			],
 		], //cloud_library_availability_changes
+
+		'usps_settings' => [
+			'title' => 'USPS Address Verification',
+			'description' => 'Adds settings for USPS API address verification',
+			'sql' => [
+				"CREATE TABLE `usps_settings` (
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `clientId` varchar(255) DEFAULT NULL,
+				  `clientSecret` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+			],
+		], //usps_settings
+
+		'cloud_library_target_audience' => [
+			'title' => 'Cloud Library Target Audience',
+			'description' => 'Adds column for target audience for Cloud Library items.',
+			'sql' => [
+				"ALTER TABLE cloud_library_title ADD targetAudience VARCHAR(25) DEFAULT 'ADULT' AFTER format;"
+			],
+		],
 
 		//lucas - Theke
 		 'requires_address_info' => [

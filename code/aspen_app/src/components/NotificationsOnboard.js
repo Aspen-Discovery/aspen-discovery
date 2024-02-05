@@ -5,14 +5,14 @@ import React from 'react';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../context/initialContext';
 import { navigateStack } from '../helpers/RootNavigator';
 import { getTermFromDictionary } from '../translations/TranslationService';
-import { updateNotificationOnboardingStatus } from '../util/api/user';
+import { refreshProfile, updateNotificationOnboardingStatus } from '../util/api/user';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
      const { setAlreadyCheckedNotifications, setShowNotificationsOnboarding } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard } = React.useContext(UserContext);
+     const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard, updateNotificationSettings } = React.useContext(UserContext);
      const [isOpen, setIsOpen] = React.useState(true);
      const [onboardingBody, setOnboardingBody] = React.useState('');
      const [onboardingButton, setOnboardingButton] = React.useState('');
@@ -23,6 +23,9 @@ export const NotificationsOnboard = (props) => {
           } catch (e) {
                // onboarding isn't setup yet (Discovery older than 23.07.00)
           }
+          await refreshProfile(library.baseUrl).then((profile) => {
+               updateNotificationSettings(profile.notification_preferences, language, false);
+          });
           setIsOpen(false);
           //setAlreadyCheckedNotifications(true);
           //setShowNotificationsOnboarding(false);
@@ -47,6 +50,9 @@ export const NotificationsOnboard = (props) => {
                          } catch (e) {
                               // onboarding isn't setup yet (Discovery older than 23.07.00)
                          }
+                         await refreshProfile(library.baseUrl).then((profile) => {
+                              updateNotificationSettings(profile.notification_preferences, language, false);
+                         });
                     }
                };
                getTranslations().then(() => {

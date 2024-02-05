@@ -120,12 +120,15 @@ class EventAPI extends Action {
 			$itemData['pastEvent'] = $today >= $eventDay;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($libraryCalendarDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($libraryCalendarDriver->getSource());
 			}
+
 
 			return $itemData;
 		}
@@ -158,6 +161,7 @@ class EventAPI extends Action {
 			$itemData['programTypes'] = $communicoDriver->getProgramTypes();
 			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			// check if event has passed
 			$difference = $communicoDriver->getStartDate()->diff(new DateTime());;
@@ -168,6 +172,7 @@ class EventAPI extends Action {
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($communicoDriver->getSource());
 			}
 
 			return $itemData;
@@ -202,11 +207,13 @@ class EventAPI extends Action {
 			$itemData['room'] = null;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
+			$itemData['canAddToList'] = false;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($springshareDriver->getSource());
 			}
 
 			return $itemData;
@@ -285,13 +292,21 @@ class EventAPI extends Action {
 					'message' => 'You must provide an event id, source, and vendor to save this event.'
 				];
 			}
+
+			$success = false;
+			$title = translate([
+				'text' => 'Unable to save',
+				'isPublicFacing' => true,
+			]);
+			$message = translate(['text' => 'Unable to save this event to your events.',
+				'isPublicFacing' => true,]);
 			
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = $user->id;
 			$userEventsEntry->sourceId = $id;
 
-			$regRequired = false;
+			$regRequired = 0;
 			$regModal = null;
 			$externalUrl = null;
 			if(str_starts_with($id, 'communico')) {
@@ -303,7 +318,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -319,7 +334,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -335,7 +350,7 @@ class EventAPI extends Action {
 					$eventDate = $recordDriver->getStartDate();
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
-						$regRequired = true;
+						$regRequired = 1;
 						$regModal = $recordDriver->getRegistrationModalBody();
 					}
 					$userEventsEntry->regRequired = $regRequired;
@@ -353,27 +368,33 @@ class EventAPI extends Action {
 			$userEventsEntry->dateAdded = time();
 
 			if($userEventsEntry->find(true)) {
-				$userEventsEntry->update();
-			} else {
-				$userEventsEntry->insert();
+				if($userEventsEntry->update()) {
+					$success = true;
+				}
+ 			} else {
+				if($userEventsEntry->insert()) {
+					$success = true;
+				}
 			}
 
-			$message = translate(['text' => 'This event was saved to your events successfully.',
-				'isPublicFacing' => true,]);
-
-			if($regRequired) {
-				$message = translate([
-					'text' => 'This event was saved to your events successfully. Saving an event to your events is not the same as registering.',
+			if($success) {
+				$message = translate(['text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,]);
+				$title = translate([
+					'text' => 'Added Successfully',
 					'isPublicFacing' => true,
 				]);
+				if($regRequired) {
+					$message = translate([
+						'text' => 'This event was saved to your events successfully. Saving an event to your events is not the same as registering.',
+						'isPublicFacing' => true,
+					]);
+				}
 			}
 
 			return [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Added Successfully',
-					'isPublicFacing' => true,
-				]),
+				'success' => $success,
+				'title' => $title,
 				'message' => $message,
 				'registrationRequired' => $regRequired,
 				'regBody' => $regModal,
@@ -485,44 +506,73 @@ class EventAPI extends Action {
 				}
 			}
 
+			/** @var SearchObject_EventsSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject('Events');
+			$eventRecords = $searchObject->getRecords(array_keys($savedEvents));
+
 			foreach($savedEvents as $eventId => $event) {
 				$_REQUEST['id'] = $eventId;
-				$details = [];
+				$registration = $user->isRegistered($event->sourceId);
 				$source = 'unknown';
-				$sourceFull = 'unknown';
 				if(str_starts_with($eventId, 'lc')) {
 					$source = 'lc';
-					$sourceFull = 'library_calendar';
-					$details = $this->getLMEventDetails();
 				} else if(str_starts_with($eventId, 'communico')) {
 					$source = 'communico';
-					$sourceFull = 'communico';
-					$details = $this->getCommunicoEventDetails();
 				} else if(str_starts_with($eventId, 'libcal')) {
 					$source = 'libcal';
-					$sourceFull = 'springshare_libcal';
-					$details = $this->getSpringshareEventDetails();
 				} else {
 					// something went wrong
 				}
 
-				if($details['success'] === true) {
+				if (array_key_exists($eventId, $eventRecords)) {
+					$details = [];
+					$sourceFull = 'unknown';
+					if(str_starts_with($eventId, 'lc')) {
+						$sourceFull = 'library_calendar';
+						$details = $this->getLMEventDetails();
+					} else if(str_starts_with($eventId, 'communico')) {
+						$sourceFull = 'communico';
+						$details = $this->getCommunicoEventDetails();
+					} else if(str_starts_with($eventId, 'libcal')) {
+						$sourceFull = 'springshare_libcal';
+						$details = $this->getSpringshareEventDetails();
+					} else {
+						// something went wrong
+					}
+
+					if($details['success'] === true) {
+						$events[$event->sourceId]['id'] = $event->id;
+						$events[$event->sourceId]['sourceId'] = $event->sourceId;
+						$events[$event->sourceId]['title'] = $event->title;
+						$events[$event->sourceId]['startDate'] = $details['startDate'];
+						$events[$event->sourceId]['endDate'] = $details['endDate'];
+						$events[$event->sourceId]['url'] = $details['url'];
+						$events[$event->sourceId]['bypass'] = $details['bypass'];
+						$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
+						$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
+						$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
+						$events[$event->sourceId]['pastEvent'] = $details['pastEvent'];
+						$events[$event->sourceId]['location'] = $details['location'];
+						$events[$event->sourceId]['pastEvent'] = $filter == 'past';
+						$events[$event->sourceId]['source'] = $source;
+					}
+				} else {
+					$eventDate = date('c', $event->eventDate);
+					$eventDate = new DateTime($eventDate);
+					$eventDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+					
 					$events[$event->sourceId]['id'] = $event->id;
 					$events[$event->sourceId]['sourceId'] = $event->sourceId;
 					$events[$event->sourceId]['title'] = $event->title;
-					$events[$event->sourceId]['startDate'] = $details['startDate'];
-					$events[$event->sourceId]['endDate'] = $details['endDate'];
-					$events[$event->sourceId]['url'] = $details['url'];
-					$events[$event->sourceId]['bypass'] = $details['bypass'];
-					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
-					$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
-					$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
-					$events[$event->sourceId]['pastEvent'] = $details['pastEvent'];
-					$events[$event->sourceId]['location'] = $details['location'];
+					$events[$event->sourceId]['startDate'] = $eventDate;
+					$events[$event->sourceId]['endDate'] = null;
+					$events[$event->sourceId]['bypass'] = 0;
+					$events[$event->sourceId]['url'] = null;
+					$events[$event->sourceId]['cover'] = null;
+					$events[$event->sourceId]['registrationRequired'] = null;
+					$events[$event->sourceId]['userIsRegistered'] = $registration;
+					$events[$event->sourceId]['pastEvent'] = $filter == 'past';
 					$events[$event->sourceId]['source'] = $source;
-				} else {
-					$events[$event->sourceId]['invalid'] = true;
-					$events[$event->sourceId]['message'] = 'Event not found';
 				}
 			}
 

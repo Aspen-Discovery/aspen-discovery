@@ -305,6 +305,9 @@ const DisplayResult = (data) => {
           displayStartTime = moment(displayStartTime).format('h:mm A');
           displayEndTime = moment(displayEndTime).format('h:mm A');
 
+          let locationData = item?.location ?? [];
+          let roomData = item?.room ?? null;
+
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                     <HStack space={3}>
@@ -354,11 +357,18 @@ const DisplayResult = (data) => {
                               </Text>
                               {item.start_date && item.end_date ? (
                                    <>
-                                        <Text>{displayDay}</Text>
+                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                             {displayDay}
+                                        </Text>
                                         <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
                                              {displayStartTime} - {displayEndTime}
                                         </Text>
                                    </>
+                              ) : null}
+                              {locationData.name ? (
+                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                                        {locationData.name}
+                                   </Text>
                               ) : null}
                               {registrationRequired ? (
                                    <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">

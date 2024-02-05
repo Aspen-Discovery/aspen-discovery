@@ -343,9 +343,11 @@ export async function listofListSearchResults(searchId, limit = 25, page, url, l
 
 export async function savedSearchResults(searchId, limit = 25, page, url, language) {
      let id = searchId;
-     if (searchId.includes('system_saved_search')) {
-          const myArray = searchId.split('_');
-          id = myArray[3];
+     if (_.isString(searchId)) {
+          if (searchId.includes('system_saved_search')) {
+               const myArray = searchId.split('_');
+               id = myArray[3];
+          }
      }
 
      const postBody = await postData();
@@ -409,7 +411,7 @@ export function buildParamsForUrl() {
                          } else {
                               params = params.concat('&sort=' + facet);
                          }
-                    } else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
+                    } else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level' || field === 'start_date') {
                          facet = facet.replaceAll(' ', '+');
                          params = params.concat('&filter[]=' + field + ':' + facet);
                     } else {

@@ -50,7 +50,7 @@ verbose=false
 THIS_OS=`uname -s`
 
 # What version of Java is required to run this version of Solr.
-JAVA_VER_REQ="8"
+JAVA_VER_REQ="11"
 
 stop_all=false
 

@@ -26,9 +26,6 @@ class DonationsSetting extends DataObject {
 		$donationsValuesStructure = DonationValue::getObjectStructure($context);
 		unset($donationsValuesStructure['donationSettingId']);
 
-		$donationsFormFieldsStructure = DonationFormFields::getObjectStructure($context);
-		unset($donationsFormFieldsStructure['donationSettingId']);
-
 		$donationsEarmarksStructure = DonationEarmark::getObjectStructure($context);
 		unset($donationsEarmarksStructure['donationSettingId']);
 
@@ -75,9 +72,8 @@ class DonationsSetting extends DataObject {
 			'requiresAddressInfo' => [
 				'property' => 'requiresAddressInfo',
 				'type' => 'checkbox',
-				'label' => 'Requests users to add their address information for donation.',
-				'description' => 'Whether or not users have to add address information to make a donation.',
-				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
+				'label' => 'Allow users to enter their address when making a donation.',
+				'description' => 'Whether or not users are prompted to add address information to make a donation.',
 			],
 			'donationsContent' => [
 				'property' => 'donationsContent',
@@ -176,8 +172,6 @@ class DonationsSetting extends DataObject {
 				}
 			}
 			return $this->_libraries;
-		} elseif ($name == 'donationFormFields') {
-			return $this->getDonationFormFields();
 		} elseif ($name == 'donationValues') {
 			return $this->getDonationValues();
 		} elseif ($name == 'donationEarmarks') {
@@ -192,8 +186,6 @@ class DonationsSetting extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		} elseif ($name == 'donationFormFields') {
-			$this->_donationFormFields = $value;
 		} elseif ($name == 'donationValues') {
 			$this->_donationValues = $value;
 		} elseif ($name == 'donationEarmarks') {
@@ -209,7 +201,6 @@ class DonationsSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
-			$this->saveDonationFormFields();
 			$this->saveDonationValues();
 			$this->saveDonationEarmarks();
 			$this->saveDonationDedicationTypes();
@@ -221,7 +212,6 @@ class DonationsSetting extends DataObject {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
-			$this->saveDonationFormFields();
 			$this->saveDonationValues();
 			$this->saveDonationEarmarks();
 			$this->saveDonationDedicationTypes();
@@ -252,31 +242,6 @@ class DonationsSetting extends DataObject {
 			}
 			unset($this->_libraries);
 		}
-	}
-
-	private $_donationFormFields;
-
-	public function setDonationFormFields($value) {
-		$this->_donationFormFields = $value;
-	}
-
-	/**
-	 * @return array|null
-	 */
-	public function getDonationFormFields() {
-		if (!isset($this->_donationFormFields) && $this->id) {
-			$this->_donationFormFields = [];
-
-			$donationFormFields = new DonationFormFields();
-			$donationFormFields->donationSettingId = $this->id;
-			if ($donationFormFields->find()) {
-				while ($donationFormFields->fetch()) {
-					$this->_donationFormFields[$donationFormFields->id] = clone $donationFormFields;
-				}
-			}
-
-		}
-		return $this->_donationFormFields;
 	}
 
 	private $_donationValues;
@@ -357,11 +322,223 @@ class DonationsSetting extends DataObject {
 		return $this->_donationDedicationTypes;
 	}
 
-	public function saveDonationFormFields() {
-		if (isset ($this->_donationFormFields) && is_array($this->_donationFormFields)) {
-			$this->saveOneToManyOptions($this->_donationFormFields, 'donationSettingId');
-			unset($this->_donationFormFields);
+	public function getDefaultFormFields(): array {
+		$defaultFieldsToDisplay = [];
+
+		// Donation Information
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->label = 'Donation Amount';
+		$defaultField->textId = 'valueList';
+		$defaultField->type = 'select';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->label = 'What would you like your donation to support?';
+		$defaultField->textId = 'earmarkList';
+		$defaultField->type = 'select';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->label = 'If your donation is for a specific branch, please select the branch';
+		$defaultField->textId = 'locationList';
+		$defaultField->type = 'select';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->label = 'Dedicate my donation in honor or in memory of someone';
+		$defaultField->textId = 'shouldBeDedicated';
+		$defaultField->type = 'checkbox';
+		$defaultField->required = 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Honoree information';
+		$defaultField->label = 'Choose an amount to donate';
+		$defaultField->textId = 'dedicationType';
+		$defaultField->type = 'radio';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Honoree information';
+		$defaultField->label = 'Honoree\'s First Name';
+		$defaultField->textId = 'honoreeFirstName';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Honoree information';
+		$defaultField->label = 'Honoree\'s Last Name';
+		$defaultField->textId = 'honoreeLastName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Honoree information';
+		$defaultField->label = 'Notify someone about this in memory or in honor of gift';
+		$defaultField->textId = 'shouldBeNotified';
+		$defaultField->type = 'checkbox';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Notification Party First Name';
+		$defaultField->textId = 'notificationFirstName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Notification Party Last Name';
+		$defaultField->textId = 'notificationLastName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Address';
+		$defaultField->textId = 'notificationAddress';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'City';
+		$defaultField->textId = 'notificationCity';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'State';
+		$defaultField->textId = 'notificationState';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Zipcode';
+		$defaultField->textId = 'notificationZip';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		// User Information
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'First Name';
+		$defaultField->textId = 'firstName';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Last Name';
+		$defaultField->textId = 'lastName';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Don\'t show my name publicly';
+		$defaultField->textId = 'makeAnonymous';
+		$defaultField->type = 'checkbox';
+		$defaultField->required = 0;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $this->id;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Email Address';
+		$defaultField->textId = 'emailAddress';
+		$defaultField->type = 'text';
+		$defaultField->note = 'Your receipt will be emailed here';
+		$defaultField->required = 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		if ($this->requiresAddressInfo) {
+			$defaultField = new DonationFormFields();
+			$defaultField->donationSettingId = $this->id;
+			$defaultField->category = 'Enter your information';
+			$defaultField->label = 'Address';
+			$defaultField->textId = 'address';
+			$defaultField->type = 'text';
+			$defaultField->required = 0;
+			$defaultFieldsToDisplay[] = $defaultField;
+
+			$defaultField = new DonationFormFields();
+			$defaultField->donationSettingId = $this->id;
+			$defaultField->category = 'Enter your information';
+			$defaultField->label = 'Address 2';
+			$defaultField->textId = 'address2';
+			$defaultField->type = 'text';
+			$defaultField->required = 0;
+			$defaultFieldsToDisplay[] = $defaultField;
+
+			$defaultField = new DonationFormFields();
+			$defaultField->donationSettingId = $this->id;
+			$defaultField->category = 'Enter your information';
+			$defaultField->label = 'City';
+			$defaultField->textId = 'city';
+			$defaultField->type = 'text';
+			$defaultField->required = 0;
+			$defaultFieldsToDisplay[] = $defaultField;
+
+			$defaultField = new DonationFormFields();
+			$defaultField->donationSettingId = $this->id;
+			$defaultField->category = 'Enter your information';
+			$defaultField->label = 'State';
+			$defaultField->textId = 'state';
+			$defaultField->type = 'text';
+			$defaultField->required = 0;
+			$defaultFieldsToDisplay[] = $defaultField;
+
+			$defaultField = new DonationFormFields();
+			$defaultField->donationSettingId = $this->id;
+			$defaultField->category = 'Enter your information';
+			$defaultField->label = 'Zip';
+			$defaultField->textId = 'zip';
+			$defaultField->type = 'text';
+			$defaultField->required = 0;
+			$defaultFieldsToDisplay[] = $defaultField;
 		}
+
+		return $defaultFieldsToDisplay;
+
 	}
 
 	public function saveDonationValues() {
@@ -402,16 +579,6 @@ class DonationsSetting extends DataObject {
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationForm() {
-		$defaultFieldsToDisplay = DonationFormFields::getDefaults($this->id);
-		$this->clearDonationFormFields();
-		$this->setDonationFormFields($defaultFieldsToDisplay);
-		$this->update();
-		header("Location: /Admin/DonationsSettings?objectAction=edit&id=" . $this->id);
-		die();
-	}
-
-	/** @noinspection PhpUnused */
 	function defaultDonationValues() {
 		$defaultValuesToDisplay = DonationValue::getDefaults($this->id);
 		$this->setDonationValues($defaultValuesToDisplay);
@@ -436,12 +603,6 @@ class DonationsSetting extends DataObject {
 		$this->update();
 		header("Location: /Admin/DonationsSettings?objectAction=edit&id=" . $this->id);
 		die();
-	}
-
-	public function clearDonationFormFields() {
-		$this->clearOneToManyOptions('DonationsFormFields', 'donationSettingId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->donationFormFields = [];
 	}
 
 	function getEditLink($context): string {

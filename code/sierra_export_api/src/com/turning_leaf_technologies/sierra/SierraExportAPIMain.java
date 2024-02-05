@@ -113,6 +113,18 @@ public class SierraExportAPIMain {
 				}
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
 
+				//Check to see if the jar has changes before processing records, and if so quit
+				if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+				if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
 				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
@@ -140,9 +152,8 @@ public class SierraExportAPIMain {
 						exportHolds(sierraConn, dbConn);
 						exportVolumes(sierraConn, dbConn);
 					}
+					getBibsWithHoldings(sierraConn);
 				}
-
-				getBibsWithHoldings(sierraConn);
 
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
@@ -166,7 +177,9 @@ public class SierraExportAPIMain {
 					}
 
 					//Get a list of all active bibs, so we can see what needs to be deleted.
-					checkForDeletedBibsInSierra(sierraConn);
+					if (sierraInstanceInformation.sierraConnection != null) {
+						checkForDeletedBibsInSierra(sierraConn);
+					}
 
 					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
@@ -1076,7 +1089,7 @@ public class SierraExportAPIMain {
 				}
 			}else{
 				//Log this as an invalid record, so we can continue, but return true, so we don't log an error.
-				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
+				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API, could not connect to API");
 				return true;
 			}
 		}catch (Exception e){
@@ -1372,8 +1385,9 @@ public class SierraExportAPIMain {
 		}
 		//Connect to the API to get our token
 		HttpURLConnection conn;
+		String getTokenUrl = baseUrl + "/token";
 		try {
-			URL emptyIndexURL = new URL(baseUrl + "/token");
+			URL emptyIndexURL = new URL(getTokenUrl);
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
@@ -1432,7 +1446,7 @@ public class SierraExportAPIMain {
 			}
 
 		} catch (Exception e) {
-			logger.error("Error connecting to sierra API", e );
+			logger.error("Error connecting to sierra API - " + getTokenUrl, e );
 			return false;
 		}
 		return true;
@@ -1583,6 +1597,8 @@ public class SierraExportAPIMain {
 			} catch (Exception e) {
 				logger.error("Error loading data from sierra API (getMarcJSONFromSierraApiURL) ", e );
 			}
+		}else {
+			logger.error("Could not connect to api when fetching " + sierraUrl);
 		}
 		return null;
 	}

@@ -948,7 +948,8 @@ class UserAPI extends Action {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
 
-			$userData->numSavedEvents = $user->getNumSavedEvents('upcoming');
+			$userData->numSavedEvents = $user->getNumSavedEvents('all');
+			$userData->numSavedEventsUpcoming = $user->getNumSavedEvents('upcoming');
 
 			$userData->summaryFines = translate([
 				'text' => 'Your accounts have %1% in fines',
@@ -4305,11 +4306,10 @@ class UserAPI extends Action {
 				$token->pushToken = $userToken;
 				$token->userId = $user->id;
 				if($token->find(true)) {
-					if ($newStatus == 'false' || !$newStatus) {
-						$token->onboardAppNotifications = 0;
-						$user->onboardAppNotifications = 0;
-					}
+					$token->onboardAppNotifications = 0;
+					$user->onboardAppNotifications = 0;
 					$token->update();
+					$user->update();
 					return [
 						'success' => true,
 						'title' => 'Success',
@@ -4317,10 +4317,10 @@ class UserAPI extends Action {
 					];
 				} else {
 					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
-					if ($newStatus == 'false' || !$newStatus) {
+					if ($user->onboardAppNotifications == 1) {
 						$user->onboardAppNotifications = 0;
+						$user->update();
 					}
-					$user->update();
 					return [
 						'success' => true,
 						'title' => 'Success',

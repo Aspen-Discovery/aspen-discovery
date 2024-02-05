@@ -373,6 +373,17 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return false;
 	}
 
+	public function getAllowInListsSetting() {
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		$eventSettings = new LMLibraryCalendarSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->eventsInLists;
+		}
+
+		return false;
+	}
+
 	public function getSummaryInformation() {
 		return [
 			'id' => $this->getUniqueID(),

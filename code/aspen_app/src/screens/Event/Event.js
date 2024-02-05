@@ -142,7 +142,7 @@ const DisplayEvent = (payload) => {
                          </Button>
                     </HStack>
                     {getDescription(event.description)}
-                    <HStack justifyContent="space-between" space={5} mt={5}>
+                    <HStack justifyContent="space-between" space={5} mt={5} flexWrap="wrap">
                          {getAudiences(event.audiences)}
                          {getCategories(event.categories)}
                          {getProgramTypes(event.programTypes)}
@@ -249,24 +249,28 @@ const getAddToCalendar = (start, end, location, event) => {
      let displayDay = false;
      let displayStartTime = false;
      let displayEndTime = false;
+     let day = '';
+     let time1arr = '';
+     let time2arr = '';
+     let startTime = null;
+     let endTime = null;
 
-     if (start && end) {
-          const startTime = start.date;
-          const endTime = end.date;
-
+     if (start) {
+          startTime = start.date;
           let time1 = startTime.split(' ');
-          let day = time1[0];
-          let time2 = endTime.split(' ');
-
-          let time1arr = time1[1].split(':');
-          let time2arr = time2[1].split(':');
-
+          day = time1[0];
+          time1arr = time1[1].split(':');
           displayDay = moment(day);
           displayStartTime = moment().set({ hour: time1arr[0], minute: time1arr[1] });
-          displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
-
           displayDay = moment(displayDay).format('dddd, MMMM D, YYYY');
           displayStartTime = moment(displayStartTime).format('h:mm A');
+     }
+
+     if (end) {
+          endTime = end.date;
+          let time2 = endTime.split(' ');
+          time2arr = time2[1].split(':');
+          displayEndTime = moment().set({ hour: time2arr[0], minute: time2arr[1] });
           displayEndTime = moment(displayEndTime).format('h:mm A');
      }
 
@@ -342,7 +346,7 @@ const getAddToCalendar = (start, end, location, event) => {
                                              <Alert maxW="400" status="success" colorScheme="success">
                                                   <VStack space={2} flexShrink={1} w="100%">
                                                        <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-                                                            <HStack flexShrink={1} space={2} alignItems="center">
+                                                            <HStack flexShrink={1} space={2}>
                                                                  <Alert.Icon />
                                                                  <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolGray.800' }}>
                                                                       {getTermFromDictionary(language, 'added_successfully')}
@@ -485,10 +489,12 @@ const getAddToYourEvents = (id, source) => {
           await saveEvent(id, language, library.baseUrl).then((result) => {
                setIsLoading(false);
                queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, 'upcoming'] });
+               queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, 'all'] });
+               queryClient.invalidateQueries({ queryKey: ['saved_events', user.id, library.baseUrl, 1, 'past'] });
                queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                queryClient.invalidateQueries({ queryKey: ['event', id, source, language, library.baseUrl] });
                if (result.success || result.success === 'true') {
-                    popAlert(getTermFromDictionary(language, 'success'), result.message, 'success');
+                    popAlert(getTermFromDictionary(language, 'added_successfully'), result.message, 'success');
                } else {
                     popAlert(getTermFromDictionary(language, 'error'), result.message, 'error');
                }

@@ -154,6 +154,11 @@ public class WebsiteIndexerMain {
 				PreparedStatement deletedSitesStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 1");
 				ResultSet deletedSitesRS = deletedSitesStmt.executeQuery();
 				while (deletedSitesRS.next()) {
+					//Check to see if the jar has changes before processing records, and if so quit
+					if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+						break;
+					}
+
 					WebsiteIndexLogEntry logEntry = null;
 					long websiteId = deletedSitesRS.getLong("id");
 					//Get a list of any pages that exist for the site.

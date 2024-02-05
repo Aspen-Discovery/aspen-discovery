@@ -70,11 +70,53 @@ class MyAccount_ContactInformation extends MyAccount {
 					$samePatron = false;
 				}
 				if ($updateScope == 'contact' && $samePatron) {
-					$result = $user->updatePatronInfo($canUpdateContactInfo, false);
-					$user->updateMessage = implode('<br/>', $result['messages']);
-					$user->updateMessageIsError = !$result['success'];
-					$user->update();
-				}else{
+					require_once ROOT_DIR . '/sys/Administration/USPS.php';
+					$uspsInfo = USPS::getUSPSInfo();
+
+					//if there's no USPS info, don't bother trying to validate
+					if ($uspsInfo) {
+						$streetAddress = '';
+						$city = '';
+						$state = '';
+						$zip = '';
+
+						//get the correct _REQUEST names as they differ across ILSes
+						foreach ($_REQUEST as $selfRegValue => $val) {
+							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)) {
+								$streetAddress = $val;
+							} elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)) {
+								$city = $val;
+							} elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)) {
+								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+								if (strlen($val) == 2) {
+									$state = $val;
+								}
+							} elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)) {
+								$zip = $val;
+							}
+						}
+						require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+						//Submit form to ILS if address is validated
+						if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)) {
+							$result = $user->updatePatronInfo($canUpdateContactInfo, false);
+							$user->updateMessage = implode('<br/>', $result['messages']);
+							$user->updateMessageIsError = !$result['success'];
+							$user->update();
+						} else {
+							$user->updateMessage = translate([
+								'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
+								'isPublicFacing' => true
+							]);
+							$user->updateMessageIsError = true;
+							$user->update();
+						}
+					} else {
+						$result = $user->updatePatronInfo($canUpdateContactInfo, false);
+						$user->updateMessage = implode('<br/>', $result['messages']);
+						$user->updateMessageIsError = !$result['success'];
+						$user->update();
+					}
+				} else {
 					$user->updateMessage = translate([
 						'text' => 'Wrong account credentials, please try again.',
 						'isPublicFacing' => true,
