@@ -19,7 +19,7 @@ read waitOver
 echo "In a new window, update cron to run appropriate commands as the aspen user, and then press return when done"
 read waitOver
 
-pkill java
+pkill -9 java
 
 ./updateSitePermissions.sh $1
 

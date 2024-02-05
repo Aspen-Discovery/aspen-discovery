@@ -12,7 +12,7 @@ if [ -z "$2" ]
 fi
 
 service cron stop
-pkill java
+pkill -9 java
 
 apt-get update
 

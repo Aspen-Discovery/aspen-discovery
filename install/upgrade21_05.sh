@@ -17,7 +17,7 @@ service crond stop
 echo "Run database maintenance, and then press return when done"
 read waitOver
 
-pkill java
+pkill -9 java
 
 apachectl restart
 

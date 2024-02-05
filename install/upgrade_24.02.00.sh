@@ -6,7 +6,7 @@ if [ -z "$1" ]
 fi
 
 yum install -y java-11-openjdk
-pkill java
+pkill -9 java
 yum -y remove java-1.8.0-openjdk
 yum -y remove java-1.8.0-openjdk-headless.x86_64
 #update-alternatives --set java /usr/lib/jvm/java-11-openjdk-11.0.21.0.9-1.el7_9.x86_64/bin/java

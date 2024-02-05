@@ -12,7 +12,7 @@ if [ -z "$2" ]
 fi
 
 #service crond stop
-pkill java
+pkill -9 java
 
 cd /usr/local/aspen-discovery/install
 if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
