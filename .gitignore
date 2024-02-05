@@ -217,7 +217,6 @@ sites/roundrock.localhost/httpd-roundrock.localhost.conf
 code/aspen_app/.run/Update EAS.run.xml
 code/aspen_app/.run/Update Aspen LiDA Instance.run.xml
 code/aspen_app/.run/Start Aspen LiDA Instance.run.xml
-*.default
 code/aspen_app/updateInternal.sh
 code/aspen_app/updateEASInternal.sh
 code/aspen_app/startInternal.sh
