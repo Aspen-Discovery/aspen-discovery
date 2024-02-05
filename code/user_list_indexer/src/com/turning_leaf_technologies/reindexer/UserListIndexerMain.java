@@ -59,6 +59,11 @@ public class UserListIndexerMain {
 
 			ListIndexingLogEntry logEntry = initializeIndexer(serverName);
 
+			//Check to see if the jar has changes before processing records, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+
 			//Process lists
 			long numListsProcessed = 0;
 			try {

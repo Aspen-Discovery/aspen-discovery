@@ -92,6 +92,18 @@ public class SideLoadingMain {
 				PreparedStatement updateSideloadFileStmt = aspenConn.prepareStatement("UPDATE sideload_files set lastChanged = ?, deletedTime = ?, lastIndexed = ? WHERE id = ?");
 				ResultSet getSideloadsRS = getSideloadsStmt.executeQuery();
 				while (getSideloadsRS.next()) {
+					//Check to see if the jar has changes before processing records, and if so quit
+					if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+						IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+						disconnectDatabase(aspenConn);
+						break;
+					}
+					if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+						IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+						disconnectDatabase(aspenConn);
+						break;
+					}
+
 					SideLoadSettings settings = new SideLoadSettings(getSideloadsRS);
 					processSideLoad(settings, getFilesForSideloadStmt, insertSideloadFileStmt, updateSideloadFileStmt);
 				}

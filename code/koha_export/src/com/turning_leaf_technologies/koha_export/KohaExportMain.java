@@ -111,6 +111,18 @@ public class KohaExportMain {
 					System.exit(1);
 				}
 
+				//Check to see if the jar has changes, and if so quit
+				if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+				if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
 				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);

@@ -112,6 +112,18 @@ public class EvolveExportMain {
 					System.exit(1);
 				}
 
+				//Check to see if the jar has changes before processing records, and if so quit
+				if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+				if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+					IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+					disconnectDatabase();
+					break;
+				}
+
 				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'evolve'");
 				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 				if (accountProfileRS.next()){

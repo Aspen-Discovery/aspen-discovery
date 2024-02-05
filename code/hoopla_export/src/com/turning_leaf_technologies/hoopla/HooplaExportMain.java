@@ -99,6 +99,18 @@ public class HooplaExportMain {
 			//Connect to the Aspen database
 			aspenConn = connectToDatabase();
 
+			//Check to see if the jar has changes before processing records, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+
 			//Start a log entry
 			createDbLogEntry(startTime, aspenConn);
 			logEntry.addNote("Starting extract");

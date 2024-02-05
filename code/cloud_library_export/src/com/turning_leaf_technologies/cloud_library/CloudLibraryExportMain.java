@@ -56,6 +56,18 @@ public class CloudLibraryExportMain {
 			//Connect to the aspen database
 			aspenConn = connectToDatabase();
 
+			//Check to see if the jar has changes before processing, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+
 			//Do the actual work here
 			int numChanges = extractCloudLibraryData();
 
