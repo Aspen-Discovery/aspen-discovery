@@ -110,6 +110,16 @@ public class ExtractOverDriveInfoMain {
 					try {
 						localDBConnection = DriverManager.getConnection(databaseConnectionInfo);
 
+						//Check to see if the jar has changes before processing records, and if so quit
+						if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+							IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+							return;
+						}
+						if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+							IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+							return;
+						}
+
 						OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(localDBConnection, setting, logger);
 						if (!logEntry.saveResults()) {
 							logger.error("Could not save log entry to database, quitting");

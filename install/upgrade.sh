@@ -14,7 +14,7 @@ fi
 echo "Starting upgrade of $1 to version $2"
 
 service crond stop
-pkill java
+pkill -9 java
 
 yum -y update
 

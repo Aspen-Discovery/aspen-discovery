@@ -52,6 +52,11 @@ public class CourseReservesIndexerMain {
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
+			//Check to see if the jar has changes before processing records, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+
 			startTime = new Date().getTime();
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)

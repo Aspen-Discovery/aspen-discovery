@@ -576,7 +576,7 @@ public class GroupedWorkIndexer {
 		try {
 			if (permanentId.length() < 40) {
 				//Delete both the original id (if less than 40 characters)
-				updateServer.deleteByQuery("id:\"" + permanentId + "\"");
+				updateServer.deleteById(permanentId);
 			}
 
 			if (permanentId.length() >= 37 && permanentId.length() < 40){
@@ -591,7 +591,7 @@ public class GroupedWorkIndexer {
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 1000 == 0) {
+			if (totalRecordsHandled % 500 == 0) {
 				updateServer.commit(false, false, true);
 			}
 
