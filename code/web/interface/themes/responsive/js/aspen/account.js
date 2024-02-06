@@ -1840,7 +1840,7 @@ AspenDiscovery.Account = (function () {
 					}
 				}
 			}).fail(function() {
-				const cardButton = document.getElementById('process-stripe-payment');
+				var cardButton = document.getElementById('process-stripe-payment');
 				AspenDiscovery.ajaxFail();
 				cardButton.disabled = false;
 			})

@@ -765,6 +765,10 @@ class Evergreen extends AbstractIlsDriver {
 	}
 
 	public function canLoadReadingHistoryInMasqueradeMode() : bool {
+		$activePatron = UserAccount::getActiveUserObj();
+		if (!empty($activePatron)) {
+			return !empty($activePatron->ils_password);
+		}
 		return false;
 	}
 
@@ -786,7 +790,7 @@ class Evergreen extends AbstractIlsDriver {
 		$readingHistoryTitles = [];
 		$numTitles = 0;
 
-		$authToken = $this->getAPIAuthToken($patron, true);
+		$authToken = $this->getAPIAuthToken($patron, false);
 		if ($authToken != null) {
 			//Get a list of checkouts
 
@@ -809,19 +813,48 @@ class Evergreen extends AbstractIlsDriver {
 					$circEntryMapped = $this->mapEvergreenFields($circEntry->__p, $this->fetchIdl('auch'));
 
 					require_once ROOT_DIR . '/sys/User/Checkout.php';
-					$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
-					$curTitle = [];
-					$curTitle['id'] = $checkout->recordId;
-					$curTitle['shortId'] = $checkout->recordId;
-					$curTitle['recordId'] = $checkout->recordId;
-					$curTitle['title'] = $checkout->title;
-					$curTitle['author'] = $checkout->author;
-					$curTitle['format'] = $checkout->format;
-					$curTitle['checkout'] = $checkout->checkoutDate;
-					if (!empty($circEntryMapped['checkin_time'])) {
-						$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+					if (empty($circEntryMapped['source_circ'])) {
+						$modsForCopy = $this->getModsForCopy($circEntryMapped['target_copy']);
+						if ($modsForCopy != null) {
+							$curTitle = [];
+							$curTitle['id'] = $modsForCopy['doc_id'];
+							$curTitle['shortId'] = $modsForCopy['doc_id'];
+							$curTitle['recordId'] = $modsForCopy['doc_id'];
+							$curTitle['title'] = $modsForCopy['title'];
+							$curTitle['author'] = $modsForCopy['author'];
+							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+							$marcRecordDriver = new MarcRecordDriver($modsForCopy['doc_id']);
+							if ($marcRecordDriver->isValid()) {
+								$curTitle['format'] = $marcRecordDriver->getPrimaryFormat();
+							}else{
+								$curTitle['format'] = 'Unknown';
+							}
+							if (!empty($circEntryMapped['xact_start'])) {
+								$curTitle['checkout'] = strtotime($circEntryMapped['xact_start']);;
+							}
+							if (!empty($circEntryMapped['checkin_time'])) {
+								$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+							} else {
+								$curTitle['checkin'] = null;
+							}
+						} else {
+							continue;
+						}
 					} else {
-						$curTitle['checkin'] = null;
+						$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
+						$curTitle = [];
+						$curTitle['id'] = $checkout->recordId;
+						$curTitle['shortId'] = $checkout->recordId;
+						$curTitle['recordId'] = $checkout->recordId;
+						$curTitle['title'] = $checkout->title;
+						$curTitle['author'] = $checkout->author;
+						$curTitle['format'] = $checkout->format;
+						$curTitle['checkout'] = $checkout->checkoutDate;
+						if (!empty($circEntryMapped['checkin_time'])) {
+							$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+						} else {
+							$curTitle['checkin'] = null;
+						}
 					}
 					$readingHistoryTitles[] = $curTitle;
 					$numTitles++;
@@ -1674,10 +1707,10 @@ class Evergreen extends AbstractIlsDriver {
 				'service' => 'open-ils.auth',
 				'method' => 'open-ils.auth.login',
 				'param' => json_encode([
-					'password' => $password,
+					'password' => trim($password),
 					'type' => 'persist',
 					'org' => null,
-					'identifier' => $username,
+					'identifier' => trim($username),
 				]),
 			];
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);

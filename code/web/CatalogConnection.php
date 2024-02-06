@@ -589,7 +589,7 @@ class CatalogConnection {
 						$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
 						if ($result['numTitles'] > 0) {
 							foreach ($result['titles'] as $title) {
-								if ($title['permanentId'] != null) {
+								//if ($title['permanentId'] != null) {
 									$userReadingHistoryEntry = new ReadingHistoryEntry();
 									$userReadingHistoryEntry->userId = $patron->id;
 									$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
@@ -612,7 +612,7 @@ class CatalogConnection {
 									$userReadingHistoryEntry->deleted = 0;
 									$userReadingHistoryEntry->insert();
 									$userReadingHistoryEntry = null;
-								}
+								//}
 							}
 						}
 						$timer->logTime("Finished loading native reading history");
@@ -656,7 +656,7 @@ class CatalogConnection {
 		} elseif ($sortOption == "format") {
 			$readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
 		}
-		$readingHistoryDB->groupBy(['groupedWorkPermanentId']);
+		$readingHistoryDB->groupBy(['groupedWorkPermanentId', 'title', 'author']);
 
 		$numTitles = $readingHistoryDB->count();
 
