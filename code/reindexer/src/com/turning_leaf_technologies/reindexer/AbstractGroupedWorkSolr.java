@@ -391,7 +391,7 @@ public abstract class AbstractGroupedWorkSolr {
 		//Remove the default value if we get something more specific
 		if (valuesCollection.containsKey(defaultValue) && valuesCollection.size() > 1) {
 			valuesCollection.remove(defaultValue);
-		} else if (valuesCollection.size() == 0) {
+		} else if (valuesCollection.isEmpty()) {
 			valuesCollection.put(defaultValue, 1);
 		}
 	}
@@ -405,7 +405,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
-	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
+	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)([(]?(?:a )?graphic novel|audio cd|book club kit|large print[)]?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory) {
@@ -452,24 +452,24 @@ public abstract class AbstractGroupedWorkSolr {
 			if (updateTitle || forceUpdate) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
+				if (!tmpTitle.isEmpty()) {
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
+				if (!tmpTitle.isEmpty()) {
 					shortTitle = tmpTitle;
 				}
 				this.title = shortTitle;
 				this.titleFormat = formatCategory;
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
+				if (!tmpTitle.isEmpty()) {
 					sortableTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
+				if (!tmpTitle.isEmpty()) {
 					sortableTitle = tmpTitle;
 				}
 				//remove punctuation from the sortable title
@@ -477,7 +477,7 @@ public abstract class AbstractGroupedWorkSolr {
 				this.titleSort = sortableTitle.trim();
 
 				//SubTitle only gets set based on the main title.
-				if (subTitle == null || subTitle.equals("")){
+				if (subTitle == null || subTitle.isEmpty()){
 					this.displayTitle = shortTitle;
 					if (this.subTitle != null) {
 						//clear the subtitle if it was set by a previous record.
@@ -507,7 +507,7 @@ public abstract class AbstractGroupedWorkSolr {
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0) {
+			if (!tmpTitle.isEmpty()) {
 				subTitle = tmpTitle;
 			}
 			this.subTitle = subTitle;
@@ -702,14 +702,14 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addSeriesWithVolume(String seriesName, String volume) {
-		if (seriesName != null && seriesName.length() != 0) {
+		if (seriesName != null && !seriesName.isEmpty()) {
 			String seriesInfo = getNormalizedSeries(seriesName);
-			if (volume.length() > 0) {
+			if (!volume.isEmpty()) {
 				volume = getNormalizedSeriesVolume(volume);
 			}
 			String seriesInfoLower = seriesInfo.toLowerCase();
 			String volumeLower = volume.toLowerCase();
-			String seriesInfoWithVolume = seriesInfo + "|" + (volume.length() > 0 ? volume : "");
+			String seriesInfoWithVolume = seriesInfo + "|" + (!volume.isEmpty() ? volume : "");
 			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
 
 			if (!this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume)) {
@@ -724,27 +724,27 @@ public abstract class AbstractGroupedWorkSolr {
 					//Get the longer series name
 					if (existingSeriesName.contains(seriesInfoLower)) {
 						//Use the old one unless it doesn't have a volume
-						if (existingVolume.length() == 0) {
+						if (existingVolume.isEmpty()) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
 						} else {
 							if (volumeLower.equals(existingVolume)) {
 								okToAdd = false;
 								break;
-							} else if (volumeLower.length() == 0) {
+							} else if (volumeLower.isEmpty()) {
 								okToAdd = false;
 								break;
 							}
 						}
 					} else if (seriesInfoLower.contains(existingSeriesName)) {
 						//Before removing the old series, make sure the new one has a volume
-						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)) {
+						if (!existingVolume.isEmpty() && existingVolume.equals(volumeLower)) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
-						} else if (volume.length() == 0 && existingVolume.length() > 0) {
+						} else if (volume.isEmpty() && !existingVolume.isEmpty()) {
 							okToAdd = false;
 							break;
-						} else if (volume.length() == 0) {
+						} else if (volume.isEmpty()) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
 						}
@@ -918,7 +918,7 @@ public abstract class AbstractGroupedWorkSolr {
 		if (publisher.endsWith(",") || publisher.endsWith(";")){
 			publisher = publisher.substring(0, publisher.length() - 1).trim();
 		}
-		if (publisher.length() > 0){
+		if (!publisher.isEmpty()){
 			this.publishers.add(publisher);
 		}
 	}
@@ -948,11 +948,8 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addPlaceOfPublication(String placeOfPublication) {
-		placeOfPublication	= placeOfPublication.trim();
-		if (placeOfPublication.endsWith(",") || placeOfPublication.endsWith(";")){
-			placeOfPublication = placeOfPublication.substring(0, placeOfPublication.length() -1).trim();
-		}
-		if (placeOfPublication.length() > 0) {
+		placeOfPublication	= AspenStringUtils.trimTrailingPunctuation(placeOfPublication);
+		if (!placeOfPublication.isEmpty()) {
 			this.placesOfPublication.add(placeOfPublication);
 		}
 	}
@@ -1047,7 +1044,7 @@ public abstract class AbstractGroupedWorkSolr {
 		switch (target_audience){
 			case "Unknown":
 			case "Other":
-				if (targetAudience.size() == 0){
+				if (targetAudience.isEmpty()){
 					targetAudience.add(target_audience);
 					targetAudiencesAsString = null;
 				}
@@ -1079,7 +1076,7 @@ public abstract class AbstractGroupedWorkSolr {
 			case "Other":
 			case "No Attempt To Code":
 				//noinspection ConstantConditions
-				if (targetAudienceFull.size() == 0){
+				if (targetAudienceFull.isEmpty()){
 					targetAudienceFull.add(target_audience);
 				}
 				break;
@@ -1121,7 +1118,7 @@ public abstract class AbstractGroupedWorkSolr {
 
 	void addBarcodes(Set<String> barcodeList) {
 		for (String barcode: barcodeList){
-			if (barcode.length() > 0){
+			if (!barcode.isEmpty()){
 				this.barcodes.add(barcode);
 			}
 		}
@@ -1140,7 +1137,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void setFountasPinnell(String fountasPinnell) {
-		if (this.fountasPinnell.length() == 0) {
+		if (this.fountasPinnell.isEmpty()) {
 			this.fountasPinnell = fountasPinnell;
 		}
 	}
@@ -1194,7 +1191,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addDescription(String description, String recordFormat, String formatCategory) {
-		if (description == null || description.length() == 0) {
+		if (description == null || description.isEmpty()) {
 			return;
 		}
 		this.description.add(description);
@@ -1246,6 +1243,7 @@ public abstract class AbstractGroupedWorkSolr {
 		}
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	RecordInfo addRelatedRecord(String source, String subSource, String recordIdentifier) {
 		String recordIdentifierWithType = source + ":" + subSource + ":" + recordIdentifier;
 		if (relatedRecords.containsKey(recordIdentifierWithType)) {
@@ -1301,7 +1299,7 @@ public abstract class AbstractGroupedWorkSolr {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}
-			if (otherRecordsAsArray.size() == 0 || hooplaRecordsAsArray.size() == 0){
+			if (otherRecordsAsArray.isEmpty() || hooplaRecordsAsArray.isEmpty()){
 				return;
 			}
 			// record 1 is a hoopla record
@@ -1320,8 +1318,7 @@ public abstract class AbstractGroupedWorkSolr {
 							HashSet<String> scopesToRemove = new HashSet<>();
 							for (ScopingInfo item1Scope : curItem1.getScopingInfo().values()) {
 								String item1ScopeName = item1Scope.getScope().getScopeName();
-								//Get information about the scope so we can determine how this scope should be processed.
-								boolean removeScope = false;
+								//Get information about the scope to determine how this scope should be processed.
 								switch (item1Scope.getScope().getHooplaScope().getExcludeTitlesWithCopiesFromOtherVendors()) {
 									case 0:
 										//Don't remove items that have the same record someplace else
@@ -1353,20 +1350,22 @@ public abstract class AbstractGroupedWorkSolr {
 								//Remove from related scopes as well
 								ArrayList<ScopingInfo> scopingInfo = relatedScopes.get(scopeToRemove);
 								if (scopingInfo != null) {
-									ArrayList<ScopingInfo> scopingInfoClone = (ArrayList<ScopingInfo>) scopingInfo.clone();
+									ArrayList<ScopingInfo> scopingInfoClone;
+									//noinspection unchecked
+									scopingInfoClone = (ArrayList<ScopingInfo>) scopingInfo.clone();
 									for (ScopingInfo relatedScopeInfo : scopingInfoClone) {
 										if (relatedScopeInfo.getItem().equals(curItem1)) {
 											scopingInfo.remove(relatedScopeInfo);
 										}
 									}
-									if (scopingInfo.size() == 0) {
+									if (scopingInfo.isEmpty()) {
 										relatedScopes.remove(scopeToRemove);
 									}
 								}
 							}
 
 							//Remove the item entirely if it is no longer valid for any scope
-							if (curItem1.getScopingInfo().size() == 0){
+							if (curItem1.getScopingInfo().isEmpty()){
 								record1.getRelatedItems().remove(curItem1);
 								break;
 							}
@@ -1377,7 +1376,7 @@ public abstract class AbstractGroupedWorkSolr {
 				}
 
 				//Remove the record entirely if it has no related items
-				if (record1.getRelatedItems().size() == 0){
+				if (record1.getRelatedItems().isEmpty()){
 					relatedRecords.remove(record1.getFullIdentifier());
 				}
 			}
@@ -1468,7 +1467,7 @@ public abstract class AbstractGroupedWorkSolr {
 	private String targetAudiencesAsString = null;
 	public String getTargetAudiencesAsString() {
 		if (targetAudiencesAsString == null) {
-			if (targetAudience.size() == 0) {
+			if (targetAudience.isEmpty()) {
 				targetAudiencesAsString = "";
 			} else if (targetAudience.size() == 1) {
 				targetAudiencesAsString = targetAudience.first();
@@ -1477,10 +1476,6 @@ public abstract class AbstractGroupedWorkSolr {
 			}
 		}
 		return targetAudiencesAsString;
-	}
-
-	public boolean hasParentRecords() {
-		return parentRecords.size() > 0;
 	}
 
 	public void addParentRecord(String workId){

@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 
-class ScopingInfo{
+public class ScopingInfo{
 	private final ItemInfo item;
 	private final Scope scope;
 	private boolean locallyOwned;
