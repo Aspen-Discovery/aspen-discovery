@@ -2120,6 +2120,13 @@ CREATE TABLE `indexed_publisher` (
   UNIQUE KEY `publisher` (`publisher`),
   UNIQUE KEY `publisher_2` (`publisher`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_place_of_publication;
+CREATE TABLE `indexed_place_of_publication`(
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `placeOfPublication` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `placeOfPublication` (`placeOfPublication`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS indexed_record_source;
 CREATE TABLE `indexed_record_source` (
   `id` int NOT NULL AUTO_INCREMENT,

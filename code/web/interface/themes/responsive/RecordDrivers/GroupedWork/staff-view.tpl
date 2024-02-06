@@ -77,6 +77,7 @@
 									<th>{translate text="Language" isPublicFacing=true}</th>
 									<th>{translate text="Publisher" isPublicFacing=true}</th>
 									<th>{translate text="Pub Date" isPublicFacing=true}</th>
+									<th>{translate text="Place of Publication" isPublicFacing=true}</th>
 									<th>{translate text="Physical Description" isPublicFacing=true}</th>
 								</tr>
 							</thead>
@@ -200,6 +201,7 @@
 				<th>{$row.edition}</th>
 				<th>{$row.publisher}</th>
 				<th>{$row.publicationDate}</th>
+				<th>{$row.placeOfPublication}</th>
 				<th>{$row.physicalDescription}</th>
 				<th>{$row.format}</th>
 				<th>{$row.formatCategory}</th>

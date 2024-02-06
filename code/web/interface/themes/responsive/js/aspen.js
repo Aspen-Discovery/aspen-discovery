@@ -6660,7 +6660,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		showSearchToolbar: function (displayMode, showCovers, rssLink, excelLink, searchId, sortList) {
+		showSearchToolbar: function (displayMode, showCovers, rssLink, excelLink, risLink, searchId, sortList) {
 			var url = Globals.path + "/Search/AJAX";
 			var params = {
 				method: 'showSearchToolbar',
@@ -6668,6 +6668,7 @@ AspenDiscovery.Account = (function () {
 				showCovers: showCovers,
 				rssLink: rssLink,
 				excelLink: excelLink,
+				risLink: risLink,
 				searchId: searchId,
 				sortList: sortList
 			};

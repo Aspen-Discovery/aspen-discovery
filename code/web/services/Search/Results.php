@@ -230,6 +230,8 @@ class Search_Results extends ResultsAction {
 			$searchObject->buildExcel();
 			// And we're done
 			exit;
+		} elseif ($searchObject->getView() == 'ris') {
+			$searchObject->buildRisExport();
 		}
 		$displayMode = $searchObject->getView();
 		if ($displayMode == 'covers') {
@@ -247,6 +249,7 @@ class Search_Results extends ResultsAction {
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 		$interface->assign('excelLink', $searchObject->getExcelUrl());
+		$interface->assign('risLink', $searchObject->getRisUrl());
 
 		$timer->logTime('Setup Search');
 
