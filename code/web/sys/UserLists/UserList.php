@@ -1196,7 +1196,7 @@ class UserList extends DataObject {
 			foreach ($titleDetails as $curDoc) {
 				//check document type
 				if ($curDoc instanceof GroupedWorkDriver && $curDoc->isValid()) {
-					$risCitation =$curDoc-> formatGroupedWorkCitation($curDoc);
+					$risCitation =$curDoc-> formatGroupedWorkCitation();
 				} else {
 					continue;
 				}

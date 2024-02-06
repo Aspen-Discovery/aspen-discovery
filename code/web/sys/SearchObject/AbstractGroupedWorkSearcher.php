@@ -748,7 +748,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		try {
 			// First, get the search results if none were provided
 			if (is_null($result)) {
-				$this->limit = 1000;
+				//$this->limit = 1000;
 				$result = $this->processSearch(false, false);
 			}
 	
@@ -759,134 +759,10 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			if ($docs != null) {
 				foreach ($docs as $curDoc) {
 					// Build RIS data for each document
-					$risData .= "TI  - " . $curDoc['title_display'] . PHP_EOL;
-					$risData .= "AU  - " . $curDoc['author_display'] . PHP_EOL;
-	
-					// Adjustments for publisher and placeOfPublication
-					$publisher = isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '';
-					$risData .= "PB  - " . $publisher . PHP_EOL;
-					
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($curDoc);
-					$placeOfPublication = $groupedWorkDriver->getPlaceOfPublication();
-					if(is_array($placeOfPublication) && count($placeOfPublication) > 0) {
-						$placesOfPublicationClean = implode(', ', $placeOfPublication);
-						$placesOfPublicationClean = str_replace([':', '; '], ' ', $placeOfPublication);
-					} else {
-						if(!empty($placeOfPublication)) {
-							$placesOfPublicationClean = str_replace([':', '; '], ' ', $placeOfPublication);
-						}
-					}
-				
-					$risData .= "CY  - " . $placesOfPublicationClean . PHP_EOL;
-	
-					// Adjustments for publishDate
-					if (isset($curDoc['publishDate'])) {
-						$publishDates = is_array($curDoc['publishDate']) ? $curDoc['publishDate'] : [$curDoc['publishDate']];
-						$publishDate = count($publishDates) == 1 ? $publishDates[0] : min($publishDates) . ' - ' . max($publishDates);
-						$risData .= "PY  - " . $publishDate . PHP_EOL;
-					}
-
-					foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
-						$format = $relatedManifestation->format;
-						switch ($format) {
-							case 'book': 
-								$format = 'BOOK';
-								break;
-							case 'BOOK':
-								$format = 'BOOK';
-								break;
-							case 'BOOKS':
-								$format = 'BOOK';
-								break;
-							case 'Book':
-								$format = 'BOOK';
-								break;
-							case 'books':
-								$format = 'BOOK';
-								break;
-							case 'BK':
-								$format = 'BOOK';
-								break;
-							case 'Books':
-								$format = 'BOOK';
-								break;
-							case 'JOURNAL':
-								$format = 'BOOK';
-								break;
-							case 'Journal Article':
-								$format = 'JOUR';
-								break;
-							case 'JOURNAL ARTICLE':
-								$format = 'JOUR';
-								break;
-							case 'Journal':
-								$format = 'BOOK';
-								break;
-							case 'Audio-Visual':
-								$format = 'SOUND';
-								break;
-							case 'AudioBook':
-								$format = 'SOUND';
-								break;
-							case 'Catalog':
-								$format = 'CTLG';
-								break;
-							case 'Dictionary':
-								$format = 'DICT';
-								break;
-							case 'Electronic Article':
-								$format = 'EJOUR';
-								break;
-							case 'Electronic Book':
-								$format = 'EBOOK';
-								break;
-							case 'E-Book':
-								$format = 'EBOOK';
-								break;
-							case 'Magazine':
-								$format = 'MGZN';
-								break;
-							case 'Magazine Article':
-								$format = 'MGZN';
-								break;
-							case 'Music':
-								$format = 'MUSIC';
-								break;
-							case 'MUSIC':
-								$format = 'MUSIC';
-								break;
-							case 'Newspaper':
-								$format = 'NEWS';
-								break;
-							case 'Newspaper Article':
-								$format = 'NEWS';
-								break;
-							case 'Web Page':
-								$format = 'ELEC';
-								break;
-							case 'Visual Materials':
-								$format = 'VIDEO';
-								break;
-							case 'Movie':
-								$format = 'VIDEO';
-								break;
-							case 'Movie -- DVD':
-								$format = 'VIDEO';
-								break;
-							case 'Movie -- VHS':
-								$format = 'VIDEO';
-								break;
-							case 'Electronic Database':
-								$format = 'EBOOK';
-									break;
-							case 'Reference':
-								$format = 'BOOK';
-								break;
-						}
-						$risData .= "TY  - ".$format .PHP_EOL;
-					}
-					$risData .= PHP_EOL; // Add a blank line between records
+					$risData .= $groupedWorkDriver->formatGroupedWorkCitation();
+					$risData .= PHP_EOL . PHP_EOL; // Add a blank line between records
 
 				}
 			}

@@ -815,9 +815,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getEditions() {
-		$edition = isset($this->overDriveMetaData->getDecodedRawData()->edition) ? $this->overDriveMetaData->getDecodedRawData()->edition : null;
-		if (is_array($edition) || is_null($edition)) {
+		$edition = isset($this->getOverDriveMetaData()->getDecodedRawData()->edition) ? $this->getOverDriveMetaData()->getDecodedRawData()->edition : null;
+		if (is_array($edition)) {
 			return $edition;
+		} elseif (is_null($edition)) {
+			return [];
 		} else {
 			return [$edition];
 		}

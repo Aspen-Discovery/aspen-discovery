@@ -3409,16 +3409,16 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $locations;
 	}
 
-	public function formatGroupedWorkCitation($curDoc) {
+	public function formatGroupedWorkCitation() {
 		// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
 			
-		if ($curDoc->isValid()) {
+		if ($this->isValid()) {
 			// Initialize an array to store the RIS-formatted citation fields
 			$risFields = array();
 
 			// RIS TY - Format
-			$format = $curDoc->getFormat() ;
+			$format = $this->getFormat() ;
 			if(is_array($format) && count($format) > 0) {
 				$format = implode(', ', $format);
 
@@ -3522,12 +3522,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}	
 			//RIS Tag: AU - Author
 			$authors = array();
-			$primaryAuthor = $curDoc->getPrimaryAuthor();
+			$primaryAuthor = $this->getPrimaryAuthor();
 			if (!empty($primaryAuthor)) {
 				$authors[] = $primaryAuthor;
 			}
 
-			$contributors = $curDoc->getContributors();
+			$contributors = $this->getContributors();
 			if(is_array($contributors) && count($contributors) > 0) {
 				$authors = array_merge($authors, $contributors);
 			}
@@ -3539,20 +3539,20 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 
 			// RIS Tag: TI - Title
-			$title = $curDoc->getTitle();
+			$title = $this->getTitle();
 			if (!empty($title)) {
 				$risFields[] = "TI  - " . $title;
 			}
 
 			// RIS Tag: PB - Publisher
-			$publishers = $curDoc->getPublishers();
+			$publishers = $this->getPublishers();
 			if (is_array($publishers) && count($publishers) > 0) {
 				$publishers = implode(', ', $publishers);
 				$risFields[] = "PB  - " . $publishers;
 			}
 
 			// RIS Tag: PY - Publication Year(s)
-			$publishDates = $curDoc->getPublicationDates();
+			$publishDates = $this->getPublicationDates();
 			if (!is_array($publishDates)) {
 				$publishDates = [$publishDates];
 			}
@@ -3562,7 +3562,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 			}
 
-			$placesOfPublication = $curDoc->getPlaceOfPublication();
+			$placesOfPublication = $this->getPlaceOfPublication();
 			if(is_array($placesOfPublication) && count($placesOfPublication) > 0) {
 				$placesOfPublicationClean = implode(', ', $placesOfPublication);
 				$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
@@ -3575,7 +3575,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 
 		// //RIS Tag: ET - Editions
-				$editions = $curDoc->getEdition();
+				$editions = $this->getEdition();
 				if(is_array($editions) && count($editions) > 0) {
 					$editions = implode(', ', $editions);
 					$risFields[] = "ET  - ".$editions;
@@ -3586,14 +3586,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 
 				//RIS UR - URL
-				$url = $curDoc->getRecordUrl();
+				$url = $this->getRecordUrl();
 				if(is_array($url) && count($url) > 0) {
 					$url = implode(', ', $url);
 					$risFields[] = "UR  - ".$url;
 				}
 
 			//RIS Tag: N1 - Info
-			$notes = $curDoc->getTableOfContentsNotes();
+			$notes = $this->getTableOfContentsNotes();
 			if(is_array($notes) && count($notes) > 0) {
 				$notes = implode(', ', $notes);
 				$risFields[] = "N1  - ".$notes;
@@ -3604,26 +3604,26 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 
 			//RIS Tag: N2 - Notes
-			$description = $curDoc->getDescription();
+			$description = $this->getDescription();
 			if(!empty($description)) {
 				$risFields[] = "N2  - ".$description;
 			}
 
 			//RIS T2 - Series
-			$series = $curDoc->getSeries();
+			$series = $this->getSeries();
 			if(is_array($series) && count($series) >0){
 				$series = implode(', ', $series);
 				$risFields[] = "T2  - ".$series;
 			}
 
 			//RIS ST - Short Title
-			$shortTilte = $curDoc->getShortTitle();
+			$shortTilte = $this->getShortTitle();
 			if(!empty($shortTilte)) {
 				$risFields[] = "ST  - ".$shortTilte;
 			}
 
 			// RIS Tag: SN - ISBN 
-			$ISBN = $curDoc->getPrimaryIsbn();
+			$ISBN = $this->getPrimaryIsbn();
 			if(!empty($ISBN)){
 				$risFields[] = "SN  - ".$ISBN;
 			}
