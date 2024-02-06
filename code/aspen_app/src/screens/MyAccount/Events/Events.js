@@ -5,7 +5,7 @@ import CachedImage from 'expo-cached-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
-import { Badge, Box, Button, Center, FlatList, HStack, Icon, Pressable, ScrollView, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
+import { Badge, Box, Button, Center, Container, FlatList, HStack, Icon, Pressable, ScrollView, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { loadError, popAlert } from '../../../components/loadError';
@@ -182,6 +182,11 @@ const Item = (data) => {
           registrationRequired = event.registrationRequired;
      }
 
+     let hasPassed = false;
+     if (typeof event.pastEvent !== 'undefined') {
+          hasPassed = event.pastEvent;
+     }
+
      const start = event.startDate ?? null;
      const end = event.endDate ?? null;
      let displayDay = false;
@@ -269,6 +274,13 @@ const Item = (data) => {
                <HStack space={3}>
                     {event.cover ? (
                          <VStack maxW="35%">
+                              {hasPassed ? (
+                                   <Container zIndex={1}>
+                                        <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>
+                                             {getTermFromDictionary(language, 'flag_past')}
+                                        </Badge>
+                                   </Container>
+                              ) : null}
                               <CachedImage
                                    cacheKey={key}
                                    alt={event.title}
