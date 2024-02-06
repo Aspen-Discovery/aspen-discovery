@@ -2629,7 +2629,10 @@ abstract class SearchObject_BaseSearcher {
 	 * @param array|null $result Existing result set (null to do a new search)
 	 * @return string RIS formatted data
 	 */
-	public abstract function buildRisExport($result = null);
+	public function buildRisExport($result = null) {
+		//By default, return nothing, and we will override for grouped works and anything else that should be represented.
+		return '';
+	}
 	
 
 	public abstract function getResultRecordSet();
