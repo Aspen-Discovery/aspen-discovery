@@ -45,7 +45,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			if (validCheckedOutStatusCodes.contains(statusCode)) {
 				//We need to override based on due date
 				String dueDate = itemInfo.getDueDate();
-				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
+				if (dueDate == null || dueDate.isEmpty() || dueDate.equals("-  -")) {
 					return translateValue("item_grouped_status", statusCode, identifier);
 				} else {
 					return "Checked Out";
@@ -65,7 +65,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			if (validCheckedOutStatusCodes.contains(statusCode)) {
 				//We need to override based on due date
 				String dueDate = itemInfo.getDueDate();
-				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
+				if (dueDate == null || dueDate.isEmpty() || dueDate.equals("-  -")) {
 					return translateValue("item_status", statusCode, identifier);
 				} else {
 					return "Checked Out";
@@ -84,7 +84,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		}else {
 			if (validCheckedOutStatusCodes.contains(itemStatus)) {
 				String dueDate = itemInfo.getDueDate();
-				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
+				if (dueDate == null || dueDate.isEmpty() || dueDate.equals("-  -")) {
 					itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
 				}else{
 					itemInfo.setDetailedStatus("Due " + getDisplayDueDate(dueDate, itemInfo.getItemIdentifier()));
@@ -160,7 +160,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		if (hasTangibleItems && hideOrderRecordsForBibsWithPhysicalItems) {
 			return;
 		}
-		if (orderInfoFromExport.size() > 0){
+		if (!orderInfoFromExport.isEmpty()){
 			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier());
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
@@ -187,6 +187,11 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			return;
 		}
 		itemInfo.setLocationCode(location);
+		if (hasTranslation("location", orderItem.getLocationCode())) {
+			itemInfo.setCollection(translateValue("location", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+		}else {
+			itemInfo.setCollection("On Order");
+		}
 		itemInfo.setItemIdentifier(orderNumber + "-" + location);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
@@ -194,7 +199,11 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
-		itemInfo.setCollection("On Order");
+		if (hasTranslation("collection", orderItem.getLocationCode())) {
+			itemInfo.setCollection(translateValue("collection", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+		}else {
+			itemInfo.setCollection("On Order");
+		}
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
 		Date tomorrow = new Date();
 		tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
@@ -203,8 +212,15 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
 
 		//Add the library this is on order for
-		itemInfo.setShelfLocation("On Order");
-		itemInfo.setDetailedLocation("On Order");
+		if (hasTranslation("shelf_location", orderItem.getLocationCode())){
+			String translatedLocationCode = translateValue("shelf_location", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false);
+			itemInfo.setShelfLocation(translatedLocationCode);
+			itemInfo.setShelfLocationCode(orderItem.getLocationCode());
+			itemInfo.setDetailedLocation(translatedLocationCode);
+		} else {
+			itemInfo.setShelfLocation("On Order");
+			itemInfo.setDetailedLocation("On Order");
+		}
 
 		String status = orderItem.getStatus();
 
@@ -219,8 +235,8 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		String status = itemInfo.getStatusCode();
 		String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
 		String availableStatus = "-o";
-		if (status.length() > 0 && availableStatus.indexOf(status.charAt(0)) >= 0) {
-			if (dueDate.length() == 0) {
+		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
+			if (dueDate.isEmpty()) {
 				available = true;
 			}
 		}
@@ -296,7 +312,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 								formatBoost = translateValue("format_boost", formatValue, recordInfo.getRecordIdentifier());
 							}
 							try {
-								if (formatBoost != null && formatBoost.length() > 0) {
+								if (formatBoost != null && !formatBoost.isEmpty()) {
 									recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 								}
 							} catch (Exception e) {
