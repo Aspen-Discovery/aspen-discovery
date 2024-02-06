@@ -852,7 +852,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	public function getContributors() {
-		return $this->fields['author2-role']; //Include the role when displaying contributor
+		if (!empty($this->fields['author2-role'])) {
+			return $this->fields['author2-role']; //Include the role when displaying contributor
+		}else{
+			return [];
+		}
 	}
 
 	function getDescription() {
