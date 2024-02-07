@@ -106,7 +106,7 @@ function getUpdates24_02_00(): array {
 			'sql' => [
 				"ALTER TABLE open_archives_collection ADD COLUMN metadataFormat VARCHAR(10) DEFAULT('oai_dc')"
 			],
-		],
+		], //open_archives_metadata_format
 		'open_archives_index_all_sets' => [
 			'title' => 'Open Archives Index all sets',
 			'description' => 'Add the ability to index all sets for an open archives collection',
@@ -114,7 +114,7 @@ function getUpdates24_02_00(): array {
 			'sql' => [
 				"ALTER TABLE open_archives_collection ADD COLUMN indexAllSets TINYINT(1) DEFAULT(0)"
 			],
-		],
+		], //open_archives_index_all_sets
 		'summon_password_length' => [
 			'title' => 'Summon Password Length',
 			'description' => 'Increase the length of the Summon password to account for encryption',
@@ -122,7 +122,7 @@ function getUpdates24_02_00(): array {
 			'sql' => [
 				"ALTER TABLE summon_settings CHANGE COLUMN summonApiPassword summonApiPassword VARCHAR(256)"
 			],
-		],
+		], //summon_password_length
 		'remove_donation_form_fields_table' => [
 			'title' => 'Remove Donation Form Fields table',
 			'description' => 'Remove Donation Form Fields table because the fields are predefined and configured with switches',
@@ -130,7 +130,17 @@ function getUpdates24_02_00(): array {
 			'sql' => [
 				"DROP TABLE donations_form_fields"
 			],
+		], //remove_donation_form_fields_table
+		'palace_project_update_title_uniqueness' => [
+			'title' => 'Place Project Update Title Uniqueness',
+			'description' => 'Allow the same title to be part of multiple collections',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE palace_project_title DROP INDEX palaceProjectId",
+				"ALTER TABLE palace_project_title ADD UNIQUE INDEX (palaceProjectId, collectionName)",
+			],
 		],
+
 
 		//kirstien - ByWater
 		'add_branded_app_privacy_policy_contact' => [
