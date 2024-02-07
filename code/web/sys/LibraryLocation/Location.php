@@ -2684,7 +2684,7 @@ class Location extends DataObject {
 
 		$apiInfo['locationImage'] = null;
 		if(isset($this->locationImage)) {
-			$apiInfo['locationImage'] = urlencode($configArray['Site']['url'] . '/files/original/' . $this->locationImage);
+			$apiInfo['locationImage'] = $configArray['Site']['url'] . '/files/original/' . rawurlencode($this->locationImage);
 		}
 
 		return $apiInfo;
