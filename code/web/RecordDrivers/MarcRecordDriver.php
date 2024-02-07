@@ -413,7 +413,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 			}
 			foreach ($placesOfPublication as $key => $placeOfPublication) {
-				$placeOfPublication[$key] = preg_replace('/[.,]$/', '', $placeOfPublication);
+				$placesOfPublication[$key] = preg_replace('/[.,]$/', '', $placeOfPublication);
 			}
 		}
 		return $placesOfPublication;
