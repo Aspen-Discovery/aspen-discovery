@@ -1586,9 +1586,13 @@ class BookCoverProcessor {
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => false,
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
@@ -1631,9 +1635,13 @@ class BookCoverProcessor {
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => false,
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
@@ -1676,9 +1684,13 @@ class BookCoverProcessor {
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => false,
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
