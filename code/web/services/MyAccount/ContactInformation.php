@@ -74,7 +74,7 @@ class MyAccount_ContactInformation extends MyAccount {
 					$uspsInfo = USPS::getUSPSInfo();
 
 					//if there's no USPS info, don't bother trying to validate
-					if ($uspsInfo) {
+					if ($uspsInfo && $canUpdateAddress) {
 						$streetAddress = '';
 						$city = '';
 						$state = '';

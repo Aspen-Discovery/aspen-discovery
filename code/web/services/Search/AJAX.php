@@ -566,6 +566,7 @@ class AJAX extends Action {
 		$interface->assign('displayMode', $_REQUEST['displayMode']);
 		$interface->assign('showCovers', $_REQUEST['showCovers']);
 		$interface->assign('excelLink', $_REQUEST['excelLink']);
+		$interface->assign('risLink', $_REQUEST['risLink']);
 		$interface->assign('rssLink', $_REQUEST['rssLink']);
 		$interface->assign('searchId', $_REQUEST['searchId']);
 		$interface->assign('sortList', $_REQUEST['sortList']);

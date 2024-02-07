@@ -619,7 +619,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			header('Content-Disposition: attachment;filename="SearchResults.csv"');
 			$fp = fopen('php://output', 'w');
 
-			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
+			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Place of Publication', 'Format', 'Location & Call Number');
 			fputcsv($fp, $fields);
 
 			$docs = $result['response']['docs'];
@@ -643,6 +643,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					$publisher = '';
 					if (isset($curDoc['publisherStr'])) {
 						$publisher = implode('; ', $curDoc['publisherStr']);
+					}
+
+					$placeOfPublication = '';
+					if (isset($curDoc['placeOfPublication'])) {
+						$placeOfPublication = implode('; ', $curDoc['placeOfPublication']);
 					}
 
 					// Publish Dates: Min-Max
@@ -723,7 +728,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					}
 					$groupedWorkDriver = null;
 					$output = implode(',', $output);
-					$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
+					$row = array ($link, $title, $author, $publisher, $publishDate, $placeOfPublication, $uniqueFormats, $output);
 					fputcsv($fp, $row);
 				}
 			}
@@ -734,6 +739,45 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 	}
 
+		/**
+	 * Turn our results into a RIS document
+	 * @param null|array $result
+	 */
+
+	public function buildRisExport($result = null) {
+		try {
+			// First, get the search results if none were provided
+			if (is_null($result)) {
+				//$this->limit = 1000;
+				$result = $this->processSearch(false, false);
+			}
+	
+			$risData = '';
+	
+			$docs = $result['response']['docs'];
+	
+			if ($docs != null) {
+				foreach ($docs as $curDoc) {
+					// Build RIS data for each document
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($curDoc);
+					$risData .= $groupedWorkDriver->formatGroupedWorkCitation();
+					$risData .= PHP_EOL . PHP_EOL; // Add a blank line between records
+
+				}
+			}
+
+			// Output the RIS data
+			header("Content-Type: application/x-research-info-systems");
+			header('Content-Disposition: attachment;filename="SearchResults.ris"');
+			echo $risData;
+			exit();
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create RIS file: " . $e->getMessage(), Logger::LOG_ERROR);
+		}
+	}
+	
 	/**
 	 * Retrieves a document specified by the ID.
 	 *
