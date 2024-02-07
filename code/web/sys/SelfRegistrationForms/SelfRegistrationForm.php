@@ -9,13 +9,13 @@ class SelfRegistrationForm extends DataObject {
 	public $selfRegistrationBarcodePrefix;
 	public $selfRegBarcodeSuffixLength;
 	public $noDuplicateCheck;
+	public $promptForSMSNoticesInSelfReg;
+	public $selfRegistrationUserProfile;
+	public $promptForParentInSelfReg;
+	public $cityStateField;
 
 	private $_fields;
 	private $_libraries;
-	private $SMSpromts;
-	private $selfRegProfile;
-	private $promptForParent;
-	private $cityState;
 
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
@@ -145,14 +145,6 @@ class SelfRegistrationForm extends DataObject {
 			return $this->getFields();
 		} if ($name == "libraries") {
 			return $this->getLibraries();
-		} if ($name == "promptForSMSNoticesInSelfReg") {
-			return $this->getSMSpromptSetting();
-		} if ($name == "selfRegistrationUserProfile") {
-			return $this->getSelfRegistrationUserProfile();
-		} if ($name == "promptForParentInSelfReg"){
-			return $this->getPromptForParentInSelfReg();
-		} if($name == "cityStateField") {
-			return $this->getCityStateSetting();
 		}else {
 			return parent::__get($name);
 		}
@@ -163,15 +155,7 @@ class SelfRegistrationForm extends DataObject {
 			$this->_fields = $value;
 		} if ($name == "libraries") {
 			$this->_libraries = $value;
-		} if ($name == "promptForSMSNoticesInSelfReg") {
-			$this->SMSpromts = $value;
-		} if ($name == "selfRegistrationUserProfile") {
-			$this->selfRegProfile = $value;
-		} if ($name == "promptForParentInSelfReg") {
-			$this->promptForParent = $value;
-		} if ($name == "cityStateField") {
-			$this->cityState = $value;
-		}else {
+		} else {
 			parent::__set($name, $value);
 		}
 	}
@@ -204,58 +188,6 @@ class SelfRegistrationForm extends DataObject {
 		}
 	}
 
-	public function getSMSpromptSetting() {
-		if (!isset($this->SMSpromts) && $this->id) {
-			$this->SMSpromts = 0;
-			$library = new Library();
-			$library->selfRegistrationFormId = $this->id;
-			if ($library->find(true)){
-				$library->fetch();
-				$this->SMSpromts = $library->promptForSMSNoticesInSelfReg;
-			}
-		}
-		return $this->SMSpromts;
-	}
-
-	public function getSelfRegistrationUserProfile() {
-		if (!isset($this->selfRegProfile) && $this->id) {
-			$this->selfRegProfile = '';
-			$library = new Library();
-			$library->selfRegistrationFormId = $this->id;
-			if ($library->find(true)){
-				$library->fetch();
-				$this->selfRegProfile = $library->selfRegistrationUserProfile;
-			}
-		}
-		return $this->selfRegProfile;
-	}
-
-	public function getPromptForParentInSelfReg() {
-		if (!isset($this->promptForParent) && $this->id) {
-			$this->promptForParent = 0;
-			$library = new Library();
-			$library->selfRegistrationFormId = $this->id;
-			if ($library->find(true)){
-				$library->fetch();
-				$this->promptForParent = $library->promptForParentInSelfReg;
-			}
-		}
-		return $this->promptForParent;
-	}
-
-	public function getCityStateSetting() {
-		if (!isset($this->cityState) && $this->id) {
-			$this->cityState = 0;
-			$library = new Library();
-			$library->selfRegistrationFormId = $this->id;
-			if ($library->find(true)) {
-				$library->fetch();
-				$this->cityState = $library->cityStateField;
-			}
-		}
-		return $this->cityState;
-	}
-
 	public function getLibraries() {
 		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
@@ -279,13 +211,8 @@ class SelfRegistrationForm extends DataObject {
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)) {
 					//only update libraries in _libraries - unselected libraries will not have any fields other than selfRegistrationFormId updated
-					if (($library->selfRegistrationFormId != $this->id) || ($library->promptForSMSNoticesInSelfReg != $this->SMSpromts) || ($library->selfRegistrationUserProfile != $this->selfRegProfile)
-						|| ($library->promptForParentInSelfReg != $this->promptForParent) || ($library->cityStateField != $this->cityState)) {
+					if ($library->selfRegistrationFormId != $this->id) {
 						$library->selfRegistrationFormId = $this->id;
-						$library->promptForSMSNoticesInSelfReg = $this->SMSpromts;
-						$library->selfRegistrationUserProfile = $this->selfRegProfile;
-						$library->promptForParentInSelfReg = $this->promptForParent;
-						$library->cityStateField = $this->cityState;
 						$library->update();
 					}
 				} else {

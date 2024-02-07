@@ -1974,11 +1974,13 @@ AspenDiscovery.Account = (function () {
 					$('#propertyRowparentname').hide();
 					$('#propertyRowcareof').hide();
 					$('#propertyRowcare_of').hide();
+					$('#propertyRowguardian').hide();
 				} else {
 					$('#propertyRowparentName').show();
 					$('#propertyRowparentname').show();
 					$('#propertyRowcareof').show();
 					$('#propertyRowcare_of').show();
+					$('#propertyRowguardian').show();
 				}
 			}
 			var smsNotices = $("#smsNotices");

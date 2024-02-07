@@ -564,7 +564,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 			$createPatronInfoParameters['fields']['profile'] = [
 				'resource' => '/policy/userProfile',
-				'key' => $library->selfRegistrationUserProfile,
+				'key' => $selfRegistrationForm->selfRegistrationUserProfile,
 			];
 			//$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
 
@@ -651,10 +651,10 @@ class SirsiDynixROA extends HorizonAPI {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'city' && (!empty($_REQUEST['city']) && (!empty($_REQUEST['state'])))) {
-						if ($library->cityStateField == 1) {
+						if ($selfRegistrationForm->cityStateField == 1) {
 							$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 							$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-						} elseif ($library->cityStateField == 2) {
+						} elseif ($selfRegistrationForm->cityStateField == 2) {
 							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						} else {
 							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -686,61 +686,6 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'primaryPhone' && (!empty($_REQUEST['primaryPhone']))) {
 						$this->setPatronUpdateField('primaryPhone', $this->getPatronFieldValue($_REQUEST['primaryPhone'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-				}
-			} else {
-				if (!empty($_REQUEST['firstName'])) {
-					$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-				}
-				if (!empty($_REQUEST['middleName'])) {
-					$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-				}
-				if (!empty($_REQUEST['lastName'])) {
-					$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-				}
-				if (!empty($_REQUEST['suffix'])) {
-					$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
-				}
-				if (!empty($_REQUEST['birthDate'])) {
-					$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
-				}
-
-				// Update Address Field with new data supplied by the user
-				if (isset($_REQUEST['parentName'])) {
-					$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-				}
-
-				if (isset($_REQUEST['email'])) {
-					$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-				}
-
-				if (isset($_REQUEST['phone'])) {
-					$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
-				}
-
-				if (isset($_REQUEST['address'])) {
-					$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-				}
-
-				if ($library->cityStateField == 1) {
-					if (isset($_REQUEST['city'])) {
-						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-					}
-
-					if (isset($_REQUEST['state'])) {
-						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-					}
-				} else {
-					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-						if ($library->cityStateField == 2) {
-							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-						} else {
-							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-						}
-					}
-				}
-
-				if (isset($_REQUEST['zip'])) {
-					$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 				}
 			}
 
@@ -2333,7 +2278,14 @@ class SirsiDynixROA extends HorizonAPI {
 			'success' => false,
 			'messages' => [],
 		];
+		$cityState = 0;
 		$homeLibrary = $patron->getHomeLibrary();
+		$selfRegistrationForm = new SelfRegistrationForm();
+		$selfRegistrationForm->id = $homeLibrary->selfRegistrationFormId;
+		if ($selfRegistrationForm->find(true)) {
+			$cityState = $selfRegistrationForm->cityStateField;
+		}
+
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
@@ -2372,7 +2324,7 @@ class SirsiDynixROA extends HorizonAPI {
 								$patron->_address1 = $_REQUEST['address1'];
 							}
 
-							if ($homeLibrary->cityStateField == 1) {
+							if ($cityState == 1) {
 								if (isset($_REQUEST['city'])) {
 									$this->setPatronUpdateFieldBySearch('CITY', $_REQUEST['city'], $updatePatronInfoParameters, $preferredAddress);
 									$patron->_city = $_REQUEST['city'];
@@ -2384,7 +2336,7 @@ class SirsiDynixROA extends HorizonAPI {
 								}
 							} else {
 								if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-									if ($homeLibrary->cityStateField == 2) {
+									if ($cityState == 2) {
 										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
 									} else {
 										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
@@ -3168,17 +3120,6 @@ class SirsiDynixROA extends HorizonAPI {
 
 		global $library;
 		$hasCustomSelfRegistrationFrom = false;
-		if (!empty($library->selfRegistrationFormId)) {
-			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
-			$selfRegistrationForm = new SelfRegistrationForm();
-			$selfRegistrationForm->id = $library->selfRegistrationFormId;
-			if ($selfRegistrationForm->find(true)) {
-				$customFields = $selfRegistrationForm->getFields();
-				if ($customFields != null && count($customFields) > 0) {
-					$hasCustomSelfRegistrationFrom = true;
-				}
-			}
-		}
 		if (count($pickupLocations) == 1) {
 			$selectedPickupLocation = '';
 			foreach ($pickupLocations as $code => $name) {
@@ -3203,206 +3144,21 @@ class SirsiDynixROA extends HorizonAPI {
 			];
 		}
 
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
+			$selfRegistrationForm = new SelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$customFields = $selfRegistrationForm->getFields();
+				if ($customFields != null && count($customFields) > 0) {
+					$hasCustomSelfRegistrationFrom = true;
+				}
+			}
+		}
+
 		$fields = [];
-		if (!$hasCustomSelfRegistrationFrom) {
-			if (count($pickupLocations) == 1) {
-				$fields['pickupLocation'] = $pickupLocationField;
-			} else {
-				$fields['librarySection'] = [
-					'property' => 'librarySection',
-					'type' => 'section',
-					'label' => 'Library',
-					'hideInLists' => true,
-					'expandByDefault' => true,
-					'properties' => [
-						'pickupLocation' => $pickupLocationField,
-					],
-				];
-			}
-
-			$fields['identitySection'] = [
-				'property' => 'identitySection',
-				'type' => 'section',
-				'label' => 'Identity',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [],
-			];
-			if ($library->promptForParentInSelfReg) {
-				$fields['identitySection']['properties'][] = [
-					'property' => 'cardType',
-					'type' => 'enum',
-					'values' => [
-						'adult' => 'Adult (18 and Over)',
-						'minor' => 'Minor (Under 18)',
-					],
-					'label' => 'Type of Card',
-					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
-				];
-			}
-			$fields['identitySection']['properties'][] = [
-				'property' => 'firstName',
-				'type' => 'text',
-				'label' => 'First Name',
-				'maxLength' => 255,
-				'required' => true,
-				'autocomplete' => false,
-			];
-			$fields['identitySection']['properties'][] = [
-				'property' => 'middleName',
-				'type' => 'text',
-				'label' => 'Middle Name',
-				'maxLength' => 255,
-				'required' => false,
-				'autocomplete' => false,
-			];
-			$fields['identitySection']['properties'][] = [
-				'property' => 'lastName',
-				'type' => 'text',
-				'label' => 'Last Name',
-				'maxLength' => 255,
-				'required' => true,
-				'autocomplete' => false,
-			];
-			if ($library->promptForParentInSelfReg) {
-				$fields['identitySection']['properties'][] = [
-					'property' => 'parentName',
-					'type' => 'text',
-					'label' => 'Parent/Guardian Name',
-					'maxLength' => 255,
-					'required' => false,
-					'hiddenByDefault' => true,
-					'autocomplete' => false,
-				];
-			}
-			if ($library && $library->promptForBirthDateInSelfReg) {
-				$birthDateMin = date('Y-m-d', strtotime('-113 years'));
-				$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-				$fields['identitySection']['properties'][] = [
-					'property' => 'birthDate',
-					'type' => 'date',
-					'label' => 'Date of Birth (MM/DD/YYYY)',
-					'min' => $birthDateMin,
-					'max' => $birthDateMax,
-					'maxLength' => 10,
-					'required' => true,
-					'autocomplete' => false,
-				];
-			}
-
-			$fields['mainAddressSection'] = [
-				'property' => 'mainAddressSection',
-				'type' => 'section',
-				'label' => 'Main Address',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [],
-			];
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'address',
-				'type' => 'text',
-				'label' => 'Mailing Address',
-				'maxLength' => 255,
-				'required' => true,
-				'autocomplete' => false,
-			];
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'city',
-				'type' => 'text',
-				'label' => 'City',
-				'maxLength' => 255,
-				'required' => true,
-				'autocomplete' => false,
-			];
-			if (empty($library->validSelfRegistrationStates)) {
-				$fields['mainAddressSection']['properties'][] = [
-					'property' => 'state',
-					'type' => 'text',
-					'label' => 'State',
-					'maxLength' => 2,
-					'required' => true,
-					'autocomplete' => false,
-				];
-			} else {
-				$validStates = explode('|', $library->validSelfRegistrationStates);
-				$validStates = array_combine($validStates, $validStates);
-				$fields['mainAddressSection']['properties'][] = [
-					'property' => 'state',
-					'type' => 'enum',
-					'values' => $validStates,
-					'label' => 'State',
-					'description' => 'State',
-					'maxLength' => 32,
-					'required' => true,
-				];
-			}
-			$fields['mainAddressSection']['properties']['zip'] = [
-				'property' => 'zip',
-				'type' => 'text',
-				'label' => 'Zip Code',
-				'maxLength' => 10,
-				'required' => true,
-				'autocomplete' => false,
-			];
-			if (!empty($library->validSelfRegistrationZipCodes)) {
-				$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
-				$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate([
-					'text' => 'Please enter a valid zip code',
-					'isPublicFacing' => true,
-				]);
-			}
-
-			$fields['contactInformationSection'] = [
-				'property' => 'contactInformationSection',
-				'type' => 'section',
-				'label' => 'Contact Information',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [],
-			];
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'phone',
-				'type' => 'text',
-				'label' => 'Primary Phone',
-				'maxLength' => 15,
-				'required' => $library->selfRegRequirePhone,
-				'autocomplete' => false,
-			];
-			if ($library->promptForSMSNoticesInSelfReg) {
-				$fields['contactInformationSection']['properties'][] = [
-					'property' => 'smsNotices',
-					'type' => 'checkbox',
-					'label' => 'Receive notices via text',
-					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
-				];
-				$fields['contactInformationSection']['properties'][] = [
-					'property' => 'cellPhone',
-					'type' => 'text',
-					'label' => 'Cell Phone',
-					'maxLength' => 15,
-					'required' => false,
-					'hiddenByDefault' => true,
-					'autocomplete' => false,
-				];
-			}
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'email',
-				'type' => 'email',
-				'label' => 'Email',
-				'maxLength' => 128,
-				'required' => $library->selfRegRequireEmail,
-				'autocomplete' => false,
-			];
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'email2',
-				'type' => 'email',
-				'label' => 'Confirm Email',
-				'maxLength' => 128,
-				'required' => $library->selfRegRequireEmail,
-				'autocomplete' => false,
-			];
-		} else {
-			if ($library->promptForParentInSelfReg){
+		if ($hasCustomSelfRegistrationFrom) {
+			if ($selfRegistrationForm->promptForParentInSelfReg){
 				$fields[] = [
 					'property' => 'cardType',
 					'type' => 'enum',
@@ -3461,7 +3217,7 @@ class SirsiDynixROA extends HorizonAPI {
 							$customField->symphonyName => $pickupLocationField,
 						],
 					];
-				} elseif (($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
+				} elseif (($customField->symphonyName == 'parentname' || $customField->symphonyName == 'guardian' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
 					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
@@ -3470,7 +3226,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'note' => $customField->note,
 						'hiddenByDefault' => $hiddenDefault,
 					];
-				} elseif ($customField->symphonyName == 'cellPhone' && $library->promptForSMSNoticesInSelfReg) {
+				} elseif ($customField->symphonyName == 'cellPhone' && $selfRegistrationForm->promptForSMSNoticesInSelfReg) {
 					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
