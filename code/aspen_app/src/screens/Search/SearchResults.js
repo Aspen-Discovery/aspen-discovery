@@ -342,7 +342,7 @@ const DisplayResult = (data) => {
                                         />
                                    }
                               />
-                              <AddToList source="Events" itemId={item.key} btnStyle="sm" />
+                              {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}
                          </VStack>
                          <VStack w="65%">
                               <Text
