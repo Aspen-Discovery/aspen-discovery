@@ -15,8 +15,11 @@ It will be necessary to create:
 * Those directories which will be used for the persistence of data.
 
 ```
-ASPEN_Instance=nameOfYourInstance
-export ASPEN_Repo=~/aspen-repos/${ASPEN_Instance}
+ASPEN_INSTANCE=nameOfYourInstance
+echo "export ASPEN_INSTANCE" >> ~/.bashrc
+echo "export ASPEN_Repo=~/aspen-repos/${ASPEN_Instance}" >> ~/.bashrc
+source ~/.bashrc
+
 mkdir -p ${ASPEN_Repo}/mariadb_data ${ASPEN_Repo}/solr_data
 cd ${ASPEN_Repo}
 git clone https://github.com/mdnoble73/aspen-discovery.git
@@ -99,6 +102,7 @@ TUNNEL_JumpServer=test.koha.theke.io
 ```
 
 ### 3.1)
+
 * Backup :
 
 ```
