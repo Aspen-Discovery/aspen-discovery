@@ -41,8 +41,17 @@ export const MyList = () => {
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
      const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+     const systemMessagesForScreen = [];
 
      React.useEffect(() => {
+          if (_.isArray(systemMessages)) {
+               systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         systemMessagesForScreen.push(obj);
+                    }
+               });
+          }
+
           async function fetchTranslations() {
                let tmp = sortBy;
                let term = '';
@@ -73,7 +82,7 @@ export const MyList = () => {
           }
 
           fetchTranslations();
-     }, [language]);
+     }, [language, systemMessages]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id, sort, page], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
           keepPreviousData: false,
@@ -401,7 +410,7 @@ export const MyList = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+               {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (

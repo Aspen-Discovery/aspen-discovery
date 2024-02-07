@@ -30,6 +30,7 @@ export const MyReadingHistory = () => {
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
      const pageSize = 25;
+     const systemMessagesForScreen = [];
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -61,6 +62,13 @@ export const MyReadingHistory = () => {
 
      useFocusEffect(
           React.useCallback(() => {
+               if (_.isArray(systemMessages)) {
+                    systemMessages.map((obj, index, collection) => {
+                         if (obj.showOn === '0') {
+                              systemMessagesForScreen.push(obj);
+                         }
+                    });
+               }
                const update = async () => {
                     let tmp = sortBy;
                     let term = '';
@@ -94,7 +102,7 @@ export const MyReadingHistory = () => {
                update().then(() => {
                     return () => update();
                });
-          }, [language])
+          }, [language, systemMessages])
      );
 
      const [isOpen, setIsOpen] = React.useState(false);
@@ -325,7 +333,7 @@ export const MyReadingHistory = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+               {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
                          <Button onPress={optIn} isLoading={optingIn} isLoadingText={getTermFromDictionary(language, 'updating', true)}>
