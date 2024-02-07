@@ -3059,7 +3059,10 @@ class SearchAPI extends Action {
 							$options[$key]['facets'][$i]['field'] = $appliedFacet['field'];
 							$options[$key]['facets'][$i]['count'] = null;
 							$options[$key]['facets'][$i]['isApplied'] = true;
-							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$options[$key]['facets'][$i]['multiSelect'] = false;
+							if(isset($facet['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
 							$i++;
 						}
 					}
