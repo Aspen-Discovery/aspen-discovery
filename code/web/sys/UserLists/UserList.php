@@ -457,19 +457,19 @@ class UserList extends DataObject {
 						if (preg_match('`^communico`', $listEntryInfo['sourceId'])){
 							$id = explode("communico_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
-							$coverUrl = "/bookcover.php?id={$id}&size=small&type=communico_event";
+							$coverUrl = "/bookcover.php?id={$id}&size=medium&type=communico_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
 						} elseif (preg_match('`^libcal`', $listEntryInfo['sourceId'])){
 							$id = explode("libcal_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
-							$coverUrl = "/bookcover.php?id={$id}&size=small&type=springshare_libcal_event";
+							$coverUrl = "/bookcover.php?id={$id}&size=medium&type=springshare_libcal_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
 						} elseif (preg_match('`^lc_`', $listEntryInfo['sourceId'])){
 							$id = explode("lc_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
-							$coverUrl = "/bookcover.php?id={$id}&size=small&type=library_calendar_event";
+							$coverUrl = "/bookcover.php?id={$id}&size=medium&type=library_calendar_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
 						}

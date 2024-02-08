@@ -1562,17 +1562,37 @@ class BookCoverProcessor {
 		$driver = new LibraryCalendarEventRecordDriver($id);
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$coverBuilder = new EventCoverBuilder();
-			$props = [
-				'eventDate' => $driver->getStartDateFromDB($id),
-			];
-			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			$userEntry = new UserEventsEntry();
+			$userEntry->sourceId = $id;
+			if ($userEntry->find(true)){
+				$startDate = new DateTime("@$userEntry->eventDate");
+				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$props = [
+					'eventDate' => $startDate,
+					'isPastEvent' => true,
+				];
+				$title = $userEntry->title;
+			} else{
+				$props = [
+					'eventDate' => $driver->getStartDateFromDB($id),
+					'isPastEvent' => true,
+				];
+				$title = $driver->getTitleFromDB($id);
+			}
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
@@ -1591,17 +1611,37 @@ class BookCoverProcessor {
 		$driver = new SpringshareLibCalEventRecordDriver($id);
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$coverBuilder = new EventCoverBuilder();
-			$props = [
-				'eventDate' => $driver->getStartDateFromDB($id),
-			];
-			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			$userEntry = new UserEventsEntry();
+			$userEntry->sourceId = $id;
+			if ($userEntry->find(true)){
+				$startDate = new DateTime("@$userEntry->eventDate");
+				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$props = [
+					'eventDate' => $startDate,
+					'isPastEvent' => true,
+				];
+				$title = $userEntry->title;
+			} else{
+				$props = [
+					'eventDate' => $driver->getStartDateFromDB($id),
+					'isPastEvent' => true,
+				];
+				$title = $driver->getTitleFromDB($id);
+			}
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
@@ -1620,17 +1660,37 @@ class BookCoverProcessor {
 		$driver = new CommunicoEventRecordDriver($id);
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$coverBuilder = new EventCoverBuilder();
-			$props = [
-				'eventDate' => $driver->getStartDateFromDB($id),
-			];
-			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			$userEntry = new UserEventsEntry();
+			$userEntry->sourceId = $id;
+			if ($userEntry->find(true)){
+				$startDate = new DateTime("@$userEntry->eventDate");
+				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$props = [
+					'eventDate' => $startDate,
+					'isPastEvent' => true,
+				];
+				$title = $userEntry->title;
+			} else{
+				$props = [
+					'eventDate' => $driver->getStartDateFromDB($id),
+					'isPastEvent' => true,
+				];
+				$title = $driver->getTitleFromDB($id);
+			}
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
 		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
 			$props = [
 				'eventDate' => $driver->getStartDate(),
+				'isPastEvent' => $isPast,
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);

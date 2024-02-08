@@ -497,7 +497,9 @@ class SearchAPI extends Action {
 
 					}
 					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
@@ -2883,7 +2885,7 @@ class SearchAPI extends Action {
 					$items[$recordKey]['author'] = null;
 					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
 					$items[$recordKey]['language'] = null;
-					$items[$recordKey]['summary'] = strip_tags($record['description']);
+					$items[$recordKey]['summary'] = isset($record['description']) ? strip_tags($record['description']) : null;
 					$items[$recordKey]['registration_required'] = $registrationRequired;
 					$items[$recordKey]['event_day'] = $record['event_day'];
 					$items[$recordKey]['location'] = $locationInfo;
@@ -3057,7 +3059,10 @@ class SearchAPI extends Action {
 							$options[$key]['facets'][$i]['field'] = $appliedFacet['field'];
 							$options[$key]['facets'][$i]['count'] = null;
 							$options[$key]['facets'][$i]['isApplied'] = true;
-							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$options[$key]['facets'][$i]['multiSelect'] = false;
+							if(isset($facet['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
 							$i++;
 						}
 					}

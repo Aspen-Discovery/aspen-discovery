@@ -121,40 +121,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * @return  array              Name of Smarty template file to display.
 	 */
 	public function getHoldings() {
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-
-		$items = $this->getItems();
-		//Add links as needed
-		$availability = $this->getAvailability();
-		$addCheckoutLink = false;
-		$addPlaceHoldLink = false;
-		if ($availability->copiesAvailable > 0) {
-			$addCheckoutLink = true;
-		} else {
-			$addPlaceHoldLink = true;
-		}
-		foreach ($items as $key => $item) {
-			$item->links = [];
-			if ($addCheckoutLink) {
-				$checkoutLink = "return AspenDiscovery.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
-				$item->links[] = [
-					'onclick' => $checkoutLink,
-					'text' => 'Check Out',
-					'overDriveId' => $this->getUniqueID(),
-					'action' => 'CheckOut',
-				];
-			} elseif ($addPlaceHoldLink) {
-				$item->links[] = [
-					'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
-					'text' => 'Place Hold',
-					'overDriveId' => $this->getUniqueID(),
-					'action' => 'Hold',
-				];
-			}
-			$items[$key] = $item;
-		}
-
-		return $items;
+		return $this->getItems();
 	}
 
 	public function getStatusSummary() {

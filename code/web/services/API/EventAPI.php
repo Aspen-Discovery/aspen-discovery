@@ -205,9 +205,13 @@ class EventAPI extends Action {
 			$itemData['categories'] = $springshareDriver->getCategories();
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
-
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 			$itemData['canAddToList'] = false;
+
+			// check if event has passed
+			$today = new DateTime('now');
+			$eventDay = $springshareDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
