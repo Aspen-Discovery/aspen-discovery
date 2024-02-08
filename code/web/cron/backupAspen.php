@@ -68,6 +68,7 @@ foreach ($allTables as $table) {
 		$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
 		$isFirstRow = true;
 		$hasData = false;
+		$numRowsWritten = 0;
 		while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
 			$hasData = true;
 			if ($isFirstRow) {
@@ -98,7 +99,9 @@ foreach ($allTables as $table) {
 				$isFirstValue = false;
 			}
 			fwrite($fhnd, ")");
-			fflush($fhnd);
+			if ($numRowsWritten++ % 5000 == 0) {
+				fflush($fhnd);
+			}
 
 			$isFirstRow = false;
 		}
