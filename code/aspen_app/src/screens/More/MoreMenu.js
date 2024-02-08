@@ -147,7 +147,7 @@ const PrivacyPolicy = () => {
      const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
      const browserParams = {
           enableDefaultShareMenuItem: false,
-          presentationStyle: 'popover',
+          presentationStyle: 'automatic',
           showTitle: false,
           toolbarColor: backgroundColor,
           controlsColor: textColor,
@@ -184,7 +184,7 @@ const MenuLink = (payload) => {
      const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
      const browserParams = {
           enableDefaultShareMenuItem: false,
-          presentationStyle: 'popover',
+          presentationStyle: 'automatic',
           showTitle: false,
           toolbarColor: backgroundColor,
           controlsColor: textColor,

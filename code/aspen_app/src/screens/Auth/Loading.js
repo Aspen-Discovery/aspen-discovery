@@ -14,7 +14,6 @@ import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
-import { ForceLogout } from './ForceLogout';
 
 const prefix = Linking.createURL('/');
 
@@ -199,9 +198,9 @@ export const LoadingScreen = () => {
           },
      });
 
-     if (hasError) {
-          return <ForceLogout />;
-     }
+     /*if (hasError) {
+	 return <ForceLogout />;
+	 }*/
 
      if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
           return (

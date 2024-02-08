@@ -96,7 +96,7 @@ const DisplayEvent = (payload) => {
      const openLink = async () => {
           const browserParams = {
                enableDefaultShareMenuItem: false,
-               presentationStyle: 'popover',
+               presentationStyle: 'automatic',
                showTitle: false,
                toolbarColor: backgroundColor,
                controlsColor: textColor,
@@ -529,7 +529,7 @@ const getRegistrationModal = (event) => {
 
           const browserParams = {
                enableDefaultShareMenuItem: false,
-               presentationStyle: 'popover',
+               presentationStyle: 'automatic',
                showTitle: false,
                toolbarColor: backgroundColor,
                controlsColor: textColor,

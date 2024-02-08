@@ -218,6 +218,16 @@ abstract class IndexRecordDriver extends RecordInterface {
 		return $this->fields['publisherStr'] ?? [];
 	}
 
+	/**
+	 * Get the place of publication.
+	 * 
+	 * @access protected
+	 * @return array
+	 */
+	public function getPlacesOfPublication() {
+		return $this->fields['placeOfPublication'];
+	}
+
 	public function getScore() {
 		if (isset($this->fields['score'])) {
 			return $this->fields['score'];
@@ -301,12 +311,12 @@ abstract class IndexRecordDriver extends RecordInterface {
 
 		// Collect all details for citation builder:
 		$publishers = $this->getPublishers();
-		//$pubPlaces = $this->getPlacesOfPublication();
+		$placesOfPublication = $this->getPlacesOfPublication();
 		$details = [
 			'authors' => $authors,
 			'title' => $this->getTitle(),
 			'subtitle' => '',
-			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'placesOfPublication' => count($placesOfPublication) > 0 ? $placesOfPublication[0] : null,
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => null,
 			'edition' => null,

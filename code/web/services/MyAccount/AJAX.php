@@ -4020,7 +4020,7 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$donateToLocation = $_REQUEST['toLocation'];
-		$toLocation = 'None';
+		$toLocation = -1;
 		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
@@ -4186,6 +4186,11 @@ class MyAccount_AJAX extends JSON_Action {
 		$donation->comments = $comments;
 		$donation->donationSettingId = $_REQUEST['settingId'];
 		$donation->sendEmailToUser = 1;
+		$donation->address = $_REQUEST['address'];
+		$donation->address2 = $_REQUEST['address2'];
+		$donation->city = $_REQUEST['city'];
+		$donation->state = $_REQUEST['state'];
+		$donation->zip = $_REQUEST['zip'];
 
 		$donation->insert();
 
@@ -5172,7 +5177,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
 			if ($transactionType == 'donation') {
-				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=msb&payment=' . $payment->id . '&donation=' . $donation->id;
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id;
 			} else {
 				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
 			}
@@ -8120,6 +8125,52 @@ class MyAccount_AJAX extends JSON_Action {
 				'result' => false,
 				'message' => translate([
 					'text' => 'Export User List to CSV: Invalid list id.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function exportUserListRIS() {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Export User List to RIS: something went wrong.',
+				'isPublicFacing' => true,
+			]),
+		];
+		global $interface;
+		if(isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) {
+			$userListId = $_REQUEST['listId'];
+			require_once ROOT_DIR .'/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->id = $userListId;
+			if($list->find(true)) {
+				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
+					$list->buildRIS();
+				} else {
+					$result = [
+						'result' => false,
+							'message' => translate([
+								'text' => 'Export User List to RIS: You do not have access to this list.',
+								'isPublicFacing' => true,
+							]),
+						];
+				}
+			} else {
+				$result = [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Export User List to RIS: Unable to read list.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			$result = [
+				'result' => false,
+				'message' => translate([
+					'text' => 'Export User List to RIS: Invalid list id.',
 					'isPublicFacing' => true,
 				]),
 			];

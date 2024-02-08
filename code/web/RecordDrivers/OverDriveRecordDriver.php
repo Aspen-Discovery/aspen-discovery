@@ -121,40 +121,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * @return  array              Name of Smarty template file to display.
 	 */
 	public function getHoldings() {
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-
-		$items = $this->getItems();
-		//Add links as needed
-		$availability = $this->getAvailability();
-		$addCheckoutLink = false;
-		$addPlaceHoldLink = false;
-		if ($availability->copiesAvailable > 0) {
-			$addCheckoutLink = true;
-		} else {
-			$addPlaceHoldLink = true;
-		}
-		foreach ($items as $key => $item) {
-			$item->links = [];
-			if ($addCheckoutLink) {
-				$checkoutLink = "return AspenDiscovery.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
-				$item->links[] = [
-					'onclick' => $checkoutLink,
-					'text' => 'Check Out',
-					'overDriveId' => $this->getUniqueID(),
-					'action' => 'CheckOut',
-				];
-			} elseif ($addPlaceHoldLink) {
-				$item->links[] = [
-					'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
-					'text' => 'Place Hold',
-					'overDriveId' => $this->getUniqueID(),
-					'action' => 'Hold',
-				];
-			}
-			$items[$key] = $item;
-		}
-
-		return $items;
+		return $this->getItems();
 	}
 
 	public function getStatusSummary() {
@@ -795,15 +762,18 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 */
 	function getPublicationDetails() {
 		$places = $this->getPlacesOfPublication();
+		$placesOfPublication = $this->getPlacesOfPublication();
 		$names = $this->getPublishers();
 		$dates = $this->getPublicationDates();
 
 		$i = 0;
 		$returnVal = [];
-		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		while (isset($places[$i]) || isset($placesOfPublication[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		// while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
-			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? $dates[$i] : '');
+			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($placesOfPublication[$i]) ? $placesOfPublication[$i] . ' ': '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			// $publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? $dates[$i] : '');
 			$returnVal[] = trim(str_replace('  ', ' ', $publicationInfo));
 			$i++;
 		}
@@ -812,9 +782,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getEditions() {
-		$edition = isset($this->overDriveMetaData->getDecodedRawData()->edition) ? $this->overDriveMetaData->getDecodedRawData()->edition : null;
-		if (is_array($edition) || is_null($edition)) {
+		$edition = isset($this->getOverDriveMetaData()->getDecodedRawData()->edition) ? $this->getOverDriveMetaData()->getDecodedRawData()->edition : null;
+		if (is_array($edition)) {
 			return $edition;
+		} elseif (is_null($edition)) {
+			return [];
 		} else {
 			return [$edition];
 		}

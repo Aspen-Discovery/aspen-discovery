@@ -205,9 +205,13 @@ class EventAPI extends Action {
 			$itemData['categories'] = $springshareDriver->getCategories();
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
-
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 			$itemData['canAddToList'] = false;
+
+			// check if event has passed
+			$today = new DateTime('now');
+			$eventDay = $springshareDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
 
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
@@ -514,11 +518,27 @@ class EventAPI extends Action {
 				$_REQUEST['id'] = $eventId;
 				$registration = $user->isRegistered($event->sourceId);
 				$source = 'unknown';
+				$sourceFull = 'unknown';
+
+				$hasPassed = false;
+				$today = new DateTime();
+				$today->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$eventDate = date('c', $event->eventDate);
+				$eventDate = new DateTime($eventDate);
+				$eventDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+
+				if($today > $eventDate) {
+					$hasPassed = true;
+				}
+
 				if(str_starts_with($eventId, 'lc')) {
+					$sourceFull = 'library_calendar';
 					$source = 'lc';
 				} else if(str_starts_with($eventId, 'communico')) {
+					$sourceFull = 'communico';
 					$source = 'communico';
 				} else if(str_starts_with($eventId, 'libcal')) {
+					$sourceFull = 'springshare_libcal';
 					$source = 'libcal';
 				} else {
 					// something went wrong
@@ -526,15 +546,11 @@ class EventAPI extends Action {
 
 				if (array_key_exists($eventId, $eventRecords)) {
 					$details = [];
-					$sourceFull = 'unknown';
 					if(str_starts_with($eventId, 'lc')) {
-						$sourceFull = 'library_calendar';
 						$details = $this->getLMEventDetails();
 					} else if(str_starts_with($eventId, 'communico')) {
-						$sourceFull = 'communico';
 						$details = $this->getCommunicoEventDetails();
 					} else if(str_starts_with($eventId, 'libcal')) {
-						$sourceFull = 'springshare_libcal';
 						$details = $this->getSpringshareEventDetails();
 					} else {
 						// something went wrong
@@ -548,19 +564,14 @@ class EventAPI extends Action {
 						$events[$event->sourceId]['endDate'] = $details['endDate'];
 						$events[$event->sourceId]['url'] = $details['url'];
 						$events[$event->sourceId]['bypass'] = $details['bypass'];
-						$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
+						$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;
 						$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
 						$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
-						$events[$event->sourceId]['pastEvent'] = $details['pastEvent'];
 						$events[$event->sourceId]['location'] = $details['location'];
-						$events[$event->sourceId]['pastEvent'] = $filter == 'past';
+						$events[$event->sourceId]['pastEvent'] = $hasPassed;
 						$events[$event->sourceId]['source'] = $source;
 					}
 				} else {
-					$eventDate = date('c', $event->eventDate);
-					$eventDate = new DateTime($eventDate);
-					$eventDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-					
 					$events[$event->sourceId]['id'] = $event->id;
 					$events[$event->sourceId]['sourceId'] = $event->sourceId;
 					$events[$event->sourceId]['title'] = $event->title;
@@ -568,10 +579,10 @@ class EventAPI extends Action {
 					$events[$event->sourceId]['endDate'] = null;
 					$events[$event->sourceId]['bypass'] = 0;
 					$events[$event->sourceId]['url'] = null;
-					$events[$event->sourceId]['cover'] = null;
+					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;
 					$events[$event->sourceId]['registrationRequired'] = null;
 					$events[$event->sourceId]['userIsRegistered'] = $registration;
-					$events[$event->sourceId]['pastEvent'] = $filter == 'past';
+					$events[$event->sourceId]['pastEvent'] = $hasPassed;
 					$events[$event->sourceId]['source'] = $source;
 				}
 			}

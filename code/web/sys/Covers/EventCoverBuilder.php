@@ -16,7 +16,13 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 		//Define our colors
 		$white = imagecolorallocate($imageCanvas, 255, 255, 255);
 		$this->setBackgroundColors($title);
-		$backgroundColor = imagecolorallocate($imageCanvas, $this->backgroundColor['r'], $this->backgroundColor['g'], $this->backgroundColor['b']);
+		if ($props['isPastEvent']){
+			$backgroundColor = imagecolorallocate($imageCanvas, 128, 128, 128);
+			$textColor = imagecolorallocate($imageCanvas, 128, 128, 128);
+		} else {
+			$backgroundColor = imagecolorallocate($imageCanvas, $this->backgroundColor['r'], $this->backgroundColor['g'], $this->backgroundColor['b']);
+			$textColor = imagecolorallocate($imageCanvas, 50, 50, 50);
+		}
 
 		//Draw a background for the entire image
 		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $backgroundColor);
@@ -26,8 +32,6 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 		//Make sure the borders are preserved
 		imagefilledrectangle($imageCanvas, $this->imageWidth - 10, 0, $this->imageWidth, $this->imageHeight, $backgroundColor);
 		imagefilledrectangle($imageCanvas, 0, $this->imageWidth, $this->imageWidth - 10, $this->imageHeight, $backgroundColor);
-
-		$textColor = imagecolorallocate($imageCanvas, 50, 50, 50);
 
 		imagefilledrectangle($imageCanvas, 10, 10, $this->imageWidth - 10, $this->imageWidth - 10, $white);
 

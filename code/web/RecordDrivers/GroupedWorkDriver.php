@@ -2,14 +2,18 @@
 
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/File/MARC.php';
+// require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
+
 
 class GroupedWorkDriver extends IndexRecordDriver {
-
 	private $permanentId = null;
 	public $isValid = true;
 
 	/** @var SearchObject_AbstractGroupedWorkSearcher */
 	private static $recordLookupSearcher = null;
+
+	// private $marcRecordDriver;
 
 	public function __construct($indexFields) {
 		if (is_string($indexFields)) {
@@ -17,6 +21,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$id = $indexFields;
 			$id = str_replace('groupedWork:', '', $id);
 			$this->permanentId = $id;
+
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
 			if (GroupedWorkDriver::$recordLookupSearcher == null) {
@@ -89,6 +94,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$summPublisher = null;
 		$summPubDate = null;
+		$summPlaceOfPublication =  null;
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
@@ -98,6 +104,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if ($isFirst) {
 				$summPublisher = $relatedRecord->publisher;
 				$summPubDate = $relatedRecord->publicationDate;
+				$summPlaceOfPublication = $relatedRecord->placeOfPublication;
 				$summPhysicalDesc = $relatedRecord->physical;
 				$summEdition = $relatedRecord->edition;
 				$summLanguage = $relatedRecord->language;
@@ -108,6 +115,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
 					$summPubDate = null;
+				}
+				if ($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
+					$summPlaceOfPublication = null;
 				}
 				if ($summPhysicalDesc != $relatedRecord->physical) {
 					$summPhysicalDesc = null;
@@ -126,6 +136,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		$interface->assign('summPublisher', $summPublisher);
 		$interface->assign('summPubDate', $summPubDate);
+		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
@@ -576,12 +587,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		// Collect all details for citation builder:
 		$publishers = $this->getPublishers();
 		$pubDates = $this->getPublicationDates();
-		//$pubPlaces = $this->getPlacesOfPublication();
 		$details = [
 			'authors' => $authors,
 			'title' => $this->getShortTitle(),
 			'subtitle' => $this->getSubtitle(),
-			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'placeOfPublication' => $this->getPlaceOfPublication(),
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition' => $this->getEditions(),
@@ -746,6 +756,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$summPublisher = null;
 		$summPubDate = null;
+		$summPlaceOfPublication = null;
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
@@ -756,6 +767,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if ($isFirst) {
 				$summPublisher = $relatedRecord->publisher;
 				$summPubDate = $relatedRecord->publicationDate;
+				$summPlaceOfPublication = $relatedRecord->placeOfPublication;
 				$summPhysicalDesc = $relatedRecord->physical;
 				$summEdition = $relatedRecord->edition;
 				$summLanguage = $relatedRecord->language;
@@ -768,6 +780,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
 					$summPubDate = $alwaysShowMainDetails ? translate([
+						'text' => 'Varies, see individual formats and editions',
+						'isPublicFacing' => true,
+					]) : null;
+				}
+				if($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
+					$summPlaceOfPublication= $alwaysShowMainDetails ? translate([
 						'text' => 'Varies, see individual formats and editions',
 						'isPublicFacing' => true,
 					]) : null;
@@ -795,6 +813,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		$interface->assign('summPublisher', rtrim($summPublisher, ','));
 		$interface->assign('summPubDate', $summPubDate);
+		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication, ',');
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
@@ -833,7 +852,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	public function getContributors() {
-		return $this->fields['author2-role']; //Include the role when displaying contributor
+		if (!empty($this->fields['author2-role'])) {
+			return $this->fields['author2-role']; //Include the role when displaying contributor
+		}else{
+			return [];
+		}
 	}
 
 	function getDescription() {
@@ -928,7 +951,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getEditions() {
+	public function getEditions() {
 		if (isset($this->fields['edition'])) {
 			if (is_array(isset($this->fields['edition']))) {
 				return $this->fields['edition'];
@@ -1493,6 +1516,18 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return isset($this->fields['publishDateSort']) ? $this->fields['publishDateSort'] : '';
 	}
 
+	function getEdition() {
+		$relatedRecords = $this->getRelatedRecords();
+		foreach ($relatedRecords as $relatedRecord) {
+			$relatedRecordDriver = $relatedRecord->getDriver();
+			$editionsForDriver = $relatedRecordDriver->getEditions();
+			if(count($editionsForDriver) > 0) {
+				return reset($editionsForDriver);
+			}
+		}
+		return '';
+	}
+
 	function getPlaceOfPublication () {
 		$relatedRecords = $this->getRelatedRecords();
 		foreach ($relatedRecords as $relatedRecord) {
@@ -1503,6 +1538,32 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  array              Array of elements in the table of contents
+	 */
+	public function getTableOfContentsNotes() {
+		$tableOfContentsNotes = [];
+		foreach ($this->getRelatedRecords() as $record) {
+			if ($record->getDriver()) {
+				$driver = $record->getDriver();
+				/** @var GroupedWorkSubDriver $driver */
+				$recordTOC = $driver->getTableOfContents();
+				if ($recordTOC != null && count($recordTOC) > 0) {
+					$editionDescription = "{$record->format}";
+					if ($record->edition) {
+						$editionDescription .= " - {$record->edition}";
+					}
+					$tableOfContentsNotes = $recordTOC;
+				}
+			}
+		}
+		return $tableOfContentsNotes;
 	}
 
 	/**
@@ -1818,6 +1879,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$summPublisher = null;
 		$summPubDate = null;
+		$summPlaceOfPublication = null;
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
@@ -1828,6 +1890,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if ($isFirst) {
 				$summPublisher = $relatedRecord->publisher;
 				$summPubDate = $relatedRecord->publicationDate;
+				$summPlaceOfPublication= $relatedRecord->placeOfPublication;
 				$summPhysicalDesc = $relatedRecord->physical;
 				$summEdition = $relatedRecord->edition;
 				$summLanguage = $relatedRecord->language;
@@ -1840,6 +1903,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
 					$summPubDate = $alwaysShowMainDetails ? translate([
+						'text' => 'Varies, see individual formats and editions',
+						'isPublicFacing' => true,
+					]) : null;
+				}
+				if ($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
+					$summPlaceOfPublication = $alwaysShowMainDetails ? translate([
 						'text' => 'Varies, see individual formats and editions',
 						'isPublicFacing' => true,
 					]) : null;
@@ -1867,6 +1936,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		$interface->assign('summPublisher', rtrim($summPublisher, ','));
 		$interface->assign('summPubDate', $summPubDate);
+		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
@@ -2926,11 +2996,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$records = [];
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
 								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
+								  LEFT JOIN indexed_place_of_publication ON placeOfPublicationId = indexed_place_of_publication.id
 								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
@@ -3336,5 +3407,233 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 		}
 		return $locations;
+	}
+
+	public function formatGroupedWorkCitation() {
+		// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+			
+		if ($this->isValid()) {
+			// Initialize an array to store the RIS-formatted citation fields
+			$risFields = array();
+
+			// RIS TY - Format
+			$format = $this->getFormat() ;
+			if(is_array($format) && count($format) > 0) {
+				$format = implode(', ', $format);
+
+			switch ($format) {
+				case 'book': 
+					$format = 'BOOK';
+					break;
+				case 'BOOK':
+					$format = 'BOOK';
+					break;
+				case 'BOOKS':
+					$format = 'BOOK';
+					break;
+				case 'Book':
+					$format = 'BOOK';
+					break;
+				case 'books':
+					$format = 'BOOK';
+					break;
+				case 'BK':
+					$format = 'BOOK';
+					break;
+				case 'Books':
+					$format = 'BOOK';
+					break;
+				case 'JOURNAL':
+					$format = 'BOOK';
+					break;
+				case 'Journal Article':
+					$format = 'JOUR';
+					break;
+				case 'JOURNAL ARTICLE':
+					$format = 'JOUR';
+					break;
+				case 'Journal':
+					$format = 'BOOK';
+					break;
+				case 'Audio-Visual':
+					$format = 'SOUND';
+					break;
+				case 'AudioBook':
+					$format = 'SOUND';
+					break;
+				case 'Catalog':
+					$format = 'CTLG';
+					break;
+				case 'Dictionary':
+					$format = 'DICT';
+					break;
+				case 'Electronic Article':
+					$format = 'EJOUR';
+					break;
+				case 'Electronic Book':
+					$format = 'EBOOK';
+					break;
+				case 'E-Book':
+					$format = 'EBOOK';
+					break;
+				case 'Magazine':
+					$format = 'MGZN';
+					break;
+				case 'Magazine Article':
+					$format = 'MGZN';
+					break;
+				case 'Music':
+					$format = 'MUSIC';
+					break;
+				case 'MUSIC':
+					$format = 'MUSIC';
+					break;
+				case 'Newspaper':
+					$format = 'NEWS';
+					break;
+				case 'Newspaper Article':
+					$format = 'NEWS';
+					break;
+				case 'Web Page':
+					$format = 'ELEC';
+					break;
+				case 'Visual Materials':
+					$format = 'VIDEO';
+					break;
+				case 'Movie':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- DVD':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- VHS':
+					$format = 'VIDEO';
+					break;
+				case 'Electronic Database':
+					$format = 'EBOOK';
+						break;
+				case 'Reference':
+					$format = 'BOOK';
+					break;
+			}
+
+		 $risFields[] = "TY  - ".$format;
+		}	
+			//RIS Tag: AU - Author
+			$authors = array();
+			$primaryAuthor = $this->getPrimaryAuthor();
+			if (!empty($primaryAuthor)) {
+				$authors[] = $primaryAuthor;
+			}
+
+			$contributors = $this->getContributors();
+			if(is_array($contributors) && count($contributors) > 0) {
+				$authors = array_merge($authors, $contributors);
+			}
+
+			if (!empty($authors)) {
+				foreach ($authors as $author){
+				$risFields[] = "AU - " . $author;
+				}
+		}
+
+			// RIS Tag: TI - Title
+			$title = $this->getTitle();
+			if (!empty($title)) {
+				$risFields[] = "TI  - " . $title;
+			}
+
+			// RIS Tag: PB - Publisher
+			$publishers = $this->getPublishers();
+			if (is_array($publishers) && count($publishers) > 0) {
+				$publishers = implode(', ', $publishers);
+				$risFields[] = "PB  - " . $publishers;
+			}
+
+			// RIS Tag: PY - Publication Year(s)
+			$publishDates = $this->getPublicationDates();
+			if (!is_array($publishDates)) {
+				$publishDates = [$publishDates];
+			}
+			foreach ($publishDates as $publishDate) {
+				if (!empty($publishDate)) {
+					$risFields[] = "PY  - " . $publishDate;
+				}
+			}
+
+			$placesOfPublication = $this->getPlaceOfPublication();
+			if(is_array($placesOfPublication) && count($placesOfPublication) > 0) {
+				$placesOfPublicationClean = implode(', ', $placesOfPublication);
+				$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+				$risFields[] = "CY  - ".$placesOfPublicationClean;
+			} else {
+				if(!empty($placesOfPublication)) {
+					$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+					$risFields[] = "CY  - ".$placesOfPublicationClean;
+				}
+			}
+
+		// //RIS Tag: ET - Editions
+				$editions = $this->getEdition();
+				if(is_array($editions) && count($editions) > 0) {
+					$editions = implode(', ', $editions);
+					$risFields[] = "ET  - ".$editions;
+				} else {
+					if(!empty($editions)) {
+						$risFields[] = "ET  - ".$editions;
+					}
+				}
+
+				//RIS UR - URL
+				$url = $this->getRecordUrl();
+				if(is_array($url) && count($url) > 0) {
+					$url = implode(', ', $url);
+					$risFields[] = "UR  - ".$url;
+				}
+
+			//RIS Tag: N1 - Info
+			$notes = $this->getTableOfContentsNotes();
+			if(is_array($notes) && count($notes) > 0) {
+				$notes = implode(', ', $notes);
+				$risFields[] = "N1  - ".$notes;
+			}else{
+			if(!empty($notes)) {
+				$risFields[] = "N1  - ".$notes;
+				}
+			}
+
+			//RIS Tag: N2 - Notes
+			$description = $this->getDescription();
+			if(!empty($description)) {
+				$risFields[] = "N2  - ".$description;
+			}
+
+			//RIS T2 - Series
+			$series = $this->getSeries();
+			if(is_array($series) && count($series) >0){
+				$series = implode(', ', $series);
+				$risFields[] = "T2  - ".$series;
+			}
+
+			//RIS ST - Short Title
+			$shortTilte = $this->getShortTitle();
+			if(!empty($shortTilte)) {
+				$risFields[] = "ST  - ".$shortTilte;
+			}
+
+			// RIS Tag: SN - ISBN 
+			$ISBN = $this->getPrimaryIsbn();
+			if(!empty($ISBN)){
+				$risFields[] = "SN  - ".$ISBN;
+			}
+
+			//RIS Tag: AV
+			$risFields[] = "ER  -";
+
+			return implode("\n", $risFields);
+		} else {
+			return '';
+		}
 	}
 }

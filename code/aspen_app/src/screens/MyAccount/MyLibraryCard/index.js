@@ -56,6 +56,11 @@ export const MyLibraryCard = () => {
           placeholderData: [],
      });
 
+     const updateStatus = async () => {
+          await updateScreenBrightnessStatus(false, library.baseUrl, language);
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+     };
+
      React.useEffect(() => {
           const updateAccounts = navigation.addListener('focus', async () => {
                queryClient.invalidateQueries({ queryKey: ['linked_accounts', library.baseUrl, language] });
@@ -152,7 +157,7 @@ export const MyLibraryCard = () => {
      }, [navigation, previousBrightness, isLandscape]);
 
      if (shouldRequestPermissions) {
-          return <PermissionsPrompt promptTitle="permissions_screen_brightness_title" promptBody="permissions_screen_brightness_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
+          return <PermissionsPrompt promptTitle="permissions_screen_brightness_title" promptBody="permissions_screen_brightness_body" setShouldRequestPermissions={setShouldRequestPermissions} updateStatus={updateStatus} />;
      }
 
      /* useFocusEffect(

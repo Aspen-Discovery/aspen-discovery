@@ -222,6 +222,7 @@ class AnodeAPI extends Action {
 				unset($groupedWork['small_image']);
 				unset($groupedWork['titleURL']);
 				unset($groupedWork['publishDate']);
+				unset($groupedWork['placeOfPublication']);
 				unset($groupedWork['title_display']);
 				unset($groupedWork['title_short']);
 				unset($groupedWork['title_full']);

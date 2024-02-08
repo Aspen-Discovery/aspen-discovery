@@ -937,7 +937,7 @@ abstract class MarcRecordProcessor {
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
 		groupedWork.addPublishers(publishers);
-		if (publishers.size() > 0){
+		if (!publishers.isEmpty()){
 			String publisher = publishers.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPublisher(publisher);
@@ -947,13 +947,22 @@ abstract class MarcRecordProcessor {
 		//Load publication dates
 		Set<String> publicationDates = this.getPublicationDates(record);
 		groupedWork.addPublicationDates(publicationDates);
-		if (publicationDates.size() > 0){
+		if (!publicationDates.isEmpty()){
 			String publicationDate = publicationDates.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPublicationDate(publicationDate);
 			}
 		}
 
+		//load places of publication
+		Set<String> placesOfPublication = this.getPlacesOfPublication(record);
+		groupedWork.addPlacesOfPublication(placesOfPublication);
+		if (!placesOfPublication.isEmpty()){
+			String placeOfPublication = placesOfPublication.iterator().next();
+			for(RecordInfo ilsRecord : ilsRecords) {
+				ilsRecord.setPlaceOfPublication(placeOfPublication);
+			}
+		}
 	}
 
 	private Set<String> getPublicationDates(org.marc4j.marc.Record record) {
@@ -961,7 +970,7 @@ abstract class MarcRecordProcessor {
 		HashSet<String> publicationDates = new HashSet<>();
 		String date;
 		//Try to get from RDA data
-		if (rdaFields.size() > 0){
+		if (!rdaFields.isEmpty()){
 			for (DataField dataField : rdaFields){
 				if (dataField.getIndicator2() == '1'){
 					Subfield subFieldC = dataField.getSubfield('c');
@@ -973,22 +982,396 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		//Try to get from 260
-		if (publicationDates.size() ==0) {
+		if (publicationDates.isEmpty()) {
 			publicationDates.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260c")));
 		}
 		//Try to get from 008, but only need to do if we don't have anything else
-		if (publicationDates.size() == 0) {
+		if (publicationDates.isEmpty()) {
 			publicationDates.add(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[7-10]")));
 		}
 
 		return publicationDates;
 	}
 
+	private Set<String> getPlacesOfPublication(org.marc4j.marc.Record record) {
+		List<DataField> rdaFields = record.getDataFields(264);
+		HashSet<String> placesOfPublication = new HashSet<>();
+		String place;
+		if(!rdaFields.isEmpty()) {
+			for(DataField dataField : rdaFields){
+				if (dataField.getIndicator2() == '1') {
+					Subfield subFieldA = dataField.getSubfield('a');
+					if (subFieldA != null) {
+						place = subFieldA.getData();
+						placesOfPublication.add(AspenStringUtils.trimTrailingPunctuation(place));
+					}
+				}
+			}
+		}
+		//Try field 260
+		if (placesOfPublication.isEmpty()) {
+			placesOfPublication.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260a")));
+		}
+		//Try 008
+		if(placesOfPublication.isEmpty()) {
+			// placesOfPublication.add(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[15-17]")));
+			String countryCode = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[15-17]"));
+			if (!countryCode.isEmpty()) {
+				String country = codeToCountry(countryCode);
+				if (country != null) {
+					placesOfPublication.add(country);
+				}
+			}
+		}
+		return placesOfPublication;
+	}
+
+	private static HashMap<String, String> countryList = new HashMap<>();
+	public static String codeToCountry(String code) {
+		code = code.toUpperCase().trim();
+
+		if (countryList.isEmpty()) {
+			countryList.put("AF", "Afghanistan");
+			countryList.put("AX", "Aland Islands");
+			countryList.put("AL", "Albania");
+			countryList.put("DZ", "Algeria");
+			countryList.put("AS", "American Samoa");
+			countryList.put("AD", "Andorra");
+			countryList.put("AO", "Angola");
+			countryList.put("AI", "Anguilla");
+			countryList.put("AQ", "Antigua and Barbuda");
+			countryList.put("AR", "Argentina");
+			countryList.put("AM", "Armenia");
+			countryList.put("AW", "Aruba");
+			countryList.put("AU", "Australia");
+			countryList.put("AT", "Austria");
+			countryList.put("AZ", "Azerbaijan");
+			countryList.put("BS", "Bahamas the");
+			countryList.put("BH", "Bahrain");
+			countryList.put("BD", "Bangladesh");
+			countryList.put("BB", "Barbados");
+			countryList.put("BY", "Belarus");
+			countryList.put("BE", "Belgium");
+			countryList.put("BZ", "Belize");
+			countryList.put("BJ", "Benin");
+			countryList.put("BM", "Bermuda");
+			countryList.put("BT", "Bhutan");
+			countryList.put("BO", "Bolivia");
+			countryList.put("BA", "Bosnia and Herzegovina");
+			countryList.put("BW", "Botswana");
+			countryList.put("BV", "Bouvet Island (Bouvetoya)");
+			countryList.put("BR", "Brazil");
+			countryList.put("IO", "British Indian Ocean Territory (Chagos Archipelago)");
+			countryList.put("VG", "British Virgin Islands");
+			countryList.put("BN", "Brunei Darussalam");
+			countryList.put("BG", "Bulgaria");
+			countryList.put("BF", "Burkina Faso");
+			countryList.put("BI", "Burundi");
+			countryList.put("KH", "Cambodia");
+			countryList.put("CM", "Cameroon");
+			countryList.put("CA", "Canada");
+			countryList.put("CV", "Cape Verde");
+			countryList.put("KY", "Cayman Islands");
+			countryList.put("CF", "Central African Republic");
+			countryList.put("TD", "Chad");
+			countryList.put("CL", "Chile");
+			countryList.put("CN", "China");
+			countryList.put("CX", "Christmas Island");
+			countryList.put("CC", "Cocos (Keeling) Islands");
+			countryList.put("CO", "Colombia");
+			countryList.put("KM", "Comoros the");
+			countryList.put("CD", "Congo");
+			countryList.put("CG", "Congo the");
+			countryList.put("CK", "Cook Islands");
+			countryList.put("CR", "Costa Rica");
+			countryList.put("CI", "Cote d'Ivoire");
+			countryList.put("HR", "Croatia");
+			countryList.put("CU", "Cuba");
+			countryList.put("CY", "Cyprus");
+			countryList.put("CZ", "Czech Republic");
+			countryList.put("DK", "Denmark");
+			countryList.put("DJ", "Djibouti");
+			countryList.put("DM", "Dominica");
+			countryList.put("DO", "Dominican Republic");
+			countryList.put("EC", "Ecuador");
+			countryList.put("EG", "Egypt");
+			countryList.put("SV", "El Salvador");
+			countryList.put("GQ", "Equatorial Guinea");
+			countryList.put("ER", "Eritrea");
+			countryList.put("EE", "Estonia");
+			countryList.put("ET", "Ethiopia");
+			countryList.put("FO", "Faroe Islands");
+			countryList.put("FK", "Falkland Islands (Malvinas)");
+			countryList.put("FJ", "Fiji the Fiji Islands");
+			countryList.put("FI", "Finland");
+			countryList.put("FR", "France, French Republic");
+			countryList.put("GF", "French Guiana");
+			countryList.put("PF", "French Polynesia");
+			countryList.put("TF", "French Southern Territories");
+			countryList.put("GA", "Gabon");
+			countryList.put("GM", "Gambia the");
+			countryList.put("GE", "Georgia");
+			countryList.put("DE", "Germany");
+			countryList.put("GH", "Ghana");
+			countryList.put("GI", "Gibraltar");
+			countryList.put("GR", "Greece");
+			countryList.put("GL", "Greenland");
+			countryList.put("GD", "Grenada");
+			countryList.put("GP", "Guadeloupe");
+			countryList.put("GU", "Guam");
+			countryList.put("GT", "Guatemala");
+			countryList.put("GG", "Guernsey");
+			countryList.put("GN", "Guinea");
+			countryList.put("GW", "Guinea-Bissau");
+			countryList.put("GY", "Guyana");
+			countryList.put("HT", "Haiti");
+			countryList.put("HM", "Heard Island and McDonald Islands");
+			countryList.put("VA", "Holy See (Vatican City State)");
+			countryList.put("HN", "Honduras");
+			countryList.put("HK", "Hong Kong");
+			countryList.put("HU", "Hungary");
+			countryList.put("IS", "Iceland");
+			countryList.put("IN", "India");
+			countryList.put("ID", "Indonesia");
+			countryList.put("IR", "Iran");
+			countryList.put("IQ", "Iraq");
+			countryList.put("IE", "Ireland");
+			countryList.put("IM", "Isle of Man");
+			countryList.put("IL", "Israel");
+			countryList.put("IT", "Italy");
+			countryList.put("JM", "Jamaica");
+			countryList.put("JA", "Japan");
+			countryList.put("JP", "Japan");
+			countryList.put("JE", "Jersey");
+			countryList.put("JO", "Jordan");
+			countryList.put("KZ", "Kazakhstan");
+			countryList.put("KE", "Kenya");
+			countryList.put("KI", "Kiribati");
+			countryList.put("KP", "Korea");
+			countryList.put("KR", "Korea");
+			countryList.put("KW", "Kuwait");
+			countryList.put("KG", "Kyrgyz Republic");
+			countryList.put("LA", "Lao");
+			countryList.put("LV", "Latvia");
+			countryList.put("LB", "Lebanon");
+			countryList.put("LS", "Lesotho");
+			countryList.put("LR", "Liberia");
+			countryList.put("LY", "Libyan Arab Jamahiriya");
+			countryList.put("LI", "Liechtenstein");
+			countryList.put("LT", "Lithuania");
+			countryList.put("LU", "Luxembourg");
+			countryList.put("MO", "Macao");
+			countryList.put("MK", "Macedonia");
+			countryList.put("MG", "Madagascar");
+			countryList.put("MW", "Malawi");
+			countryList.put("MY", "Malaysia");
+			countryList.put("MV", "Maldives");
+			countryList.put("ML", "Mali");
+			countryList.put("MT", "Malta");
+			countryList.put("MH", "Marshall Islands");
+			countryList.put("MQ", "Martinique");
+			countryList.put("MR", "Mauritania");
+			countryList.put("MU", "Mauritius");
+			countryList.put("YT", "Mayotte");
+			countryList.put("MX", "Mexico");
+			countryList.put("FM", "Micronesia");
+			countryList.put("MD", "Moldova");
+			countryList.put("MC", "Monaco");
+			countryList.put("MN", "Mongolia");
+			countryList.put("ME", "Montenegro");
+			countryList.put("MS", "Montserrat");
+			countryList.put("MA", "Morocco");
+			countryList.put("MZ", "Mozambique");
+			countryList.put("MM", "Myanmar");
+			countryList.put("NA", "Namibia");
+			countryList.put("NR", "Nauru");
+			countryList.put("NP", "Nepal");
+			countryList.put("AN", "Netherlands Antilles");
+			countryList.put("NL", "Netherlands the");
+			countryList.put("NC", "New Caledonia");
+			countryList.put("NZ", "New Zealand");
+			countryList.put("NI", "Nicaragua");
+			countryList.put("NE", "Niger");
+			countryList.put("NG", "Nigeria");
+			countryList.put("NU", "Niue");
+			countryList.put("NF", "Norfolk Island");
+			countryList.put("MP", "Northern Mariana Islands");
+			countryList.put("NO", "Norway");
+			countryList.put("OM", "Oman");
+			countryList.put("PK", "Pakistan");
+			countryList.put("PW", "Palau");
+			countryList.put("PS", "Palestinian Territory");
+			countryList.put("PA", "Panama");
+			countryList.put("PG", "Papua New Guinea");
+			countryList.put("PY", "Paraguay");
+			countryList.put("PE", "Peru");
+			countryList.put("PH", "Philippines");
+			countryList.put("PN", "Pitcairn Islands");
+			countryList.put("PL", "Poland");
+			countryList.put("PT", "Portugal, Portuguese Republic");
+			countryList.put("PR", "Puerto Rico");
+			countryList.put("QA", "Qatar");
+			countryList.put("RE", "Reunion");
+			countryList.put("RO", "Romania");
+			countryList.put("RU", "Russian Federation");
+			countryList.put("RW", "Rwanda");
+			countryList.put("BL", "Saint Barthelemy");
+			countryList.put("SH", "Saint Helena");
+			countryList.put("KN", "Saint Kitts and Nevis");
+			countryList.put("LC", "Saint Lucia");
+			countryList.put("MF", "Saint Martin");
+			countryList.put("PM", "Saint Pierre and Miquelon");
+			countryList.put("VC", "Saint Vincent and the Grenadines");
+			countryList.put("WS", "Samoa");
+			countryList.put("SM", "San Marino");
+			countryList.put("ST", "Sao Tome and Principe");
+			countryList.put("SA", "Saudi Arabia");
+			countryList.put("SN", "Senegal");
+			countryList.put("RS", "Serbia");
+			countryList.put("SC", "Seychelles");
+			countryList.put("SL", "Sierra Leone");
+			countryList.put("SG", "Singapore");
+			countryList.put("SK", "Slovakia (Slovak Republic)");
+			countryList.put("SI", "Slovenia");
+			countryList.put("SB", "Solomon Islands");
+			countryList.put("SO", "Somalia, Somali Republic");
+			countryList.put("ZA", "South Africa");
+			countryList.put("GS", "South Georgia and the South Sandwich Islands");
+			countryList.put("ES", "Spain");
+			countryList.put("LK", "Sri Lanka");
+			countryList.put("SD", "Sudan");
+			countryList.put("SR", "Suriname");
+			countryList.put("SJ", "Svalbard & Jan Mayen Islands");
+			countryList.put("SZ", "Swaziland");
+			countryList.put("SE", "Sweden");
+			countryList.put("CH", "Switzerland, Swiss Confederation");
+			countryList.put("SY", "Syrian Arab Republic");
+			countryList.put("TW", "Taiwan");
+			countryList.put("TJ", "Tajikistan");
+			countryList.put("TZ", "Tanzania");
+			countryList.put("TH", "Thailand");
+			countryList.put("TL", "Timor-Leste");
+			countryList.put("TG", "Togo");
+			countryList.put("TK", "Tokelau");
+			countryList.put("TO", "Tonga");
+			countryList.put("TT", "Trinidad and Tobago");
+			countryList.put("TN", "Tunisia");
+			countryList.put("TR", "Turkey");
+			countryList.put("TM", "Turkmenistan");
+			countryList.put("TC", "Turks and Caicos Islands");
+			countryList.put("TV", "Tuvalu");
+			countryList.put("UG", "Uganda");
+			countryList.put("UA", "Ukraine");
+			countryList.put("AE", "United Arab Emirates");
+			countryList.put("GB", "United Kingdom");
+			countryList.put("US", "United States of America");
+			countryList.put("UM", "United States Minor Outlying Islands");
+			countryList.put("VI", "United States Virgin Islands");
+			countryList.put("UY", "Uruguay, Eastern Republic of");
+			countryList.put("UZ", "Uzbekistan");
+			countryList.put("VU", "Vanuatu");
+			countryList.put("VE", "Venezuela");
+			countryList.put("VN", "Vietnam");
+			countryList.put("WF", "Wallis and Futuna");
+			countryList.put("EH", "Western Sahara");
+			countryList.put("YE", "Yemen");
+			countryList.put("ZM", "Zambia");
+			countryList.put("ZW", "Zimbabwe");
+			countryList.put("XXC","Canada");
+			countryList.put("ABC","Alberta");
+			countryList.put("BCC","British Columbia");
+			countryList.put("MBC","Manitoba");
+			countryList.put("NKC","New Brunswick");
+			countryList.put("NFC","Newfoundland and Labrador");
+			countryList.put("NTC","Northwest Territories");
+			countryList.put("NSC","Nova Scotia");
+			countryList.put("NUC","Nunavut");
+			countryList.put("ONC","Ontario");
+			countryList.put("PIC","Prince Edward Island");
+			countryList.put("QUC","Québec (Province)");
+			countryList.put("SNC","Saskatchewan");
+			countryList.put("YKC","Yukon Territory");
+			countryList.put("XL","Saint Pierre and Miquelon");
+			countryList.put("XXU","United States");
+			countryList.put("ALU","Alabama");
+			countryList.put("AKU","Alaska");
+			countryList.put("AZU","Arizona");
+			countryList.put("ARU","Arkansas");
+			countryList.put("CAU","California");
+			countryList.put("COU","Colorado");
+			countryList.put("CTU","Connecticut");
+			countryList.put("DEU","Delaware");
+			countryList.put("DCU","District of Columbia");
+			countryList.put("FLU","Florida");
+			countryList.put("GAU","Georgia");
+			countryList.put("HIU","Hawaii");
+			countryList.put("IDU","Idaho");
+			countryList.put("ILU","Illinois");
+			countryList.put("INU","Indiana");
+			countryList.put("IAU","Iowa");
+			countryList.put("KSU","Kansas");
+			countryList.put("KYU","Kentucky");
+			countryList.put("LAU","Louisiana");
+			countryList.put("MEU","Maine");
+			countryList.put("MDU","Maryland");
+			countryList.put("MAU","Massachusetts");
+			countryList.put("MIU","Michigan");
+			countryList.put("MNU","Minnesota");
+			countryList.put("MSU","Mississippi");
+			countryList.put("MOU","Missouri");
+			countryList.put("MTU","Montana");
+			countryList.put("NBU","Nebraska");
+			countryList.put("NVU","Nevada");
+			countryList.put("NHU","New Hampshire");
+			countryList.put("NJU","New Jersey");
+			countryList.put("NMU","New Mexico");
+			countryList.put("NYU","New York (State)");
+			countryList.put("NCU","North Carolina");
+			countryList.put("NDU","North Dakota");
+			countryList.put("OHU","Ohio");
+			countryList.put("OKU","Oklahoma");
+			countryList.put("ORU","Oregon");
+			countryList.put("PAU","Pennsylvania");
+			countryList.put("RIU","Rhode Island");
+			countryList.put("SCU","South Carolina");
+			countryList.put("SDU","South Dakota");
+			countryList.put("TNU","Tennessee");
+			countryList.put("TXU","Texas");
+			countryList.put("UTU","Utah");
+			countryList.put("VTU","Vermont");
+			countryList.put("VAU","Virginia");
+			countryList.put("WAU","Washington (State)");
+			countryList.put("WVU","West Virginia");
+			countryList.put("WIU","Wisconsin");
+			countryList.put("WYU","Wyoming");
+			countryList.put("XXK","United Kingdom");
+			countryList.put("ENK","England");
+			countryList.put("NIK","Northern Ireland");
+			countryList.put("STK","Scotland");
+			countryList.put("UIK","United Kingdom Misc. Islands");
+			countryList.put("WLK","Wales");
+			countryList.put("ACA","Australian Capital Territory");
+			countryList.put("QEA","Queensland");
+			countryList.put("TMA","Tasmania");
+			countryList.put("VRA","Victoria");
+			countryList.put("WEA","Western Australia");
+			countryList.put("XGA","Coral Sea Islands Territory");
+			countryList.put("XNA","New South Wales");
+			countryList.put("XOA","Northern Territory");
+			countryList.put("XRA","South Australia");
+		}
+
+		return countryList.get(code);
+
+		// return countryList.getOrDefault(code, code);
+	}
+
+
 	private Set<String> getPublishers(org.marc4j.marc.Record record){
 		Set<String> publisher = new LinkedHashSet<>();
 		//First check for 264 fields
 		List<DataField> rdaFields = MarcUtil.getDataFields(record, 264);
-		if (rdaFields.size() > 0){
+		if (!rdaFields.isEmpty()){
 			for (DataField curField : rdaFields){
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
@@ -1010,9 +1393,9 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
-			if (treatUnknownLanguageAs != null && treatUnknownLanguageAs.length() > 0 && translatedLanguage.equals("Unknown")){
+			if (treatUnknownLanguageAs != null && !treatUnknownLanguageAs.isEmpty() && translatedLanguage.equals("Unknown")){
 				translatedLanguage = treatUnknownLanguageAs;
-			}else if (treatUndeterminedLanguageAs != null && treatUndeterminedLanguageAs.length() > 0 && translatedLanguage.equals("Undetermined")){
+			}else if (treatUndeterminedLanguageAs != null && !treatUndeterminedLanguageAs.isEmpty() && translatedLanguage.equals("Undetermined")){
 				translatedLanguage = treatUndeterminedLanguageAs;
 			}
 			translatedLanguages.add(translatedLanguage);
@@ -1033,7 +1416,7 @@ abstract class MarcRecordProcessor {
 				groupedWork.setLanguageBoostSpanish(languageBoostVal);
 			}
 		}
-		if (translatedLanguages.size() == 0){
+		if (translatedLanguages.isEmpty()){
 			translatedLanguages.add(treatUnknownLanguageAs);
 			for (RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPrimaryLanguage(treatUnknownLanguageAs);
@@ -1121,7 +1504,7 @@ abstract class MarcRecordProcessor {
 			authorInTitleField = titleField.getSubfieldsAsString("c");
 		}
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
-		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
+		if ((authorInTitleField != null && !authorInTitleField.isEmpty()) || (standardAuthorData == null || standardAuthorData.isEmpty())) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
 		} else {
 			//We didn't get an author from the 245, combine with the 100
@@ -1158,7 +1541,7 @@ abstract class MarcRecordProcessor {
 			//load url into the item
 			if (urlField.getSubfield('u') != null){
 				String linkText = urlField.getSubfield('u').getData().trim();
-				if (linkText.length() > 0) {
+				if (!linkText.isEmpty()) {
 					//Try to determine if this is a resource or not.
 					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0') {
 						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
@@ -1197,7 +1580,7 @@ abstract class MarcRecordProcessor {
 			title = title.substring(nonFilingInt);
 		}
 
-		if (title.length() == 0) {
+		if (title.isEmpty()) {
 			return "";
 		}
 
@@ -1710,7 +2093,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches())) {
+					if (result.isEmpty() && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches())) {
 						result.add("Book");
 					}
 				} else {

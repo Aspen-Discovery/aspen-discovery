@@ -265,6 +265,7 @@
 		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="publishDate" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="placeOfPublication" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 
 		<!-- Facets -->
 		<field name="physical" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>

@@ -2738,7 +2738,7 @@ class User extends DataObject {
 					$readingHistoryDB = new ReadingHistoryEntry();
 					$readingHistoryDB->userId = $this->id;
 					$readingHistoryDB->whereAdd('deleted = 0');
-					$readingHistoryDB->groupBy('groupedWorkPermanentId');
+					$readingHistoryDB->groupBy('groupedWorkPermanentId, title, author');
 					$this->_readingHistorySize = $readingHistoryDB->count();
 					$timer->logTime("Updated reading history size");
 				} else {
@@ -4223,9 +4223,9 @@ class User extends DataObject {
 		if(empty($preferences)) {
 			$preference['device'] = 'Unknown';
 			$preference['token'] = 'Unknown';
-			$preference['notifySavedSearch'] = '0';
-			$preference['notifyCustom'] = '0';
-			$preference['notifyAccount'] = '0';
+			$preference['notifySavedSearch'] = 0;
+			$preference['notifyCustom'] = 0;
+			$preference['notifyAccount'] = 0;
 			$preference['onboardStatus'] = 1;
 
 			$preferences[] = $preference;

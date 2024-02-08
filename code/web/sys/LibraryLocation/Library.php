@@ -4172,7 +4172,7 @@ class Library extends DataObject {
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
 		}  elseif ($name == 'interLibraryLoanItemTypes') {
-			$this->interLibraryLoanItemTypes = $value;
+			$this->_interLibraryLoanItemTypes = $value;
 		} else {
 			parent::__set($name, $value);
 		}

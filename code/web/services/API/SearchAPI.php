@@ -496,8 +496,10 @@ class SearchAPI extends Action {
 						}
 
 					}
-					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
+					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
