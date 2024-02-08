@@ -158,8 +158,8 @@
 	{if !empty($fullWidthTheme)}</div>{/if}
 
 		{if empty($minimalInterface)}
-		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-footer">
-			<div id="footer-container" role="contentinfo" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-footer" role="contentinfo">
+			<div id="footer-container" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 				{include file="footer_responsive.tpl"}
 			</div>
 		</div>
