@@ -31,23 +31,56 @@ foreach ($allTables as $table) {
 		$exportData = true;
 	}
 
-	if ($exportData) {
-		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
-		exec_advanced($dumpCommand, $debug);
-	}else{
+//	if ($exportData) {
+//		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
+//		exec_advanced($dumpCommand, $debug);
+//	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 		$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
+		$fhnd = fopen($exportFile, 'a+');
+		fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 		foreach ($createTablesRS as $createTableSql) {
-			$fhnd = fopen($exportFile, 'a+');
-			fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 			$createTableValue = $createTableSql['Create Table'];
 			//Remove the auto increment id
 			$createTableValue = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableValue);
 			fwrite($fhnd, $createTableValue . ";\n");
-			fclose($fhnd);
 		}
+		$createTableStmt->closeCursor();
+
+		if ($exportData) {
+			$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
+			$isFirstRow = true;
+			$hasData = false;
+			while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
+				$hasData = true;
+				if ($isFirstRow) {
+					$columns = implode(',', array_keys($row));
+					$insertStatement = "INSERT INTO $table ($columns) VALUES ";
+					fwrite($fhnd, $insertStatement);
+				}
+				$values = [];
+				foreach ($row as $value) {
+					if (is_numeric($value)) {
+						$values[] = $value;
+					}else{
+						$values[] = "'" . str_replace("'", "/'", $value) . "'";
+					}
+				}
+				if (!$isFirstRow) {
+					fwrite($fhnd, ", ");
+				}
+				fwrite($fhnd, "(" . implode(',', $values) . ")");
+
+				$isFirstRow = false;
+			}
+			if ($hasData) {
+				fwrite($fhnd, ";\n");
+			}
+			$exportDataStmt->closeCursor();
+		}
+		fclose($fhnd);
 		//$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";
-	}
+//	}
 }
 
 //Add additional data
@@ -110,12 +143,12 @@ fwrite($fhnd, "INSERT INTO user_roles (userId, roleId) VALUES (2,1),(2,2);\n");
 fwrite($fhnd, "INSERT INTO variables VALUES (1,'lastHooplaExport','false'),(2,'validateChecksumsFromDisk','false'),(3,'offline_mode_when_offline_login_allowed','false'),(4,'fullReindexIntervalWarning','86400'),(5,'fullReindexIntervalCritical','129600'),(6,'bypass_export_validation','0'),(7,'last_validatemarcexport_time',NULL),(8,'last_export_valid','1'),(9,'record_grouping_running','false'),(10,'last_grouping_time',NULL),(25,'partial_reindex_running','true'),(26,'last_reindex_time',NULL),(27,'lastPartialReindexFinish',NULL),(29,'full_reindex_running','false'),(37,'lastFullReindexFinish',NULL),(44,'num_title_in_unique_sitemap','20000'),(45,'num_titles_in_most_popular_sitemap','20000'),(46,'lastRbdigitalExport',NULL);\n");
 fwrite($fhnd, "INSERT INTO web_builder_audience VALUES (1,'Adults'),(4,'Children'),(7,'Everyone'),(5,'Parents'),(6,'Seniors'),(2,'Teens'),(3,'Tweens');\n");
 fwrite($fhnd, "INSERT INTO web_builder_category VALUES (10,'Arts and Music'),(1,'eBooks and Audiobooks'),(9,'Homework Help'),(2,'Languages and Culture'),(11,'Library Documents and Policies'),(3,'Lifelong Learning'),(8,'Local History'),(4,'Newspapers and Magazines'),(5,'Reading Recommendations'),(6,'Reference and Research'),(7,'Video Streaming');\n");
-fwrite($fhnd, "INSERT INTO website_facet_groups (id, name) VALUES (1, 'default')");
-fwrite($fhnd, "INSERT INTO website_facets VALUES (1,1, 'Site Name', 'Site Names', 'website_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),(2,1, 'Website Type', 'Website Types', 'search_category', 2, 5, 'num_results', 1, 1, 1, 1, 1),(3,1, 'Audience', 'Audiences', 'audience_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),(4,1, 'Category', 'Categories', 'category_facet', 4, 5, 'num_results', 1, 1, 1, 1, 1)");
-fwrite($fhnd, "INSERT INTO events_facet_groups (id, name) VALUES (1, 'default')");
-fwrite($fhnd, "INSERT INTO events_facet VALUES (1,1, 'Age Group/Audience', 'Age Groups/Audiences', 'age_group_facet', 1, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(2,1, 'Branch', 'Branches', 'branch', 2, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(3,1, 'Room', 'Rooms', 'room', 3, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(4,1, 'Event Type', 'Event Types', 'event_type', 4, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(5,1, 'Program Type', 'Program Types', 'program_type_facet', 5, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(6,1, 'Registration Required?', 'Registration Required?', 'registration_required', 6, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(7,1, 'Category', 'Categories', 'internal_category', 7, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(8,1, 'Reservation State', 'Reservation State', 'reservation_state', 8, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(9,1, 'Event State', 'Event State', 'event_state', 9, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1)");
-fwrite($fhnd, "INSERT INTO open_archives_facet_groups (id, name) VALUES (1, 'default')");
-fwrite($fhnd, "INSERT INTO open_archives_facets VALUES (1,1, 'Collection', 'Collections', 'collection_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),(2,1, 'Creator', 'Creators', 'creator_facet', 2, 5, 'num_results', 1, 1, 1, 1, 1),(3,1, 'Contributor', 'Contributors', 'contributor_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),(4,1, 'Type', 'Types', 'type', 4, 5, 'num_results', 1, 1, 1, 1, 1),(5,1, 'Subject', 'Subjects', 'subject_facet', 5, 5, 'num_results', 1, 1, 1, 1, 1),(6,1, 'Publisher', 'Publishers', 'publisher_facet', 6, 5, 'num_results', 1, 1, 1, 1, 1),(7,1, 'Source', 'Sources', 'source', 7, 5, 'num_results', 1, 1, 1, 1, 1)");
+fwrite($fhnd, "INSERT INTO website_facet_groups (id, name) VALUES (1, 'default');\n");
+fwrite($fhnd, "INSERT INTO website_facets VALUES (1,1, 'Site Name', 'Site Names', 'website_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),(2,1, 'Website Type', 'Website Types', 'search_category', 2, 5, 'num_results', 1, 1, 1, 1, 1),(3,1, 'Audience', 'Audiences', 'audience_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),(4,1, 'Category', 'Categories', 'category_facet', 4, 5, 'num_results', 1, 1, 1, 1, 1);\n");
+fwrite($fhnd, "INSERT INTO events_facet_groups (id, name) VALUES (1, 'default');\n");
+fwrite($fhnd, "INSERT INTO events_facet VALUES (1,1, 'Age Group/Audience', 'Age Groups/Audiences', 'age_group_facet', 1, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(2,1, 'Branch', 'Branches', 'branch', 2, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(3,1, 'Room', 'Rooms', 'room', 3, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(4,1, 'Event Type', 'Event Types', 'event_type', 4, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(5,1, 'Program Type', 'Program Types', 'program_type_facet', 5, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(6,1, 'Registration Required?', 'Registration Required?', 'registration_required', 6, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(7,1, 'Category', 'Categories', 'internal_category', 7, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(8,1, 'Reservation State', 'Reservation State', 'reservation_state', 8, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),(9,1, 'Event State', 'Event State', 'event_state', 9, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1);\n");
+fwrite($fhnd, "INSERT INTO open_archives_facet_groups (id, name) VALUES (1, 'default');\n");
+fwrite($fhnd, "INSERT INTO open_archives_facets VALUES (1,1, 'Collection', 'Collections', 'collection_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),(2,1, 'Creator', 'Creators', 'creator_facet', 2, 5, 'num_results', 1, 1, 1, 1, 1),(3,1, 'Contributor', 'Contributors', 'contributor_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),(4,1, 'Type', 'Types', 'type', 4, 5, 'num_results', 1, 1, 1, 1, 1),(5,1, 'Subject', 'Subjects', 'subject_facet', 5, 5, 'num_results', 1, 1, 1, 1, 1),(6,1, 'Publisher', 'Publishers', 'publisher_facet', 6, 5, 'num_results', 1, 1, 1, 1, 1),(7,1, 'Source', 'Sources', 'source', 7, 5, 'num_results', 1, 1, 1, 1, 1);\n");
 fclose($fhnd);
 
 //TODO: Fix which modules are enabled by default
