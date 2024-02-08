@@ -30,7 +30,7 @@ class CourseReserve extends DataObject {
 	}
 
 	public function getTitle() {
-		return $this->courseNumber . ' ' . $this->courseTitle . ' - ' . $this->courseInstructor;
+		return $this->courseNumber . ' ' . $this->courseTitle . ' - ' . str_replace('|',', ', $this->courseInstructor);
 	}
 
 	public function getNumericColumnNames(): array {
