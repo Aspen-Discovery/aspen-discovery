@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
@@ -148,6 +149,7 @@ public class GroupedReindexMain {
 
 		logEntry.addNote("Finished Reindex for " + serverName);
 		logEntry.setFinished();
+		SystemUtils.printMemoryStats(logger);
 
 		System.exit(0);
 	}
@@ -210,6 +212,7 @@ public class GroupedReindexMain {
 		logEntry = new NightlyIndexLogEntry(dbConn, logger);
 
 		//If this is the nightly index, check to see if we need to run
+		SystemUtils.printMemoryStats(logger);
 		if (isNightlyReindex) {
 			boolean arDataReloaded = loadAcceleratedReaderData();
 			if (!arDataReloaded) { //Force nightly update to run if AR data was reloaded
