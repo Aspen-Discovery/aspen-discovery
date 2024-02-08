@@ -53,7 +53,7 @@
 {strip}
 	{if !empty($showTopOfPageButton) && empty($minimalInterface)}
 	<a class="top-link hide" href="" id="js-top">
-		<i class="fas fa-arrow-up fa-2x fa-fw"></i>
+		<i class="fas fa-arrow-up fa-2x fa-fw" role="presentation"></i>
 		<span class="screen-reader-text">{translate text="Back to top" isPublicFacing=true}</span>
 	</a>
 	{/if}

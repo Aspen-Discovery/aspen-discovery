@@ -3,7 +3,7 @@
 	<div class="menu-section menu-section-left">
 		{if $useHomeLink == '1' || $useHomeLink == '3'}
 			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to %1%" 1=$homeLinkText inAttribute=true isPublicFacing=true}" aria-label="{translate text="Return to %1%" 1=$homeLinkText inAttribute=true isPublicFacing=true}" role="link">
-				<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
+				<i class="fas fa-home fa-lg" role="presentation"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 			</a>
 		{/if}
 		<a href="{if $useHomeLink == '0' || $useHomeLink == '2'}/{else}/Search/Home{/if}" id="browseLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" role="link">
@@ -16,7 +16,7 @@
 					<div class="dropdown menuToggleButton {$topCategory->getEscapedCategory()}Menu" style="display:inline-block;">
 						<a id="{$topCategory->getEscapedCategory()}-menu-trigger" tabindex="0" class="dropdown-toggle menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true isPublicFacing=true}"  aria-haspopup="true" aria-expanded="false" role="link">
 							{if !empty($topCategory->iconName)}
-								<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
+								<i class="fas fa-{$topCategory->iconName} fa-lg" role="presentation"></i>
 							{/if}
 							<span class="menu-bar-label visible-inline-block-lg">
 								{if $topCategory->published == 0}<em>{/if}
@@ -56,7 +56,7 @@
 				{else}
 					<a href="{$topCategory->url}" role="link" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true isPublicFacing=true}" {if $topCategory->openInNewTab}target="_blank"{/if} tabindex="0">
 						{if !empty($topCategory->iconName)}
-							<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
+							<i class="fas fa-{$topCategory->iconName} fa-lg" role="presentation"></i>
 						{/if}
 						<span class="menu-bar-label visible-inline-block-lg">
 							{if $topCategory->published == 0}<em>{/if}
@@ -73,9 +73,9 @@
 			<div class="dropdown menuToggleButton accountMenu" style="display:inline-block;">
 			<a tabindex="0" class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Account" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="account-menu-dropdown">
 				{if !empty($masqueradeMode)}
-					<i class="fas fa-theater-masks fa-lg"></i>
+					<i class="fas fa-theater-masks fa-lg" role="presentation"></i>
 				{else}
-					<i class="fas fa-user fa-lg"></i>
+					<i class="fas fa-user fa-lg" role="presentation"></i>
 				{/if}
 				<span class="menu-bar-label hidden-inline-block-xs">
 					{if !empty($masqueradeMode)}
@@ -90,14 +90,14 @@
 		{else} {* Not Logged In *}
 			{if !empty($showLoginButton)}
 			<a href="/MyAccount/Home" id="loginLink" onclick="{if !empty($isLoginPage)}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" onkeypress="{if !empty($isLoginPage)}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login' inAttribute=true isPublicFacing=true}">
-				<i class="fas fa-sign-in-alt fa-lg {if $userLang->isRTL()}fa-flip-horizontal{/if}"></i>
+				<i class="fas fa-sign-in-alt fa-lg {if $userLang->isRTL()}fa-flip-horizontal{/if}" role="presentation"></i>
 				<span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in" isPublicFacing=true}</span>
 			</a>
 			{/if}
 		{/if}
 
 		<div class="dropdown menuToggleButton headerMenu" style="display:inline-block;"><a class="dropdown-toggle menu-icon menu-bar-option" tabindex="0" role="button" title="{translate text="Show Menu" inAttribute=true isPublicFacing=true}"  aria-haspopup="true" aria-expanded="false" id="header-menu-dropdown">
-			<i class="fas fa-bars fa-lg"></i>
+			<i class="fas fa-bars fa-lg" role="presentation"></i>
 		</a>
 		{include file="header-menu.tpl"}
 		</div>

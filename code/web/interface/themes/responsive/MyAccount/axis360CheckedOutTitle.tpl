@@ -93,7 +93,7 @@
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !empty($record->accessOnlineUrl)}
-							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>
+							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canRenew}
 							<a href="#" onclick="return AspenDiscovery.Axis360.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>

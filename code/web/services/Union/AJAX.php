@@ -103,7 +103,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		} else {
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -140,7 +140,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -179,7 +179,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -208,7 +208,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		} else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		}
 
@@ -248,7 +248,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No Results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -287,7 +287,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($innReachResults['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 				$interface->assign('innReachResults', $innReachResults['records']);
 				$results .= $interface->fetch('Union/innReach.tpl');
 			}

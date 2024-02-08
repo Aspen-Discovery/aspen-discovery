@@ -3,7 +3,7 @@
 		<div class="modal-dialog">
 			<div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="myModalLabel">
 				<div class="modal-header">
-					<button type="button" class="close modalClose" data-dismiss="modal" aria-hidden="true" aria-label="{translate text="Close Window" isPublicFacing=true inAttribute=true}"><i class="fas fa-times"></i></button>
+					<button type="button" class="close modalClose" data-dismiss="modal" aria-hidden="true" aria-label="{translate text="Close Window" isPublicFacing=true inAttribute=true}"><i class="fas fa-times" role="presentation"></i></button>
 					<div class="modal-title" id="myModalLabel">{translate text='Loading, please wait' isPublicFacing=true}</div>
 				</div>
 				<div class="modal-body">

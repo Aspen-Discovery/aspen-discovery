@@ -7,7 +7,7 @@
 				{if $useHomeLink == '1' || $useHomeLink == '3'}
 					<li>
 						<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true isPublicFacing=true isAdminFacing=true}">
-							<i class="fas fa-home"></i> {translate text=$homeLinkText isPublicFacing=true isAdminFacing=true}
+							<i class="fas fa-home" role="presentation"></i> {translate text=$homeLinkText isPublicFacing=true isAdminFacing=true}
 						</a>
 					</li>
 				{/if}
@@ -19,7 +19,7 @@
 						<i class="fas {if ($useHomeLink == '1' || $useHomeLink == '3') || ($showBookIcon == '1' && ($useHomeLink == '0' || $useHomeLink == '2'))}fa-book-open{else}fa-home{/if}"></i> {translate text=$browseLinkText isPublicFacing=true isAdminFacing=true}
 					</a>
 				</li>
-				{* <li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb"><i class="fas fa-home fa"></i> {translate text=$homeLinkText}</a></li> *}
+				{* <li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb"><i class="fas fa-home fa" role="presentation"></i> {translate text=$homeLinkText}</a></li> *}
 				{if !empty($breadcrumbs)}
 					{foreach from=$breadcrumbs item=breadcrumb}
 						{if !empty($breadcrumb->label)}

@@ -1325,7 +1325,7 @@ class Admin_AJAX extends JSON_Action {
 					if ($fieldLock->delete()) {
 						$result = [
 							'success' => true,
-							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i class=\"text-info fas fa-unlock-alt\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-unlock-alt\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
 						];
 					}
 				} else {
@@ -1333,7 +1333,7 @@ class Admin_AJAX extends JSON_Action {
 					if ($fieldLock->insert()) {
 						$result = [
 							'success' => true,
-							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i class=\"text-info fas fa-lock\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-lock\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
 						];
 					}
 				}

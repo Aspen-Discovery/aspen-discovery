@@ -56,7 +56,7 @@ class LayoutSetting extends DataObject {
 			'showBookIcon' => [
 				'property' => 'showBookIcon',
 				'type' => 'checkbox',
-				'label' => 'Use <i class="fas fa-book-open fa-sm"></i> Book icon instead of <i class="fas fa-home fa-sm"></i> Home icon for catalog home link',
+				'label' => 'Use <i class="fas fa-book-open fa-sm" role="presentation"></i> Book icon instead of <i class="fas fa-home fa-sm"></i> Home icon for catalog home link',
 				'description' => 'Whether or not the icon link for catalog home shows as a book or house.',
 			],
 			'homeLinkText' => [
@@ -99,7 +99,7 @@ class LayoutSetting extends DataObject {
 			'dismissPlacardButtonIcon' => [
 				'property' => 'dismissPlacardButtonIcon',
 				'type' => 'checkbox',
-				'label' => 'Show Dismiss Placard Button as <i class="fas fa-times"></i> (Close) Icon',
+				'label' => 'Show Dismiss Placard Button as <i class="fas fa-times" role="presentation"></i> (Close) Icon',
 				'description' => 'Whether or not to show icon instead of default dismiss placard text',
 				'default' => false,
 			],
