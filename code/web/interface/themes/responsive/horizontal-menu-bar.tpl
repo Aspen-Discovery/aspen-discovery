@@ -71,7 +71,7 @@
 	<div class="menu-section menu-section-right">
 		{if !empty($loggedIn)}{* Logged In *}
 			<div class="dropdown menuToggleButton accountMenu" style="display:inline-block;">
-			<a tabindex="0" class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Account" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="account-menu-dropdown">
+			<a tabindex="0" class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Account" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Account" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="account-menu-dropdown">
 				{if !empty($masqueradeMode)}
 					<i class="fas fa-theater-masks fa-lg" role="presentation"></i>
 				{else}
