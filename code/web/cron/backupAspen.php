@@ -101,6 +101,7 @@ foreach ($allTables as $table) {
 			fwrite($fhnd, ")");
 			if ($numRowsWritten++ % 5000 == 0) {
 				fflush($fhnd);
+				usleep(250);
 			}
 
 			$isFirstRow = false;
@@ -109,6 +110,8 @@ foreach ($allTables as $table) {
 			fwrite($fhnd, ";\n");
 		}
 		$exportDataStmt->closeCursor();
+
+		sleep(1);
 	}
 	fclose($fhnd);
 //	if ($exportData) {
