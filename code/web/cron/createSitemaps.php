@@ -26,6 +26,7 @@ while ($library->fetch()) {
 		global $solrScope;
 		$solrScope = preg_replace('/[^a-zA-Z0-9_]/', '', $subdomain);
 
+
 		if (empty($library->baseUrl)) {
 			$baseUrl = $configArray['Site']['url'];
 		} else {
@@ -34,65 +35,63 @@ while ($library->fetch()) {
 		echo(date('H:i:s') . " Creating sitemaps for $library->displayName ($library->subdomain)\r\n");
 		ob_flush();
 
-		//Do a quick search to see how many results we have
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		$searchObject->setFieldsToReturn('id');
-		$searchObject->setLimit(1);
-		$result = $searchObject->processSearch();
 		//Technically google will take 50k, but they don't like it if you have that many.
 		$recordsPerSitemap = 40000;
-		$solrBatchSize = 5000;
-		if (!$result instanceof AspenError && empty($result['error'])) {
-			$numResults = $searchObject->getResultTotal();
-			$searchObject->setTimeout(60);
-			$lastPage = (int)ceil($numResults / $solrBatchSize);
-			$searchObject->setLimit($solrBatchSize);
-			$searchObject->clearFacets();
+
+		//Export all Grouped Works
+		require_once ROOT_DIR . '/sys/Grouping/Scope.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
+		$scope = new Grouping_Scope();
+		$scope->name = $solrScope;
+		$scope->isLibraryScope = 1;
+		if ($scope->find(true)) {
+			global $aspen_db;
+			$scopeId = $scope->id;
+			//Get a count of the number of works for the scope
+			$numResults = 0;
+			$results = $aspen_db->query("select count(distinct(permanent_id)) as numWorks from grouped_work_record_items inner join grouped_work_records on grouped_work_records.id = groupedWorkRecordId inner join grouped_work on groupedWorkId = grouped_work.id where recordIncludedScopes like '%~$scopeId~%' or libraryOwnedScopes like '%~$scopeId~%'", PDO::FETCH_ASSOC);
+			if ($results) {
+				$result = $results->fetch();
+				if ($result) {
+					$numResults = $result['numWorks'];
+				}
+			}
+			$results->closeCursor();
 
 			$numSitemaps = (int)ceil($numResults / $recordsPerSitemap);
 			echo(date('H:i:s') . "   Found a total of $numResults results in the collection\r\n");
 
-			//Now do searches in batch and create the sitemap files
-			for ($curSitemap = 1; $curSitemap <= $numSitemaps; $curSitemap++) {
-				echo(date('H:i:s') . "   Sitemap {$curSitemap} of {$numSitemaps}\r\n");
-				ob_flush();
+			$curRecord = 1;
+			$curSitemap = 1;
+			echo(date('H:i:s') . "   Sitemap {$curSitemap} of {$numSitemaps}\r\n");
+			$curSitemapName = 'grouped_work_site_map_' . $subdomain . '_' . str_pad($curSitemap, 3, "0", STR_PAD_LEFT) . '.txt';
+			//Store sitemaps in the sitemaps directory
+			$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
 
-				set_time_limit(300);
-				$curSitemapName = 'grouped_work_site_map_' . $subdomain . '_' . str_pad($curSitemap, 3, "0", STR_PAD_LEFT) . '.txt';
-				//Store sitemaps in the sitemaps directory
-				$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
-
-				$sitemapStartIndex = ($curSitemap - 1) * $recordsPerSitemap;
-				$sitemapStartPage = $sitemapStartIndex / $solrBatchSize;
-				$sitemapEndIndex = $curSitemap * $recordsPerSitemap;
-				$sitemapEndPage = $sitemapEndIndex / $solrBatchSize;
-
-				for ($curPage = $sitemapStartPage; $curPage < $sitemapEndPage; $curPage++) {
-					echo(date('H:i:s') . "     Search page {$curPage} of {$sitemapEndPage}\r\n");
-					ob_flush();
-					$searchObject->setPage($curPage);
-					$result = $searchObject->processSearch(true, false, false);
-					if (!$result instanceof AspenError && empty($result['error'])) {
-						foreach ($result['response']['docs'] as $doc) {
-							$url = $baseUrl . '/GroupedWork/' . $doc['id'] . '/Home';
-							fwrite($sitemapFhnd, $url . "\r\n");
-						}
+			$results = $aspen_db->query("select distinct(permanent_id) from grouped_work_record_items inner join grouped_work_records on grouped_work_records.id = groupedWorkRecordId inner join grouped_work on groupedWorkId = grouped_work.id where recordIncludedScopes like '%~$scopeId~%' or libraryOwnedScopes like '%~$scopeId~%'", PDO::FETCH_ASSOC);
+			if ($results) {
+				while ($result = $results->fetch()) {
+					if ($curRecord % $recordsPerSitemap == 0) {
+						$curSitemap++;
+						fclose($sitemapFhnd);
+						echo(date('H:i:s') . "   Sitemap {$curSitemap} of {$numSitemaps}\r\n");
+						$curSitemapName = 'grouped_work_site_map_' . $subdomain . '_' . str_pad($curSitemap, 3, "0", STR_PAD_LEFT) . '.txt';
+						//Store sitemaps in the sitemaps directory
+						$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
 					}
+					$curRecord++;
+					$permanent_id = $result['permanent_id'];
+					$url = $baseUrl . '/GroupedWork/' . $permanent_id . '/Home';
+					fwrite($sitemapFhnd, $url . "\r\n");
 				}
-				fclose($sitemapFhnd);
-				gc_collect_cycles();
 			}
-		} elseif ($result instanceof AspenError) {
-			echo(date('H:i:s') . "   Result was an error $result\r\n");
-		} elseif (!$result['error']) {
-			echo(date('H:i:s') . "   Result had error {$result['error']}\r\n");
-		} else {
-			echo(date('H:i:s') . "   No results found\r\n");
+			$results->closeCursor();
+			fclose($sitemapFhnd);
 		}
-		gc_collect_cycles();
-		$searchObject = null;
+
+		//TODO: Export Web Builder Pages and Resources
+
+
 	}
 }
 
