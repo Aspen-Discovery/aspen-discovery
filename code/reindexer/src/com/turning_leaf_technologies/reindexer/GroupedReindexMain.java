@@ -147,6 +147,10 @@ public class GroupedReindexMain {
 			logEntry.incErrors("Exception processing reindex ", e);
 		}
 
+		logEntry.addNote("Finished Reindex for " + serverName);
+		logEntry.setFinished();
+		SystemUtils.printMemoryStats(logger);
+
 		if (dbConn != null) {
 			try {
 				dbConn.close();
@@ -156,10 +160,7 @@ public class GroupedReindexMain {
 			}
 
 		}
-		logEntry.addNote("Finished Reindex for " + serverName);
-		logEntry.setFinished();
-		SystemUtils.printMemoryStats(logger);
-
+		
 		System.exit(0);
 	}
 
