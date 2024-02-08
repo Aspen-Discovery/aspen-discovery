@@ -298,10 +298,10 @@ class SideFacets implements RecommendationInterface {
 						unset($sideFacets[$key]);
 					}
 				}
-				$tmpList = array_slice($facetsList, 0, 5);
+				$tmpList = array_slice($facetsList, 0, $facetSetting->numEntriesToShowByDefault);
 				$sideFacets[$facetKey]['list'] = array_merge($sideFacets[$facetKey]['list'], $tmpList);
 			} else {
-				$sideFacets[$facetKey]['list'] = array_slice($facetsList, 0, 5);
+				$sideFacets[$facetKey]['list'] = array_slice($facetsList, 0, $facetSetting->numEntriesToShowByDefault);
 			}
 
 			$sortedList = [];
