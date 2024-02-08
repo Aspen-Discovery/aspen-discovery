@@ -160,7 +160,7 @@ public class GroupedReindexMain {
 			}
 
 		}
-		
+
 		System.exit(0);
 	}
 

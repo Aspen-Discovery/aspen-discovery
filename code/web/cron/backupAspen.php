@@ -46,9 +46,9 @@ foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
 	$fullExportFilePath = "$backupDir/$exportFile";
 	if ($exportData) {
-		$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName $table > $fullExportFilePath";
+		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName $table > $fullExportFilePath";
 	}else{
-		$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --no-data $dbName $table > $fullExportFilePath";
+		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --no-data $dbName $table > $fullExportFilePath";
 	}
 	exec_advanced($dumpCommand, $debug);
 

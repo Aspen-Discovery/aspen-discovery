@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
+import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -114,6 +115,7 @@ public class NightlyIndexLogEntry implements BaseIndexingLogEntry {
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
+			SystemUtils.printMemoryStats(logger);
 			return true;
 		} catch (SQLException e) {
 			logger.error("Error creating updating nightly indexing log", e);

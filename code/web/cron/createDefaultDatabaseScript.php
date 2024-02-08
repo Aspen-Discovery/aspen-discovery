@@ -32,7 +32,7 @@ foreach ($allTables as $table) {
 	}
 
 	if ($exportData) {
-		$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
+		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
 		exec_advanced($dumpCommand, $debug);
 	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
