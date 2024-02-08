@@ -52,7 +52,7 @@ foreach ($allTables as $table) {
 
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 	$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
-	$fhnd = fopen($fullExportFilePath, 'a+');
+	$fhnd = fopen($fullExportFilePath, 'w');
 	fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 	foreach ($createTablesRS as $createTableSql) {
 		$createTableValue = $createTableSql['Create Table'];
@@ -61,6 +61,7 @@ foreach ($allTables as $table) {
 		fwrite($fhnd, $createTableValue . ";\n");
 	}
 	$createTableStmt->closeCursor();
+	fflush($fhnd);
 
 	if ($exportData) {
 		$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
@@ -74,17 +75,29 @@ foreach ($allTables as $table) {
 				fwrite($fhnd, $insertStatement);
 			}
 			$values = [];
-			foreach ($row as $value) {
-				if (is_numeric($value)) {
-					$values[] = $value;
-				}else{
-					$values[] = "'" . str_replace("'", "/'", $value) . "'";
-				}
-			}
+			$isFirstValue = true;
 			if (!$isFirstRow) {
 				fwrite($fhnd, ", ");
 			}
-			fwrite($fhnd, "(" . implode(',', $values) . ")");
+			fwrite($fhnd, "(");
+			foreach ($row as $value) {
+				if (!$isFirstValue) {
+					fwrite($fhnd, ",");
+				}
+				if (is_null($value)) {
+					fwrite($fhnd, 'NULL');
+				}else if (is_numeric($value)) {
+					fwrite($fhnd, $value);
+				}else{
+					fwrite($fhnd, "'");
+					fwrite($fhnd, str_replace("'", "/'", $value));
+					fwrite($fhnd, "'");
+					$values[] = "'" . str_replace("'", "/'", $value) . "'";
+				}
+				$isFirstValue = false;
+			}
+			fwrite($fhnd, ")");
+			fflush($fhnd);
 
 			$isFirstRow = false;
 		}
