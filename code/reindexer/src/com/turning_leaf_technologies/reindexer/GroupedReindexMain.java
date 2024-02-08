@@ -147,6 +147,15 @@ public class GroupedReindexMain {
 			logEntry.incErrors("Exception processing reindex ", e);
 		}
 
+		if (dbConn != null) {
+			try {
+				dbConn.close();
+				logger.error("Closed database connection");
+			} catch (SQLException e) {
+				logger.error("Error closing database", e);
+			}
+
+		}
 		logEntry.addNote("Finished Reindex for " + serverName);
 		logEntry.setFinished();
 		SystemUtils.printMemoryStats(logger);
@@ -202,6 +211,7 @@ public class GroupedReindexMain {
 		}
 		try {
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
+			logger.error("Connected to aspen database");
 			dbConn.prepareCall("SET collation_connection = utf8mb4_general_ci").execute();
 			dbConn.prepareCall("SET NAMES utf8mb4").execute();
 		} catch (SQLException e) {
