@@ -118,7 +118,7 @@ public class NightlyIndexLogEntry implements BaseIndexingLogEntry {
 			SystemUtils.printMemoryStats(logger);
 			return true;
 		} catch (SQLException e) {
-			logger.error("Error creating updating nightly indexing log", e);
+			logger.error("Error saving nightly indexing log", e);
 			return false;
 		}
 	}
