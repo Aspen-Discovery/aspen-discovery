@@ -15,23 +15,31 @@ import { popAlert, popToast } from './loadError';
 export async function registerForPushNotificationsAsync(url) {
      console.log('url: ' + url);
      let token = false;
+     let checkPermissionsManually = true;
      if (Device.isDevice) {
           if (Platform.OS === 'android') {
                await createChannelsAndCategories();
-          }
-          const { status: existingStatus } = await Notifications.getPermissionsAsync();
-          console.log('status: ' + existingStatus);
-          let finalStatus = existingStatus;
-          if (existingStatus !== 'granted') {
-               if (Platform.OS !== 'android') {
-                    const { status } = await Notifications.requestPermissionsAsync();
-                    finalStatus = status;
+               if (Device.osVersion >= 13) {
+                    checkPermissionsManually = false;
                }
           }
-          if (finalStatus !== 'granted') {
-               console.log('Failed to get push token for push notification!');
-               return;
+
+          if (checkPermissionsManually) {
+               const { status: existingStatus } = await Notifications.getPermissionsAsync();
+               console.log('status: ' + existingStatus);
+               let finalStatus = existingStatus;
+               if (existingStatus !== 'granted') {
+                    if (Platform.OS !== 'android') {
+                         const { status } = await Notifications.requestPermissionsAsync();
+                         finalStatus = status;
+                    }
+               }
+               if (finalStatus !== 'granted') {
+                    console.log('Failed to get push token for push notification!');
+                    return;
+               }
           }
+
           token = (await Notifications.getExpoPushTokenAsync()).data;
           console.log('token: ' + token);
           if (token) {
