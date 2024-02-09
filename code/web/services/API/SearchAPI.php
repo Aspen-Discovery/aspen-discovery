@@ -2583,9 +2583,9 @@ class SearchAPI extends Action {
 					'fileName' => $link,
 					'append' => false,
 				];
-				$results['searchIndex'] = $searchObject->getSearchIndex();
-				$results['searchSource'] = $searchObject->getSearchSource();
-				$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+				$results['searchIndex'] = '';
+				$results['searchSource'] = '';
+				$results['defaultSearchIndex'] = '';
 				require_once ROOT_DIR . '/sys/Pager.php';
 				$pager = new Pager($options);
 				$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2677,9 +2677,9 @@ class SearchAPI extends Action {
 				'fileName' => $link,
 				'append' => false,
 			];
-			$results['searchIndex'] = $searchObject->getSearchIndex();
-			$results['searchSource'] = $searchObject->getSearchSource();
-			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+			$results['searchIndex'] = '';
+			$results['searchSource'] = '';
+			$results['defaultSearchIndex'] = '';
 			require_once ROOT_DIR . '/sys/Pager.php';
 			$pager = new Pager($options);
 			$results['totalResults'] = (int)$pager->getTotalItems();
@@ -3442,7 +3442,7 @@ class SearchAPI extends Action {
 					$index++;
 					$i = 0;
 					if ($facet['field_name'] == 'availability_toggle') {
-						$availabilityToggle = $topFacetSet['availability_toggle'];
+						$availabilityToggle = $allFacets['availability_toggle'];
 						$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
 						$items[$key]['key'] = $index;
 						$items[$key]['label'] = $key;
