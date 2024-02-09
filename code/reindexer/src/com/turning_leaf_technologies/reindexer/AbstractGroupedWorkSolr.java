@@ -704,6 +704,9 @@ public abstract class AbstractGroupedWorkSolr {
 	void addSeriesWithVolume(String seriesName, String volume) {
 		if (seriesName != null && !seriesName.isEmpty()) {
 			String seriesInfo = getNormalizedSeries(seriesName);
+			if (GroupedWorkIndexer.hideSeries.contains(seriesInfo)) {
+				return;
+			}
 			if (!volume.isEmpty()) {
 				volume = getNormalizedSeriesVolume(volume);
 			}
@@ -773,6 +776,9 @@ public abstract class AbstractGroupedWorkSolr {
 		if (seriesInfo != null && !seriesInfo.equalsIgnoreCase("none")) {
 			seriesInfo = getNormalizedSeries(seriesInfo);
 			String normalizedSeries = seriesInfo.toLowerCase();
+			if (GroupedWorkIndexer.hideSeries.contains(normalizedSeries)) {
+				return;
+			}
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
 				for (String existingSeries2 : seriesField.keySet()) {

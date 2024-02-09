@@ -1467,7 +1467,7 @@ public class GroupedWorkIndexer {
 		try {
 			ResultSet hideSeriesRS = getHideSeriesStmt.executeQuery();
 			while (hideSeriesRS.next()) {
-				hideSeries.add(hideSeriesRS.getString("seriesNormalized"));
+				hideSeries.add(hideSeriesRS.getString("seriesNormalized").toLowerCase());
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading series to hide: ", e);
@@ -1752,7 +1752,7 @@ public class GroupedWorkIndexer {
 			return -1;
 		}
 		if (publisher.length() > 500) {
-			logEntry.incErrors("Publisher for record " + recordIdentifier + " was more than 500 characters (" + publisher.length() + ") " + publisher);
+			logEntry.incInvalidRecords("Publisher for record " + recordIdentifier + " was more than 500 characters (" + publisher.length() + ") " + publisher);
 			publisher = publisher.substring(0, 500);
 		}
 		Long id = publisherIds.get(publisher);
