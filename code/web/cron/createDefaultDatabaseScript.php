@@ -31,75 +31,23 @@ foreach ($allTables as $table) {
 		$exportData = true;
 	}
 
-//	if ($exportData) {
-//		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
-//		exec_advanced($dumpCommand, $debug);
-//	}else{
+	if ($exportData) {
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
+		exec_advanced($dumpCommand, $debug);
+	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 		$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
-		$fhnd = fopen($exportFile, 'a');
-		fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 		foreach ($createTablesRS as $createTableSql) {
+			$fhnd = fopen($exportFile, 'a+');
+			fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 			$createTableValue = $createTableSql['Create Table'];
 			//Remove the auto increment id
 			$createTableValue = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableValue);
 			fwrite($fhnd, $createTableValue . ";\n");
+			fclose($fhnd);
 		}
-		$createTableStmt->closeCursor();
-
-		if ($exportData) {
-			$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
-			$isFirstRow = true;
-			$hasData = false;
-			$numRowsWritten = 0;
-			while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
-				$hasData = true;
-				if ($isFirstRow) {
-					$columns = implode(',', array_keys($row));
-					$insertStatement = "INSERT INTO $table ($columns) VALUES ";
-					fwrite($fhnd, $insertStatement);
-				}
-				$values = [];
-				$isFirstValue = true;
-				if (!$isFirstRow) {
-					fwrite($fhnd, ", ");
-				}
-				fwrite($fhnd, "(");
-				foreach ($row as $value) {
-					if (!$isFirstValue) {
-						fwrite($fhnd, ",");
-					}
-					if (is_null($value)) {
-						fwrite($fhnd, 'NULL');
-					}else if (is_numeric($value)) {
-						fwrite($fhnd, $value);
-					}else{
-						fwrite($fhnd, "'");
-						fwrite($fhnd, str_replace("'", "/'", $value));
-						fwrite($fhnd, "'");
-						$values[] = "'" . str_replace("'", "/'", $value) . "'";
-					}
-					$isFirstValue = false;
-				}
-				fwrite($fhnd, ")");
-				if ($numRowsWritten++ % 2500 == 0) {
-					fflush($fhnd);
-					usleep(250);
-				}
-
-				$isFirstRow = false;
-			}
-			if ($hasData) {
-				fwrite($fhnd, ";\n");
-			}
-			$exportDataStmt->closeCursor();
-			$exportDataStmt = null;
-
-			sleep(1);
-		}
-		fclose($fhnd);
-		//$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";
-//	}
+		//$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";
+	}
 }
 
 //Add additional data
