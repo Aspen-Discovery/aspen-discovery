@@ -62,6 +62,7 @@ foreach ($allTables as $table) {
 		fwrite($fhnd, $createTableValue . ";\n");
 	}
 	$createTableStmt->closeCursor();
+	$createTableStmt = null;
 	fflush($fhnd);
 
 	if ($exportData) {
@@ -99,7 +100,7 @@ foreach ($allTables as $table) {
 				$isFirstValue = false;
 			}
 			fwrite($fhnd, ")");
-			if ($numRowsWritten++ % 5000 == 0) {
+			if ($numRowsWritten++ % 2500 == 0) {
 				fflush($fhnd);
 				usleep(250);
 			}
@@ -110,6 +111,7 @@ foreach ($allTables as $table) {
 			fwrite($fhnd, ";\n");
 		}
 		$exportDataStmt->closeCursor();
+		$exportDataStmt = null;
 
 		sleep(1);
 	}
