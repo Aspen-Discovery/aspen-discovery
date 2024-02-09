@@ -62,6 +62,7 @@ foreach ($allTables as $table) {
 		fwrite($fhnd, $createTableValue . ";\n");
 	}
 	$createTableStmt->closeCursor();
+	$createTableStmt = null;
 	fflush($fhnd);
 
 	if ($exportData) {
@@ -110,6 +111,7 @@ foreach ($allTables as $table) {
 			fwrite($fhnd, ";\n");
 		}
 		$exportDataStmt->closeCursor();
+		$exportDataStmt = null;
 
 		sleep(1);
 	}
