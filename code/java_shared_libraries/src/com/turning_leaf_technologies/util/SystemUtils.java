@@ -52,6 +52,6 @@ public class SystemUtils {
 
 	public static void printMemoryStats(Logger logger) {
 		Runtime runtime = Runtime.getRuntime();
-		logger.error("Max: " + AspenStringUtils.formatBytes(runtime.maxMemory()) + " | Total: " + AspenStringUtils.formatBytes(runtime.totalMemory()) + " | Used: " + (AspenStringUtils.formatBytes(runtime.totalMemory() - runtime.freeMemory())) + " | Free: " + AspenStringUtils.formatBytes(runtime.freeMemory()));
+		logger.debug("Max: " + AspenStringUtils.formatBytes(runtime.maxMemory()) + " | Total: " + AspenStringUtils.formatBytes(runtime.totalMemory()) + " | Used: " + (AspenStringUtils.formatBytes(runtime.totalMemory() - runtime.freeMemory())) + " | Free: " + AspenStringUtils.formatBytes(runtime.freeMemory()));
 	}
 }
