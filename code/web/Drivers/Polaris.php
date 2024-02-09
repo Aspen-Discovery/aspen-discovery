@@ -166,6 +166,7 @@ class Polaris extends AbstractIlsDriver {
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
 				$readingHistoryList = $jsonResponse->PatronReadingHistoryGetRows;
+				set_time_limit(20 * count($readingHistoryList));
 				foreach ($readingHistoryList as $readingHistoryItem) {
 					$checkOutDate = $this->parsePolarisDate($readingHistoryItem->CheckOutDate);
 					$curTitle = [];
