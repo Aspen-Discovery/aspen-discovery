@@ -43,7 +43,7 @@ foreach ($currentFilesInBackup as $file) {
 		//Backup files we should delete after 3 days
 		$lastModified = filemtime($backupDir . '/'. $file);
 		if ($lastModified != false && $lastModified < $earliestTimeToKeep) {
-			unlink($file);
+			unlink($backupDir . '/'. $file);
 		}
 	}
 }
