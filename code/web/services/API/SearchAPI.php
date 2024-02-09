@@ -505,10 +505,11 @@ class SearchAPI extends Action {
 						$checkEntriesInLast24Hours = false;
 						$checkEntriesInLast8Hours = false;
 						while ($hooplaSettings->fetch()) {
-							if ($hooplaSettings->indexByDay) {
+							if ($hooplaSettings->indexByDay == 0) {
 								$checkEntriesInLast26Hours = false;
 								$checkEntriesInLast24Hours = true;
 								$checkEntriesInLast8Hours = true;
+								break;
 							}
 						}
 
