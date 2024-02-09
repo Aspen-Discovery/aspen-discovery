@@ -4168,6 +4168,7 @@ class User extends DataObject {
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
 		$pushToken->deviceModel = $device;
+		$pushToken->onboardAppNotifications = 0;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {
@@ -4215,7 +4216,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
 			$preference['notifyAccount'] = $obj->notifyAccount;
-			$preference['onboardStatus'] = $obj->onboardAppNotifications ?? 1;
+			$preference['onboardStatus'] = $obj->onboardAppNotifications ?? 0;
 
 			$preferences[] = $preference;
 		}
