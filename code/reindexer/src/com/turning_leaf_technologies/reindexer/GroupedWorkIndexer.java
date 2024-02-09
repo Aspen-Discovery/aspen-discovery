@@ -618,15 +618,23 @@ public class GroupedWorkIndexer {
 	}
 
 	public void finishIndexingFromExtract(BaseIndexingLogEntry logEntry){
-		try {
-			processScheduledWorks(logEntry, true, 100);
+		processScheduledWorks(logEntry, true, 100);
 
+		try {
 			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logEntry.incErrors("Error in final commit while finishing extract ", e);
+		}
+		try {
 			logEntry.addNote("Shutting down the update server");
 			updateServer.blockUntilFinished();
+		}catch (Exception e) {
+			logEntry.incErrors("Error blocking until finished while finishing extract ", e);
+		}
+		try {
 			updateServer.close();
 		}catch (Exception e) {
-			logEntry.incErrors("Error finishing extract ", e);
+			logEntry.incErrors("Error closing update server ", e);
 		}
 	}
 
@@ -634,7 +642,7 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.commit(false, false, true);
 		}catch (Exception e) {
-			logEntry.incErrors("Error finishing extract ", e);
+			logEntry.incErrors("Error committing changes ", e);
 		}
 	}
 
