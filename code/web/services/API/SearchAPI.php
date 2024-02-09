@@ -467,7 +467,9 @@ class SearchAPI extends Action {
 						}
 						$isFirstEntry = false;
 					}
+					$checkEntriesInLast26Hours = false;
 					$checkEntriesInLast24Hours = true;
+					$checkEntriesInLast8Hours = true;
 					if ($aspenModule->name == 'Web Builder') {
 						// Check to make sure there is web builder content to actually index
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
@@ -489,16 +491,33 @@ class SearchAPI extends Action {
 									$checkEntriesInLast24Hours = true;
 								} else {
 									$checkEntriesInLast24Hours = false;
+									$checkEntriesInLast8Hours = false;
 									//Nothing to index, skip adding a check.
 									continue;
 								}
 							}
 						}
+					}elseif ($aspenModule->name == 'Hoopla') {
+						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+						$hooplaSettings = new HooplaSetting();
+						$hooplaSettings->find();
+						$checkEntriesInLast26Hours = true;
+						$checkEntriesInLast24Hours = false;
+						$checkEntriesInLast8Hours = false;
+						while ($hooplaSettings->fetch()) {
+							if ($hooplaSettings->indexByDay) {
+								$checkEntriesInLast26Hours = false;
+								$checkEntriesInLast24Hours = true;
+								$checkEntriesInLast8Hours = true;
+							}
+						}
 
 					}
-					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
+					if ($checkEntriesInLast26Hours && ($lastFinishTime < time() - 26 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
+					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+					} elseif ($checkEntriesInLast8Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
 					} else {
 						if ($logErrors > 0) {
