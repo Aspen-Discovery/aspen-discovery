@@ -37,7 +37,7 @@ foreach ($allTables as $table) {
 //	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 		$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
-		$fhnd = fopen($exportFile, 'a+');
+		$fhnd = fopen($exportFile, 'a');
 		fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 		foreach ($createTablesRS as $createTableSql) {
 			$createTableValue = $createTableSql['Create Table'];
@@ -51,6 +51,7 @@ foreach ($allTables as $table) {
 			$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
 			$isFirstRow = true;
 			$hasData = false;
+			$numRowsWritten = 0;
 			while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
 				$hasData = true;
 				if ($isFirstRow) {
@@ -59,17 +60,32 @@ foreach ($allTables as $table) {
 					fwrite($fhnd, $insertStatement);
 				}
 				$values = [];
-				foreach ($row as $value) {
-					if (is_numeric($value)) {
-						$values[] = $value;
-					}else{
-						$values[] = "'" . str_replace("'", "/'", $value) . "'";
-					}
-				}
+				$isFirstValue = true;
 				if (!$isFirstRow) {
 					fwrite($fhnd, ", ");
 				}
-				fwrite($fhnd, "(" . implode(',', $values) . ")");
+				fwrite($fhnd, "(");
+				foreach ($row as $value) {
+					if (!$isFirstValue) {
+						fwrite($fhnd, ",");
+					}
+					if (is_null($value)) {
+						fwrite($fhnd, 'NULL');
+					}else if (is_numeric($value)) {
+						fwrite($fhnd, $value);
+					}else{
+						fwrite($fhnd, "'");
+						fwrite($fhnd, str_replace("'", "/'", $value));
+						fwrite($fhnd, "'");
+						$values[] = "'" . str_replace("'", "/'", $value) . "'";
+					}
+					$isFirstValue = false;
+				}
+				fwrite($fhnd, ")");
+				if ($numRowsWritten++ % 2500 == 0) {
+					fflush($fhnd);
+					usleep(250);
+				}
 
 				$isFirstRow = false;
 			}
@@ -77,6 +93,9 @@ foreach ($allTables as $table) {
 				fwrite($fhnd, ";\n");
 			}
 			$exportDataStmt->closeCursor();
+			$exportDataStmt = null;
+
+			sleep(1);
 		}
 		fclose($fhnd);
 		//$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";
@@ -84,7 +103,7 @@ foreach ($allTables as $table) {
 }
 
 //Add additional data
-$fhnd = fopen($exportFile, 'a+');
+$fhnd = fopen($exportFile, 'a');
 fwrite($fhnd, "INSERT INTO account_profiles (id, name, driver, loginConfiguration, authenticationMethod, vendorOpacUrl, patronApiUrl, recordSource, weight, ils) VALUES (1,'admin','Library','barcode_pin','db','defaultURL','defaultURL','admin',1,'library');\n");
 fwrite($fhnd, "INSERT INTO browse_category (id, textId, userId, sharing, label, description, defaultFilter, defaultSort, searchTerm, numTimesShown, numTitlesClickedOn, sourceListId, source, libraryId, startDate, endDate) VALUES (1,'main_new_fiction',2,'everyone','New Fiction','','literary_form:Fiction','newest_to_oldest','',2,0,-1,'GroupedWork',-1,0,0),(2,'main_new_non_fiction',1,'everyone','New Non Fiction','','literary_form:Non Fiction','newest_to_oldest','',0,0,-1,'GroupedWork',-1,0,0);\n");
 fwrite($fhnd, "INSERT INTO browse_category_group (id, name) VALUES (1, 'Main Library');\n");
