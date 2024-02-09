@@ -100,7 +100,7 @@ foreach ($allTables as $table) {
 				$isFirstValue = false;
 			}
 			fwrite($fhnd, ")");
-			if ($numRowsWritten++ % 5000 == 0) {
+			if ($numRowsWritten++ % 2500 == 0) {
 				fflush($fhnd);
 				usleep(250);
 			}
