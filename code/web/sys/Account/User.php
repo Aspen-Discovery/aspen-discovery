@@ -2853,7 +2853,7 @@ class User extends DataObject {
 	 * Sends an Aspen LiDA notification when a user has been linked to.
 	 **/
 	function sendNewLinkNotification(User $initiatingUser): void {
-		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+		if ($this->canReceiveNotifications('notifyAccount')) {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
@@ -2907,7 +2907,7 @@ class User extends DataObject {
 	 * Sends an Aspen LiDA notification to the managing account when a user removes the link.
 	 **/
 	function sendRemoveManagingLinkNotification(User $unlinkedUser): void {
-		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+		if ($this->canReceiveNotifications('notifyAccount')) {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';

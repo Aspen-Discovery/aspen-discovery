@@ -80,7 +80,7 @@ if ($search->getNumResults() > 0) {
 				}
 				if ($searchEntry->update() > 0) {
 					$searchUpdateLogEntry->numUpdated++;
-					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch, 'notifySavedSearch')) {
+					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications('notifySavedSearch')) {
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$appScheme = 'aspen-lida';
