@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 set_time_limit(0);
+ini_set('memory_limit', '2G');
 global $configArray;
 global $serverName;
 
@@ -52,7 +53,7 @@ foreach ($allTables as $table) {
 
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 	$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
-	$fhnd = fopen($fullExportFilePath, 'a+');
+	$fhnd = fopen($fullExportFilePath, 'w');
 	fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 	foreach ($createTablesRS as $createTableSql) {
 		$createTableValue = $createTableSql['Create Table'];
@@ -61,11 +62,13 @@ foreach ($allTables as $table) {
 		fwrite($fhnd, $createTableValue . ";\n");
 	}
 	$createTableStmt->closeCursor();
+	fflush($fhnd);
 
 	if ($exportData) {
 		$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
 		$isFirstRow = true;
 		$hasData = false;
+		$numRowsWritten = 0;
 		while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
 			$hasData = true;
 			if ($isFirstRow) {
@@ -74,17 +77,32 @@ foreach ($allTables as $table) {
 				fwrite($fhnd, $insertStatement);
 			}
 			$values = [];
-			foreach ($row as $value) {
-				if (is_numeric($value)) {
-					$values[] = $value;
-				}else{
-					$values[] = "'" . str_replace("'", "/'", $value) . "'";
-				}
-			}
+			$isFirstValue = true;
 			if (!$isFirstRow) {
 				fwrite($fhnd, ", ");
 			}
-			fwrite($fhnd, "(" . implode(',', $values) . ")");
+			fwrite($fhnd, "(");
+			foreach ($row as $value) {
+				if (!$isFirstValue) {
+					fwrite($fhnd, ",");
+				}
+				if (is_null($value)) {
+					fwrite($fhnd, 'NULL');
+				}else if (is_numeric($value)) {
+					fwrite($fhnd, $value);
+				}else{
+					fwrite($fhnd, "'");
+					fwrite($fhnd, str_replace("'", "/'", $value));
+					fwrite($fhnd, "'");
+					$values[] = "'" . str_replace("'", "/'", $value) . "'";
+				}
+				$isFirstValue = false;
+			}
+			fwrite($fhnd, ")");
+			if ($numRowsWritten++ % 5000 == 0) {
+				fflush($fhnd);
+				usleep(250);
+			}
 
 			$isFirstRow = false;
 		}
@@ -92,6 +110,8 @@ foreach ($allTables as $table) {
 			fwrite($fhnd, ";\n");
 		}
 		$exportDataStmt->closeCursor();
+
+		sleep(1);
 	}
 	fclose($fhnd);
 //	if ($exportData) {
