@@ -10,7 +10,7 @@ import { createChannelsAndCategories, deletePushToken, getNotificationPreference
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import { reloadProfile } from '../../../util/api/user';
+import { refreshProfile, reloadProfile } from '../../../util/api/user';
 
 export const Settings_NotificationOptions = () => {
      const isFetchingUserProfile = useIsFetching({ queryKey: ['user'] });
@@ -59,7 +59,7 @@ export const Settings_NotificationOptions = () => {
                          setShouldRequestPermissions(true);
                          return false;
                     } else {
-                         await reloadProfile(library.baseUrl).then(async (result) => {
+                         await refreshProfile(library.baseUrl).then(async (result) => {
                               updateUser(result);
                               await getPreferences();
                          });
@@ -69,7 +69,7 @@ export const Settings_NotificationOptions = () => {
                });
           } else {
                await deletePushToken(library.baseUrl, expoToken, true);
-               await reloadProfile(library.baseUrl).then(async (result) => {
+               await refreshProfile(library.baseUrl).then(async (result) => {
                     updateUser(result);
                     await getPreferences();
                });
@@ -117,7 +117,12 @@ export const Settings_NotificationOptions = () => {
           setLoading(false);
      };
 
-     const updateStatus = async () => {};
+     const updateStatus = async () => {
+          await reloadProfile(library.baseUrl).then(async (result) => {
+               updateUser(result);
+               await getPreferences();
+          });
+     };
 
      if (isLoading) {
           return loadingSpinner();
