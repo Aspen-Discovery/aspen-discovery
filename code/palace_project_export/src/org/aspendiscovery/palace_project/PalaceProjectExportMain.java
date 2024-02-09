@@ -318,17 +318,20 @@ public class PalaceProjectExportMain {
 				if (!logEntry.hasErrors()) {
 					int numDeleted = 0;
 					for (PalaceProjectTitle existingTitle : existingRecords.values()) {
-						deletePalaceProjectTitleFromDbStmt.setLong(1, existingTitle.getId());
-						deletePalaceProjectTitleFromDbStmt.executeUpdate();
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", existingTitle.getPalaceProjectId());
-						if (result.reindexWork) {
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						if (!existingTitle.isFoundInExport()) {
+							deletePalaceProjectTitleFromDbStmt.setLong(1, existingTitle.getId());
+							deletePalaceProjectTitleFromDbStmt.executeUpdate();
+							//TODO: This needs to also account for the collection
+							RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", existingTitle.getPalaceProjectId());
+							if (result.reindexWork) {
+								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+							} else if (result.deleteWork) {
+								//Delete the work from solr and the database
+								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							}
+							numDeleted++;
+							logEntry.incDeleted();
 						}
-						numDeleted++;
-						logEntry.incDeleted();
 					}
 					if (numDeleted > 0) {
 						logEntry.saveResults();
@@ -382,7 +385,7 @@ public class PalaceProjectExportMain {
 				String palaceProjectId = curTitleMetadata.getString("identifier");
 				String title = curTitleMetadata.getString("title");
 
-				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId);
+				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId + collectionName);
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
 					//Record exists
@@ -415,7 +418,7 @@ public class PalaceProjectExportMain {
 					}catch (DataTruncation e) {
 						logEntry.addNote("Record " + palaceProjectId + " " + title + " contained invalid data " + e);
 					}catch (SQLException e){
-						logEntry.incErrors("Error adding Palace Project title to database record " + palaceProjectId + " " + title, e);
+						logEntry.incErrors("Error adding Palace Project title to database record " + palaceProjectId + " " + title + " " + collectionName, e);
 					}
 				}else if (recordUpdated || doFullReload){
 					updatePalaceProjectTitleInDbStmt.setString(1, title);
@@ -434,8 +437,6 @@ public class PalaceProjectExportMain {
 						logEntry.incErrors("Error updating Palace Project data in database for record " + palaceProjectId + " " + title, e);
 					}
 				}
-
-				existingRecords.remove(palaceProjectId);
 			}catch (Exception e){
 				logEntry.incErrors("Error updating palace project data", e);
 			}
@@ -488,7 +489,7 @@ public class PalaceProjectExportMain {
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
-				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
+				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, collectionName, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
 				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, collectionName, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, COMPRESS(?), ?)");
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, collectionName = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
@@ -537,13 +538,15 @@ public class PalaceProjectExportMain {
 			ResultSet allRecordsRS = getAllExistingPalaceProjectTitlesStmt.executeQuery();
 			while (allRecordsRS.next()) {
 				String palaceProjectId = allRecordsRS.getString("palaceProjectId");
+				String collectionName = allRecordsRS.getString("collectionName");
 				PalaceProjectTitle newTitle = new PalaceProjectTitle(
 						allRecordsRS.getLong("id"),
 						palaceProjectId,
+						collectionName,
 						allRecordsRS.getLong("rawChecksum"),
 						allRecordsRS.getLong("rawResponseLength")
 				);
-				existingRecords.put(palaceProjectId, newTitle);
+				existingRecords.put(palaceProjectId+collectionName, newTitle);
 			}
 			allRecordsRS.close();
 			//noinspection UnusedAssignment
