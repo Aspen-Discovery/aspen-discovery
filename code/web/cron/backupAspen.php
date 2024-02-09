@@ -44,88 +44,21 @@ $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportData = true;
 	//Ignore
-	if ($table == 'session' || $table == 'cached_values' || $table == 'external_request_log') {
+	if ($table == 'session' || $table == 'cached_values') {
 		$exportData = false;
 	}
 
 	$exportFile = "$serverName.$curDateTime.$table.sql";
 	$fullExportFilePath = "$backupDir/$exportFile";
-
-	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
-	$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
-	$fhnd = fopen($fullExportFilePath, 'w');
-	fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
-	foreach ($createTablesRS as $createTableSql) {
-		$createTableValue = $createTableSql['Create Table'];
-		//Remove the auto increment id
-		$createTableValue = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableValue);
-		fwrite($fhnd, $createTableValue . ";\n");
-	}
-	$createTableStmt->closeCursor();
-	$createTableStmt = null;
-	fflush($fhnd);
-
 	if ($exportData) {
-		$exportDataStmt = $aspen_db->query("SELECT * FROM " . $table);
-		$isFirstRow = true;
-		$hasData = false;
-		$numRowsWritten = 0;
-		while ($row = $exportDataStmt->fetch(PDO::FETCH_ASSOC)) {
-			$hasData = true;
-			if ($isFirstRow) {
-				$columns = implode(',', array_keys($row));
-				$insertStatement = "INSERT INTO $table ($columns) VALUES ";
-				fwrite($fhnd, $insertStatement);
-			}
-			$values = [];
-			$isFirstValue = true;
-			if (!$isFirstRow) {
-				fwrite($fhnd, ", ");
-			}
-			fwrite($fhnd, "(");
-			foreach ($row as $value) {
-				if (!$isFirstValue) {
-					fwrite($fhnd, ",");
-				}
-				if (is_null($value)) {
-					fwrite($fhnd, 'NULL');
-				}else if (is_numeric($value)) {
-					fwrite($fhnd, $value);
-				}else{
-					fwrite($fhnd, "'");
-					fwrite($fhnd, str_replace("'", "/'", $value));
-					fwrite($fhnd, "'");
-					$values[] = "'" . str_replace("'", "/'", $value) . "'";
-				}
-				$isFirstValue = false;
-			}
-			fwrite($fhnd, ")");
-			if ($numRowsWritten++ % 2500 == 0) {
-				fflush($fhnd);
-				usleep(250);
-			}
-
-			$isFirstRow = false;
-		}
-		if ($hasData) {
-			fwrite($fhnd, ";\n");
-		}
-		$exportDataStmt->closeCursor();
-		$exportDataStmt = null;
-
-		sleep(1);
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName $table > $fullExportFilePath";
+	}else{
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --no-data $dbName $table > $fullExportFilePath";
 	}
-	fclose($fhnd);
-//	if ($exportData) {
-//		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName $table > $fullExportFilePath";
-//	}else{
-//		$dumpCommand = "mariadb-dump --quick -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --no-data $dbName $table > $fullExportFilePath";
-//	}
-//	exec_advanced($dumpCommand, $debug);
+	exec_advanced($dumpCommand, $debug);
 
-	//remove the exported file
+	//Add the file to the archive
 	if (file_exists($fullExportFilePath)) {
-		//Add the file to the archive
 		if ($configArray['System']['operatingSystem'] != 'windows') {
 			exec_advanced("cd $backupDir; tar -rf $backupFile $exportFile", $debug);
 
