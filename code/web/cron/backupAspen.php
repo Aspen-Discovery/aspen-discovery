@@ -17,17 +17,35 @@ $dbHost = $configArray['Database']['database_aspen_host'];
 $dbPort = $configArray['Database']['database_aspen_dbport'];
 
 //Make sure our backup directory exists
-if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
-	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
+$backupDir = "/data/aspen-discovery/$serverName/sql_backup";
+if (!file_exists($backupDir)) {
+	mkdir($backupDir, 700, true);
 }
 
 //Remove any backups older than 3 days
-$backupDir = "/data/aspen-discovery/$serverName/sql_backup";
-if ($configArray['System']['operatingSystem'] != 'windows') {
-	exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql -type f -mtime +3 -delete", $debug);
-	exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql.gz -type f -mtime +3 -delete", $debug);
-	exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar -type f -mtime +3 -delete", $debug);
-	exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 -delete", $debug);
+$currentFilesInBackup = scandir($backupDir);
+$earliestTimeToKeep = time() - (3 * 24 * 60 * 60);
+foreach ($currentFilesInBackup as $file) {
+	$okToProcess = false;
+	if (strlen($file) > 4) {
+		$last4 = substr($file, -4);
+		if ($last4 == ".sql" || $last4 == ".tar") {
+			$okToProcess = true;
+		}
+	}
+	if (!$okToProcess && strlen($file) > 7) {
+		$last4 = substr($file, -7);
+		if ($last4 == ".tar.gz" || $last4 == ".sql.gz") {
+			$okToProcess = true;
+		}
+	}
+	if ($okToProcess) {
+		//Backup files we should delete after 3 days
+		$lastModified = filemtime($backupDir . '/'. $file);
+		if ($lastModified != false && $lastModified < $earliestTimeToKeep) {
+			unlink($file);
+		}
+	}
 }
 
 //Create the tar file
