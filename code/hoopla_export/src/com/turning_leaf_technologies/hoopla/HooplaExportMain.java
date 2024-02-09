@@ -366,18 +366,23 @@ public class HooplaExportMain {
 					f.setTimeZone(TimeZone.getTimeZone("UTC"));
 					Date now = new Date();
 					String curHourUTC = f.format(now);
+					Calendar nowCal = GregorianCalendar.getInstance();
+					nowCal.setTime(now);
+					nowCal.add(Calendar.HOUR, -32);
+					long twentyFiveHoursAgo = nowCal.getTimeInMillis() / 1000;
 					if (curHourUTC.equals("01")){
 						//Set last update time to 32 hours ago (go bigger to get more updates)
-						Calendar nowCal = GregorianCalendar.getInstance();
-						nowCal.setTime(now);
-						nowCal.add(Calendar.HOUR, -32);
-						long twentyFiveHoursAgo = nowCal.getTimeInMillis() / 1000;
 						if (twentyFiveHoursAgo < lastUpdate){
 							lastUpdate = twentyFiveHoursAgo;
 						}
 					}else{
 						//It's not 1 am UTC, skip for now.
-						continue;
+						//Figure out when we last indexed this collection.
+						if (lastUpdateOfChangedRecords < twentyFiveHoursAgo) {
+							//Go ahead and index even if we are off schedule
+						} else {
+							continue;
+						}
 					}
 				}
 
