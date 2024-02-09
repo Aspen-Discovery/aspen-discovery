@@ -127,10 +127,12 @@ class CourseReservesIndexer {
 
 			String courseLibrary = allCourseReservesRS.getString("courseLibrary");
 			String courseInstructor = allCourseReservesRS.getString("courseInstructor");
+			String[] courseInstructors = courseInstructor.split("\\|",0);
+			String displayInstructors = String.join(", ", courseInstructors);
 			String courseNumber = allCourseReservesRS.getString("courseNumber");
 			String courseTitle = allCourseReservesRS.getString("courseTitle");
 
-			String displayName = courseNumber + " " + courseTitle + " - " + courseInstructor;
+			String displayName = courseNumber + " " + courseTitle + " - " + displayInstructors;
 			courseReserveSolr.setTitle(displayName);
 			courseReserveSolr.setCourseNumber(courseNumber);
 			courseReserveSolr.setCourseTitle(courseTitle);
@@ -143,7 +145,10 @@ class CourseReservesIndexer {
 			}
 			courseReserveSolr.setDisplayLibrary(displayLibrary);
 
-			courseReserveSolr.setInstructor(courseInstructor);
+			// Add Instructors
+			for (String instructor : courseInstructors) {
+				courseReserveSolr.addInstructor(instructor);
+			}
 
 			//Get information about all the titles on reserve
 			getTitlesForCourseReserveStmt.setLong(1, courseReserveId);
