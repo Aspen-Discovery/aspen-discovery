@@ -119,6 +119,7 @@ class Admin_Administrators extends ObjectEditor {
 				//See if we can fetch the user from the ils
 				$newAdmin = UserAccount::findNewUser($login, '');
 				if ($newAdmin == false) {
+					$newAdmin = new User();
 					$newAdmin->username = $login;
 					$newAdmin->find();
 					$numResults = $newAdmin->getNumResults();
