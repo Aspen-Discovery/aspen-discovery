@@ -49,10 +49,15 @@ class CourseReservesIndexer {
 		}
 
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
-				.withThreadCount(2)
-				.withQueueSize(25)
-				.build();
+		try {
+			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Unable to create solr client, out of memory", e);
+			System.exit(-7);
+		}
 
 		groupedWorkServer = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2").build();
 
