@@ -60,11 +60,21 @@ class CourseReservesIndexer {
 	}
 
 	void close() {
-		groupedWorkServer.close();
-		groupedWorkServer = null;
+		try {
+			groupedWorkServer.close();
+			groupedWorkServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing grouped work server ", e);
+			System.exit(-5);
+		}
 
-		updateServer.close();
-		updateServer = null;
+		try {
+			updateServer.close();
+			updateServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing update server ", e);
+			System.exit(-5);
+		}
 	}
 
 	public long processCourseReserves(boolean fullReindex, long lastReindexTime, CourseReservesIndexingLogEntry logEntry) {

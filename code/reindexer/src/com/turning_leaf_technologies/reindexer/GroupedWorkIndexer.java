@@ -623,18 +623,27 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.commit(false, false, true);
 		}catch (Exception e) {
-			logEntry.incErrors("Error in final commit while finishing extract ", e);
+			logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-3);
 		}
 		try {
 			logEntry.addNote("Shutting down the update server");
 			updateServer.blockUntilFinished();
 		}catch (Exception e) {
-			logEntry.incErrors("Error blocking until finished while finishing extract ", e);
+			logEntry.incErrors("Error blocking until finished while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-4);
 		}
 		try {
 			updateServer.close();
 		}catch (Exception e) {
 			logEntry.incErrors("Error closing update server ", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-5);
 		}
 	}
 

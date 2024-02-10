@@ -231,6 +231,14 @@ public class OaiIndexerMain {
 		} catch (SQLException e) {
 			logger.error("Error loading collections", e);
 		}
+
+		try {
+			updateServer.close();
+			updateServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing update server ", e);
+			System.exit(-5);
+		}
 	}
 
 	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String metadataFormat, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, boolean indexAllSets, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
@@ -452,7 +460,10 @@ public class OaiIndexerMain {
 			try {
 				updateServer.commit(true, true, false);
 			} catch (Exception e) {
-				logEntry.incErrors("Error in final commit", e);
+				logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+				logEntry.setFinished();
+				logEntry.saveResults();
+				System.exit(-3);
 			}
 
 			//Update that we indexed the collection

@@ -117,7 +117,13 @@ public class EventsIndexerMain {
 					indexer.indexEvents();
 				}
 
-					//Index events from other source here
+				//Index events from other source here
+				try {
+					solrUpdateServer.close();
+				}catch (Exception e) {
+					logger.error("Error closing update server ", e);
+					System.exit(-5);
+				}
 			} catch (Exception e) {
 				logger.error("Exception indexing events", e);
 			} catch (Error e) {

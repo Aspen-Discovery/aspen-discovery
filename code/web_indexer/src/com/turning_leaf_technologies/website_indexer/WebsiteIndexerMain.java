@@ -242,6 +242,13 @@ public class WebsiteIndexerMain {
 					logger.error("Error deleting all content without a settingId", e );
 				}
 
+				try {
+					solrUpdateServer.close();
+				}catch (Exception e) {
+					logger.error("Error closing update server ", e);
+					System.exit(-5);
+				}
+
 			} catch (SQLException e) {
 				logger.error("Error processing websites to index", e);
 			}

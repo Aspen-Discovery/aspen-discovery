@@ -106,14 +106,30 @@ class UserListIndexer {
 	void close() {
 		this.dbConn = null;
 
-		groupedWorkServer.close();
-		groupedWorkServer = null;
+		try {
+			groupedWorkServer.close();
+			groupedWorkServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing grouped work server ", e);
+			System.exit(-5);
+		}
 
-		openArchivesServer.close();
-		openArchivesServer = null;
+		try {
+			openArchivesServer.close();
+			openArchivesServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing open archives server ", e);
+			System.exit(-5);
+		}
 
-		updateServer.close();
-		updateServer = null;
+		try {
+			updateServer.close();
+			updateServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing update server ", e);
+			System.exit(-5);
+		}
+
 		scopes = null;
 		librariesByHomeLocation = null;
 		locationCodesByHomeLocation = null;
