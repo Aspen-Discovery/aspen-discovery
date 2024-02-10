@@ -1,4 +1,5 @@
 import { create } from 'apisauce';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import _ from 'lodash';
@@ -15,13 +16,17 @@ import { popAlert, popToast } from './loadError';
 export async function registerForPushNotificationsAsync(url) {
      console.log('url: ' + url);
      let token = false;
-     let checkPermissionsManually = true;
+     let checkPermissionsManually = false;
      if (Device.isDevice) {
+          console.log(Platform.OS);
           if (Platform.OS === 'android') {
                await createChannelsAndCategories();
-               if (Device.osVersion >= 13) {
-                    checkPermissionsManually = false;
+               console.log(Device.osVersion);
+               if (Device.osVersion < 13) {
+                    checkPermissionsManually = true;
                }
+          } else {
+               checkPermissionsManually = true;
           }
 
           if (checkPermissionsManually) {
@@ -36,12 +41,23 @@ export async function registerForPushNotificationsAsync(url) {
                }
                if (finalStatus !== 'granted') {
                     console.log('Failed to get push token for push notification!');
-                    return;
+                    return false;
                }
           }
 
-          token = (await Notifications.getExpoPushTokenAsync()).data;
+          try {
+               token = (
+                    await Notifications.getExpoPushTokenAsync({
+                         projectId: Constants.expoConfig.extra.eas.projectId,
+                    })
+               ).data;
+          } catch (e) {
+               console.log(e);
+               return false;
+          }
+
           console.log('token: ' + token);
+
           if (token) {
                await savePushToken(url, token);
           }
@@ -72,7 +88,7 @@ export async function savePushToken(url, pushToken) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popAlert(problem.title ?? 'Error', problem.message ?? 'Unknown error saving setting', 'warning');
           console.log(response);
      }
 }

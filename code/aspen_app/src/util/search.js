@@ -84,43 +84,46 @@ export async function getDefaultFacets(url, limit = 5, language) {
 
 export async function getSearchResults(searchTerm, pageSize = 25, page, url, language) {
      let baseUrl = url ?? LIBRARY.url;
+     const postBody = await postData();
      const discovery = create({
-          baseURL: baseUrl,
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          baseURL: baseUrl + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               library: PATRON.scope ?? null,
+               lookfor: searchTerm ?? '',
+               pageSize,
+               page,
+               type: 'catalog',
+               language,
+               searchIndex: SEARCH.searchIndex,
+               source: SEARCH.searchSource,
+          },
      });
 
-     const data = await discovery.get(endpoint.url + 'searchLite' + SEARCH.appendedParams, {
-          library: PATRON.scope,
-          lookfor: searchTerm,
-          pageSize,
-          page,
-          language,
-          searchIndex: SEARCH.searchIndex,
-          source: SEARCH.searchSource,
-     });
-     const response = getResponseCode(data);
-     if (response.success) {
+     const results = await discovery.post('/SearchAPI?method=searchLite' + SEARCH.appendedParams, postBody);
+
+     if (results.success) {
           // only set these if we get back a good result
-          if (response.data.result.success) {
-               SEARCH.id = response.data.result.id;
-               SEARCH.sortMethod = response.data.result.sort;
-               SEARCH.term = response.data.result.lookfor;
+          if (results.data.result.success) {
+               SEARCH.id = results.data.result.id;
+               SEARCH.sortMethod = results.data.result.sort;
+               SEARCH.term = results.data.result.lookfor;
                await getSortList(baseUrl);
                await getAvailableFacets(baseUrl);
                await getAppliedFilters(baseUrl);
           }
 
           return {
-               success: response.data.result.success,
-               data: response.data.result,
+               success: results.data.result.success,
+               data: results.data.result,
           };
      } else {
           return {
-               success: response.success,
+               success: results.success,
                data: [],
-               error: response.error ?? [],
+               error: results.error ?? [],
           };
      }
 }
