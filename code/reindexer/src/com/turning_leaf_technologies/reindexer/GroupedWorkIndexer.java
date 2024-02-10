@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -583,10 +584,10 @@ public class GroupedWorkIndexer {
 				updateServer.deleteById(permanentId);
 			}
 
-			if (permanentId.length() >= 37 && permanentId.length() < 40){
+			if (permanentId.length() >= 37 && permanentId.length() < 40) {
 				//Also try padding with spaces if less than 40 characters
 				StringBuilder permanentIdBuilder = new StringBuilder(permanentId);
-				while (permanentIdBuilder.length() < 40){
+				while (permanentIdBuilder.length() < 40) {
 					permanentIdBuilder.append(" ");
 				}
 				permanentId = permanentIdBuilder.toString();
@@ -612,6 +613,11 @@ public class GroupedWorkIndexer {
 			deleteGroupedWorkStmt.executeUpdate();
 			*/
 
+		}catch (SolrServerException sse) {
+			logEntry.incErrors("Solr Exception deleting work from index, quitting to be safe", sse);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-6);
 		} catch (Exception e) {
 			logEntry.incErrors("Error deleting work from index", e);
 		}
