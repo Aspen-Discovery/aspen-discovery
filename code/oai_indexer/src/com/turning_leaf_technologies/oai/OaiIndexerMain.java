@@ -501,7 +501,7 @@ public class OaiIndexerMain {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives", http2Client)
 				.withThreadCount(2)
-				.withQueueSize(100)
+				.withQueueSize(25)
 				.build();
 	}
 

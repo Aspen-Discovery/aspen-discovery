@@ -51,7 +51,7 @@ class CourseReservesIndexer {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
 				.withThreadCount(2)
-				.withQueueSize(100)
+				.withQueueSize(25)
 				.build();
 
 		groupedWorkServer = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2").build();

@@ -155,7 +155,7 @@ public class EventsIndexerMain {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/events", http2Client)
 			.withThreadCount(2)
-			.withQueueSize(100)
+			.withQueueSize(25)
 			.build();
 	}
 

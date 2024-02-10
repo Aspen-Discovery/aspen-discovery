@@ -76,7 +76,7 @@ class UserListIndexer {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/lists", http2Client)
 				.withThreadCount(2)
-				.withQueueSize(100)
+				.withQueueSize(25)
 				.build();
 		//Get the search version from system variables
 		int searchVersion = 1;
