@@ -19,6 +19,7 @@ if (file_exists($sqlBackupDir)) {
 	$exportFiles = scandir($sqlBackupDir);
 	foreach ($exportFiles as $exportFile) {
 		if ($exportFile != '.' && $exportFile != '..' && is_file($sqlBackupDir . $exportFile)) {
+			/** @noinspection PhpStrFunctionsInspection */
 			if (strpos($exportFile, ".sql") > 0 && strpos($exportFile, 'mysql') === false) {
 				echo("Importing $exportFile\n");
 				$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $sqlBackupDir$exportFile";
@@ -30,3 +31,8 @@ if (file_exists($sqlBackupDir)) {
 		}
 	}
 }
+
+$configArray = null;
+$aspen_db = null;
+
+die();

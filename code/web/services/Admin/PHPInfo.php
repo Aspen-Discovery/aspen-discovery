@@ -17,7 +17,7 @@ class Admin_PHPInfo extends Admin_Admin {
 		$info = substr($info, 0, strrpos($info, '</div>') + 6); //+6 to include closing tag
 		// re-add slightly modified styling
 
-		$info .= '<style type="text/css">
+		$info .= '<style>
 #maincontent {background-color: #ffffff; color: #000000;}
 #maincontent, td, th, h1, h2 {font-family: sans-serif;}
 pre {margin: 0; font-family: monospace;}

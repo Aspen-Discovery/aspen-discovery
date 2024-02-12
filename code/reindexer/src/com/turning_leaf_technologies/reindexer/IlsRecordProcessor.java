@@ -46,7 +46,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
 
-	private int determineAudienceBy;
+	protected int determineAudienceBy;
 	private char audienceSubfield;
 	private String treatUnknownAudienceAs;
 

@@ -467,7 +467,9 @@ class SearchAPI extends Action {
 						}
 						$isFirstEntry = false;
 					}
+					$checkEntriesInLast26Hours = false;
 					$checkEntriesInLast24Hours = true;
+					$checkEntriesInLast8Hours = true;
 					if ($aspenModule->name == 'Web Builder') {
 						// Check to make sure there is web builder content to actually index
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
@@ -489,17 +491,35 @@ class SearchAPI extends Action {
 									$checkEntriesInLast24Hours = true;
 								} else {
 									$checkEntriesInLast24Hours = false;
+									$checkEntriesInLast8Hours = false;
 									//Nothing to index, skip adding a check.
 									continue;
 								}
 							}
 						}
+					}elseif ($aspenModule->name == 'Hoopla') {
+						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+						$hooplaSettings = new HooplaSetting();
+						$hooplaSettings->find();
+						$checkEntriesInLast26Hours = true;
+						$checkEntriesInLast24Hours = false;
+						$checkEntriesInLast8Hours = false;
+						while ($hooplaSettings->fetch()) {
+							if ($hooplaSettings->indexByDay == 0) {
+								$checkEntriesInLast26Hours = false;
+								$checkEntriesInLast24Hours = true;
+								$checkEntriesInLast8Hours = true;
+								break;
+							}
+						}
 
 					}
-					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
+					if ($checkEntriesInLast26Hours && ($lastFinishTime < time() - 26 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
 					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+					} elseif ($checkEntriesInLast8Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
@@ -2564,9 +2584,9 @@ class SearchAPI extends Action {
 					'fileName' => $link,
 					'append' => false,
 				];
-				$results['searchIndex'] = $searchObject->getSearchIndex();
-				$results['searchSource'] = $searchObject->getSearchSource();
-				$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+				$results['searchIndex'] = '';
+				$results['searchSource'] = '';
+				$results['defaultSearchIndex'] = '';
 				require_once ROOT_DIR . '/sys/Pager.php';
 				$pager = new Pager($options);
 				$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2658,9 +2678,9 @@ class SearchAPI extends Action {
 				'fileName' => $link,
 				'append' => false,
 			];
-			$results['searchIndex'] = $searchObject->getSearchIndex();
-			$results['searchSource'] = $searchObject->getSearchSource();
-			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+			$results['searchIndex'] = '';
+			$results['searchSource'] = '';
+			$results['defaultSearchIndex'] = '';
 			require_once ROOT_DIR . '/sys/Pager.php';
 			$pager = new Pager($options);
 			$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2885,7 +2905,7 @@ class SearchAPI extends Action {
 					$items[$recordKey]['author'] = null;
 					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
 					$items[$recordKey]['language'] = null;
-					$items[$recordKey]['summary'] = strip_tags($record['description']);
+					$items[$recordKey]['summary'] = isset($record['description']) ? strip_tags($record['description']) : null;
 					$items[$recordKey]['registration_required'] = $registrationRequired;
 					$items[$recordKey]['event_day'] = $record['event_day'];
 					$items[$recordKey]['location'] = $locationInfo;
@@ -3059,7 +3079,10 @@ class SearchAPI extends Action {
 							$options[$key]['facets'][$i]['field'] = $appliedFacet['field'];
 							$options[$key]['facets'][$i]['count'] = null;
 							$options[$key]['facets'][$i]['isApplied'] = true;
-							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$options[$key]['facets'][$i]['multiSelect'] = false;
+							if(isset($facet['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
 							$i++;
 						}
 					}
@@ -3420,7 +3443,7 @@ class SearchAPI extends Action {
 					$index++;
 					$i = 0;
 					if ($facet['field_name'] == 'availability_toggle') {
-						$availabilityToggle = $topFacetSet['availability_toggle'];
+						$availabilityToggle = $allFacets['availability_toggle'];
 						$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
 						$items[$key]['key'] = $index;
 						$items[$key]['label'] = $key;

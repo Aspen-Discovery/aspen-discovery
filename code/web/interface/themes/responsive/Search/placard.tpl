@@ -25,7 +25,7 @@
 				{/if}
 
 				{if !empty($placard->css)}
-					<style type="text/css">{$placard->css}</style>
+					<style>{$placard->css}</style>
 				{/if}
 			</div>
 		</div>

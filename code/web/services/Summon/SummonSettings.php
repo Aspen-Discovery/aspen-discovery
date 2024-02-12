@@ -56,7 +56,7 @@ class Summon_SummonSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/summon';
+		return 'https://help.aspendiscovery.org/ebsco';
 	}
 
 	function getBreadcrumbs(): array {

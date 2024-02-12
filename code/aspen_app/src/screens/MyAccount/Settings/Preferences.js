@@ -22,7 +22,11 @@ export const PreferencesScreen = () => {
      React.useEffect(() => {
           const updateTokens = navigation.addListener('focus', async () => {
                if (Constants.isDevice) {
-                    const token = (await Notifications.getExpoPushTokenAsync()).data;
+                    const token = (
+                         await Notifications.getExpoPushTokenAsync({
+                              projectId: Constants.expoConfig.extra.eas.projectId,
+                         })
+                    ).data;
                     if (token) {
                          if (!_.isEmpty(user.notification_preferences)) {
                               const tokenStorage = user.notification_preferences;

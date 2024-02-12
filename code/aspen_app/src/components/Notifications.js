@@ -1,4 +1,5 @@
 import { create } from 'apisauce';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import _ from 'lodash';
@@ -15,25 +16,48 @@ import { popAlert, popToast } from './loadError';
 export async function registerForPushNotificationsAsync(url) {
      console.log('url: ' + url);
      let token = false;
+     let checkPermissionsManually = false;
      if (Device.isDevice) {
+          console.log(Platform.OS);
           if (Platform.OS === 'android') {
                await createChannelsAndCategories();
+               console.log(Device.osVersion);
+               if (Device.osVersion < 13) {
+                    checkPermissionsManually = true;
+               }
+          } else {
+               checkPermissionsManually = true;
           }
-          const { status: existingStatus } = await Notifications.getPermissionsAsync();
-          console.log('status: ' + existingStatus);
-          let finalStatus = existingStatus;
-          if (existingStatus !== 'granted') {
-               if (Platform.OS !== 'android') {
-                    const { status } = await Notifications.requestPermissionsAsync();
-                    finalStatus = status;
+
+          if (checkPermissionsManually) {
+               const { status: existingStatus } = await Notifications.getPermissionsAsync();
+               console.log('status: ' + existingStatus);
+               let finalStatus = existingStatus;
+               if (existingStatus !== 'granted') {
+                    if (Platform.OS !== 'android') {
+                         const { status } = await Notifications.requestPermissionsAsync();
+                         finalStatus = status;
+                    }
+               }
+               if (finalStatus !== 'granted') {
+                    console.log('Failed to get push token for push notification!');
+                    return false;
                }
           }
-          if (finalStatus !== 'granted') {
-               console.log('Failed to get push token for push notification!');
-               return;
+
+          try {
+               token = (
+                    await Notifications.getExpoPushTokenAsync({
+                         projectId: Constants.expoConfig.extra.eas.projectId,
+                    })
+               ).data;
+          } catch (e) {
+               console.log(e);
+               return false;
           }
-          token = (await Notifications.getExpoPushTokenAsync()).data;
+
           console.log('token: ' + token);
+
           if (token) {
                await savePushToken(url, token);
           }
@@ -64,7 +88,7 @@ export async function savePushToken(url, pushToken) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popAlert(problem.title ?? 'Error', problem.message ?? 'Unknown error saving setting', 'warning');
           console.log(response);
      }
 }

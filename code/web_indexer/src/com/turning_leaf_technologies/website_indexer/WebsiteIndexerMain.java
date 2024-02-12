@@ -242,6 +242,13 @@ public class WebsiteIndexerMain {
 					logger.error("Error deleting all content without a settingId", e );
 				}
 
+				try {
+					solrUpdateServer.close();
+				}catch (Exception e) {
+					logger.error("Error closing update server ", e);
+					System.exit(-5);
+				}
+
 			} catch (SQLException e) {
 				logger.error("Error processing websites to index", e);
 			}
@@ -277,10 +284,16 @@ public class WebsiteIndexerMain {
 
 	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrHost, String solrPort) {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/website_pages", http2Client)
-				.withThreadCount(2)
-				.withQueueSize(100)
-				.build();
+		try {
+			return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/website_pages", http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Unable to create solr client, out of memory", e);
+			System.exit(-7);
+		}
+		return null;
 	}
 
 	private static Connection connectToDatabase(Ini configIni) {
