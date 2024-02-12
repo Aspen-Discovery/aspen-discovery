@@ -4,6 +4,7 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 global $configArray;
 global $serverName;
 global $interface;
+global $aspen_db;
 
 require_once ROOT_DIR . '/sys/Module.php';
 $aspenModule = new Module();
@@ -16,8 +17,10 @@ while ($aspenModule->fetch()) {
 		$addGroupedWorks = true;
 	}
 }
+$aspenModule = null;
 
 ini_set('memory_limit', '4G');
+set_time_limit(0);
 $library = new Library();
 $library->find();
 while ($library->fetch()) {
@@ -45,7 +48,6 @@ while ($library->fetch()) {
 		$scope->name = $solrScope;
 		$scope->isLibraryScope = 1;
 		if ($scope->find(true)) {
-			global $aspen_db;
 			$scopeId = $scope->id;
 			//Get a count of the number of works for the scope
 			$numResults = 0;
@@ -63,7 +65,7 @@ while ($library->fetch()) {
 
 			$curRecord = 1;
 			$curSitemap = 1;
-			echo(date('H:i:s') . "   Sitemap {$curSitemap} of {$numSitemaps}\r\n");
+			echo(date('H:i:s') . "   Sitemap $curSitemap of $numSitemaps\r\n");
 			$curSitemapName = 'grouped_work_site_map_' . $subdomain . '_' . str_pad($curSitemap, 3, "0", STR_PAD_LEFT) . '.txt';
 			//Store sitemaps in the sitemaps directory
 			$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
@@ -74,7 +76,7 @@ while ($library->fetch()) {
 					if ($curRecord % $recordsPerSitemap == 0) {
 						$curSitemap++;
 						fclose($sitemapFhnd);
-						echo(date('H:i:s') . "   Sitemap {$curSitemap} of {$numSitemaps}\r\n");
+						echo(date('H:i:s') . "   Sitemap $curSitemap of $numSitemaps\r\n");
 						$curSitemapName = 'grouped_work_site_map_' . $subdomain . '_' . str_pad($curSitemap, 3, "0", STR_PAD_LEFT) . '.txt';
 						//Store sitemaps in the sitemaps directory
 						$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
@@ -88,10 +90,16 @@ while ($library->fetch()) {
 			$results->closeCursor();
 			fclose($sitemapFhnd);
 		}
+		$scope = null;
 
 		//TODO: Export Web Builder Pages and Resources
 
 		//TODO: Export lists
 	}
 }
+$library = null;
 
+$aspen_db = null;
+$configArray = null;
+
+die();
