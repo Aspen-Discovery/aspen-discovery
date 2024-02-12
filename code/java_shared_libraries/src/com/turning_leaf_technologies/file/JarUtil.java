@@ -16,7 +16,7 @@ public class JarUtil {
 
 			checksumCalculator.update(Files.readAllBytes(myJar.toPath()));
 			checksumValue = checksumCalculator.getValue();
-			logger.error("Checksum of " + jarName + " is " + checksumValue);
+			logger.debug("Checksum of " + jarName + " is " + checksumValue);
 		} catch (IOException e) {
 			logger.error("Error determining checksum for "  + jarName);
 		}

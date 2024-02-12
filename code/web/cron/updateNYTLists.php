@@ -22,7 +22,7 @@ $nytSettings = new NewYorkTimesSetting();
 if (!$nytSettings->find(true)) {
 	$nytUpdateLog->addError("No settings found, not updating lists");
 } else {
-	//Pass the log entry to the API so we can update it there
+	//Pass the log entry to the API, so we can update it there
 	$nyt_api = new NYTApi($nytSettings->booksApiKey);
 
 	$retry = true;
@@ -85,8 +85,21 @@ if (!$nytSettings->find(true)) {
 			sleep(7);
 		}
 	}
+
+	$nyt_api = null;
 }
 
 $nytUpdateLog->addNote("Finished updating lists");
 $nytUpdateLog->endTime = time();
 $nytUpdateLog->update();
+
+$nytSettings->__destruct();
+$nytSettings = null;
+
+$nytUpdateLog->__destruct();
+$nytUpdateLog = null;
+
+global $aspen_db;
+$aspen_db = null;
+
+die();

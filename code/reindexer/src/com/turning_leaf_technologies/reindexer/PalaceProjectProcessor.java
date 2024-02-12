@@ -166,6 +166,11 @@ public class PalaceProjectProcessor {
 								break;
 							case "http://schema.org/audience":
 								audience = subjectObject.getString("name");
+								if (audience.equalsIgnoreCase("Children")) {
+									audience = "Juvenile";
+								}else if (audience.equalsIgnoreCase("Adults Only")) {
+									audience = "Adults";
+								}
 								break;
 							case "http://schema.org/typicalAgeRange":
 								//TODO: Do we want to apply this anywhere?

@@ -393,7 +393,10 @@ class CommunicoIndexer {
 		try {
 			solrUpdateServer.commit(true, true, false);
 		} catch (Exception e) {
-			logEntry.incErrors("Error in final commit ", e);
+			logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-3);
 		}
 
 		logEntry.addNote("Indexing Finished");
@@ -533,25 +536,42 @@ class CommunicoIndexer {
 						apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
 						logEntry.addNote("Loading events from " + apiEventsURL);
 						logEntry.saveResults();
-						try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
-							StatusLine status = response1.getStatusLine();
-							HttpEntity entity1 = response1.getEntity();
-							if (status.getStatusCode() == 200) {
-								String response = EntityUtils.toString(entity1);
-								JSONObject response2 = new JSONObject(response);
-								JSONObject data = response2.getJSONObject("data");
-								JSONArray events1 = data.getJSONArray("entries");
-								for (int i = 0; i < events1.length(); i++) {
-									JSONObject event = events1.getJSONObject(i);
-									if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))) {
-										events.put(events1.get(i));
+
+						boolean successfulCall = false;
+						//Retry if the server is slow to respond
+						for (int j = 0; j < 3; j++) {
+							try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+								StatusLine status = response1.getStatusLine();
+								HttpEntity entity1 = response1.getEntity();
+								if (status.getStatusCode() == 200) {
+									successfulCall = true;
+									String response = EntityUtils.toString(entity1);
+									JSONObject response2 = new JSONObject(response);
+									JSONObject data = response2.getJSONObject("data");
+									JSONArray events1 = data.getJSONArray("entries");
+									for (int i = 0; i < events1.length(); i++) {
+										JSONObject event = events1.getJSONObject(i);
+										if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))) {
+											events.put(events1.get(i));
+										}
+									}
+								} else {
+									if (j == 2) {
+										logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+									}else {
+										Thread.sleep(500);
 									}
 								}
-							} else {
-								logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+							} catch (Exception e) {
+								if (j == 2) {
+									logEntry.incErrors("Error getting events from " + apiEventsURL, e);
+								}else {
+									Thread.sleep(500);
+								}
 							}
-						} catch (Exception e) {
-							logEntry.incErrors("Error getting events from " + apiEventsURL, e);
+							if (successfulCall) {
+								break;
+							}
 						}
 						logEntry.addNote("Finished loading events");
 						logEntry.saveResults();

@@ -60,7 +60,7 @@ if ($search->getNumResults() > 0) {
 			$searchObject->setFieldsToReturn('id');
 			$searchObject->setLimit(10);
 
-			$searchResult = $searchObject->processSearch(false, false);
+			$searchResult = $searchObject->processSearch();
 			if (!$searchResult instanceof AspenError && empty($searchResult['error'])) {
 				$numResults = $searchObject->getResultTotal();
 				$hasNewResults = $numResults > 0;
@@ -80,7 +80,7 @@ if ($search->getNumResults() > 0) {
 				}
 				if ($searchEntry->update() > 0) {
 					$searchUpdateLogEntry->numUpdated++;
-					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch, 'notifySavedSearch')) {
+					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications('notifySavedSearch')) {
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$appScheme = 'aspen-lida';
@@ -105,7 +105,10 @@ if ($search->getNumResults() > 0) {
 							];
 							$expoNotification = new ExpoNotification();
 							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
+							$expoNotification = null;
 						}
+						$notificationToken->__destruct();
+						$notificationToken = null;
 					}
 				}
 			} else {
@@ -114,11 +117,14 @@ if ($search->getNumResults() > 0) {
 					$searchEntry->update();
 				}
 			}
+			$userForSearch = null;
 		}
 		$numProcessed++;
 		if ($numProcessed % 100 == 0) {
 			$searchUpdateLogEntry->update();
 		}
+		$searchEntry->__destruct();
+		$searchEntry = null;
 	}
 }
 $searchUpdateLogEntry->update();
@@ -126,3 +132,11 @@ $searchUpdateLogEntry->update();
 $searchUpdateLogEntry->addNote("Finished updating saved searches");
 $searchUpdateLogEntry->endTime = time();
 $searchUpdateLogEntry->update();
+
+$search->__destruct();
+$search = null;
+
+global $aspen_db;
+$aspen_db = null;
+
+die();

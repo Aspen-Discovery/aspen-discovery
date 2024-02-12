@@ -12,7 +12,7 @@ class CourseReserveSolr {
 	private final CourseReservesIndexer courseReservesIndexer;
 	private long id;
 	private final HashSet<String> relatedRecordIds = new HashSet<>();
-	private String instructor;
+	private HashSet<String> instructor = new HashSet<>();
 	private String title;
 	private String courseNumber;
 	private String courseTitle;
@@ -105,8 +105,8 @@ class CourseReserveSolr {
 		this.courseTitle = courseTitle;
 	}
 
-	public void setInstructor(String instructor) {
-		this.instructor = instructor;
+	public void addInstructor(String instructor) {
+		this.instructor.add(instructor);
 	}
 
 	public void setCourseLibrary(String courseLibrary) {

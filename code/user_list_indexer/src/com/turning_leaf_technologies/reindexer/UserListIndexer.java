@@ -74,10 +74,15 @@ class UserListIndexer {
 		}
 
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/lists", http2Client)
-				.withThreadCount(2)
-				.withQueueSize(100)
-				.build();
+		try {
+			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/lists", http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Unable to create solr client, out of memory", e);
+			System.exit(-7);
+		}
 		//Get the search version from system variables
 		int searchVersion = 1;
 		try {
@@ -106,14 +111,30 @@ class UserListIndexer {
 	void close() {
 		this.dbConn = null;
 
-		groupedWorkServer.close();
-		groupedWorkServer = null;
+		try {
+			groupedWorkServer.close();
+			groupedWorkServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing grouped work server ", e);
+			System.exit(-5);
+		}
 
-		openArchivesServer.close();
-		openArchivesServer = null;
+		try {
+			openArchivesServer.close();
+			openArchivesServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing open archives server ", e);
+			System.exit(-5);
+		}
 
-		updateServer.close();
-		updateServer = null;
+		try {
+			updateServer.close();
+			updateServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing update server ", e);
+			System.exit(-5);
+		}
+
 		scopes = null;
 		librariesByHomeLocation = null;
 		locationCodesByHomeLocation = null;

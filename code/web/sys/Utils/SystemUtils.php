@@ -108,7 +108,7 @@ class SystemUtils {
 			'Accept: application/json',
 		], true);
 
-		$url = $baseUrl . '/addresses/v3/address?streetAddress=' . urlencode($streetAddress) . '&city=' . $city . '&state=' . $state . '&ZIPCode=' . $zip;
+		$url = $baseUrl . '/addresses/v3/address?streetAddress=' . urlencode($streetAddress) . '&city=' . urlencode($city) . '&state=' . $state . '&ZIPCode=' . $zip;
 		$validateAddressResults = $validateAddress->curlGetPage($url);
 		ExternalRequestLogEntry::logRequest('usps.validateAddress', 'GET', $url, $validateAddress->getHeaders(), '', $validateAddress->getResponseCode(), $validateAddressResults, []);
 
