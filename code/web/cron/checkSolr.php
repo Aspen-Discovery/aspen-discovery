@@ -38,23 +38,23 @@ if (!$solrRunning) {
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
 
-if (strlen($results) > 0) {
-	//For debugging
-	echo($results);
-	try {
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = new SystemVariables();
-		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mailer = new Mailer();
-			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
-			$mailer = null;
-		}
-		$systemVariables = null;
-	} catch (Exception $e) {
-		//This happens if the table has not been created
-	}
-}
+//if (strlen($results) > 0) {
+//	//For debugging
+//	echo($results);
+//	try {
+//		require_once ROOT_DIR . '/sys/SystemVariables.php';
+//		$systemVariables = new SystemVariables();
+//		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+//			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+//			$mailer = new Mailer();
+//			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
+//			$mailer = null;
+//		}
+//		$systemVariables = null;
+//	} catch (Exception $e) {
+//		//This happens if the table has not been created
+//	}
+//}
 
 global $aspen_db;
 $aspen_db = null;
