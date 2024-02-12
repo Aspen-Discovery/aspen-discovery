@@ -55,6 +55,22 @@ class SystemUtils {
 		}
 	}
 
+	static function validateAge($minimumAge, $dob): bool {
+		$today = date("d-m-Y");//today's date
+
+		$dob = new DateTime($dob);
+		$today = new DateTime($today);
+
+		$interval = $dob->diff($today);
+
+		$age = $interval->y;
+
+		if ($age >= $minimumAge) {
+			return true;
+		}
+		return false;
+	}
+
 	static function validateAddress($streetAddress, $city, $state, $zip): bool {
 		$baseUrl = 'https://api.usps.com';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
