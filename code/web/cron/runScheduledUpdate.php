@@ -22,7 +22,7 @@ global $configArray;
 global $serverName;
 
 if (count($updatesToRun) == 0) {
-	console_log("no updates to run\n");
+	//console_log("no updates to run\n");
 }else {
 	foreach ($updatesToRun as $id) {
 		//Load the actual item
