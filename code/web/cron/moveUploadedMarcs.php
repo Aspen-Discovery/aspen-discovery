@@ -2,6 +2,7 @@
 //Copied files for pickup by the Aspen server
 
 if (count($_SERVER['argv']) < 3) {
+	/** @noinspection SpellCheckingInspection */
 	die("Usage php moveUploadedMarcs.php fromUser toDirectory\n");
 }
 $copyFrom = $_SERVER['argv'][1];

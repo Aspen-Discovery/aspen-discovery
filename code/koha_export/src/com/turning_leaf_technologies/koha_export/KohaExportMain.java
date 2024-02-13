@@ -1197,14 +1197,22 @@ public class KohaExportMain {
 				}
 			}
 
-			PreparedStatement coursesStmt = kohaConn.prepareStatement("with p as ( select course_id , group_concat( distinct concat( if(b.title is null or b.title = '', '', concat(b.title,' ')), if(b.firstname is null or b.firstname = '', '', concat(b.firstname,' ')), if(b.surname is null or b.surname = '', '', b.surname) ) order by ifnull(b.surname, '') asc separator '|' ) as course_instructor_names from course_instructors p left join borrowers b on p.borrowernumber = b.borrowernumber group by course_id ) select ci.itemnumber , i.holdingbranch , c.course_number , c.course_name , p.course_instructor_names from courses c left join course_reserves r on c.course_id = r.course_id left join course_items ci on r.ci_id = ci.ci_id left join p on c.course_id = p.course_id left join items i on ci.itemnumber = i.itemnumber where c.enabled = 'yes'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement coursesStmt = kohaConn.prepareStatement("select ci.itemnumber , i.holdingbranch , c.course_number, c.course_id , c.course_name from courses c left join course_reserves r on c.course_id = r.course_id left join course_items ci on r.ci_id = ci.ci_id left join items i on ci.itemnumber = i.itemnumber where c.enabled = 'yes'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement instructorsForCourseStmt = kohaConn.prepareStatement("select course_id , group_concat(distinct concat(if(b.title is null or b.title = '', '', concat(b.title,' ')), if(b.firstname is null or b.firstname = '', '', concat(b.firstname,' ')), if(b.surname is null or b.surname = '', '', b.surname)) order by ifnull(b.surname, '') asc separator '|' ) as course_instructor_names from course_instructors p left join borrowers b on p.borrowernumber = b.borrowernumber  WHERE course_id=?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet coursesRS = coursesStmt.executeQuery();
 			while (coursesRS.next()) {
+				long courseId = coursesRS.getLong("course_id");
 				String barcode = coursesRS.getString("itemnumber");
 				String courseLibrary = coursesRS.getString("holdingbranch");
 				String courseNumber = coursesRS.getString("course_number");
 				String courseTitle = coursesRS.getString("course_name");
-				String courseInstructor = coursesRS.getString("course_instructor_names");
+				String courseInstructor = "";
+				instructorsForCourseStmt.setLong(1, courseId);
+				ResultSet instructorsForCourseRS = instructorsForCourseStmt.executeQuery();
+				if (instructorsForCourseRS.next()){
+					courseInstructor = instructorsForCourseRS.getString("course_instructor_names");
+				}
+				instructorsForCourseRS.close();
 
 				//Get the grouped work id for the barcode, we won't add to the course if we can't find the book
 				getWorkIdForBarcodeStmt.setString(1, barcode);

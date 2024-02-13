@@ -5,6 +5,7 @@ global $configArray;
 global $serverName;
 $runningProcesses = [];
 if ($configArray['System']['operatingSystem'] == 'windows') {
+	/** @noinspection SpellCheckingInspection */
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
 	$processRegEx = '/.*?java\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
@@ -45,7 +46,7 @@ foreach ($processes as $processInfo) {
 	}
 }
 
-if (!$solrRunning && $configArray['Index']['solrHost'] == localhost) {
+if (!$solrRunning && $configArray['Index']['solrHost'] == 'localhost') {
 	$results .= "Solr is not running for $serverName\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/$serverName/$serverName.bat start";
@@ -79,7 +80,6 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			unset($runningProcesses[$backgroundProcess]);
 		} else {
 			//Don't message starting background processes since this can happen nightly. Only show an error if the restart fails.
-			//$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
 			//Attempt to restart the service
 			$local = $configArray['Site']['local'];
 			//The local path include web, get rid of that
@@ -89,7 +89,6 @@ if (!$nightlyReindexRunning && $solrRunning) {
 				if (file_exists($processPath . "/$backgroundProcess.jar")) {
 					execInBackground("cd $processPath; java -jar $backgroundProcess.jar $serverName");
 					//Don't send an error message when successfully starting a process.
-					//$results .= "Restarted '{$aspenModule->name}'\r\n";
 				} else {
 					$results .= "Could not automatically restart $backgroundProcess, the jar $processPath/$backgroundProcess.jar did not exist\r\n";
 				}
@@ -98,6 +97,8 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			}
 		}
 	}
+	$aspenModule->__destruct();
+	$aspenModule = null;
 
 	foreach ($runningProcesses as $process) {
 		if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer' && $process['name'] != 'reindexer') {
@@ -115,13 +116,24 @@ if (strlen($results) > 0) {
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mailer = new Mailer();
 			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
+			$mailer = null;
 		}
+		$systemVariables = null;
 	} catch (Exception $e) {
 		//This happens if the table has not been created
 	}
 }
 
+global $aspen_db;
+$aspen_db = null;
+$configArray = null;
+
+die();
+
+/////// END OF PROCESS ///////
+
 function execInBackground($cmd) {
+	/** @noinspection PhpStrFunctionsInspection */
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		pclose(popen("start /B " . $cmd, "r"));
 	} else {

@@ -11,10 +11,18 @@ $userNotification->error = 0;
 
 $notifications = array_filter($userNotification->fetchAll('receiptId'));
 
+$userNotification = null;
+
 $numProcessed = 0;
 
+$expoNotification = new ExpoNotification();
 foreach ($notifications as $notification) {
-	$expoNotification = new ExpoNotification();
 	$expoNotification->getExpoNotificationReceipt($notification);
 	$numProcessed++;
 }
+$expoNotification = null;
+
+global $aspen_db;
+$aspen_db = null;
+
+die();

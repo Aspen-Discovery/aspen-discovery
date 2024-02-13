@@ -16,12 +16,13 @@ $pendingUpdates->whereAdd('dateScheduled <= ' . time()); //Only get things where
 $pendingUpdates->orderBy('dateScheduled asc');
 //Load all of them once since we update them
 $updatesToRun = $pendingUpdates->fetchAll('id');
+$pendingUpdates = null;
 
 global $configArray;
 global $serverName;
 
 if (count($updatesToRun) == 0) {
-	console_log("no updates to run\n");
+	//console_log("no updates to run\n");
 }else {
 	foreach ($updatesToRun as $id) {
 		//Load the actual item
@@ -93,7 +94,7 @@ if (count($updatesToRun) == 0) {
 						foreach($companionSystems as $companion) {
 							/** @var CompanionSystem $companion **/
 							if ($scheduledUpdate->updateType === 'complete') {
-								doFullUpgrade($operatingSystem, $linuxDistribution, $companion->serverName, $versionToUpdateTo, $installDir, $scheduledUpdate, $companion);
+								doFullUpgrade($operatingSystem, $linuxDistribution, $companion->getServerName(), $versionToUpdateTo, $installDir, $scheduledUpdate, $companion);
 							} elseif ($scheduledUpdate->updateType === 'patch') {
 								doPatchUpgrade($operatingSystem, $versionToUpdateTo, $scheduledUpdate, $companion);
 							} else {
@@ -136,7 +137,7 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
-			//Re initialize database since it may have been closed during updates
+			//Re-initialize database since it may have been closed during updates
 			initDatabase();
 			if (!$scheduledUpdate->update()) {
 				echo("Could not update scheduled update " . $scheduledUpdate->getLastError());
@@ -161,15 +162,26 @@ if (count($updatesToRun) == 0) {
 						'greenhouseSiteId' => $scheduledUpdate->siteId
 					];
 					$response = $curl->curlPostPage($greenhouseUrl . '/API/GreenhouseAPI?method=updateScheduledUpdate', $body);
-
+					$curl = null;
 					//TODO: temp debugging
 					//print_r($response);
 				}
+				$systemVariables = null;
 			}
 		}
+		$scheduledUpdate->__destruct();
+		$scheduledUpdate = null;
 	}
 	console_log("Finished running " . count($updatesToRun) . " updates\n");
 }
+
+global $aspen_db;
+$aspen_db = null;
+$configArray = null;
+
+die();
+
+/////// END OF PROCESS ///////
 
 /**
  * @param $operatingSystem
@@ -230,11 +242,11 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?Companion
 	if($companionSystem != null) {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curl = new CurlWrapper();
-		console_log('Running Database Maintenance ' . $companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates');
-		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
+		console_log('Running Database Maintenance ' . $companionSystem->getServerUrl() . '/API/SystemAPI?method=runPendingDatabaseUpdates');
+		$response = json_decode($curl->curlGetPage($companionSystem->getServerUrl() . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
 		if(!isset($response->success) || $response->success == false) {
 			$scheduledUpdate->status = 'failed';
-			$scheduledUpdate->notes .= 'DB maintenance failed for ' . $companionSystem->serverName;
+			$scheduledUpdate->notes .= 'DB maintenance failed for ' . $companionSystem->getServerName();
 		}
 
 		if(isset($response->message)) {
@@ -254,7 +266,7 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?Companion
  * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, ?CompanionSystem $companionSystem = null): void {
+function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate $scheduledUpdate, ?CompanionSystem $companionSystem = null): void {
 	if($companionSystem != null) {
 		//Update the companion system
 		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
@@ -301,6 +313,7 @@ function executeCommand(string $commandNote, string $commandToExecute, Scheduled
 
 function hasErrors($notes) : bool {
 	$lowerNotes = strtolower($notes);
+	/** @noinspection PhpStrFunctionsInspection */
 	if ((strpos($lowerNotes, 'fatal') !== false) || (preg_match('/failed[\s.]/si', $lowerNotes) === 1) || (strpos($lowerNotes, 'rejected') !== false)) {
 		return true;
 	} else {
@@ -308,6 +321,7 @@ function hasErrors($notes) : bool {
 	}
 }
 
+/** @noinspection PhpUnusedParameterInspection */
 function getOSInformation() {
 	if (false == function_exists("shell_exec") || false == is_readable("/etc/os-release")) {
 		return null;

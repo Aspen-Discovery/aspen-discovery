@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
 {/if}
 
-<style type="text/css">
+<style>
 
 {if !empty($customHeadingFont) && !empty($customHeadingFontName)}
 @font-face {ldelim}
