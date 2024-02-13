@@ -13,11 +13,11 @@ class Authentication_SAML2 extends Action {
 			$logger->log('Starting SAML Authentication', Logger::LOG_ERROR);
 			$auth = new SAMLAuthentication();
 			$returnTo = $configArray['Site']['url'];
-			$action = $_REQUEST['followupAction'] ? strip_tags($_REQUEST['followupAction']) : 'Home';
-			$module = $_REQUEST['followupModule'] ? strip_tags($_REQUEST['followupModule']) :  'MyAccount';
-			$followupAction = $_SESSION['returnToAction'] ?? $action;
-			$followupModule = $_SESSION['returnToModule'] ?? $module;
-			$followupPageId = $_SESSION['returnToId'] ?? null;
+			$action = isset($_REQUEST['followupAction']) ? strip_tags($_REQUEST['followupAction']) : 'Home';
+			$module = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) :  'MyAccount';
+			$followupAction = isset($_SESSION['returnToAction']) ?? $action;
+			$followupModule = isset($_SESSION['returnToModule']) ?? $module;
+			$followupPageId = isset($_SESSION['returnToId']) ?? null;
 			if($followupModule && $followupAction) {
 				if($followupModule == 'WebBuilder' && $followupAction == 'PortalPage' && $followupPageId) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
