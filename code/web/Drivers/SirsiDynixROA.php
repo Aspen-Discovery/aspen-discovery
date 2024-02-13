@@ -3550,7 +3550,7 @@ class SirsiDynixROA extends HorizonAPI {
 			}
 			foreach ($fields as $section) {
 				if ($section['type'] == 'section') {
-					if (empty($section['properties'])) {
+					if (empty($section['properties']) || ($section['property'] == 'librarySection' && !array_key_exists('values', ($section["properties"]["library"])))) {
 						unset ($fields[$section['property']]);
 					}
 				}
