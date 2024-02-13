@@ -8,6 +8,8 @@ require_once ROOT_DIR . '/sys/Support/Ticket.php';
 require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
 
+set_time_limit(0);
+
 $greenhouseSettings = new GreenhouseSettings();
 $rtAuthToken = null;
 $baseRtUrl = null;
@@ -15,6 +17,8 @@ if ($greenhouseSettings->find(true)) {
 	$rtAuthToken = $greenhouseSettings->requestTrackerAuthToken;
 	$baseRtUrl = $greenhouseSettings->requestTrackerBaseUrl;
 }
+$greenhouseSettings->__destruct();
+$greenhouseSettings = null;
 
 $openTicketsFound = [];
 $ticketStatusFeeds = new TicketStatusFeed();
@@ -30,8 +34,12 @@ while ($ticketStatusFeeds->fetch()) {
 		} catch (PDOException $e) {
 			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 		}
+		$ticket = null;
 	}
 }
+$ticketStatusFeeds->__destruct();
+$ticketStatusFeeds = null;
+
 //There are too many closed tickets to get an RSS feed, we need to just mark anything closed we don't see.
 $ticket = new Ticket();
 $ticket->whereAdd("status <> 'Closed'");
@@ -47,6 +55,8 @@ while ($ticket->fetch()) {
 		}
 	}
 }
+$ticket->__destruct();
+$ticket = null;
 
 //Update all tickets based on their queues
 require_once ROOT_DIR . '/sys/Support/TicketQueueFeed.php';
@@ -62,8 +72,11 @@ while ($ticketQueueFeeds->fetch()) {
 		} catch (PDOException $e) {
 			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 		}
+		$ticket = null;
 	}
 }
+$ticketQueueFeeds->__destruct();
+$ticketQueueFeeds = null;
 
 //Update all tickets based on their severity
 require_once ROOT_DIR . '/sys/Support/TicketSeverityFeed.php';
@@ -79,8 +92,11 @@ while ($ticketSeverityFeeds->fetch()) {
 		} catch (PDOException $e) {
 			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 		}
+		$ticket = null;
 	}
 }
+$ticketSeverityFeeds->__destruct();
+$ticketSeverityFeeds = null;
 
 //Update all tickets based on assigned component
 $tmpTicket = new Ticket();
@@ -95,6 +111,8 @@ $allComponentsByName = [];
 while ($allComponents->fetch()) {
 	$allComponentsByName[$allComponents->name] = clone $allComponents;
 }
+$allComponents->__destruct();
+$allComponents = null;
 
 $curlConnection = new CurlWrapper();
 foreach ($allOpenTickets as $openTicket) {
@@ -140,6 +158,7 @@ foreach ($allOpenTickets as $openTicket) {
 	$openTicket->setRelatedComponents($relatedComponents);
 	$openTicket->update();
 }
+$curlConnection = null;
 
 //Update all tickets from partner feeds
 
@@ -189,6 +208,8 @@ while ($aspenSite->fetch()) {
 				} catch (PDOException $e) {
 					echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 				}
+				$ticket->__destruct();
+				$ticket = null;
 			}
 		} else {
 			if ($priority1Ticket != -1) {
@@ -206,6 +227,8 @@ while ($aspenSite->fetch()) {
 						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 					}
 				}
+				$ticket->__destruct();
+				$ticket = null;
 			}
 			if ($priority2Ticket != -1) {
 				$ticket = new Ticket();
@@ -222,6 +245,8 @@ while ($aspenSite->fetch()) {
 						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 					}
 				}
+				$ticket->__destruct();
+				$ticket = null;
 			}
 			if ($priority3Ticket != -1) {
 				$ticket = new Ticket();
@@ -238,10 +263,13 @@ while ($aspenSite->fetch()) {
 						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
 					}
 				}
+				$ticket->__destruct();
+				$ticket = null;
 			}
 		}
 	}
 }
+$aspenSite = null;
 
 //Update Ticket Components, we will loop through all open tickets
 
@@ -253,8 +281,12 @@ while ($aspenSite->fetch()) {
 //$ticketStats->month = date('n');
 //$ticketStats->day = date('d');
 
+global $aspen_db;
+$aspen_db = null;
 
-die;
+die();
+
+/////// END OF PROCESS ///////
 
 function getTicketInfoFromFeed($name, $feedUrl): array {
 	$rssDataRaw = @file_get_contents($feedUrl);
@@ -285,7 +317,7 @@ function getTicketInfoFromFeed($name, $feedUrl): array {
 			} else {
 				fwrite(STDOUT, "  Found 0 \n");
 			}
-		} catch (Exception $e) {
+		} /** @noinspection PhpUnusedLocalVariableInspection */ catch (Exception $e) {
 			fwrite(STDOUT, " Could not parse data \n");
 		}
 		return $activeTickets;
@@ -295,9 +327,7 @@ function getTicketInfoFromFeed($name, $feedUrl): array {
 function getTicket($ticketInfo): Ticket {
 	$ticket = new Ticket();
 	$ticket->ticketId = $ticketInfo['id'];
-	if ($ticket->find(true)) {
-		return $ticket;
-	} else {
+	if (!$ticket->find(true)) {
 		$ticket = new Ticket();
 		$ticket->ticketId = $ticketInfo['id'];
 		$ticket->title = $ticketInfo['title'];
@@ -313,6 +343,6 @@ function getTicket($ticketInfo): Ticket {
 			echo("Could not create ticket $ticket->ticketId " . $e);
 			fwrite(STDOUT, "Could not create ticket $ticket->ticketId " . $e . "\n");
 		}
-		return $ticket;
 	}
+	return $ticket;
 }

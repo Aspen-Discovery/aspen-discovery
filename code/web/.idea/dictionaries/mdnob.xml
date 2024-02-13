@@ -21,6 +21,7 @@
       <w>amountoutstanding</w>
       <w>anotes</w>
       <w>anymap</w>
+      <w>apachectl</w>
       <w>apikey</w>
       <w>arrarr</w>
       <w>asmx</w>
@@ -83,6 +84,7 @@
       <w>criti</w>
       <w>criticality</w>
       <w>criticasereview</w>
+      <w>crond</w>
       <w>crontab</w>
       <w>csrf</w>
       <w>curdate</w>
@@ -93,6 +95,7 @@
       <w>dateofbirth</w>
       <w>dbchapter</w>
       <w>dbname</w>
+      <w>dbport</w>
       <w>deminification</w>
       <w>deminify</w>
       <w>deminifying</w>
@@ -147,6 +150,7 @@
       <w>hilite</w>
       <w>hocr</w>
       <w>hoopladigital</w>
+      <w>hostkey</w>
       <w>httpd</w>
       <w>iiiticket</w>
       <w>iiprop</w>
@@ -220,6 +224,7 @@
       <w>munge</w>
       <w>munges</w>
       <w>mylang</w>
+      <w>mysqld</w>
       <w>navbar</w>
       <w>negcap</w>
       <w>newkey</w>
@@ -280,6 +285,7 @@
       <w>recaptchalib</w>
       <w>recordtype</w>
       <w>refetch</w>
+      <w>reindexer</w>
       <w>relatedpika</w>
       <w>relators</w>
       <w>rels</w>

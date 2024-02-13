@@ -8,6 +8,8 @@ $sharedSessions = new SharedSession();
 
 $sessions = array_filter($sharedSessions->fetchAll('sessionId'));
 
+$sharedSessions = null;
+
 $numProcessed = 0;
 
 foreach ($sessions as $session) {
@@ -20,5 +22,15 @@ foreach ($sessions as $session) {
 			$sharedSession->delete();
 		}
 	}
+	$sharedSession->__destruct();
+	$sharedSession = null;
 	$numProcessed++;
 }
+
+global $aspen_db;
+$aspen_db = null;
+$configArray = null;
+
+die();
+
+/////// END OF PROCESS ///////

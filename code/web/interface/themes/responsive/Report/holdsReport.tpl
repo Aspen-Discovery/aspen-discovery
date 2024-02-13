@@ -27,7 +27,7 @@
             {/if}
 		</div>
 {literal}
-<style type="text/css">
+<styl>
     @media screen {
         .displayPrint {
             display: none !important;

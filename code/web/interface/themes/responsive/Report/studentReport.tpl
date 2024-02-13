@@ -33,7 +33,7 @@
 				</p>
 		</div>
 {literal}
-<style type="text/css">
+<style>
 	div.overdueSlip {
 		border-top: 1px dashed #ccc !important;
 		display: table !important;

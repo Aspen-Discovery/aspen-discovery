@@ -16,3 +16,9 @@ chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-8.11.2
 #Update the startup script to call solr 8 rather than solr 7
 echo "updating startup script to use solr 8"
 sed -i -e "s/7.6.0/8.11.2/g" /usr/local/aspen-discovery/sites/$1/$1.sh
+
+truncate -s0 /var/mail/aspen
+truncate -s0 /var/mail/solr
+truncate -s0 /var/mail/root
+
+cp install/logrotate.conf /etc/logrotate.d/aspen_discovery

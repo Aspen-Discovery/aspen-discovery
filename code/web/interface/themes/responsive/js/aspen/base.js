@@ -114,6 +114,10 @@ var AspenDiscovery = (function(){
 						callback();
 					});
 				}
+			}else{
+				if (callback !== undefined){
+					callback();
+				}
 			}
 		},
 
