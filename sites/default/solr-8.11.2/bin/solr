@@ -182,6 +182,8 @@ SOLR_URL_SCHEME=http
 SOLR_JETTY_CONFIG=()
 SOLR_SSL_OPTS=""
 
+SOLR_SSL_OPTS+="-Dsolr.cloud.client.stallTime=60000"
+
 if [ -n "$SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH" ]; then
   SOLR_SSL_OPTS+=" -Dhadoop.security.credential.provider.path=$SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH"
 fi

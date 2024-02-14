@@ -72,6 +72,8 @@ set SOLR_URL_SCHEME=http
 set "SOLR_JETTY_CONFIG=--module=http"
 set "SOLR_SSL_OPTS= "
 
+SOLR_SSL_OPTS+="-Dsolr.cloud.client.stallTime=60000"
+
 IF DEFINED SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH (
   set "SOLR_SSL_OPTS=!SOLR_SSL_OPTS! -Dhadoop.security.credential.provider.path=%SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH%"
 )
