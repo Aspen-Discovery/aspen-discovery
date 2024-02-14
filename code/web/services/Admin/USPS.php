@@ -58,7 +58,7 @@ class Admin_USPS extends ObjectEditor {
 	}
 
 	function canDelete() {
-		return false;
+		return true;
 	}
 
 	function getBreadcrumbs(): array {

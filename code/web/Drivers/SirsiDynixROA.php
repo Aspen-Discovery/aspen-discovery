@@ -3179,29 +3179,15 @@ class SirsiDynixROA extends HorizonAPI {
 				}
 			}
 		}
-		if (count($pickupLocations) == 1) {
-			$selectedPickupLocation = '';
-			foreach ($pickupLocations as $code => $name) {
-				$selectedPickupLocation = $code;
-			}
-			$pickupLocationField = [
-				'property' => 'pickupLocation',
-				'type' => 'hidden',
-				'label' => 'Home Library',
-				'description' => 'Please choose the Library location you would prefer to use',
-				'default' => $selectedPickupLocation,
-				'required' => true,
-			];
-		} else {
-			$pickupLocationField = [
-				'property' => 'pickupLocation',
-				'type' => 'enum',
-				'label' => 'Home Library',
-				'description' => 'Please choose the Library location you would prefer to use',
-				'values' => $pickupLocations,
-				'required' => true,
-			];
-		}
+
+		$pickupLocationField = [
+			'property' => 'pickupLocation',
+			'type' => 'enum',
+			'label' => 'Home Library',
+			'description' => 'Please choose the Library location you would prefer to use',
+			'values' => $pickupLocations,
+			'required' => true,
+		];
 
 		$fields = [];
 		if (!$hasCustomSelfRegistrationFrom) {
@@ -3451,16 +3437,30 @@ class SirsiDynixROA extends HorizonAPI {
 			/** @var SelfRegistrationFormValues $customField */
 			foreach ($customFields as $customField) {
 				if ($customField->symphonyName == 'library') {
-					$fields['librarySection'] = [
-						'property' => 'librarySection',
-						'type' => 'section',
-						'label' => 'Library',
-						'hideInLists' => true,
-						'expandByDefault' => true,
-						'properties' => [
-							$customField->symphonyName => $pickupLocationField,
-						],
-					];
+					if (count($pickupLocations) == 1) {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->symphonyName => $pickupLocationField,
+							],
+							'hiddenByDefault' => true,
+						];
+					} else {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->symphonyName => $pickupLocationField,
+							],
+						];
+					}
 				} elseif (($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
 					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->symphonyName,
@@ -3550,7 +3550,7 @@ class SirsiDynixROA extends HorizonAPI {
 			}
 			foreach ($fields as $section) {
 				if ($section['type'] == 'section') {
-					if (empty($section['properties']) || ($section['property'] == 'librarySection' && !array_key_exists('values', ($section["properties"]["library"])))) {
+					if (empty($section['properties'])) {
 						unset ($fields[$section['property']]);
 					}
 				}
