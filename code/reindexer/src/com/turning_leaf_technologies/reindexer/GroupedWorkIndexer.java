@@ -1157,6 +1157,9 @@ public class GroupedWorkIndexer {
 						logEntry.incErrors("Error setting auto reindex times", e);
 					}
 				}
+			} catch (IOException e) {
+				logEntry.incErrors("Error adding grouped work to solr " + groupedWork.getId() + " quitting", e);
+				System.exit(-8);
 			} catch (Exception e) {
 				logEntry.incErrors("Error adding grouped work to solr " + groupedWork.getId(), e);
 			}

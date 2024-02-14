@@ -181,18 +181,20 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	private void createAndAddOrderItem(RecordInfo recordInfo, OrderInfo orderItem) {
 		ItemInfo itemInfo = new ItemInfo();
 		String orderNumber = orderItem.getOrderRecordId();
-		String location = orderItem.getLocationCode();
-		if (location == null){
+		String locationCode = orderItem.getLocationCode();
+		String location = "";
+		if (locationCode == null){
 			logger.warn("No location set for order " + orderNumber + " skipping");
 			return;
 		}
-		itemInfo.setLocationCode(location);
+		itemInfo.setLocationCode(locationCode);
 		if (hasTranslation("location", orderItem.getLocationCode())) {
-			itemInfo.setCollection(translateValue("location", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+			location = translateValue("location", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false);
+			itemInfo.setCollection(location);
 		}else {
 			itemInfo.setCollection("On Order");
 		}
-		itemInfo.setItemIdentifier(orderNumber + "-" + location);
+		itemInfo.setItemIdentifier(orderNumber + "-" + locationCode);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
 		itemInfo.setIsOrderItem();
@@ -216,7 +218,16 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			String translatedLocationCode = translateValue("shelf_location", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false);
 			itemInfo.setShelfLocation(translatedLocationCode);
 			itemInfo.setShelfLocationCode(orderItem.getLocationCode());
-			itemInfo.setDetailedLocation(translatedLocationCode);
+			if (settings.isIncludeLocationNameInDetailedLocation()) {
+				String detailedLocation = location;
+				if (!detailedLocation.isEmpty()){
+					detailedLocation += " - ";
+				}
+				detailedLocation += translatedLocationCode;
+				itemInfo.setDetailedLocation(detailedLocation);
+			}else{
+				itemInfo.setDetailedLocation(translatedLocationCode);
+			}
 		} else {
 			itemInfo.setShelfLocation("On Order");
 			itemInfo.setDetailedLocation("On Order");
