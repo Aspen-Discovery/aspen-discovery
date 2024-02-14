@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { create } from 'apisauce';
 import CachedImage from 'expo-cached-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
@@ -18,7 +18,7 @@ import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchCont
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
@@ -50,6 +50,8 @@ export const SearchResults = () => {
      const type = useRoute().params.type ?? 'catalog';
      const id = useRoute().params.id ?? null;
 
+     const systemMessagesForScreen = [];
+
      if (term && term !== storedTerm) {
           console.log('Search term changed. Clearing previous search options...');
           setStoredTerm(term);
@@ -63,6 +65,16 @@ export const SearchResults = () => {
           SEARCH.appendedParams = '';
           params = [];
      }
+
+     React.useEffect(() => {
+          if (_.isArray(systemMessages)) {
+               systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         systemMessagesForScreen.push(obj);
+                    }
+               });
+          }
+     }, [systemMessages]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery({
           queryKey: ['searchResults', url, page, term, scope, params, type, id, language, currentIndex, currentSource],
@@ -171,7 +183,7 @@ export const SearchResults = () => {
      const NoResults = () => {
           return (
                <>
-                    {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+                    {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
                          <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
@@ -187,7 +199,7 @@ export const SearchResults = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+               {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
@@ -342,7 +354,7 @@ const DisplayResult = (data) => {
                                         />
                                    }
                               />
-                              <AddToList source="Events" itemId={item.key} btnStyle="sm" />
+                              {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}
                          </VStack>
                          <VStack w="65%">
                               <Text
@@ -553,6 +565,9 @@ const CreateFilterButtonDefaults = () => {
                               <Button
                                    key={index}
                                    variant="outline"
+                                   _dark={{
+                                        borderColor: 'gray.400',
+                                   }}
                                    onPress={() => {
                                         navigation.push('modal', {
                                              screen: 'Facet',
@@ -575,6 +590,9 @@ const CreateFilterButtonDefaults = () => {
                          <Button
                               key={index}
                               variant="outline"
+                              _dark={{
+                                   borderColor: 'gray.400',
+                              }}
                               onPress={() => {
                                    navigation.push('modal', {
                                         screen: 'Facet',
@@ -626,6 +644,9 @@ const CreateFilterButton = () => {
                          return (
                               <Button
                                    key={index}
+                                   _dark={{
+                                        borderColor: 'gray.400',
+                                   }}
                                    onPress={() => {
                                         navigation.push('modal', {
                                              screen: 'Facet',
@@ -653,11 +674,11 @@ const CreateFilterButton = () => {
 };
 
 async function fetchSearchResults(term, page, scope, url, type, id, language, index, source) {
-     console.log(SEARCH.appendedParams);
-     const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
+     const postBody = await postData();
+     const discovery = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(false),
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                library: scope ?? null,
@@ -672,6 +693,12 @@ async function fetchSearchResults(term, page, scope, url, type, id, language, in
                searchIndex: index,
           },
      });
+
+     let data = [];
+     const results = await discovery.post('/SearchAPI?method=searchLite' + SEARCH.appendedParams, postBody);
+     if (results.ok) {
+          data = results.data;
+     }
 
      let morePages = true;
      if (data.result?.page_current === data.result?.page_total) {

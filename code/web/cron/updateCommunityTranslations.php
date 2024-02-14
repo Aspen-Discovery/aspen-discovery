@@ -6,10 +6,12 @@ require_once ROOT_DIR . '/sys/Translation/TranslationTerm.php';
 require_once ROOT_DIR . '/sys/Translation/Language.php';
 require_once ROOT_DIR . '/sys/Translation/Translation.php';
 
-$allTranslationTerms = new TranslationTerm();
+set_time_limit(0);
+
 $allLanguages = new Language();
 $languages = array_filter($allLanguages->fetchAll('id'));
 $numUpdated = 0;
+$allLanguages = null;
 
 global $logger;
 
@@ -28,17 +30,17 @@ foreach($languages as $languageId) {
 
 			while ($translationTerm->fetch()) {
 				$translation = new Translation();
-				$translation->termId = $translationTerm->id;
+				$translation->termId = $translationTerm->getId();
 				$translation->languageId = $language->id;
 				//Needs to be fetched from community if we haven't gotten a translation yet
 				if ($translation->find(true)){
 					if (!$translation->translated) {
-						$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+						$allTermsToTranslate[$translationTerm->getId()] = $translationTerm->getTerm();
 						$translation->lastCheckInCommunity = time();
 						$translation->update();
 					}
 				} else {
-					$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+					$allTermsToTranslate[$translationTerm->getId()] = $translationTerm->getTerm();
 					$translation->lastCheckInCommunity = time();
 					$translation->update();
 				}
@@ -85,7 +87,13 @@ foreach($languages as $languageId) {
 			}
 		}
 	}
+	$language = null;
 }
+
+global $aspen_db;
+$aspen_db = null;
+
+die();
 
 /**
  * @param array $terms
@@ -106,7 +114,7 @@ function getCommunityTranslations(array $terms, Language $activeLanguage): array
 			'languageCode' => $activeLanguage->code,
 		];
 		$url = $systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslations';
-		$response = $communityContentCurlWrapper->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslations', $body);
+		$response = $communityContentCurlWrapper->curlPostPage($url, $body);
 		if ($response) {
 			$jsonResponse = json_decode($response);
 			if (!empty($jsonResponse->translations) && $jsonResponse->success) {
@@ -118,37 +126,5 @@ function getCommunityTranslations(array $terms, Language $activeLanguage): array
 	return [
 		'isTranslatedInCommunity' => $translatedInCommunity,
 		'translations' => $translatedTerms,
-	];
-}
-
-/**
- * @param string $phrase
- * @param Language $activeLanguage
- * @return array
- */
-function getCommunityTranslation(string $phrase, $activeLanguage): array {
-	require_once ROOT_DIR . '/sys/SystemVariables.php';
-	$systemVariables = SystemVariables::getSystemVariables();
-	$translatedInCommunity = false;
-	$defaultTranslation = null;
-	if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		$communityContentCurlWrapper = new CurlWrapper();
-		$body = [
-			'term' => $phrase,
-			'languageCode' => $activeLanguage->code,
-		];
-		$response = $communityContentCurlWrapper->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslation', $body);
-		if ($response !== false) {
-			$jsonResponse = json_decode($response);
-			if (!empty($jsonResponse) && $jsonResponse->success) {
-				$defaultTranslation = $jsonResponse->translation;
-				$translatedInCommunity = true;
-			}
-		}
-	}
-	return [
-		'isTranslatedInCommunity' => $translatedInCommunity,
-		'translation' => $defaultTranslation
 	];
 }

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.util;
 
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
@@ -47,5 +48,10 @@ public class SystemUtils {
 			//Can't easily determine for Windows
 			return false;
 		}
+	}
+
+	public static void printMemoryStats(Logger logger) {
+		Runtime runtime = Runtime.getRuntime();
+		logger.debug("Max: " + AspenStringUtils.formatBytes(runtime.maxMemory()) + " | Total: " + AspenStringUtils.formatBytes(runtime.totalMemory()) + " | Used: " + (AspenStringUtils.formatBytes(runtime.totalMemory() - runtime.freeMemory())) + " | Free: " + AspenStringUtils.formatBytes(runtime.freeMemory()));
 	}
 }

@@ -9,11 +9,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AspenStringUtils {
-	private static Pattern cleanJrSrPattern = Pattern.compile(".*[JS]r\\.$");
-	private static Pattern cleaner1Pattern = Pattern.compile(".*\\w\\w\\.$");
-	private static Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
-	private static Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
-	private static Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
+	private static final Pattern cleanJrSrPattern = Pattern.compile(".*[JS]r\\.$");
+	private static final Pattern cleaner1Pattern = Pattern.compile(".*\\w\\w\\.$");
+	private static final Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
+	private static final Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
+	private static final Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
 
 	/**
 	 * Removes trailing characters (space, comma, slash, semicolon, colon),
@@ -35,7 +35,6 @@ public class AspenStringUtils {
 
 			// trailing period removed in certain circumstances
 			if (currResult.endsWith(".")) {
-				//noinspection StatementWithEmptyBody
 				if (cleanJrSrPattern.matcher(currResult).matches()) {
 					// don't strip period off of Jr. or Sr.
 				} else if (cleaner1Pattern.matcher(currResult).matches()) {
@@ -51,7 +50,7 @@ public class AspenStringUtils {
 
 			currResult = removeOuterBrackets(currResult);
 
-			if (currResult.length() == 0) return currResult;
+			if (currResult.isEmpty()) return currResult;
 
 		} while (!currResult.equals(prevResult));
 
@@ -104,7 +103,7 @@ public class AspenStringUtils {
 
 	public static char convertStringToChar(String subfieldString) {
 		char subfield = ' ';
-		if (subfieldString != null && subfieldString.length() > 0) {
+		if (subfieldString != null && !subfieldString.isEmpty()) {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;
@@ -114,7 +113,7 @@ public class AspenStringUtils {
 		StringBuilder out = new StringBuilder(); // Used to hold the output.
 		char current; // Used to reference the current character.
 
-		if (in == null || ("".equals(in))) return ""; // vacancy test.
+		if (in == null || (in.isEmpty())) return ""; // vacancy test.
 		for (int i = 0; i < in.length(); i++) {
 			current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
 			if ((current == 0x9) ||
@@ -128,7 +127,7 @@ public class AspenStringUtils {
 		return out.toString();
 	}
 
-	private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
+	private static final Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
 
 	public static String makeValueSortable(String curTitle) {
 		if (curTitle == null) return "";
@@ -141,7 +140,7 @@ public class AspenStringUtils {
 		return sortTitle;
 	}
 
-	private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[-\\s/,.;:|]+$");
+	private static final Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[-\\s/,.;:|]+$");
 
 	public static String trimTrailingPunctuation(String format) {
 		if (format == null) {
@@ -175,7 +174,7 @@ public class AspenStringUtils {
 		return trimmedCollection;
 	}
 
-	private static Pattern replacePipePattern = Pattern.compile("\\|");
+	private static final Pattern replacePipePattern = Pattern.compile("\\|");
 
 	public static Collection<String> normalizeSubjects(Set<String> fieldList) {
 		HashSet<String> trimmedCollection = new HashSet<>();
@@ -199,11 +198,11 @@ public class AspenStringUtils {
 	 * string.
 	 */
 	public static String removeOuterBrackets(String origStr) {
-		if (origStr == null || origStr.length() == 0) return origStr;
+		if (origStr == null || origStr.isEmpty()) return origStr;
 
 		String result = origStr.trim();
 
-		if (result.length() > 0) {
+		if (!result.isEmpty()) {
 			boolean openBracketFirst = result.charAt(0) == '[';
 			boolean closeBracketLast = result.endsWith("]");
 			if (openBracketFirst && closeBracketLast && result.indexOf('[', 1) == -1 && result.lastIndexOf(']', result.length() - 2) == -1)
@@ -237,7 +236,7 @@ public class AspenStringUtils {
 		if (stringToTest == null) {
 			return false;
 		}
-		if (stringToTest.length() == 0) {
+		if (stringToTest.isEmpty()) {
 			return false;
 		}
 		int numDecimals = 0;
@@ -256,7 +255,7 @@ public class AspenStringUtils {
 		if (stringToTest == null) {
 			return false;
 		}
-		if (stringToTest.length() == 0) {
+		if (stringToTest.isEmpty()) {
 			return false;
 		}
 		for (char curChar : stringToTest.toCharArray()) {
@@ -286,9 +285,26 @@ public class AspenStringUtils {
 		return value;
 	}
 
-	private static Pattern nonAlphaNumerics = Pattern.compile("[^a-z0-9_]");
+	private static final Pattern nonAlphaNumerics = Pattern.compile("[^a-z0-9_]");
 	public static String toLowerCaseNoSpecialChars(String originalValue){
 		originalValue = originalValue.toLowerCase();
 		return nonAlphaNumerics.matcher(originalValue).replaceAll("_");
+	}
+
+	public static String formatBytes(long bytes) {
+		return AspenStringUtils.formatBytes(bytes, 2);
+	}
+
+	public static String formatBytes(long bytes, int precision) {
+		String[] units = {"B", "KB", "MB", "GB", "TB"};
+
+		bytes = Math.max(bytes, 0);
+		int pow = (int) Math.floor(Math.log(bytes) / Math.log(1024));
+		pow = Math.min(pow, units.length - 1);
+
+		double result = bytes / Math.pow(1024, pow);  // Using Math.pow
+
+		//noinspection MalformedFormatString
+		return String.format("%." + precision + "f %s", result, units[pow]);
 	}
 }

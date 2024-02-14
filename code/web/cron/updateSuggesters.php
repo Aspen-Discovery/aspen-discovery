@@ -32,3 +32,5 @@ if (!file_get_contents($solrBaseUrl . '/genealogy/suggest?suggest.build=true', f
 if (!file_get_contents($solrBaseUrl . '/lists/suggest?suggest.build=true', false, $context)) {
 	echo("Could not update suggesters for lists");
 }
+
+die();

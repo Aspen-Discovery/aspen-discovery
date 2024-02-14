@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -312,10 +313,15 @@ public class GroupedWorkIndexer {
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2";
 		}
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
-				.withThreadCount(2)
-				.withQueueSize(100)
-				.build();
+		try {
+			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Unable to create solr client, out of memory", e);
+			System.exit(-7);
+		}
 
 		try {
 			scopes = IndexingUtils.loadScopes(dbConn, logger);
@@ -583,10 +589,10 @@ public class GroupedWorkIndexer {
 				updateServer.deleteById(permanentId);
 			}
 
-			if (permanentId.length() >= 37 && permanentId.length() < 40){
+			if (permanentId.length() >= 37 && permanentId.length() < 40) {
 				//Also try padding with spaces if less than 40 characters
 				StringBuilder permanentIdBuilder = new StringBuilder(permanentId);
-				while (permanentIdBuilder.length() < 40){
+				while (permanentIdBuilder.length() < 40) {
 					permanentIdBuilder.append(" ");
 				}
 				permanentId = permanentIdBuilder.toString();
@@ -612,21 +618,43 @@ public class GroupedWorkIndexer {
 			deleteGroupedWorkStmt.executeUpdate();
 			*/
 
+		}catch (SolrServerException sse) {
+			logEntry.incErrors("Solr Exception deleting work from index, quitting to be safe", sse);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-6);
 		} catch (Exception e) {
 			logEntry.incErrors("Error deleting work from index", e);
 		}
 	}
 
 	public void finishIndexingFromExtract(BaseIndexingLogEntry logEntry){
-		try {
-			processScheduledWorks(logEntry, true, 100);
+		processScheduledWorks(logEntry, true, 100);
 
+		try {
 			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-3);
+		}
+		try {
 			logEntry.addNote("Shutting down the update server");
 			updateServer.blockUntilFinished();
+		}catch (Exception e) {
+			logEntry.incErrors("Error blocking until finished while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-4);
+		}
+		try {
 			updateServer.close();
 		}catch (Exception e) {
-			logEntry.incErrors("Error finishing extract ", e);
+			logEntry.incErrors("Error closing update server ", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-5);
 		}
 	}
 
@@ -634,7 +662,7 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.commit(false, false, true);
 		}catch (Exception e) {
-			logEntry.incErrors("Error finishing extract ", e);
+			logEntry.incErrors("Error committing changes ", e);
 		}
 	}
 
@@ -1459,7 +1487,7 @@ public class GroupedWorkIndexer {
 		try {
 			ResultSet hideSeriesRS = getHideSeriesStmt.executeQuery();
 			while (hideSeriesRS.next()) {
-				hideSeries.add(hideSeriesRS.getString("seriesNormalized"));
+				hideSeries.add(hideSeriesRS.getString("seriesNormalized").toLowerCase());
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading series to hide: ", e);
@@ -1498,11 +1526,11 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
 				addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher(), recordInfo.getRecordIdentifier()));
 				addRecordForWorkStmt.setLong(6, getPublicationDateId(recordInfo.getPublicationDate()));
-				addRecordForWorkStmt.setLong(7, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
-				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
-				addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
-				addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
-				addRecordForWorkStmt.setLong(11, getPlaceOfPublicationId(recordInfo.getPlaceOfPublication()));
+				addRecordForWorkStmt.setLong(7, getPlaceOfPublicationId(recordInfo.getPlaceOfPublication()));
+				addRecordForWorkStmt.setLong(8, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
+				addRecordForWorkStmt.setLong(9, getFormatId(recordInfo.getPrimaryFormat()));
+				addRecordForWorkStmt.setLong(10, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
+				addRecordForWorkStmt.setLong(11, getLanguageId(recordInfo.getPrimaryLanguage()));
 				addRecordForWorkStmt.setBoolean(12, recordInfo.isClosedCaptioned());
 				addRecordForWorkStmt.setBoolean(13, recordInfo.hasParentRecord());
 				addRecordForWorkStmt.setBoolean(14, recordInfo.hasChildRecord());
@@ -1550,11 +1578,11 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setLong(2, editionId);
 					updateRecordForWorkStmt.setLong(3, publisherId);
 					updateRecordForWorkStmt.setLong(4, publicationDateId);
-					updateRecordForWorkStmt.setLong(5, physicalDescriptionId);
-					updateRecordForWorkStmt.setLong(6, formatId);
-					updateRecordForWorkStmt.setLong(7, formatCategoryId);
-					updateRecordForWorkStmt.setLong(8, languageId);
-					updateRecordForWorkStmt.setLong(9, placeOfPublicationId);
+					updateRecordForWorkStmt.setLong(5, placeOfPublicationId);
+					updateRecordForWorkStmt.setLong(6, physicalDescriptionId);
+					updateRecordForWorkStmt.setLong(7, formatId);
+					updateRecordForWorkStmt.setLong(8, formatCategoryId);
+					updateRecordForWorkStmt.setLong(9, languageId);
 					updateRecordForWorkStmt.setBoolean(10, isClosedCaptioned);
 					updateRecordForWorkStmt.setBoolean(11, hasParentRecord);
 					updateRecordForWorkStmt.setBoolean(12, hasChildRecord);
@@ -1744,7 +1772,7 @@ public class GroupedWorkIndexer {
 			return -1;
 		}
 		if (publisher.length() > 500) {
-			logEntry.incErrors("Publisher for record " + recordIdentifier + " was more than 500 characters (" + publisher.length() + ") " + publisher);
+			logEntry.incInvalidRecords("Publisher for record " + recordIdentifier + " was more than 500 characters (" + publisher.length() + ") " + publisher);
 			publisher = publisher.substring(0, 500);
 		}
 		Long id = publisherIds.get(publisher);

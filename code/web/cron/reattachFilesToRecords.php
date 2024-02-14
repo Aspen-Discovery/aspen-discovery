@@ -36,8 +36,17 @@ if (file_exists($dataPath)) {
 					$recordFile->insert();
 					$numReattached++;
 				}
+				$recordFile = null;
+				$fileUpload = null;
 			}
+			$recordDriver = null;
 		}
 	}
 }
 echo "Reattached $numReattached PDFs to their record";
+
+$configArray = null;
+global $aspen_db;
+$aspen_db = null;
+
+die();

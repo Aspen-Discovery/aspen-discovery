@@ -12,20 +12,25 @@ require_once ROOT_DIR . '/sys/Support/TicketTrendByPartner.php';
 require_once ROOT_DIR . '/sys/Support/TicketTrendByQueue.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
+set_time_limit(0);
+
 //Whether to load historic data, this is off by default, but can be used to populate the DB as best possible.
 $ticketStat = new TicketTrendByQueue();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForTicketsByQueue = $numExistingStats == 0;
+$ticketStat->__destruct();
 $ticketStat = null;
 
 $ticketStat = new TicketTrendBugsBySeverity();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForBugsBySeverity = $numExistingStats == 0;
+$ticketStat->__destruct();
 $ticketStat = null;
 
 $ticketStat = new TicketTrendByPartner();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForTicketsByPartner = $numExistingStats == 0;
+$ticketStat->__destruct();
 $ticketStat = null;
 
 //Tickets by Queue
@@ -33,6 +38,7 @@ if ($loadHistoricDataForTicketsByQueue) {
 	//Clear old data
 	$ticketStat = new TicketTrendByQueue();
 	$ticketStat->delete(true);
+	$ticketStat->__destruct();
 	$ticketStat = null;
 
 	//Start with Mark's first Day at ByWater when tickets started getting entered
@@ -406,3 +412,10 @@ if ($loadHistoricDataForTicketsByPartner) {
 //		}
 //	}
 //}
+
+global $aspen_db;
+$aspen_db = null;
+
+die();
+
+/////// END OF PROCESS ///////

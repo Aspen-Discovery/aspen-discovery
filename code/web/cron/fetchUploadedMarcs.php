@@ -24,6 +24,7 @@ copyFiles($sshConnection, $sftpConnection, $config['SFTP_Server']['remoteDir'] .
 
 ssh2_disconnect($sshConnection);
 
+die();
 //End!
 
 function copyFiles($sshConnection, $sftpConnection, $remotePath, $localPath) {
@@ -60,11 +61,12 @@ function copyFiles($sshConnection, $sftpConnection, $remotePath, $localPath) {
 	}
 }
 
-function listFilesInDir($path) {
+function listFilesInDir($path) : array {
 	$contents = [];
 	$handle = opendir($path);
 	while (($file = readdir($handle)) !== false) {
 		//Skip . and ..
+		/** @noinspection PhpStrFunctionsInspection */
 		if (substr("$file", 0, 1) != ".") {
 			//Don't recurse into subdirectories
 			if (!is_dir("$path/$file")) {

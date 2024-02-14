@@ -49,10 +49,15 @@ class CourseReservesIndexer {
 		}
 
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
-				.withThreadCount(2)
-				.withQueueSize(100)
-				.build();
+		try {
+			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/course_reserves", http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Unable to create solr client, out of memory", e);
+			System.exit(-7);
+		}
 
 		groupedWorkServer = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2").build();
 
@@ -60,11 +65,21 @@ class CourseReservesIndexer {
 	}
 
 	void close() {
-		groupedWorkServer.close();
-		groupedWorkServer = null;
+		try {
+			groupedWorkServer.close();
+			groupedWorkServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing grouped work server ", e);
+			System.exit(-5);
+		}
 
-		updateServer.close();
-		updateServer = null;
+		try {
+			updateServer.close();
+			updateServer = null;
+		}catch (Exception e) {
+			logger.error("Error closing update server ", e);
+			System.exit(-5);
+		}
 	}
 
 	public long processCourseReserves(boolean fullReindex, long lastReindexTime, CourseReservesIndexingLogEntry logEntry) {
@@ -127,10 +142,12 @@ class CourseReservesIndexer {
 
 			String courseLibrary = allCourseReservesRS.getString("courseLibrary");
 			String courseInstructor = allCourseReservesRS.getString("courseInstructor");
+			String[] courseInstructors = courseInstructor.split("\\|",0);
+			String displayInstructors = String.join(", ", courseInstructors);
 			String courseNumber = allCourseReservesRS.getString("courseNumber");
 			String courseTitle = allCourseReservesRS.getString("courseTitle");
 
-			String displayName = courseNumber + " " + courseTitle + " - " + courseInstructor;
+			String displayName = courseNumber + " " + courseTitle + " - " + displayInstructors;
 			courseReserveSolr.setTitle(displayName);
 			courseReserveSolr.setCourseNumber(courseNumber);
 			courseReserveSolr.setCourseTitle(courseTitle);
@@ -143,7 +160,10 @@ class CourseReservesIndexer {
 			}
 			courseReserveSolr.setDisplayLibrary(displayLibrary);
 
-			courseReserveSolr.setInstructor(courseInstructor);
+			// Add Instructors
+			for (String instructor : courseInstructors) {
+				courseReserveSolr.addInstructor(instructor);
+			}
 
 			//Get information about all the titles on reserve
 			getTitlesForCourseReserveStmt.setLong(1, courseReserveId);

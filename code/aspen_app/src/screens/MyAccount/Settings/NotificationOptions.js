@@ -4,13 +4,13 @@ import * as Device from 'expo-device';
 import _ from 'lodash';
 import { Box, FlatList, HStack, Switch, Text } from 'native-base';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import { reloadProfile } from '../../../util/api/user';
+import { refreshProfile, reloadProfile } from '../../../util/api/user';
 
 export const Settings_NotificationOptions = () => {
      const isFetchingUserProfile = useIsFetching({ queryKey: ['user'] });
@@ -56,10 +56,18 @@ export const Settings_NotificationOptions = () => {
                          setToggle(false);
                          console.log('unable to update preference');
                          setLoading(false);
-                         setShouldRequestPermissions(true);
+                         if (Platform.OS === 'android') {
+                              if (Device.osVersion < 13) {
+                                   setShouldRequestPermissions(true);
+                              }
+                         }
+
+                         if (Platform.OS === 'ios') {
+                              setShouldRequestPermissions(true);
+                         }
                          return false;
                     } else {
-                         await reloadProfile(library.baseUrl).then(async (result) => {
+                         await refreshProfile(library.baseUrl).then(async (result) => {
                               updateUser(result);
                               await getPreferences();
                          });
@@ -69,7 +77,7 @@ export const Settings_NotificationOptions = () => {
                });
           } else {
                await deletePushToken(library.baseUrl, expoToken, true);
-               await reloadProfile(library.baseUrl).then(async (result) => {
+               await refreshProfile(library.baseUrl).then(async (result) => {
                     updateUser(result);
                     await getPreferences();
                });
@@ -117,7 +125,12 @@ export const Settings_NotificationOptions = () => {
           setLoading(false);
      };
 
-     const updateStatus = async () => {};
+     const updateStatus = async () => {
+          await reloadProfile(library.baseUrl).then(async (result) => {
+               updateUser(result);
+               await getPreferences();
+          });
+     };
 
      if (isLoading) {
           return loadingSpinner();
