@@ -8,6 +8,8 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotification.php';
 $allNotifications = new LiDANotification();
 $allNotifications->sent = 0;
 $notifications = $allNotifications->fetchAll('id');
+$allNotifications->__destruct();
+$allNotifications = null;
 
 foreach ($notifications as $notification) {
 	$tokens = [];
@@ -44,11 +46,20 @@ foreach ($notifications as $notification) {
 
 				$expoNotification = new ExpoNotification();
 				$expoNotification->sendExpoPushNotification($body, $user['token'], $user['uid'], "custom_notification");
+				$expoNotification = null;
 			}
+			$tokens = null;
 
 			$notificationToSend->sent = 1;
 			$notificationToSend->expiresOn = $expirationTime;
 			$notificationToSend->update();
 		}
 	}
+	$notificationToSend->__destruct();
+	$notificationToSend = null;
 }
+
+global $aspen_db;
+$aspen_db = null;
+
+die();

@@ -117,7 +117,13 @@ public class EventsIndexerMain {
 					indexer.indexEvents();
 				}
 
-					//Index events from other source here
+				//Index events from other source here
+				try {
+					solrUpdateServer.close();
+				}catch (Exception e) {
+					logger.error("Error closing update server ", e);
+					System.exit(-5);
+				}
 			} catch (Exception e) {
 				logger.error("Exception indexing events", e);
 			} catch (Error e) {
@@ -152,11 +158,17 @@ public class EventsIndexerMain {
 	}
 
 	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrHost, String solrPort) {
-		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
-		return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/events", http2Client)
-			.withThreadCount(2)
-			.withQueueSize(100)
-			.build();
+		try {
+			Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+			return new ConcurrentUpdateHttp2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/events", http2Client)
+					.withThreadCount(1)
+					.withQueueSize(25)
+					.build();
+		}catch (OutOfMemoryError e) {
+			logger.error("Could not create solr client, out of memory", e);
+			System.exit(-7);
+		}
+		return null;
 	}
 
 	private static Connection connectToDatabase(Ini configIni) {

@@ -7,9 +7,12 @@ class PalaceProjectTitle {
 	private long rawResponseLength;
 	private boolean foundInExport;
 
-	PalaceProjectTitle(long id, String palaceProjectId, long checksum, long rawResponseLength) {
+	private String collectionName;
+
+	PalaceProjectTitle(long id, String palaceProjectId, String collectionName, long checksum, long rawResponseLength) {
 		this.id = id;
 		this.palaceProjectId = palaceProjectId;
+		this.collectionName = collectionName;
 		this.checksum = checksum;
 		this.rawResponseLength = rawResponseLength;
 	}

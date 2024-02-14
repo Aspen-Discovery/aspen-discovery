@@ -22,6 +22,7 @@ class SelfReg extends Action {
 					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 				} else {
 					require_once ROOT_DIR . '/sys/Administration/USPS.php';
+					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
 					$uspsInfo = USPS::getUSPSInfo();
 
 					//if there's no USPS info, don't bother trying to validate
@@ -49,12 +50,19 @@ class SelfReg extends Action {
 								$zip = $val;
 							}
 						}
-
-						require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
 						//Submit form to ILS if address is validated
 						if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)){
-							$result = $catalog->selfRegister();
-							$interface->assign('selfRegResult', $result);
+							//Submit form to ILS if age is validated
+							if (SystemUtils::validateAge($library->minSelfRegAge, $_REQUEST['dob'])){
+								$result = $catalog->selfRegister();
+								$interface->assign('selfRegResult', $result);
+							} else {
+								$ageMessage = translate([
+									'text' => 'Age not valid.',
+									'isPublicFacing' => true
+								]);
+								$interface->assign('ageMessage', $ageMessage);
+							}
 						} else {
 							$addressMessage = translate([
 								'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
@@ -63,8 +71,17 @@ class SelfReg extends Action {
 							$interface->assign('addressMessage', $addressMessage);
 						}
 					} else {
-						$result = $catalog->selfRegister();
-						$interface->assign('selfRegResult', $result);
+						//Submit form to ILS if age is validated
+						if (SystemUtils::validateAge($library->minSelfRegAge, $_REQUEST['dob'])){
+							$result = $catalog->selfRegister();
+							$interface->assign('selfRegResult', $result);
+						} else {
+							$ageMessage = translate([
+								'text' => 'Age should be at least' . $library->minSelfRegAge . ' years. Please enter a valid Date of Birth.',
+								'isPublicFacing' => true
+							]);
+							$interface->assign('ageMessage', $ageMessage);
+						}
 					}
 
 				}

@@ -7184,7 +7184,7 @@ AspenDiscovery.Account = (function () {
 					}
 				}
 			}).fail(function() {
-				const cardButton = document.getElementById('process-stripe-payment');
+				var cardButton = document.getElementById('process-stripe-payment');
 				AspenDiscovery.ajaxFail();
 				cardButton.disabled = false;
 			})
@@ -7318,11 +7318,13 @@ AspenDiscovery.Account = (function () {
 					$('#propertyRowparentname').hide();
 					$('#propertyRowcareof').hide();
 					$('#propertyRowcare_of').hide();
+					$('#propertyRowguardian').hide();
 				} else {
 					$('#propertyRowparentName').show();
 					$('#propertyRowparentname').show();
 					$('#propertyRowcareof').show();
 					$('#propertyRowcare_of').show();
+					$('#propertyRowguardian').show();
 				}
 			}
 			var smsNotices = $("#smsNotices");

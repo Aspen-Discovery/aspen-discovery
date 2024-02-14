@@ -29,6 +29,7 @@ export const MyEvents = () => {
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
      const pageSize = 25;
+     const systemMessagesForScreen = [];
 
      const [filterBy, setFilterBy] = React.useState('upcoming');
 
@@ -39,6 +40,16 @@ export const MyEvents = () => {
                headerLeft: () => <Box />,
           });
      }, [navigation]);
+
+     React.useEffect(() => {
+          if (_.isArray(systemMessages)) {
+               systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1') {
+                         systemMessagesForScreen.push(obj);
+                    }
+               });
+          }
+     }, [systemMessages]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_events', user.id, library.baseUrl, page, filterBy], () => fetchSavedEvents(page, pageSize, filterBy, library.baseUrl), {
           keepPreviousData: true,
@@ -69,13 +80,31 @@ export const MyEvents = () => {
                     }}
                     borderColor="coolGray.200">
                     <Button.Group alignItems="center" isAttached size="sm" pb={1}>
-                         <Button variant={filterBy === 'all' ? 'solid' : 'outline'} onPress={() => setFilterBy('all')}>
+                         <Button
+                              variant={filterBy === 'all' ? 'solid' : 'outline'}
+                              onPress={() => setFilterBy('all')}
+                              _dark={{
+                                   borderWidth: '1',
+                                   borderColor: 'gray.400',
+                              }}>
                               {getTermFromDictionary(language, 'all_events')}
                          </Button>
-                         <Button variant={filterBy === 'upcoming' ? 'solid' : 'outline'} onPress={() => setFilterBy('upcoming')}>
+                         <Button
+                              variant={filterBy === 'upcoming' ? 'solid' : 'outline'}
+                              _dark={{
+                                   borderWidth: '1',
+                                   borderColor: 'gray.400',
+                              }}
+                              onPress={() => setFilterBy('upcoming')}>
                               {getTermFromDictionary(language, 'upcoming_events')}
                          </Button>
-                         <Button variant={filterBy === 'past' ? 'solid' : 'outline'} onPress={() => setFilterBy('past')}>
+                         <Button
+                              _dark={{
+                                   borderWidth: '1',
+                                   borderColor: 'gray.400',
+                              }}
+                              variant={filterBy === 'past' ? 'solid' : 'outline'}
+                              onPress={() => setFilterBy('past')}>
                               {getTermFromDictionary(language, 'past_events')}
                          </Button>
                     </Button.Group>
@@ -146,7 +175,7 @@ export const MyEvents = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+               {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {getActionButtons()}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()

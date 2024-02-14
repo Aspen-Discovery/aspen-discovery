@@ -58,7 +58,10 @@ class WebBuilderIndexer {
 		try {
 			solrUpdateServer.commit(true, true, false);
 		} catch (Exception e) {
-			logEntry.incErrors("Error in final commit ", e);
+			logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-3);
 		}
 	}
 
