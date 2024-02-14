@@ -148,7 +148,7 @@ export const MyEvents = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {getActionButtons()}
-               {status === 'loading' || isFetching ? (
+               {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
