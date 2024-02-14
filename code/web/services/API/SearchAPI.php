@@ -469,7 +469,7 @@ class SearchAPI extends Action {
 					}
 					$checkEntriesInLast26Hours = false;
 					$checkEntriesInLast24Hours = true;
-					$checkEntriesInLast8Hours = true;
+					$checkEntriesInLast1Hours = true;
 					if ($aspenModule->name == 'Web Builder') {
 						// Check to make sure there is web builder content to actually index
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
@@ -491,7 +491,7 @@ class SearchAPI extends Action {
 									$checkEntriesInLast24Hours = true;
 								} else {
 									$checkEntriesInLast24Hours = false;
-									$checkEntriesInLast8Hours = false;
+									$checkEntriesInLast1Hours = false;
 									//Nothing to index, skip adding a check.
 									continue;
 								}
@@ -503,23 +503,22 @@ class SearchAPI extends Action {
 						$hooplaSettings->find();
 						$checkEntriesInLast26Hours = true;
 						$checkEntriesInLast24Hours = false;
-						$checkEntriesInLast8Hours = false;
+						$checkEntriesInLast1Hours = false;
 						while ($hooplaSettings->fetch()) {
 							if ($hooplaSettings->indexByDay == 0) {
 								$checkEntriesInLast26Hours = false;
 								$checkEntriesInLast24Hours = true;
-								$checkEntriesInLast8Hours = true;
+								$checkEntriesInLast1Hours = true;
 								break;
 							}
 						}
-
 					}
 					if ($checkEntriesInLast26Hours && ($lastFinishTime < time() - 26 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
 					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast8Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
+					} elseif ($checkEntriesInLast1Hours && ($lastFinishTime < time() - 1 * 60 * 60) && date('H') >= 8 && date('H') < 21) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 1 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
