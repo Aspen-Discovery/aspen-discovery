@@ -3041,7 +3041,10 @@ class SearchAPI extends Action {
 				$options[$key]['multiSelect'] = false;
 				foreach ($sortList as $value => $sort) {
 					$options[$key]['facets'][$i]['value'] = $value;
-					$options[$key]['facets'][$i]['display'] = $sort['desc'];
+					$options[$key]['facets'][$i]['display'] = translate([
+						'text' => $sort['desc'],
+						'isPublicFacing' => true,
+					]);
 					$options[$key]['facets'][$i]['field'] = 'sort_by';
 					$options[$key]['facets'][$i]['count'] = 0;
 					$options[$key]['facets'][$i]['isApplied'] = $sort['selected'];
