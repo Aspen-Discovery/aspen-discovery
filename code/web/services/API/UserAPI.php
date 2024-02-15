@@ -895,6 +895,34 @@ class UserAPI extends Action {
 				}
 			}
 
+			//Add Palace Project data
+			$userData->isValidForPalaceProject = false;
+			if ($user->isValidForEContentSource('palace_project')) {
+				$userData->isValidForPalaceProject = true;
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				$projectPalaceSummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOut_PalaceProject = (int)$projectPalaceSummary->numCheckedOut;
+				$userData->numHolds_PalaceProject = (int)$projectPalaceSummary->getNumHolds();
+				$userData->numHoldsAvailable_PalaceProject = (int)$projectPalaceSummary->numAvailableHolds;
+				$numCheckedOut += (int)$projectPalaceSummary->numCheckedOut;
+				$numHolds += (int)$projectPalaceSummary->getNumHolds();
+				$numHoldsAvailable += (int)$projectPalaceSummary->numAvailableHolds;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_ProjectPalace = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_PalaceProject += (int)$linkedUserSummary_ProjectPalace->numCheckedOut;
+						$userData->numHolds_PalaceProject += (int)$linkedUserSummary_ProjectPalace->getNumHolds();
+						$userData->numHoldsAvailable_PalaceProject += (int)$linkedUserSummary_ProjectPalace->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_ProjectPalace->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_ProjectPalace->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_ProjectPalace->numAvailableHolds;
+					}
+				}
+			}
+
 			//Add Interlibrary Loan
 			$userData->hasInterlibraryLoan = false;
 			if ($user->hasInterlibraryLoan()) {
