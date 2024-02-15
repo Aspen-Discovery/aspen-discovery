@@ -15,6 +15,16 @@ function getUpdates24_03_00(): array {
 		//mark - ByWater
 
 		//kirstien - ByWater
+		'add_lida_event_reg_body' => [
+			'title' => 'Event Registration Body for Aspen LiDA',
+			'description'=> 'Add settings for event registration information to use with APIs/Aspen LiDA',
+			'sql' => [
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN registrationModalBodyApp varchar(500)',
+				'ALTER TABLE springshare_libcal_settings ADD COLUMN registrationModalBodyApp varchar(500)',
+				'ALTER TABLE communico_settings ADD COLUMN registrationModalBodyApp varchar(500)',
+			],
+		],
+		//add_lida_event_reg_body
 
 		//kodi - ByWater
 		'self_reg_min_age' => [

@@ -105,7 +105,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $libraryCalendarDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($libraryCalendarDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = strip_tags($libraryCalendarDriver->getRegistrationModalBodyForAPI());
 			$itemData['bypass'] = (bool)$libraryCalendarDriver->getBypassSetting();
 			$itemData['cover'] = $libraryCalendarDriver->getEventCoverUrl();
 			$itemData['url'] = $libraryCalendarDriver->getExternalUrl();
@@ -152,7 +152,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $communicoDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($communicoDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = strip_tags($communicoDriver->getRegistrationModalBodyForAPI());
 			$itemData['bypass'] = (bool)$communicoDriver->getBypassSetting();
 			$itemData['cover'] = $communicoDriver->getEventCoverUrl();
 			$itemData['url'] = $communicoDriver->getExternalUrl();
@@ -197,7 +197,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $springshareDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($springshareDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = strip_tags($springshareDriver->getRegistrationModalBodyForAPI());
 			$itemData['bypass'] = (bool)$springshareDriver->getBypassSetting();
 			$itemData['cover'] = $springshareDriver->getEventCoverUrl();
 			$itemData['url'] = $springshareDriver->getExternalUrl();
@@ -323,7 +323,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();
@@ -339,7 +339,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();
@@ -355,7 +355,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();
