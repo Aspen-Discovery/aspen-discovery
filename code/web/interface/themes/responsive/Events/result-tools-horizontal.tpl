@@ -6,7 +6,7 @@
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
 						{if $bypassEventPage}
-							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="More Info" isPublicFacing=true}</a>
+							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text="More Info" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="More Info" isPublicFacing=true}</a>
 						{else}
 							<a href="{if !empty($eventUrl)}{$eventUrl}{else}{$recordDriver->getExternalUrl()}{/if}" class="btn btn-sm btn-tools">{translate text="More Info" isPublicFacing=true}</a>
 						{/if}

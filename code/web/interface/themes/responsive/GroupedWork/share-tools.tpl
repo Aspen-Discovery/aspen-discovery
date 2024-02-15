@@ -8,14 +8,14 @@
 			</a>
 		{/if}
 		{if !empty($showShareOnExternalSites)}
-			<a href="https://twitter.com/intent/tweet?text={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}">
+			<a href="https://twitter.com/intent/tweet?text={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 				<i class="fab fa-twitter-square fa-2x fa-fw"></i>
 			</a>
-			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="{translate text="Share on Facebook" inAttribute=true}" aria-label="Share {$recordDriver->getTitle()|escapeCSS}, by {$recordDriver->getPrimaryAuthor()|escape} on Facebook">
+			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="{translate text="Share on Facebook" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share %1%, by %2% on Facebook" 1=$recordDriver->getTitle()|escapeCSS 2=$recordDriver->getTitle()|escapeCSS inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 				<i class="fab fa-facebook-square fa-2x fa-fw"></i>
 			</a>
 
-			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$url}{$recordDriver->getBookcoverUrl('large')}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true}" aria-label="Pin {$recordDriver->getTitle()|escapeCSS}, by {$recordDriver->getPrimaryAuthor()|escape} on Pinterest">
+			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$url}{$recordDriver->getBookcoverUrl('large')}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$recordDriver->getTitle()|escapeCSS 2=$recordDriver->getTitle()|escapeCSS inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 				<i class="fab fa-pinterest-square fa-2x fa-fw"></i>
 			</a>
 		{/if}

@@ -51,28 +51,28 @@
 				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
 					<span id="connect-with-us-label" class="large">{translate text='CONNECT WITH US' isPublicFacing=true}</span>
 					{if !empty($twitterLink)}
-						<a href="{$twitterLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Twitter" inAttribute=true isPublicFacing=true}"><i class='fab fa-twitter fa-lg' role="presentation"></i></a>
+						<a href="{$twitterLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Twitter" inAttribute=true isPublicFacing=true}  ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-twitter fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($facebookLink)}
-						<a href="{$facebookLink}" class="connect-icon" target="_blank" title="{translate text="Like us on Facebook" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Like us on Facebook" inAttribute=true isPublicFacing=true}"><i class='fab fa-facebook fa-lg' role="presentation"></i></a>
+						<a href="{$facebookLink}" class="connect-icon" target="_blank" title="{translate text="Like us on Facebook" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Like us on Facebook" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-facebook fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($youtubeLink)}
-						<a href="{$youtubeLink}" class="connect-icon" target="_blank" title="{translate text="Subscribe to our YouTube Channel" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Subscribe to our YouTube Channel" inAttribute=true isPublicFacing=true}"><i class='fab fa-youtube fa-lg' role="presentation"></i></a>
+						<a href="{$youtubeLink}" class="connect-icon" target="_blank" title="{translate text="Subscribe to our YouTube Channel" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Subscribe to our YouTube Channel" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-youtube fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($instagramLink)}
-						<a href="{$instagramLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Instagram" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Instagram" inAttribute=true isPublicFacing=true}"><i class='fab fa-instagram fa-lg' role="presentation"></i></a>
+						<a href="{$instagramLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Instagram" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Instagram" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-instagram fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($pinterestLink)}
-						<a href="{$pinterestLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Pinterest" inAttribute=true isPublicFacing=true}"><i class='fab fa-pinterest fa-lg' role="presentation"></i></a>
+						<a href="{$pinterestLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Pinterest" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-pinterest fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($goodreadsLink)}
-						<a href="{$goodreadsLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Goodreads" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Goodreads" inAttribute=true isPublicFacing=true}"><i class='fab fa-goodreads fa-lg' role="presentation"></i></a>
+						<a href="{$goodreadsLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Goodreads" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on Goodreads" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-goodreads fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($tiktokLink)}
-						<a href="{$tiktokLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true}"><i class='fab fa-tiktok fa-lg' role="presentation"></i></a>
+						<a href="{$tiktokLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-tiktok fa-lg' role="presentation"></i></a>
 					{/if}
 					{if !empty($generalContactLink)}
-						<a href="{$generalContactLink}" class="connect-icon" target="_blank" title="{translate text="Contact Us" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Contact Us" inAttribute=true isPublicFacing=true}"><i class='fas fa-envelope-open fa-lg' role="presentation"></i></a>
+						<a href="{$generalContactLink}" class="connect-icon" target="_blank" title="{translate text="Contact Us" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Contact Us" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fas fa-envelope-open fa-lg' role="presentation"></i></a>
 					{/if}
 				{/if}
 			</div>
