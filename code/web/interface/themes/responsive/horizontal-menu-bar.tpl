@@ -29,7 +29,7 @@
 								{* Only render HTML contents in the header menu *}
 								{if empty($link->htmlContents)}
 									<div class="header-menu-option childMenuItem">
-										<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName isPublicFacing=true inAttribute=true}">
+										<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 											{if $link->published == 0}<em>{/if}
 											{translate text=$linkName isPublicFacing=true}
 											{if $link->published == 0}</em>{/if}
@@ -54,7 +54,7 @@
 					</script>
 				{/literal}
 				{else}
-					<a href="{$topCategory->url}" role="link" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true isPublicFacing=true}" {if $topCategory->openInNewTab}target="_blank"{/if} tabindex="0">
+					<a href="{$topCategory->url}" role="link" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})" {if $topCategory->openInNewTab}target="_blank"{/if} tabindex="0">
 						{if !empty($topCategory->iconName)}
 							<i class="fas fa-{$topCategory->iconName} fa-lg" role="presentation"></i>
 						{/if}

@@ -109,7 +109,7 @@
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record->accessOnlineUrl}
-						<a href="{$record->accessOnlineUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-action"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Access Online" isPublicFacing=true}</a>
+						<a href="{$record->accessOnlineUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-action" aria-label="{translate text='Access Online' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Access Online" isPublicFacing=true}</a>
 						{/if}
 						<a href="#" onclick="return AspenDiscovery.Hoopla.returnCheckout('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning">{translate text="Return&nbsp;Now" isPublicFacing=true}</a>
 					</div>

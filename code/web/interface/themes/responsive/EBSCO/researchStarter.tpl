@@ -11,14 +11,14 @@
 		<div class="row researchStarterBody">
 			<div class="col-tn-12 col-xs-4 col-md-3 text-center">
 				{if !empty($image)}
-					<a href="{$link}" target="_blank" class="researchStarter-link">
+					<a href="{$link}" target="_blank" class="researchStarter-link"  aria-label="{$title} ({translate text='opens in new window' isPublicFacing=true})">
 					<img src="{$image}" class="researchStarter-image img-thumbnail {$coverStyle}" alt="{$title}">
 					</a>
 				{/if}
 			</div>
 			<div class="col-tn-12 col-xs-8 col-md-9">
 				<div class="result-title notranslate">
-					<a href="{$link}" target="_blank" class="researchStarter-link">{$title}</a>
+					<a href="{$link}" target="_blank" class="researchStarter-link"  aria-label="{$title} ({translate text='opens in new window' isPublicFacing=true})">{$title}</a>
 				</div>
 				{if !empty($description)}
 					<div class="researchStarter-body">

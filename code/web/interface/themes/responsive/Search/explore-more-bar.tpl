@@ -35,7 +35,7 @@
 											<img src="{$exploreMoreCategory.image}" alt="{translate text="Explore more on"  inAttribute=true isPublicFacing=true} {$exploreMoreCategory.label|escapeCSS}">
 										</a>
 										<figcaption class="explore-more-category-title">
-											<a href='{$exploreMoreCategory.link}' {if !empty($exploreMoreCategory.onclick)}onclick="{$exploreMoreCategory.onclick}"{/if} {if !empty($exploreMoreCategory.openInNewWindow)}target="_blank" {/if}>
+											<a href='{$exploreMoreCategory.link}' {if !empty($exploreMoreCategory.onclick)}onclick="{$exploreMoreCategory.onclick}"{/if} {if !empty($exploreMoreCategory.openInNewWindow)}target="_blank" aria-label="{$exporeMoreCategory.label|truncate:30} ({translate text='opens in new window' isPublicFacing=true})" {/if}>
 												<strong>{$exploreMoreCategory.label|truncate:30}</strong>
 											</a>
 										</figcaption>

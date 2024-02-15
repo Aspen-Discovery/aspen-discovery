@@ -61,7 +61,7 @@
 								{$link->htmlContents}
 							{else}
 								<div class="header-menu-option {if !empty($categoryName) && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
-									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 										{if !empty($link->iconName)}
 											<i class="fas fa-{$link->iconName} fa-fw" role="presentation"></i>
 										{/if}
@@ -79,7 +79,7 @@
 						{if $link->htmlContents}
 							{$link->htmlContents}
 						{else}
-							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 								<div class="header-menu-option {if $link->showInTopMenu || $link->alwaysShowIconInTopMenu}hidden-lg{/if}">
 									{if !empty($link->iconName)}
 										<i class="fas fa-{$link->iconName} fa-fw" role="presentation"></i>

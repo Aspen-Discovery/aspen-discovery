@@ -32,10 +32,10 @@
 				<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
 			{/if}
 			{if !empty($staffClientUrl)}
-				<a href="{$staffClientUrl}" class="btn btn-sm btn-info" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View in Staff Client" isAdminFacing=true}</a>
+				<a href="{$staffClientUrl}" class="btn btn-sm btn-info" target="_blank" aria-label="{translate text="View in Staff Client" isAdminFacing=true inAttribute=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View in Staff Client" isAdminFacing=true}</a>
 			{/if}
 			{if !empty($classicUrl) && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
-				<a href="{$classicUrl}" class="btn btn-sm btn-info" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View in Native OPAC" isAdminFacing=true}</a>
+				<a href="{$classicUrl}" class="btn btn-sm btn-info" target="_blank" aria-label="{translate text="View in Native OPAC" isAdminFacing=true inAttribute=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View in Native OPAC" isAdminFacing=true}</a>
 			{/if}
 			{if !empty($permanentId)}
 				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
