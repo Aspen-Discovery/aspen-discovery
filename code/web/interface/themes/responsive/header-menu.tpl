@@ -100,7 +100,7 @@
 			<div class="header-menu-option">
 				<i class="fas fa-cog fa-fw" role="presentation"></i>
 				<span>
-					<a {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
+					<a {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} href="#" onclick="AspenDiscovery.showDisplaySettings()"{/if}>
 					 	{translate text="Display Options" isPublicFacing=true}
 					</a>
 				</span>
