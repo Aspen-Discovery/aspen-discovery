@@ -39,8 +39,8 @@ export const DiscoverHomeScreen = () => {
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location, updateLocations } = React.useContext(LibraryBranchContext);
-     const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
+     const { category, list, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
@@ -58,6 +58,7 @@ export const DiscoverHomeScreen = () => {
      });
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+          initialData: category,
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
@@ -217,6 +218,7 @@ export const DiscoverHomeScreen = () => {
      });
 
      useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          initialData: user,
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -404,6 +406,12 @@ export const DiscoverHomeScreen = () => {
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
+                    });
+               } else if (type === 'Event') {
+                    navigateStack('BrowseTab', 'EventScreen', {
+                         id: key,
+                         title: title,
                          prevRoute: 'HomeScreen',
                     });
                } else {

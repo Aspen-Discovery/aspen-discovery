@@ -55,6 +55,7 @@ export const MyCheckouts = () => {
      }, [navigation]);
 
      useQuery(['checkouts', user.id, library.baseUrl, language, source], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
+          initialData: checkouts,
           onSuccess: (data) => {
                updateCheckouts(data);
           },
