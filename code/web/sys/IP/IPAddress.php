@@ -150,12 +150,22 @@ class IPAddress extends DataObject {
 				'label' => 'Allow Single Sign-on (SSO)',
 				'description' => 'Traffic from this IP will be allowed to use single sign-on.',
 				'default' => false,
+			],
+			'authenticatedForSummon' => [
+				'property' => 'authenticatedForSummon',
+				'type' => 'checkbox',
+				'label' => 'Authenticated For Summon',
+				'description' => 'Traffic from this IP will be automatically authenticated in Summon',
+				'default' => false,
 			]
 		];
 
 		global $enabledModules;
 		if (!array_key_exists('EBSCOhost', $enabledModules)) {
 			unset ($structure['authenticatedForEBSCOhost']);
+		}
+		if (!array_key_exists('Summon', $enabledModules)) {
+			unset ($structure['authenticatedForSummon']);
 		}
 		return $structure;
 	}
