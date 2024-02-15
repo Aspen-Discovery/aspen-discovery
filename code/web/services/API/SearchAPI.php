@@ -1879,6 +1879,12 @@ class SearchAPI extends Action {
 			$isLiDARequest = $_REQUEST['LiDARequest'];
 		}
 
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -2008,7 +2014,9 @@ class SearchAPI extends Action {
 							if ($list->find(true)) {
 								$listEntry = new UserListEntry();
 								$listEntry->listId = $list->id;
-								$listEntry->whereAdd("source <> 'Events'");
+								if ($appVersion && $appVersion < 24.03) {
+									$listEntry->whereAdd("source <> 'Events'");
+								}
 								$listEntry->find();
 								$count = 0;
 								do {
@@ -2019,8 +2027,15 @@ class SearchAPI extends Action {
 										];
 										$count++;
 									} elseif ($listEntry->source == 'Events') {
-										// just to make sure events don't sneak in
-										$categoryResponse['records'] = [];
+										if ($appVersion && $appVersion < 24.03) {
+											$categoryResponse['events'] = [];
+										} else {
+											$categoryResponse['events'][] = [
+												'sourceId' => $listEntry->sourceId,
+												'title' => $listEntry->title,
+											];
+											$count++;
+										}
 									} else {
 										if ($listEntry->sourceId) {
 											$categoryResponse['records'][] = [
@@ -3825,5 +3840,16 @@ class SearchAPI extends Action {
 			}
 		}
 		return false;
+	}
+
+	function getLiDAVersion() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'version' || $name == 'Version') {
+				$version = explode(' ', $value);
+				$version = substr($version[0], 1); // remove starting 'v'
+				return floatval($version);
+			}
+		}
+		return 0;
 	}
 }
