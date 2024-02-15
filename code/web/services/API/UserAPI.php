@@ -1550,6 +1550,8 @@ class UserAPI extends Action {
 				return $this->checkoutAxis360Item();
 			} elseif ($source == 'ils') {
 				return $this->checkoutILSItem();
+			} elseif ($source == 'palace_project') {
+				return $this->checkoutProjectPalaceItem();
 			} else {
 				return [
 					'success' => false,
@@ -1578,6 +1580,8 @@ class UserAPI extends Action {
 				return $this->returnCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->returnAxis360Item();
+			} elseif ($source == 'project_palace') {
+				return $this->returnPalaceProjectItem();
 			} else {
 				return [
 					'success' => false,
@@ -1730,6 +1734,8 @@ class UserAPI extends Action {
 				return $this->renewCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->renewAxis360Item();
+			} elseif ($source == 'project_palace') {
+				return $this->renewProjectPalaceItem();
 			} else {
 				return [
 					'success' => false,
@@ -1991,6 +1997,8 @@ class UserAPI extends Action {
 					return $this->placeCloudLibraryHold();
 				} elseif ($source == 'axis360') {
 					return $this->placeAxis360Hold();
+				} elseif ($source == 'palace_project') {
+					return $this->placePalaceProjectHold();
 				} else {
 					return [
 						'success' => false,
@@ -2759,6 +2767,121 @@ class UserAPI extends Action {
 		}
 	}
 
+	function checkoutProjectPalaceItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->checkOutTitle($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function returnPalaceProjectItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->returnCheckout($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+
+	}
+
+	function renewProjectPalaceItem(): array {
+		$id = $_REQUEST['recordId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->renewCheckout($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function placePalaceProjectHold(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function cancelPalaceProjectHold(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->cancelHold($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
 	/**
 	 * Checkout an item in Hoopla by first adding to the cart and then processing the cart.
 	 *
@@ -3168,6 +3291,8 @@ class UserAPI extends Action {
 				return $this->cancelCloudLibraryHold();
 			} elseif ($source == 'axis360') {
 				return $this->cancelAxis360Hold();
+			} elseif ($source == 'palace_project') {
+				return $this->cancelPalaceProjectHold();
 			} else {
 				return [
 					'success' => false,
