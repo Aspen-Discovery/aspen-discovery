@@ -4640,6 +4640,7 @@ class UserAPI extends Action {
 			$account = [];
 			if (count($linkedAccounts) > 0) {
 				foreach ($linkedAccounts as $linkedAccount) {
+					$linkedAccount->loadContactInformation();
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->getBarcode();
