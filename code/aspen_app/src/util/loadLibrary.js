@@ -489,7 +489,9 @@ export function formatBrowseCategories(payload) {
                const subCategories = category['subCategories'] ?? [];
                const manyLists = category['lists'] ?? [];
                const records = category['records'] ?? [];
+               const allEvents = category['events'] ?? [];
                const lists = [];
+               const events = [];
                if (!_.isEmpty(subCategories) && subCategories.length > 0) {
                     subCategories.forEach((item) =>
                          categories.push({
@@ -500,7 +502,7 @@ export function formatBrowseCategories(payload) {
                          })
                     );
                } else {
-                    if (!_.isEmpty(subCategories) || !_.isEmpty(manyLists) || !_.isEmpty(records)) {
+                    if (!_.isEmpty(subCategories) || !_.isEmpty(manyLists) || !_.isEmpty(records) || !_.isEmpty(allEvents)) {
                          if (!_.isEmpty(subCategories) && subCategories.length > 0) {
                               subCategories.forEach((item) =>
                                    categories.push({
@@ -522,6 +524,17 @@ export function formatBrowseCategories(payload) {
                                    );
                               }
 
+                              if (!_.isEmpty(allEvents)) {
+                                   allEvents.forEach((item) =>
+                                        events.push({
+                                             id: item.sourceId,
+                                             categoryId: category.key,
+                                             source: 'Event',
+                                             title_display: item.title,
+                                        })
+                                   );
+                              }
+
                               let id = category.key;
                               const categoryId = category.key;
                               if (lists.length !== 0) {
@@ -538,6 +551,24 @@ export function formatBrowseCategories(payload) {
                                         title: category.title,
                                         source: category.source,
                                         numNewTitles,
+                                        records: lists,
+                                        id: categoryId,
+                                   });
+                              } else if (events.length !== 0) {
+                                   if (!_.isUndefined(category.listId)) {
+                                        id = category.listId;
+                                   }
+
+                                   let numNewTitles = 0;
+                                   if (!_.isUndefined(category.numNewTitles)) {
+                                        numNewTitles = category.numNewTitles;
+                                   }
+
+                                   categories.push({
+                                        key: id,
+                                        title: category.title,
+                                        source: category.source,
+                                        numNewTitles: numNewTitles,
                                         records: lists,
                                         id: categoryId,
                                    });
