@@ -441,9 +441,30 @@ class SearchAPI extends Action {
 					$logEntry = new $aspenModule->logClassName();
 					$logEntry->orderBy("id DESC");
 					$numEntriesToCheck = 3;
+					$isHooplaIndexByDay = false;
 					if ($aspenModule->name == 'Web Builder') {
 						/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 						$logEntry->websiteName = 'Web Builder Content';
+					}elseif ($aspenModule->name == 'Hoopla') {
+						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+						$hooplaSettings = new HooplaSetting();
+						$hooplaSettings->find();
+						$checkEntriesInLast26Hours = true;
+						$checkEntriesInLast24Hours = false;
+						$checkEntriesInLast1Hours = false;
+						$isHooplaIndexByDay = true;
+						while ($hooplaSettings->fetch()) {
+							if ($hooplaSettings->indexByDay == 0) {
+								$isHooplaIndexByDay = false;
+								$checkEntriesInLast26Hours = false;
+								$checkEntriesInLast24Hours = true;
+								$checkEntriesInLast1Hours = true;
+								break;
+							}
+						}
+					}
+					if ($isHooplaIndexByDay) {
+						$numEntriesToCheck = 1;
 					}
 					$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 					$logErrors = 0;

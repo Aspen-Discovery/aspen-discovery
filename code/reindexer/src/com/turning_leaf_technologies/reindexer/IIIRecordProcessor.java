@@ -220,6 +220,9 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setShelfLocationCode(orderItem.getLocationCode());
 			if (settings.isIncludeLocationNameInDetailedLocation()) {
 				String detailedLocation = location;
+				if (detailedLocation == null) {
+					detailedLocation = "";
+				}
 				if (!detailedLocation.isEmpty()){
 					detailedLocation += " - ";
 				}

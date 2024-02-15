@@ -507,7 +507,7 @@ abstract class MarcRecordProcessor {
 				if (subfieldB.getData().toLowerCase().startsWith("lexile")){
 					String lexileValue = subfieldA.getData();
 					if (lexileValue.endsWith("L")){
-						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
+						lexileValue = lexileValue.substring(0, lexileValue.length() - 1).trim();
 					}
 					if (AspenStringUtils.isNumeric(lexileValue)) {
 						AspenStringUtils.trimTrailingPunctuation(lexileValue);
