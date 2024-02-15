@@ -651,9 +651,11 @@ class UserList extends DataObject {
 	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecordsRaw($start, $numItems, $forLiDA = false): array {
+	public function getBrowseRecordsRaw($start, $numItems, $forLiDA = false, $appVersion = 0): array {
+		global $configArray;
+
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries(null, $forLiDA);
+		$listEntryInfo = $this->getListEntries(null, $forLiDA, $appVersion);
 
 		//Trim to the number of records we want to return
 		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
@@ -666,9 +668,60 @@ class UserList extends DataObject {
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
 		}
 
+		$lmBypass = false;
+		$commmunicoBypass = false;
+		$springshareBypass = false;
+		$lmAddToList = false;
+		$communicoAddToList = false;
+		$springshareAddToList = false;
+		$libraryEventSettings = [];
+
 		//Load catalog items
 		$browseRecords = [];
 		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
+			if($sourceType == 'Events') {
+				require_once ROOT_DIR . '/sys/SolrConnector/EventsSolrConnector.php';
+				$searchLibrary = Library::getSearchLibrary(null);
+				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+				$libraryEventsSetting = new LibraryEventsSetting();
+				$libraryEventsSetting->libraryId = $searchLibrary->libraryId;
+				$libraryEventSettings = $libraryEventsSetting->fetchAll();
+
+				foreach($libraryEventSettings as $setting) {
+					$source = $setting->settingSource;
+					$id = $setting->settingId;
+					if($source == 'library_market') {
+						require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+						$eventSetting = new LMLibraryCalendarSetting();
+						$eventSetting->id = $id;
+						if($eventSetting->find(true)) {
+							$lmBypass = $eventSetting->bypassAspenEventPages;
+							$lmAddToList = $eventSetting->eventsInLists;
+						}
+					} else if ($source == 'communico') {
+						require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+						$eventSetting = new CommunicoSetting();
+						$eventSetting->id = $id;
+						if($eventSetting->find(true)) {
+							$commmunicoBypass = $eventSetting->bypassAspenEventPages;
+							$commmunicoBypass = $eventSetting->eventsInLists;
+						}
+					} else if ($source == 'springshare') {
+						require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+						$eventSetting = new SpringshareLibCalSetting();
+						$eventSetting->id = $id;
+						if($eventSetting->find(true)) {
+							$springshareBypass = $eventSetting->bypassAspenEventPages;
+							$springshareBypass = $eventSetting->eventsInLists;
+						}
+					} else {
+						// invalid event source
+					}
+				}
+
+			} else {
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			}
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
 			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
@@ -677,6 +730,64 @@ class UserList extends DataObject {
 				foreach ($records as $key => $record) {
 					if ($record instanceof ListsRecordDriver) {
 						$browseRecords[$key] = $record->getFields();
+					} elseif ($sourceType == 'Events') {
+						if(str_starts_with($record->getId(), 'lc')) {
+							$eventSource = 'library_calendar';
+							$bypass = $lmBypass;
+							$addToList = $lmAddToList;
+						} else if (str_starts_with($record->getId(), 'communico')) {
+							$eventSource = 'communico';
+							$bypass = $commmunicoBypass;
+							$addToList = $communicoAddToList;
+						} else if (str_starts_with($record->getId(), 'libcal')) {
+							$eventSource = 'springshare_libcal';
+							$bypass = $springshareBypass;
+							$addToList = $springshareAddToList;
+						} else {
+							$eventSource = 'unknown';
+							$bypass = false;
+							$addToList = false;
+						}
+						$user = false;
+						if($forLiDA) {
+							if (isset($_POST['username']) && isset($_POST['password'])) {
+								$username = $_POST['username'];
+								$password = $_POST['password'];
+								$user = UserAccount::validateAccount($username, $password);
+								if ($user !== false && $user->source == 'admin') {
+									$user = false;
+								}
+							}
+						} else {
+							$user = UserAccount::getActiveUserObj();
+						}
+
+						$locationInfo = null;
+						if($record->getBranch()) {
+							$branch = $record->getBranch();
+							require_once ROOT_DIR . '/services/API/EventAPI.php';
+							$eventApi = new EventAPI();
+							$locationInfo = $eventApi->getDiscoveryBranchDetails($branch[0]);
+						}
+
+						$browseRecords[$key]['key'] = $record->getId();
+						$browseRecords[$key]['source'] = $eventSource;
+						$browseRecords[$key]['title'] = $record->getTitle();
+						$browseRecords[$key]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record->getId() . '&size=medium&type=' . $eventSource . '_event';
+						$browseRecords[$key]['registration_required'] = $record->isRegistrationRequired();
+						$browseRecords[$key]['location'] = $locationInfo;
+						$browseRecords[$key]['start_date'] = $record->getStartDate();
+						$browseRecords[$key]['end_date'] = $record->getEndDate();
+						$browseRecords[$key]['url'] = $record->getExternalUrl();
+						$browseRecords[$key]['bypass'] = $bypass;
+						$browseRecords[$key]['canAddToList'] = false;
+						$browseRecords[$key]['userIsRegistered'] = false;
+						$browseRecords[$key]['inUserEvents'] = false;
+						if ($user && !($user instanceof AspenError)) {
+							$browseRecords[$key]['canAddToList'] = $user->isAllowedToAddEventsToList($record->getSource());
+							$browseRecords[$key]['userIsRegistered'] = $user->isRegistered($record->getId());
+							$browseRecords[$key]['inUserEvents'] = $user->inUserEvents($record->getId());
+						}
 					} else {
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$groupedWorkDriver = new GroupedWorkDriver($key);

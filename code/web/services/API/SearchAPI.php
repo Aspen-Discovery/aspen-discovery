@@ -2174,6 +2174,13 @@ class SearchAPI extends Action {
 		} else {
 			$thisId = $_REQUEST['id'];
 		}
+
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		$response = [];
 
 		if (strpos($thisId, "system_saved_searches") !== false) {
@@ -2217,7 +2224,7 @@ class SearchAPI extends Action {
 						$sourceList = new UserList();
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
-							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, true);
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
 						} else {
 							$records = [];
 						}
@@ -2304,7 +2311,11 @@ class SearchAPI extends Action {
 			];
 		}
 
+		$appVersion = false;
 		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceList = new UserList();
@@ -2312,7 +2323,7 @@ class SearchAPI extends Action {
 		if ($sourceList->find(true)) {
 			$response['title'] = $sourceList->title;
 			$response['id'] = $sourceList->id;
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
 		}
 		$response['items'] = $records;
 
@@ -2495,6 +2506,12 @@ class SearchAPI extends Action {
 		global $timer;
 		global $configArray;
 
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		$searchType = $_REQUEST['type'] ?? 'catalog';
 
 		$results = [
@@ -2558,7 +2575,7 @@ class SearchAPI extends Action {
 					'endRecord' => $endRecord,
 					'perPage' => $recordsPerPage,
 				];
-				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage);
+				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage, $isLida, $appVersion);
 				$items = [];
 				foreach($records as $recordKey => $record) {
 					$items[$recordKey]['key'] = $record['id'];
