@@ -23,6 +23,7 @@ class IndexerInformation extends Admin_Admin{
 				$killResults = 'Unable to stop processes on Windows';
 			}
 			$interface->assign('killResults', $killResults);
+			$runningProcesses = $this->loadRunningProcesses();
 
 		}
 
