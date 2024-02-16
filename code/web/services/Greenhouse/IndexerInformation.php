@@ -48,7 +48,7 @@ class IndexerInformation extends Admin_Admin{
 			exec("ps -ef | grep java", $processes);
 			$processRegEx = '/(\d+)\s+.*?([a-zA-Z0-9:]{5}).*?(\d{2}:\d{2}:\d{2})\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
 			$processIdIndex = 1;
-			$processNameIndex = 3;
+			$processNameIndex = 4;
 			$processStartIndex = 2;
 			$solrRegex = "/(\d+)\s+.*?([a-zA-Z0-9:]{5}).*?(\d{2}:\d{2}:\d{2})\s.*?$serverName\/solr7/ix";
 		}
