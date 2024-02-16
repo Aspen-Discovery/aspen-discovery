@@ -449,6 +449,11 @@ const Checkout = (props) => {
      const key = 'medium_' + checkout.source + '_' + checkout.groupedWorkId;
      let url = library.baseUrl + '/bookcover.php?id=' + checkout.fullId + '&size=medium';
 
+     let itemId = checkout.itemId;
+     if (checkout.renewalId) {
+          itemId = checkout.renewalId;
+     }
+
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
@@ -525,7 +530,7 @@ const Checkout = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'renewing', true)}
                                    onPress={() => {
                                         setRenew(true);
-                                        renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
+                                        renewCheckout(checkout.barcode, checkout.recordId, checkout.source, itemId, library.baseUrl, checkout.userId).then((result) => {
                                              setRenew(false);
 
                                              if (result?.confirmRenewalFee && result.confirmRenewalFee) {
@@ -537,7 +542,7 @@ const Checkout = (props) => {
                                                        recordId: checkout.recordId ?? null,
                                                        barcode: checkout.barcode ?? null,
                                                        source: checkout.source ?? null,
-                                                       itemId: checkout.itemId ?? null,
+                                                       itemId: itemId ?? null,
                                                        userId: checkout.userId ?? null,
                                                        renewType: 'single',
                                                   });
