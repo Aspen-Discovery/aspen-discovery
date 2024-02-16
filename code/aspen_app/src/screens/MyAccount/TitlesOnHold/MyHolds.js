@@ -87,6 +87,8 @@ export const MyHolds = () => {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
                } else if (value === 'axis360') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_boundless') });
+               } else if (value === 'palace_project') {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_palace_project') });
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
@@ -385,6 +387,7 @@ export const MyHolds = () => {
                                         {user.isValidForOverdrive ? <Select.Item label={filterByLibby + ' (' + (user.numHoldsOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
                                         {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numHolds_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} /> : null}
                                         {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numHolds_axis360 ?? 0) + ')'} value="axis360" key={4} /> : null}
+                                        {user.isValidForPalaceProject ? <Select.Item label={getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numHolds_PalaceProject ?? 0) + ')'} value="palace_project" key={5} /> : null}
                                    </Select>
                               </FormControl>
                          </HStack>

@@ -2,7 +2,7 @@ import moment from 'moment';
 import { Badge, Box, Text } from 'native-base';
 import React from 'react';
 
-import { LanguageContext, UserContext } from '../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../context/initialContext';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const isOverdue = (overdue) => {
@@ -84,19 +84,26 @@ export const getAuthor = (author) => {
 
 export const getFormat = (format, source = null) => {
      const { language } = React.useContext(LanguageContext);
+     const { library } = React.useContext(LibrarySystemContext);
      if (format !== 'Unknown') {
           if (source) {
                if (source !== 'ils') {
                     if (source === 'interlibrary_loan') {
-                         source = 'Interlibrary Loan';
+                         source = getTermFromDictionary(language, 'interlibrary_loan');
                     } else if (source === 'axis360') {
-                         source = 'Axis 360';
+                         source = getTermFromDictionary(language, 'boundless');
                     } else if (source === 'cloudlibrary') {
-                         source = 'CloudLibrary';
+                         source = getTermFromDictionary(language, 'cloud_library');
                     } else if (source === 'hoopla') {
-                         source = 'Hoopla';
+                         source = getTermFromDictionary(language, 'hoopla');
                     } else if (source === 'overdrive') {
-                         source = 'OverDrive';
+                         if (library.libbyReaderName) {
+                              source = library.libbyReaderName;
+                         } else {
+                              source = getTermFromDictionary(language, 'libby');
+                         }
+                    } else if (source === 'palace_project') {
+                         source = getTermFromDictionary(language, 'palace_project');
                     }
                     return (
                          <Text
@@ -200,6 +207,8 @@ export const getType = (type) => {
                type = getTermFromDictionary(language, 'hoopla');
           } else if (type === 'overdrive') {
                type = getTermFromDictionary(language, 'overdrive');
+          } else if (type === 'palace_project') {
+               type = getTermFromDictionary(language, 'palace_project');
           }
 
           return (
@@ -255,17 +264,21 @@ export const getCheckedOutTo = (props) => {
 
 export const getDueDate = (date) => {
      const { language } = React.useContext(LanguageContext);
-     const dueDate = moment.unix(date);
-     const itemDueOn = moment(dueDate).format('MMM D, YYYY');
-     return (
-          <Text
-               fontSize={{
-                    base: 'xs',
-                    lg: 'sm',
-               }}>
-               <Text bold>{getTermFromDictionary(language, 'checkout_due')}:</Text> {itemDueOn}
-          </Text>
-     );
+     if (date && date !== 0) {
+          const dueDate = moment.unix(date);
+          const itemDueOn = moment(dueDate).format('MMM D, YYYY');
+          return (
+               <Text
+                    fontSize={{
+                         base: 'xs',
+                         lg: 'sm',
+                    }}>
+                    <Text bold>{getTermFromDictionary(language, 'checkout_due')}:</Text> {itemDueOn}
+               </Text>
+          );
+     }
+
+     return null;
 };
 
 export const willAutoRenew = (props) => {

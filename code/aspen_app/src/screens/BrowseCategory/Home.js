@@ -57,6 +57,26 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          initialData: user,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (user) {
+                    if (data !== user) {
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                    }
+               } else {
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
+               }
+          },
+     });
+
      const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
           initialData: category,
           refetchInterval: 60 * 1000 * 15,
@@ -74,7 +94,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -82,7 +102,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -143,7 +163,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
+     useQuery(['saved_searches', user?.id ?? 'unknown', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
@@ -170,7 +190,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['saved_events', user.id, library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
+     useQuery(['saved_events', user?.id ?? 'unknown', library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           placeholderData: [],
@@ -213,26 +233,6 @@ export const DiscoverHomeScreen = () => {
           onSuccess: (data) => {
                if (data === false || data === 'false') {
                     setInvalidSession(true);
-               }
-          },
-     });
-
-     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
-          initialData: user,
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               if (user) {
-                    if (data !== user) {
-                         updateUser(data);
-                         updateLanguage(data.interfaceLanguage ?? 'en');
-                         PATRON.language = data.interfaceLanguage ?? 'en';
-                    }
-               } else {
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
                }
           },
      });

@@ -45,6 +45,7 @@ export const MyCheckouts = () => {
           overdrive: 'Checked Out Titles for Libby',
           axis_360: 'Checked Out Titles for Boundless',
           cloud_library: 'Checked Out Titles for cloudLibrary',
+          palace_project: 'Checked Out Titles for Palace Project',
           all: 'Checked Out Titles',
      });
 
@@ -77,6 +78,8 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.hoopla });
                } else if (value === 'axis360') {
                     navigation.setOptions({ title: checkoutsBy.axis_360 });
+               } else if (value === 'project_palace') {
+                    navigation.setOptions({ title: checkoutsBy.palace_project });
                } else {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
@@ -138,6 +141,12 @@ export const MyCheckouts = () => {
                     term = getTermFromDictionary(language, 'checkouts_for_boundless');
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'axis_360', term);
+                         setCheckoutBy(tmp);
+                    }
+
+                    term = getTermFromDictionary(language, 'checkouts_for_palace_project');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'palace_project', term);
                          setCheckoutBy(tmp);
                     }
 
@@ -236,6 +245,7 @@ export const MyCheckouts = () => {
                                    {user.isValidForHoopla ? <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} /> : null}
                                    {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} /> : null}
                                    {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} /> : null}
+                                   {user.isValidForPalaceProject ? <Select.Item label={getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numCheckedOut_PalaceProject ?? 0) + ')'} value="palace_project" key={6} /> : null}
                               </Select>
                          </FormControl>
                     </HStack>
