@@ -15,8 +15,8 @@ class IndexerInformation extends Admin_Admin{
 				foreach ($processesToStop as $processId => $value){
 					if (array_key_exists($processId, $runningProcesses)) {
 						$killResults .= "attempting to kill {$runningProcesses[$processId]['name']}<br>";
-						exec("kill $processId", $stopResults);
-						$killResults .= $stopResults . "<br>";
+						exec("kill $processId",  $stopResults);
+						$killResults .=implode("<br> - ", $stopResults) . "<br>";
 					}else{
 						$killResults .= "Process $processId was not found";
 					}
