@@ -197,7 +197,7 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		$eventSettings = new CommunicoSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
-			if ($eventSettings->registrationModalBodyApp){
+			if (!empty($eventSettings->registrationModalBodyApp)){
 				return $eventSettings->registrationModalBodyApp;
 			} else {
 				return null;

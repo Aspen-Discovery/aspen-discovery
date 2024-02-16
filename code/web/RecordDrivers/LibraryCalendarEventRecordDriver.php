@@ -193,7 +193,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		$eventSettings = new LMLibraryCalendarSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
-			if ($eventSettings->registrationModalBodyApp){
+			if (!empty($eventSettings->registrationModalBodyApp)){
 				return $eventSettings->registrationModalBodyApp;
 			} else {
 				return null;

@@ -216,7 +216,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$eventSettings = new SpringshareLibCalSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
-			if ($eventSettings->registrationModalBodyApp){
+			if (!empty($eventSettings->registrationModalBodyApp)){
 				return $eventSettings->registrationModalBodyApp;
 			} else {
 				return null;
