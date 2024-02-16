@@ -18,7 +18,7 @@ class IndexerInformation extends Admin_Admin{
 						exec("kill $processId", $stopResults);
 						$killResults .= $stopResults . "<br>";
 					}else{
-						exec("Process $processId was not found");
+						$killResults .= "Process $processId was not found";
 					}
 				}
 			}else{
