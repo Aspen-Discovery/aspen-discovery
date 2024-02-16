@@ -13,7 +13,7 @@ class IndexerInformation extends Admin_Admin{
 			if ($configArray['System']['operatingSystem'] != 'windows') {
 				$killResults = "Stopping " . count($processesToStop) . " processes<br>";
 				foreach ($processesToStop as $processId => $value){
-					if (in_array($processId, $runningProcesses)) {
+					if (array_key_exists($processId, $runningProcesses)) {
 						$killResults .= "attempting to kill {$runningProcesses[$processId]['name']}<br>";
 						exec("kill $processId", $stopResults);
 						$killResults .= $stopResults . "<br>";
