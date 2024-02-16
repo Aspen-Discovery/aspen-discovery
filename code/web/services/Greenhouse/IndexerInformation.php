@@ -6,11 +6,12 @@ class IndexerInformation extends Admin_Admin{
 		global $interface;
 
 		$runningProcesses = $this->loadRunningProcesses();
-		$killResults = '';
 		if (!empty($_REQUEST['selectedProcesses'])) {
+			$killResults = '';
 			$processesToStop = $_REQUEST['selectedProcesses'];
 			global $configArray;
 			if ($configArray['System']['operatingSystem'] != 'windows') {
+				$killResults = "Stopping " . count($processesToStop) . " processes";
 				foreach ($processesToStop as $processId => $value){
 					if (in_array($processId, $runningProcesses)) {
 						$killResults .= "attempting to kill {$runningProcesses[$processId]['name']}<br>";
@@ -21,7 +22,7 @@ class IndexerInformation extends Admin_Admin{
 					}
 				}
 			}else{
-				$killResults = 'Unable to stop processes on Windows';
+				$killResults .= 'Unable to stop processes on Windows';
 			}
 			$interface->assign('killResults', $killResults);
 			$runningProcesses = $this->loadRunningProcesses();
