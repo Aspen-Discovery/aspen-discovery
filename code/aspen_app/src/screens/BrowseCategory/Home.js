@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
@@ -29,6 +29,7 @@ let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const isFocused = useIsFocused();
+     const isQueryFetching = useIsFetching();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [invalidSession, setInvalidSession] = React.useState(false);
@@ -39,6 +40,7 @@ export const DiscoverHomeScreen = () => {
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
      const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
      const { category, list, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -260,6 +262,8 @@ export const DiscoverHomeScreen = () => {
                          await getDefaultFacets(library.baseUrl, 5, language);
                     }
 
+                    setPreliminaryCheck(true);
+
                     console.log('notificationOnboard: ' + notificationOnboard);
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
@@ -270,7 +274,6 @@ export const DiscoverHomeScreen = () => {
                               //setAlreadyCheckedNotifications(true);
                          }
                     } else {
-                         updateNotificationOnboard(1);
                          setShowNotificationsOnboarding(true);
                          //setAlreadyCheckedNotifications(false);
                     }
@@ -300,9 +303,11 @@ export const DiscoverHomeScreen = () => {
      };
 
      // load notification onboarding prompt
-     if (notificationOnboard !== '0' && notificationOnboard !== 0) {
-          if (isFocused) {
-               return <NotificationsOnboard />;
+     if (isQueryFetching === 0 && preliminaryLoadingCheck) {
+          if (notificationOnboard !== '0' && notificationOnboard !== 0) {
+               if (isFocused) {
+                    return <NotificationsOnboard />;
+               }
           }
      }
 
