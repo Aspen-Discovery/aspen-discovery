@@ -133,7 +133,7 @@ const DisplayEvent = (payload) => {
                          {getAddToCalendar(event.startDate, event.endDate, event.location, event)}
                          {getDirections(event.location, event.room ?? false)}
                     </VStack>
-                    {event.registrationRequired ? getRegistrationModal(event) : null}
+                    {event.registrationRequired && event.registrationBody ? getRegistrationModal(event) : null}
                     {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
                     <HStack justifyContent="space-between" space={2}>
                          {event.canAddToList ? <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" /> : null}
