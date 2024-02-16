@@ -137,7 +137,7 @@ const DisplayEvent = (payload) => {
                     {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
                     <HStack justifyContent="space-between" space={2}>
                          {event.canAddToList ? <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" /> : null}
-                         <Button w="49%" onPress={() => openLink()}>
+                         <Button w={event.canAddToList ? '49%' : '100%'} onPress={() => openLink()}>
                               {getTermFromDictionary(language, 'more_info')}
                          </Button>
                     </HStack>
