@@ -98,7 +98,10 @@ class EventAPI extends Action {
 			$registrationInformation = null;
 			if($libraryCalendarDriver->getRegistrationModalBodyForAPI()) {
 				$registrationInformation = strip_tags($libraryCalendarDriver->getRegistrationModalBodyForAPI());
+			} elseif ($libraryCalendarDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($libraryCalendarDriver->getRegistrationModalBody());
 			}
+
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
 			$itemData['title'] = $libraryCalendarDriver->getTitle();
@@ -149,7 +152,10 @@ class EventAPI extends Action {
 			$registrationInformation = null;
 			if($communicoDriver->getRegistrationModalBodyForAPI()) {
 				$registrationInformation = strip_tags($communicoDriver->getRegistrationModalBodyForAPI());
+			} elseif ($communicoDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($communicoDriver->getRegistrationModalBody());
 			}
+
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
 			$itemData['title'] = $communicoDriver->getTitle();
@@ -198,6 +204,8 @@ class EventAPI extends Action {
 			$registrationInformation = null;
 			if($springshareDriver->getRegistrationModalBodyForAPI()) {
 				$registrationInformation = strip_tags($springshareDriver->getRegistrationModalBodyForAPI());
+			} elseif ($springshareDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($springshareDriver->getRegistrationModalBody());
 			}
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
