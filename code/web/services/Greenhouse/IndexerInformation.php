@@ -7,24 +7,24 @@ class IndexerInformation extends Admin_Admin{
 
 		$runningProcesses = $this->loadRunningProcesses();
 		if (!empty($_REQUEST['selectedProcesses'])) {
-			$killResults = '';
+
+			$stopResults = '';
 			$processesToStop = $_REQUEST['selectedProcesses'];
-			global $configArray;
-			if ($configArray['System']['operatingSystem'] != 'windows') {
-				$killResults = "Stopping " . count($processesToStop) . " processes<br>";
-				foreach ($processesToStop as $processId => $value){
-					if (array_key_exists($processId, $runningProcesses)) {
-						$killResults .= "attempting to kill {$runningProcesses[$processId]['name']}<br>";
-						exec("kill $processId",  $stopResults);
-						$killResults .=implode("<br> - ", $stopResults) . "<br>";
-					}else{
-						$killResults .= "Process $processId was not found";
-					}
+			$stopResults = "Stopping " . count($processesToStop) . " processes<br>";
+			foreach ($processesToStop as $processId => $value){
+				if (array_key_exists($processId, $runningProcesses)) {
+					//Add to the list of processes to stop
+					require_once ROOT_DIR . '/sys/Greenhouse/ProcessToStop.php';
+					$processToStop = new ProcessToStop();
+					$processToStop->processId = $processId;
+					$processToStop->processName = $runningProcesses[$processId]['name'];
+					$processToStop->stopAttempted = 0;
+					$processToStop->insert();
+				}else{
+					$stopResults .= "Process $processId was not found";
 				}
-			}else{
-				$killResults .= 'Unable to stop processes on Windows';
 			}
-			$interface->assign('killResults', $killResults);
+			$interface->assign('stopResults', $stopResults);
 			$runningProcesses = $this->loadRunningProcesses();
 
 		}

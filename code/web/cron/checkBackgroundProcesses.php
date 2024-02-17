@@ -3,15 +3,26 @@ require_once __DIR__ . '/../bootstrap.php';
 
 global $configArray;
 global $serverName;
+
+//Check to see if there are processes that should be stopped
+require_once ROOT_DIR . '/sys/Greenhouse/ProcessToStop.php';
+$processToStop = new ProcessToStop();
+$processToStop->stopAttempted = 0;
+$processToStop->find();
+$processesToStop = [];
+while ($processToStop->fetch()) {
+	$processesToStop[$processToStop->processId] = clone $processToStop;
+}
+
 $runningProcesses = [];
 if ($configArray['System']['operatingSystem'] == 'windows') {
 	/** @noinspection SpellCheckingInspection */
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
-	$processRegEx = '/.*?java\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
+	$processRegEx = '/.*?java(?:.exe\")?\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
 	$solrRegex = "/$serverName\\\\solr7/ix";
-	$nightlyReindexRegex = "/.*?java\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
+	$nightlyReindexRegex = "/.*?java(?:.exe\")?\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
 } else {
 	exec("ps -ef | grep java", $processes);
 	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
@@ -31,15 +42,34 @@ foreach ($processes as $processInfo) {
 	} elseif (preg_match($processRegEx, $processInfo, $matches)) {
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
-		if (array_key_exists($process, $runningProcesses)) {
-			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]['pid']} and $processId\r\n";
-		} else {
-			$runningProcesses[$process] = [
-				'name' => $process,
-				'pid' => $processId,
-			];
-		}
 
+		//Check to see if this process should be killed.
+		if (array_key_exists($processId, $processesToStop)) {
+			/** @var ProcessToStop $processToStop */
+			$processToStop = $processesToStop[$processId];
+			$processToStop->stopAttempted = true;
+			$processToStop->update();
+
+			if ($configArray['System']['operatingSystem'] == 'windows') {
+				$stopResults = "Cannot stop processes on windows.";
+			}else{
+				$stopResults = "attempting to stop {$runningProcesses[$processId]['name']}<br>";
+				exec("kill -9 $processId", $stopResultsRaw);
+				$stopResults .= implode("<br> - ", $stopResultsRaw) . "<br>";
+			}
+
+			$processToStop->stopResults = $stopResults;
+			$processToStop->update();
+		} else {
+			if (array_key_exists($process, $runningProcesses)) {
+				$results .= "There is more than one process for $process PID: {$runningProcesses[$process]['pid']} and $processId\r\n";
+			} else {
+				$runningProcesses[$process] = [
+					'name' => $process,
+					'pid' => $processId,
+				];
+			}
+		}
 		//echo("Process: $process ($processId)\r\n");
 	} elseif (preg_match($solrRegex, $processInfo)) {
 		$solrRunning = true;

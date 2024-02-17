@@ -4,15 +4,15 @@
 			<h1 id="pageTitle">{$pageTitleShort}</h1>
 		</div>
 	</div>
-	{if !empty($killResults)}
+	{if !empty($stopResults)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-info">{$killResults}</div>
+				<div class="alert alert-info">{$stopResults}</div>
 			</div>
 		</div>
 	{/if}
 	{if isset($runningProcesses)}
-		<form action="" method="get" id='indexerInformationForm' class="form-inline">
+		<form action="" method="post" id='indexerInformationForm' class="form-inline">
 			<div class="row">
 				<div class="col-xs-12">
 					<div class="alert alert-info">{translate text="This tool can be used to view information about the indexers running on the system." isAdminFacing=true}</div>
