@@ -53,7 +53,7 @@ foreach ($processes as $processInfo) {
 			if ($configArray['System']['operatingSystem'] == 'windows') {
 				$stopResults = "Cannot stop processes on windows.";
 			}else{
-				$stopResults = "attempting to stop {$runningProcesses[$processId]['name']}<br>";
+				$stopResults = "attempting to stop {$processToStop->processName}<br>";
 				exec("kill -9 $processId", $stopResultsRaw);
 				$stopResults .= implode("<br> - ", $stopResultsRaw) . "<br>";
 			}
