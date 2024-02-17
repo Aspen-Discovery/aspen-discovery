@@ -10,7 +10,7 @@ class IndexerInformation extends Admin_Admin{
 
 			$stopResults = '';
 			$processesToStop = $_REQUEST['selectedProcesses'];
-			$stopResults = "Stopping " . count($processesToStop) . " processes<br>";
+			$stopResults = "Marking " . count($processesToStop) . " processes to be stopped.<br>";
 			foreach ($processesToStop as $processId => $value){
 				if (array_key_exists($processId, $runningProcesses)) {
 					//Add to the list of processes to stop
@@ -21,12 +21,21 @@ class IndexerInformation extends Admin_Admin{
 					$processToStop->stopAttempted = 0;
 					$processToStop->insert();
 				}else{
-					$stopResults .= "Process $processId was not found";
+					$stopResults .= "Process $processId was not found.";
 				}
 			}
-			$interface->assign('stopResults', $stopResults);
-			$runningProcesses = $this->loadRunningProcesses();
 
+			$user = UserAccount::getActiveUserObj();
+			$user->updateMessage = $stopResults;
+			$user->update();
+
+			header('Location: /Greenhouse/IndexerInformation');
+			die();
+		}else{
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->updateMessage)) {
+				$interface->assign('stopResults', $user->updateMessage);
+			}
 		}
 
 		$interface->assign('runningProcesses', $runningProcesses);
