@@ -472,18 +472,26 @@ class SearchAPI extends Action {
 					$numUnfinishedEntries = 0;
 					$lastFinishTime = 0;
 					$isFirstEntry = true;
+					$isFirstEntryRunning = false;
+					$currentTime = time();
 					while ($logEntry->fetch()) {
 						if ($logEntry->numErrors > 0) {
 							$logErrors++;
 						}
 						if (empty($logEntry->endTime)) {
 							$numUnfinishedEntries++;
-							if ($isFirstEntry && (time() - $logEntry->startTime) >= 8 * 60 * 60) {
+							if ($isFirstEntry && ($currentTime - $logEntry->startTime) >= 8 * 60 * 60) {
 								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last log entry for {$aspenModule->name} has been running for more than 8 hours");
 							}
 						} else {
 							if ($logEntry->endTime > $lastFinishTime) {
 								$lastFinishTime = $logEntry->endTime;
+							}
+						}
+						if ($isFirstEntry) {
+							$lastUpdateTime = max($logEntry->startTime, $logEntry->lastUpdate);
+							if ($isFirstEntry && ($currentTime - $logEntry->startTime) <= 6 * 60) {
+								$isFirstEntryRunning = true;
 							}
 						}
 						$isFirstEntry = false;
@@ -534,18 +542,19 @@ class SearchAPI extends Action {
 							}
 						}
 					}
-					if ($checkEntriesInLast26Hours && ($lastFinishTime < time() - 26 * 60 * 60)) {
+					if ($checkEntriesInLast26Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 26 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 26 hours");
+					} elseif ($checkEntriesInLast24Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 24 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast1Hours && ($lastFinishTime < time() - 1 * 60 * 60) && date('H') >= 8 && date('H') < 21) {
+					} elseif ($checkEntriesInLast1Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 1 * 60 * 60) && date('H') >= 8 && date('H') < 21) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 1 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 						} else {
 							if ($numUnfinishedEntries > $numSettings) {
-								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+								$totalEntriesChecked = $numEntriesToCheck * $numSettings;
+								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last $totalEntriesChecked log entries for {$aspenModule->name} did not finish.");
 							} else {
 								$this->addCheck($checks, $aspenModule->name);
 							}
