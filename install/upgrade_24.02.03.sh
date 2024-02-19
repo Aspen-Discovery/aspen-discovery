@@ -5,4 +5,4 @@ if [ -z "$1" ]
     exit 1
 fi
 
-cp install/limits.conf /etc/security/limits.conf
+cp /usr/local/aspen-discovery/install/limits.conf /etc/security/limits.conf
