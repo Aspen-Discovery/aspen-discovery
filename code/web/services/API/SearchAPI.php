@@ -490,7 +490,7 @@ class SearchAPI extends Action {
 						}
 						if ($isFirstEntry) {
 							$lastUpdateTime = max($logEntry->startTime, $logEntry->lastUpdate);
-							if ($isFirstEntry && ($currentTime - $logEntry->startTime) <= 6 * 60) {
+							if (($currentTime - $logEntry->startTime) <= 6 * 60) {
 								$isFirstEntryRunning = true;
 							}
 						}
@@ -552,7 +552,7 @@ class SearchAPI extends Action {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 						} else {
-							if ($numUnfinishedEntries > $numSettings) {
+							if (!$isFirstEntryRunning && ($numUnfinishedEntries > $numSettings)) {
 								$totalEntriesChecked = $numEntriesToCheck * $numSettings;
 								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last $totalEntriesChecked log entries for {$aspenModule->name} did not finish.");
 							} else {
