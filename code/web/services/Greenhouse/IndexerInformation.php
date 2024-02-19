@@ -19,6 +19,7 @@ class IndexerInformation extends Admin_Admin{
 					$processToStop->processId = $processId;
 					$processToStop->processName = $runningProcesses[$processId]['name'];
 					$processToStop->stopAttempted = 0;
+					$processToStop->dateSet = time();
 					$processToStop->insert();
 				}else{
 					$stopResults .= "Process $processId was not found.";
@@ -35,10 +36,28 @@ class IndexerInformation extends Admin_Admin{
 			$user = UserAccount::getActiveUserObj();
 			if (!empty($user->updateMessage)) {
 				$interface->assign('stopResults', $user->updateMessage);
+				$user->updateMessage = '';
+				$user->update();
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/Greenhouse/ProcessToStop.php';
+		$processToStop = new ProcessToStop();
+		$processToStop->stopAttempted = 0;
+		$processToStop->find();
+		$processesToStop = [];
+		while ($processToStop->fetch()) {
+			if (array_key_exists($processToStop->processId, $runningProcesses)) {
+				$processesToStop[$processToStop->processId] = clone $processToStop;
+			}else{
+				//This process is no longer running
+				$processToStop->stopAttempted = 2;
+				$processToStop->update();
 			}
 		}
 
 		$interface->assign('runningProcesses', $runningProcesses);
+		$interface->assign('processesToStop', $processesToStop);
 
 		$this->display('indexerInformation.tpl', 'Indexer Information', false);
 	}

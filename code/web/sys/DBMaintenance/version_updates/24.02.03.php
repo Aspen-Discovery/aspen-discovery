@@ -25,5 +25,12 @@ function getUpdates24_02_03(): array {
 				) ENGINE = INNODB',
 			]
 		], //processes_to_stop
+		'processes_to_stop_time' => [
+			'title'=> 'Add Date Set to Processes To Stop',
+			'description' => 'Add Date Set to Processes To Stop',
+			'sql' => [
+				'ALTER TABLE processes_to_stop ADD COLUMN dateSet INT(11)',
+			]
+		], //processes_to_stop_time
     ];
 }
