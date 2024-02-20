@@ -1,8 +1,6 @@
 #Base it on Debian 10
 FROM debian:buster
 
-ARG BRANCHNAME
-
 #Install deps
 RUN apt -y update \
 	&& apt -y install \
@@ -64,16 +62,13 @@ RUN apt -y update \
 	&& rm -rf /var/lib/apt/lists/*
 
 #Adding entrypoint file
-COPY start.sh /start.sh
+COPY aspen-discovery/docker/start.sh /start.sh
 
 # Load apache modules
 RUN a2enmod rewrite
 
 # Add aspen-discovery
-RUN cd /usr/local \
-	&& echo "Branch : $BRANCHNAME" \
-	&& git clone --depth=1 -b $BRANCHNAME https://github.com/mdnoble73/aspen-discovery.git \
-	&& rm -rf ./aspen-discovery/.git
+COPY aspen-discovery /usr/local/aspen-discovery
 
 #Delete sites
 RUN cd /usr/local/aspen-discovery/sites \
