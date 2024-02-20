@@ -41,7 +41,8 @@ class SystemAPI extends Action {
 					'getSystemMessages',
 					'dismissSystemMessage',
 					'getLibraryLinks',
-					'getLocations'
+					'getLocations',
+					'getCatalogStatus'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -82,6 +83,25 @@ class SystemAPI extends Action {
 			$this->forbidAPIAccess();
 		}
 
+	}
+
+	public function getCatalogStatus(): array {
+		$results = [
+			'success' => true,
+			'catalogStatus' => 0,
+			'message' => null,
+		];
+
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->find(true)) {
+			$results['catalogStatus'] = $systemVariables->catalogStatus;
+			if($systemVariables->catalogStatus == 1) {
+				$results['message'] = $systemVariables->offlineMessage;
+			}
+		}
+
+		return $results;
 	}
 
 	public function getLibraries(): array {
