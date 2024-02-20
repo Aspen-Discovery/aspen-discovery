@@ -31,6 +31,7 @@ class AspenSite extends DataObject {
 	protected $lastOnlineTime;
 	protected $lastOfflineNote;
 	protected $isOnline;
+	protected $isOfflineMode;
 	protected $optOutBatchUpdates;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
@@ -92,7 +93,8 @@ class AspenSite extends DataObject {
 			'implementationStatus',
 			'appAccess',
 			'ils',
-			'isOnline'
+			'isOnline',
+			'isOfflineMode'
 		];
 	}
 
@@ -298,6 +300,13 @@ class AspenSite extends DataObject {
 				'type' => 'label',
 				'label' => 'Server is online',
 				'description' => 'Whether or not the server is online.',
+				'hideInLists' => false,
+			],
+			'isOfflineMode' => [
+				'property' => 'isOfflineMode',
+				'type' => 'label',
+				'label' => 'Offline Mode',
+				'description' => 'Whether or not the site is in offline mode.',
 				'hideInLists' => false,
 			],
 			'lastOfflineTime' => [
