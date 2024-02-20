@@ -68,7 +68,7 @@ if (count($updatesToRun) == 0) {
 
 					if ($scheduledUpdate->updateType === 'complete') {
 						if ($operatingSystem == 'linux') {
-							executeCommand('Stopping java', 'pkill java', $scheduledUpdate);
+							executeCommand('Stopping java', 'pkill -9 java', $scheduledUpdate);
 						}
 						doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, $scheduledUpdate);
 					} elseif ($scheduledUpdate->updateType === 'patch') {

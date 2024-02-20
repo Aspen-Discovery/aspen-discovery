@@ -15,15 +15,15 @@
 	{foreach from=$libraryLocations item=curLocation name=locationLoop}
 		<div class="locationInfo" id="locationAddress{$curLocation.id}"
 			 {if empty($smarty.foreach.locationLoop.first)}style="display:none"{/if}>
-			<div class="row">
+			<div style="width: 100%; display: inline-flex; flex-direction: row; justify-content: space-around; flex-wrap: wrap; gap: 2rem">
 				{if !empty($curLocation.image)}
-					<div class="col-xs-5">
+					<div style="flex-grow: 1; max-width: 300px">
 						<img src="{$curLocation.image}" alt="{$curLocation.name}" class="img-responsive"/>
 					</div>
                 {/if}
-				<div class="{if !empty($curLocation.image)}col-xs-7{else}col-xs-12{/if}">
+				<div style="flex-grow: 1">
 					<h2 style="margin-top:0; padding-top: 0">{$curLocation.name}</h2>
-					<address>
+					<address style="text-wrap: normal; word-break: break-all; word-wrap: break-word;">
                         {if !empty($curLocation.address)}
 							{$curLocation.address}<br/>
 						{/if}
@@ -41,14 +41,14 @@
                         {/if}
 					</address>
 					{if !empty($curLocation.hoursMessage)}
-						<span class="label label-info" style="font-size: revert">{$curLocation.hoursMessage}</span>
+						<span class="label label-info" style="font-size: revert; white-space: normal">{$curLocation.hoursMessage}</span>
 					{/if}
 				</div>
 			</div>
 			{if !empty($curLocation.map_link) || !empty($curLocation.phone) || !empty($curLocation.email) || !empty($curLocation.homeLink)}
 			<div class="row" style="padding-top: 1em">
 				<div class="col-xs-12">
-					<div style="display: inline-flex; flex-direction: row; justify-content: space-around; flex-wrap: nowrap; width: 100%; gap: 1rem">
+					<div style="width: 100%; display: inline-flex; flex-direction: row; justify-content: space-around; flex-wrap: wrap; gap: 1rem">
 		                {if !empty($curLocation.map_link)}
 							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="{$curLocation.map_link}" role="button"><i class="fas fa-directions" role="presentation"></i> {translate text="Visit Library" isPublicFacing=true}</a>
 						{/if}
@@ -66,9 +66,9 @@
 			</div>
             {/if}
 
-			<div class="row">
+			<div class="row" style="width: 100%; display: inline-flex; flex-direction: row; justify-content: stretch; flex-wrap: wrap; gap: 1rem">
 			{if !empty($curLocation.hasValidHours)}
-				<div class="{if !empty($curLocation.latitude) && $curLocation.latitude !== 0}col-tn-6{else}col-tn-12{/if}">
+				<div style="flex-grow: 1; flex-basis: 300px; flex-shrink: 0; justify-self: stretch">
 				<h3>{translate text="Hours" isPublicFacing=true}</h3>
 				{assign var='lastDay' value="-1"}
 				{foreach from=$curLocation.hours item=curHours}
@@ -108,7 +108,7 @@
 				</div>
 			{/if}
                 {if !empty($curLocation.latitude) && $curLocation.latitude !== 0}
-				<div class="{if !empty($curLocation.hasValidHours)}col-tn-6{else}col-tn-12{/if}">
+				<div style="flex-grow: 1; flex-basis: 300px; flex-shrink: 0; justify-self: stretch">
 					<iframe
 							width="100%"
 							height="250"

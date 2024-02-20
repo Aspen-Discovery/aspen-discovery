@@ -4,7 +4,7 @@ networks:
 services:
 
   backend:
-    image: aspen-discovery/aspen:${COMPOSE_ImageVersion}
+    image: aspen-discovery/aspen
     env_file:
       - .env
     ports:
@@ -13,7 +13,7 @@ services:
       - net-aspen
     tty: true
     volumes:
-      - ~/${ASPEN_Instance}:/mnt
+      - ${ASPEN_Repo}:/mnt
     depends_on:
       - db
 
@@ -25,27 +25,30 @@ services:
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - ~/${ASPEN_Instance}/mariadb_data:/var/lib/mysql
+      - ${ASPEN_Repo}/mariadb_data:/var/lib/mysql
     networks:
       - net-aspen
 
   solr:
-    image: aspen-discovery/solr:${COMPOSE_ImageVersion}
+    image: aspen-discovery/solr
     env_file:
       - .env
+    environment:
+      - SOLR_PORT=${SITE_solrPort}
+      - SOLR_HOST=${SITE_solrHost}
     ports:
       - "${SITE_solrPort}:${SITE_solrPort}"
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - ~/${ASPEN_Instance}/solr_data:/var/solr
+      - ${ASPEN_Repo}/solr_data:/var/solr
     networks:
       - net-aspen
     depends_on:
       - backend
-      
+
   tunnel:
-    image: aspen-discovery/tunnel:${COMPOSE_ImageVersion}
+    image: aspen-discovery/tunnel
     env_file:
       - .env
     deploy:

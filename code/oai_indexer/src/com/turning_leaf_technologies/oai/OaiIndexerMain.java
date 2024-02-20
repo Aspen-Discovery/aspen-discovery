@@ -169,16 +169,16 @@ public class OaiIndexerMain {
 						switch (fetchFrequency) {
 							case "hourly": //Legacy, no longer in the interface
 							case "daily":
-								needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
+								needsIndexing = lastFetched < (currentTime - 23 * 60 * 60);
 								break;
 							case "weekly":
-								needsIndexing = lastFetched < (currentTime - 7 * 24 * 60 * 60);
+								needsIndexing = lastFetched < (currentTime - (7 * 24 * 60 * 60) - (60 * 60));
 								break;
 							case "monthly":
-								needsIndexing = lastFetched < (currentTime - 30 * 24 * 60 * 60);
+								needsIndexing = lastFetched < (currentTime - (30 * 24 * 60 * 60) - (60 * 60));
 								break;
 							case "yearly":
-								needsIndexing = lastFetched < (currentTime - 3655 * 24 * 60 * 60);
+								needsIndexing = lastFetched < (currentTime - (365 * 24 * 60 * 60) - (60 * 60));
 								break;
 						}
 					}

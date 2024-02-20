@@ -6,7 +6,6 @@ class OverDriveExtractLogEntry extends BaseLogEntry {
 	public $__table = 'overdrive_extract_log';   // table name
 	public $id;
 	public $settingId;
-	public $lastUpdate;
 	public $notes;
 	public $numProducts;
 	public $numErrors;

@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 class SearchUpdateLogEntry extends BaseLogEntry {
 	public $__table = 'search_update_log';   // table name
 	public $id;
-	public $lastUpdate;
 	public $notes;
 	public $numSearches;
 	public $numUpdated;
