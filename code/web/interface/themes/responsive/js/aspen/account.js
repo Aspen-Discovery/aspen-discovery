@@ -1992,6 +1992,9 @@ AspenDiscovery.Account = (function () {
 				}
 			}
 		},
+		selfRegistrationTermsModal: function (title, body) {
+			AspenDiscovery.showMessage(title, body);
+		},
 
 		saveEvent: function (trigger, source, id, vendor) {
 			if (Globals.loggedIn) {
