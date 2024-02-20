@@ -94,9 +94,9 @@ class SystemAPI extends Action {
 
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->find(true)) {
+		if ($systemVariables !== false) {
 			$results['catalogStatus'] = $systemVariables->catalogStatus;
-			if($systemVariables->catalogStatus == 1) {
+			if($systemVariables->catalogStatus > 0) {
 				$results['message'] = $systemVariables->offlineMessage;
 			}
 		}
