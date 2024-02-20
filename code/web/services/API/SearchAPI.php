@@ -490,7 +490,7 @@ class SearchAPI extends Action {
 						}
 						if ($isFirstEntry) {
 							$lastUpdateTime = max($logEntry->startTime, $logEntry->lastUpdate);
-							if (($currentTime - $logEntry->startTime) <= 6 * 60) {
+							if (($currentTime - $logEntry->lastUpdate) <= 6 * 60) {
 								$isFirstEntryRunning = true;
 							}
 						}
