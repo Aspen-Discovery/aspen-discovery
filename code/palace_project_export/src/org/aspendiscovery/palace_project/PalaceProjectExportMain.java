@@ -252,6 +252,7 @@ public class PalaceProjectExportMain {
 				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Accept", "application/opds+json");
+				headers.put("User-Agent", "Aspen Discovery");
 
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()) {
@@ -460,6 +461,7 @@ public class PalaceProjectExportMain {
 				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Accept", "application/opds+json");
+				headers.put("User-Agent", "Aspen Discovery");
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()){
 					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());

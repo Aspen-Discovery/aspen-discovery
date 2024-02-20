@@ -34,7 +34,7 @@ class Development_AspenReleases extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'id';
+		return 'name desc';
 	}
 
 	function getObjectStructure($context = ''): array {

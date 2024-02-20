@@ -34,7 +34,7 @@ class SelfReg extends Action {
 
 						//get the correct _REQUEST names as they differ across ILSes
 						foreach ($_REQUEST as $selfRegValue => $val){
-							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)){
+							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue) && !(preg_match('/(.*?)address2(.*)/', $selfRegValue))){
 								$streetAddress = $val;
 							}
 							elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){

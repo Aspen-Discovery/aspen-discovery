@@ -48,6 +48,7 @@
 				<tr>
 					<th>{translate text="Name" isAdminFacing=true}</th>
 					<th>{translate text="DB Maintenance" isAdminFacing=true}</th>
+					<th>{translate text="Indexers" isAdminFacing=true}</th>
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
 					<th>{translate text="Timezone" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
@@ -68,6 +69,9 @@
 						</td>
 						<td>
 							<a href="{$siteStatus.baseUrl}/Admin/DBMaintenance" target="_blank">{translate text="Update" isAdminFacing=true}</a>
+						</td>
+						<td>
+							<a href="{$siteStatus.baseUrl}/Greenhouse/IndexerInformation" target="_blank">{translate text="Indexers" isAdminFacing=true}</a>
 						</td>
 						<td>
 							{translate text=$siteStatus.implementationStatus isAdminFacing=true}

@@ -47,6 +47,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char shelvingLocationSubfield;
 	private char yearToDateCheckoutsSubfield;
 	private char totalCheckoutsSubfield;
+	private char callNumberPrestampSubfield;
 	private char callNumberSubfield;
 	private char dateCreatedSubfield;
 	private char dueDateSubfield;
@@ -151,6 +152,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
 		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
 		this.setDateCreatedFormat(indexingProfileRS.getString("dateCreatedFormat"));
+		this.setCallNumberPrestampSubfield(getCharFromRecordSet(indexingProfileRS,"callNumberPrestamp"));
 		this.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
 		this.setTotalCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"totalCheckouts"));
 		this.setYearToDateCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"yearToDateCheckouts"));
@@ -504,6 +506,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setTotalCheckoutsSubfield(char totalCheckoutsSubfield) {
 		this.totalCheckoutsSubfield = totalCheckoutsSubfield;
+	}
+
+	public char getCallNumberPrestampSubfield() {
+		return callNumberPrestampSubfield;
+	}
+
+	private void setCallNumberPrestampSubfield(char callNumberPrestampSubfield) {
+		this.callNumberPrestampSubfield = callNumberPrestampSubfield;
 	}
 
 	public char getCallNumberSubfield() {

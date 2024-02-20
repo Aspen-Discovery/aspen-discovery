@@ -92,6 +92,7 @@ class AspenSite extends DataObject {
 			'implementationStatus',
 			'appAccess',
 			'ils',
+			'isOnline'
 		];
 	}
 
@@ -360,10 +361,13 @@ class AspenSite extends DataObject {
 							$status['alive'] = false;
 							$status['checks'] = [];
 							$status['wasOffline'] = false;
-							$this->isOnline = 0;
+							$this->setIsOnline(0);
 
 							if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-								$this->lastOfflineTime = time();
+								$this->setLastOfflineTime(time());
+							}
+							if ($this->hasChanges()) {
+								$this->update();
 							}
 						}
 					} else {
@@ -374,10 +378,10 @@ class AspenSite extends DataObject {
 								$status['alive'] = false;
 								$status['checks'] = [];
 								$status['wasOffline'] = false;
-								$this->isOnline = 0;
+								$this->setIsOnline(0);
 
 								if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-									$this->lastOfflineTime = time();
+									$this->setLastOfflineTime(time());
 								}
 								$this->lastOfflineNote = "JSON data is not available";
 							}
@@ -388,10 +392,10 @@ class AspenSite extends DataObject {
 								$status['alive'] = false;
 								$status['checks'] = [];
 								$status['wasOffline'] = false;
-								$this->isOnline = 0;
+								$this->setIsOnline(0);
 
 								if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-									$this->lastOfflineTime = time();
+									$this->setLastOfflineTime(time());
 								}
 								$this->lastOfflineNote = "JSON data is not available";
 							} else {
@@ -503,8 +507,8 @@ class AspenSite extends DataObject {
 									$status['wasOffline'] = false;
 								}
 
-								$this->isOnline = 1;
-								$this->lastOnlineTime = time();
+								$this->setIsOnline(1);
+								$this->setLastOnlineTime(time());
 							}
 						}
 						if ($this->hasChanges()) {
@@ -517,10 +521,10 @@ class AspenSite extends DataObject {
 						$status['alive'] = false;
 						$status['checks'] = [];
 						$status['wasOffline'] = false;
-						$this->isOnline = 0;
-						$this->lastOfflineNote = "Unable to connect to server";
+						$this->setIsOnline(0);
+						$this->setLastOfflineNote("Unable to connect to server");
 						if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-							$this->lastOfflineTime = time();
+							$this->setLastOnlineTime(time());
 						}
 						if ($this->hasChanges()) {
 							$this->update();
@@ -535,10 +539,10 @@ class AspenSite extends DataObject {
 			$status['alive'] = false;
 			$status['checks'] = [];
 			$status['wasOffline'] = false;
-			$this->isOnline = 0;
+			$this->setIsOnline(0);
 			$this->lastOfflineNote = "Base URL not set";
 			if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-				$this->lastOfflineTime = time();
+				$this->setLastOnlineTime(time());
 			}
 			if ($this->hasChanges()) {
 				$this->update();
@@ -701,5 +705,21 @@ class AspenSite extends DataObject {
 			$lastUpdate['status'] = $scheduledUpdates->status;
 		}
 		return $lastUpdate;
+	}
+
+	private function setIsOnline(int $online) {
+		$this->__set('isOnline', $online);
+	}
+
+	private function setLastOnlineTime(int $time) {
+		$this->__set('lastOnlineTime', $time);
+	}
+
+	private function setLastOfflineNote(string $note) {
+		$this->__set('lastOfflineNote', $note);
+	}
+
+	private function setLastOfflineTime(int $time) {
+		$this->__set('lastOfflineTime', $time);
 	}
 }

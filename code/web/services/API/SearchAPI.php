@@ -441,9 +441,30 @@ class SearchAPI extends Action {
 					$logEntry = new $aspenModule->logClassName();
 					$logEntry->orderBy("id DESC");
 					$numEntriesToCheck = 3;
+					$isHooplaIndexByDay = false;
 					if ($aspenModule->name == 'Web Builder') {
 						/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 						$logEntry->websiteName = 'Web Builder Content';
+					}elseif ($aspenModule->name == 'Hoopla') {
+						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+						$hooplaSettings = new HooplaSetting();
+						$hooplaSettings->find();
+						$checkEntriesInLast26Hours = true;
+						$checkEntriesInLast24Hours = false;
+						$checkEntriesInLast1Hours = false;
+						$isHooplaIndexByDay = true;
+						while ($hooplaSettings->fetch()) {
+							if ($hooplaSettings->indexByDay == 0) {
+								$isHooplaIndexByDay = false;
+								$checkEntriesInLast26Hours = false;
+								$checkEntriesInLast24Hours = true;
+								$checkEntriesInLast1Hours = true;
+								break;
+							}
+						}
+					}
+					if ($isHooplaIndexByDay) {
+						$numEntriesToCheck = 1;
 					}
 					$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 					$logErrors = 0;
@@ -451,13 +472,15 @@ class SearchAPI extends Action {
 					$numUnfinishedEntries = 0;
 					$lastFinishTime = 0;
 					$isFirstEntry = true;
+					$isFirstEntryRunning = false;
+					$currentTime = time();
 					while ($logEntry->fetch()) {
 						if ($logEntry->numErrors > 0) {
 							$logErrors++;
 						}
 						if (empty($logEntry->endTime)) {
 							$numUnfinishedEntries++;
-							if ($isFirstEntry && (time() - $logEntry->startTime) >= 8 * 60 * 60) {
+							if ($isFirstEntry && ($currentTime - $logEntry->startTime) >= 8 * 60 * 60) {
 								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last log entry for {$aspenModule->name} has been running for more than 8 hours");
 							}
 						} else {
@@ -465,11 +488,17 @@ class SearchAPI extends Action {
 								$lastFinishTime = $logEntry->endTime;
 							}
 						}
+						if ($isFirstEntry) {
+							$lastUpdateTime = max($logEntry->startTime, $logEntry->lastUpdate);
+							if (($currentTime - $logEntry->lastUpdate) <= 6 * 60) {
+								$isFirstEntryRunning = true;
+							}
+						}
 						$isFirstEntry = false;
 					}
 					$checkEntriesInLast26Hours = false;
 					$checkEntriesInLast24Hours = true;
-					$checkEntriesInLast8Hours = true;
+					$checkEntriesInLast1Hours = true;
 					if ($aspenModule->name == 'Web Builder') {
 						// Check to make sure there is web builder content to actually index
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
@@ -491,7 +520,7 @@ class SearchAPI extends Action {
 									$checkEntriesInLast24Hours = true;
 								} else {
 									$checkEntriesInLast24Hours = false;
-									$checkEntriesInLast8Hours = false;
+									$checkEntriesInLast1Hours = false;
 									//Nothing to index, skip adding a check.
 									continue;
 								}
@@ -503,29 +532,29 @@ class SearchAPI extends Action {
 						$hooplaSettings->find();
 						$checkEntriesInLast26Hours = true;
 						$checkEntriesInLast24Hours = false;
-						$checkEntriesInLast8Hours = false;
+						$checkEntriesInLast1Hours = false;
 						while ($hooplaSettings->fetch()) {
 							if ($hooplaSettings->indexByDay == 0) {
 								$checkEntriesInLast26Hours = false;
 								$checkEntriesInLast24Hours = true;
-								$checkEntriesInLast8Hours = true;
+								$checkEntriesInLast1Hours = true;
 								break;
 							}
 						}
-
 					}
-					if ($checkEntriesInLast26Hours && ($lastFinishTime < time() - 26 * 60 * 60)) {
+					if ($checkEntriesInLast26Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 26 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 26 hours");
+					} elseif ($checkEntriesInLast24Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 24 * 60 * 60)) {
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_CRITICAL, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-					} elseif ($checkEntriesInLast8Hours && ($lastFinishTime < time() - 8 * 60 * 60)) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 8 hours");
+					} elseif ($checkEntriesInLast1Hours && !$isFirstEntryRunning && ($lastFinishTime < time() - 1 * 60 * 60) && date('H') >= 8 && date('H') < 21) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 1 hours");
 					} else {
 						if ($logErrors > 0) {
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 						} else {
-							if ($numUnfinishedEntries > $numSettings) {
-								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+							if (!$isFirstEntryRunning && ($numUnfinishedEntries > $numSettings)) {
+								$totalEntriesChecked = $numEntriesToCheck * $numSettings;
+								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last $totalEntriesChecked log entries for {$aspenModule->name} did not finish.");
 							} else {
 								$this->addCheck($checks, $aspenModule->name);
 							}
