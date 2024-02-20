@@ -41,7 +41,7 @@
                         {/if}
                     </address>
                     {if !empty($curLocation.hoursMessage)}
-                        <span class="label label-info" style="font-size: revert">{$curLocation.hoursMessage}</span>
+                        <span class="label label-info" style="font-size: revert; white-space: normal">{$curLocation.hoursMessage}</span>
                     {/if}
                 </div>
             </div>

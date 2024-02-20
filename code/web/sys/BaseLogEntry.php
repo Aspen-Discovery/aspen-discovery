@@ -5,6 +5,7 @@ abstract class BaseLogEntry extends DataObject {
 	public $numErrors;
 	public $startTime;
 	public $endTime;
+	public $lastUpdate;
 
 	function getElapsedTime() {
 		if (!isset($this->endTime) || is_null($this->endTime)) {

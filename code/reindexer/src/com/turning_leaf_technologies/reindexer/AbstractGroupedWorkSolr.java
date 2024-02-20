@@ -704,13 +704,13 @@ public abstract class AbstractGroupedWorkSolr {
 	void addSeriesWithVolume(String seriesName, String volume) {
 		if (seriesName != null && !seriesName.isEmpty()) {
 			String seriesInfo = getNormalizedSeries(seriesName);
-			if (GroupedWorkIndexer.hideSeries.contains(seriesInfo)) {
+			String seriesInfoLower = seriesInfo.toLowerCase();
+			if (GroupedWorkIndexer.hideSeries.contains(seriesInfoLower)) {
 				return;
 			}
 			if (!volume.isEmpty()) {
 				volume = getNormalizedSeriesVolume(volume);
 			}
-			String seriesInfoLower = seriesInfo.toLowerCase();
 			String volumeLower = volume.toLowerCase();
 			String seriesInfoWithVolume = seriesInfo + "|" + (!volume.isEmpty() ? volume : "");
 			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
@@ -775,23 +775,23 @@ public abstract class AbstractGroupedWorkSolr {
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {
 		if (seriesInfo != null && !seriesInfo.equalsIgnoreCase("none")) {
 			seriesInfo = getNormalizedSeries(seriesInfo);
-			String normalizedSeries = seriesInfo.toLowerCase();
-			if (GroupedWorkIndexer.hideSeries.contains(normalizedSeries)) {
+			String normalizedSeriesLower = seriesInfo.toLowerCase();
+			if (GroupedWorkIndexer.hideSeries.contains(normalizedSeriesLower)) {
 				return;
 			}
-			if (!seriesField.containsKey(normalizedSeries)) {
+			if (!seriesField.containsKey(normalizedSeriesLower)) {
 				boolean okToAdd = true;
 				for (String existingSeries2 : seriesField.keySet()) {
-					if (existingSeries2.contains(normalizedSeries)) {
+					if (existingSeries2.contains(normalizedSeriesLower)) {
 						okToAdd = false;
 						break;
-					} else if (normalizedSeries.contains(existingSeries2)) {
+					} else if (normalizedSeriesLower.contains(existingSeries2)) {
 						seriesField.remove(existingSeries2);
 						break;
 					}
 				}
 				if (okToAdd) {
-					seriesField.put(normalizedSeries, seriesInfo);
+					seriesField.put(normalizedSeriesLower, seriesInfo);
 				}
 			}
 		}

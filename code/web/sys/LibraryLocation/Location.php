@@ -2077,6 +2077,13 @@ class Location extends DataObject {
 								'isPublicFacing' => true,
 							]);
 						}
+
+						if($simpleOutput) {
+							$libraryHoursMessage = translate([
+								'text' => 'Closed today',
+								'isPublicFacing' => true,
+							]);
+						}
 					}
 				} else {
 					//Library is open
@@ -2114,6 +2121,14 @@ class Location extends DataObject {
 							} else {
 								$libraryHoursMessage = translate([
 									'text' => "%1% will be closed tomorrow",
+									1 => $location->displayName,
+									'isPublicFacing' => true,
+								]);
+							}
+
+							if($simpleOutput) {
+								$libraryHoursMessage = translate([
+									'text' => 'Closed tomorrow',
 									1 => $location->displayName,
 									'isPublicFacing' => true,
 								]);

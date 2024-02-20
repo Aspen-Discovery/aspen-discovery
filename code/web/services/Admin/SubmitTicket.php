@@ -52,7 +52,7 @@ class SubmitTicket extends Admin_Admin {
 				$message = 'System Variables has not been created, could not find ticket email to submit to';
 			}
 			if ($result == true) {
-				header('Location: /SubmitTicketResults?success=true');
+				header('Location: /Admin/SubmitTicketResults?success=true');
 			} else {
 				$interface->assign('error', 'There was an error submitting your ticket. ' . $message);
 			}

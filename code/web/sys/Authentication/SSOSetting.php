@@ -132,7 +132,8 @@ class SSOSetting extends DataObject {
 		];
 
 		$uid_ils_options = [
-			'' => 'Cardnumber (default)',
+			'' => 'Use Default',
+			'cardnumber' => 'Cardnumber',
 			'borrowernumber' => 'Borrower Number',
 			'email' => 'Email',
 			'sort1' => 'Sort 1',
@@ -520,7 +521,7 @@ class SSOSetting extends DataObject {
 								'values' => $uid_ils_options,
 								'label' => 'ILS attribute that uniquely identifies a user',
 								'description' => 'This should be unique to each user',
-								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute. Leave blank to use barcode.',
+								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute.',
 								'size' => '512',
 								'hideInLists' => true,
 							],

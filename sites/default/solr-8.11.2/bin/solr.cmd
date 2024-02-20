@@ -72,6 +72,8 @@ set SOLR_URL_SCHEME=http
 set "SOLR_JETTY_CONFIG=--module=http"
 set "SOLR_SSL_OPTS= "
 
+SOLR_SSL_OPTS+="-Dsolr.cloud.client.stallTime=60000"
+
 IF DEFINED SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH (
   set "SOLR_SSL_OPTS=!SOLR_SSL_OPTS! -Dhadoop.security.credential.provider.path=%SOLR_HADOOP_CREDENTIAL_PROVIDER_PATH%"
 )
@@ -1296,6 +1298,7 @@ REM '-OmitStackTraceInFastThrow' ensures stack traces in errors,
 REM users who don't care about useful error msgs can override in SOLR_OPTS with +OmitStackTraceInFastThrow
 set "START_OPTS=%START_OPTS% -XX:-OmitStackTraceInFastThrow"
 set START_OPTS=%START_OPTS% !GC_TUNE! %GC_LOG_OPTS%
+set "START_OPTS=%START_OPTS% -Dsolr.cloud.client.stallTime=60000"
 IF NOT "!CLOUD_MODE_OPTS!"=="" set "START_OPTS=%START_OPTS% !CLOUD_MODE_OPTS!"
 IF NOT "!IP_ACL_OPTS!"=="" set "START_OPTS=%START_OPTS% !IP_ACL_OPTS!"
 IF NOT "%REMOTE_JMX_OPTS%"=="" set "START_OPTS=%START_OPTS% %REMOTE_JMX_OPTS%"
