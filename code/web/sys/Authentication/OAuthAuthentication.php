@@ -363,6 +363,7 @@ class OAuthAuthentication extends Action {
 		global $timer;
 		/** SessionInterface $session */
 		global $session;
+		@session_destroy();
 		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
 		session_name('aspen_session');
 		$session = new MySQLSession();

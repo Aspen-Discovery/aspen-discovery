@@ -1521,6 +1521,22 @@ public class EvergreenExportMain {
 													continue;
 												}
 
+												//Look for call number prefix and suffix
+												String prefix = "";
+												NodeList prefixNodeList = curVolume.getElementsByTagName("call_number_prefix");
+												if (prefixNodeList.getLength() > 0) {
+													Element prefixElement = (Element) prefixNodeList.item(0);
+													prefix = prefixElement.getAttribute("label");
+												}
+
+
+												String suffix = "";
+												NodeList suffixNodeList = curVolume.getElementsByTagName("call_number_suffix");
+												if (suffixNodeList.getLength() > 0) {
+													Element suffixElement = (Element) suffixNodeList.item(0);
+													suffix = suffixElement.getAttribute("label");
+												}
+
 												//Get all the copies within each volume
 												NodeList copies = curVolume.getElementsByTagName("copies");
 												if (copies.getLength() > 0) {
@@ -1555,7 +1571,13 @@ public class EvergreenExportMain {
 														String itemType = curCopy.getAttribute("circ_modifier");
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getITypeSubfield(), itemType));
 
+														if (!prefix.isEmpty()) {
+															curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPrestampSubfield(), prefix));
+														}
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
+														if (!suffix.isEmpty()) {
+															curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPoststampSubfield(), suffix));
+														}
 
 														String price = curCopy.getAttribute("price");
 														curItemField.addSubfield(marcFactory.newSubfield('y', price));
