@@ -1843,8 +1843,8 @@ public class GroupedWorkIndexer {
 		if(placeOfPublication == null) {
 			return -1;
 		}
-		if (placeOfPublication.length() > 1000) {
-			placeOfPublication = placeOfPublication.substring(0, 1000);
+		if (placeOfPublication.length() > 500) {
+			placeOfPublication = placeOfPublication.substring(0, 500);
 		}
 		Long id = placeOfPublicationIds.get(placeOfPublication);
 		if (id == null) {
