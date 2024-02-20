@@ -44,7 +44,7 @@ function getUpdates24_02_00(): array {
 					timesHeld INT(11) NOT NULL DEFAULT 0,
 					timesCheckedOut INT(11) NOT NULL DEFAULT 0
 				) ENGINE = InnoDB",
-				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, axis360Id, year, month)",
+				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, palaceProjectId, year, month)",
 				"ALTER TABLE palace_project_record_usage ADD INDEX (instance, year, month)",
 			],
 		], //track_palace_project_record_usage
