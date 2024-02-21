@@ -143,6 +143,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
+	function getSelfRegistrationTerms() {
+		return [];
+	}
+
 	function getSelfRegistrationFields() {
 		return [];
 	}

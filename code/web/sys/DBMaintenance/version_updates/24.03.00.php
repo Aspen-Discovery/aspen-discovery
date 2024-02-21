@@ -52,9 +52,31 @@ function getUpdates24_03_00(): array {
 				"ALTER TABLE library DROP COLUMN promptForSMSNoticesInSelfReg",
 				"ALTER TABLE library DROP COLUMN cityStateField",
 				"ALTER TABLE library DROP COLUMN selfRegistrationUserProfile",
-			]
-		]
+			],
+		],
 		//self_reg_symphony_only
+		'self_reg_tos' => [
+			'title' => "TOS for Self Registration (Symphony)",
+			'description' => "Adds table for self registration terms of service pages",
+			'sql' => [
+				"CREATE TABLE `self_registration_tos` (
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `name` varchar(75) NOT NULL UNIQUE,
+				  `terms` mediumtext,
+				  `redirect` mediumtext,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB"
+			],
+		],
+		//self_reg_tos
+		'self_reg_form_update' => [
+			'title' => "TOS for Self Registration",
+			'description' => "Adds column to self_registration_form table for TOS setting id",
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN termsOfServiceSetting int NOT NULL default -1",
+			],
+		],
+		//self_reg_form_update
 
 
 		//lucas - Theke
