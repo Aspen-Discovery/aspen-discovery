@@ -57,10 +57,9 @@ class PalaceProject_AJAX extends JSON_Action {
 						'text' => 'View Full Screen',
 						'isPublicFacing' => true,
 						'inAttribute' => true,
-					])." (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>" . translate([
+					])." (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute' => true]).")'>" . translate([
 						'text' => "View Full Screen",
 						'isPublicFacing' => true,
-						'inAttribute' => true,
 					]) . "</a>";
 			} else {
 				$result['message'] = 'No preview found for this title';
