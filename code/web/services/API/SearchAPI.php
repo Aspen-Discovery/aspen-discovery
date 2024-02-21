@@ -695,12 +695,10 @@ class SearchAPI extends Action {
 			}
 
 			$isOfflineMode = $systemVariables->catalogStatus;
-			$isOfflineModeMessage = 'Catalog is online.';
-			if($isOfflineMode == 1) {
-				$isOfflineModeMessage = $systemVariables->offlineMessage;
-				$this->addCheck($checks, "Offline Mode", self::STATUS_WARN, $isOfflineModeMessage);
+			if($isOfflineMode > 0) {
+				$this->addCheck($checks, "Offline Mode", self::STATUS_WARN, "The catalog is in offline mode");
 			} else {
-				$this->addCheck($checks, "Offline Mode", self::STATUS_OK, $isOfflineModeMessage);
+				$this->addCheck($checks, "Offline Mode", self::STATUS_OK);
 			}
 		}
 
