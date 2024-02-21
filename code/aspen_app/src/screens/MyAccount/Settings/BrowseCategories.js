@@ -13,6 +13,7 @@ export const Settings_BrowseCategories = () => {
      const { list, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
 
      const { status, data, error, isFetching } = useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
+          initialData: list,
           onSuccess: (data) => {
                updateBrowseCategoryList(data);
           },

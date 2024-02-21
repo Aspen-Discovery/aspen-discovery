@@ -50,6 +50,7 @@ export const MyLists = () => {
      }, [navigation]);
 
      useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
+          initialData: lists,
           onSuccess: (data) => {
                updateLists(data);
                setLoading(false);
@@ -57,7 +58,6 @@ export const MyLists = () => {
           onSettle: (data) => {
                setLoading(false);
           },
-          placeholderData: [],
      });
 
      useQueries({

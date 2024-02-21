@@ -94,7 +94,7 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						{assign var=accessOnlineLink value=$record->accessOnlineUrl}
 						{if !empty($accessOnlineLink)}
-							<a href="{$accessOnlineLink}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in cloudLibrary' isPublicFacing=true}</a>
+							<a href="{$accessOnlineLink}" target="_blank" class="btn btn-sm btn-action btn-wrap" aria-label="{translate text='Open in cloudLibrary' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text='Open in cloudLibrary' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canRenew}
 							<a href="#" onclick="return AspenDiscovery.CloudLibrary.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info btn-wrap">{translate text='Renew Checkout' isPublicFacing=true}</a>

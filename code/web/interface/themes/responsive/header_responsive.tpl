@@ -37,7 +37,7 @@
 		{if count($validLanguages) > 1 || count($allActiveThemes) > 1}
 		<div id="language-selection-header" class="col-tn-12 col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 		{if $languageAndDisplayInHeader}
-			<a id="theme-selection-dropdown" class="btn btn-default btn-sm" {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
+			<a id="theme-selection-dropdown" role="button" class="btn btn-default btn-sm" {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
 				{if count($validLanguages) > 1 && count($allActiveThemes) > 1}
 					{translate text="Languages & Display" isPublicFacing=true}&nbsp;<i class="fa fa-cog"></i>
 				{elseif count($validLanguages) > 1}
@@ -110,7 +110,7 @@
 			{/if}
 			{if count($allActiveThemes) > 1}
 				<div class="dropdown">
-					<button class="btn btn-default btn-sm dropdown-toggle" type="button" id="theme-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<button class="btn btn-default btn-sm dropdown-toggle" role="button" type="button" id="theme-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						{translate text="Display" isPublicFacing=true}&nbsp;<span class="caret"></span>
 					</button>
 					<ul id="select-theme" class="dropdown-menu" aria-labelledby="theme-selection-dropdown">

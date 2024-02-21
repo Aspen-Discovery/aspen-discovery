@@ -119,13 +119,13 @@
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record->overdriveRead}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{elseif $record->overdriveListen}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Listen Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Listen Online" isPublicFacing=true}</a>
 						{elseif !empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Watch Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Watch Online" isPublicFacing=true}</a>
 						{elseif $record->overdriveMagazine}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{elseif $record->formatSelected && empty($record->overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Download Again" isPublicFacing=true}</a>
 						{elseif $fulfillmentMethod == "1"}

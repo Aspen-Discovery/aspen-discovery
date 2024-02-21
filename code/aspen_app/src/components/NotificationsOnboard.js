@@ -17,22 +17,21 @@ export const NotificationsOnboard = (props) => {
      const [onboardingBody, setOnboardingBody] = React.useState('');
      const [onboardingButton, setOnboardingButton] = React.useState('');
      const [isLoading, setIsLoading] = React.useState(false);
+     const [isCanceling, setIsCanceling] = React.useState(false);
      const onClose = async () => {
-          setIsLoading(true);
-          updateNotificationOnboard(0);
-          try {
-               await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
-          } catch (e) {
-               // onboarding isn't setup yet (Discovery older than 23.07.00)
-          }
+          await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
           await refreshProfile(library.baseUrl).then((profile) => {
                updateNotificationSettings(profile.notification_preferences, language, false);
+               setIsOpen(false);
           });
-          setIsOpen(false);
+
+          updateNotificationOnboard(0);
           setIsLoading(false);
+          setIsCanceling(false);
           //setAlreadyCheckedNotifications(true);
           //setShowNotificationsOnboarding(false);
      };
+
      const cancelRef = React.useRef(null);
 
      useFocusEffect(
@@ -71,7 +70,16 @@ export const NotificationsOnboard = (props) => {
                     <AlertDialog.Body>{onboardingBody}</AlertDialog.Body>
                     <AlertDialog.Footer>
                          <Button.Group space={2}>
-                              <Button isLoading={isLoading} isLoadingText={getTermFromDictionary(language, 'canceling', true)} variant="unstyled" colorScheme="coolGray" onPress={() => onClose()} ref={cancelRef}>
+                              <Button
+                                   isLoading={isCanceling}
+                                   isLoadingText={getTermFromDictionary(language, 'canceling', true)}
+                                   variant="unstyled"
+                                   colorScheme="coolGray"
+                                   onPress={() => {
+                                        setIsCanceling(true);
+                                        onClose();
+                                   }}
+                                   ref={cancelRef}>
                                    {getTermFromDictionary(language, 'onboard_notifications_button_cancel')}
                               </Button>
                               <Button
@@ -79,6 +87,7 @@ export const NotificationsOnboard = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                    colorScheme="danger"
                                    onPress={() => {
+                                        setIsLoading(true);
                                         onClose().then(() => navigateStack('MoreTab', 'MyDevice_Notifications', {}));
                                    }}>
                                    {onboardingButton}

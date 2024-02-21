@@ -10,7 +10,7 @@
 				<div class="input-group">
 					<input  type="text" name="searchPermissions" id="searchPermissions"
 							onkeyup="return AspenDiscovery.Admin.searchPermissions();" class="form-control" />
-					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#searchPermissions').val('');return AspenDiscovery.Admin.searchPermissions();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#searchPermissions').val('');return AspenDiscovery.Admin.searchPermissions();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle" role="presentation"></i></button></span>
 					<script type="text/javascript">
                         {literal}
 						$(document).ready(function() {
@@ -35,8 +35,8 @@
 				{/foreach}
 			</select>
 			<div class="btn-group" style="padding-left: 1em; padding-top: 0">
-				<a class="btn btn-danger btn-sm" style="margin-bottom: 0" onclick="if (confirm('{translate text="Are you sure you want to delete this role" inAttribute=true isAdminFacing=true}')){ldelim}return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId}){rdelim}else{ldelim}return false{rdelim}"><i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}</a>
-				<a class="btn btn-default btn-sm" style="margin-bottom: 0"  onclick="return AspenDiscovery.Admin.showCreateRoleForm()"><i class="fas fa-plus"></i> {translate text="Create New Role" isAdminFacing=true}</a>
+				<a class="btn btn-danger btn-sm" style="margin-bottom: 0" onclick="if (confirm('{translate text="Are you sure you want to delete this role" inAttribute=true isAdminFacing=true}')){ldelim}return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId}){rdelim}else{ldelim}return false{rdelim}"><i class="fas fa-trash" role="presentation"></i> {translate text="Delete" isAdminFacing=true}</a>
+				<a class="btn btn-default btn-sm" style="margin-bottom: 0"  onclick="return AspenDiscovery.Admin.showCreateRoleForm()"><i class="fas fa-plus" role="presentation"></i> {translate text="Create New Role" isAdminFacing=true}</a>
 			</div>
 		</div>
 	</form>
@@ -94,6 +94,6 @@
 				</div>
 			{/foreach}
 		</div>
-		<button type="submit" name="submit" value="save" class="btn btn-primary" style="margin-top: 2em"><i class="fas fa-save"></i> {translate text="Save Changes" isAdminFacing=true}</button>
+		<button type="submit" name="submit" value="save" class="btn btn-primary" style="margin-top: 2em"><i class="fas fa-save" role="presentation"></i> {translate text="Save Changes" isAdminFacing=true}</button>
 	</form>
 {/strip}

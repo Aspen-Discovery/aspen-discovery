@@ -19,6 +19,7 @@ class SpringshareLibCalSetting extends DataObject {
 	public $eventsInLists;
 	public $bypassAspenEventPages;
 	public $registrationModalBody;
+	public $registrationModalBodyApp;
 	public $username;
 	public $password;
 	public $numberOfDaysToIndex;
@@ -106,6 +107,15 @@ class SpringshareLibCalSetting extends DataObject {
 				'description' => 'The body of the modal for event registration information',
 				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 				'hideInLists' => true,
+			],
+			'registrationModalBodyApp' => [
+				'property' => 'registrationModalBodyApp',
+				'type' => 'textarea',
+				'label' => 'Registration Information to Show in Aspen LiDA',
+				'description' => 'The body of the modal for event registration in Aspen LiDA',
+				'hideInLists' => true,
+				'maxLength' => 500,
+				'note' => '500 character limit. HTML is not allowed.',
 			],
 
 			'libraries' => [

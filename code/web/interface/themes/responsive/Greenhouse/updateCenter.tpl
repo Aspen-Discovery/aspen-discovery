@@ -145,7 +145,7 @@
                             {/if}
 						</td>
 						<td>
-							<a class="btn btn-xs btn-default" href="{$site->baseUrl}/Admin/DBMaintenance" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="Run" isAdminFacing=true}</a>
+							<a class="btn btn-xs btn-default" href="{$site->baseUrl}/Admin/DBMaintenance" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Run" isAdminFacing=true}</a>
 						</td>
 					</tr>
 				{/foreach}

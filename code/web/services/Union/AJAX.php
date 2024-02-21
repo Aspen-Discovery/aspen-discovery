@@ -65,7 +65,10 @@ class Union_AJAX extends JSON_Action {
 					'translateParameters' => true,
 				]) . "</div>";
 		}
-		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>" . translate([
+		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank' aria-label='".translate([
+				'text' => 'Full Results from %1%',
+				'isPublicFacing' => true,
+			])." (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>" . translate([
 				'text' => 'Full Results from %1%',
 				1 => $sectionObject->displayName,
 				'isPublicFacing' => true,
@@ -103,7 +106,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		} else {
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -140,7 +143,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -179,7 +182,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -208,7 +211,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		} else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		}
 
@@ -248,7 +251,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No Results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -287,7 +290,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($innReachResults['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 				$interface->assign('innReachResults', $innReachResults['records']);
 				$results .= $interface->fetch('Union/innReach.tpl');
 			}

@@ -12,7 +12,7 @@
 				<div class="input-group">
 					<input  type="text" name="settingsSearch" id="settingsSearch"
 							onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
-					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle" role="presentation"></i></button></span>
 					<script type="text/javascript">
 						{literal}
 						$(document).ready(function() {
@@ -42,7 +42,7 @@
 									{foreach from=$adminSection->actions item=action}
 										<div class="adminAction row">
 											<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-												<a href="{$action->link}" title="{translate text=$action->label inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+												<a href="{$action->link}" title="{translate text=$action->label inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa" role="presentation"></i></a>
 											</div>
 											<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 												<div class="adminActionLabel"><a href="{$action->link}">{translate text=$action->label  isAdminFacing=true}</a></div>
@@ -52,7 +52,7 @@
 										{foreach from=$action->subActions item=subAction}
 											<div class="adminAction row">
 												<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-													<a href="{$subAction->link}" title="{translate text=$subAction->label inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+													<a href="{$subAction->link}" title="{translate text=$subAction->label inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa" role="presentation"></i></a>
 												</div>
 												<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 													<div class="adminActionLabel"><a href="{$subAction->link}">{translate text=$subAction->label isAdminFacing=true}</a></div>

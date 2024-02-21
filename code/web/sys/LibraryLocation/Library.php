@@ -3222,7 +3222,7 @@ class Library extends DataObject {
 				'property' => 'courseReservesSection',
 				'type' => 'section',
 				'label' => 'Course Reserves',
-				'instructions' => '<i class="fas fa-info-circle"></i> Applies to Koha and Symphony only',
+				'instructions' => '<i class="fas fa-info-circle" role="presentation"></i> Applies to Koha and Symphony only',
 				'hideInLists' => true,
 				'permissions' => [
 					'Administer Course Reserves',

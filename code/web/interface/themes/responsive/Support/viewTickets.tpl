@@ -12,7 +12,7 @@
 			{foreach from=$activeTickets item="ticket"}
 				<tr>
 					<td>{$ticket.id}</td>
-					<td><a href="{$ticket.link}" target="_blank">{$ticket.title}</a></td>
+					<td><a href="{$ticket.link}" target="_blank" aria-label="{$ticket.title} ({translate text='opens in new window' isPublicFacing=true})">{$ticket.title}</a></td>
 					<td>{$ticket.description}</td>
 				</tr>
 			{/foreach}

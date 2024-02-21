@@ -6,7 +6,7 @@ import moment from 'moment';
 // custom components and helper files
 import { popAlert, popToast } from '../components/loadError';
 import { getTermFromDictionary } from '../translations/TranslationService';
-import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
+import { createAuthTokens, getHeaders, postData, problemCodeMap, stripHTML } from './apiAuth';
 import { GLOBALS } from './globals';
 import { getBrowseCategories, LIBRARY } from './loadLibrary';
 import { getPatronBrowseCategories } from './loadPatron';
@@ -64,17 +64,17 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
                }
 
                if (result.success === true) {
-                    popAlert(result.title, result.message, 'success');
+                    popAlert(result.title, stripHTML(result.message), 'success');
                     //await reloadCheckedOutItems();
                } else {
-                    popAlert(result.title, result.message, 'error');
+                    popAlert(result.title, stripHTML(result.message), 'error');
                }
           } else {
                if (result.success === true) {
-                    popAlert(result.title, result.message, 'success');
+                    popAlert(result.title, stripHTML(result.message), 'success');
                     //await reloadCheckedOutItems();
                } else {
-                    popAlert(result.title, result.message, 'error');
+                    popAlert(result.title, stripHTML(result.message), 'error');
                }
           }
      } else {

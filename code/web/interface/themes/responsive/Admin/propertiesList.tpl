@@ -3,7 +3,7 @@
 		<h1 id="pageTitle">{$pageTitleShort}</h1>
 	</div>
 	<div class="col-xs-12 col-md-3 help-link">
-		{if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
+		{if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle" role="presentation"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
 	</div>
 </div>
 
@@ -172,7 +172,7 @@
 								{/if}
 								{if $dataItem->getAdditionalListActions()}
 									{foreach from=$dataItem->getAdditionalListActions() item=action}
-										<a href='{$action.url}' class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" {if !empty($action.target) && $action.target == "_blank"}target="_blank" {/if}>{if !empty($action.target) && $action.target == "_blank"}<i class="fas fa-external-link-alt"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
+										<a href='{$action.url}' class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" {if !empty($action.target) && $action.target == "_blank"}target="_blank" {/if}>{if !empty($action.target) && $action.target == "_blank"}<i class="fas fa-external-link-alt" role="presentation"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
 									{/foreach}
 								{/if}
 								{if $dataItem->getAdditionalListJavascriptActions()}

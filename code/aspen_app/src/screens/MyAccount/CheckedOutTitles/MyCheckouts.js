@@ -45,6 +45,7 @@ export const MyCheckouts = () => {
           overdrive: 'Checked Out Titles for Libby',
           axis_360: 'Checked Out Titles for Boundless',
           cloud_library: 'Checked Out Titles for cloudLibrary',
+          palace_project: 'Checked Out Titles for Palace Project',
           all: 'Checked Out Titles',
      });
 
@@ -55,6 +56,7 @@ export const MyCheckouts = () => {
      }, [navigation]);
 
      useQuery(['checkouts', user.id, library.baseUrl, language, source], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
+          initialData: checkouts,
           onSuccess: (data) => {
                updateCheckouts(data);
           },
@@ -76,6 +78,8 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.hoopla });
                } else if (value === 'axis360') {
                     navigation.setOptions({ title: checkoutsBy.axis_360 });
+               } else if (value === 'project_palace') {
+                    navigation.setOptions({ title: checkoutsBy.palace_project });
                } else {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
@@ -137,6 +141,12 @@ export const MyCheckouts = () => {
                     term = getTermFromDictionary(language, 'checkouts_for_boundless');
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'axis_360', term);
+                         setCheckoutBy(tmp);
+                    }
+
+                    term = getTermFromDictionary(language, 'checkouts_for_palace_project');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'palace_project', term);
                          setCheckoutBy(tmp);
                     }
 
@@ -235,6 +245,7 @@ export const MyCheckouts = () => {
                                    {user.isValidForHoopla ? <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} /> : null}
                                    {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} /> : null}
                                    {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} /> : null}
+                                   {user.isValidForPalaceProject ? <Select.Item label={getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numCheckedOut_PalaceProject ?? 0) + ')'} value="palace_project" key={6} /> : null}
                               </Select>
                          </FormControl>
                     </HStack>
@@ -438,6 +449,11 @@ const Checkout = (props) => {
      const key = 'medium_' + checkout.source + '_' + checkout.groupedWorkId;
      let url = library.baseUrl + '/bookcover.php?id=' + checkout.fullId + '&size=medium';
 
+     let itemId = checkout.itemId;
+     if (checkout.renewalId) {
+          itemId = checkout.renewalId;
+     }
+
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
@@ -514,7 +530,7 @@ const Checkout = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'renewing', true)}
                                    onPress={() => {
                                         setRenew(true);
-                                        renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
+                                        renewCheckout(checkout.barcode, checkout.recordId, checkout.source, itemId, library.baseUrl, checkout.userId).then((result) => {
                                              setRenew(false);
 
                                              if (result?.confirmRenewalFee && result.confirmRenewalFee) {
@@ -526,7 +542,7 @@ const Checkout = (props) => {
                                                        recordId: checkout.recordId ?? null,
                                                        barcode: checkout.barcode ?? null,
                                                        source: checkout.source ?? null,
-                                                       itemId: checkout.itemId ?? null,
+                                                       itemId: itemId ?? null,
                                                        userId: checkout.userId ?? null,
                                                        renewType: 'single',
                                                   });

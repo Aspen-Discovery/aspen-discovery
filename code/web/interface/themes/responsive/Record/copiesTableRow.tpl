@@ -66,7 +66,7 @@
 
 		{if $holdingsHaveUrls}
 			<td>
-				{if !empty($holding.itemUrl)}<a href="{$holding.itemUrl}" target="_blank"><i class="fas fa-external-link-alt"></i> {if empty($holding.itemUrlDescription)}{$holding.itemUrl}{else}{$holding.itemUrlDescription}{/if}</a> {/if}
+				{if !empty($holding.itemUrl)}<a href="{$holding.itemUrl}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {if empty($holding.itemUrlDescription)}{$holding.itemUrl}{else}{$holding.itemUrlDescription}{/if}</a> {/if}
 			</td>
 		{/if}
 	</tr>

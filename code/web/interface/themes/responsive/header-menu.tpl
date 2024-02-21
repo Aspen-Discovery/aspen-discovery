@@ -2,26 +2,26 @@
 <div id="header-menu" class="dropdown-menu dropdownMenu" aria-labelledby="header-menu-dropdown">
 	{if !empty($showLoginButton)}
 		<div id="hamburger-menu-my-account" class="header-menu-option">
-			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw"></i><span>{translate text='Your Account' isPublicFacing=true}</span></a>
+			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw" role="presentation"></i><span>{translate text='Your Account' isPublicFacing=true}</span></a>
 		</div>
 	{/if}
 
 	{if !empty($userPermissions)}
 		<div id="admin-home-button" class="header-menu-option">
-			<a href="/Admin/Home"><i class="fas fa-tools fa-fw"></i><span>{translate text='Aspen Administration' isAdminFacing=true}</span></a>
+			<a href="/Admin/Home"><i class="fas fa-tools fa-fw" role="presentation"></i><span>{translate text='Aspen Administration' isAdminFacing=true}</span></a>
 		</div>
 	{/if}
 
 	{if !empty($homeLink)}
 		<div id="home-page-home-button" class="header-menu-option">
-			<a href="{$homeLink}"><i class="fas fa-landmark fa-fw"></i><span>{translate text='Library Home Page' isAdminFacing=true}</span></a>
+			<a href="{$homeLink}"><i class="fas fa-landmark fa-fw" role="presentation"></i><span>{translate text='Library Home Page' isAdminFacing=true}</span></a>
 		</div>
 	{/if}
 
 	{if !empty($showLibraryHoursAndLocationsLink)}
 		<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true isAdminFacing=true}" class="modalDialogTrigger">
 			<div id="home-page-hours-locations" class="header-menu-option">
-				<i class="fas fa-map-marker-alt fa-fw"></i>
+				<i class="fas fa-map-marker-alt fa-fw" role="presentation"></i>
 				<span>
 				{if $numLocations == 1}
 					{if !isset($hasValidHours) || $hasValidHours}
@@ -61,9 +61,9 @@
 								{$link->htmlContents}
 							{else}
 								<div class="header-menu-option {if !empty($categoryName) && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
-									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 										{if !empty($link->iconName)}
-											<i class="fas fa-{$link->iconName} fa-fw"></i>
+											<i class="fas fa-{$link->iconName} fa-fw" role="presentation"></i>
 										{/if}
 										{if $link->published == 0}<em>{/if}
 											<span>{translate text=$linkName isPublicFacing=true}</span>
@@ -79,10 +79,10 @@
 						{if $link->htmlContents}
 							{$link->htmlContents}
 						{else}
-							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})">
 								<div class="header-menu-option {if $link->showInTopMenu || $link->alwaysShowIconInTopMenu}hidden-lg{/if}">
 									{if !empty($link->iconName)}
-										<i class="fas fa-{$link->iconName} fa-fw"></i>
+										<i class="fas fa-{$link->iconName} fa-fw" role="presentation"></i>
 									{/if}
 									{if $link->published == 0}<em>{/if}
 										<span>{translate text=$linkName isPublicFacing=true}</span>
@@ -98,9 +98,9 @@
 	{if !empty($allActiveThemes)}
 		{if count($allActiveThemes) > 1}
 			<div class="header-menu-option">
-				<i class="fas fa-cog fa-fw"></i>
+				<i class="fas fa-cog fa-fw" role="presentation"></i>
 				<span>
-					<a {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
+					<a {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} href="#" onclick="AspenDiscovery.showDisplaySettings()"{/if}>
 					 	{translate text="Display Options" isPublicFacing=true}
 					</a>
 				</span>
@@ -111,11 +111,11 @@
 	{if !empty($validLanguages)}
 		{if count($validLanguages) > 1}
 			<div class="header-menu-section" id="aspenLanguagesMenuSection">
-				<i class="fas fa-globe fa-fw"></i> {translate text="Languages" isPublicFacing=true}
+				<i class="fas fa-globe fa-fw" role="presentation"></i> {translate text="Languages" isPublicFacing=true}
 			</div>
 		{else}
 			<div class="header-menu-section" id="aspenLanguagesMenuSection">
-				<i class="fas fa-globe fa-fw"></i> {translate text="Language" isPublicFacing=true}
+				<i class="fas fa-globe fa-fw" role="presentation"></i> {translate text="Language" isPublicFacing=true}
 			</div>
 		{/if}
 		{foreach from=$validLanguages key=languageCode item=language}
@@ -124,7 +124,7 @@
 			{/if}
 				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
 					{if $userLang->code==$languageCode}
-						<i class="fas fa-check fa-fw"></i>&nbsp;
+						<i class="fas fa-check fa-fw" role="presentation"></i>&nbsp;
 					{/if}
 					{$language->displayName}
 				</div>

@@ -11,7 +11,7 @@
 						<td>{$marcHolding.library}</td>
 						<td>{$marcHolding.shelfLocation}</td>
 						<td>{implode subject=$marcHolding.holdings glue='<br/>'}</td>
-						<td>{if !empty($marcHolding.link)}<a href="{$marcHolding.link}" target="_blank"><i class="fas fa-external-link-alt"></i> {$marcHolding.linkText}</a>{else}{translate text="N/A" isPublicFacing=true}{/if}</td>
+						<td>{if !empty($marcHolding.link)}<a href="{$marcHolding.link}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {$marcHolding.linkText}</a>{else}{translate text="N/A" isPublicFacing=true}{/if}</td>
 					</tr>
 				{/foreach}
 			</tbody>
@@ -31,7 +31,7 @@
 							<td>{$marcHolding.library}</td>
 							<td>{$marcHolding.shelfLocation}</td>
 							<td>{implode subject=$marcHolding.holdings glue='<br/>'}</td>
-							<td>{if !empty($marcHolding.link)}<a href="{$marcHolding.link}" target="_blank"><i class="fas fa-external-link-alt"></i> {$marcHolding.linkText}</a>{else}{translate text="N/A" isPublicFacing=true}{/if}</td>
+							<td>{if !empty($marcHolding.link)}<a href="{$marcHolding.link}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {$marcHolding.linkText}</a>{else}{translate text="N/A" isPublicFacing=true}{/if}</td>
 						</tr>
 					{/foreach}
 				</tbody>

@@ -3,8 +3,8 @@
 	<div class="row" style="margin-top: 1em">
 		<div class="col-xs-12">
 			<div class="btn-group btn-group-sm">
-				<a class="btn btn-default" href="/Admin/TwoFactorAuth?objectAction=edit&amp;id={$id}"><i class="fas fa-cog"></i> {translate text="Edit Settings" isAdminFacing=true}</a>
-				<a class="btn btn-default" href='/Admin/TwoFactorAuth?objectAction=list'><i class="fas fa-list"></i> {translate text="Return to List" isAdminFacing=true}</a>
+				<a class="btn btn-default" href="/Admin/TwoFactorAuth?objectAction=edit&amp;id={$id}"><i class="fas fa-cog" role="presentation"></i> {translate text="Edit Settings" isAdminFacing=true}</a>
+				<a class="btn btn-default" href='/Admin/TwoFactorAuth?objectAction=list'><i class="fas fa-list" role="presentation"></i> {translate text="Return to List" isAdminFacing=true}</a>
 			</div>
 		</div>
 	</div>

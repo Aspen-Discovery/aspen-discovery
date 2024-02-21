@@ -3,7 +3,7 @@
 		<div id="account-menu-label" class="sidebar-label row">
 			<div class="col-xs-12">{translate text='Administration Options' isAdminFacing=true}</div>
 			<a class='searchSettings searchSettingsColor' onClick="return AspenDiscovery.Admin.showSearch();"
-			   id='showSearchButton'><i class="fas fa-search"></i> {translate text="Search" isAdminFacing=true}</a>
+			   id='showSearchButton'><i class="fas fa-search" role="presentation"></i> {translate text="Search" isAdminFacing=true}</a>
 		</div>
 		<form id='adminSearchBox' role="form" class="form-horizontal" style='display:none'>
 			<div class="form-group">
@@ -15,7 +15,7 @@
 					<span class="input-group-btn"><button class="btn btn-default" type="button"
 														  onclick="$('#searchAdminBar').val('');return AspenDiscovery.Admin.searchAdminBar();"
 														  title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i
-									class="fas fa-times-circle"></i></button></span>
+									class="fas fa-times-circle" role="presentation"></i></button></span>
 					<script type="text/javascript">
 						{literal}
 						$(document).ready(function () {

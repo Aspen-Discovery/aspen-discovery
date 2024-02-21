@@ -53,7 +53,11 @@ class PalaceProject_AJAX extends JSON_Action {
 //				$palaceProjectDriver->incrementStat('numPreviews');
 
 				$result['modalBody'] = "<iframe src='{$sampleUrl}' class='previewFrame'></iframe>";
-				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate([
+				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank' aria-label='".translate([
+						'text' => 'View Full Screen',
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					])." (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute' => true]).")'>" . translate([
 						'text' => "View Full Screen",
 						'isPublicFacing' => true,
 					]) . "</a>";

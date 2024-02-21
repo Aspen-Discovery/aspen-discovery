@@ -95,6 +95,13 @@ class EventAPI extends Action {
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$libraryCalendarDriver = new LibraryCalendarEventRecordDriver($_REQUEST['id']);
 		if($libraryCalendarDriver->isValid()) {
+			$registrationInformation = null;
+			if($libraryCalendarDriver->getRegistrationModalBodyForAPI()) {
+				$registrationInformation = strip_tags($libraryCalendarDriver->getRegistrationModalBodyForAPI());
+			} elseif ($libraryCalendarDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($libraryCalendarDriver->getRegistrationModalBody());
+			}
+
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
 			$itemData['title'] = $libraryCalendarDriver->getTitle();
@@ -105,7 +112,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $libraryCalendarDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($libraryCalendarDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = $registrationInformation;
 			$itemData['bypass'] = (bool)$libraryCalendarDriver->getBypassSetting();
 			$itemData['cover'] = $libraryCalendarDriver->getEventCoverUrl();
 			$itemData['url'] = $libraryCalendarDriver->getExternalUrl();
@@ -142,6 +149,13 @@ class EventAPI extends Action {
 		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 		$communicoDriver = new CommunicoEventRecordDriver($_REQUEST['id']);
 		if($communicoDriver->isValid()) {
+			$registrationInformation = null;
+			if($communicoDriver->getRegistrationModalBodyForAPI()) {
+				$registrationInformation = strip_tags($communicoDriver->getRegistrationModalBodyForAPI());
+			} elseif ($communicoDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($communicoDriver->getRegistrationModalBody());
+			}
+
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
 			$itemData['title'] = $communicoDriver->getTitle();
@@ -152,7 +166,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $communicoDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($communicoDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = $registrationInformation;
 			$itemData['bypass'] = (bool)$communicoDriver->getBypassSetting();
 			$itemData['cover'] = $communicoDriver->getEventCoverUrl();
 			$itemData['url'] = $communicoDriver->getExternalUrl();
@@ -187,6 +201,12 @@ class EventAPI extends Action {
 		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 		$springshareDriver = new SpringshareLibCalEventRecordDriver($_REQUEST['id']);
 		if($springshareDriver->isValid()) {
+			$registrationInformation = null;
+			if($springshareDriver->getRegistrationModalBodyForAPI()) {
+				$registrationInformation = strip_tags($springshareDriver->getRegistrationModalBodyForAPI());
+			} elseif ($springshareDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($springshareDriver->getRegistrationModalBody());
+			}
 			$itemData['success'] = true;
 			$itemData['id'] = $_REQUEST['id'];
 			$itemData['title'] = $springshareDriver->getTitle();
@@ -197,7 +217,7 @@ class EventAPI extends Action {
 			$itemData['registrationRequired'] = $springshareDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
 			$itemData['inUserEvents'] = false;
-			$itemData['registrationBody'] = strip_tags($springshareDriver->getRegistrationModalBody());
+			$itemData['registrationBody'] = $registrationInformation;
 			$itemData['bypass'] = (bool)$springshareDriver->getBypassSetting();
 			$itemData['cover'] = $springshareDriver->getEventCoverUrl();
 			$itemData['url'] = $springshareDriver->getExternalUrl();
@@ -323,7 +343,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();
@@ -339,7 +359,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();
@@ -355,7 +375,7 @@ class EventAPI extends Action {
 					$userEventsEntry->eventDate = $eventDate->getTimestamp();
 					if ($recordDriver->isRegistrationRequired()){
 						$regRequired = 1;
-						$regModal = $recordDriver->getRegistrationModalBody();
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
 					}
 					$userEventsEntry->regRequired = $regRequired;
 					$userEventsEntry->location = $recordDriver->getBranch();

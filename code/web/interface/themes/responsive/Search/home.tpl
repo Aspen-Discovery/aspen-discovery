@@ -8,8 +8,8 @@
 					<div class="jcarousel" id="browse-category-carousel">
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
-								<li id="browse-category-{$browseCategory->textId}" class="browse-category {if (empty($selectedBrowseCategory) && $smarty.foreach.browseCategoryLoop.index == 0) || (!empty($selectedBrowseCategory) && $selectedBrowseCategory->textId == $browseCategory->textId)} selected{/if}" data-category-id="{$browseCategory->textId}">
-									<div >
+								<li tabindex="0" id="browse-category-{$browseCategory->textId}" class="browse-category {if (empty($selectedBrowseCategory) && $smarty.foreach.browseCategoryLoop.index == 0) || (!empty($selectedBrowseCategory) && $selectedBrowseCategory->textId == $browseCategory->textId)} selected{/if}" data-category-id="{$browseCategory->textId}">
+									<div role="button">
 										{translate text=$browseCategory->label isPublicFacing=true}
 									</div>
 								</li>
@@ -17,8 +17,8 @@
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true isPublicFacing=true}"></a>
-					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true isPublicFacing=true}"></a>
+					<a role="button" href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true isPublicFacing=true}"></a>
+					<a role="button" href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true isPublicFacing=true}"></a>
 
 					<p class="jcarousel-pagination hidden-xs"></p>
 				</div>
@@ -82,7 +82,7 @@
 			<div class="clearfix"></div>
 			<a onclick="return AspenDiscovery.Browse.getMoreResults()" onkeypress="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true isPublicFacing=true}" tabindex="0">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}" role="button"></span>
+					<span tabindex="0" class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}" role="button"></span>
 				</div>
 			</a>
 			{else}
