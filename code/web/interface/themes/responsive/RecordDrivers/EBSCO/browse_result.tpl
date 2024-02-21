@@ -1,7 +1,7 @@
 {strip}
 	{if $browseMode == '1'}
 		<div class="{*browse-title *}browse-list grid-item {$coverStyle} {if $browseStyle == 'grid'}browse-grid-style col-tn-6 col-xs-6 col-sm-6 col-md-4 col-lg-3{/if}">
-			<a href="{$summUrl}" target="_blank">
+			<a href="{$summUrl}" target="_blank" aria-label="{$summTitle|escape} ({translate text='opens in new window' isPublicFacing=true})">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle}" title="{$summTitle}">
 				<div><strong>{$summTitle}</strong></div>
 			</a>
@@ -9,7 +9,7 @@
 
 	{else}{*Default Browse Mode (covers) *}
 		<div class="browse-thumbnail grid-item {$coverStyle} {if $browseStyle == 'grid'}col-tn-6 col-xs-4 col-sm-4 col-md-3 col-lg-2{/if}">
-			<a href="{$summUrl}" target="_blank">
+			<a href="{$summUrl}" target="_blank" aria-label="{$summTitle|escape} ({translate text='opens in new window' isPublicFacing=true})">
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" title="{$summTitle}">
 				</div>

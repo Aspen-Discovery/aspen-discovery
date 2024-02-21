@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{$openArchiveUrl}" class="btn btn-sm btn-tools" target="_blank">{translate text="More Info" isPublicFacing=true}</a>
+						<a href="{$openArchiveUrl}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text='More Info' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})">{translate text="More Info" isPublicFacing=true}</a>
 					</div>
 				{/if}
 				{if $showFavorites == 1}

@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { Button, Center, FormControl, Input, Modal, Text } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
+import { loadingSpinner } from '../../components/loadingSpinner';
 import { LibrarySystemContext } from '../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
 import { createAuthTokens, getHeaders, postData, stripHTML } from '../../util/apiAuth';
@@ -15,6 +16,7 @@ export const ResetPassword = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { ils, forgotPasswordType, usernameLabel, passwordLabel, showForgotPasswordModal, setShowForgotPasswordModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
+     const [isLoading, setIsLoading] = React.useState(false);
 
      const language = 'en';
      let libraryUrl = library.baseUrl ?? LIBRARY.url;
@@ -25,6 +27,8 @@ export const ResetPassword = (props) => {
      const [resetBody, setResetBody] = React.useState('To reset your PIN, enter your card number or your email address.  You must have an email associated with your account to reset your PIN.  If you do not, please contact the library.');
 
      React.useEffect(() => {
+          setIsLoading(true);
+
           async function fetchTranslations() {
                await getTranslationsWithValues('forgot_password_link', passwordLabel, language, libraryUrl).then((result) => {
                     setButtonLabel(_.toString(result));
@@ -63,6 +67,7 @@ export const ResetPassword = (props) => {
                          setResetBody(_.toString(result));
                     });
                }
+               setIsLoading(false);
           }
 
           fetchTranslations();
@@ -73,6 +78,10 @@ export const ResetPassword = (props) => {
           setIsProcessing(false);
      };
 
+     if (isLoading) {
+          return null;
+     }
+
      return (
           <Center>
                <Button variant="ghost" onPress={() => setShowForgotPasswordModal(true)} colorScheme="primary">
@@ -82,7 +91,10 @@ export const ResetPassword = (props) => {
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton onPress={closeWindow} />
                          <Modal.Header>{modalTitle}</Modal.Header>
-                         {ils === 'koha' && forgotPasswordType === 'emailResetLink' ? (
+
+                         {isLoading ? (
+                              <Modal.Body>{loadingSpinner()}</Modal.Body>
+                         ) : ils === 'koha' && forgotPasswordType === 'emailResetLink' ? (
                               <KohaResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'sirsi' && forgotPasswordType === 'emailResetLink' ? (
                               <SirsiResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />

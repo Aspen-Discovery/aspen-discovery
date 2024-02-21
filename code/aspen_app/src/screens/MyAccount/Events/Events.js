@@ -52,10 +52,10 @@ export const MyEvents = () => {
      }, [systemMessages]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_events', user.id, library.baseUrl, page, filterBy], () => fetchSavedEvents(page, pageSize, filterBy, library.baseUrl), {
+          initialData: savedEvents,
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
-               //updateEvents(data.events);
                updateSavedEvents(data.events);
           },
           onSettle: (data) => setLoading(false),
@@ -177,7 +177,7 @@ export const MyEvents = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {getActionButtons()}
-               {status === 'loading' || isFetching ? (
+               {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')

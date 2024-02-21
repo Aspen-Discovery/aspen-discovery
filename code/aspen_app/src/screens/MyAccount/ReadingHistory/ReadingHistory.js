@@ -46,6 +46,7 @@ export const MyReadingHistory = () => {
      }, [navigation]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', user.id, library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
+          initialData: readingHistory,
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {

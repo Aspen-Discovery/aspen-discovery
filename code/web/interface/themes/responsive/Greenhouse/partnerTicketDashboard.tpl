@@ -56,7 +56,7 @@
 					<a href="/Greenhouse/Tickets?objectAction=edit&id={$priority1Ticket->id}">{$priority1Ticket->ticketId} {$priority1Ticket->title}</a>
 				</div>
 				<div class="col-xs-2">
-					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority1Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority1Ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority1Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority1Ticket->ticketId} (opens in a new window)" target="_blank" ><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 				</div>
 			{else}
 				<div class="col-md-9 result-value">
@@ -71,7 +71,7 @@
 					<a href="/Greenhouse/Tickets?objectAction=edit&id={$priority2Ticket->id}">{$priority2Ticket->ticketId} {$priority2Ticket->title}</a>
 				</div>
 				<div class="col-xs-2">
-					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority2Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority2Ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority2Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority2Ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 				</div>
 			{else}
 				<div class="col-md-9 result-value">
@@ -86,7 +86,7 @@
 					<a href="/Greenhouse/Tickets?objectAction=edit&id={$priority3Ticket->id}">{$priority3Ticket->ticketId} {$priority3Ticket->title}</a>
 				</div>
 				<div class="col-xs-2">
-					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority3Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority3Ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+					<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$priority3Ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$priority3Ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 				</div>
 			{else}
 				<div class="col-md-9 result-value">
@@ -116,7 +116,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}
@@ -146,7 +146,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}
@@ -173,7 +173,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}
@@ -200,7 +200,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}
@@ -230,7 +230,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}
@@ -260,7 +260,7 @@
 									<a href="/Greenhouse/Tickets?objectAction=edit&id={$ticket->id}">{$ticket->ticketId} {$ticket->title}</a>
 								</div>
 								<div class="col-xs-2">
-									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt"></i>  Open in RT</a>
+									<a href="https://ticket.bywatersolutions.com/Ticket/Display.html?id={$ticket->ticketId}" class="btn btn-default btn-sm" aria-label="Open in RT for Ticket {$ticket->ticketId}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i>  Open in RT</a>
 								</div>
 							</div>
 						{/foreach}

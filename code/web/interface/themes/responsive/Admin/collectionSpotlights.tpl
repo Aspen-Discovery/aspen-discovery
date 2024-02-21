@@ -3,7 +3,7 @@
 		<div class="col-xs-12 col-md-9">
 		<h1>{translate text='Available Collection Spotlights' isAdminFacing=true}</h1>
 		</div>
-		<div class="col-xs-12 col-md-3 help-link"><a href="https://help.aspendiscovery.org/help/promote/spotlights"><i class="fas fa-question-circle"></i>&nbsp;Documentation</a></div>
+		<div class="col-xs-12 col-md-3 help-link"><a href="https://help.aspendiscovery.org/help/promote/spotlights"><i class="fas fa-question-circle" role="presentation"></i>&nbsp;Documentation</a></div>
 		<br>
 		</div>
 		<div id="spotlights"></div>

@@ -20,7 +20,7 @@
 			<div class="row row-no-gutters" style="padding-bottom: 1em">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 					<div class="input-group">
-						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x" style="vertical-align: middle"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label></span>
+						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x" style="vertical-align: middle" role="presentation"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label></span>
 
 						{* Main Search Term Box *}
 						<input type="text" class="form-control input-lg"{/strip}
@@ -30,7 +30,7 @@
 							onfocus="$(this).select()"
 							autocomplete="off"
 							aria-labelledby="lookfor-label"
-
+						    aria-required="true"
 							{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
 						{strip}>
 					</div>

@@ -50,16 +50,16 @@
 				<div class="col-xs-12">
 					<div style="width: 100%; display: inline-flex; flex-direction: row; justify-content: space-around; flex-wrap: wrap; gap: 1rem">
 		                {if !empty($curLocation.map_link)}
-							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="{$curLocation.map_link}" role="button"><i class="fas fa-directions"></i> {translate text="Visit Library" isPublicFacing=true}</a>
+							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="{$curLocation.map_link}" role="button"><i class="fas fa-directions" role="presentation"></i> {translate text="Visit Library" isPublicFacing=true}</a>
 						{/if}
 	                    {if !empty($curLocation.phone)}
-		                    <a class="btn btn-default btn-lg" style="flex-grow: 1" href="tel:{$curLocation.phone}" role="button"><i class="fas fa-phone"></i> {translate text="Call Library" isPublicFacing=true}</a>
+		                    <a class="btn btn-default btn-lg" style="flex-grow: 1" href="tel:{$curLocation.phone}" role="button"><i class="fas fa-phone" role="presentation"></i> {translate text="Call Library" isPublicFacing=true}</a>
 						{/if}
                         {if !empty($curLocation.email)}
-							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="mailto:{$curLocation.email}" role="button"><i class="fas fa-envelope"></i> {translate text="Email Library" isPublicFacing=true}</a>
+							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="mailto:{$curLocation.email}" role="button"><i class="fas fa-envelope" role="presentation"></i> {translate text="Email Library" isPublicFacing=true}</a>
 						{/if}
                         {if !empty($curLocation.homeLink)}
-							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="{$curLocation.homeLink}" role="button" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="Visit Website" isPublicFacing=true}</a>
+							<a class="btn btn-default btn-lg" style="flex-grow: 1" href="{$curLocation.homeLink}" role="button" target="_blank" aria-label="{translate text="Visit Website" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Visit Website" isPublicFacing=true}</a>
 						{/if}
 					</div>
 				</div>

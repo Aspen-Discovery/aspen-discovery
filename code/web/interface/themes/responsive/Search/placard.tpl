@@ -10,7 +10,7 @@
 		</div>
 		{/if}
 		{if $placard->link}
-			<a href="{$placard->link}" target="_blank" class="placard-link">
+			<a href="{$placard->link}" target="_blank" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
 		{/if}
 		<div class="row">
 			<div class="col-xs-12">

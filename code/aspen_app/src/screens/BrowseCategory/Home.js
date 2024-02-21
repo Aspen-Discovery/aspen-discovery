@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
@@ -29,6 +29,7 @@ let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const isFocused = useIsFocused();
+     const isQueryFetching = useIsFetching();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [invalidSession, setInvalidSession] = React.useState(false);
@@ -39,8 +40,9 @@ export const DiscoverHomeScreen = () => {
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location, updateLocations } = React.useContext(LibraryBranchContext);
-     const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
+     const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
+     const { category, list, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
@@ -57,7 +59,28 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          initialData: user,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (user) {
+                    if (data !== user) {
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                    }
+               } else {
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
+               }
+          },
+     });
+
      const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+          initialData: category,
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
@@ -73,7 +96,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -81,7 +104,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -142,7 +165,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
+     useQuery(['saved_searches', user?.id ?? 'unknown', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
@@ -169,7 +192,7 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['saved_events', user.id, library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
+     useQuery(['saved_events', user?.id ?? 'unknown', library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           placeholderData: [],
@@ -216,25 +239,6 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               if (user) {
-                    if (data !== user) {
-                         updateUser(data);
-                         updateLanguage(data.interfaceLanguage ?? 'en');
-                         PATRON.language = data.interfaceLanguage ?? 'en';
-                    }
-               } else {
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
-               }
-          },
-     });
-
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
@@ -258,6 +262,8 @@ export const DiscoverHomeScreen = () => {
                          await getDefaultFacets(library.baseUrl, 5, language);
                     }
 
+                    setPreliminaryCheck(true);
+
                     console.log('notificationOnboard: ' + notificationOnboard);
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
@@ -268,7 +274,6 @@ export const DiscoverHomeScreen = () => {
                               //setAlreadyCheckedNotifications(true);
                          }
                     } else {
-                         updateNotificationOnboard(1);
                          setShowNotificationsOnboarding(true);
                          //setAlreadyCheckedNotifications(false);
                     }
@@ -298,9 +303,11 @@ export const DiscoverHomeScreen = () => {
      };
 
      // load notification onboarding prompt
-     if (notificationOnboard !== '0' && notificationOnboard !== 0) {
-          if (isFocused) {
-               return <NotificationsOnboard />;
+     if (isQueryFetching === 0 && preliminaryLoadingCheck) {
+          if (notificationOnboard !== '0' && notificationOnboard !== 0) {
+               if (isFocused) {
+                    return <NotificationsOnboard />;
+               }
           }
      }
 
@@ -404,6 +411,12 @@ export const DiscoverHomeScreen = () => {
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
+                    });
+               } else if (type === 'Event') {
+                    navigateStack('BrowseTab', 'EventScreen', {
+                         id: key,
+                         title: title,
                          prevRoute: 'HomeScreen',
                     });
                } else {

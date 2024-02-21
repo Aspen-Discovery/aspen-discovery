@@ -895,6 +895,34 @@ class UserAPI extends Action {
 				}
 			}
 
+			//Add Palace Project data
+			$userData->isValidForPalaceProject = false;
+			if ($user->isValidForEContentSource('palace_project')) {
+				$userData->isValidForPalaceProject = true;
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				$projectPalaceSummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOut_PalaceProject = (int)$projectPalaceSummary->numCheckedOut;
+				$userData->numHolds_PalaceProject = (int)$projectPalaceSummary->getNumHolds();
+				$userData->numHoldsAvailable_PalaceProject = (int)$projectPalaceSummary->numAvailableHolds;
+				$numCheckedOut += (int)$projectPalaceSummary->numCheckedOut;
+				$numHolds += (int)$projectPalaceSummary->getNumHolds();
+				$numHoldsAvailable += (int)$projectPalaceSummary->numAvailableHolds;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_ProjectPalace = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_PalaceProject += (int)$linkedUserSummary_ProjectPalace->numCheckedOut;
+						$userData->numHolds_PalaceProject += (int)$linkedUserSummary_ProjectPalace->getNumHolds();
+						$userData->numHoldsAvailable_PalaceProject += (int)$linkedUserSummary_ProjectPalace->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_ProjectPalace->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_ProjectPalace->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_ProjectPalace->numAvailableHolds;
+					}
+				}
+			}
+
 			//Add Interlibrary Loan
 			$userData->hasInterlibraryLoan = false;
 			if ($user->hasInterlibraryLoan()) {
@@ -1522,6 +1550,8 @@ class UserAPI extends Action {
 				return $this->checkoutAxis360Item();
 			} elseif ($source == 'ils') {
 				return $this->checkoutILSItem();
+			} elseif ($source == 'palace_project') {
+				return $this->checkoutProjectPalaceItem();
 			} else {
 				return [
 					'success' => false,
@@ -1550,6 +1580,8 @@ class UserAPI extends Action {
 				return $this->returnCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->returnAxis360Item();
+			} elseif ($source == 'project_palace') {
+				return $this->returnPalaceProjectItem();
 			} else {
 				return [
 					'success' => false,
@@ -1702,6 +1734,8 @@ class UserAPI extends Action {
 				return $this->renewCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->renewAxis360Item();
+			} elseif ($source == 'project_palace') {
+				return $this->renewProjectPalaceItem();
 			} else {
 				return [
 					'success' => false,
@@ -1963,6 +1997,8 @@ class UserAPI extends Action {
 					return $this->placeCloudLibraryHold();
 				} elseif ($source == 'axis360') {
 					return $this->placeAxis360Hold();
+				} elseif ($source == 'palace_project') {
+					return $this->placePalaceProjectHold();
 				} else {
 					return [
 						'success' => false,
@@ -2731,6 +2767,121 @@ class UserAPI extends Action {
 		}
 	}
 
+	function checkoutProjectPalaceItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->checkOutTitle($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function returnPalaceProjectItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->returnCheckout($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+
+	}
+
+	function renewProjectPalaceItem(): array {
+		$id = $_REQUEST['recordId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->renewCheckout($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function placePalaceProjectHold(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function cancelPalaceProjectHold(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->cancelHold($user, $id);
+			return [
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
 	/**
 	 * Checkout an item in Hoopla by first adding to the cart and then processing the cart.
 	 *
@@ -3140,6 +3291,8 @@ class UserAPI extends Action {
 				return $this->cancelCloudLibraryHold();
 			} elseif ($source == 'axis360') {
 				return $this->cancelAxis360Hold();
+			} elseif ($source == 'palace_project') {
+				return $this->cancelPalaceProjectHold();
 			} else {
 				return [
 					'success' => false,
@@ -4487,6 +4640,7 @@ class UserAPI extends Action {
 			$account = [];
 			if (count($linkedAccounts) > 0) {
 				foreach ($linkedAccounts as $linkedAccount) {
+					$linkedAccount->loadContactInformation();
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->getBarcode();

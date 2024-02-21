@@ -1,20 +1,22 @@
-import React from 'react';
-import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
-import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
-import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
-import { LIBRARY } from '../../util/loadLibrary';
 import _ from 'lodash';
-import { LibrarySystemContext } from '../../context/initialContext';
-import { useKeyboard } from '../../util/useKeyboard';
+import { Button, Center, FormControl, Input, Modal, Text } from 'native-base';
+import React from 'react';
 import { Platform } from 'react-native';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
+import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { LIBRARY } from '../../util/loadLibrary';
+import { useKeyboard } from '../../util/useKeyboard';
+
 export const ForgotBarcode = (props) => {
      const isKeyboardOpen = useKeyboard();
      const { library } = React.useContext(LibrarySystemContext);
      const { usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
      const language = 'en';
+     const [isLoading, setIsLoading] = React.useState(false);
 
      let libraryUrl = library.baseUrl ?? LIBRARY.url;
 
@@ -29,6 +31,8 @@ export const ForgotBarcode = (props) => {
      const [modalButtonLabel, setModalButtonLabel] = React.useState('Send My Barcode');
 
      React.useEffect(() => {
+          setIsLoading(true);
+
           async function fetchTranslations() {
                await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, libraryUrl).then((result) => {
                     setButtonLabel(_.toString(result));
@@ -45,7 +49,9 @@ export const ForgotBarcode = (props) => {
                await getTranslationsWithValues('forgot_barcode_body', usernameLabel, language, libraryUrl).then((result) => {
                     setModalBody(_.toString(result));
                });
+               setIsLoading(false);
           }
+
           fetchTranslations();
      }, [language, libraryUrl]);
 
@@ -69,6 +75,10 @@ export const ForgotBarcode = (props) => {
           setShowResults(false);
           setResults('');
      };
+
+     if (isLoading) {
+          return null;
+     }
 
      return (
           <Center>
@@ -114,7 +124,14 @@ export const ForgotBarcode = (props) => {
                                              <Button variant="ghost" onPress={closeWindow}>
                                                   {getTermFromDictionary('en', 'cancel')}
                                              </Button>
-                                             <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateForgotBarcode}>
+                                             <Button
+                                                  style={{
+                                                       flexShrink: 1,
+                                                  }}
+                                                  isLoading={isProcessing}
+                                                  isLoadingText={getTermFromDictionary('en', 'button_processing', true)}
+                                                  colorScheme="primary"
+                                                  onPress={initiateForgotBarcode}>
                                                   {modalButtonLabel}
                                              </Button>
                                         </>

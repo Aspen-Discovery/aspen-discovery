@@ -1738,7 +1738,7 @@ class Record_AJAX extends Action {
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("Record/select-view-item-link-form.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewItem\").submit()'><i class='fas fa-external-link-alt'></i> $buttonTitle</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewItem\").submit()'><i class='fas fa-external-link-alt' role='presentation'></i> $buttonTitle</button>",
 			];
 		} else {
 			return [

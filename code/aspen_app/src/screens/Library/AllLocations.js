@@ -28,9 +28,10 @@ export const AllLocations = () => {
      const [sort, setSort] = React.useState('alphabetical');
      const [userLatitude, setUserLatitude] = React.useState(0);
      const [userLongitude, setUserLongitude] = React.useState(0);
-     const [sortedLocations, setSortedLocations] = React.useState(locations);
+     const [sortedLocations, setSortedLocations] = React.useState(_.sortBy(locations, ['displayName']));
 
      const { status, data, error, isFetching } = useQuery(['locations', user.id, library.baseUrl, language, userLatitude, userLongitude, sort], () => getLocations(library.baseUrl, language, userLatitude, userLongitude), {
+          initialData: locations,
           onSuccess: (data) => {
                updateLocations(data);
                if (sort === 'distance') {

@@ -170,7 +170,7 @@
                         {if $finePaymentType == 1}
                             {* Pay Fines Button *}
                             {if !empty($finePaymentType) && $fineTotalsVal.$userId > $minimumFineAmount}
-								<a class="btn btn-sm btn-primary" href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if !empty($showRefreshAccountButton)} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+								<a class="btn btn-sm btn-primary" href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"  aria-label="{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online" isPublicFacing=true}{/if} ({translate text='opens in new window' isPublicFacing=true})"{/if}{if !empty($showRefreshAccountButton)} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
                                     {if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online" isPublicFacing=true}{/if}
 								</a>
                             {/if}

@@ -1917,6 +1917,12 @@ class SearchAPI extends Action {
 			$isLiDARequest = $_REQUEST['LiDARequest'];
 		}
 
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -2046,7 +2052,9 @@ class SearchAPI extends Action {
 							if ($list->find(true)) {
 								$listEntry = new UserListEntry();
 								$listEntry->listId = $list->id;
-								$listEntry->whereAdd("source <> 'Events'");
+								if ($appVersion && $appVersion < 24.03) {
+									$listEntry->whereAdd("source <> 'Events'");
+								}
 								$listEntry->find();
 								$count = 0;
 								do {
@@ -2057,8 +2065,15 @@ class SearchAPI extends Action {
 										];
 										$count++;
 									} elseif ($listEntry->source == 'Events') {
-										// just to make sure events don't sneak in
-										$categoryResponse['records'] = [];
+										if ($appVersion && $appVersion < 24.03) {
+											$categoryResponse['events'] = [];
+										} else {
+											$categoryResponse['events'][] = [
+												'sourceId' => $listEntry->sourceId,
+												'title' => $listEntry->title,
+											];
+											$count++;
+										}
 									} else {
 										if ($listEntry->sourceId) {
 											$categoryResponse['records'][] = [
@@ -2197,6 +2212,13 @@ class SearchAPI extends Action {
 		} else {
 			$thisId = $_REQUEST['id'];
 		}
+
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		$response = [];
 
 		if (strpos($thisId, "system_saved_searches") !== false) {
@@ -2240,7 +2262,7 @@ class SearchAPI extends Action {
 						$sourceList = new UserList();
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
-							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, true);
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
 						} else {
 							$records = [];
 						}
@@ -2327,7 +2349,11 @@ class SearchAPI extends Action {
 			];
 		}
 
+		$appVersion = false;
 		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceList = new UserList();
@@ -2335,7 +2361,7 @@ class SearchAPI extends Action {
 		if ($sourceList->find(true)) {
 			$response['title'] = $sourceList->title;
 			$response['id'] = $sourceList->id;
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
 		}
 		$response['items'] = $records;
 
@@ -2518,6 +2544,12 @@ class SearchAPI extends Action {
 		global $timer;
 		global $configArray;
 
+		$appVersion = false;
+		$isLida = $this->checkIfLiDA();
+		if($isLida) {
+			$appVersion = $this->getLiDAVersion();
+		}
+
 		$searchType = $_REQUEST['type'] ?? 'catalog';
 
 		$results = [
@@ -2581,7 +2613,7 @@ class SearchAPI extends Action {
 					'endRecord' => $endRecord,
 					'perPage' => $recordsPerPage,
 				];
-				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage);
+				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage, $isLida, $appVersion);
 				$items = [];
 				foreach($records as $recordKey => $record) {
 					$items[$recordKey]['key'] = $record['id'];
@@ -3047,7 +3079,10 @@ class SearchAPI extends Action {
 				$options[$key]['multiSelect'] = false;
 				foreach ($sortList as $value => $sort) {
 					$options[$key]['facets'][$i]['value'] = $value;
-					$options[$key]['facets'][$i]['display'] = $sort['desc'];
+					$options[$key]['facets'][$i]['display'] = translate([
+						'text' => $sort['desc'],
+						'isPublicFacing' => true,
+					]);
 					$options[$key]['facets'][$i]['field'] = 'sort_by';
 					$options[$key]['facets'][$i]['count'] = 0;
 					$options[$key]['facets'][$i]['isApplied'] = $sort['selected'];
@@ -3863,5 +3898,16 @@ class SearchAPI extends Action {
 			}
 		}
 		return false;
+	}
+
+	function getLiDAVersion() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'version' || $name == 'Version') {
+				$version = explode(' ', $value);
+				$version = substr($version[0], 1); // remove starting 'v'
+				return floatval($version);
+			}
+		}
+		return 0;
 	}
 }
