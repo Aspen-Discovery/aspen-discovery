@@ -542,9 +542,11 @@ class OverDrive_AJAX extends JSON_Action {
 				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank' aria-label='".translate([
 						'text' => 'View Full Screen',
 						'isPublicFacing' => true,
+						'inAttribute' => true,
 					])." (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>" . translate([
 						'text' => "View Full Screen",
 						'isPublicFacing' => true,
+						'inAttribute' => true,
 					]) . "</a>";
 			} else {
 				$result['message'] = 'The specified Format was not valid';

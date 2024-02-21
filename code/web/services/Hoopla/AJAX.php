@@ -83,7 +83,7 @@ class Hoopla_AJAX extends Action {
 							'buttons' => '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">' . translate([
 									'text' => 'I registered, Check Out now',
 									'isPublicFacing' => true,
-								]) . '</button>' . '<a class="btn btn-primary" role="button" href="' . $hooplaRegistrationUrl . '" target="_blank" title="Register at Hoopla" aria-label="Register at Hoopla ('.translate(['text' => 'opens in a new window']) .')" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">' . translate([
+								]) . '</button>' . '<a class="btn btn-primary" role="button" href="' . $hooplaRegistrationUrl . '" target="_blank" title="Register at Hoopla" aria-label="Register at Hoopla ('.translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute' => true]) .')" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">' . translate([
 									'text' => 'Register at Hoopla',
 									'isPublicFacing' => true,
 								]) . '</a>',
