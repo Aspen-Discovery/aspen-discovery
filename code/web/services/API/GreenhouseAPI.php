@@ -24,7 +24,6 @@ class GreenhouseAPI extends Action {
 				'authenticateTokens',
 				'getNotificationAccessToken',
 				'updateAspenLiDABuild',
-				'getCatalogStatus'
 			]) && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
 		}
@@ -124,13 +123,6 @@ class GreenhouseAPI extends Action {
 			$siteStatus = $sites->updateStatus();
 			if ($sites->version != $siteStatus['version']) {
 				$sites->version = $siteStatus['version'];
-				$sites->update();
-			}
-
-			$isOfflineMode = $sites->getSiteBaseUrl() .'/API/SystemAPI?method=getCatalogStatus';
-
-			if ($isOfflineMode != $siteStatus['isOfflineMode']) {
-				$sites->isOfflineMode = $siteStatus['isOfflineMode'];
 				$sites->update();
 			}
 
