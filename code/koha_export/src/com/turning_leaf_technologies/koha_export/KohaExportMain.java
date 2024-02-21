@@ -133,6 +133,11 @@ public class KohaExportMain {
 					logger.error("Error deleting old log entries", e);
 				}
 
+				//Check to see if the ILS connection is offline and don't index
+				if (isOffline()) {
+					System.exit(0);
+				}
+
 				//Connect to the Koha database
 				Connection kohaConn;
 				KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
@@ -245,6 +250,27 @@ public class KohaExportMain {
 		} //Infinite loop
 
 		System.exit(0);
+	}
+
+	private static boolean isOffline() {
+		try {
+			PreparedStatement getOfflineStatusStmt = dbConn.prepareStatement("SELECT catalogStatus FROM system_variables", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getOfflineStatusRS = getOfflineStatusStmt.executeQuery();
+			if (getOfflineStatusRS.next()) {
+				int catalogStatus = getOfflineStatusRS.getInt("catalogStatus");
+				getOfflineStatusStmt.close();
+				getOfflineStatusRS.close();
+				return (catalogStatus != 0);
+			}else{
+				getOfflineStatusStmt.close();
+				getOfflineStatusRS.close();
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error("Error determining if the catalog is offline, quitting to be safe", e);
+			System.exit(-9);
+		}
+		return true;
 	}
 
 	private static void exportAuthorAuthorities(Connection dbConn, Connection kohaConn) {
