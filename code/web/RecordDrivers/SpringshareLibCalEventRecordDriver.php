@@ -62,6 +62,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('externalUrl', $this->getExternalUrl());
 		$interface->assign('branch', $this->getBranch());
+		$interface->assign('room', $this->getRoom());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', $this->fields['description']);
@@ -373,6 +374,10 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 
 	public function getBranch() {
 		return implode(", ", $this->fields['branch']);
+	}
+
+	public function getRoom() {
+		return implode(", ", $this->fields['room']);
 	}
 
 	public function isRegistrationRequired(): bool {

@@ -44,11 +44,26 @@
 					{/if}
 				</div>
 			</div>
-			<div class="row">
-				<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
-				<div class="result-value col-tn-6 notranslate">
-					{$recordDriver->getBranch()}
+			{if !empty($room)}
+				<div class="row">
+					<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
+					<div class="result-value col-tn-6 notranslate">
+						{$recordDriver->getBranch()}
+					</div>
 				</div>
+			{/if}
+			<div class="row">
+				{if !empty($room)}
+					<div class="result-label col-tn-2">{translate text="Room" isPublicFacing=true} </div>
+					<div class="result-value col-tn-6 notranslate">
+						{$room}
+					</div>
+				{else}
+					<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
+					<div class="result-value col-tn-6 notranslate">
+						{$recordDriver->getBranch()}
+					</div>
+				{/if}
 				{* Register Button *}
 				<div class="result-value col-tn-4">
 					{if $recordDriver->inEvents()}
@@ -97,15 +112,6 @@
 					{/if}
 				</div>
 			</div>
-
-			{if !empty($branch)}
-			<div class="row">
-			<div class="result-label col-tn-2">{translate text="Branch" isPublicFacing=true} </div>
-			<div class="result-value col-tn-6 notranslate">
-				{$branch}
-			</div>
-			</div>
-			{/if}
 
 			{* Description Section *}
 			{if !empty($description)}
