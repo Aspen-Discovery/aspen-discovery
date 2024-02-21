@@ -107,6 +107,9 @@ class GreenhouseAPI extends Action {
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
 		$sites->monitored = 1;
+		if (!empty($_REQUEST['siteId']) && is_numeric($_REQUEST['siteId'])) {
+			$sites->id = $_REQUEST['siteId'];
+		}
 		$sites->orderBy('name ASC');
 		$sites->find();
 		$numSitesUpdated = 0;
