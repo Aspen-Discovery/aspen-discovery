@@ -204,7 +204,7 @@ class EventAPI extends Action {
 			$itemData['audiences'] = $springshareDriver->getAudiences();
 			$itemData['categories'] = $springshareDriver->getCategories();
 			$itemData['programTypes'] = null;
-			$itemData['room'] = null;
+			$itemData['room'] = $springshareDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 			$itemData['canAddToList'] = false;
 
