@@ -1675,6 +1675,32 @@ class Evergreen extends AbstractIlsDriver {
 			$user->homeLocationId = 0;
 		}
 
+		//Check patron pickup location
+//		$authToken = $this->getAPIAuthToken($user, true);
+//		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+//		$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
+//		$request .= '&param=' . json_encode([
+//				'opac.default_pickup_location',
+//			]);
+//		$request .= '&param=' . json_encode($authToken);
+//
+//		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+//		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+//			$apiResponse = json_decode($apiResponse);
+//			foreach ($apiResponse->payload[0] as $payload) {
+//				if ($payload->name == 'opac.default_pickup_location') {
+//					if (!empty($payload->value)) {
+//						$location = new Location();
+//						$location->historicCode = $payload->value;
+//
+//						if ($location->find(true)) {
+//							$user->pickupLocationId = $user->homeLocationId;
+//						}
+//					}
+//				}
+//			}
+//		}
+
 		if ($insert) {
 			$user->created = date('Y-m-d');
 			if (!$user->insert()) {
