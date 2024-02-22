@@ -876,6 +876,10 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
+			if (logEntry instanceof NightlyIndexLogEntry){
+				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + "times");
+			}
+
 			if (processEmptyGroupedWorks) {
 				processEmptyGroupedWorks();
 			}
