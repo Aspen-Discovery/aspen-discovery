@@ -2462,6 +2462,51 @@ class User extends DataObject {
 		}
 	}
 
+	public function isPaymentHistoryEnabled() {
+		//Check to see if it's enabled by home library
+		$homeLibrary =  $this->getHomeLibrary();
+		if (!empty($homeLibrary)) {
+			return $homeLibrary->showPaymentHistory && $homeLibrary->finePaymentType > 1;
+		} else {
+			global $library;
+			return $library->showPaymentHistory && $library->finePaymentType > 1;
+		}
+	}
+
+	public function getPaymentHistory($page = 1, $recordsPerPage = 25) {
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		$userPayment = new UserPayment();
+		$userPayment->userId = $this->id;
+		$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
+		$numPayments = $userPayment->count();
+		$firstIndex = ($page - 1) * $recordsPerPage;
+		$userPayment->limit($firstIndex, $recordsPerPage);
+		$userPayment->orderBy('transactionDate desc');
+		$userPayment->find();
+		$payments = [];
+		while ($userPayment->fetch()) {
+			if ($userPayment->completed) {
+				$completed = 'Yes';
+			}elseif ($userPayment->error) {
+				$completed = 'No';
+			}
+			$payments[] = [
+				'date' => $userPayment->transactionDate,
+				'type' => translate(['text'=> ucfirst($userPayment->transactionType), 'isPublicFacing' => true, 'inAttribute' => true]),
+				'completed' => translate(['text'=> $completed, 'isPublicFacing' => true, 'inAttribute' => true]),
+				'totalPaid' => StringUtils::formatCurrency($userPayment->totalPaid),
+			];
+		}
+
+		$paymentHistory = [
+			'numPayments' => $numPayments,
+			'payments' => $payments
+		];
+		return $paymentHistory;
+	}
+
 	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
 		if ($this->isReadingHistoryEnabled()) {
 			return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);

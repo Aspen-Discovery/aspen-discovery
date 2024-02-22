@@ -1,8 +1,10 @@
 <?php
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class UserAPI extends Action {
+class UserAPI extends AbstractAPI {
+
+
 	/**
 	 * Processes method to determine return type and calls the correct method.
 	 * Should not be called directly.
@@ -742,6 +744,8 @@ class UserAPI extends Action {
 			$userData->readingHistoryEnabled = (int)$user->isReadingHistoryEnabled();
 			$accountSummary->setReadingHistory($user->getReadingHistorySize());
 			$userData->numReadingHistory = $accountSummary->getReadingHistory();
+
+			$userData->paymentHistoryEnabled = (int)$user->isPaymentHistoryEnabled();
 
 			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$ptype = $user->getPType();
@@ -3715,6 +3719,42 @@ class UserAPI extends Action {
 		];
 	}
 
+	function getPaymentHistory() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$page = $_REQUEST['page'] ?? 1;
+			$pageSize = $_REQUEST['pageSize'] ?? 25;
+			$paymentHistory = $user->getPaymentHistory($page, $pageSize);
+			global $library;
+			global $activeLanguage;
+			$explanationText = $library->getTextBlockTranslation('paymentHistoryExplanation', $activeLanguage->code, true);
+			if ($this->context == 'lida') {
+				$explanationText = strip_tags($explanationText);
+			}
+
+			$options = [
+				'totalItems' => $paymentHistory['numPayments'],
+				'perPage' => $pageSize,
+				'append' => false,
+			];
+			$pager = new Pager($options);
+
+			return [
+				'success' => true,
+				'totalResults' => $pager->getTotalItems(),
+				'page_current' => (int)$pager->getCurrentPage(),
+				'page_total' => (int)$pager->getTotalPages(),
+				'paymentHistory' => $paymentHistory['payments'],
+				'explanationText' => $explanationText
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
 	/**
 	 * @return array
 	 * @noinspection PhpUnused
@@ -4404,46 +4444,50 @@ class UserAPI extends Action {
 	 * @return bool|User
 	 */
 	protected function getUserForApiCall() {
-		$user = false;
-		if ($this->getLiDAVersion() === "v22.04.00") {
-			[
-				$username,
-				$password,
-			] = $this->loadUsernameAndPassword();
-			return UserAccount::validateAccount($username, $password);
-		}
+		if ($this->context == 'internal') {
+			return UserAccount::getActiveUserObj();
+		} else {
+			$user = false;
+			if ($this->getLiDAVersion() === "v22.04.00") {
+				[
+					$username,
+					$password,
+				] = $this->loadUsernameAndPassword();
+				return UserAccount::validateAccount($username, $password);
+			}
 
-		if (isset($_REQUEST['patronId'])) {
-			$user = new User();
-			$user->username = $_REQUEST['patronId'];
-			$user->unique_ils_id = $_REQUEST['unique_ils_id'];
-			if (!$user->find(true)) {
-				$user = false;
+			if (isset($_REQUEST['patronId'])) {
+				$user = new User();
+				$user->username = $_REQUEST['patronId'];
+				$user->unique_ils_id = $_REQUEST['unique_ils_id'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
+			} elseif (isset($_REQUEST['userId'])) {
+				$user = new User();
+				$user->id = $_REQUEST['userId'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
+			} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
+				$user = new User();
+				$user->id = $_REQUEST['id'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
 			}
-		} elseif (isset($_REQUEST['userId'])) {
-			$user = new User();
-			$user->id = $_REQUEST['userId'];
-			if (!$user->find(true)) {
-				$user = false;
+			if ($user === false) {
+				[
+					$username,
+					$password,
+				] = $this->loadUsernameAndPassword();
+				$user = UserAccount::validateAccount($username, $password);
 			}
-		} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
-			$user = new User();
-			$user->id = $_REQUEST['id'];
-			if (!$user->find(true)) {
-				$user = false;
+			if ($user !== false && $user->source == 'admin') {
+				return false;
 			}
+			return $user;
 		}
-		if ($user === false) {
-			[
-				$username,
-				$password,
-			] = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
-		}
-		if ($user !== false && $user->source == 'admin') {
-			return false;
-		}
-		return $user;
 	}
 
 	function getLiDAVersion() {

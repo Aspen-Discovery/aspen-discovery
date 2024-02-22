@@ -25,6 +25,11 @@
 						<a href="/MyAccount/Fines">{translate text='Fines and Messages' isPublicFacing=true}</a>
 					</div>
 				{/if}
+				{if !empty($enablePaymentHistory)}
+					<div class="header-menu-option" >
+						<a href="/MyAccount/PaymentHistory">{translate text='Payment History' isPublicFacing=true}</a>
+					</div>
+				{/if}
 			{/if}
 			{if $user->canSuggestMaterials()}
 				{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
