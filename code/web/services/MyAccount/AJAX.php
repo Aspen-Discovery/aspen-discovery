@@ -1111,7 +1111,14 @@ class MyAccount_AJAX extends JSON_Action {
 							}
 						}
 
-						$message = '<div class="alert alert-success">' . translate([
+						if ($success == 0) {
+							$alertStatus = 'alert-error';
+						}else if ($success != $total) {
+							$alertStatus = 'alert-warning';
+						}else {
+							$alertStatus = 'alert-success';
+						}
+						$message = '<div class="alert ' . $alertStatus . '">' . translate([
 								'text' => '%1% of %2% holds were frozen',
 								1 => $success,
 								2 => $total,
