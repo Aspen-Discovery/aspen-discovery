@@ -943,14 +943,13 @@ class Evergreen extends AbstractIlsDriver {
 				'Content-Type: application/x-www-form-urlencoded',
 			];
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$params = [
-				'service' => 'open-ils.circ',
-				'method' => 'open-ils.circ.holds.retrieve',
-				'param' => json_encode($authToken),
-			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$getHoldsParams = 'service=open-ils.circ';
+			$getHoldsParams .= '&method=open-ils.circ.holds.retrieve';
+			$getHoldsParams .= '&param=' . json_encode($authToken);
+			$getHoldsParams .= '&param=' . $patron->unique_ils_id;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getHoldsParams);
 
-			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getHoldsParams, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				foreach ($apiResponse->payload[0] as $payload) {
