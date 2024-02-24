@@ -26,7 +26,8 @@
 	<script type="text/javascript">
 		{* Override variables as needed *}
 		{literal}
-		$(document).ready(function(){{/literal}
+			$(document).ready(function(){
+		{/literal}
 			Globals.url = '{$url}';
 			Globals.loggedIn = {if !empty($loggedIn)}true{else}false{/if};
 			Globals.opac = {if !empty($onInternalIP)}true{else}false{/if};
@@ -39,14 +40,14 @@
 			{/if}
 
 			{if !empty($automaticTimeoutLength)}
-			Globals.automaticTimeoutLength = {$automaticTimeoutLength};
+				Globals.automaticTimeoutLength = {$automaticTimeoutLength};
 			{/if}
 			{if !empty($automaticTimeoutLengthLoggedOut)}
-			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
+				Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
 			{if empty($onInternalIP)}
-			AspenDiscovery.Searches.getPreferredDisplayMode();
+				AspenDiscovery.Searches.getPreferredDisplayMode();
 			{/if}
 			{if !empty($userHasCatalogConnection)}
 				Globals.hasILSConnection = true;
@@ -64,7 +65,7 @@
 				Globals.hasOverDriveConnection = true;
 			{/if}
             {if array_key_exists('Palace Project', $enabledModules)}
-			Globals.hasPalaceProjectConnection = true;
+				Globals.hasPalaceProjectConnection = true;
             {/if}
 			{if !empty($hasInterlibraryLoanConnection)}
 				Globals.hasInterlibraryLoanConnection = true;
@@ -78,9 +79,11 @@
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
 			AspenDiscovery.Browse.browseStyle = '{$browseStyle}';
 			Globals.cookiePolicyHTML = '{$cookieStorageConsentHTML|escape:javascript|regex_replace:"/[\r\n]/" : " "}';
-			Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
-			{literal}
-		});
+			{if array_key_exists($timeUntilSessionExpiration)}
+				Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
+			{/if}
+		{literal}
+			});
 		{/literal}
 	</script>{strip}
 
