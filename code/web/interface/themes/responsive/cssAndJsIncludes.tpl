@@ -79,7 +79,7 @@
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
 			AspenDiscovery.Browse.browseStyle = '{$browseStyle}';
 			Globals.cookiePolicyHTML = '{$cookieStorageConsentHTML|escape:javascript|regex_replace:"/[\r\n]/" : " "}';
-			{if array_key_exists($timeUntilSessionExpiration)}
+			{if !empty($timeUntilSessionExpiration)}
 				Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
 			{/if}
 		{literal}
