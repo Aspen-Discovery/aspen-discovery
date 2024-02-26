@@ -481,22 +481,21 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	//Compile filter options chosen in side facets and add to filter array to be passed in via options array
 	public function getSummonFilters() {
-        $this->filters = array();
-        foreach($this->filterList as $key => $value) {
-            if(is_array($value)) {
-                foreach($value as $val){
-                    $parts = explode(' ', $val);
-                    $result = implode('+', $parts);
-                    $this->filters[] = urlencode($key . ',') . $result . urlencode(',');
-                }
-            } else {
-                $parts = explode(' ', $value);
-                $result = implode('+', $parts);
-                $this->filters = urlencode($key . ',') . $result . urlencode(',');
-            }
-        }
-      return $this->filters;
-    }	
+		$this->filters = array();
+		foreach ($this->filterList as $key => $value) {
+			if (is_array($value)) {
+				foreach ($value as $val) {
+					$encodedValue = urlencode($val); 
+					$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
+				}
+			} else {
+				$encodedValue = urlencode($value); 
+				$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
+			}
+		}
+		return $this->filters;
+	}
+	
 	
 	/**
 	 * Generate an HMAC hash for authentication

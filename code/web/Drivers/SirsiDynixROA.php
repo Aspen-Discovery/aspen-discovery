@@ -3087,6 +3087,27 @@ class SirsiDynixROA extends HorizonAPI {
 		return $result;
 	}
 
+	public function getSelfRegistrationTerms() {
+		global $library;
+
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
+			$selfRegistrationForm = new SelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$tosId = $selfRegistrationForm->termsOfServiceSetting;
+				require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
+				$tos = new SelfRegistrationTerms();
+				$tos->id = $tosId;
+				if ($tosId != -1){
+					if ($tos->find(true)) {
+						return $tos;
+					}
+				}
+			}
+			return null;
+		}
+	}
 	public function getSelfRegistrationFields() {
 		global $library;
 
@@ -3141,18 +3162,6 @@ class SirsiDynixROA extends HorizonAPI {
 			'values' => $pickupLocations,
 			'required' => true,
 		];
-
-		if (!empty($library->selfRegistrationFormId)) {
-			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
-			$selfRegistrationForm = new SelfRegistrationForm();
-			$selfRegistrationForm->id = $library->selfRegistrationFormId;
-			if ($selfRegistrationForm->find(true)) {
-				$customFields = $selfRegistrationForm->getFields();
-				if ($customFields != null && count($customFields) > 0) {
-					$hasCustomSelfRegistrationFrom = true;
-				}
-			}
-		}
 
 		$fields = [];
 		if ($hasCustomSelfRegistrationFrom) {

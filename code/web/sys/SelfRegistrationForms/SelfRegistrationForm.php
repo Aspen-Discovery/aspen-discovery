@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationFormValues.php';
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
 
 class SelfRegistrationForm extends DataObject {
 	public $__table = 'self_registration_form';
@@ -13,12 +14,21 @@ class SelfRegistrationForm extends DataObject {
 	public $selfRegistrationUserProfile;
 	public $promptForParentInSelfReg;
 	public $cityStateField;
+	public $termsOfServiceSetting;
 
 	private $_fields;
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+
+		$selfRegistrationTerms = [];
+		$selfRegistrationTOS = new SelfRegistrationTerms();
+		$selfRegistrationTOS->find();
+		$selfRegistrationTerms[-1] = 'None';
+		while ($selfRegistrationTOS->fetch()) {
+			$selfRegistrationTerms[$selfRegistrationTOS->id] = (string)$selfRegistrationTOS->name;
+		}
 
 		$fieldValuesStructure = SelfRegistrationFormValues::getObjectStructure($context);
 		unset($fieldValuesStructure['weight']);
@@ -34,10 +44,16 @@ class SelfRegistrationForm extends DataObject {
 			'name' => [
 				'property' => 'name',
 				'type' => 'text',
-				'label' => 'Display Name',
+				'label' => 'Name',
 				'description' => 'The name of the settings',
 				'size' => '40',
 				'maxLength' => 255,
+			],
+			'termsOfServiceSetting' => [
+				'property' => 'termsOfServiceSetting',
+				'type' => 'enum',
+				'values' => $selfRegistrationTerms,
+				'label' => 'Terms of Service Form',
 			],
 			'fields' => [
 				'property' => 'fields',

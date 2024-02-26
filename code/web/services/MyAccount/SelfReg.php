@@ -115,6 +115,26 @@ class SelfReg extends Action {
 				$interface->assign('captchaKey', $recaptcha->publicKey);
 			}
 
+			$interface->assign('tos', false);
+			if ($catalog->accountProfile->ils = "symphony"){
+				$selfRegTerms = $catalog->getSelfRegistrationTerms();
+				if ($selfRegTerms != null){
+					$interface->assign('tos', true);
+					$interface->assign("selfRegTerms", $selfRegTerms->terms);
+					$selfRegTermsModalTitle = translate([
+						'text' => "Terms of Service",
+						"isPublicFacing" => true,
+					]);
+					$interface->assign("selfRegTermsModalTitle", $selfRegTermsModalTitle);
+					$tosAccept = false;
+					if (!empty($_REQUEST['tosAccept'])){
+						$tosAccept = $_REQUEST['tosAccept'];
+					}
+					$interface->assign('tosAccept', $tosAccept);
+				}
+			}
+
+			$interface->assign('isSelfRegistration', true);
 			$interface->assign('formLabel', 'Self Registration');
 			$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 			$interface->assign('selfRegForm', $fieldsForm);

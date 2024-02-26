@@ -33,6 +33,11 @@
 		{/foreach}
 
 		{if (!isset($canSave) || ($canSave == true))}
+			{if !empty($tos)}
+				<div class="form-group">
+					<input id="tosCheckbox" type="checkbox" {if $tosAccept}checked="checked"{/if}> {translate text="I have read and accept the " isPublicFacing=true} <a onclick="AspenDiscovery.Account.selfRegistrationTermsModal('{$selfRegTermsModalTitle}', '{$selfRegTerms}')"> {translate text="Terms of Service" isPublicFacing=true} </a>
+				</div>
+			{/if}
 			{* Show Recaptcha spam control if set. *}
 			{if !empty($captcha)}
 				<div class="form-group">
@@ -48,7 +53,11 @@
 
 			<div class="form-group">
 				{if !empty($saveButtonText)}
-					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
+					{if $isSelfRegistration && !empty($tos) && !$tosAccept}
+						<button type="submit" name="submit" disabled="true" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
+					{else}
+						<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
+					{/if}
 				{else}
 					<div id="objectEditorSaveButtons" class="btn-group">
 					<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary"><i class="fas fa-save"></i> {translate text="Save Changes and Return" isAdminFacing=true}</button>
@@ -76,6 +85,19 @@
     </script>
 	{/literal}
 {/if}
+	{if !empty($tos)}
+		<script type="text/javascript">
+			const checkbox = document.querySelector("#tosCheckbox");
+			const target = document.querySelector("div.form-group button[value='Register']");
+			checkbox.onclick = function() {
+				if (checkbox.checked) {
+					target.disabled = false;}
+				else {
+					target.disabled = true;
+				}
+			}
+		</script>
+	{/if}
 
 	{literal}
 	<script type="text/javascript">

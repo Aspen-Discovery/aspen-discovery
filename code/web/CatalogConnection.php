@@ -1007,6 +1007,10 @@ class CatalogConnection {
 		return false;
 	}
 
+	public function getSelfRegistrationTerms() {
+		return $this->driver->getSelfRegistrationTerms();
+	}
+
 	public function getSelfRegistrationFields() {
 		return $this->driver->getSelfRegistrationFields();
 	}
