@@ -257,6 +257,7 @@ class Grouping_Record {
 			case 'eAudiobook':
 			case 'eBook':
 			case 'eMagazine':
+			case 'eResource':
 			case 'CD':
 			case 'Journal':
 			case 'Large Print':
