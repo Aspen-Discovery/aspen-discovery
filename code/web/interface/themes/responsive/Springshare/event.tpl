@@ -67,7 +67,10 @@
 						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDateString()|date_format:"%A %B %e, %Y"}</li>
 						<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDateString()|date_format:"%l:%M %p"} to {$recordDriver->getEndDateString()|date_format:"%l:%M %p"}</li>
 					{/if}
-					<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
+					<li>{translate text="Location: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
+					{if !empty($recordDriver->getRoom())}
+					<li>{translate text="Room: " isPublicFacing=true}{$recordDriver->getRoom()}</li>
+					{/if}
 				</ul>
 		</div>
 		<div class="col-tn-4" style="display:flex; justify-content:center;">
