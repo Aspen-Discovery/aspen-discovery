@@ -1580,7 +1580,7 @@ class UserAPI extends Action {
 				return $this->returnCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->returnAxis360Item();
-			} elseif ($source == 'project_palace') {
+			} elseif ($source == 'palace_project') {
 				return $this->returnPalaceProjectItem();
 			} else {
 				return [
@@ -1734,7 +1734,7 @@ class UserAPI extends Action {
 				return $this->renewCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->renewAxis360Item();
-			} elseif ($source == 'project_palace') {
+			} elseif ($source == 'palace_project') {
 				return $this->renewProjectPalaceItem();
 			} else {
 				return [
