@@ -1580,7 +1580,7 @@ class UserAPI extends Action {
 				return $this->returnCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->returnAxis360Item();
-			} elseif ($source == 'project_palace') {
+			} elseif ($source == 'palace_project') {
 				return $this->returnPalaceProjectItem();
 			} else {
 				return [
@@ -1734,7 +1734,7 @@ class UserAPI extends Action {
 				return $this->renewCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->renewAxis360Item();
-			} elseif ($source == 'project_palace') {
+			} elseif ($source == 'palace_project') {
 				return $this->renewProjectPalaceItem();
 			} else {
 				return [
@@ -2772,7 +2772,7 @@ class UserAPI extends Action {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
 			$result = $driver->checkOutTitle($user, $id);
 			$action = $result['api']['action'] ?? null;
@@ -2796,7 +2796,7 @@ class UserAPI extends Action {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
 			$result = $driver->returnCheckout($user, $id);
 			return [
@@ -2820,7 +2820,7 @@ class UserAPI extends Action {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
 			$result = $driver->renewCheckout($user, $id);
 			return [
@@ -2842,7 +2842,7 @@ class UserAPI extends Action {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
 			$result = $driver->placeHold($user, $id);
 			$action = $result['api']['action'] ?? null;
@@ -2865,7 +2865,7 @@ class UserAPI extends Action {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/ProjectPalaceDriver.php';
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
 			$result = $driver->cancelHold($user, $id);
 			return [
