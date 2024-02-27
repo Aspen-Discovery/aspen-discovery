@@ -3750,9 +3750,59 @@ class UserAPI extends AbstractAPI {
 		} else {
 			return [
 				'success' => false,
-				'message' => 'Login unsuccessful',
+				'message' => translate(['text'=>'Login unsuccessful','isPublicFacing'=>true,'inAttribute'=>$this->checkIfLiDA()]),
 			];
 		}
+	}
+
+	function getPaymentDetails($paymentId = null) {
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Login unsuccessful','isPublicFacing'=>true,'inAttribute'=>$this->checkIfLiDA()]),
+		];
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			require_once ROOT_DIR . '/sys/Account/UserPaymentLine.php';
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+			if (is_null($paymentId)) {
+				if (!empty($_REQUEST['paymentId'])) {
+					$paymentId = $_REQUEST['paymentId'];
+				}
+			}
+			if (empty($paymentId) || !is_numeric($paymentId)) {
+				$result['message'] = translate(['text'=>'No payment ID provided','isPublicFacing'=>true,'inAttribute'=>$this->checkIfLiDA()]);
+			}else{
+				$userPayment = new UserPayment();
+				$userPayment->userId = $user->id;
+				$userPayment->id = $paymentId;
+				if ($userPayment->find(true)) {
+					$result['success'] = true;
+					$result['message'] = '';
+					$paymentArray = $userPayment->toArray(false);
+					unset($paymentArray['requestingUrl']);
+					unset($paymentArray['deluxeSecurityId']);
+					unset($paymentArray['deluxeRemittanceId']);
+					unset($paymentArray['aciToken']);
+					unset($paymentArray['stripeToken']);
+					unset($paymentArray['squareToken']);
+					$result['payment'] = $paymentArray;
+					$result['payment']['paymentLines'] = [];
+					$paymentLines = new UserPaymentLine();
+					$paymentLines->paymentId = $paymentId;
+					$paymentLines->find();
+					while ($paymentLines->fetch()) {
+						$result['payment']['paymentLines'][] = $paymentLines->toArray(false);
+					}
+				}else{
+					$result['message'] = translate(['text'=>'Invalid payment ID provided','isPublicFacing'=>true,'inAttribute'=>$this->checkIfLiDA()]);
+				}
+			}
+
+		}
+		return $result;
 	}
 
 	/**

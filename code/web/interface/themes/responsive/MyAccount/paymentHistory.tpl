@@ -22,26 +22,28 @@
 		{/if}
 
 		{strip}
-			<div id="paymentHistory">
-				<div class="row">
-					<div class="col-sm-3">{translate text="Date" isPublicFacing=true}</div>
-					<div class="col-sm-2">{translate text="Type" isPublicFacing=true}</div>
-					<div class="col-sm-3">{translate text="Amount" isPublicFacing=true}</div>
-					<div class="col-sm-2">{translate text="Completed?" isPublicFacing=true}</div>
-					<div class="col-sm-2"></div>
-				</div>
-				<div id="paymentHistoryBody" class="striped">
+			<table id="paymentHistory" class="table table-striped">
+				<thead>
+					<tr>
+						<th>{translate text="Date" isPublicFacing=true}</th>
+						<th>{translate text="Type" isPublicFacing=true}</th>
+						<th>{translate text="Amount" isPublicFacing=true}</th>
+						<th>{translate text="Completed?" isPublicFacing=true}</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="paymentHistoryBody">
 					{foreach from=$paymentHistory item=$payment}
-						<div class="row">
-							<div class="col-sm-3">{$payment.date|date_format:"%D %T"}</div>
-							<div class="col-sm-2">{$payment.type}</div>
-							<div class="col-sm-3">{$payment.totalPaid}</div>
-							<div class="col-sm-2">{$payment.completed}</div>
-							<div class="col-sm-2"><a href="/MyAccount/PaymentDetails?id={$payment.id}" class="btn btn-sm btn-info">More details<</a>/div>
-						</div>
+						<tr>
+							<td>{$payment.date|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+							<td>{$payment.type}</td>
+							<td>{$payment.totalPaid}</td>
+							<td>{$payment.completed}</td>
+							<td><a href="/MyAccount/PaymentDetails?paymentId={$payment.id}" class="btn btn-sm btn-info">{translate text="More details" isPublicFacing=true}</a></td>
+						</tr>
 					{/foreach}
-				</div>
-			</div>
+				</tbody>
+			</table>
 		{/strip}
 	{else}
 		<div class="page">

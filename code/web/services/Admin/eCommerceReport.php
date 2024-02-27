@@ -18,22 +18,22 @@ class Admin_eCommerceReport extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new UserPayment();
-        $object->orderBy($this->getSort());
-        $this->applyFilters($object);
-        $object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-        $objectList = [];
-        if (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
-            $homeLibrary = Library::getPatronHomeLibrary()->libraryId;
-            $locationList = Location::getLocationList(true);
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$objectList = [];
+		if (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
+			$homeLibrary = Library::getPatronHomeLibrary()->libraryId;
+			$locationList = Location::getLocationList(true);
 			$locationListIds = array_keys($locationList);
-            $object->joinAdd(new User(), 'LEFT', 'user', 'userId', 'id');
-            $object->joinAdd(new Library(), 'LEFT', 'library', 'paidFromInstance', 'subdomain');
-            $object->whereAdd('user.homeLocationId IN (' . implode(', ', $locationListIds) . ') OR library.libraryId = ' . $homeLibrary);
-        }
-        $object->find();
-        while ($object->fetch()) {
-            $objectList[$object->id] = clone $object;
-        }
+			$object->joinAdd(new User(), 'LEFT', 'user', 'userId', 'id');
+			$object->joinAdd(new Library(), 'LEFT', 'library', 'paidFromInstance', 'subdomain');
+			$object->whereAdd('user.homeLocationId IN (' . implode(', ', $locationListIds) . ') OR library.libraryId = ' . $homeLibrary);
+		}
+		$object->find();
+		while ($object->fetch()) {
+			$objectList[$object->id] = clone $object;
+		}
 		return $objectList;
 	}
 

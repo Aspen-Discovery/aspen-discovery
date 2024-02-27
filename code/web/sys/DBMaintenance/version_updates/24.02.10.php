@@ -21,14 +21,19 @@ function getUpdates24_02_10(): array {
 				'ALTER TABLE library add column showPaymentHistory TINYINT DEFAULT 0'
 			]
 		], //library_show_payment_history
-//		'user_payment_lines' => [
-//			'title' => '',
-//			'description' => '',
-//			'continueOnError' => false,
-//			'sql' => [
-//				''
-//			]
-//		], //user_payment_lines
+		'user_payment_lines' => [
+			'title' => 'User Payment Lines',
+			'description' => 'Add User Payment Lines Table',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE user_payment_lines (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					paymentId INT(11) NOT NULL,
+					description TEXT,
+					amountPaid FLOAT
+				)'
+			]
+		], //user_payment_lines
 
 		//kirstien - ByWater
 

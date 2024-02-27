@@ -2479,20 +2479,23 @@ class User extends DataObject {
 
 		$userPayment = new UserPayment();
 		$userPayment->userId = $this->id;
-		$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
+		//$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
 		$numPayments = $userPayment->count();
-		$firstIndex = ($page - 1) * $recordsPerPage;
-		$userPayment->limit($firstIndex, $recordsPerPage);
+		if ($recordsPerPage > 0) {
+			$firstIndex = ($page - 1) * $recordsPerPage;
+			$userPayment->limit($firstIndex, $recordsPerPage);
+		}
 		$userPayment->orderBy('transactionDate desc');
 		$userPayment->find();
 		$payments = [];
 		while ($userPayment->fetch()) {
 			if ($userPayment->completed) {
 				$completed = 'Yes';
-			}elseif ($userPayment->error) {
+			}else {
 				$completed = 'No';
 			}
 			$payments[] = [
+				'id' => $userPayment->id,
 				'date' => $userPayment->transactionDate,
 				'type' => translate(['text'=> ucfirst($userPayment->transactionType), 'isPublicFacing' => true, 'inAttribute' => true]),
 				'completed' => translate(['text'=> $completed, 'isPublicFacing' => true, 'inAttribute' => true]),
