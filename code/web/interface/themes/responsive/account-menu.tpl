@@ -22,7 +22,7 @@
 				{/if}
 				{if !empty($showFines)}
 					<div class="header-menu-option" >
-						<a href="/MyAccount/Fines">{translate text='Fines and Messages' isPublicFacing=true}</a>
+						<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true}</a>
 					</div>
 				{/if}
 				{if !empty($enablePaymentHistory)}
