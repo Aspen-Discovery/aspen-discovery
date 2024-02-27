@@ -2479,7 +2479,7 @@ class User extends DataObject {
 
 		$userPayment = new UserPayment();
 		$userPayment->userId = $this->id;
-		//$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
+		$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
 		$numPayments = $userPayment->count();
 		if ($recordsPerPage > 0) {
 			$firstIndex = ($page - 1) * $recordsPerPage;
