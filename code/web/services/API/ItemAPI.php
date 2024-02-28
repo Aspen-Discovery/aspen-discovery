@@ -1,11 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class ItemAPI extends Action {
+class ItemAPI extends AbstractAPI {
 	/** @var  AbstractIlsDriver */
 	protected $catalog;
 
