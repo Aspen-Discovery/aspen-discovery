@@ -1307,15 +1307,21 @@ class Koha extends AbstractIlsDriver {
 	function initDatabaseConnection() {
 		if ($this->dbConnection == null) {
 			$port = empty($this->accountProfile->databasePort) ? '3306' : $this->accountProfile->databasePort;
-			$this->dbConnection = mysqli_connect($this->accountProfile->databaseHost, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $this->accountProfile->databaseName, $port);
+			try {
+				$this->dbConnection = mysqli_connect($this->accountProfile->databaseHost, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $this->accountProfile->databaseName, $port);
 
-			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0) {
+				if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0) {
+					global $logger;
+					$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
+					$this->dbConnection = null;
+				}
+				global $timer;
+				$timer->logTime("Initialized connection to Koha");
+			}catch (mysqli_sql_exception $e) {
 				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
+				$logger->log("Error connecting to Koha database " . $e, Logger::LOG_ERROR);
 				$this->dbConnection = null;
 			}
-			global $timer;
-			$timer->logTime("Initialized connection to Koha");
 		}
 	}
 
