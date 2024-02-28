@@ -34,6 +34,14 @@ function getUpdates24_02_10(): array {
 				)'
 			]
 		], //user_payment_lines
+		'library_deletePaymentHistoryOlderThan' => [
+			'title' => 'Library delete payment history older than',
+			'description' => 'Add setting to delete payment history older than a specific date',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN deletePaymentHistoryOlderThan INT DEFAULT 0'
+			]
+		], //library_deletePaymentHistoryOlderThan
 
 		//kirstien - ByWater
 

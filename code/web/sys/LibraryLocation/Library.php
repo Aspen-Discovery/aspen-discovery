@@ -120,6 +120,7 @@ class Library extends DataObject {
 	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
 	public $showPaymentHistory;
 	protected $_paymentHistoryExplanation;
+	public $deletePaymentHistoryOlderThan;
 	public $finesToPay;
 	public $finePaymentOrder;
 	public $payFinesLink;
@@ -2784,6 +2785,14 @@ class Library extends DataObject {
 						'description' => 'Provide additional information about the Payment History',
 						'defaultTextFile' => 'Library_paymentHistoryExplanation.MD',
 						'hideInLists' => true,
+					],
+					'deletePaymentHistoryOlderThan' => [
+						'property' => 'deletePaymentHistoryOlderThan',
+						'type' => 'integer',
+						'label' => 'Delete Payment History Older than (days)',
+						'description' => 'The number of days to preserve payment history.  We suggest preserving for at least 395 days for reporting.  Setting to a value of 0 will preserve all payment history',
+						'hideInLists' => true,
+						'default' => 0,
 					],
 				]
 			],
