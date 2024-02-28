@@ -1452,7 +1452,7 @@ class SirsiDynixROA extends HorizonAPI {
 			//Check all items to get the item id we want
 			foreach ($relatedRecord->getItems() as $item) {
 				//we only care about items with no volume
-				if (empty($item->volume)) {
+				if (empty($item->volume) && !$item->isEContent) {
 					if ($item->libraryOwned || $item->locallyOwned) {
 						$itemIdToUse = $item->itemId;
 						break;

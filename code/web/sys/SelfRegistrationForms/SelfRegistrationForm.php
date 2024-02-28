@@ -247,7 +247,7 @@ class SelfRegistrationForm extends DataObject {
 		$index = -1;
 		foreach ($this->_fields as $subObject) {
 			$subObject->id = $index;
-			$subObject->browseCategoryGroupId = $this->id;
+			$subObject->selfRegistrationFormId = $this->id;
 			$index--;
 		}
 	}
