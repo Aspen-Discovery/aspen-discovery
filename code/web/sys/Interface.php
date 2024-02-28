@@ -740,6 +740,7 @@ class UInterface extends Smarty {
 		$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
 		$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
 		$this->assign('languageAndDisplayInHeader', $library->languageAndDisplayInHeader);
+		$this->assign('showExploreMoreOptions', $library->getLayoutSettings()->showExploreMoreOptions);
 
 		if ($location != null) {
 			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
