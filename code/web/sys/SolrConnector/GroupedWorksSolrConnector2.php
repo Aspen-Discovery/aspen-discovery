@@ -256,12 +256,18 @@ class GroupedWorksSolrConnector2 extends Solr {
 	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25, $notInterestedIds = []) {
 		// Query String Parameters
 		$idString = '';
+		$numIdsProcessed = 0;
 		foreach ($ids as $index => $ratingInfo) {
 			if (strlen($idString) > 0) {
 				$idString .= ' OR ';
 			}
 			$ratingBoost = $ratingInfo['rating'];
 			$idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
+			$numIdsProcessed++;
+			//Only process up to 500 IDs at a time to avoid overwhelming solr
+			if ($numIdsProcessed >= 500) {
+				break;
+			}
 		}
 		//$idString = implode(' OR ', $ids);
 		$options = [
