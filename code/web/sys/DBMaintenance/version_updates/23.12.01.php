@@ -26,6 +26,13 @@ function getUpdates23_12_01(): array {
 			'sql' => [
 				'ALTER TABLE ip_lookup ADD COLUMN authenticatedForSummon TINYINT DEFAULT 0',
 			]
-			], //summon authentication
-    ];
+		], //summon authentication
+		'explore_more_section_control' => [
+			'title' => 'Explore More Section Control',
+			'description' => 'Allow control over whether the Explore More Section is displayed',
+			'sql' => [
+				"ALTER TABLE layout_settings ADD COLUMN showExploreMoreOptions TINYINT DEFAULT '1'",
+			]
+		],//control_whether_the_explore_more_box_is_displayed
+	];
 }

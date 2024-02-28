@@ -1,5 +1,6 @@
 {strip}
 	{* TODO: Consider renaming classes to assume they are under the exploreMoreBar class *}
+{if !empty($showExploreMoreOptions)}
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
 	<div class="label-top">
@@ -50,4 +51,9 @@
 	</div>
 
 </div>
+{else}
+	<div>
+	</div>
+{/if}
 {/strip}
+
