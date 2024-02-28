@@ -194,6 +194,9 @@ class UserListIndexer {
 				updateServer.commit(true, true);
 			}
 
+		} catch (IOException e) {
+			logEntry.incErrors("Error processing public lists quitting", e);
+			System.exit(-8);
 		}catch (Exception e){
 			logger.error("Error processing public lists", e);
 		}
