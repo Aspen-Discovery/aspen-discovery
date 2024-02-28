@@ -147,6 +147,7 @@
   "holds": "Holds",
   "no_holds": "You have no items on hold",
   "place_hold": "Place Hold",
+  "confirm_place_hold": "Yes, Place Hold",
   "cancel_hold": "Cancel Hold",
   "cancel_holds": "Cancel holds",
   "cancel_all_holds": "Cancel all holds",

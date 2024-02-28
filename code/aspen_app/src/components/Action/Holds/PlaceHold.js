@@ -1,10 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Button } from 'native-base';
+import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@gluestack-ui/themed';
 import React from 'react';
 
 // custom components and helper files
-import { HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { HoldsContext, LibraryBranchContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { completeAction } from '../../../screens/GroupedWork/Record';
 import { HoldPrompt } from './HoldPrompt';
 
@@ -44,6 +44,7 @@ export const PlaceHold = (props) => {
      const { location } = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
      const { updateHolds } = React.useContext(HoldsContext);
+     const { theme } = React.useContext(ThemeContext);
 
      let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
      if (_.isNumber(user.pickupLocationId)) {
@@ -113,12 +114,8 @@ export const PlaceHold = (props) => {
                <>
                     <Button
                          size="md"
-                         colorScheme="primary"
+                         bgColor={theme['colors']['primary']['500']}
                          variant="solid"
-                         _text={{
-                              padding: 0,
-                              textAlign: 'center',
-                         }}
                          isLoading={loading}
                          isLoadingText="Placing hold..."
                          style={{
@@ -163,7 +160,9 @@ export const PlaceHold = (props) => {
                                    }
                               });
                          }}>
-                         {title}
+                         <ButtonText color={theme['colors']['primary']['500-text']} textAlign="center" p="$0">
+                              {title}
+                         </ButtonText>
                     </Button>
                </>
           );

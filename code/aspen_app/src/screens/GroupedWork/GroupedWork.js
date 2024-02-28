@@ -1,19 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { SearchIcon } from 'lucide-react-native';
+
+import { Button, ButtonGroup, ButtonIcon, ButtonText, Box, Center, HStack, Text, SafeAreaView, ScrollView } from '@gluestack-ui/themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
-import { AlertDialog, Box, Button, Center, HStack, Icon, Image, ScrollView, Text, useToken } from 'native-base';
+import { AlertDialog, Icon, Image, useToken } from 'native-base';
 import React, { Component, useEffect } from 'react';
-import { SafeAreaView } from 'react-native';
 import { Rating } from 'react-native-elements';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
-import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { userContext } from '../../context/user';
 import { navigateStack, startSearch } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -32,15 +34,13 @@ import Variations from './Variations';
 export const GroupedWorkScreen = () => {
      const route = useRoute();
      const queryClient = useQueryClient();
-     const navigation = useNavigation();
      const id = route.params.id;
-     const prevRoute = route.params.prevRoute ?? null;
      const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
-     const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
+     const { language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language: userLanguage } = React.useContext(LanguageContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
-     const [isLoading, setLoading] = React.useState(false);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
 
      const { status, data, error, isFetching } = useQuery(['groupedWork', id, userLanguage, library.baseUrl], () => getGroupedWork(route.params.id, userLanguage, library.baseUrl));
 
@@ -86,13 +86,13 @@ export const GroupedWorkScreen = () => {
      return (
           <ScrollView>
                {status === 'loading' || isFetching ? (
-                    <Box pt={50}>{loadingSpinner('Fetching data...')}</Box>
+                    <Center>{loadingSpinner('Fetching data...')}</Center>
                ) : status === 'error' ? (
-                    <Box pt={50}>{loadError(error, '')}</Box>
+                    <Center>{loadError(error, '')}</Center>
                ) : (
                     <>
-                         <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />
-                         {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+                         <Box sx={{ '@base': { height: 150 }, '@lg': { height: 200 } }} w="100%" bgColor={colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900']} zIndex={-1} position="absolute" left={0} top={0} />
+                         {_.size(systemMessages) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                          <DisplayGroupedWork data={data.results} initialFormat={data.format} updateFormat={data.format} />
                     </>
                )}
@@ -108,9 +108,10 @@ const DisplayGroupedWork = (payload) => {
      const { format } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { textColor } = React.useContext(ThemeContext);
 
      const formats = Object.keys(groupedWork.formats);
-     if (formats) {
+     if (_.isObject(formats)) {
           useQueries({
                queries: formats.map((format) => {
                     return {
@@ -133,8 +134,8 @@ const DisplayGroupedWork = (payload) => {
      const key = 'large_' + groupedWork.id;
 
      return (
-          <Box safeArea={5} w="100%">
-               <Center mt={5} width="100%">
+          <Box p="$5" w="100%">
+               <Center mt="$5" width="100%">
                     <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: urldecode(groupedWork.cover), expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
@@ -149,10 +150,11 @@ const DisplayGroupedWork = (payload) => {
 };
 
 const getTitle = (title) => {
+     const { textColor } = React.useContext(ThemeContext);
      if (title) {
           return (
                <>
-                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold pt={5} alignText="center">
+                    <Text color={textColor} sx={{ '@base': { fontSize: 16, lineHeight: 19 }, '@lg': { fontSize: 24, lineHeight: 27 } }} bold pt="$5" alignText="center">
                          {title}
                     </Text>
                </>
@@ -164,10 +166,14 @@ const getTitle = (title) => {
 
 const getAuthor = (author) => {
      const { library } = React.useContext(LibrarySystemContext);
+     const { theme } = React.useContext(ThemeContext);
      if (author) {
           return (
-               <Button pt={2} size="sm" variant="link" colorScheme="tertiary" _text={{ fontWeight: '600' }} leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1" />} onPress={() => startSearch(author, 'SearchResults', library.baseUrl)}>
-                    {author}
+               <Button size="sm" variant="link" onPress={() => startSearch(author, 'SearchResults', library.baseUrl)}>
+                    <ButtonIcon as={SearchIcon} color={theme['colors']['tertiary']['400']} size="xs" mr="$1" />
+                    <ButtonText fontWeight="normal" color={theme['colors']['tertiary']['400']}>
+                         {author}
+                    </ButtonText>
                </Button>
           );
      }
@@ -180,22 +186,24 @@ const Format = (data) => {
      const isSelected = data.isSelected;
      const updateFormat = data.updateFormat;
      const btnStyle = isSelected === key ? 'solid' : 'outline';
+     const { theme } = React.useContext(ThemeContext);
 
      if (isSelected === key) {
           updateFormat(key);
      }
 
      return (
-          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(key)}>
-               {format.label}
+          <Button size="sm" bg={btnStyle === 'outline' ? 'transparent' : theme['colors']['secondary']['400']} borderColor={theme['colors']['secondary']['400']} mb="$1" mr="$1" variant={btnStyle} onPress={() => updateFormat(key)}>
+               <ButtonText color={btnStyle === 'outline' ? theme['colors']['secondary']['400'] : theme['colors']['secondary']['400-text']}>{format.label}</ButtonText>
           </Button>
      );
 };
 
 const getDescription = (description) => {
+     const { theme, textColor } = React.useContext(ThemeContext);
      if (description) {
           return (
-               <Text mt={5} mb={5} fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }}>
+               <Text mt="$5" mb="$5" sx={{ '@base': { fontSize: 14, lineHeight: 21 }, '@lg': { fontSize: 20, lineHeight: 27 } }} color={textColor}>
                     {decodeHTML(description)}
                </Text>
           );
@@ -206,13 +214,15 @@ const getDescription = (description) => {
 
 const getLanguage = (language) => {
      const { language: user_language } = React.useContext(LanguageContext);
+     const { theme, textColor } = React.useContext(ThemeContext);
      if (language) {
           return (
-               <HStack mt={3} mb={1}>
-                    <Text fontSize={{ base: 'xs', lg: 'md' }} bold>
+               <HStack mt="$3" mb="$1">
+                    <Text sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }} bold color={textColor}>
                          {getTermFromDictionary(user_language, 'language')}:
                     </Text>
-                    <Text fontSize={{ base: 'xs', lg: 'md' }} ml={1}>
+                    <Text sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }} ml="$1" color={textColor}>
+                         {' '}
                          {language}
                     </Text>
                </HStack>
@@ -225,17 +235,18 @@ const getLanguage = (language) => {
 const getFormats = (formats) => {
      const { language } = React.useContext(LanguageContext);
      const { format, updateFormat } = React.useContext(GroupedWorkContext);
+     const { theme, textColor } = React.useContext(ThemeContext);
      if (formats) {
           return (
                <>
-                    <Text fontSize={{ base: 'xs', lg: 'md' }} bold mt={3} mb={1}>
+                    <Text sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }} bold mt="$3" mb="$1" color={textColor}>
                          {getTermFromDictionary(language, 'format')}:
                     </Text>
-                    <Button.Group flexDirection="row" flexWrap="wrap">
+                    <ButtonGroup flexDirection="row" flexWrap="wrap">
                          {_.map(_.keys(formats), function (item, index, array) {
                               return <Format key={index} format={item} data={formats[item]} isSelected={format} updateFormat={updateFormat} />;
                          })}
-                    </Button.Group>
+                    </ButtonGroup>
                </>
           );
      } else {

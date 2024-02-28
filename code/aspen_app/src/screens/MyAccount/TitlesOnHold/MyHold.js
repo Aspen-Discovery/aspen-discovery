@@ -27,13 +27,18 @@ export const MyHold = (props) => {
      const [thawing, startThawing] = React.useState(false);
      let label, method, icon, canCancel;
      const version = formatDiscoveryVersion(library.discoveryVersion);
-     const [holdPosition, setHoldPosition] = React.useState('');
+     const [usesHoldPosition, setUsesHoldPosition] = React.useState(false);
+     const [holdPosition, setHoldPosition] = React.useState(null);
 
      React.useEffect(() => {
           async function fetchTranslations() {
                if (hold.holdQueueLength) {
                     await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then((result) => {
-                         setHoldPosition(result);
+                         let term = result;
+                         if (!term.includes('%1%')) {
+                              setUsesHoldPosition(true);
+                              setHoldPosition(term);
+                         }
                     });
                }
           }
@@ -276,7 +281,7 @@ export const MyHold = (props) => {
                               {getOnHoldFor(hold.user)}
                               {getPickupLocation(hold.currentPickupName, hold.source)}
                               {getExpirationDate(hold.expirationDate, hold.available)}
-                              {getPosition(hold.position, hold.available, hold.holdQueueLength, holdPosition)}
+                              {getPosition(hold.position, hold.available, hold.holdQueueLength, holdPosition, usesHoldPosition)}
                               {getStatus(hold.status, hold.source)}
                          </VStack>
                     </HStack>
@@ -500,7 +505,7 @@ export const ManageAllHolds = (props) => {
                                         startCancelling(true);
                                         cancelHolds(titlesToCancel, library.baseUrl).then((r) => {
                                              resetGroup();
-                                             onClose(onClose);
+                                             onClose();
                                              startCancelling(false);
                                         });
                                    }}>

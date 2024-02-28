@@ -426,6 +426,7 @@ export function buildParamsForUrl() {
 
      params = _.join(params, '');
      SEARCH.appendedParams = params;
+     console.log('buildParamsForUrl: ');
      console.log(params);
      return params;
 }

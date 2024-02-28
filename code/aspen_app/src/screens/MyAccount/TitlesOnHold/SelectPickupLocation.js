@@ -1,21 +1,30 @@
-import _ from 'lodash';
-import { Platform } from 'react-native';
-import { Actionsheet, Box, Button, FormControl, Select, CheckIcon, CloseIcon, Icon, Pressable, HStack, VStack } from 'native-base';
-import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
+import _ from 'lodash';
+import { Actionsheet, Box, Button, CheckIcon, CloseIcon, FormControl, HStack, Icon, Pressable, Select, VStack } from 'native-base';
+import React from 'react';
+import { Platform } from 'react-native';
+import Modal from 'react-native-modal';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 import { changeHoldPickUpLocation } from '../../../util/accountActions';
-import React from 'react';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectPickupLocation = (props) => {
      const { locations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup, language } = props;
      let pickupLocation = _.findIndex(locations, function (o) {
           return o.locationId === currentPickupId;
      });
+
+     let pickupId = currentPickupId;
+     if (_.isNumber(pickupId)) {
+          pickupId = _.toString(pickupId);
+     }
+
      pickupLocation = _.nth(locations, pickupLocation);
      let pickupLocationCode = _.get(pickupLocation, 'code', '');
-     pickupLocation = currentPickupId.concat('_', pickupLocationCode);
+     if (_.isNumber(pickupLocationCode)) {
+          pickupLocationCode = _.toString(pickupLocationCode);
+     }
+     pickupLocation = pickupId.concat('_', pickupLocationCode);
 
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);

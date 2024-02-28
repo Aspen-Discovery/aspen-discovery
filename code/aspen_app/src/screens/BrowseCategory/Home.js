@@ -1,17 +1,17 @@
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { ScanBarcode, SearchIcon, XIcon, Settings, RotateCwIcon, ClockIcon } from 'lucide-react-native';
+import { Center, Box, Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner, HStack, Icon, Badge, BadgeText, FormControl, Input, InputField, InputSlot, InputIcon, Pressable, ScrollView, Text } from '@gluestack-ui/themed';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
-import { Badge, Box, Button, Container, FormControl, HStack, Icon, Input, Pressable, ScrollView, Text } from 'native-base';
 import React from 'react';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { fetchSavedEvents } from '../../util/api/event';
@@ -50,7 +50,7 @@ export const DiscoverHomeScreen = () => {
      const [searchTerm, setSearchTerm] = React.useState('');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
-
+     const { theme, mode, textColor } = React.useContext(ThemeContext);
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
      navigation.setOptions({
@@ -281,14 +281,14 @@ export const DiscoverHomeScreen = () => {
                checkSettings().then(() => {
                     return () => checkSettings();
                });
-          }, [language, notificationOnboard])
+          }, [language, notificationOnboard, mode])
      );
 
      const clearText = () => {
           setSearchTerm('');
      };
 
-     const search = async () => {
+     const search = () => {
           navigateStack('BrowseTab', 'SearchResults', {
                term: searchTerm,
                type: 'catalog',
@@ -314,19 +314,27 @@ export const DiscoverHomeScreen = () => {
      const renderHeader = (title, key, user, url) => {
           return (
                <Box>
-                    <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
+                    <HStack space="$3" alignItems="center" justifyContent="space-between" pb="$2">
                          <Text
                               maxWidth="80%"
                               bold
-                              mb={1}
-                              fontSize={{
-                                   base: 'lg',
-                                   lg: '2xl',
+                              mb="$1"
+                              $dark-color="$textLight50"
+                              sx={{
+                                   '@base': {
+                                        fontSize: '$16',
+                                   },
+                                   '@lg': {
+                                        fontSize: '$22',
+                                   },
                               }}>
                               {title}
                          </Text>
-                         <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => onHideCategory(url, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                              {getTermFromDictionary(language, 'hide')}
+                         <Button size="xs" variant="link" onPress={() => onHideCategory(url, key)}>
+                              <ButtonIcon as={XIcon} color={textColor} mr="$1" />
+                              <ButtonText fontWeight="$medium" sx={{ color: textColor }}>
+                                   {getTermFromDictionary(language, 'hide')}
+                              </ButtonText>
                          </Button>
                     </HStack>
                </Box>
@@ -355,23 +363,25 @@ export const DiscoverHomeScreen = () => {
 
           return (
                <Pressable
-                    ml={1}
-                    mr={3}
+                    ml="$1"
+                    mr="$3"
                     onPress={() => onPressItem(item.id, type, item.title_display, version)}
-                    width={{
-                         base: 100,
-                         lg: 200,
-                    }}
-                    height={{
-                         base: 150,
-                         lg: 250,
+                    sx={{
+                         '@base': {
+                              width: 100,
+                              height: 150,
+                         },
+                         '@lg': {
+                              width: 180,
+                              height: 250,
+                         },
                     }}>
                     {version >= '22.08.00' && isNew ? (
-                         <Container zIndex={1}>
-                              <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{ fontSize: 9 }}>
-                                   {getTermFromDictionary(language, 'flag_new')}
+                         <Box zIndex={1}>
+                              <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1}>
+                                   <BadgeText size="$9">{getTermFromDictionary(language, 'flag_new')}</BadgeText>
                               </Badge>
-                         </Container>
+                         </Box>
                     ) : null}
                     <CachedImage
                          cacheKey={key}
@@ -498,6 +508,7 @@ export const DiscoverHomeScreen = () => {
      const showSystemMessage = () => {
           if (_.isArray(systemMessages)) {
                return systemMessages.map((obj, index, collection) => {
+                    console.log(obj);
                     if (obj.showOn === '0') {
                          return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
                     }
@@ -520,50 +531,26 @@ export const DiscoverHomeScreen = () => {
 
      return (
           <ScrollView>
-               <Box safeArea={5}>
+               <Box p="$5">
                     {showSystemMessage()}
-                    <FormControl pb={5}>
-                         <Input
-                              returnKeyType="search"
-                              variant="outline"
-                              autoCapitalize="none"
-                              onChangeText={(term) => setSearchTerm(term)}
-                              status="info"
-                              placeholder={getTermFromDictionary(language, 'search')}
-                              onSubmitEditing={search}
-                              value={searchTerm}
-                              size="xl"
-                              _dark={{
-                                   color: 'muted.50',
-                                   borderColor: 'muted.50',
-                              }}
-                              InputLeftElement={
-                                   <Icon
-                                        as={<Ionicons name="search" />}
-                                        size={5}
-                                        ml="2"
-                                        color="muted.800"
-                                        _dark={{
-                                             color: 'muted.50',
-                                        }}
-                                   />
-                              }
-                              InputRightElement={
-                                   <>
-                                        {searchTerm ? (
-                                             <Pressable onPress={() => clearSearch()}>
-                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={6} mr="2" />
-                                             </Pressable>
-                                        ) : null}
-                                        <Pressable onPress={() => openScanner()}>
-                                             <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
-                                        </Pressable>
-                                   </>
-                              }
-                         />
+                    <FormControl pb="$5">
+                         <Input>
+                              <InputSlot>
+                                   <InputIcon as={SearchIcon} ml="$2" color={textColor} />
+                              </InputSlot>
+                              <InputField returnKeyType="search" variant="outline" autoCapitalize="none" onChangeText={(term) => setSearchTerm(term)} status="info" placeholder={getTermFromDictionary(language, 'search')} onSubmitEditing={search} value={searchTerm} size="lg" sx={{ color: textColor, borderColor: textColor, ':focus': { borderColor: textColor } }} />
+                              {searchTerm ? (
+                                   <InputSlot onPress={() => clearSearch()}>
+                                        <InputIcon as={XIcon} mr="$2" color={textColor} />
+                                   </InputSlot>
+                              ) : null}
+                              <InputSlot onPress={() => openScanner()}>
+                                   <InputIcon as={ScanBarcode} mr="$2" color={textColor} />
+                              </InputSlot>
+                         </Input>
                     </FormControl>
                     {category.map((item, index) => {
-                         return <DisplayBrowseCategory language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
+                         return <DisplayBrowseCategory textColor={textColor} language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
                     })}
                     <ButtonOptions language={language} libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
                </Box>
@@ -572,6 +559,7 @@ export const DiscoverHomeScreen = () => {
 };
 
 const ButtonOptions = (props) => {
+     const { theme } = React.useContext(ThemeContext);
      const [loading, setLoading] = React.useState(false);
      const [refreshing, setRefreshing] = React.useState(false);
      const { language, onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
@@ -580,73 +568,111 @@ const ButtonOptions = (props) => {
 
      if (version >= '22.07.00') {
           return (
-               <Box>
-                    {!loadAll ? (
+               <Center>
+                    <ButtonGroup
+                         sx={{
+                              '@base': {
+                                   flexDirection: 'column',
+                              },
+                              '@lg': {
+                                   flexDirection: 'row',
+                              },
+                         }}>
+                         {!loadAll ? (
+                              <Button
+                                   isDisabled={loading}
+                                   sx={{
+                                        bg: theme['colors']['primary']['500'],
+                                        size: 'md',
+                                   }}
+                                   onPress={() => {
+                                        setLoading(true);
+                                        onLoadAllCategories(libraryUrl, patronId);
+                                        setTimeout(function () {
+                                             setLoading(false);
+                                        }, 5000);
+                                   }}>
+                                   {loading ? <ButtonSpinner /> : <ButtonIcon as={ClockIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
+                                   <ButtonText
+                                        sx={{
+                                             color: theme['colors']['primary']['500-text'],
+                                        }}
+                                        size="sm"
+                                        fontWeight="$medium">
+                                        {getTermFromDictionary(language, 'browse_categories_load_all')}
+                                   </ButtonText>
+                              </Button>
+                         ) : null}
+
                          <Button
-                              isLoading={loading}
-                              size="md"
-                              colorScheme="primary"
-                              onPress={() => {
-                                   setLoading(true);
-                                   onLoadAllCategories(libraryUrl, patronId);
-                                   setTimeout(function () {
-                                        setLoading(false);
-                                   }, 5000);
+                              sx={{
+                                   bg: theme['colors']['primary']['500'],
                               }}
-                              startIcon={<Icon as={MaterialIcons} name="schedule" size="sm" />}>
-                              {getTermFromDictionary(language, 'browse_categories_load_all')}
+                              onPress={() => {
+                                   onPressSettings();
+                              }}>
+                              <ButtonIcon as={Settings} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />
+                              <ButtonText
+                                   sx={{
+                                        color: theme['colors']['primary']['500-text'],
+                                   }}
+                                   size="sm"
+                                   fontWeight="$medium">
+                                   {getTermFromDictionary(language, 'browse_categories_manage')}
+                              </ButtonText>
                          </Button>
-                    ) : null}
-                    <Button
-                         size="md"
-                         mt="3"
-                         colorScheme="primary"
-                         onPress={() => {
-                              onPressSettings();
-                         }}
-                         startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                         {getTermFromDictionary(language, 'browse_categories_manage')}
-                    </Button>
-                    <Button
-                         isLoading={refreshing}
-                         size="md"
-                         mt="3"
-                         colorScheme="primary"
-                         onPress={() => {
-                              setRefreshing(true);
-                              onRefreshCategories();
-                              setTimeout(function () {
-                                   setRefreshing(false);
-                              });
-                         }}
-                         startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                         {getTermFromDictionary(language, 'browse_categories_refresh')}
-                    </Button>
-               </Box>
+
+                         <Button
+                              isDisabled={refreshing}
+                              sx={{
+                                   bg: theme['colors']['primary']['500'],
+                              }}
+                              onPress={() => {
+                                   setRefreshing(true);
+                                   onRefreshCategories();
+                                   setTimeout(function () {
+                                        setRefreshing(false);
+                                   });
+                              }}>
+                              {refreshing ? <ButtonSpinner /> : <ButtonIcon as={RotateCwIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
+
+                              <ButtonText size="sm" fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
+                                   {getTermFromDictionary(language, 'browse_categories_refresh')}
+                              </ButtonText>
+                         </Button>
+                    </ButtonGroup>
+               </Center>
           );
      }
 
      return (
-          <Box>
-               <Button
-                    size="md"
-                    colorScheme="primary"
-                    onPress={() => {
-                         onPressSettings(libraryUrl, patronId);
-                    }}
-                    startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                    {getTermFromDictionary(language, 'browse_categories_manage')}
-               </Button>
-               <Button
-                    size="md"
-                    mt="3"
-                    colorScheme="primary"
-                    onPress={() => {
-                         onRefreshCategories(libraryUrl);
-                    }}
-                    startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                    {getTermFromDictionary(language, 'browse_categories_refresh')}
-               </Button>
-          </Box>
+          <Center>
+               <ButtonGroup flexDirection="column">
+                    <Button
+                         sx={{
+                              bg: theme['colors']['primary']['500'],
+                         }}
+                         onPress={() => {
+                              onPressSettings(libraryUrl, patronId);
+                         }}>
+                         <ButtonIcon as={Settings} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />
+                         <ButtonText fontSize={10} fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
+                              {getTermFromDictionary(language, 'browse_categories_manage')}
+                         </ButtonText>
+                    </Button>
+                    <Button
+                         sx={{
+                              bg: theme['colors']['primary']['500'],
+                         }}
+                         onPress={() => {
+                              onRefreshCategories(libraryUrl);
+                         }}>
+                         <ButtonIcon as={RotateCwIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />
+                         <ButtonText fontSize={10} fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
+                              {getTermFromDictionary(language, 'browse_categories_refresh')}
+                         </ButtonText>
+                    </Button>
+               </ButtonGroup>
+          </Center>
      );
 };

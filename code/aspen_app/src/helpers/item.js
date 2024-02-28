@@ -111,7 +111,7 @@ export const getFormat = (format, source = null) => {
                                    base: 'xs',
                                    lg: 'sm',
                               }}>
-                              <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format} - {source}
+                              <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format !== '' ? format : 'Unknown'} - {source}
                          </Text>
                     );
                }
@@ -317,10 +317,10 @@ export const getPickupLocation = (location, source) => {
      }
 };
 
-export const getPosition = (position, available, length, holdPosition) => {
+export const getPosition = (position, available, length, holdPosition, usesHoldPosition) => {
      const { language } = React.useContext(LanguageContext);
      if (position && !available && position !== 0 && position !== '0') {
-          if (length) {
+          if (length && usesHoldPosition) {
                return (
                     <Text
                          fontSize={{

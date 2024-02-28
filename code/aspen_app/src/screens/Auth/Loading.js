@@ -1,4 +1,5 @@
-import { StackActions, useIsFocused, useLinkTo, useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused, useLinkTo, useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
@@ -6,7 +7,8 @@ import _ from 'lodash';
 import { Box, Center, Heading, Progress, VStack } from 'native-base';
 import React from 'react';
 import { checkVersion } from 'react-native-check-version';
-import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
+import { createGlueTheme } from '../../themes/theme';
 import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
 import { getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
@@ -14,6 +16,7 @@ import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
+import { ForceLogout } from './ForceLogout';
 
 const prefix = Linking.createURL('/');
 
@@ -45,17 +48,31 @@ export const LoadingScreen = () => {
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { theme, updateTheme, updateColorMode } = React.useContext(ThemeContext);
 
      const [loadingText, setLoadingText] = React.useState('');
 
      React.useEffect(() => {
-          const unsubscribe = navigation.addListener('focus', () => {
+          const unsubscribe = navigation.addListener('focus', async () => {
                // The screen is focused
                console.log('The screen is focused.');
                setIsReloading(true);
                setProgress(0);
                queryClient.queryCache.clear();
-               navigation.dispatch(StackActions.popToTop());
+               //navigation.dispatch(StackActions.popToTop());
+               try {
+                    await AsyncStorage.getItem('@colorMode').then(async (mode) => {
+                         if (mode === 'light' || mode === 'dark') {
+                              updateColorMode(mode);
+                         } else {
+                              updateColorMode('light');
+                         }
+                    });
+               } catch (e) {
+                    // something went wrong (or the item didn't exist yet in storage)
+                    // so just set it to the default: light
+                    updateColorMode('light');
+               }
           });
 
           // Return the function to unsubscribe from the event so it gets removed on unmount
@@ -75,6 +92,13 @@ export const LoadingScreen = () => {
           enabled: !!translationQuery,
           onSuccess: (data) => {
                updateLanguages(data);
+          },
+     });
+
+     const { status: themeQueryStatus, data: themeQuery } = useQuery(['theme', LIBRARY.url], () => createGlueTheme(LIBRARY.url), {
+          enabled: !!languagesQuery,
+          onSuccess: (data) => {
+               updateTheme(data);
           },
      });
 
@@ -106,7 +130,7 @@ export const LoadingScreen = () => {
      }, []);
 
      const { status: librarySystemQueryStatus, data: librarySystemQuery } = useQuery(['library_system', LIBRARY.url], () => getLibraryInfo(LIBRARY.url), {
-          enabled: !!languagesQuery,
+          enabled: !!themeQuery,
           onSuccess: (data) => {
                setProgress(20);
                updateLibrary(data);
@@ -120,7 +144,6 @@ export const LoadingScreen = () => {
                if (_.isUndefined(data) || _.isEmpty(data)) {
                     setHasError(true);
                } else {
-                    console.log(data);
                     if (data.success === false || data.success === 'false') {
                          setHasError(true);
                     } else {
@@ -198,11 +221,11 @@ export const LoadingScreen = () => {
           },
      });
 
-     /*if (hasError) {
-	 return <ForceLogout />;
-	 }*/
+     if (hasError) {
+          return <ForceLogout />;
+     }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
+     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading' || themeQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -217,7 +240,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success' || themeQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);

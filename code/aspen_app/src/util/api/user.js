@@ -28,6 +28,7 @@ export async function refreshProfile(url) {
           },
      });
      const response = await discovery.post(`${endpoint.url}getPatronProfile`, postBody);
+     console.log(response);
      if (response.ok) {
           if (response.data?.result) {
                //console.log(response.data.result.profile);
@@ -110,7 +111,7 @@ export async function validateUser(username, password, url) {
      postBody.append('password', password);
      const discovery = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutFast,
+          timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
@@ -128,7 +129,7 @@ export async function validateSession(url) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutFast,
+          timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
@@ -151,7 +152,7 @@ export async function revalidateUser(url) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutFast,
+          timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
@@ -159,7 +160,11 @@ export async function revalidateUser(url) {
      if (response.ok) {
           if (response?.data?.result?.valid) {
                return response.data.result.valid;
+          } else {
+               console.log(response.data);
           }
+     } else {
+          console.log(response);
      }
      return false;
 }

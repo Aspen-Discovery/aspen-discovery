@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { useToken } from '@gluestack-style/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import chroma from 'chroma-js';
@@ -6,10 +7,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
 import { Box, extendTheme, HStack, Icon, IconButton, Text, useColorMode, useColorModeValue } from 'native-base';
 import React, { useState } from 'react';
+import { ThemeContext } from '../context/initialContext';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
-import { getAppSettings } from '../util/loadLibrary';
+import { getAppSettings, LIBRARY } from '../util/loadLibrary';
 
 export async function getThemeData() {
      let theme = [];
@@ -64,8 +66,12 @@ const getThemeId = () => {
      return value;
 };
 
-export async function getThemeInfo() {
-     await getAppSettings(GLOBALS.url, 10000, GLOBALS.slug);
+export async function getThemeInfo(url = null) {
+     let libraryUrl = LIBRARY.url ?? GLOBALS.url;
+     if (url) {
+          libraryUrl = url;
+     }
+     await getAppSettings(libraryUrl, 10000, GLOBALS.slug);
      const api = create({
           baseURL: GLOBALS.url + '/API',
           timeout: 10000,
@@ -100,7 +106,7 @@ export async function getThemeInfo() {
 
 const getColorNumber = (index) => (index === 0 ? 50 : index * 100);
 
-const getContrastText = (color) => (chroma.contrast(color, '#ffffff') < 7 ? '#000000' : '#ffffff');
+const getContrastText = (color) => (chroma.contrast(color, '#ffffff') < 6 ? '#000000' : '#ffffff');
 
 function generateSwatches(swatch) {
      const LIGHTNESS_MAP = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05];
@@ -156,7 +162,6 @@ function generateSwatches(swatch) {
 }
 
 export async function createTheme(colorMode) {
-     console.log('createTheme: ' + colorMode);
      const response = await getThemeInfo();
      const theme = extendTheme({
           colors: {
@@ -174,6 +179,19 @@ export async function createTheme(colorMode) {
           },
      });
      console.log('Theme created and saved.');
+     return theme;
+}
+
+export async function createGlueTheme(url) {
+     const response = await getThemeInfo(url);
+     const theme = extendTheme({
+          colors: {
+               primary: response[0],
+               secondary: response[1],
+               tertiary: response[2],
+          },
+     });
+     console.log('Glue theme created and saved.');
      return theme;
 }
 
@@ -217,10 +235,24 @@ export function UseColorMode(props) {
      const colorMode = useColorModeValue('dark', 'light');
      const currentColorMode = useColorModeValue('Light', 'Dark');
      const currentModeB = useColorModeValue('wb-sunny', 'nightlight-round');
+     const darkText = useToken('colors', 'textLight950');
+     const lightText = useToken('colors', 'textLight50');
+     const { updateColorMode, updateTextColor } = React.useContext(ThemeContext);
 
      const switchColorMode = async () => {
           toggleColorMode();
           console.log('Set colorMode to: ' + colorMode);
+
+          if (colorMode === 'light') {
+               updateTextColor(darkText);
+          }
+
+          if (colorMode === 'dark') {
+               updateTextColor(lightText);
+          }
+
+          updateColorMode(colorMode);
+          //console.log('Set Glue colorMode to: ' + colorModeForGlue);
           await AsyncStorage.setItem('@colorMode', colorMode);
      };
 

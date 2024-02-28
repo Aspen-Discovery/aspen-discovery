@@ -1,14 +1,14 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Button, CheckIcon, FormControl, Heading, Modal, Select } from 'native-base';
+import { CheckIcon, CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormControlLabel, FormControlLabelText, Heading, Select, Button, ButtonGroup, ButtonText, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, ButtonSpinner } from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
-import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { HoldsContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { completeAction } from '../../../screens/GroupedWork/Record';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { getCopies } from '../../../util/api/item';
 import { HoldNotificationPreferences } from './HoldNotificationPreferences';
-import { SelectItem } from './SelectItem';
+import { SelectItemHold } from './SelectItem';
 import { SelectVolume } from './SelectVolume';
 
 export const HoldPrompt = (props) => {
@@ -48,6 +48,7 @@ export const HoldPrompt = (props) => {
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateHolds } = React.useContext(HoldsContext);
+     const { theme, colorMode, textColor } = React.useContext(ThemeContext);
 
      const { status, data, error, isFetching } = useQuery({
           queryKey: ['copies', id, variationId, language, library.baseUrl],
@@ -86,6 +87,10 @@ export const HoldPrompt = (props) => {
 
      let promptForHoldType = false;
      let typeOfHold = 'default';
+
+     if (holdTypeForFormat) {
+          typeOfHold = holdTypeForFormat;
+     }
 
      if (volumeInfo.numItemsWithVolumes >= 1) {
           typeOfHold = 'item';
@@ -137,14 +142,21 @@ export const HoldPrompt = (props) => {
 
      return (
           <>
-               <Button onPress={() => setShowModal(true)}>{title}</Button>
+               <Button bgColor={theme['colors']['primary']['500']} onPress={() => setShowModal(true)}>
+                    <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>
+               </Button>
                <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
-                    <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
-                         <Modal.CloseButton />
-                         <Modal.Header>
-                              <Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading>
-                         </Modal.Header>
-                         <Modal.Body>
+                    <ModalBackdrop />
+                    <ModalContent maxWidth="90%" bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                         <ModalHeader borderBottomWidth="$1" borderBottomColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}>
+                              <Heading size="md" color={textColor}>
+                                   {isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}
+                              </Heading>
+                              <ModalCloseButton>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody mt="$3">
                               {promptForHoldNotifications ? (
                                    <HoldNotificationPreferences
                                         user={user}
@@ -164,65 +176,108 @@ export const HoldPrompt = (props) => {
                                         url={library.baseUrl}
                                    />
                               ) : null}
-                              {!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? <SelectItem id={id} item={item} setItem={setItem} language={language} data={data} holdType={holdType} setHoldType={setHoldType} holdTypeForFormat={holdTypeForFormat} url={library.baseUrl} showModal={showModal} /> : null}
-                              {promptForHoldType || holdType === 'volume' ? <SelectVolume id={id} language={language} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} holdType={holdType} setHoldType={setHoldType} showModal={showModal} url={library.baseUrl} /> : null}
+                              {!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? <SelectItemHold theme={theme} id={id} item={item} setItem={setItem} language={language} data={data} holdType={holdType} setHoldType={setHoldType} holdTypeForFormat={holdTypeForFormat} url={library.baseUrl} showModal={showModal} textColor={textColor} /> : null}
+                              {promptForHoldType || holdType === 'volume' ? <SelectVolume id={id} language={language} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} holdType={holdType} setHoldType={setHoldType} showModal={showModal} url={library.baseUrl} textColor={textColor} /> : null}
                               {_.isArray(locations) && _.size(locations) > 1 && !isEContent ? (
-                                   <FormControl>
-                                        <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
+                                   <FormControl mt="$1">
+                                        <FormControlLabel>
+                                             <FormControlLabelText size="sm" color={textColor}>
+                                                  {getTermFromDictionary(language, 'select_pickup_location')}
+                                             </FormControlLabelText>
+                                        </FormControlLabel>
                                         <Select
                                              isReadOnly={Platform.OS === 'android'}
                                              name="pickupLocations"
                                              selectedValue={location}
-                                             minWidth="200"
+                                             initialLabel="Test"
+                                             minWidth={200}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
                                              }}
-                                             mt={1}
-                                             mb={2}
+                                             mt="$1"
+                                             mb="$2"
                                              onValueChange={(itemValue) => setLocation(itemValue)}>
-                                             {locations.map((location, index) => {
-                                                  return <Select.Item label={location.name} value={location.code} key={index} />;
-                                             })}
+                                             <SelectTrigger variant="outline" size="md">
+                                                  {locations.map((selectedLocation, index) => {
+                                                       if (selectedLocation.code === location) {
+                                                            return <SelectInput value={selectedLocation.name} color={textColor} />;
+                                                       }
+                                                  })}
+                                                  <SelectIcon mr="$3">
+                                                       <Icon as={ChevronDownIcon} color={textColor} />
+                                                  </SelectIcon>
+                                             </SelectTrigger>
+                                             <SelectPortal>
+                                                  <SelectBackdrop />
+                                                  <SelectContent p="$5">
+                                                       <SelectDragIndicatorWrapper>
+                                                            <SelectDragIndicator />
+                                                       </SelectDragIndicatorWrapper>
+                                                       {locations.map((availableLocations, index) => {
+                                                            if (availableLocations.code === location) {
+                                                                 return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} />;
+                                                            }
+                                                            return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} />;
+                                                       })}
+                                                  </SelectContent>
+                                             </SelectPortal>
                                         </Select>
                                    </FormControl>
                               ) : null}
                               {_.isArray(accounts) && _.size(accounts) > 0 ? (
                                    <FormControl>
-                                        <FormControl.Label>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControl.Label>
+                                        <FormControlLabel>
+                                             <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControlLabelText>
+                                        </FormControlLabel>
                                         <Select
                                              isReadOnly={Platform.OS === 'android'}
                                              name="linkedAccount"
                                              selectedValue={activeAccount}
-                                             minWidth="200"
+                                             minWidth={200}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
                                              }}
-                                             mt={1}
-                                             mb={3}
+                                             mt="$1"
+                                             mb="$3"
                                              onValueChange={(itemValue) => setActiveAccount(itemValue)}>
-                                             <Select.Item label={user.displayName} value={user.id} />
-                                             {accounts.map((item, index) => {
-                                                  return <Select.Item label={item.displayName} value={item.id} key={index} />;
-                                             })}
+                                             <SelectTrigger variant="outline" size="md">
+                                                  <SelectInput color={textColor} />
+                                                  <SelectIcon mr="$3">
+                                                       <Icon as={ChevronDownIcon} />
+                                                  </SelectIcon>
+                                             </SelectTrigger>
+                                             <SelectPortal>
+                                                  <SelectBackdrop />
+                                                  <SelectContent>
+                                                       <SelectDragIndicatorWrapper>
+                                                            <SelectDragIndicator />
+                                                       </SelectDragIndicatorWrapper>
+                                                       <SelectItem label={user.displayName} value={user.id} />
+                                                       {accounts.map((item, index) => {
+                                                            return <SelectItem label={item.displayName} value={item.id} key={index} />;
+                                                       })}
+                                                  </SelectContent>
+                                             </SelectPortal>
                                         </Select>
                                    </FormControl>
                               ) : null}
-                         </Modal.Body>
-                         <Modal.Footer>
-                              <Button.Group space={2} size="md">
+                         </ModalBody>
+                         <ModalFooter borderTopWidth="$1" borderTopColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}>
+                              <ButtonGroup space="sm">
                                    <Button
-                                        colorScheme="muted"
                                         variant="outline"
+                                        borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}
                                         onPress={() => {
                                              setShowModal(false);
                                              setLoading(false);
                                         }}>
-                                        {getTermFromDictionary(language, 'close_window')}
+                                        <ButtonText color={colorMode === 'light' ? theme['colors']['warmGray']['500'] : theme['colors']['coolGray']['300']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
                                    </Button>
                                    <Button
-                                        isLoading={loading}
+                                        bgColor={theme['colors']['primary']['500']}
+                                        isDisabled={loading}
                                         onPress={async () => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
@@ -276,11 +331,11 @@ export const HoldPrompt = (props) => {
                                                   }
                                              });
                                         }}>
-                                        {title}
+                                        {loading ? <ButtonSpinner /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
                                    </Button>
-                              </Button.Group>
-                         </Modal.Footer>
-                    </Modal.Content>
+                              </ButtonGroup>
+                         </ModalFooter>
+                    </ModalContent>
                </Modal>
           </>
      );

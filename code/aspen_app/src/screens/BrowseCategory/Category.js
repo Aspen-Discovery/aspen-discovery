@@ -1,14 +1,13 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Button, ButtonGroup, ButtonIcon, ButtonText, FlatList, View, HStack, Pressable, Text, SafeAreaView } from '@gluestack-ui/themed';
+import { XIcon } from 'lucide-react-native';
 import _ from 'lodash';
-import { Button, HStack, Icon, Text, View, Pressable, FlatList } from 'native-base';
 import React from 'react';
 
 import { LibrarySystemContext } from '../../context/initialContext';
-import { SafeAreaView } from 'react-native';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const DisplayBrowseCategory = (props) => {
-     const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
+     const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden, textColor } = props;
 
      const hide = getTermFromDictionary(language, 'hide');
      let key = categoryKey;
@@ -30,25 +29,40 @@ const DisplayBrowseCategory = (props) => {
                     <LibrarySystemContext.Consumer>
                          {(library) => (
                               <SafeAreaView>
-                                   <View pb={5} height="225">
-                                        <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
+                                   <View
+                                        pb="$5"
+                                        sx={{
+                                             '@base': {
+                                                  height: 225,
+                                             },
+                                             '@lg': {
+                                                  height: 325,
+                                             },
+                                        }}>
+                                        <HStack space="$3" alignItems="center" justifyContent="space-between" pb="$2">
                                              {library.version >= '22.10.00' ? (
-                                                  <Pressable onPress={() => onPressCategory(categoryLabel, categoryKey, categorySource)} maxWidth="80%" mb={1}>
+                                                  <Pressable onPress={() => onPressCategory(categoryLabel, categoryKey, categorySource)} maxWidth="80%" mb="$1">
                                                        <Text
-                                                            bold
-                                                            fontSize={{
-                                                                 base: 'lg',
-                                                                 lg: '2xl',
-                                                            }}>
+                                                            color={textColor}
+                                                            sx={{
+                                                                 '@base': {
+                                                                      fontSize: 16,
+                                                                 },
+                                                                 '@lg': {
+                                                                      fontSize: 22,
+                                                                 },
+                                                            }}
+                                                            bold>
                                                             {categoryLabel}
                                                        </Text>
                                                   </Pressable>
                                              ) : (
                                                   <Text
                                                        maxWidth="80%"
-                                                       mb={1}
+                                                       mb="$1"
                                                        bold
-                                                       fontSize={{
+                                                       color={textColor}
+                                                       size={{
                                                             base: 'lg',
                                                             lg: '2xl',
                                                        }}>
@@ -56,8 +70,11 @@ const DisplayBrowseCategory = (props) => {
                                                   </Text>
                                              )}
 
-                                             <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(libraryUrl, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                                                  {hide}
+                                             <Button size="xs" variant="link" onPress={() => hideCategory(libraryUrl, key)}>
+                                                  <ButtonIcon as={XIcon} color={textColor} mr="$1" />
+                                                  <ButtonText fontWeight="$medium" sx={{ color: textColor }}>
+                                                       {hide}
+                                                  </ButtonText>
                                              </Button>
                                         </HStack>
                                         <FlatList horizontal data={newArr} keyExtractor={(item, index) => index.toString()} renderItem={(item, index) => renderRecords(item, library.baseUrl, library.version, index)} initialNumToRender={5} ListFooterComponent={loadMore(categoryLabel, categoryKey, libraryUrl, categorySource, recordCount, discoveryVersion)} extra={categoryList} />

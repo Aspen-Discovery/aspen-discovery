@@ -12,10 +12,10 @@ export function getStatusIndicator(status, language) {
                     } else {
                          if (status['groupedStatus'] === 'On Order') {
                               label = getTermFromDictionary(language, 'status_on_order');
-                              indicator = 'danger';
+                              indicator = 'error';
                          } else {
                               label = getTermFromDictionary(language, 'status_checked_out');
-                              indicator = 'danger';
+                              indicator = 'error';
                          }
                     }
                }
@@ -52,7 +52,7 @@ export function getStatusIndicator(status, language) {
                               }
                          } else {
                               label = getTermFromDictionary(language, 'status_checked_out_library_use_only');
-                              indicator = 'danger';
+                              indicator = 'error';
                          }
                     }
                } else if (status['isAvailable'] && status['isAvailableLocally'] === false && status['hasLocalItem']) {
@@ -70,7 +70,7 @@ export function getStatusIndicator(status, language) {
                          }
                     }
                } else {
-                    indicator = 'danger';
+                    indicator = 'error';
                     if (status['groupedStatus']) {
                          label = status['groupedStatus'];
                     } else {

@@ -1,14 +1,14 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import { View, Box, Button, Center, VStack } from 'native-base';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { loadingSpinner } from './loadingSpinner';
-import { loadError } from './loadError';
-import { navigateStack } from '../helpers/RootNavigator';
-import BarcodeMask from 'react-native-barcode-mask';
-import { getTermFromDictionary } from '../translations/TranslationService';
-import { LanguageContext } from '../context/initialContext';
 import { useIsFocused } from '@react-navigation/native';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Button, Center, View } from 'native-base';
+import React from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import BarcodeMask from 'react-native-barcode-mask';
+import { LanguageContext } from '../context/initialContext';
+import { navigateStack } from '../helpers/RootNavigator';
+import { getTermFromDictionary } from '../translations/TranslationService';
+import { loadError } from './loadError';
+import { loadingSpinner } from './loadingSpinner';
 
 export default function Scanner() {
      const isFocused = useIsFocused();
@@ -26,8 +26,10 @@ export default function Scanner() {
 
      const handleBarCodeScanned = ({ type, data }) => {
           console.log(data);
+          console.log(type);
           setLoading(true);
           if (!scanned) {
+               data = cleanBarcode(data, type);
                setScanned(true);
                navigateStack('BrowseTab', 'SearchResults', { term: data, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: true });
                setLoading(false);
@@ -73,3 +75,13 @@ const styles = StyleSheet.create({
           justifyContent: 'center',
      },
 });
+
+function cleanBarcode(barcode, type) {
+     barcode = barcode.toUpperCase();
+
+     if ((type === '512' || type === 'org.gs1.UPC-A') && Platform.OS === 'ios') {
+          barcode = barcode.substring(1);
+     }
+
+     return barcode;
+}
