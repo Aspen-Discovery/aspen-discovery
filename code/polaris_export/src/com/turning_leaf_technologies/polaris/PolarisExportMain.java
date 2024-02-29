@@ -184,6 +184,15 @@ public class PolarisExportMain {
 							updateBranchInfo(dbConn);
 							updatePatronCodes(dbConn);
 							updateTranslationMaps(dbConn);
+
+							//Get a list of all active bibs, so we can see what needs to be deleted.
+							//This is an expensive process, so we will only do it
+							SimpleDateFormat f = new SimpleDateFormat("HH");
+							Date now = new Date();
+							String curHour = f.format(now);
+							if (curHour.equals("21")) {
+								checkForDeletedBibsInPolaris();
+							}
 						}
 
 						//Update works that have changed since the last index
@@ -512,7 +521,7 @@ public class PolarisExportMain {
 				for (int i = 0; i < shelfLocationRows.length(); i++){
 					JSONObject curShelfLocation = shelfLocationRows.getJSONObject(i);
 					long shelfLocationId = curShelfLocation.getLong("ID");
-					String shelfLocationName = curShelfLocation.getString("Description");
+					String shelfLocationName = curShelfLocation.getString("Description").trim();
 					if (!existingShelfLocations.containsKey(Long.toString(shelfLocationId))){
 						if (!shelfLocationName.isEmpty()){
 							try {
@@ -536,7 +545,7 @@ public class PolarisExportMain {
 								insertTranslationStmt.executeUpdate();
 								existingShelfLocations.put(shelfLocationName, shelfLocationName);
 							}catch (SQLException e){
-								logEntry.addNote("Error adding shelf location value " + shelfLocationName + " with a translation of " + shelfLocationName + " "  + e);
+								logEntry.addNote("Error adding shelf location value '" + shelfLocationName + "' with a translation of " + shelfLocationName + " "  + e);
 							}
 						}
 					}
@@ -553,7 +562,7 @@ public class PolarisExportMain {
 				for (int i = 0; i < materialTypeRows.length(); i++){
 					JSONObject curMaterialType = materialTypeRows.getJSONObject(i);
 					long materialTypeId = curMaterialType.getLong("MaterialTypeID");
-					String materialTypeName = curMaterialType.getString("Description");
+					String materialTypeName = curMaterialType.getString("Description").trim();
 					if (!existingITypes.containsKey(Long.toString(materialTypeId))){
 						if (!materialTypeName.isEmpty()){
 							try {
@@ -594,7 +603,7 @@ public class PolarisExportMain {
 		getExistingValuesForMapStmt.setLong(1, translationMapId);
 		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
 		while (getExistingValuesForMapRS.next()) {
-			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase().trim(), getExistingValuesForMapRS.getString("translation"));
 		}
 		return existingValues;
 	}
@@ -777,7 +786,8 @@ public class PolarisExportMain {
 		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		boolean doneLoading = false;
 		while (!doneLoading) {
-			@SuppressWarnings("SpellCheckingInspection")
+
+			//noinspection SpellCheckingInspection
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate, StandardCharsets.UTF_8) + "&nrecs=100";
 			int numTries = 0;
 			boolean successfulResponse = false;
@@ -857,7 +867,7 @@ public class PolarisExportMain {
 		String formattedTimeNow = dateFormatter.format(Instant.now());
 
 		//Get the highest bib from Polaris
-		@SuppressWarnings("SpellCheckingInspection")
+		//noinspection SpellCheckingInspection
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
 		long maxBibId = -1;
 		if (maxBibResponse.isSuccess()){
@@ -873,7 +883,7 @@ public class PolarisExportMain {
 			if (lastIdForThisBatch > highestIdProcessed){
 				highestIdProcessed = lastIdForThisBatch;
 			}
-			@SuppressWarnings("SpellCheckingInspection")
+			//noinspection SpellCheckingInspection
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 				//noinspection SpellCheckingInspection
@@ -1020,7 +1030,7 @@ public class PolarisExportMain {
 				logEntry.saveResults();
 
 				//Get the highest item id from Polaris
-				@SuppressWarnings("SpellCheckingInspection")
+				//noinspection SpellCheckingInspection
 				WebServiceResponse maxItemResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/maxid", null, "GET", "application/json", accessSecret);
 				long maxItemId = -1;
 				if (maxItemResponse.isSuccess()){
@@ -1667,5 +1677,70 @@ public class PolarisExportMain {
 		String lastId;
 		boolean doneLoading = false;
 		int numChanges = 0;
+	}
+
+	private static void checkForDeletedBibsInPolaris() {
+		//Get the highest bib from Polaris
+		logEntry.addNote("Starting to check for bibs that have been deleted in Polaris.");
+		logEntry.saveResults();
+
+		//noinspection SpellCheckingInspection
+		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
+		long maxBibId = -1;
+		if (maxBibResponse.isSuccess()){
+			maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
+		}
+
+		//Get a list of all bib ids in Polaris
+		HashSet<String> allBibsInPolaris = new HashSet<>();
+		int startId = 0;
+		int numberOfRecords = 1000;
+		while (startId < maxBibId) {
+			//noinspection SpellCheckingInspection
+			WebServiceResponse getBibIdList = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/idlist?startId=" + startId + "&nrecs=" + numberOfRecords, null, "GET", "application/json", accessSecret);
+			if (maxBibResponse.isSuccess()){
+				JSONArray bibIdListRows = getBibIdList.getJSONResponse().getJSONArray("BibIDListRows");
+				for (int i = 0; i < bibIdListRows.length(); i ++){
+					JSONObject bibInfo = bibIdListRows.getJSONObject(i);
+					long bibId = bibInfo.getLong("BibliographicRecordID");
+					allBibsInPolaris.add(Long.toString(bibId));
+				}
+			}
+
+			startId += numberOfRecords;
+		}
+		logEntry.addNote("Loaded list of all bibs in Polaris.");
+		logEntry.saveResults();
+
+		HashSet<String> bibsToDelete = new HashSet<>();
+		HashSet<String> allBibsInAspen = getRecordGroupingProcessor().loadExistingActiveIds(logEntry);
+		logEntry.addNote("Loaded list of all bibs in Aspen.");
+		logEntry.saveResults();
+		if (allBibsInAspen != null) {
+			for (String bibId : allBibsInAspen) {
+				if (!allBibsInPolaris.contains(bibId)) {
+					//This bib has been deleted
+					bibsToDelete.add(bibId);
+				} else {
+					//Remove it faster to lookup information in the future
+					allBibsInPolaris.remove(bibId);
+				}
+			}
+
+			logEntry.addNote("Deleting " + bibsToDelete.size() + " bibs that no longer exist in Polaris.");
+			for (String bibToDelete : bibsToDelete) {
+				getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), bibToDelete);
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibToDelete);
+				if (result.reindexWork) {
+					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				}
+				logEntry.incDeleted();
+			}
+		}
+
+		logEntry.saveResults();
 	}
 }

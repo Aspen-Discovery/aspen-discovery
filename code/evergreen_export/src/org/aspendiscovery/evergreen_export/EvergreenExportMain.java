@@ -1517,7 +1517,7 @@ public class EvergreenExportMain {
 												String callNumber = curVolume.getAttribute("label");
 
 												String opacVisible = curVolume.getAttribute("opac_visible");
-												if (opacVisible.equals("f")) {
+												if (opacVisible.equals("f") || opacVisible.equals("false")) {
 													continue;
 												}
 
@@ -1549,7 +1549,7 @@ public class EvergreenExportMain {
 															continue;
 														}
 														opacVisible = curCopy.getAttribute("opac_visible");
-														if (opacVisible.equals("f")) {
+														if (opacVisible.equals("f") || opacVisible.equals("false")) {
 															continue;
 														}
 														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
@@ -1595,7 +1595,7 @@ public class EvergreenExportMain {
 																		String statusCode = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), statusCode));
 																		String statusOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (statusOpacVisible.equals("f")) {
+																		if (statusOpacVisible.equals("f") || statusOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;
@@ -1603,7 +1603,7 @@ public class EvergreenExportMain {
 																		String shelfLocation = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelfLocation));
 																		String locOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (locOpacVisible.equals("f")) {
+																		if (locOpacVisible.equals("f") || locOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;
@@ -1611,7 +1611,7 @@ public class EvergreenExportMain {
 																		String locationCode = curCopySubElement.getAttribute("shortname");
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLocationSubfield(), locationCode));
 																		String libOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (libOpacVisible.equals("f")) {
+																		if (libOpacVisible.equals("f") || libOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;
