@@ -520,6 +520,19 @@ class Evergreen extends AbstractIlsDriver {
 		return $hold_result;
 	}
 
+	// Evergreen supports indefinite or thaw-on-date hold freezing
+	public function suspendRequiresReactivationDate(): bool {
+		return true;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return true;
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return true;
+	}
+
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
 		$result = [
 			'success' => false,
@@ -551,6 +564,10 @@ class Evergreen extends AbstractIlsDriver {
 				'id' => $itemToFreezeId,
 				'frozen' => 't',
 			];
+
+			if (isset($dateToReactivate) && !empty($dateToReactivate)) {
+				$namedParams['thaw_date'] = $dateToReactivate;
+			}
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
 			$request .= '&param=' . json_encode($authToken);
@@ -630,6 +647,7 @@ class Evergreen extends AbstractIlsDriver {
 			$namedParams = [
 				'id' => $itemToThawId,
 				'frozen' => 'f',
+				'thaw_date' => null,
 			];
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
