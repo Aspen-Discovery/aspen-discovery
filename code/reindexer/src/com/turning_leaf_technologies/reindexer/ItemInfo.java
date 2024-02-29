@@ -111,7 +111,7 @@ public class ItemInfo{
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
-		if (itemIdentifier == null || itemIdentifier.length() == 0){
+		if (itemIdentifier == null || itemIdentifier.isEmpty()){
 			//Don't use empty identifiers
 			itemIdentifier = null;
 		}else if (itemIdentifier.length() > 255){
@@ -325,11 +325,7 @@ public class ItemInfo{
 
 	ScopingInfo addScope(Scope scope) {
 		String scopeName = scope.getScopeName();
-		ScopingInfo scopeInfo = scopingInfo.get(scopeName);
-		if (scopeInfo == null){
-			scopeInfo = new ScopingInfo(scope, this);
-			scopingInfo.put(scopeName, scopeInfo);
-		}
+		ScopingInfo scopeInfo = scopingInfo.computeIfAbsent(scopeName, k -> new ScopingInfo(scope, this));
 		return scopeInfo;
 	}
 
