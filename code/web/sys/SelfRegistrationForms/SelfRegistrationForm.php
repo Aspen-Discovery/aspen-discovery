@@ -241,4 +241,14 @@ class SelfRegistrationForm extends DataObject {
 			unset($this->_libraries);
 		}
 	}
+
+	public function loadCopyableSubObjects() {
+		$this->getFields();
+		$index = -1;
+		foreach ($this->_fields as $subObject) {
+			$subObject->id = $index;
+			$subObject->selfRegistrationFormId = $this->id;
+			$index--;
+		}
+	}
 }

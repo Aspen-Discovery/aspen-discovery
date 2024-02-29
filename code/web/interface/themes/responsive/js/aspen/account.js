@@ -572,17 +572,22 @@ AspenDiscovery.Account = (function () {
 						}
 
 						Globals.loggedIn = true;
+						var doReloading = true;
 						if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
+							doReloading = false;
 							ajaxCallback();
 						} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof (AspenDiscovery.Account.ajaxCallback) === "function") {
+							doReloading = false;
 							AspenDiscovery.Account.ajaxCallback();
 							AspenDiscovery.Account.ajaxCallback = null;
 						}
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
 						} else {
-							$('.modal-body').html("Loading...");
-							$(".modal-title").text("Loading...");
+							if (doReloading){
+								$('.modal-body').html("Loading...");
+								$(".modal-title").text("Loading...");
+							}
 						}
 					} else if (response.result.success === false && response.result.passwordExpired === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
