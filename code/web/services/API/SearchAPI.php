@@ -1964,7 +1964,7 @@ class SearchAPI extends AbstractAPI {
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
+				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List" || $categoryInformation->source == 'Events')) {
 					if ($categoryInformation->textId == ("system_saved_searches")) {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
@@ -2125,6 +2125,74 @@ class SearchAPI extends AbstractAPI {
 							$numCategoriesProcessed++;
 							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
 								break;
+							}
+						}
+					} elseif ($categoryInformation->source == 'Events') {
+						$subCategories = $categoryInformation->getSubCategories();
+						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
+							$eventsSearchResults = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+							$formattedEventsResults = [];
+							if(count($eventsSearchResults) > 0) {
+								foreach ($eventsSearchResults as $event) {
+									$formattedEventsResults[] = [
+										'id' => $event['id'],
+										'title_display' => $event['title'],
+									];
+								}
+							}
+
+							$categoryResponse = [
+								'key' => $categoryInformation->textId,
+								'title' => $categoryInformation->label,
+								'source' => 'Events',
+								'sourceId' => $categoryInformation->id,
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+								'events' => $formattedEventsResults,
+							];
+							$formattedCategories[] = $categoryResponse;
+							$numCategoriesProcessed++;
+						}
+						if ($includeSubCategories) {
+							if (count($subCategories) > 0) {
+								foreach ($subCategories as $subCategory) {
+									$temp = new BrowseCategory();
+									$temp->id = $subCategory->subCategoryId;
+									if ($temp->find(true)) {
+										if ($temp->isValidForDisplay($appUser)) {
+											if ($temp->source != '') {
+												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12);
+												if(count($records) > 0) {
+													$parent = new BrowseCategory();
+													$parent->id = $subCategory->browseCategoryId;
+													if ($parent->find(true)) {
+														$parentLabel = $parent->label;
+													}
+													if ($parentLabel == $temp->label) {
+														$displayLabel = $temp->label;
+													} else {
+														$displayLabel = $parentLabel . ': ' . $temp->label;
+													}
+													$categoryResponse = [
+														'key' => $temp->textId,
+														'title' => $displayLabel,
+														'source' => $temp->source,
+														'isHidden' => $temp->isDismissed($appUser),
+														'sourceId' => (string)$temp->sourceListId,
+														'records' => $records,
+													];
+													$formattedCategories[] = $categoryResponse;
+													$numCategoriesProcessed++;
+													if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+														break;
+													}
+												}
+											}
+										}
+									}
+									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+										break;
+									}
+								}
 							}
 						}
 					} else {
