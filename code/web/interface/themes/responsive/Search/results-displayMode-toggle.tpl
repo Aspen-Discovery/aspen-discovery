@@ -16,11 +16,11 @@
 		<div class="col-xs-6">
 			<div id="selected-browse-label">
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="covers">
-						<span class="thumbnail-icon"></span><span> {translate text=Covers isPublicFacing=true}</span>
+					<label for="covers" title="Covers" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="covers">
+						<span class="thumbnail-icon" role="presentation"></span><span> {translate text=Covers isPublicFacing=true}</span>
 					</label>
-					<label for="list" title="Lists" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="list">
-						<span class="list-icon"></span><span> {translate text=List isPublicFacing=true}</span>
+					<label for="list" title="Lists" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="list">
+						<span class="list-icon" role="presentation"></span><span> {translate text=List isPublicFacing=true}</span>
 					</label>
 				</div>
 				<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
