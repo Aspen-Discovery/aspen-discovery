@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 
 public class SierraExportAPIMain {
 	private static Logger logger;
@@ -986,6 +987,18 @@ public class SierraExportAPIMain {
 								char subfieldIndicator = subfieldIndicatorStr.charAt(0);
 								String subfieldValue = subfieldData.getString(subfieldIndicatorStr);
 								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
+							}
+							if (tag.equals(indexingProfile.getRecordNumberTag())) {
+								Subfield recordNumberSubfield = dataField.getSubfield(indexingProfile.getRecordNumberSubfield());
+								if (recordNumberSubfield == null) {
+									continue;
+								}else{
+									if (!recordNumberSubfield.getData().startsWith(".b")) {
+										continue;
+									}else if (recordNumberSubfield.getData().equals(".b")) {
+										continue;
+									}
+								}
 							}
 							marcRecord.addVariableField(dataField);
 						}else{

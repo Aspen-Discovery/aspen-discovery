@@ -118,6 +118,9 @@ class Library extends DataObject {
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
 	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
+	public $showPaymentHistory;
+	protected $_paymentHistoryExplanation;
+	public $deletePaymentHistoryOlderThan;
 	public $finesToPay;
 	public $finePaymentOrder;
 	public $payFinesLink;
@@ -2714,6 +2717,41 @@ class Library extends DataObject {
 					],
 					//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				],
+
+			],
+
+			'paymentHistorySection' => [
+				'property' => 'paymentHistorySection',
+				'type' => 'section',
+				'label' => 'Payment History',
+				'hideInLists' => true,
+				'helpLink' => '',
+				'permissions' => ['Library Catalog Options'],
+				'properties' => [
+					'showPaymentHistory' => [
+						'property' => 'showPaymentHistory',
+						'type' => 'checkbox',
+						'label' => 'Show Payment History for fines paid in Aspen',
+						'default' => 0,
+						'hideInLists' => true,
+					],
+					'paymentHistoryExplanation' => [
+						'property' => 'paymentHistoryExplanation',
+						'type' => 'translatableTextBlock',
+						'label' => 'Payment History Explanation',
+						'description' => 'Provide additional information about the Payment History',
+						'defaultTextFile' => 'Library_paymentHistoryExplanation.MD',
+						'hideInLists' => true,
+					],
+					'deletePaymentHistoryOlderThan' => [
+						'property' => 'deletePaymentHistoryOlderThan',
+						'type' => 'integer',
+						'label' => 'Delete Payment History Older than (days)',
+						'description' => 'The number of days to preserve payment history.  We suggest preserving for at least 395 days for reporting.  Setting to a value of 0 will preserve all payment history',
+						'hideInLists' => true,
+						'default' => 0,
+					],
+				]
 			],
 
 			//Grouped Work Display
@@ -4179,6 +4217,7 @@ class Library extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
 			$this->saveILLItemTypes();
+			$this->saveTextBlockTranslations('paymentHistoryExplanation');
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4235,6 +4274,7 @@ class Library extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
 			$this->saveILLItemTypes();
+			$this->saveTextBlockTranslations('paymentHistoryExplanation');
 		}
 		return $ret;
 	}

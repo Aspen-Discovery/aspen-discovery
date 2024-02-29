@@ -148,6 +148,11 @@
 											<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true} <span class="finesBadge-placeholder"><span class="badge">??</span></span></a>
 										</div>
 									{/if}
+									{if !empty($enablePaymentHistory)}
+										<div class="myAccountLink" title="Payment History">
+											<a href="/MyAccount/PaymentHistory">{translate text='Payment History' isPublicFacing=true}</a>
+										</div>
+									{/if}
 								{/if}
 							{/if}
 							{if empty($offline) && $userHasCatalogConnection && $showUserCirculationModules}

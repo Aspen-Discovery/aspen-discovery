@@ -65,6 +65,8 @@ public class RecordGroupingProcessor {
 	private final HashSet<String> recordsToNotGroup = new HashSet<>();
 	private final Long updateTime = new Date().getTime() / 1000;
 
+	private long numAuthorAuthoritiesUsed = 0;
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
 	 *
@@ -875,7 +877,12 @@ public class RecordGroupingProcessor {
 				getAuthoritativeAuthorStmt.setString(1, originalAuthor);
 				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
 				if (authoritativeAuthorRS.next()) {
-					return authoritativeAuthorRS.getString("normalized");
+					String normalizedAuthoritativeAuthor = authoritativeAuthorRS.getString("normalized");
+					if (!normalizedAuthoritativeAuthor.equals(originalAuthor)) {
+						numAuthorAuthoritiesUsed++;
+					}
+
+					return normalizedAuthoritativeAuthor;
 				}
 			} catch (SQLException e) {
 				logEntry.incErrors("Error getting authoritative author", e);
@@ -1145,5 +1152,9 @@ public class RecordGroupingProcessor {
 		String languageCode = translateValue("two_to_three_character_language_codes", language.toLowerCase(Locale.ROOT));
 
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
+	}
+
+	public long getNumAuthoritiesUsed() {
+		return numAuthorAuthoritiesUsed;
 	}
 }

@@ -22,6 +22,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeSpammySearches(dbConn, logger, processLog);
 		removeLongSearches(dbConn, logger, processLog);
 		removeOldMaterialsRequests(dbConn, logger, processLog);
+		removeOldPaymentHistory(dbConn, logger, processLog);
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
 		removeOldCachedObjects(dbConn, logger, processLog);
 		removeOldIndexingData(dbConn, logger, processLog);
@@ -283,6 +284,64 @@ public class DatabaseCleanup implements IProcessHandler {
 			librariesListRS.close();
 			librariesListStmt.close();
 			processLog.addNote("Removed " + numDeletions + " old materials requests.");
+		}catch (SQLException e) {
+			processLog.incErrors("Unable to remove old materials requests. ", e);
+		}
+	}
+
+	private void removeOldPaymentHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try{
+			//Get a list of a libraries
+			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deletePaymentHistoryOlderThan from library where deletePaymentHistoryOlderThan > 0");
+			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId from location where libraryId = ?");
+			PreparedStatement deletePaymentStmt = dbConn.prepareStatement("DELETE from user_payments where id = ?");
+			PreparedStatement deletePaymentLinesStmt = dbConn.prepareStatement("DELETE from user_payment_lines where paymentId = ?");
+
+			ResultSet librariesListRS = librariesListStmt.executeQuery();
+
+			long numDeletions = 0;
+			//Loop through libraries
+			while (librariesListRS.next()){
+				//Get the number of days to preserve from the variables table
+				long libraryId = librariesListRS.getLong("libraryId");
+				long daysToPreserve = librariesListRS.getLong("deletePaymentHistoryOlderThan");
+
+				//Get a list of locations for the library
+				libraryLocationsStmt.setLong(1, libraryId);
+
+				ResultSet libraryLocationsRS = libraryLocationsStmt.executeQuery();
+				StringBuilder libraryLocations = new StringBuilder();
+				while (libraryLocationsRS.next()){
+					if (libraryLocations.length() > 0){
+						libraryLocations.append(", ");
+					}
+					libraryLocations.append(libraryLocationsRS.getString("locationId"));
+				}
+
+				if (libraryLocations.length() > 0) {
+					//Delete records for that library
+					PreparedStatement paymentsToDeleteStmt = dbConn.prepareStatement("SELECT user_payments.id from user_payments INNER JOIN user on userId = user.id where user.homeLocationId IN (" + libraryLocations + ") AND transactionDate < ?");
+
+					long now = new Date().getTime() / 1000;
+					long earliestDateToPreserve = now - (daysToPreserve * 24 * 60 * 60);
+					paymentsToDeleteStmt.setLong(1, earliestDateToPreserve);
+
+					ResultSet paymentsToDeleteRS = paymentsToDeleteStmt.executeQuery();
+					while (paymentsToDeleteRS.next()) {
+						deletePaymentLinesStmt.setLong(1, paymentsToDeleteRS.getLong(1));
+						int numLinesDeleted = deletePaymentLinesStmt.executeUpdate();
+						deletePaymentStmt.setLong(1, paymentsToDeleteRS.getLong(1));
+						int numUpdates = deletePaymentStmt.executeUpdate();
+						processLog.addUpdates(numUpdates);
+						numDeletions += numUpdates;
+					}
+					paymentsToDeleteRS.close();
+					paymentsToDeleteStmt.close();
+				}
+			}
+			librariesListRS.close();
+			librariesListStmt.close();
+			processLog.addNote("Removed " + numDeletions + " old payments.");
 		}catch (SQLException e) {
 			processLog.incErrors("Unable to remove old materials requests. ", e);
 		}

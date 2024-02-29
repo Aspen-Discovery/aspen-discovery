@@ -494,6 +494,7 @@ if ($isLoggedIn) {
 
 	$interface->assign('activeUserId', $user->id);
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
+	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
 	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
@@ -611,6 +612,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
 	$user = UserAccount::getActiveUserObj();
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
+	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)) {
@@ -627,6 +629,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('hasInterlibraryLoanConnection', false);
 	$interface->assign('disableCoverArt', false);
 	$interface->assign('enableReadingHistory', false);
+	$interface->assign('enablePaymentHistory', false);
 }
 
 //Find a reasonable default location to go to

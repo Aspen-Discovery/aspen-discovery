@@ -1,9 +1,9 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class SearchAPI extends Action {
+class SearchAPI extends AbstractAPI {
 
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -3887,27 +3887,5 @@ class SearchAPI extends Action {
 			// do something with the term
 		}
 		return $results;
-	}
-
-	function checkIfLiDA() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'User-Agent' || $name == 'user-agent') {
-				if (strpos($value, "Aspen LiDA") !== false) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	function getLiDAVersion() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				$version = substr($version[0], 1); // remove starting 'v'
-				return floatval($version);
-			}
-		}
-		return 0;
 	}
 }

@@ -1452,7 +1452,7 @@ class SirsiDynixROA extends HorizonAPI {
 			//Check all items to get the item id we want
 			foreach ($relatedRecord->getItems() as $item) {
 				//we only care about items with no volume
-				if (empty($item->volume)) {
+				if (empty($item->volume) && !$item->isEContent) {
 					if ($item->libraryOwned || $item->locallyOwned) {
 						$itemIdToUse = $item->itemId;
 						break;
@@ -2274,6 +2274,7 @@ class SirsiDynixROA extends HorizonAPI {
 	 * @return array
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade): array {
+		require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
 		$result = [
 			'success' => false,
 			'messages' => [],
@@ -2300,7 +2301,7 @@ class SirsiDynixROA extends HorizonAPI {
 							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
 							if (isset($_REQUEST['preferredName'])) {
-								$updatePatronInfoParameters['fields']['preferredName'] = $_REQUEST['preferredName'];
+								$updatePatronInfoParameters['fields']['preferredName'] = $this->getPatronFieldValue($_REQUEST['preferredName'], $homeLibrary->useAllCapsWhenUpdatingProfile);
 								if ($homeLibrary->setUsePreferredNameInIlsOnUpdate) {
 									$updatePatronInfoParameters['fields']['usePreferredName'] = !empty($_REQUEST['preferredName']);
 								}
@@ -2310,7 +2311,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 							// Update Address Field with new data supplied by the user
 							if (isset($_REQUEST['email'])) {
-								$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
+								$this->setPatronUpdateFieldBySearch('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 								$patron->email = $_REQUEST['email'];
 							}
 
@@ -2320,26 +2321,26 @@ class SirsiDynixROA extends HorizonAPI {
 							}
 
 							if (isset($_REQUEST['address1'])) {
-								$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
+								$this->setPatronUpdateFieldBySearch('STREET', $this->getPatronFieldValue($_REQUEST['address1'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 								$patron->_address1 = $_REQUEST['address1'];
 							}
 
 							if ($cityState == 1) {
 								if (isset($_REQUEST['city'])) {
-									$this->setPatronUpdateFieldBySearch('CITY', $_REQUEST['city'], $updatePatronInfoParameters, $preferredAddress);
+									$this->setPatronUpdateFieldBySearch('CITY', $this->getPatronFieldValue($_REQUEST['city'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 									$patron->_city = $_REQUEST['city'];
 								}
 
 								if (isset($_REQUEST['state'])) {
-									$this->setPatronUpdateFieldBySearch('STATE', $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									$this->setPatronUpdateFieldBySearch('STATE', $this->getPatronFieldValue($_REQUEST['state'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 									$patron->_state = $_REQUEST['state'];
 								}
 							} else {
 								if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
 									if ($cityState == 2) {
-										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+										$this->setPatronUpdateFieldBySearch('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 									} else {
-										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+										$this->setPatronUpdateFieldBySearch('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $homeLibrary->useAllCapsWhenUpdatingProfile), $updatePatronInfoParameters, $preferredAddress);
 									}
 									$patron->_city = $_REQUEST['city'];
 									$patron->_state = $_REQUEST['state'];

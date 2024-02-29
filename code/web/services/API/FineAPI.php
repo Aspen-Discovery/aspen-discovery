@@ -1,10 +1,8 @@
 <?php
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class FineAPI extends Action {
-	private $catalog;
-
+class FineAPI extends AbstractAPI {
 	function launch() {
 		//Make sure the user can access the API based on the IP address
 		if (!IPAddress::allowAPIAccessForClientIP()) {
