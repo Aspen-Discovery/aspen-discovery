@@ -96,7 +96,7 @@
 			{/if}
 		{/if}
 
-		<div class="dropdown menuToggleButton headerMenu" style="display:inline-block;"><a class="dropdown-toggle menu-icon menu-bar-option" tabindex="0" role="button" title="{translate text="Show Menu" inAttribute=true isPublicFacing=true}"  aria-haspopup="true" aria-expanded="false" id="header-menu-dropdown">
+		<div class="dropdown menuToggleButton headerMenu" style="display:inline-block;"><a class="dropdown-toggle menu-icon menu-bar-option" tabindex="0" role="button" title="{translate text="Show Menu" inAttribute=true isPublicFacing=true}"  aria-label="{translate text="Show Menu" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="header-menu-dropdown">
 			<i class="fas fa-bars fa-lg" role="presentation"></i>
 		</a>
 		{include file="header-menu.tpl"}
