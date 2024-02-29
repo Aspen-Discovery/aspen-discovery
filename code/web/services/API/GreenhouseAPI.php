@@ -1,10 +1,10 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
-class GreenhouseAPI extends Action {
+class GreenhouseAPI extends AbstractAPI {
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 

@@ -876,6 +876,10 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
+			if (logEntry instanceof NightlyIndexLogEntry){
+				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + "times");
+			}
+
 			if (processEmptyGroupedWorks) {
 				processEmptyGroupedWorks();
 			}
@@ -1809,6 +1813,9 @@ public class GroupedWorkIndexer {
 	private long getPublicationDateId(String publicationDate) {
 		if (publicationDate == null){
 			return -1;
+		}
+		if (publicationDate.length() > 250) {
+			publicationDate = publicationDate.substring(0, 250);
 		}
 		Long id = publicationDateIds.get(publicationDate);
 		if (id == null){

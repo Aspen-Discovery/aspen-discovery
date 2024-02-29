@@ -1830,6 +1830,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					largePrintCheck(recordInfo, record);
 					return;
 				}
+			} if (recordInfo.hasItemFormats() && !recordInfo.allItemsHaveFormats()){
+				//We're doing bib level formats, but we got some item level formats (probably eContent or something)
+				loadPrintFormatFromBib(recordInfo, record);
+				for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
+					if (itemInfo.getFormat() == null || itemInfo.getFormat().isEmpty()) {
+						itemInfo.setFormat(recordInfo.getFirstFormat());
+						itemInfo.setFormatCategory(recordInfo.getFirstFormatCategory());
+					}
+				}
+				return;
 			}
 
 			//If not, we will assign format based on bib level data

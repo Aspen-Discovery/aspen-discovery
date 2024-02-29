@@ -1,11 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
 
-class ListAPI extends Action {
+class ListAPI extends AbstractAPI {
 
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -686,28 +686,6 @@ class ListAPI extends Action {
 				'message' => 'The specified list could not be found.',
 			];
 		}
-	}
-
-	function checkIfLiDA() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'User-Agent' || $name == 'user-agent') {
-				if (strpos($value, "Aspen LiDA") !== false) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	function getLiDAVersion() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				$version = substr($version[0], 1); // remove starting 'v'
-				return floatval($version);
-			}
-		}
-		return 0;
 	}
 
 	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null) {

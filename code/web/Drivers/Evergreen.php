@@ -520,6 +520,19 @@ class Evergreen extends AbstractIlsDriver {
 		return $hold_result;
 	}
 
+	// Evergreen supports indefinite or thaw-on-date hold freezing
+	public function suspendRequiresReactivationDate(): bool {
+		return true;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return true;
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return true;
+	}
+
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
 		$result = [
 			'success' => false,
@@ -551,6 +564,10 @@ class Evergreen extends AbstractIlsDriver {
 				'id' => $itemToFreezeId,
 				'frozen' => 't',
 			];
+
+			if (isset($dateToReactivate) && !empty($dateToReactivate)) {
+				$namedParams['thaw_date'] = $dateToReactivate;
+			}
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
 			$request .= '&param=' . json_encode($authToken);
@@ -630,6 +647,7 @@ class Evergreen extends AbstractIlsDriver {
 			$namedParams = [
 				'id' => $itemToThawId,
 				'frozen' => 'f',
+				'thaw_date' => null,
 			];
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
@@ -943,14 +961,13 @@ class Evergreen extends AbstractIlsDriver {
 				'Content-Type: application/x-www-form-urlencoded',
 			];
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$params = [
-				'service' => 'open-ils.circ',
-				'method' => 'open-ils.circ.holds.retrieve',
-				'param' => json_encode($authToken),
-			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$getHoldsParams = 'service=open-ils.circ';
+			$getHoldsParams .= '&method=open-ils.circ.holds.retrieve';
+			$getHoldsParams .= '&param=' . json_encode($authToken);
+			$getHoldsParams .= '&param=' . $patron->unique_ils_id;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getHoldsParams);
 
-			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getHoldsParams, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				foreach ($apiResponse->payload[0] as $payload) {
@@ -1674,6 +1691,32 @@ class Evergreen extends AbstractIlsDriver {
 			}
 		} else {
 			$user->homeLocationId = 0;
+		}
+
+		//Check patron pickup location
+		$authToken = $this->getAPIAuthToken($user, true);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
+		$request .= '&param=' . json_encode([
+				'opac.default_pickup_location',
+			]);
+		$request .= '&param=' . json_encode($authToken);
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			foreach ($apiResponse->payload[0] as $payload) {
+				if ($payload->name == 'opac.default_pickup_location') {
+					if (!empty($payload->value)) {
+						$location = new Location();
+						$location->historicCode = $payload->value;
+
+						if ($location->find(true)) {
+							$user->pickupLocationId = $location->locationId;
+						}
+					}
+				}
+			}
 		}
 
 		if ($insert) {

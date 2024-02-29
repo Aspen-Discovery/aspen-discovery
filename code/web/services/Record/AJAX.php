@@ -594,15 +594,17 @@ class Record_AJAX extends Action {
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
 			foreach ($relatedRecord->getItems() as $item) {
-				if (empty($item->volume)) {
-					$numItemsWithoutVolumes++;
-				} else {
-					if ($item->libraryOwned || $item->locallyOwned) {
-						if (array_key_exists($item->volumeId, $volumeData)) {
-							$volumeData[$item->volumeId]->setHasLocalItems(true);
+				if (!$item->isEContent){
+					if (empty($item->volume)) {
+						$numItemsWithoutVolumes++;
+					} else {
+						if ($item->libraryOwned || $item->locallyOwned) {
+							if (array_key_exists($item->volumeId, $volumeData)) {
+								$volumeData[$item->volumeId]->setHasLocalItems(true);
+							}
 						}
+						$numItemsWithVolumes++;
 					}
-					$numItemsWithVolumes++;
 				}
 			}
 

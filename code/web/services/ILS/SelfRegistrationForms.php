@@ -66,4 +66,12 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Self Registration Forms');
 	}
+
+	function canAddNew(): bool {
+		return UserAccount::userHasPermission('Administer Self Registration Forms');
+	}
+
+	function canCopy(): bool {
+		return this->canAddNew();
+	}
 }

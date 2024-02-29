@@ -1,6 +1,7 @@
 <?php
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 
-class WorkAPI extends Action {
+class WorkAPI extends AbstractAPI {
 	/** @var  AbstractIlsDriver */
 	protected $catalog;
 
