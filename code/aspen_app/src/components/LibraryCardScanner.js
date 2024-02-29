@@ -1,12 +1,12 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Button, View } from 'native-base';
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Box, Button, View } from 'native-base';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { loadingSpinner } from './loadingSpinner';
-import { loadError } from './loadError';
-import { navigate, navigateStack } from '../helpers/RootNavigator';
 import BarcodeMask from 'react-native-barcode-mask';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { navigate } from '../helpers/RootNavigator';
+import { loadError } from './loadError';
+import { loadingSpinner } from './loadingSpinner';
 
 export default function LibraryCardScanner() {
      const navigation = useNavigation();
@@ -64,16 +64,21 @@ const styles = StyleSheet.create({
      },
 });
 
-function cleanBarcode(barcode) {
+function cleanBarcode(barcode, type) {
      barcode = barcode.toUpperCase();
+     if (type === '8' || type === 8) {
+          let firstValue = barcode.charAt(0);
+          if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
+               barcode = barcode.substring(1);
+          }
 
-     let firstValue = barcode.charAt(0);
-     if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
-          barcode = barcode.substring(1);
+          let lastValue = barcode.charAt(barcode.length - 1);
+          if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
+               barcode = barcode.substring(0, barcode.length - 1);
+          }
      }
 
-     let lastValue = barcode.charAt(barcode.length - 1);
-     if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
+     if (type === '64' || type === 64 || type === 'org.gs1.EAN-8') {
           barcode = barcode.substring(0, barcode.length - 1);
      }
 

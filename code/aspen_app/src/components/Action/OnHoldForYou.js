@@ -1,9 +1,12 @@
-import { Button } from 'native-base';
+import { Button, ButtonText } from '@gluestack-ui/themed';
+import React from 'react';
+import { ThemeContext } from '../../context/initialContext';
 
 // custom components and helper files
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 
 export const OnHoldForYou = (props) => {
+     const { theme } = React.useContext(ThemeContext);
      const handleNavigation = () => {
           if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults' || props.prevRoute === 'HomeScreen') {
                navigateStack('AccountScreenTab', 'MyHolds', {});
@@ -13,20 +16,10 @@ export const OnHoldForYou = (props) => {
      };
 
      return (
-          <Button
-               size="md"
-               colorScheme="primary"
-               variant="solid"
-               _text={{
-                    padding: 0,
-                    textAlign: 'center',
-               }}
-               style={{
-                    flex: 1,
-                    flexWrap: 'wrap',
-               }}
-               onPress={handleNavigation}>
-               {props.title}
+          <Button size="md" bgColor={theme['colors']['primary']['500']} variant="solid" onPress={handleNavigation}>
+               <ButtonText textAlign="center" p="$0">
+                    {props.title}
+               </ButtonText>
           </Button>
      );
 };

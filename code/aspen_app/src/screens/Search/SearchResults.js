@@ -1,20 +1,21 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Button, ButtonGroup, ButtonIcon, ButtonText, Heading, Box, Center, FlatList, HStack, Pressable, Text, SafeAreaView, Badge, BadgeText, VStack } from '@gluestack-ui/themed';
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { create } from 'apisauce';
 import CachedImage from 'expo-cached-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
+import { SlidersHorizontalIcon } from 'lucide-react-native';
 import moment from 'moment';
 
-import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, useColorModeValue, useToken, VStack } from 'native-base';
+import { useColorModeValue, useToken } from 'native-base';
 import React from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext, ThemeContext } from '../../context/initialContext';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
@@ -33,7 +34,9 @@ export const SearchResults = () => {
      const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const { currentIndex, currentSource, updateCurrentIndex, updateCurrentSource, updateIndexes, updateSources } = React.useContext(SearchContext);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const url = library.baseUrl;
+     const [paginationLabel, setPaginationLabel] = React.useState('1 of 1');
 
      const queryClient = useQueryClient();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
@@ -96,10 +99,15 @@ export const SearchResults = () => {
           },
      });
 
-     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
+     const { data: paginationLabelData, isFetching: translationIsFetching } = useQuery({
           queryKey: ['totalPages', url, page, term, scope, params, language, currentIndex, currentSource],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
+          queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
           enabled: !!data,
+          onSuccess: (data) => {
+               if (!data.includes('%1%')) {
+                    setPaginationLabel(data);
+               }
+          },
      });
 
      const Header = () => {
@@ -110,17 +118,10 @@ export const SearchResults = () => {
                     label = num + ' ' + getTermFromDictionary(language, 'result');
                }
                return (
-                    <Box
-                         bgColor="coolGray.100"
-                         borderBottomWidth="1"
-                         _dark={{
-                              borderColor: 'gray.600',
-                              bg: 'coolGray.700',
-                         }}
-                         borderColor="coolGray.200">
-                         <Container m={2}>
-                              <Text>{label}</Text>
-                         </Container>
+                    <Box bgColor={colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700']} borderBottomWidth={1} borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']}>
+                         <Box m="$2">
+                              <Text color={textColor}>{label}</Text>
+                         </Box>
                     </Box>
                );
           }
@@ -131,35 +132,27 @@ export const SearchResults = () => {
      const Paging = () => {
           if (data.totalPages > 1) {
                return (
-                    <Box
-                         safeArea={2}
-                         bgColor="coolGray.100"
-                         borderTopWidth="1"
-                         _dark={{
-                              borderColor: 'gray.600',
-                              bg: 'coolGray.700',
-                         }}
-                         borderColor="coolGray.200"
-                         flexWrap="nowrap"
-                         alignItems="center">
+                    <Box p="$2" bgColor={colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700']} borderTopWidth={1} borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']} flexWrap="nowrap" alignItems="center">
                          <ScrollView horizontal>
-                              <Button.Group size="sm">
-                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                        {getTermFromDictionary(language, 'previous')}
+                              <ButtonGroup>
+                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1} size="sm" bgColor={theme['colors']['primary']['500']}>
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'previous')}</ButtonText>
                                    </Button>
                                    <Button
+                                        bgColor={theme['colors']['primary']['500']}
                                         onPress={() => {
                                              if (!isPreviousData && data.hasMore) {
                                                   console.log('Adding to page');
                                                   setPage(page + 1);
                                              }
                                         }}
-                                        isDisabled={isPreviousData || !data.hasMore}>
-                                        {getTermFromDictionary(language, 'next')}
+                                        isDisabled={isPreviousData || !data.hasMore}
+                                        size="sm">
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'next')}</ButtonText>
                                    </Button>
-                              </Button.Group>
+                              </ButtonGroup>
                          </ScrollView>
-                         <Text mt={2} fontSize="sm">
+                         <Text mt="$2" fontSize="$10" color={textColor}>
                               {paginationLabel}
                          </Text>
                     </Box>
@@ -183,14 +176,14 @@ export const SearchResults = () => {
      const NoResults = () => {
           return (
                <>
-                    {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+                    {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
-                         <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
+                         <Heading pt="$5">{getTermFromDictionary(language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
                               {route.params?.term}
                          </Text>
-                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              {getTermFromDictionary(language, 'new_search_button')}
+                         <Button mt="$3" onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                              <ButtonText>{getTermFromDictionary(language, 'new_search_button')}</ButtonText>
                          </Button>
                     </Center>
                </>
@@ -199,7 +192,7 @@ export const SearchResults = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+               {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
@@ -220,9 +213,9 @@ const DisplayResult = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const { language } = React.useContext(LanguageContext);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const { currentIndex, currentSource } = React.useContext(SearchContext);
      const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
      const handlePressItem = () => {
           if (currentSource === 'events') {
@@ -268,8 +261,10 @@ const DisplayResult = (data) => {
 
      function getFormat(n) {
           return (
-               <Badge key={n.key} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                    {n.name}
+               <Badge key={n.key} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+                    <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
+                         {n.name}
+                    </BadgeText>
                </Badge>
           );
      }
@@ -321,9 +316,82 @@ const DisplayResult = (data) => {
           let roomData = item?.room ?? null;
 
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
-                    <HStack space={3}>
-                         <VStack maxW="35%">
+               <Pressable borderBottomWidth={1} borderColor={colorMode === 'light' ? theme['colors']['warmGray']['400'] : theme['colors']['gray']['600']} pl="$4" pr="$5" py="$2" onPress={handlePressItem}>
+                    <HStack space="md">
+                         <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
+                              <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
+                                   <CachedImage
+                                        cacheKey={key}
+                                        alt={item.title}
+                                        source={{
+                                             uri: `${url}`,
+                                             expiresIn: 86400,
+                                        }}
+                                        style={{
+                                             width: '100%',
+                                             height: '100%',
+                                             borderRadius: 4,
+                                        }}
+                                        resizeMode="cover"
+                                        placeholderContent={
+                                             <Box
+                                                  bg="warmGray.50"
+                                                  _dark={{
+                                                       bgColor: 'coolGray.800',
+                                                  }}
+                                                  width={{
+                                                       base: 100,
+                                                       lg: 200,
+                                                  }}
+                                                  height={{
+                                                       base: 150,
+                                                       lg: 250,
+                                                  }}
+                                             />
+                                        }
+                                   />
+                              </Box>
+                              {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}
+                         </VStack>
+                         <VStack w="65%" pt="$1">
+                              <Text color={textColor} bold sx={{ '@base': { fontSize: 14, lineHeight: 17, paddingBottom: 4 }, '@lg': { fontSize: 22, lineHeight: 25, paddingBottom: 4 } }}>
+                                   {item.title}
+                              </Text>
+                              {item.start_date && item.end_date ? (
+                                   <>
+                                        <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
+                                             {displayDay}
+                                        </Text>
+                                        <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
+                                             {displayStartTime} - {displayEndTime}
+                                        </Text>
+                                   </>
+                              ) : null}
+                              {locationData.name ? (
+                                   <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
+                                        {locationData.name}
+                                   </Text>
+                              ) : null}
+                              {registrationRequired ? (
+                                   <HStack mt="$4" direction="row" space="xs" flexWrap="wrap">
+                                        <Badge key={0} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+                                             <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
+                                                  {getTermFromDictionary(language, 'registration_required')}
+                                             </BadgeText>
+                                        </Badge>
+                                   </HStack>
+                              ) : null}
+                         </VStack>
+                    </HStack>
+               </Pressable>
+          );
+     }
+
+     return (
+          <Pressable borderBottomWidth={1} borderColor={colorMode === 'light' ? theme['colors']['warmGray']['400'] : theme['colors']['gray']['600']} pl="$4" pr="$5" py="$2" onPress={handlePressItem}>
+               <HStack space="md">
+                    <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
+                         <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
                               <CachedImage
                                    cacheKey={key}
                                    alt={item.title}
@@ -332,17 +400,14 @@ const DisplayResult = (data) => {
                                         expiresIn: 86400,
                                    }}
                                    style={{
-                                        width: 100,
-                                        height: 150,
+                                        width: '100%',
+                                        height: '100%',
                                         borderRadius: 4,
                                    }}
                                    resizeMode="cover"
                                    placeholderContent={
                                         <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
+                                             bg={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']}
                                              width={{
                                                   base: 100,
                                                   lg: 200,
@@ -354,117 +419,38 @@ const DisplayResult = (data) => {
                                         />
                                    }
                               />
-                              {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}
-                         </VStack>
-                         <VStack w="65%">
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {item.title}
-                              </Text>
-                              {item.start_date && item.end_date ? (
-                                   <>
-                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                             {displayDay}
-                                        </Text>
-                                        <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                             {displayStartTime} - {displayEndTime}
-                                        </Text>
-                                   </>
-                              ) : null}
-                              {locationData.name ? (
-                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                        {locationData.name}
-                                   </Text>
-                              ) : null}
-                              {registrationRequired ? (
-                                   <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                                        <Badge key={0} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                             {getTermFromDictionary(language, 'registration_required')}
-                                        </Badge>
-                                   </Stack>
-                              ) : null}
-                         </VStack>
-                    </HStack>
-               </Pressable>
-          );
-     }
-
-     return (
-          <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
-               <HStack space={3}>
-                    <VStack maxW="35%">
-                         <CachedImage
-                              cacheKey={key}
-                              alt={item.title}
-                              source={{
-                                   uri: `${url}`,
-                                   expiresIn: 86400,
-                              }}
-                              style={{
-                                   width: 100,
-                                   height: 150,
-                                   borderRadius: 4,
-                              }}
-                              resizeMode="cover"
-                              placeholderContent={
-                                   <Box
-                                        bg="warmGray.50"
-                                        _dark={{
-                                             bgColor: 'coolGray.800',
-                                        }}
-                                        width={{
-                                             base: 100,
-                                             lg: 200,
-                                        }}
-                                        height={{
-                                             base: 150,
-                                             lg: 250,
-                                        }}
-                                   />
-                              }
-                         />
+                         </Box>
                          {item.language ? (
-                              <Badge
-                                   mt={1}
-                                   _text={{
-                                        fontSize: 10,
-                                        color: 'coolGray.600',
-                                   }}
-                                   bgColor="warmGray.200"
-                                   _dark={{
-                                        bgColor: 'coolGray.900',
-                                        _text: { color: 'warmGray.400' },
+                              <Center
+                                   mt="$1"
+                                   sx={{
+                                        bgColor: colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'],
                                    }}>
-                                   {item.language}
-                              </Badge>
+                                   <Badge
+                                        size="$sm"
+                                        sx={{
+                                             bgColor: colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'],
+                                        }}>
+                                        <BadgeText textTransform="none" color={colorMode === 'light' ? theme['colors']['coolGray']['600'] : theme['colors']['warmGray']['400']} sx={{ '@base': { fontSize: 10 }, '@lg': { fontSize: 16, padding: 4, textAlign: 'center' } }}>
+                                             {item.language}
+                                        </BadgeText>
+                                   </Badge>
+                              </Center>
                          ) : null}
                          <AddToList itemId={item.key} btnStyle="sm" />
                     </VStack>
-                    <VStack w="65%">
-                         <Text
-                              _dark={{ color: 'warmGray.50' }}
-                              color="coolGray.800"
-                              bold
-                              fontSize={{
-                                   base: 'md',
-                                   lg: 'lg',
-                              }}>
+                    <VStack w="65%" pt="$1">
+                         <Text color={textColor} bold sx={{ '@base': { fontSize: 14, lineHeight: 17, paddingBottom: 4 }, '@lg': { fontSize: 22, lineHeight: 25, paddingBottom: 4 } }}>
                               {item.title}
                          </Text>
                          {item.author ? (
-                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
+                              <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
                                    {getTermFromDictionary(language, 'by')} {item.author}
                               </Text>
                          ) : null}
-                         <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                         <HStack mt="$4" direction="row" space="xs" flexWrap="wrap">
                               {_.map(formats, getFormat)}
-                         </Stack>
+                         </HStack>
                     </VStack>
                </HStack>
           </Pressable>
@@ -475,27 +461,26 @@ const FilterBar = () => {
      const navigation = useNavigation();
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { theme, colorMode, textColor } = React.useContext(ThemeContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const type = useRoute().params.type ?? 'catalog';
 
      if (version >= '22.11.00' && type === 'catalog') {
           return (
                <Box
-                    safeArea={2}
-                    bgColor="coolGray.100"
-                    borderBottomWidth="1"
-                    _dark={{
-                         borderColor: 'gray.600',
-                         bg: 'coolGray.700',
+                    padding="$2"
+                    sx={{
+                         bg: colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700'],
+                         borderColor: colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600'],
                     }}
-                    borderColor="coolGray.200"
+                    borderBottomWidth={1}
                     flexWrap="nowrap">
                     <ScrollView horizontal>
                          <Button
                               size="sm"
-                              leftIcon={<Icon as={MaterialIcons} name="tune" size="sm" />}
                               variant="solid"
-                              mr={1}
+                              mr="$1"
+                              bg={theme['colors']['primary']['600']}
                               onPress={() => {
                                    navigation.push('modal', {
                                         screen: 'Filters',
@@ -504,7 +489,8 @@ const FilterBar = () => {
                                         },
                                    });
                               }}>
-                              {getTermFromDictionary(language, 'filters')}
+                              <ButtonIcon color={theme['colors']['primary']['600-text']} as={SlidersHorizontalIcon} mr="$1" />
+                              <ButtonText color={theme['colors']['primary']['600-text']}>{getTermFromDictionary(language, 'filters')}</ButtonText>
                          </Button>
                          <CreateFilterButton />
                     </ScrollView>
@@ -518,6 +504,7 @@ const CreateFilterButtonDefaults = () => {
      const defaults = SEARCH.defaultFacets;
      const { location } = React.useContext(LibraryBranchContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { theme, colorMode, textColor } = React.useContext(ThemeContext);
 
      const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
      const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
@@ -556,17 +543,19 @@ const CreateFilterButtonDefaults = () => {
           }
      }
 
+
      return (
-          <Button.Group size="sm" space={1} vertical variant="outline">
+          <ButtonGroup space="sm" vertical>
                {defaults.map((obj, index) => {
                     if (obj['field'] === 'availability_toggle') {
                          const label = obj['label'] + ': ' + defaultAvailabilityToggleLabel;
                          return (
                               <Button
                                    key={index}
+                                   size="sm"
                                    variant="outline"
-                                   _dark={{
-                                        borderColor: 'gray.400',
+                                   sx={{
+                                        borderColor: textColor,
                                    }}
                                    onPress={() => {
                                         navigation.push('modal', {
@@ -581,7 +570,7 @@ const CreateFilterButtonDefaults = () => {
                                              },
                                         });
                                    }}>
-                                   {label}
+                                   <ButtonText color={textColor}>{label}</ButtonText>
                               </Button>
                          );
                     }
@@ -589,9 +578,10 @@ const CreateFilterButtonDefaults = () => {
                     return (
                          <Button
                               key={index}
+                              size="sm"
                               variant="outline"
-                              _dark={{
-                                   borderColor: 'gray.400',
+                              sx={{
+                                   borderColor: colorMode === 'light' ? theme['colors']['primary']['400'] : theme['colors']['gray']['400'],
                               }}
                               onPress={() => {
                                    navigation.push('modal', {
@@ -606,16 +596,17 @@ const CreateFilterButtonDefaults = () => {
                                         },
                                    });
                               }}>
-                              {obj['label']}
+                              <ButtonText color={textColor}>{obj['label']}</ButtonText>
                          </Button>
                     );
                })}
-          </Button.Group>
+          </ButtonGroup>
      );
 };
 
 const CreateFilterButton = () => {
      const { currentSource } = React.useContext(SearchContext);
+     const { theme, colorMode, textColor } = React.useContext(ThemeContext);
      const navigation = useNavigation();
      const appliedFacets = SEARCH.appliedFilters;
      const sort = _.find(appliedFacets['Sort By'], {
@@ -625,7 +616,7 @@ const CreateFilterButton = () => {
 
      if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 1 && _.size(sort) > 1) || (_.size(appliedFacets) >= 1 && currentSource === 'events')) {
           return (
-               <Button.Group size="sm" space={1} vertical variant="outline">
+               <ButtonGroup space="sm" vertical>
                     {_.map(appliedFacets, function (item, index, collection) {
                          const cluster = _.filter(SEARCH.availableFacets, ['field', item[0]['field']]);
                          let labels = '';
@@ -643,9 +634,11 @@ const CreateFilterButton = () => {
                          const label = _.truncate(index + ': ' + labels);
                          return (
                               <Button
+                                   variant="outline"
+                                   size="sm"
                                    key={index}
-                                   _dark={{
-                                        borderColor: 'gray.400',
+                                   sx={{
+                                        borderColor: textColor,
                                    }}
                                    onPress={() => {
                                         navigation.push('modal', {
@@ -662,11 +655,11 @@ const CreateFilterButton = () => {
                                              },
                                         });
                                    }}>
-                                   {label}
+                                   <ButtonText color={textColor}>{label}</ButtonText>
                               </Button>
                          );
                     })}
-               </Button.Group>
+               </ButtonGroup>
           );
      }
 
@@ -695,6 +688,7 @@ async function fetchSearchResults(term, page, scope, url, type, id, language, in
      });
 
      let data = [];
+     console.log('fetchSearchResults: ' + SEARCH.appendedParams);
      const results = await discovery.post('/SearchAPI?method=searchLite' + SEARCH.appendedParams, postBody);
      if (results.ok) {
           data = results.data;

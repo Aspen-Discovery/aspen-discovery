@@ -1,3 +1,4 @@
+import { useToken } from '@gluestack-style/react';
 import * as Device from 'expo-device';
 import _ from 'lodash';
 import React, { useState } from 'react';
@@ -8,6 +9,8 @@ import { PATRON } from '../util/loadPatron';
 export const ThemeContext = React.createContext({
      theme: [],
      updateTheme: () => {},
+     colorMode: 'light',
+     updateColorMode: () => {},
      resetTheme: () => {},
 });
 export const DiscoveryContext = React.createContext();
@@ -129,9 +132,32 @@ export const SearchContext = React.createContext({
 
 export const ThemeProvider = ({ children }) => {
      const [theme, setTheme] = useState([]);
+     const [colorMode, setColorMode] = useState('light');
+     const [textColor, setTextColor] = useState('');
+     const darkText = useToken('colors', 'textLight950');
+     const lightText = useToken('colors', 'textLight50');
 
      const updateTheme = (data) => {
           setTheme(data);
+     };
+
+     const updateColorMode = (data) => {
+          setColorMode(data);
+          console.log('Updated color mode in context');
+          if (textColor === '') {
+               if (data === 'light') {
+                    updateTextColor(darkText);
+               }
+
+               if (data === 'dark') {
+                    updateTextColor(lightText);
+               }
+          }
+     };
+
+     const updateTextColor = (data) => {
+          setTextColor(data);
+          console.log('Updated text color in context');
      };
 
      const resetTheme = () => {
@@ -143,6 +169,10 @@ export const ThemeProvider = ({ children }) => {
                value={{
                     theme,
                     updateTheme,
+                    colorMode,
+                    updateColorMode,
+                    textColor,
+                    updateTextColor,
                     resetTheme,
                }}>
                {children}

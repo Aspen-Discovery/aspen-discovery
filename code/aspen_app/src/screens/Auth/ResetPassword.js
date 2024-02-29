@@ -31,40 +31,70 @@ export const ResetPassword = (props) => {
 
           async function fetchTranslations() {
                await getTranslationsWithValues('forgot_password_link', passwordLabel, language, libraryUrl).then((result) => {
-                    setButtonLabel(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setButtonLabel(term);
+                    }
                });
                await getTranslationsWithValues('forgot_password_title', passwordLabel, language, libraryUrl).then((result) => {
-                    setModalTitle(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalTitle(term);
+                    }
                });
                await getTranslationsWithValues('reset_my_password', passwordLabel, language, libraryUrl).then((result) => {
-                    setModalButtonLabel(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalButtonLabel(term);
+                    }
                });
                if (ils === 'koha') {
                     await getTranslationsWithValues('koha_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                } else if (ils === 'sirsi' || ils === 'horizon') {
                     await getTranslationsWithValues('sirsi_password_reset_body', _.lowerCase(passwordLabel), language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                } else if (ils === 'evergreen') {
                     await getTranslationsWithValues('evergreen_password_reset_body', _.lowerCase(passwordLabel), language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                } else if (ils === 'millennium') {
                     await getTranslationsWithValues('millennium_password_reset_body', [_.lowerCase(usernameLabel), _.lowerCase(passwordLabel)], language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                     await getTranslationsWithValues('request_pin_reset', passwordLabel, language, libraryUrl).then((result) => {
-                         setModalButtonLabel(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setModalButtonLabel(term);
+                         }
                     });
                } else if (ils === 'symphony') {
                     await getTranslationsWithValues('symphony_password_reset_body', _.lowerCase(usernameLabel), language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                } else {
                     await getTranslationsWithValues('aspen_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, libraryUrl).then((result) => {
-                         setResetBody(_.toString(result));
+                         let term = _.toString(result);
+                         if (!term.includes('%1%')) {
+                              setResetBody(term);
+                         }
                     });
                }
                setIsLoading(false);

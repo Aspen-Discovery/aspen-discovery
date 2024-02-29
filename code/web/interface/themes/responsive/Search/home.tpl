@@ -9,7 +9,7 @@
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li tabindex="0" id="browse-category-{$browseCategory->textId}" class="browse-category {if (empty($selectedBrowseCategory) && $smarty.foreach.browseCategoryLoop.index == 0) || (!empty($selectedBrowseCategory) && $selectedBrowseCategory->textId == $browseCategory->textId)} selected{/if}" data-category-id="{$browseCategory->textId}">
-									<div role="button">
+									<div role="button" tabindex="0">
 										{translate text=$browseCategory->label isPublicFacing=true}
 									</div>
 								</li>
@@ -40,17 +40,17 @@
 			<div class="row" id="selected-browse-label">
 					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
 						<div class="btn-group btn-group-sm" data-toggle="buttons">
-							<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
-								<i class="fas fa-th"></i><span> {translate text='Covers' isPublicFacing=true}</span>
+							<label for="covers" title="Covers" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+								<i class="fas fa-th" role="presentation"></i><span> {translate text='Covers' isPublicFacing=true}</span>
 							</label>
-							<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
-								<i class="fas fa-th-list"></i> {translate text='Grid' isPublicFacing=true}</span>
+							<label for="grid" title="Grid" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+								<i class="fas fa-th-list" role="presentation"></i> {translate text='Grid' isPublicFacing=true}</span>
 							</label>
 						</div>
 						{if !empty($isLoggedIn)}
 						<div class="btn-group" data-toggle="buttons" style="margin-top: -.15em; margin-left: 1em;">
 							<button class="btn btn-default selected-browse-dismiss" onclick="">
-							<i class="fas fa-times"></i> {translate text='Hide' isPublicFacing=true}</button>
+							<i class="fas fa-times" role="presentation"></i> {translate text='Hide' isPublicFacing=true}</button>
 						</div>
 						{/if}
 					</div>
@@ -58,10 +58,10 @@
 
 				<div class="selected-browse-label-search">
 					<a id="selected-browse-search-link" title="See the search results page for this browse category">
-						<span class="icon-before"></span> {*space needed for good padding between text and icon *}
-						<span class="selected-browse-label-search-text"></span>
-						<span class="selected-browse-sub-category-label-search-text"></span>
-						<span class="icon-after"></span>
+						<span class="icon-before" role="presentation"></span> {*space needed for good padding between text and icon *}
+						<span class="selected-browse-label-search-text" role="presentation"></span>
+						<span class="selected-browse-sub-category-label-search-text" role="presentation"></span>
+						<span class="icon-after" role="presentation"></span>
 					</a>
 				</div>
 			</div>

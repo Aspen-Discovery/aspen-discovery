@@ -35,19 +35,34 @@ export const ForgotBarcode = (props) => {
 
           async function fetchTranslations() {
                await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, libraryUrl).then((result) => {
-                    setButtonLabel(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setButtonLabel(term);
+                    }
                });
                await getTranslationsWithValues('forgot_barcode_title', usernameLabel, language, libraryUrl).then((result) => {
-                    setModalTitle(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalTitle(term);
+                    }
                });
                await getTranslation('Phone Number', language, libraryUrl).then((result) => {
-                    setModalButtonLabel(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalButtonLabel(term);
+                    }
                });
                await getTranslationsWithValues('send_my_barcode', usernameLabel, language, libraryUrl).then((result) => {
-                    setModalButtonLabel(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalButtonLabel(term);
+                    }
                });
                await getTranslationsWithValues('forgot_barcode_body', usernameLabel, language, libraryUrl).then((result) => {
-                    setModalBody(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setModalBody(term);
+                    }
                });
                setIsLoading(false);
           }

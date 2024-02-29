@@ -7,7 +7,7 @@ import React from 'react';
 import { LanguageContext, LibrarySystemContext } from '../context/initialContext';
 import { saveLanguage } from '../util/api/user';
 
-import { createAuthTokens, getHeaders } from '../util/apiAuth';
+import { createAuthTokens, decodeHTML, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
 
 /** *******************************************************************
@@ -144,7 +144,7 @@ export async function getTranslationsWithValues(key, values, language, url, addT
           values: values,
           language: language,
      });
-
+     
      if (response.ok) {
           if (response.data?.result?.translation) {
                if (Object.values(response.data?.result?.translation) && addToDictionary) {
@@ -165,7 +165,7 @@ export async function getTranslationsWithValues(key, values, language, url, addT
           }
      }
      // it didn't work we should return the untranslated term back
-     return term;
+     return decodeHTML(term);
 }
 
 /**

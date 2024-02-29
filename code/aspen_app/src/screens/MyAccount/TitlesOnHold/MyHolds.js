@@ -50,7 +50,7 @@ export const MyHolds = () => {
           });
      }, [navigation]);
 
-     useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     const { status, data, error, isFetching } = useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           initialData: holds,
           onSuccess: (data) => {
                if (data !== holds) {
@@ -188,7 +188,7 @@ export const MyHolds = () => {
           }, [language])
      );
 
-     if (isFetchingHolds) {
+     if (isFetchingHolds || isFetching || isLoading) {
           return loadingSpinner();
      }
 
@@ -203,7 +203,7 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
@@ -233,13 +233,8 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, , library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-          useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
-               onSuccess: (data) => {
-                    updateHolds(data);
-               },
-          });
           setLoading(false);
      };
 
