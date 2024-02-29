@@ -71,7 +71,7 @@
 					{if !empty($tiktokLink)}
 						<a href="{$tiktokLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on TikTok" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fab fa-tiktok fa-lg' role="presentation"></i></a>
 					{/if}
-					{if !empty($rouped)}
+					{if !empty($generalContactLink)}
 						<a href="{$generalContactLink}" class="connect-icon" target="_blank" title="{translate text="Contact Us" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Contact Us" inAttribute=true isPublicFacing=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fas fa-envelope-open fa-lg' role="presentation"></i></a>
 					{/if}
 				{/if}
