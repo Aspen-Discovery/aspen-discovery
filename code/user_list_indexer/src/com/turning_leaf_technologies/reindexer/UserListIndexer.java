@@ -188,10 +188,18 @@ class UserListIndexer {
 				if (updateSolrForList(fullReindex, updateServer, getTitlesForListStmt, allPublicListsRS, lastReindexTime, logEntry)){
 					numListsIndexed++;
 				}
+				if (numListsIndexed % 500 == 0) {
+					if (!fullReindex) {
+						updateServer.commit(false, false, true);
+					}
+					logEntry.saveResults();
+				}
 				numListsProcessed++;
 			}
 			if (numListsProcessed > 0){
-				updateServer.commit(true, true);
+				logEntry.addNote("Calling final commit");
+				logEntry.saveResults();
+				updateServer.commit(true, true, false);
 			}
 
 		} catch (IOException e) {
@@ -346,25 +354,25 @@ class UserListIndexer {
 							//people, etc.
 						}
 					}
-					if (userListSolr.getNumTitles() >= 3) {
-						// Index in the solr catalog
-						SolrInputDocument document = userListSolr.getSolrDocument();
-						if (document != null) {
-							updateServer.add(document);
-							if (created > lastReindexTime) {
-								logEntry.incAdded();
-							} else {
-								logEntry.incUpdated();
-							}
-							indexed = true;
+				}
+				if (userListSolr.getNumTitles() >= 3) {
+					// Index in the solr catalog
+					SolrInputDocument document = userListSolr.getSolrDocument();
+					if (document != null) {
+						updateServer.add(document);
+						if (created > lastReindexTime) {
+							logEntry.incAdded();
 						} else {
-							updateServer.deleteByQuery("id:" + listId);
-							logEntry.incSkipped();
+							logEntry.incUpdated();
 						}
+						indexed = true;
 					} else {
 						updateServer.deleteByQuery("id:" + listId);
 						logEntry.incSkipped();
 					}
+				} else {
+					updateServer.deleteByQuery("id:" + listId);
+					logEntry.incSkipped();
 				}
 			} catch (Exception e) {
 				updateServer.deleteByQuery("id:" + listId);
