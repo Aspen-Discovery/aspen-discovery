@@ -995,6 +995,8 @@ public class SierraExportAPIMain {
 								}else{
 									if (!recordNumberSubfield.getData().startsWith(".b")) {
 										continue;
+									}else if (recordNumberSubfield.getData().equals(".b")) {
+										continue;
 									}
 								}
 							}
