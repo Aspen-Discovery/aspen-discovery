@@ -88,9 +88,9 @@ export const Variations = (props) => {
      return (
           <>
                {isLoading || status === 'loading' || isFetching ? (
-                    loadingSpinner()
+                    <Box padding="$5">{loadingSpinner()}</Box>
                ) : status === 'error' ? (
-                    loadError(error, '')
+                    <Box padding="$5">{loadError(error, '')}</Box>
                ) : (
                     <>
                          <FlatList

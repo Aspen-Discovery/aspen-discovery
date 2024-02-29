@@ -36,6 +36,7 @@ export const SearchResults = () => {
      const { currentIndex, currentSource, updateCurrentIndex, updateCurrentSource, updateIndexes, updateSources } = React.useContext(SearchContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const url = library.baseUrl;
+     const [paginationLabel, setPaginationLabel] = React.useState('1 of 1');
 
      const queryClient = useQueryClient();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
@@ -98,10 +99,15 @@ export const SearchResults = () => {
           },
      });
 
-     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
+     const { data: paginationLabelData, isFetching: translationIsFetching } = useQuery({
           queryKey: ['totalPages', url, page, term, scope, params, language, currentIndex, currentSource],
           queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
           enabled: !!data,
+          onSuccess: (data) => {
+               if (!data.includes('%1%')) {
+                    setPaginationLabel(data);
+               }
+          },
      });
 
      const Header = () => {
@@ -129,10 +135,11 @@ export const SearchResults = () => {
                     <Box p="$2" bgColor={colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700']} borderTopWidth={1} borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']} flexWrap="nowrap" alignItems="center">
                          <ScrollView horizontal>
                               <ButtonGroup>
-                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1} size="sm">
-                                        <ButtonText>{getTermFromDictionary(language, 'previous')}</ButtonText>
+                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1} size="sm" bgColor={theme['colors']['primary']['500']}>
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'previous')}</ButtonText>
                                    </Button>
                                    <Button
+                                        bgColor={theme['colors']['primary']['500']}
                                         onPress={() => {
                                              if (!isPreviousData && data.hasMore) {
                                                   console.log('Adding to page');
@@ -141,11 +148,11 @@ export const SearchResults = () => {
                                         }}
                                         isDisabled={isPreviousData || !data.hasMore}
                                         size="sm">
-                                        <ButtonText>{getTermFromDictionary(language, 'next')}</ButtonText>
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'next')}</ButtonText>
                                    </Button>
                               </ButtonGroup>
                          </ScrollView>
-                         <Text mt="$2" fontSize="sm">
+                         <Text mt="$2" fontSize="$10" color={textColor}>
                               {paginationLabel}
                          </Text>
                     </Box>

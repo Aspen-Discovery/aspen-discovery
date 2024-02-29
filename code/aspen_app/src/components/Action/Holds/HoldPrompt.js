@@ -152,9 +152,7 @@ export const HoldPrompt = (props) => {
                               <Heading size="md" color={textColor}>
                                    {isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}
                               </Heading>
-                              <ModalCloseButton>
-                                   <Icon as={CloseIcon} color={textColor} />
-                              </ModalCloseButton>
+                              <ModalCloseButton as={CloseIcon} color={textColor} />
                          </ModalHeader>
                          <ModalBody mt="$3">
                               {promptForHoldNotifications ? (
@@ -174,6 +172,8 @@ export const HoldPrompt = (props) => {
                                         phoneNumber={phoneNumber}
                                         setPhoneNumber={setPhoneNumber}
                                         url={library.baseUrl}
+                                        textColor={textColor}
+                                        theme={theme}
                                    />
                               ) : null}
                               {!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? <SelectItemHold theme={theme} id={id} item={item} setItem={setItem} language={language} data={data} holdType={holdType} setHoldType={setHoldType} holdTypeForFormat={holdTypeForFormat} url={library.baseUrl} showModal={showModal} textColor={textColor} /> : null}
@@ -185,28 +185,14 @@ export const HoldPrompt = (props) => {
                                                   {getTermFromDictionary(language, 'select_pickup_location')}
                                              </FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select
-                                             isReadOnly={Platform.OS === 'android'}
-                                             name="pickupLocations"
-                                             selectedValue={location}
-                                             initialLabel="Test"
-                                             minWidth={200}
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
-                                             mt="$1"
-                                             mb="$2"
-                                             onValueChange={(itemValue) => setLocation(itemValue)}>
+                                        <Select isReadOnly={Platform.OS === 'android'} name="pickupLocations" selectedValue={location} initialLabel="Test" minWidth={200} mt="$1" mb="$2" onValueChange={(itemValue) => setLocation(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   {locations.map((selectedLocation, index) => {
                                                        if (selectedLocation.code === location) {
                                                             return <SelectInput value={selectedLocation.name} color={textColor} />;
                                                        }
                                                   })}
-                                                  <SelectIcon mr="$3">
-                                                       <Icon as={ChevronDownIcon} color={textColor} />
-                                                  </SelectIcon>
+                                                  <SelectIcon mr="$3" as={ChevronDownIcon} color={textColor} />
                                              </SelectTrigger>
                                              <SelectPortal>
                                                   <SelectBackdrop />
@@ -230,23 +216,10 @@ export const HoldPrompt = (props) => {
                                         <FormControlLabel>
                                              <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select
-                                             isReadOnly={Platform.OS === 'android'}
-                                             name="linkedAccount"
-                                             selectedValue={activeAccount}
-                                             minWidth={200}
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
-                                             mt="$1"
-                                             mb="$3"
-                                             onValueChange={(itemValue) => setActiveAccount(itemValue)}>
+                                        <Select isReadOnly={Platform.OS === 'android'} name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   <SelectInput color={textColor} />
-                                                  <SelectIcon mr="$3">
-                                                       <Icon as={ChevronDownIcon} />
-                                                  </SelectIcon>
+                                                  <SelectIcon as={ChevronDownIcon} mr="$3" />
                                              </SelectTrigger>
                                              <SelectPortal>
                                                   <SelectBackdrop />

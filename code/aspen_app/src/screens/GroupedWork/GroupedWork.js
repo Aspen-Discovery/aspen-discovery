@@ -84,19 +84,19 @@ export const GroupedWorkScreen = () => {
      };
 
      return (
-          <ScrollView>
+          <SafeAreaView style={{ flex: 1 }}>
                {status === 'loading' || isFetching ? (
-                    <Center>{loadingSpinner('Fetching data...')}</Center>
+                    loadingSpinner('Fetching data...')
                ) : status === 'error' ? (
-                    <Center>{loadError(error, '')}</Center>
+                    loadError(error, '')
                ) : (
-                    <>
+                    <ScrollView>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 200 } }} w="100%" bgColor={colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900']} zIndex={-1} position="absolute" left={0} top={0} />
                          {_.size(systemMessages) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                          <DisplayGroupedWork data={data.results} initialFormat={data.format} updateFormat={data.format} />
-                    </>
+                    </ScrollView>
                )}
-          </ScrollView>
+          </SafeAreaView>
      );
 };
 

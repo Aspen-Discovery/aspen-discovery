@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { Text, HStack, VStack, Badge, FlatList, Button, Box, Icon, Center, AlertDialog } from 'native-base';
+import { Text, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop } from '@gluestack-ui/themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
 import { ActionButton } from '../../components/Action/ActionButton';
-import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const Editions = () => {
@@ -70,18 +70,23 @@ export const Editions = () => {
                          <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
                          <Center>
                               <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
-                                   <AlertDialog.Content>
-                                        <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                        <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                        <AlertDialog.Footer>
-                                             <Button.Group space={3}>
+                                   <AlertDialogBackdrop />
+                                   <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                             <Heading>{response?.title}</Heading>
+                                        </AlertDialogHeader>
+                                        <AlertDialogBody>
+                                             <Text>{response?.message}</Text>
+                                        </AlertDialogBody>
+                                        <AlertDialogFooter>
+                                             <ButtonGroup space="sm">
                                                   {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
                                                   <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
-                                                       {getTermFromDictionary(language, 'button_ok')}
+                                                       <ButtonText>{getTermFromDictionary(language, 'button_ok')}</ButtonText>
                                                   </Button>
-                                             </Button.Group>
-                                        </AlertDialog.Footer>
-                                   </AlertDialog.Content>
+                                             </ButtonGroup>
+                                        </AlertDialogFooter>
+                                   </AlertDialogContent>
                               </AlertDialog>
                          </Center>
                     </>
@@ -92,6 +97,7 @@ export const Editions = () => {
 
 const Edition = (payload) => {
      const { language } = React.useContext(LanguageContext);
+     const { theme, textColor } = React.useContext(ThemeContext);
      const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
@@ -116,39 +122,35 @@ const Edition = (payload) => {
      const statusIndicator = getStatusIndicator(records.statusIndicator, language);
 
      return (
-          <Box
-               mt={2}
-               mb={0}
-               bgColor="white"
-               _dark={{ bgColor: 'coolGray.900' }}
-               p={3}
-               rounded="8px"
-               width={{
-                    base: '100%',
-                    lg: '100%',
-               }}>
-               <HStack justifyContent="space-between" alignItems="center" space={2} flex={1}>
-                    <VStack space={1} maxW="40%" flex={1} justifyContent="center">
-                         <Text fontSize="xs">
-                              <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical} {closedCaptioned === '1' ? <Icon as={MaterialIcons} name="closed-caption" size="sm" mb={-1} /> : null}
+          <Box mt="$2" mb="$0" p="$3">
+               <HStack justifyContent="space-between" alignItems="center" space="sm" flex={1}>
+                    <VStack space="sm" maxW="40%" flex={1} justifyContent="center">
+                         <Text size="xs" color={textColor}>
+                              <Text bold size="xs" color={textColor}>
+                                   {records.publicationDate}
+                              </Text>{' '}
+                              {records.publisher}. {records.edition} {records.physical} {closedCaptioned === '1' ? <Icon as={MaterialIcons} name="closed-caption" size="sm" color={textColor} /> : null}
                          </Text>
-                         <VStack space={1}>
-                              <Badge colorScheme={statusIndicator.indicator} rounded="4px" _text={{ fontSize: 10 }}>
-                                   {statusIndicator.label}
-                              </Badge>
+                         <VStack space="sm">
+                              <Center>
+                                   <Badge action={statusIndicator.indicator} borderRadius="$sm" variant="solid">
+                                        <BadgeText textTransform="none">{statusIndicator.label}</BadgeText>
+                                   </Badge>
+                              </Center>
                               {records.source === 'ils' ? (
-                                   <Button colorScheme="tertiary" variant="ghost" size="xs" leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1" />} onPress={handleOnPress}>
-                                        {getTermFromDictionary(language, 'where_is_it')}
+                                   <Button variant="link" size="xs" onPress={handleOnPress}>
+                                        <ButtonIcon as={MaterialIcons} name="location-pin" size="xs" color={theme['colors']['tertiary']['500']} />
+                                        <ButtonText color={theme['colors']['tertiary']['500']}>{getTermFromDictionary(language, 'where_is_it')}</ButtonText>
                                    </Button>
                               ) : null}
                          </VStack>
                     </VStack>
-                    <Button.Group direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
+                    <ButtonGroup direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
                          <FlatList
                               data={actions}
                               renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />}
                          />
-                    </Button.Group>
+                    </ButtonGroup>
                </HStack>
           </Box>
      );
