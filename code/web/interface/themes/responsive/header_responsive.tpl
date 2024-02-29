@@ -39,11 +39,11 @@
 		{if $languageAndDisplayInHeader}
 			<a id="theme-selection-dropdown" role="button" class="btn btn-default btn-sm" {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
 				{if count($validLanguages) > 1 && count($allActiveThemes) > 1}
-					{translate text="Languages & Display" isPublicFacing=true}&nbsp;<i class="fa fa-cog"></i>
+					{translate text="Languages & Display" isPublicFacing=true}&nbsp;<i class="fa fa-cog" role="presentation"></i>
 				{elseif count($validLanguages) > 1}
-					{translate text="Languages" isPublicFacing=true}&nbsp;<i class="fa fa-cog"></i>
+					{translate text="Languages" isPublicFacing=true}&nbsp;<i class="fa fa-cog" role="presentation"></i>
 				{else}
-					{translate text="Display" isPublicFacing=true}&nbsp;<i class="fa fa-cog"></i>
+					{translate text="Display" isPublicFacing=true}&nbsp;<i class="fa fa-cog" role="presentation"></i>
 				{/if}
 			</a>
 		{/if}

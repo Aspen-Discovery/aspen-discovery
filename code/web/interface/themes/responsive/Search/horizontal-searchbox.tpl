@@ -87,7 +87,7 @@
 			<div class="row">
 				<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12 text-center">
 					<button class="btn btn-default" type="submit" style="width: 95%">
-						<i class="fas fa-search fas-lg"></i>
+						<i class="fas fa-search fas-lg" role="presentation"></i>
 						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
 					</button>
 				</div>

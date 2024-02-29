@@ -80,7 +80,7 @@
 				{/if}
 				<div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
                     <button class="form-control btn btn-default" type="submit">
-                        <i class="fas fa-search fas-lg"></i>
+                        <i class="fas fa-search fas-lg" role="presentation"></i>
                         <span id="home-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
                     </button>
                 </div>
