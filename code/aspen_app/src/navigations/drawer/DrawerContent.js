@@ -103,7 +103,10 @@ export const DrawerContent = () => {
      React.useEffect(() => {
           async function fetchTranslations() {
                await getTranslationsWithValues('accounts_have_fines', user.fines ?? 0, language, library.baseUrl).then((result) => {
-                    setFinesSummary(_.toString(result));
+                    let term = _.toString(result);
+                    if (!term.includes('%1%')) {
+                         setFinesSummary(term);
+                    }
                });
           }
 
@@ -234,8 +237,10 @@ const Checkouts = () => {
      React.useEffect(() => {
           async function fetchTranslations() {
                await getTranslationsWithValues('checkouts_overdue_summary', user.numOverdue ?? 0, language, library.baseUrl).then((result) => {
-                    console.log(result);
-                    setCheckoutSummary(result);
+                    let term = result;
+                    if (!term.includes('%1%')) {
+                         setCheckoutSummary(term);
+                    }
                });
           }
 
@@ -281,7 +286,10 @@ const Holds = () => {
      React.useEffect(() => {
           async function fetchTranslations() {
                await getTranslationsWithValues('num_holds_ready_for_pickup', user.numHoldsAvailable ?? 0, language, library.baseUrl).then((result) => {
-                    setHoldSummary(result);
+                    let term = result;
+                    if (!term.includes('%1%')) {
+                         setHoldSummary(term);
+                    }
                });
           }
 
@@ -379,7 +387,10 @@ const SavedSearches = () => {
      React.useEffect(() => {
           async function fetchTranslations() {
                await getTranslationsWithValues('num_saved_searches_with_updates', user.numSavedSearchesNew ?? 0, language, library.baseUrl).then((result) => {
-                    setSavedSearchSummary(result);
+                    let term = result;
+                    if (!term.includes('%1%')) {
+                         setSavedSearchSummary(term);
+                    }
                });
           }
 
@@ -582,7 +593,10 @@ const Events = () => {
      React.useEffect(() => {
           async function fetchTranslations() {
                await getTranslationsWithValues('num_saved_events_upcoming', user.numSavedEventsUpcoming ?? 0, language, library.baseUrl).then((result) => {
-                    setSavedEventsSummary(result);
+                    let term = result;
+                    if (!term.includes('%1%')) {
+                         setSavedEventsSummary(term);
+                    }
                });
           }
 
