@@ -53,7 +53,7 @@
 
 			<div class="form-group">
 				{if !empty($saveButtonText)}
-					{if $isSelfRegistration && !empty($tos) && !$tosAccept}
+					{if !empty($isSelfRegistration) && !empty($tos) && !$tosAccept}
 						<button type="submit" name="submit" disabled="true" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
 					{else}
 						<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
