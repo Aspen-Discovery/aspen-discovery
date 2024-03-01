@@ -1679,11 +1679,12 @@ class Evergreen extends AbstractIlsDriver {
 		if ($insert) {
 			$authToken = $this->getAPIAuthToken($user, true);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
+			$request = 'service=open-ils.actor&method=open-ils.actor.patron.settings.retrieve';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . json_encode($user->unique_ils_id);
 			$request .= '&param=' . json_encode([
 					'opac.default_pickup_location',
 				]);
-			$request .= '&param=' . json_encode($authToken);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
