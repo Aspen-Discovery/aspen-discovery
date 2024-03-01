@@ -2161,7 +2161,7 @@ class SearchAPI extends AbstractAPI {
 							if(count($eventsSearchResults) > 0) {
 								foreach ($eventsSearchResults as $event) {
 									$formattedEventsResults[] = [
-										'id' => $event['key'],
+										'id' => $event['id'],
 										'title_display' => $event['title'],
 									];
 								}
@@ -2575,13 +2575,7 @@ class SearchAPI extends AbstractAPI {
 					if (!$id) {
 						$response['key'] = $browseCategory->textId;
 					}
-
-					if($internalRequest) {
-						$response['records'] = $items;
-					} else {
-						$response['items'] = $items;
-					}
-
+					$response['items'] = $items;
 				}
 			} else {
 				$response = [

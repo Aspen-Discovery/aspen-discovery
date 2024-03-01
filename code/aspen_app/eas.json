@@ -8,7 +8,7 @@
 	  "distribution": "store",
 	  "channel": "production",
 	  "env": {
-		"APP_ENV": "aspen-lida-alpha",
+		"APP_ENV": "{{APP_ENV}}",
 		"GOOGLE_SERVICES_JSON": "/"
 	  },
 	  "ios": {
@@ -49,15 +49,15 @@
 	  "android": {
 		"track": "production",
 		"releaseStatus": "draft",
-		"serviceAccountKeyPath": "/usr/local/pc-api-4949057069658612443-62-7922281e6dcd.json"
+		"serviceAccountKeyPath": "{{DEV_GOOGLE_SERVICE_KEY_PATH}}"
 	  },
 	  "ios": {
-		"ascApiKeyPath": "/usr/local/AuthKey_H6BD6YN83M.p8",
-		"ascApiKeyIssuerId": "1ffc592e-60fb-452f-ac8a-4c43ffdd2a13",
-		"ascApiKeyId": "H6BD6YN83M",
-		"appleId": "kirstien@bywatersolutions.com",
-		"ascAppId": "1667677331",
-		"appleTeamId": "46LCYCHVHM"
+		"ascApiKeyPath": "{{DEV_APPLE_API_KEY_PATH}}",
+		"ascApiKeyIssuerId": "{{DEV_APPLE_API_KEY_ISSUER_ID}}",
+		"ascApiKeyId": "{{DEV_APPLE_API_KEY_ID}}",
+		"appleId": "{{DEV_APPLE_ID}}",
+		"ascAppId": "{{DEV_APP_ID}}",
+		"appleTeamId": "{{DEV_TEAM_ID}}"
 	  }
 	},
 	"beta": {
