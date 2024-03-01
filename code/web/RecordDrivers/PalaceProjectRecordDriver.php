@@ -121,7 +121,11 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getDescription() {
-		return $this->palaceProjectRawMetadata->metadata->description;
+		if (!empty($this->palaceProjectRawMetadata->metadata->description)) {
+			return $this->palaceProjectRawMetadata->metadata->description;
+		}else{
+			return '';
+		}
 	}
 
 	public function getMoreDetailsOptions() {
@@ -458,9 +462,11 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 
 	function loadSubjects() {
 		$subjects = [];
-		$rawSubjects = $this->palaceProjectRawMetadata->metadata->subject;
-		foreach ($rawSubjects as $subject) {
-			$subjects[] = $subject->name;
+		if (!empty($this->palaceProjectRawMetadata->metadata->subject)) {
+			$rawSubjects = $this->palaceProjectRawMetadata->metadata->subject;
+			foreach ($rawSubjects as $subject) {
+				$subjects[] = $subject->name;
+			}
 		}
 		global $interface;
 		$interface->assign('subjects', $subjects);

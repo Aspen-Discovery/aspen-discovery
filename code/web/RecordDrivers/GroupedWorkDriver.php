@@ -501,10 +501,17 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=grouped_work";
 
 		if (isset($this->fields['format_category'])) {
+			$category = '';
 			if (is_array($this->fields['format_category'])) {
-				$bookCoverUrl .= "&category=" . reset($this->fields['format_category']);
+				$category = reset($this->fields['format_category']);
 			} else {
-				$bookCoverUrl .= "&category=" . $this->fields['format_category'];
+				$category = $this->fields['format_category'];
+			}
+			if (!empty($category)) {
+				if (strpos($category, '#') !== false) {
+					$category = substr($category, strpos($category, '#') + 1);
+				}
+				$bookCoverUrl .= "&category=" . $category;
 			}
 		}
 

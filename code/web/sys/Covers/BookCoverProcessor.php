@@ -339,12 +339,15 @@ class BookCoverProcessor {
 	}
 
 	private function getPalaceProjectCover($id, $createDefaultIfNotFound = false) {
+		if (strpos($id, 'palace_project') === 0) {
+			$id = str_replace('palace_project:', '', $id);
+		}
 		require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
 		$driver = new PalaceProjectRecordDriver($id);
 		if ($driver->isValid()) {
 			$coverUrl = $driver->getPalaceProjectBookcoverUrl();
 			if ($coverUrl != null) {
-				return $this->processImageURL('cloud_library', $coverUrl, true);
+				return $this->processImageURL('palace_project', $coverUrl, true);
 			} else {
 				if ($createDefaultIfNotFound) {
 					return $this->getDefaultCover($driver);
@@ -1194,6 +1197,10 @@ class BookCoverProcessor {
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0) {
 					if ($this->getCloudLibraryCover($relatedRecord->id)) {
+						return true;
+					}
+				} elseif (strcasecmp($relatedRecord->source, 'palace_project') == 0) {
+					if ($this->getPalaceProjectCover($relatedRecord->id)) {
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0) {

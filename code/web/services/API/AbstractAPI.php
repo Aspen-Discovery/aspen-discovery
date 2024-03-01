@@ -12,10 +12,12 @@ abstract class AbstractAPI extends Action{
 	}
 
 	function checkIfLiDA() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'User-Agent' || $name == 'user-agent') {
-				if (strpos($value, "Aspen LiDA") !== false) {
-					return true;
+		if (function_exists('getallheaders')) {
+			foreach (getallheaders() as $name => $value) {
+				if ($name == 'User-Agent' || $name == 'user-agent') {
+					if (strpos($value, "Aspen LiDA") !== false) {
+						return true;
+					}
 				}
 			}
 		}
@@ -23,11 +25,13 @@ abstract class AbstractAPI extends Action{
 	}
 
 	function getLiDAVersion() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				$version = substr($version[0], 1); // remove starting 'v'
-				return floatval($version);
+		if (function_exists('getallheaders')) {
+			foreach (getallheaders() as $name => $value) {
+				if ($name == 'version' || $name == 'Version') {
+					$version = explode(' ', $value);
+					$version = substr($version[0], 1); // remove starting 'v'
+					return floatval($version);
+				}
 			}
 		}
 		return 0;
