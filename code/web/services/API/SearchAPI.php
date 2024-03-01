@@ -2344,6 +2344,7 @@ class SearchAPI extends AbstractAPI {
 				$response['key'] = $thisId;
 			}
 			if (isset($result['items'])) {
+				$response['success'] = true;
 				$response['records'] = $result['items'];
 			} else {
 				//Error loading items
@@ -2358,6 +2359,7 @@ class SearchAPI extends AbstractAPI {
 			if (!$id) {
 				$response['key'] = $thisId;
 			}
+			$response['success'] = true;
 			$response['records'] = $result['items'];
 		} else {
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -2365,10 +2367,13 @@ class SearchAPI extends AbstractAPI {
 			$browseCategory->textId = $thisId;
 
 			if ($browseCategory->find(true)) {
+				$response['success'] = true;
+				$response['title'] = $browseCategory->label;
 				if ($browseCategory->textId == 'system_recommended_for_you') {
 					$records = $this->getAppSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
 					$response['key'] = $browseCategory->textId;
 					$response['records'] = $records['records'];
+					$response['message'] = 'Results found for browse category';
 				} else {
 					if ($browseCategory->source == 'List') {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -2376,6 +2381,7 @@ class SearchAPI extends AbstractAPI {
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
+							$response['message'] = 'Results found for browse category';
 						} else {
 							$records = [];
 						}
@@ -2387,6 +2393,7 @@ class SearchAPI extends AbstractAPI {
 						$sourceList->id = $browseCategory->sourceCourseReserveId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+							$response['message'] = 'Results found for browse category';
 						} else {
 							$records = [];
 						}
@@ -2475,14 +2482,8 @@ class SearchAPI extends AbstractAPI {
 						$response['count'] = $summary['resultTotal'];
 						$response['page_current'] = (int)$pager->getCurrentPage();
 						$response['page_total'] = (int)$pager->getTotalPages();
-						$response['success'] = true;
-						$response['title'] = $browseCategory->label;
-						$response['message'] = translate([
-							'text' => 'Browse category has %1% results',
-							1 => $response['totalResults'],
-							'isPublicFacing' => true,
-						]);
-
+						$response['message'] = 'Results found for browse category';
+						
 						// The results to send to LiDA
 						$records = $searchObject->getResultRecordSet();
 
