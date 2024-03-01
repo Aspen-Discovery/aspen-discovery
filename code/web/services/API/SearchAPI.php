@@ -1975,7 +1975,7 @@ class SearchAPI extends AbstractAPI {
 							if ($obj->find(true)) {
 								if (!$obj->isDismissed($appUser)) {
 									$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
-									$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
+									$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12, true);
 									$formattedSavedSearchResults = [];
 									if (count($savedSearchResults) > 0) {
 										foreach ($savedSearchResults as $savedSearchResult) {
@@ -2020,7 +2020,7 @@ class SearchAPI extends AbstractAPI {
 												'source' => "List",
 												'sourceId' => $userList['id'],
 												'isHidden' => $categoryInformation->isDismissed($appUser),
-												'records' => $this->getAppBrowseCategoryResults($thisId, null, 12),
+												'records' => $this->getAppBrowseCategoryResults($thisId, null, 12, true),
 											];
 											$formattedCategories[] = $categoryResponse;
 											$numCategoriesProcessed++;
@@ -2156,7 +2156,7 @@ class SearchAPI extends AbstractAPI {
 					} elseif ($categoryInformation->source == 'Events') {
 						$subCategories = $categoryInformation->getSubCategories();
 						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
-							$eventsSearchResults = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+							$eventsSearchResults = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12, true);
 							$formattedEventsResults = [];
 							if(count($eventsSearchResults) > 0) {
 								foreach ($eventsSearchResults as $event) {
@@ -2173,6 +2173,8 @@ class SearchAPI extends AbstractAPI {
 								'source' => 'Events',
 								'sourceId' => $categoryInformation->id,
 								'isHidden' => $categoryInformation->isDismissed($appUser),
+								'searchTerm' => $categoryInformation->searchTerm,
+								'defaultFilter' => $categoryInformation->defaultFilter,
 								'events' => $formattedEventsResults,
 							];
 							$formattedCategories[] = $categoryResponse;
@@ -2186,7 +2188,7 @@ class SearchAPI extends AbstractAPI {
 									if ($temp->find(true)) {
 										if ($temp->isValidForDisplay($appUser)) {
 											if ($temp->source != '') {
-												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12);
+												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
 												if(count($records) > 0) {
 													$parent = new BrowseCategory();
 													$parent->id = $subCategory->browseCategoryId;
@@ -2224,13 +2226,15 @@ class SearchAPI extends AbstractAPI {
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
 						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
-							$records = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+							$records = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12, true);
 								if(count($records) > 0) {
 									$categoryResponse = [
 										'key' => $categoryInformation->textId,
 										'title' => $categoryInformation->label,
 										'source' => $categoryInformation->source,
 										'isHidden' => $categoryInformation->isDismissed($appUser),
+										'searchTerm' => $categoryInformation->searchTerm,
+										'defaultFilter' => $categoryInformation->defaultFilter,
 										'records' => $records,
 									];
 									$numCategoriesProcessed++;
@@ -2245,7 +2249,7 @@ class SearchAPI extends AbstractAPI {
 									if ($temp->find(true)) {
 										if ($temp->isValidForDisplay($appUser)) {
 											if ($temp->source != '') {
-												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12);
+												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
 												if(count($records) > 0) {
 													$parent = new BrowseCategory();
 													$parent->id = $subCategory->browseCategoryId;
@@ -2263,6 +2267,8 @@ class SearchAPI extends AbstractAPI {
 														'source' => $temp->source,
 														'isHidden' => $temp->isDismissed($appUser),
 														'sourceId' => (string)$temp->sourceListId,
+														'searchTerm' => $temp->searchTerm,
+														'defaultFilter' => $temp->defaultFilter,
 														'records' => $records,
 													];
 													$formattedCategories[] = $categoryResponse;
@@ -2291,7 +2297,7 @@ class SearchAPI extends AbstractAPI {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAppBrowseCategoryResults($id = null, $appUser = null, $pageSize = null) {
+	function getAppBrowseCategoryResults($id = null, $appUser = null, $pageSize = null, $internalRequest = false) {
 		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])) {
 			$pageToLoad = (int)$_REQUEST['page'];
 		} else {
@@ -2313,7 +2319,20 @@ class SearchAPI extends AbstractAPI {
 			$appVersion = $this->getLiDAVersion();
 		}
 
-		$response = [];
+		$response = [
+			'success' => false,
+			'count' => 0,
+			'totalResults' => 0,
+			'items' => [],
+			'title' => translate([
+				'text' => 'No Results Found',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Your search did not match any resources.',
+				'isPublicFacing' => true,
+			]),
+		];
 
 		if (strpos($thisId, "system_saved_searches") !== false) {
 			if ($id) {
@@ -2325,6 +2344,7 @@ class SearchAPI extends AbstractAPI {
 				$response['key'] = $thisId;
 			}
 			if (isset($result['items'])) {
+				$response['success'] = true;
 				$response['records'] = $result['items'];
 			} else {
 				//Error loading items
@@ -2339,6 +2359,7 @@ class SearchAPI extends AbstractAPI {
 			if (!$id) {
 				$response['key'] = $thisId;
 			}
+			$response['success'] = true;
 			$response['records'] = $result['items'];
 		} else {
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -2346,10 +2367,13 @@ class SearchAPI extends AbstractAPI {
 			$browseCategory->textId = $thisId;
 
 			if ($browseCategory->find(true)) {
+				$response['success'] = true;
+				$response['title'] = $browseCategory->label;
 				if ($browseCategory->textId == 'system_recommended_for_you') {
 					$records = $this->getAppSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
 					$response['key'] = $browseCategory->textId;
 					$response['records'] = $records['records'];
+					$response['message'] = 'Results found for browse category';
 				} else {
 					if ($browseCategory->source == 'List') {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -2357,6 +2381,7 @@ class SearchAPI extends AbstractAPI {
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
+							$response['message'] = 'Results found for browse category';
 						} else {
 							$records = [];
 						}
@@ -2368,12 +2393,62 @@ class SearchAPI extends AbstractAPI {
 						$sourceList->id = $browseCategory->sourceCourseReserveId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+							$response['message'] = 'Results found for browse category';
 						} else {
 							$records = [];
 						}
 
 						// Search Browse Category //
 					} else {
+						global $configArray;
+						$lmBypass = false;
+						$commmunicoBypass = false;
+						$springshareBypass = false;
+						$lmAddToList = false;
+						$communicoAddToList = false;
+						$springshareAddToList = false;
+						$libraryEventSettings = [];
+
+						if($browseCategory->source === 'Events') {
+							$searchLibrary = Library::getSearchLibrary(null);
+							require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+							$libraryEventsSetting = new LibraryEventsSetting();
+							$libraryEventsSetting->libraryId = $searchLibrary->libraryId;
+							$libraryEventSettings = $libraryEventsSetting->fetchAll();
+
+							foreach($libraryEventSettings as $setting) {
+								$source = $setting->settingSource;
+								$id = $setting->settingId;
+								if($source == 'library_market') {
+									require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+									$eventSetting = new LMLibraryCalendarSetting();
+									$eventSetting->id = $id;
+									if($eventSetting->find(true)) {
+										$lmBypass = $eventSetting->bypassAspenEventPages;
+										$lmAddToList = $eventSetting->eventsInLists;
+									}
+								} else if ($source == 'communico') {
+									require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+									$eventSetting = new CommunicoSetting();
+									$eventSetting->id = $id;
+									if($eventSetting->find(true)) {
+										$commmunicoBypass = $eventSetting->bypassAspenEventPages;
+										$commmunicoBypass = $eventSetting->eventsInLists;
+									}
+								} else if ($source == 'springshare') {
+									require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+									$eventSetting = new SpringshareLibCalSetting();
+									$eventSetting->id = $id;
+									if($eventSetting->find(true)) {
+										$springshareBypass = $eventSetting->bypassAspenEventPages;
+										$springshareBypass = $eventSetting->eventsInLists;
+									}
+								} else {
+									// invalid event source
+								}
+							}
+						}
+
 						$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 						$defaultFilterInfo = $browseCategory->defaultFilter;
 						$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -2395,16 +2470,112 @@ class SearchAPI extends AbstractAPI {
 						$searchObject->setPage($pageToLoad);
 						$searchObject->processSearch();
 
+						$link = $searchObject->renderLinkPageTemplate();
+						$summary = $searchObject->getResultSummary();
+						$options = [
+							'totalItems' => $summary['resultTotal'],
+							'fileName' => $link,
+							'perPage' => $summary['perPage'],
+						];
+						$pager = new Pager($options);
+						$response['totalResults'] = $pager->getTotalItems();
+						$response['count'] = $summary['resultTotal'];
+						$response['page_current'] = (int)$pager->getCurrentPage();
+						$response['page_total'] = (int)$pager->getTotalPages();
+						$response['message'] = 'Results found for browse category';
+						
 						// The results to send to LiDA
 						$records = $searchObject->getResultRecordSet();
 
 						// Shutdown the search object
 						$searchObject->close();
+
+						$items = [];
+						foreach ($records as $recordKey => $record) {
+							if($browseCategory->source === 'Events') {
+								if(str_starts_with($record['id'], 'lc')) {
+									$eventSource = 'library_calendar';
+									$bypass = $lmBypass;
+									$addToList = $lmAddToList;
+								} else if (str_starts_with($record['id'], 'communico')) {
+									$eventSource = 'communico';
+									$bypass = $commmunicoBypass;
+									$addToList = $communicoAddToList;
+								} else if (str_starts_with($record['id'], 'libcal')) {
+									$eventSource = 'springshare_libcal';
+									$bypass = $springshareBypass;
+									$addToList = $springshareAddToList;
+								} else {
+									$eventSource = 'unknown';
+									$bypass = false;
+									$addToList = false;
+								}
+
+								$registrationRequired = false;
+								if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
+									$registrationRequired = true;
+								}
+
+								$locationInfo = null;
+								if($record['branch']) {
+									require_once ROOT_DIR . '/services/API/EventAPI.php';
+									$eventApi = new EventAPI();
+									$locationInfo = $eventApi->getDiscoveryBranchDetails($record['branch'][0]);
+								}
+								$items[$recordKey]['key'] = $record['id'];
+								$items[$recordKey]['source'] = $eventSource;
+								$items[$recordKey]['title'] = $record['title'];
+								$items[$recordKey]['author'] = null;
+								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
+								$items[$recordKey]['language'] = null;
+								$items[$recordKey]['summary'] = isset($record['description']) ? strip_tags($record['description']) : null;
+								$items[$recordKey]['registration_required'] = $registrationRequired;
+								$items[$recordKey]['event_day'] = $record['event_day'];
+								$items[$recordKey]['location'] = $locationInfo;
+								$items[$recordKey]['room'] = $record['room'] ?? null;
+								$items[$recordKey]['type'] = 'event';
+
+								$startDate = new DateTime($record['start_date']);
+								$items[$recordKey]['start_date'] = $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+								$endDate = new DateTime($record['end_date']);
+								$items[$recordKey]['end_date'] = $endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+
+								$items[$recordKey]['url'] = $record['url'];
+								$items[$recordKey]['bypass'] = $bypass;
+								$items[$recordKey]['canAddToList'] = false;
+
+								$user = $this->getUserForApiCall();
+								if ($user && !($user instanceof AspenError)) {
+									$source = $eventSource;
+									if($eventSource == 'springshare_libcal') {
+										$source = 'springshare';
+									}
+									$items[$recordKey]['canAddToList'] = $user->isAllowedToAddEventsToList($source);
+								}
+
+								$items[$recordKey]['itemList'] = [];
+							} else {
+								$items[$recordKey]['key'] = $record['id'];
+								$items[$recordKey]['title'] = $record['title_display'];
+								$items[$recordKey]['author'] = $record['author_display'];
+								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+								$items[$recordKey]['language'] = $record['language'][0];
+								$items[$recordKey]['summary'] = null;
+								$items[$recordKey]['type'] = 'grouped_work';
+								$formats = [];
+								foreach($record['format'] as $key => $format) {
+									$formats[$format]['key'] = $key;
+									$formats[$format]['name'] = $format;
+								}
+								$items[$recordKey]['itemList'] = $formats;
+							}
+						}
+
 					}
 					if (!$id) {
 						$response['key'] = $browseCategory->textId;
 					}
-					$response['records'] = $records;
+					$response['items'] = $items;
 				}
 			} else {
 				$response = [
@@ -2414,7 +2585,7 @@ class SearchAPI extends AbstractAPI {
 			}
 		}
 
-		if ($id) {
+		if ($id && $internalRequest) {
 			return $response['records'];
 		}
 
@@ -2784,7 +2955,7 @@ class SearchAPI extends AbstractAPI {
 					'browseCategoryId' => null,
 				];
 			}
-			$records = $this->getAppBrowseCategoryResults($_REQUEST['id'], null, $_REQUEST['pageSize'] ?? 25);
+			$records = $this->getAppBrowseCategoryResults($_REQUEST['id'], null, $_REQUEST['pageSize'] ?? 25, true);
 			$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
 			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 			$startRecord = ($page - 1) * $recordsPerPage;
