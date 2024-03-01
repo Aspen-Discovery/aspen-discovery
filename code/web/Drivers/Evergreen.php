@@ -1697,20 +1697,26 @@ class Evergreen extends AbstractIlsDriver {
 		if ($insert) {
 			$authToken = $this->getAPIAuthToken($user, true);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
+			$request = 'service=open-ils.actor&method=open-ils.actor.patron.settings.retrieve';
+			if ($authToken == null) {
+				$request .= '&param=' . json_encode($staffUserInfo['authToken']);
+				$request .= '&param=' . json_encode($user->unique_ils_id);
+			} else {
+				$request .= '&param=' . json_encode($authToken);
+				$request .= '&param=' . json_encode($user->unique_ils_id);
+			}
 			$request .= '&param=' . json_encode([
 					'opac.default_pickup_location',
 				]);
-			$request .= '&param=' . json_encode($authToken);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
-				foreach ($apiResponse->payload[0] as $payload) {
-					if ($payload->name == 'opac.default_pickup_location') {
-						if (!empty($payload->value)) {
+				foreach ($apiResponse->payload[0] as $settingName => $settingValue) {
+					if ($settingName == 'opac.default_pickup_location') {
+						if (!empty($settingValue)) {
 							$location = new Location();
-							$location->historicCode = $payload->value;
+							$location->historicCode = $settingValue;
 
 							if ($location->find(true)) {
 								$user->pickupLocationId = $location->locationId;
