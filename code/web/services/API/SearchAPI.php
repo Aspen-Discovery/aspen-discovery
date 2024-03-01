@@ -2533,6 +2533,7 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['event_day'] = $record['event_day'];
 								$items[$recordKey]['location'] = $locationInfo;
 								$items[$recordKey]['room'] = $record['room'] ?? null;
+								$items[$recordKey]['type'] = 'event';
 
 								$startDate = new DateTime($record['start_date']);
 								$items[$recordKey]['start_date'] = $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
@@ -2560,6 +2561,7 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
 								$items[$recordKey]['language'] = $record['language'][0];
 								$items[$recordKey]['summary'] = null;
+								$items[$recordKey]['type'] = 'grouped_work';
 								$formats = [];
 								foreach($record['format'] as $key => $format) {
 									$formats[$format]['key'] = $key;
