@@ -2910,7 +2910,24 @@ class Theme extends DataObject {
 		$interface->assign('cookieConsentButtonTextColor', $this->cookieConsentButtonTextColor);
 		$interface->assign('cookieConsentButtonHoverTextColor', $this->cookieConsentButtonHoverTextColor);
 		$interface->assign('cookieConsentButtonBorderColor', $this->cookieConsentButtonBorderColor);
-		
+		$interface->assign('customHeadingFont', $this->customHeadingFont);
+		$interface->assign('customHeadingFontName', '');
+		$interface->assign('headingFont', '');
+		$interface->assign('customBodyFont', $this->customBodyFont);
+		$interface->assign('customBodyFontName', '');
+		$interface->assign('bodyFont', '');
+		if ($this->customHeadingFont != null) {
+			$customHeadingFontName = substr($this->customHeadingFont, 0, strrpos($this->customHeadingFont, '.'));
+			$interface->assign('customHeadingFontName', $customHeadingFontName);
+
+			$interface->assign('headingFont', $customHeadingFontName);
+		}
+		if ($this->customBodyFont != null) {
+			$customBodyFontName = substr($this->customBodyFont, 0, strrpos($this->customBodyFont, '.'));
+			$interface->assign('customBodyFontName', $customBodyFontName);
+
+			$interface->assign('bodyFont', $customBodyFontName);
+		}
 
 		foreach ($allAppliedThemes as $theme) {
 			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
@@ -3029,11 +3046,16 @@ class Theme extends DataObject {
 		if ($this->_parentTheme == null) {
 			$theme = $this;
 			if (strlen($theme->extendsTheme) != 0) {
+				$this->_parentTheme = null;
 				$extendsName = $theme->extendsTheme;
-				$theme = new Theme();
-				$theme->themeName = $extendsName;
-				if ($theme->find(true)) {
-					$this->_parentTheme = clone $theme;
+				if ($extendsName != $this->themeName) {
+					$theme = new Theme();
+					$theme->themeName = $extendsName;
+					if ($theme->find(true)) {
+						$this->_parentTheme = clone $theme;
+					}
+				}else{
+					$this->_parentTheme = null;
 				}
 			} else {
 				$this->_parentTheme = null;
