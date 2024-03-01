@@ -2068,11 +2068,37 @@ class SearchAPI extends AbstractAPI {
 										if ($appVersion && $appVersion < 24.03) {
 											$categoryResponse['events'] = [];
 										} else {
-											$categoryResponse['events'][] = [
-												'sourceId' => $listEntry->sourceId,
-												'title' => $listEntry->title,
-											];
-											$count++;
+											if (preg_match('`^communico`', $listEntry->sourceId)){
+												require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+												$recordDriver = new CommunicoEventRecordDriver($listEntry->sourceId);
+												if ($recordDriver->isValid()) {
+													$categoryResponse['events'][] = [
+														'sourceId' => $listEntry->sourceId,
+														'title' => $listEntry->title,
+													];
+													$count++;
+												}
+											} elseif (preg_match('`^libcal`', $listEntry->sourceId)){
+												require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+												$recordDriver = new SpringshareLibCalEventRecordDriver($listEntry->sourceId);
+												if ($recordDriver->isValid()) {
+													$categoryResponse['events'][] = [
+														'sourceId' => $listEntry->sourceId,
+														'title' => $listEntry->title,
+													];
+													$count++;
+												}
+											} else {
+												require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+												$recordDriver = new LibraryCalendarEventRecordDriver($listEntry->sourceId);
+												if ($recordDriver->isValid()) {
+													$categoryResponse['events'][] = [
+														'sourceId' => $listEntry->sourceId,
+														'title' => $listEntry->title,
+													];
+													$count++;
+												}
+											}
 										}
 									} else {
 										if ($listEntry->sourceId) {
