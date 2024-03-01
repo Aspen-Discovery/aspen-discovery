@@ -51,7 +51,7 @@
                 {/if}
 				{if $enableSelfRegistration == 1}
 					<p class="help-block">
-						{translate text="Don't have a library card?" isPublicFacing=true} {if $tos}<a href="/MyAccount/SelfRegTerms">{else}<a href="/MyAccount/SelfReg">{/if}{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
+						{translate text="Don't have a library card?" isPublicFacing=true} {if !empty($tos)}<a href="/MyAccount/SelfRegTerms">{else}<a href="/MyAccount/SelfReg">{/if}{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
 					</p>
 				{elseif $enableSelfRegistration == 2}
 					<p class="help-block">
