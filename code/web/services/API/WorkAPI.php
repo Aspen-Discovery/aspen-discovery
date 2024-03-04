@@ -86,6 +86,7 @@ class WorkAPI extends AbstractAPI {
 		}
 		//Load basic information
 		$this->id = $_GET['id'];
+		global $configArray;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($this->id);
 		if ($groupedWorkDriver->isValid()) {
@@ -100,7 +101,8 @@ class WorkAPI extends AbstractAPI {
 			}
 			$language = $groupedWorkDriver->getLanguage();
 			$itemData['language'] = $language[0] ?? $language;
-			$itemData['cover'] = urlencode($groupedWorkDriver->getBookcoverUrl('large', true));
+			$itemData['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $this->id . '&size=large&type=grouped_work&category=' . rawurlencode($groupedWorkDriver->getFormatCategory());
+			//$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
 
 			$itemData['series'] = $groupedWorkDriver->getIndexedSeries();
 
