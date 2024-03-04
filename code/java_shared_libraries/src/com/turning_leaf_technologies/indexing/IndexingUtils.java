@@ -788,7 +788,8 @@ public class IndexingUtils {
 				input.close();
 			} catch (IOException e) {
 				//This tends to be because the system is very busy. Even if the index isn't running, just assume that it is and quit.
-				logger.error("Error checking to see if reindexer is running", e);
+				logger.error("Error checking to see if nightly index is running, quitting", e);
+				System.exit(-10);
 				return true;
 			}
 

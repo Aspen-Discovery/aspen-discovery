@@ -15,7 +15,11 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 		$this->id = $recordId;
 
 		$this->palaceProjectTitle = new PalaceProjectTitle();
-		$this->palaceProjectTitle->palaceProjectId = $recordId;
+		if (is_numeric($recordId)) {
+			$this->palaceProjectTitle->id = $recordId;
+		}else{
+			$this->palaceProjectTitle->palaceProjectId = $recordId;
+		}
 		if ($this->palaceProjectTitle->find(true)) {
 			$this->valid = true;
 			$this->palaceProjectRawMetadata = json_decode($this->palaceProjectTitle->rawResponse);

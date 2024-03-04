@@ -877,7 +877,7 @@ public class GroupedWorkIndexer {
 			setLastUpdatedTime.close();
 
 			if (logEntry instanceof NightlyIndexLogEntry){
-				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + "times");
+				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + " times");
 			}
 
 			if (processEmptyGroupedWorks) {
@@ -1048,7 +1048,7 @@ public class GroupedWorkIndexer {
 				} else if (type.equals("hoopla")) {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				} else if (type.equals("palace_project")) {
-					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(identifier);
+					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(Long.parseLong(identifier));
 				}
 				if (newId == null) {
 					//The record is not valid, skip it.
