@@ -62,7 +62,7 @@ class MemoryWatcher {
 				if (isset($_SERVER['REQUEST_URI'])) {
 					$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 				} else {
-
+					$timingInfo = '\r\nMemory usage for internal script';
 				}
 				if (count($this->memoryMessages) > 0) {
 					$timingInfo .= implode("\r\n", $this->memoryMessages);
