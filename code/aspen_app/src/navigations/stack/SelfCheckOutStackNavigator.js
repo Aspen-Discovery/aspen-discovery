@@ -5,7 +5,6 @@ import { LanguageContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { StartCheckOutSession } from '../../screens/SCO/StartCheckOutSession';
 import { SelfCheckOut } from '../../screens/SCO/SelfCheckOut';
-import Scanner from '../../components/Scanner';
 import { FinishCheckOutSession } from '../../screens/SCO/FinishSelfCheckoutSession';
 import _ from 'lodash';
 import SelfCheckScanner from '../../screens/SCO/SelfCheckScanner';

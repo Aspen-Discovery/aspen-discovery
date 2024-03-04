@@ -104,7 +104,7 @@ export const SearchResults = () => {
           queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
           enabled: !!data,
           onSuccess: (data) => {
-               if (!data.includes('%1%')) {
+               if (!data.includes('%')) {
                     setPaginationLabel(data);
                }
           },
@@ -209,12 +209,10 @@ export const SearchResults = () => {
 
 const DisplayResult = (data) => {
      const item = data.data;
-     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const version = formatDiscoveryVersion(library.discoveryVersion);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
-     const { currentIndex, currentSource } = React.useContext(SearchContext);
+     const { currentSource } = React.useContext(SearchContext);
      const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
 
      const handlePressItem = () => {
@@ -238,22 +236,12 @@ const DisplayResult = (data) => {
                     });
                }
           } else {
-               if (version >= '23.01.00') {
-                    navigate('GroupedWorkScreen', {
-                         id: item.key,
-                         title: getCleanTitle(item.title),
-                         url: library.baseUrl,
-                         libraryContext: library,
-                    });
-               } else {
-                    navigate('GroupedWorkScreen221200', {
-                         id: item.key,
-                         title: getCleanTitle(item.title),
-                         url: library.baseUrl,
-                         userContext: user,
-                         libraryContext: library,
-                    });
-               }
+               navigate('GroupedWorkScreen', {
+                    id: item.key,
+                    title: getCleanTitle(item.title),
+                    url: library.baseUrl,
+                    libraryContext: library,
+               });
           }
      };
 
@@ -542,7 +530,6 @@ const CreateFilterButtonDefaults = () => {
                defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
           }
      }
-
 
      return (
           <ButtonGroup space="sm" vertical>

@@ -1,11 +1,10 @@
 import _ from 'lodash';
-import { Box, Divider } from 'native-base';
+import { Box, Divider, ScrollView } from 'native-base';
 import React from 'react';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
-import { userContext } from '../../../context/user';
 import Profile_ContactInformation from './ContactInformation';
 import Profile_Identity from './Identity';
 import Profile_MainAddress from './MainAddress';
@@ -47,13 +46,15 @@ export const MyProfile = () => {
      };
 
      return (
-          <Box flex={1} safeArea={5}>
-               {showSystemMessage()}
-               <Profile_Identity firstName={firstname} lastName={lastname} />
-               <Divider />
-               <Profile_MainAddress address={user.address1} city={user.city} state={user.state} zipCode={user.zip} />
-               <Divider />
-               <Profile_ContactInformation email={user.email} phone={user.phone} />
-          </Box>
+          <ScrollView>
+               <Box flex={1} safeArea={5}>
+                    {showSystemMessage()}
+                    <Profile_Identity firstName={firstname} lastName={lastname} />
+                    <Divider />
+                    <Profile_MainAddress address={user.address1} city={user.city} state={user.state} zipCode={user.zip} />
+                    <Divider />
+                    <Profile_ContactInformation email={user.email} phone={user.phone} />
+               </Box>
+          </ScrollView>
      );
 };

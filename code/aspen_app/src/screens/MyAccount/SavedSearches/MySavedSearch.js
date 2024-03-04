@@ -81,19 +81,10 @@ const SavedSearch = (data) => {
      }
 
      const openGroupedWork = () => {
-          const version = formatDiscoveryVersion(library.discoveryVersion);
-          if (version >= '23.01.00') {
-               navigateStack('AccountScreenTab', 'SavedSearchItem', {
-                    id: item.id,
-                    title: getCleanTitle(item.title),
-               });
-          } else {
-               navigateStack('AccountScreenTab', 'SavedSearchItem221200', {
-                    id: item.id,
-                    title: getCleanTitle(item.title),
-                    url: library.baseUrl,
-               });
-          }
+          navigateStack('AccountScreenTab', 'SavedSearchItem', {
+               id: item.id,
+               title: getCleanTitle(item.title),
+          });
      };
 
      return (

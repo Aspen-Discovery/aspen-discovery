@@ -96,21 +96,11 @@ export const MyList = () => {
      });
 
      const handleOpenItem = (id, title) => {
-          if (version >= '23.01.00') {
-               navigateStack('AccountScreenTab', 'ListItem', {
-                    id: id,
-                    url: library.baseUrl,
-                    title: getCleanTitle(title),
-               });
-          } else {
-               navigateStack('AccountScreenTab', 'ListItem221200', {
-                    id: id,
-                    title: getCleanTitle(title),
-                    url: library.baseUrl,
-                    userContext: user,
-                    libraryContext: library,
-               });
-          }
+          navigateStack('AccountScreenTab', 'ListItem', {
+               id: id,
+               url: library.baseUrl,
+               title: getCleanTitle(title),
+          });
      };
 
      const handleOpenEvent = (item) => {

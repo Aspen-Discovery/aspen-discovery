@@ -4,7 +4,7 @@ import { CheckIcon, CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, 
 import React from 'react';
 import { Platform } from 'react-native';
 import { HoldsContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
-import { completeAction } from '../../../screens/GroupedWork/Record';
+import { completeAction } from '../../../util/recordActions';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { getCopies } from '../../../util/api/item';
 import { HoldNotificationPreferences } from './HoldNotificationPreferences';

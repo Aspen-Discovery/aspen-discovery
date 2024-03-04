@@ -3,7 +3,7 @@ import { Button } from 'native-base';
 
 // custom components and helper files
 import {LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {completeAction} from '../../screens/GroupedWork/Record';
+import { completeAction } from '../../util/recordActions';
 
 export const LoadOverDriveSample = (props) => {
 	const { user } = React.useContext(UserContext);

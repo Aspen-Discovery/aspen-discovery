@@ -2,13 +2,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button, Center, Modal, Text } from 'native-base';
 import React, { useState } from 'react';
 
-import { LanguageContext, LibrarySystemContext } from '../../../../context/initialContext';
-import { getTermFromDictionary } from '../../../../translations/TranslationService';
-import { enableAccountLinking } from '../../../../util/api/user';
+import { LanguageContext, LibrarySystemContext } from '../../../context/initialContext';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { disableAccountLinking } from '../../../util/api/user';
 
 // custom components and helper files
 
-const EnableAccountLinking = () => {
+const DisableAccountLinking = () => {
      const queryClient = useQueryClient();
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
@@ -28,13 +28,13 @@ const EnableAccountLinking = () => {
 
      return (
           <Center>
-               <Button onPress={toggle}>{getTermFromDictionary(language, 'enable_linked_accounts')}</Button>
+               <Button onPress={toggle}>{getTermFromDictionary(language, 'disable_linked_accounts')}</Button>
                <Modal isOpen={showModal} onClose={toggle} size="lg">
                     <Modal.Content maxWidth="95%">
                          <Modal.CloseButton />
-                         <Modal.Header>{getTermFromDictionary(language, 'enable_linked_accounts_title')}</Modal.Header>
+                         <Modal.Header>{getTermFromDictionary(language, 'disable_linked_accounts_title')}</Modal.Header>
                          <Modal.Body>
-                              <Text>{getTermFromDictionary(language, 'enable_linked_accounts_body')}</Text>
+                              <Text>{getTermFromDictionary(language, 'disable_linked_accounts_body')}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group>
@@ -46,7 +46,7 @@ const EnableAccountLinking = () => {
                                         isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await enableAccountLinking(language, library.baseUrl).then(async (r) => {
+                                             await disableAccountLinking(language, library.baseUrl).then(async (r) => {
                                                   await refreshLinkedAccounts();
                                                   toggle();
                                              });
@@ -61,4 +61,4 @@ const EnableAccountLinking = () => {
      );
 };
 
-export default EnableAccountLinking;
+export default DisableAccountLinking;

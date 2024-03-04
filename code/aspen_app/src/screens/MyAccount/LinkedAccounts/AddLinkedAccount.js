@@ -3,9 +3,9 @@ import { Button, Center, Modal, FormControl, Input, Icon } from 'native-base';
 import React, { useState, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../../context/initialContext';
-import { reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount } from '../../../../util/api/user';
-import { getTermFromDictionary } from '../../../../translations/TranslationService';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount } from '../../../util/api/user';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 // custom components and helper files
 

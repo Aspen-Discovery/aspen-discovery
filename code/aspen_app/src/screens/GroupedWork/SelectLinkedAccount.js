@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { refreshProfile } from '../../util/api/user';
-import { completeAction } from './Record';
+import { completeAction } from '../../util/recordActions';
 import { SelectVolume } from './SelectVolume';
 
 const SelectLinkedAccount = (props) => {

@@ -36,31 +36,31 @@ export const ForgotBarcode = (props) => {
           async function fetchTranslations() {
                await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, libraryUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setButtonLabel(term);
                     }
                });
                await getTranslationsWithValues('forgot_barcode_title', usernameLabel, language, libraryUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setModalTitle(term);
                     }
                });
                await getTranslation('Phone Number', language, libraryUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setModalButtonLabel(term);
                     }
                });
                await getTranslationsWithValues('send_my_barcode', usernameLabel, language, libraryUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setModalButtonLabel(term);
                     }
                });
                await getTranslationsWithValues('forgot_barcode_body', usernameLabel, language, libraryUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setModalBody(term);
                     }
                });
