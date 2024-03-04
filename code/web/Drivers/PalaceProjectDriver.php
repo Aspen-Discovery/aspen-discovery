@@ -98,6 +98,15 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 							if ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
 								$checkout->canReturnEarly = true;
 								$checkout->earlyReturnUrl = $link->href;
+							}else if ($link->rel == 'http://opds-spec.org/acquisition') {
+								if (!empty($link->properties) && !empty($link->properties->availability)) {
+									if (!empty($link->properties->availability->since)) {
+										$checkout->checkoutDate = strtotime($link->properties->availability->since);
+									}
+									if (!empty($link->properties->availability->until)) {
+										$checkout->dueDate = strtotime($link->properties->availability->until);
+									}
+								}
 							}
 						}
 
