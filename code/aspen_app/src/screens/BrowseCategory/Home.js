@@ -15,13 +15,15 @@ import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext,
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { fetchSavedEvents } from '../../util/api/event';
+import { getCatalogStatus } from '../../util/api/library';
 import { getLists } from '../../util/api/list';
 import { getLocations } from '../../util/api/location';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
-import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, getPickupLocations, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
+import { CatalogOffline } from '../Auth/CatalogOffline';
 import { ForceLogout } from '../Auth/ForceLogout';
 import DisplayBrowseCategory from './Category';
 
@@ -39,7 +41,7 @@ export const DiscoverHomeScreen = () => {
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
-     const { library } = React.useContext(LibrarySystemContext);
+     const { library, updateCatalogStatus, catalogStatus } = React.useContext(LibrarySystemContext);
      const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
      const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
      const { category, list, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -56,6 +58,13 @@ export const DiscoverHomeScreen = () => {
      navigation.setOptions({
           headerLeft: () => {
                return null;
+          },
+     });
+
+     useQuery(['catalog_status', library.baseUrl], () => getCatalogStatus(library.baseUrl), {
+          enabled: !!library.baseUrl,
+          onSuccess: (data) => {
+               updateCatalogStatus(data);
           },
      });
 
@@ -309,6 +318,10 @@ export const DiscoverHomeScreen = () => {
                     return <NotificationsOnboard />;
                }
           }
+     }
+
+     if (catalogStatus > 0) {
+          return <CatalogOffline />;
      }
 
      const renderHeader = (title, key, user, url) => {

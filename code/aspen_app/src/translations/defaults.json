@@ -500,5 +500,7 @@
   "locations": "Locations",
   "view_all_locations": "View All Locations",
   "num_saved_events_upcoming": "%1% Upcoming",
-  "palace_project": "Palace Project"
+  "palace_project": "Palace Project",
+  "catalog_offline": "Catalog Offline",
+  "catalog_offline_message": "The catalog is down for maintenance, please check back later."
 }

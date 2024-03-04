@@ -49,6 +49,10 @@ export const LibrarySystemContext = React.createContext({
      version: '',
      url: '',
      menu: [],
+     catalogStatus: 0,
+     catalogStatusMessage: '',
+     updateCatalogStatus: () => {},
+     updateCatalogStatusMessage: () => {},
      updateMenu: () => {},
      resetLibrary: () => {},
 });
@@ -211,6 +215,8 @@ export const LibrarySystemProvider = ({ children }) => {
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
      const [menu, setMenu] = useState();
+     const [catalogStatus, setCatalogStatus] = useState();
+     const [catalogStatusMessage, setCatalogStatusMessage] = useState();
 
      const updateLibrary = (data) => {
           if (!_.isUndefined(data.discoveryVersion)) {
@@ -232,12 +238,24 @@ export const LibrarySystemProvider = ({ children }) => {
           setVersion({});
           setUrl({});
           setMenu({});
+          setCatalogStatus(0);
+          setCatalogStatusMessage('');
           console.log('reset LibrarySystemContext');
      };
 
      const updateMenu = (data) => {
           setMenu(data);
           console.log('updated menu in LibrarySystemContext');
+     };
+
+     const updateCatalogStatus = (data) => {
+          if (data.status) {
+               setCatalogStatus(data.status);
+          }
+
+          if (data.message) {
+               setCatalogStatusMessage(data.message);
+          }
      };
 
      return (
@@ -250,6 +268,9 @@ export const LibrarySystemProvider = ({ children }) => {
                     resetLibrary,
                     menu,
                     updateMenu,
+                    catalogStatus,
+                    catalogStatusMessage,
+                    updateCatalogStatus,
                }}>
                {children}
           </LibrarySystemContext.Provider>
