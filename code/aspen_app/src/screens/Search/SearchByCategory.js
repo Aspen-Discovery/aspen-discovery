@@ -1,309 +1,125 @@
-import { CommonActions } from '@react-navigation/native';
-import CachedImage from 'expo-cached-image';
-import { Badge, Box, Button, Center, FlatList, Heading, HStack, Pressable, Stack, Text, VStack } from 'native-base';
-import React, { Component } from 'react';
-import { SafeAreaView } from 'react-native';
+import { Box, Button, ButtonGroup, ButtonText, Center, FlatList, Heading, SafeAreaView, ScrollView, Text } from '@gluestack-ui/themed';
+import { useRoute } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+import _ from 'lodash';
+import React from 'react';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { userContext } from '../../context/user';
-import { getCleanTitle } from '../../helpers/item';
-import { navigateStack } from '../../helpers/RootNavigator';
-import { getTermFromDictionary } from '../../translations/TranslationService';
-import { getLists } from '../../util/api/list';
-import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
-import { categorySearchResults } from '../../util/search';
-import { AddToList } from './AddToList';
+import { DisplaySystemMessage } from '../../components/Notifications';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext } from '../../context/initialContext';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
+import { fetchSearchResultsForBrowseCategory } from '../../util/api/search';
+import { DisplayResult } from './DisplayResult';
 
-export default class SearchByCategory extends Component {
-     constructor() {
-          super();
-          this.state = {
-               isLoading: true,
-               isLoadingMore: false,
-               data: [],
-               searchMessage: null,
-               page: 1,
-               hasError: false,
-               error: null,
-               refreshing: false,
-               filtering: false,
-               endOfResults: false,
-               dataMessage: null,
-               listLastUsed: 0,
-          };
-          this.lastListUsed = 0;
-          this.updateLastListUsed = this.updateLastListUsed.bind(this);
-     }
+export const SearchResultsForBrowseCategory = () => {
+     const [page, setPage] = React.useState(1);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
+     const { systemMessages } = React.useContext(SystemMessagesContext);
 
-     componentDidMount = async () => {
-          //const level      = this.props.navigation.state.params.level;
-          //const format     = this.props.navigation.state.params.format;
-          //const searchType = this.props.navigation.state.params.searchType;
-          const { navigation, route } = this.props;
-          const libraryUrl = this.context.library.baseUrl;
-          const language = route.params?.language ?? 'en';
-          const prevRoute = route.params?.prevRoute ?? 'HomeScreen';
+     const [paginationLabel, setPaginationLabel] = React.useState('1 of 1');
+     const category = useRoute().params.id ?? '';
 
-          this.setState({
-               language: language,
-               prevRoute: prevRoute,
-          });
+     const { status, data, error, isFetching, isPreviousData } = useQuery({
+          queryKey: ['searchResultsForBrowseCategory', category, page, 25, library.baseUrl, language],
+          queryFn: () => fetchSearchResultsForBrowseCategory(category, page, 25, library.baseUrl, language),
+          keepPreviousData: true,
+          staleTime: 1000,
+     });
 
-          await getLists(libraryUrl);
-          this._getLastListUsed();
-          await this._fetchResults();
-     };
+     const systemMessagesForScreen = [];
 
-     _getLastListUsed = () => {
-          if (this.context.user) {
-               const user = this.context.user;
-               this.lastListUsed = user.lastListUsed;
-          }
-     };
-
-     updateLastListUsed = (id) => {
-          this.setState({
-               isLoading: true,
-          });
-
-          this.lastListUsed = id;
-
-          this.setState({
-               isLoading: false,
-          });
-     };
-
-     _fetchResults = async () => {
-          const { page } = this.state;
-          const { navigation, route } = this.props;
-          //console.log(route);
-          const category = route.params?.id ?? '';
-          const language = route.params?.language ?? 'en';
-          const libraryUrl = route.params?.url ?? LIBRARY.url;
-
-          await categorySearchResults(category, 25, page, libraryUrl, language).then((response) => {
-               if (response.ok) {
-                    const records = response.data.result.records;
-
-                    if (records.length > 0) {
-                         this.setState((prevState, nextProps) => ({
-                              data: page === 1 ? Array.from(response.data.result.records) : [...this.state.data, ...response.data.result.records],
-                              isLoading: false,
-                              isLoadingMore: false,
-                              refreshing: false,
-                         }));
-                    } else {
-                         if (page === 1 && records.length === 0) {
-                              /* No search results were found */
-                              this.setState({
-                                   hasError: true,
-                                   error: response.data.result.message,
-                                   isLoading: false,
-                                   isLoadingMore: false,
-                                   refreshing: false,
-                                   dataMessage: response.data.result.message,
-                              });
-                         } else {
-                              /* Tried to fetch next page, but end of results */
-                              this.setState({
-                                   isLoading: false,
-                                   isLoadingMore: false,
-                                   refreshing: false,
-                                   dataMessage: response.data.result.message,
-                                   endOfResults: true,
-                              });
-                         }
+     React.useEffect(() => {
+          if (_.isArray(systemMessages)) {
+               systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         systemMessagesForScreen.push(obj);
                     }
-               }
-          });
-     };
-
-     _handleLoadMore = () => {
-          this.setState(
-               (prevState, nextProps) => ({
-                    page: prevState.page + 1,
-                    isLoadingMore: true,
-               }),
-               () => {
-                    this._fetchResults();
-               }
-          );
-     };
-
-     renderItem = (item, url, user, lastListUsed) => {
-          const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=grouped_work';
-          const key = 'medium_' + item.id;
-          return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
-                    <HStack space={3}>
-                         <VStack maxW="35%">
-                              <CachedImage
-                                   cacheKey={key}
-                                   alt={item.title_display}
-                                   source={{
-                                        uri: `${imageUrl}`,
-                                        expiresIn: 86400,
-                                   }}
-                                   style={{
-                                        width: 100,
-                                        height: 150,
-                                        borderRadius: 4,
-                                   }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
-                              />
-                              <Badge
-                                   mt={1}
-                                   _text={{
-                                        fontSize: 10,
-                                        color: 'coolGray.600',
-                                   }}
-                                   bgColor="warmGray.200"
-                                   _dark={{
-                                        bgColor: 'coolGray.900',
-                                        _text: { color: 'warmGray.400' },
-                                   }}>
-                                   {item.language}
-                              </Badge>
-                              <AddToList itemId={item.id} btnStyle="sm" />
-                         </VStack>
-
-                         <VStack w="65%">
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {item.title_display}
-                              </Text>
-                              {item.author_display ? (
-                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                        {getTermFromDictionary(this.state.language, 'by')} {item.author_display}
-                                   </Text>
-                              ) : null}
-                              <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                                   {item.format.map((format, i) => {
-                                        return (
-                                             <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                                  {format}
-                                             </Badge>
-                                        );
-                                   })}
-                              </Stack>
-                         </VStack>
-                    </HStack>
-               </Pressable>
-          );
-     };
-
-     // handles the on press action
-     onPressItem = (item, url, title) => {
-          const { route } = this.props;
-          const libraryContext = route.params.libraryContext;
-          const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
-          if (version >= '23.01.00') {
-               navigateStack('BrowseTab', 'CategoryResultItem', {
-                    id: item,
-                    url: url,
-                    title: getCleanTitle(title),
-               });
-          } else {
-               navigateStack('BrowseTab', 'CategoryResultItem221200', {
-                    id: item,
-                    title: getCleanTitle(title),
-                    url: url,
                });
           }
-     };
+     }, [systemMessages]);
 
-     // this one shouldn't probably ever load with the catches in the render, but just in case
-     _listEmptyComponent = () => {
-          const { navigation, route } = this.props;
-          return (
-               <Center flex={1}>
-                    <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">
-                         {route.params?.title}
-                    </Text>
-                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {getTermFromDictionary(this.state.language, 'new_search_button')}
-                    </Button>
-               </Center>
-          );
-     };
+     const { data: paginationLabelData, isFetching: translationIsFetching } = useQuery({
+          queryKey: ['totalPages', library.baseUrl, page, category, language],
+          queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
+          enabled: !!data,
+          onSuccess: (data) => {
+               if (!data.includes('%')) {
+                    setPaginationLabel(data);
+               }
+          },
+     });
 
-     _renderFooter = () => {
-          if (!this.state.isLoadingMore) {
-               return null;
-          }
-          return loadingSpinner();
-     };
-
-     static contextType = userContext;
-
-     render() {
-          const { navigation, route } = this.props;
-          const user = this.context.user;
-          const location = this.context.location;
-          const library = route.params.libraryContext.baseUrl;
-
-          if (this.state.isLoading) {
-               return loadingSpinner();
-          }
-
-          if (this.state.hasError && !this.state.dataMessage) {
-               return loadError(this.state.error, this._fetchResults);
-          }
-
-          if (this.state.hasError && this.state.dataMessage) {
+     const Paging = () => {
+          if (data.totalPages > 1) {
                return (
-                    <Center flex={1}>
-                         <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
-                         <Text bold w="75%" textAlign="center">
-                              {route.params?.title}
+                    <Box p="$2" bgColor={colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700']} borderTopWidth={1} borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']} flexWrap="nowrap" alignItems="center">
+                         <ScrollView horizontal>
+                              <ButtonGroup>
+                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1} size="sm" bgColor={theme['colors']['primary']['500']}>
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'previous')}</ButtonText>
+                                   </Button>
+                                   <Button
+                                        bgColor={theme['colors']['primary']['500']}
+                                        onPress={() => {
+                                             if (!isPreviousData && data.hasMore) {
+                                                  console.log('Adding to page');
+                                                  setPage(page + 1);
+                                             }
+                                        }}
+                                        isDisabled={isPreviousData || !data.hasMore}
+                                        size="sm">
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'next')}</ButtonText>
+                                   </Button>
+                              </ButtonGroup>
+                         </ScrollView>
+                         <Text mt="$2" fontSize="$10" color={textColor}>
+                              {paginationLabel}
                          </Text>
-                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              {getTermFromDictionary(this.state.language, 'new_search_button')}
-                         </Button>
-                    </Center>
+                    </Box>
                );
           }
 
+          return null;
+     };
+
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
+     const NoResults = () => {
           return (
-               <SafeAreaView>
-                    <Box safeArea={2}>
-                         <FlatList
-                              data={this.state.data}
-                              ListEmptyComponent={this._listEmptyComponent()}
-                              renderItem={({ item }) => this.renderItem(item, library, user, this.lastListUsed)}
-                              keyExtractor={(item, index) => index.toString()}
-                              ListFooterComponent={this._renderFooter}
-                              onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
-                              onEndReachedThreshold={0.5}
-                              initialNumToRender={25}
-                         />
-                    </Box>
-               </SafeAreaView>
+               <>
+                    {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
+                    <Center flex={1}>
+                         <Heading pt="$5">{getTermFromDictionary(language, 'no_results')}</Heading>
+                    </Center>
+               </>
           );
-     }
-}
+     };
+
+     return (
+          <SafeAreaView style={{ flex: 1 }}>
+               {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
+               {status === 'loading' || isFetching || translationIsFetching ? (
+                    loadingSpinner('Fetching results...')
+               ) : status === 'error' ? (
+                    loadError('Error', '')
+               ) : (
+                    <Box flex={1}>
+                         <FlatList data={data.results} ListFooterComponent={Paging} ListEmptyComponent={NoResults} renderItem={({ item }) => <DisplayResult data={item} />} keyExtractor={(item, index) => index.toString()} />
+                    </Box>
+               )}
+          </SafeAreaView>
+     );
+};

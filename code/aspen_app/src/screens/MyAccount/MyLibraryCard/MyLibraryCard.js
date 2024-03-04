@@ -6,18 +6,15 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import _ from 'lodash';
 import moment from 'moment';
 import { Box, Button, Center, Flex, Icon, Image, Modal, Text, useColorModeValue, useContrastText } from 'native-base';
-import React, { Component } from 'react';
+import React from 'react';
 import { Dimensions } from 'react-native';
 import Barcode from 'react-native-barcode-expo';
 import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Carousel from 'react-native-reanimated-carousel';
-import { loadError } from '../../../components/loadError';
 
 // custom components and helper files
-import { loadingSpinner } from '../../../components/loadingSpinner';
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { userContext } from '../../../context/user';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getLinkedAccounts, updateScreenBrightnessStatus } from '../../../util/api/user';
 
@@ -457,146 +454,3 @@ const OpenBarcode = (data) => {
           </Center>
      );
 };
-
-export class MyLibraryCard221200 extends Component {
-     static contextType = userContext;
-
-     constructor(props) {
-          super(props);
-          this.state = {
-               isLoading: true,
-               hasError: false,
-               error: null,
-               barcodeStyleInvalid: false,
-               library: [],
-               location: [],
-               linkedAccounts: [],
-          };
-          this._isMounted = false;
-     }
-
-     componentDidMount = async () => {
-          this._isMounted = true;
-          if (this._isMounted) {
-               const libraryContext = JSON.parse(this.props.route.params.libraryContext);
-               this.setState({
-                    library: libraryContext.library,
-               });
-
-               await this.getLinkedAccounts();
-          }
-     };
-
-     componentWillUnmount() {
-          this._isMounted = false;
-     }
-
-     getLinkedAccounts = async () => {
-          await getLinkedAccounts(this.state.library.baseUrl).then((result) => {
-               this.setState({
-                    linkedAccounts: result,
-                    isLoading: false,
-               });
-          });
-     };
-
-     invalidFormat = () => {
-          this.setState({
-               barcodeStyleInvalid: true,
-          });
-     };
-
-     render() {
-          const user = this.context.user;
-          const library = this.state.library;
-
-          const barcodeStyle = _.toString(library.barcodeStyle);
-
-          let doesNotExpire = false;
-          if (!_.isUndefined(user.expired)) {
-               if (user.expired === 0) {
-                    const now = moment().format('MMM D, YYYY');
-                    const expirationDate = new Date(user.expires);
-                    const isExpired = moment(expirationDate).isBefore(now);
-                    if (isExpired) {
-                         doesNotExpire = true;
-                    }
-               }
-          }
-
-          let icon = library.favicon;
-          if (library.logoApp) {
-               icon = library.logoApp;
-          }
-
-          let barcodeValue = 'UNKNOWN';
-          if (user.ils_barcode) {
-               barcodeValue = user.ils_barcode;
-          } else if (user.cat_username) {
-               barcodeValue = user.cat_username;
-          }
-
-          if (this.state.isLoading || (user.cat_username === '' && user.ils_barcode === '')) {
-               return loadingSpinner();
-          }
-
-          if (this.state.hasError) {
-               return loadError(this.state.error);
-          }
-
-          if (_.isNull(barcodeStyle) || this.state.barcodeStyleInvalid) {
-               return (
-                    <Center flex={1} px={3}>
-                         <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
-                              <Center>
-                                   <Flex direction="row">
-                                        <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
-                                        <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                                             {library.displayName}
-                                        </Text>
-                                   </Flex>
-                              </Center>
-                              <Center pt={8}>
-                                   <Text pb={2} color="darkText">
-                                        {user.displayName}
-                                   </Text>
-                                   <Text color="darkText" bold fontSize="xl">
-                                        {user.ils_barcode ?? user.cat_username}
-                                   </Text>
-                                   {user.expires && !doesNotExpire ? (
-                                        <Text color="darkText" fontSize={10}>
-                                             Expires on {user.expires}
-                                        </Text>
-                                   ) : null}
-                              </Center>
-                         </Flex>
-                    </Center>
-               );
-          }
-
-          return (
-               <Center flex={1} px={3}>
-                    <Flex direction="column" bg="white" maxW="95%" px={8} py={5} borderRadius={20}>
-                         <Center>
-                              <Flex direction="row">
-                                   <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
-                                   <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                                        {library.displayName}
-                                   </Text>
-                              </Flex>
-                         </Center>
-                         <Center pt={8}>
-                              <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={() => this.invalidFormat()} />
-                              {user.expires && !doesNotExpire ? (
-                                   <Text color="darkText" fontSize={10} pt={2}>
-                                        Expires on {user.expires}
-                                   </Text>
-                              ) : null}
-                         </Center>
-                    </Flex>
-               </Center>
-          );
-     }
-}
-
-MyLibraryCard221200.contextType = UserContext;

@@ -86,24 +86,13 @@ const DisplayResult = (data) => {
                          prevRoute: 'SearchByList',
                     });
                } else {
-                    if (version >= '23.01.00') {
-                         navigateStack('BrowseTab', 'ListResultItem', {
-                              id: item.id,
-                              title: getCleanTitle(item.title_display),
-                              url: library.baseUrl,
-                              libraryContext: library,
-                              prevRoute: 'SearchByList',
-                         });
-                    } else {
-                         navigateStack('BrowseTab', 'ResultItem221200', {
-                              id: item.id,
-                              title: getCleanTitle(item.title_display),
-                              url: library.baseUrl,
-                              userContext: user,
-                              libraryContext: library,
-                              prevRoute: 'SearchByList',
-                         });
-                    }
+                    navigateStack('BrowseTab', 'ListResultItem', {
+                         id: item.id,
+                         title: getCleanTitle(item.title_display),
+                         url: library.baseUrl,
+                         libraryContext: library,
+                         prevRoute: 'SearchByList',
+                    });
                }
           }
      };

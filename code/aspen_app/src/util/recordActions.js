@@ -9,30 +9,45 @@ import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
-/**
- * Fetch information for GroupedWork
- *
- * Parameters:
- * <ul>
- *     <li>itemId - the GroupedWork id for the record</li>
- * </ul>
- **/
-export async function getGroupedWork221200(url, itemId) {
-     let baseUrl = url ?? LIBRARY.url;
-     const api = create({
-          baseURL: baseUrl + '/API',
-          timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(),
-          auth: createAuthTokens(),
-     });
-     const response = await api.get('/ItemAPI?method=getAppGroupedWork', {
-          id: itemId,
-     });
-     if (response.ok) {
-          return response.data;
-     } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
-          console.log(response);
+// complete the action on the item, i.e. checkout, hold, or view sample
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = '', url, volumeId = '', holdType = '', holdNotificationPreferences, variationId = '', bibId = '') {
+     const recordId = id.split(':');
+     const source = recordId[0];
+     let itemId = recordId[1];
+     if (recordId[1] === 'kindle') {
+          itemId = recordId[2];
+     }
+
+     let patronProfile;
+     try {
+          const tmp = await AsyncStorage.getItem('@patronProfile');
+          patronProfile = JSON.parse(tmp);
+     } catch (e) {
+          console.log('Unable to fetch patron profile in grouped work from async storage');
+          console.log(e);
+     }
+
+     if (actionType.includes('checkout')) {
+          return await checkoutItem(url, itemId, source, patronId);
+     } else if (actionType.includes('hold')) {
+          if (volumeId) {
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences);
+          } else if (_.isObject(patronProfile)) {
+               if (!patronProfile.overdriveEmail && patronProfile.promptForOverdriveEmail === 1 && source === 'overdrive') {
+                    const getPromptForOverdriveEmail = [];
+                    getPromptForOverdriveEmail['getPrompt'] = true;
+                    getPromptForOverdriveEmail['itemId'] = itemId;
+                    getPromptForOverdriveEmail['source'] = source;
+                    getPromptForOverdriveEmail['patronId'] = patronId;
+                    getPromptForOverdriveEmail['overdriveEmail'] = patronProfile.overdriveEmail;
+                    getPromptForOverdriveEmail['promptForOverdriveEmail'] = patronProfile.promptForOverdriveEmail;
+                    return getPromptForOverdriveEmail;
+               }
+          } else {
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences, variationId);
+          }
+     } else if (actionType.includes('sample')) {
+          return await overDriveSample(url, formatId, itemId, sampleNumber);
      }
 }
 

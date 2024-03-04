@@ -3,7 +3,6 @@ import { create } from 'apisauce';
 import _ from 'lodash';
 
 // custom components and helper files
-import { popAlert } from '../components/loadError';
 import { createAuthTokens, getHeaders, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
@@ -39,64 +38,6 @@ export const PATRON = {
      browseCategories: [],
 };
 
-export async function getProfile(reload = false) {
-     const postBody = await postData();
-     let libraryUrl = LIBRARY.url;
-     if (_.isNull(libraryUrl)) {
-          try {
-               libraryUrl = await AsyncStorage.getItem('@pathUrl');
-          } catch (e) {
-               console.log(e);
-          }
-     }
-
-     if (libraryUrl) {
-          const api = create({
-               baseURL: libraryUrl + '/API',
-               timeout: GLOBALS.timeoutAverage,
-               headers: getHeaders(true),
-               auth: createAuthTokens(),
-               params: { reload },
-          });
-          const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
-          await getILSMessages(libraryUrl);
-          if (response.ok) {
-               if (!_.isUndefined(response.data.result)) {
-                    if (!_.isUndefined(response.data.result.profile)) {
-                         return response.data.result.profile;
-                    }
-               }
-          } else {
-               console.log(response);
-          }
-     }
-}
-
-export async function reloadProfile() {
-     const postBody = await postData();
-
-     const api = create({
-          baseURL: LIBRARY.url + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/UserAPI?method=getPatronProfile&reload&linkedUsers=true', postBody);
-     if (response.ok) {
-          if (!_.isUndefined(response.data.result)) {
-               if (!_.isUndefined(response.data.result.profile)) {
-                    const profile = response.data.result.profile;
-                    console.log('User profile forcefully updated');
-                    //await reloadCheckedOutItems();
-                    //await reloadHolds();
-                    return profile;
-               }
-          }
-     } else {
-          //console.log(response);
-     }
-}
-
 export async function getILSMessages(url) {
      let baseUrl = url ?? LIBRARY.url;
      const postBody = await postData();
@@ -125,100 +66,6 @@ export async function getILSMessages(url) {
                }
           }
           return messages;
-     }
-}
-
-async function getCheckedOutItems(url) {
-     const postBody = await postData();
-     const api = create({
-          baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(true),
-          params: {
-               source: 'all',
-               linkedUsers: 'true',
-          },
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
-     if (response.ok) {
-          let items = response.data?.result?.checkedOutItems ?? [];
-          items = _.sortBy(items, ['daysUntilDue', 'title']);
-          return items;
-     } else {
-          console.log(response);
-     }
-}
-
-export async function reloadCheckedOutItems(url) {
-     const postBody = await postData();
-     const api = create({
-          baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(true),
-          params: {
-               source: 'all',
-               linkedUsers: 'true',
-               refreshCheckouts: 'true',
-          },
-          auth: createAuthTokens(),
-     });
-
-     const response = await api.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
-     if (response.ok) {
-          let items = response.data?.result?.checkedOutItems ?? [];
-          items = _.sortBy(items, ['daysUntilDue', 'title']);
-          return items;
-     } else {
-          console.log(response);
-     }
-}
-
-export async function getHolds(url) {
-     let response;
-     const postBody = await postData();
-     const api = create({
-          baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(true),
-          params: {
-               source: 'all',
-               linkedUsers: true,
-          },
-          auth: createAuthTokens(),
-     });
-     response = await api.post('/UserAPI?method=getPatronHolds', postBody);
-     if (response.ok) {
-          //console.log(response.data);
-          let holds;
-          let holdsReady = [];
-          let holdsNotReady = [];
-          if (!_.isUndefined(response.data.result)) {
-               if (!_.isUndefined(response.data.result.holds)) {
-                    const items = response.data.result.holds;
-
-                    if (typeof items !== 'undefined') {
-                         if (typeof items.unavailable !== 'undefined') {
-                              holdsNotReady = Object.values(items.unavailable);
-                         }
-
-                         if (typeof items.available !== 'undefined') {
-                              holdsReady = Object.values(items.available);
-                         }
-                    }
-
-                    holds = holdsReady.concat(holdsNotReady);
-               }
-          }
-
-          PATRON.holds = holds;
-          return {
-               holds,
-               holdsReady,
-               holdsNotReady,
-          };
-     } else {
-          console.log(response);
      }
 }
 
@@ -392,99 +239,6 @@ export async function getHiddenBrowseCategories(libraryUrl, patronId) {
 
           await AsyncStorage.setItem('@hiddenBrowseCategories', JSON.stringify(hiddenCategories));
           return hiddenCategories;
-     } else {
-          console.log(response);
-     }
-}
-
-export async function getLinkedAccountsB(url = null) {
-     let baseUrl = url ?? LIBRARY.url;
-     const postBody = await postData();
-     const api = create({
-          baseURL: baseUrl + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/UserAPI?method=getLinkedAccounts', postBody);
-     console.log(response.config);
-     if (response.ok) {
-          let accounts = [];
-          if (!_.isUndefined(response.data.result.linkedAccounts)) {
-               accounts = response.data.result.linkedAccounts;
-               PATRON.linkedAccounts = accounts;
-          }
-          return _.values(accounts);
-     } else {
-          console.log(response);
-     }
-}
-
-export async function getViewersB() {
-     const postBody = await postData();
-     const api = create({
-          baseURL: LIBRARY.url + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/UserAPI?method=getViewers', postBody);
-     if (response.ok) {
-          const viewers = response.data.result.viewers;
-          try {
-               await AsyncStorage.setItem('@viewerAccounts', JSON.stringify(viewers));
-          } catch (e) {
-               console.log(e);
-          }
-
-          return _.values(viewers);
-          //console.log("Viewer accounts saved")
-     } else {
-          console.log(response);
-     }
-}
-
-export async function getSavedSearches(libraryUrl) {
-     const postBody = await postData();
-     const api = create({
-          baseURL: LIBRARY.url + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/ListAPI?method=getSavedSearchesForLiDA&checkIfValid=false', postBody);
-     if (response.ok) {
-          //console.log(response);
-          let savedSearches = [];
-          if (response.data.result.success) {
-               savedSearches = response.data.result.searches;
-          }
-          return savedSearches;
-     } else {
-          console.log(response);
-     }
-}
-
-export async function getSavedSearchTitles(searchId, libraryUrl) {
-     const postBody = await postData();
-     const api = create({
-          baseURL: LIBRARY.url + '/API',
-          timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-          params: {
-               searchId,
-               numTitles: 30,
-          },
-     });
-     const response = await api.post('/ListAPI?method=getSavedSearchTitles', postBody);
-     if (response.ok) {
-          let savedSearches = [];
-          //console.log(response);
-          if (response.data.result) {
-               savedSearches = response.data.result;
-          }
-          return savedSearches;
      } else {
           console.log(response);
      }

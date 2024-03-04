@@ -343,6 +343,8 @@ export const DiscoverHomeScreen = () => {
 
      const renderRecord = (data, url, version, index) => {
           const item = data.item;
+          let id = item.key ?? item.id;
+
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
                type = item.source;
@@ -352,20 +354,32 @@ export const DiscoverHomeScreen = () => {
                type = item.recordtype;
           }
 
-          const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
+          if (type === 'Event') {
+               if (_.includes(id, 'lc_')) {
+                    type = 'library_calendar_event';
+               }
+               if (_.includes(id, 'libcal_')) {
+                    type = 'springshare_libcal_event';
+               }
+               if (_.includes(id, 'communico_')) {
+                    type = 'communico_event';
+               }
+          }
+
+          const imageUrl = library.baseUrl + '/bookcover.php?id=' + id + '&size=medium&type=' + type.toLowerCase();
 
           let isNew = false;
           if (typeof item.isNew !== 'undefined') {
                isNew = item.isNew;
           }
 
-          const key = 'medium_' + item.id;
+          const key = 'medium_' + id;
 
           return (
                <Pressable
                     ml="$1"
                     mr="$3"
-                    onPress={() => onPressItem(item.id, type, item.title_display, version)}
+                    onPress={() => onPressItem(id, type, item.title_display, version)}
                     sx={{
                          '@base': {
                               width: 100,
@@ -423,29 +437,28 @@ export const DiscoverHomeScreen = () => {
                          libraryContext: library,
                          prevRoute: 'HomeScreen',
                     });
-               } else if (type === 'Event') {
+               } else if (type === 'Event' || _.includes(type, '_event')) {
+                    let eventSource = 'unknown';
+                    if (type === 'communico_event') {
+                         eventSource = 'communico';
+                    } else if (type === 'library_calendar_event') {
+                         eventSource = 'library_calendar';
+                    } else if (type === 'springshare_libcal_event') {
+                         eventSource = 'springshare';
+                    }
+
                     navigateStack('BrowseTab', 'EventScreen', {
+                         id: key,
+                         title: title,
+                         source: eventSource,
+                         prevRoute: 'HomeScreen',
+                    });
+               } else {
+                    navigateStack('BrowseTab', 'GroupedWorkScreen', {
                          id: key,
                          title: title,
                          prevRoute: 'HomeScreen',
                     });
-               } else {
-                    if (version >= '23.01.00') {
-                         navigateStack('BrowseTab', 'GroupedWorkScreen', {
-                              id: key,
-                              title: title,
-                              prevRoute: 'HomeScreen',
-                         });
-                    } else {
-                         navigateStack('BrowseTab', 'GroupedWorkScreen221200', {
-                              id: key,
-                              title: title,
-                              url: library.baseUrl,
-                              userContext: user,
-                              libraryContext: library,
-                              prevRoute: 'HomeScreen',
-                         });
-                    }
                }
           } else {
                navigateStack('BrowseTab', 'GroupedWorkScreen', {

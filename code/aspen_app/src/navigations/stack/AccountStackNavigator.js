@@ -5,22 +5,20 @@ import { LanguageContext } from '../../context/initialContext';
 import { EventScreen } from '../../screens/Event/Event';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 
-import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
 import { MyEvents } from '../../screens/MyAccount/Events/Events';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
-import { MyProfile } from '../../screens/MyAccount/Profile';
+import { MyProfile } from '../../screens/MyAccount/Profile/MyProfile';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import { MySavedSearch } from '../../screens/MyAccount/SavedSearches/MySavedSearch';
 import { MySavedSearches } from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
-import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
-import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
+import { MyLinkedAccounts } from '../../screens/MyAccount/LinkedAccounts/LinkedAccounts';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
-import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -38,10 +36,8 @@ const AccountStackNavigator = () => {
                }}>
                <Stack.Group>
                     <Stack.Screen name="MyPreferences" component={PreferencesScreen} options={{ title: getTermFromDictionary(language, 'preferences') }} />
-                    <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
-                    <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen name="MyProfile" component={MyProfile} options={{ title: getTermFromDictionary(language, 'contact_information') }} />
@@ -65,13 +61,6 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyHolds' }}
                     />
-                    <Stack.Screen
-                         name="MyHold221200"
-                         component={GroupedWork221200}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
-                    />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -88,13 +77,6 @@ const AccountStackNavigator = () => {
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyCheckouts' }}
-                    />
-                    <Stack.Screen
-                         name="MyCheckout221200"
-                         component={GroupedWork221200}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -121,13 +103,6 @@ const AccountStackNavigator = () => {
                               title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
                          })}
                          initialParams={{ prevRoute: 'MyList' }}
-                    />
-                    <Stack.Screen
-                         name="ListItem221200"
-                         component={GroupedWork221200}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -159,14 +134,6 @@ const AccountStackNavigator = () => {
                     <Stack.Screen
                          name="SavedSearchItem"
                          component={GroupedWorkScreen}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
-                         initialParams={{ prevRoute: 'MySavedSearch' }}
-                    />
-                    <Stack.Screen
-                         name="SavedSearchItem221200"
-                         component={GroupedWork221200}
                          options={({ route }) => ({
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}

@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // custom components and helper files
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { completeAction } from '../../../screens/GroupedWork/Record';
+import { completeAction } from '../../../util/recordActions';
 import { refreshProfile } from '../../../util/api/user';
 import { HoldPrompt } from '../Holds/HoldPrompt';
 import { getTermFromDictionary } from '../../../translations/TranslationService';

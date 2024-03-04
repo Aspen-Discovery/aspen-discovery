@@ -6,14 +6,13 @@ import { enableScreens } from 'react-native-screens';
 import { LanguageContext } from '../../context/initialContext';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 
-import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import Facet from '../../screens/Search/Facet';
 import { SearchIndexScreen } from '../../screens/Search/Facets/SearchIndex';
 import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import { SearchHome } from '../../screens/Search/Search';
-import { SearchResults } from '../../screens/Search/SearchResults';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { EditionsModal } from './BrowseStackNavigator';
 
@@ -45,13 +44,6 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
-                    />
-                    <Stack.Screen
-                         name="ResultItem221200"
-                         component={GroupedWork221200}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
                     />
                </Stack.Group>
 

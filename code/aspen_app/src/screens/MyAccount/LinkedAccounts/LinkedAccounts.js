@@ -4,10 +4,10 @@ import _ from 'lodash';
 import { Box, Button, Divider, FlatList, Heading, HStack, ScrollView, Text } from 'native-base';
 import React from 'react';
 
-import { DisplayMessage, DisplaySystemMessage } from '../../../../components/Notifications';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../../context/initialContext';
-import { getTermFromDictionary } from '../../../../translations/TranslationService';
-import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount } from '../../../../util/api/user';
+import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount } from '../../../util/api/user';
 import AddLinkedAccount from './AddLinkedAccount';
 import DisableAccountLinking from './DisableAccountLinking';
 import EnableAccountLinking from './EnableAccountLinking';

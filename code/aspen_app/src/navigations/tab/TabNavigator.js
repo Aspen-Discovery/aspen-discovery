@@ -16,7 +16,6 @@ import SelfCheckOutStackNavigator from '../stack/SelfCheckOutStackNavigator';
 export default function TabNavigator() {
      const Tab = createBottomTabNavigator();
 
-     const { language, dictionary } = React.useContext(LanguageContext);
      const { enableSelfCheck } = React.useContext(LibraryBranchContext);
      const [activeIcon, inactiveIcon] = useToken('colors', [useColorModeValue('gray.800', 'coolGray.200'), useColorModeValue('gray.500', 'coolGray.400')]);
      const tabBarBackgroundColor = useColorModeValue('light', 'dark');

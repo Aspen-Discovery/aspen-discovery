@@ -1,12 +1,12 @@
 import React from 'react';
 import { FormControl, FormControlLabel, FormControlLabelText, FormControlHelper, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, Input, InputField, Checkbox, CheckboxLabel, Text, CheckIcon, CheckboxIndicator, CheckboxIcon, FormControlHelperText } from '@gluestack-ui/themed';
 import _ from 'lodash';
-import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const HoldNotificationPreferences = (props) => {
      const { textColor, theme, user, url, language, emailNotification, setEmailNotification, phoneNotification, setPhoneNotification, smsNotification, setSMSNotification, smsCarrier, setSMSCarrier, smsNumber, setSMSNumber, phoneNumber, setPhoneNumber } = props;
 
-	const holdNotificationInfo = user.holdNotificationInfo;
+     const holdNotificationInfo = user.holdNotificationInfo;
      const smsCarriers = holdNotificationInfo.smsCarriers;
 
      const [emailNotificationLabel, setEmailNotificationLabel] = React.useState('Yes, by email');
@@ -14,7 +14,7 @@ export const HoldNotificationPreferences = (props) => {
           async function fetchTranslations() {
                await getTranslationsWithValues('hold_email_notification', user.email ?? null, language, url).then((result) => {
                     const tmp = _.toString(result);
-                    if (!tmp.includes('%1%')) {
+                    if (!tmp.includes('%')) {
                          setEmailNotificationLabel(tmp);
                     }
                });
@@ -152,4 +152,4 @@ export const HoldNotificationPreferences = (props) => {
                ) : null}
           </>
      );
-}
+};

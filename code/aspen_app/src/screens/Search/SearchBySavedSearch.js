@@ -253,23 +253,11 @@ export default class SearchBySavedSearch extends Component {
 
      // handles the on press action
      onPressItem = (item, library, title) => {
-          const { route } = this.props;
-          const libraryContext = route.params?.libraryContext ?? [];
-          const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
-          if (version >= '23.01.00') {
-               navigateStack('BrowseTab', 'SavedSearchResultItem', {
-                    id: item,
-                    title: getCleanTitle(title),
-                    url: library.baseUrl,
-               });
-          } else {
-               navigateStack('BrowseTab', 'SavedSearchResultItem221200', {
-                    id: item,
-                    title: getCleanTitle(title),
-                    url: library.baseUrl,
-                    libraryContext: libraryContext,
-               });
-          }
+          navigateStack('BrowseTab', 'SavedSearchResultItem', {
+               id: item,
+               title: getCleanTitle(title),
+               url: library.baseUrl,
+          });
      };
 
      // this one shouldn't probably ever load with the catches in the render, but just in case

@@ -5,7 +5,7 @@ import React from 'react';
 
 // custom components and helper files
 import { HoldsContext, LibraryBranchContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
-import { completeAction } from '../../../screens/GroupedWork/Record';
+import { completeAction } from '../../../util/recordActions';
 import { HoldPrompt } from './HoldPrompt';
 
 export const PlaceHold = (props) => {

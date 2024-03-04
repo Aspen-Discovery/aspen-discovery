@@ -35,7 +35,7 @@ export const MyHold = (props) => {
                if (hold.holdQueueLength) {
                     await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then((result) => {
                          let term = result;
-                         if (!term.includes('%1%')) {
+                         if (!term.includes('%')) {
                               setUsesHoldPosition(true);
                               setHoldPosition(term);
                          }
@@ -87,24 +87,14 @@ export const MyHold = (props) => {
      }
 
      const openGroupedWork = (item, title) => {
-          if (version >= '23.01.00') {
-               navigateStack('AccountScreenTab', 'MyHold', {
-                    id: item,
-                    title: getCleanTitle(title),
-                    url: library.baseUrl,
-                    userContext: user,
-                    libraryContext: library,
-                    prevRoute: 'MyHolds',
-               });
-          } else {
-               navigateStack('AccountScreenTab', 'MyHold221200', {
-                    id: item,
-                    title: getCleanTitle(title),
-                    url: library.baseUrl,
-                    userContext: user,
-                    libraryContext: library,
-               });
-          }
+          navigateStack('AccountScreenTab', 'MyHold', {
+               id: item,
+               title: getCleanTitle(title),
+               url: library.baseUrl,
+               userContext: user,
+               libraryContext: library,
+               prevRoute: 'MyHolds',
+          });
      };
 
      const initializeLeftColumn = () => {

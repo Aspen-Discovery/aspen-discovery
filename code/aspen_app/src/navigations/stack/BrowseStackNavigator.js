@@ -9,13 +9,13 @@ import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { EventScreen } from '../../screens/Event/Event';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 import { Editions } from '../../screens/GroupedWork/Editions';
-import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import Facet from '../../screens/Search/Facet';
 import { SearchIndexScreen } from '../../screens/Search/Facets/SearchIndex';
 import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
 import { FiltersScreen } from '../../screens/Search/Filters';
-import SearchByCategory from '../../screens/Search/SearchByCategory';
+import { SearchResultsForBrowseCategory } from '../../screens/Search/SearchByCategory';
 import { SearchResultsForList } from '../../screens/Search/SearchByList';
 import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { SearchResults } from '../../screens/Search/SearchResults';
@@ -95,18 +95,9 @@ const BrowseStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
-
-               <Stack.Screen
-                    name="GroupedWorkScreen221200"
-                    component={GroupedWork221200}
-                    options={({ route }) => ({
-                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                    })}
-               />
-
                <Stack.Screen
                     name="SearchByCategory"
-                    component={SearchByCategory}
+                    component={SearchResultsForBrowseCategory}
                     options={({ route }) => ({
                          title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.title,
                     })}
@@ -119,14 +110,6 @@ const BrowseStackNavigator = () => {
                     })}
                     initialParams={{ prevRoute: 'SearchResults' }}
                />
-               <Stack.Screen
-                    name="CategoryResultItem221200"
-                    component={GroupedWork221200}
-                    options={({ route }) => ({
-                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                    })}
-               />
-
                <Stack.Screen
                     name="SearchByList"
                     component={SearchResultsForList}
@@ -149,13 +132,6 @@ const BrowseStackNavigator = () => {
                     })}
                     initialParams={{ prevRoute: 'SearchResults' }}
                />
-               <Stack.Screen
-                    name="ListResultItem221200"
-                    component={GroupedWork221200}
-                    options={({ route }) => ({
-                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                    })}
-               />
 
                <Stack.Screen
                     name="SearchBySavedSearch"
@@ -174,13 +150,6 @@ const BrowseStackNavigator = () => {
                          title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                     })}
                     initialParams={{ prevRoute: 'SearchResults' }}
-               />
-               <Stack.Screen
-                    name="SavedSearchResultItem221200"
-                    component={GroupedWork221200}
-                    options={({ route }) => ({
-                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                    })}
                />
                <Stack.Screen
                     name="SearchResults"

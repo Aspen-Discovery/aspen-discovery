@@ -104,7 +104,7 @@ export const DrawerContent = () => {
           async function fetchTranslations() {
                await getTranslationsWithValues('accounts_have_fines', user.fines ?? 0, language, library.baseUrl).then((result) => {
                     let term = _.toString(result);
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setFinesSummary(term);
                     }
                });
@@ -238,7 +238,7 @@ const Checkouts = () => {
           async function fetchTranslations() {
                await getTranslationsWithValues('checkouts_overdue_summary', user.numOverdue ?? 0, language, library.baseUrl).then((result) => {
                     let term = result;
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setCheckoutSummary(term);
                     }
                });
@@ -287,7 +287,7 @@ const Holds = () => {
           async function fetchTranslations() {
                await getTranslationsWithValues('num_holds_ready_for_pickup', user.numHoldsAvailable ?? 0, language, library.baseUrl).then((result) => {
                     let term = result;
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setHoldSummary(term);
                     }
                });
@@ -388,7 +388,7 @@ const SavedSearches = () => {
           async function fetchTranslations() {
                await getTranslationsWithValues('num_saved_searches_with_updates', user.numSavedSearchesNew ?? 0, language, library.baseUrl).then((result) => {
                     let term = result;
-                    if (!term.includes('%1%')) {
+                    if (!term.includes('%')) {
                          setSavedSearchSummary(term);
                     }
                });
