@@ -14,7 +14,7 @@ import { DisplayMessage } from '../../components/Notifications';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
+import { getCatalogStatus, getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
 import { getLocationInfo } from '../../util/api/location';
 import { loginToLiDA, reloadProfile, validateUser } from '../../util/api/user';
 import { createAuthTokens, getHeaders } from '../../util/apiAuth';
@@ -47,7 +47,7 @@ export const GetLoginForm = (props) => {
      // make ref to move the user to next input field
      const passwordRef = useRef();
      const { signIn } = React.useContext(AuthContext);
-     const { updateLibrary } = React.useContext(LibrarySystemContext);
+     const { updateLibrary, updateCatalogStatus, catalogStatus } = React.useContext(LibrarySystemContext);
      const { updateLocation } = React.useContext(LibraryBranchContext);
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
@@ -70,6 +70,26 @@ export const GetLoginForm = (props) => {
           const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
           if (result.success) {
                const version = formatDiscoveryVersion(result.library.discoveryVersion);
+
+               // check if catalog is in offline mode
+               if (version >= '24.03.00') {
+                    const currentStatus = await getCatalogStatus(patronsLibrary['baseUrl']);
+                    if (currentStatus) {
+                         updateCatalogStatus(currentStatus);
+                         if (currentStatus.status > 0) {
+                              // catalog is offline
+                              setLoading(false);
+                              setLoginError(true);
+                              if (currentStatus.message) {
+                                   setLoginErrorMessage(currentStatus.message);
+                              } else {
+                                   getTermFromDictionary('en', 'catalog_offline_message');
+                              }
+                         }
+                         return;
+                    }
+               }
+
                if (version >= '23.02.00') {
                     setPinValidationRules(result.library.pinValidationRules);
                     const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
