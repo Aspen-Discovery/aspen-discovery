@@ -48,6 +48,14 @@
 						</div>
 					{/if}
 
+					{if !empty($record->checkoutDate)}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text="checked_out_user_account" defaultText="Checked Out" isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
+						</div>
+					{/if}
+
+
 					<div class="row">
 						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
 						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - {translate text="Palace Project" isPublicFacing=true}</div>
@@ -68,6 +76,13 @@
 							<div class="col-sm-12 col-md-7 result-value">
 								{$record->getUserName()}
 							</div>
+						</div>
+					{/if}
+
+					{if !empty($record->dueDate)}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Expires' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->dueDate|date_format}</div>
 						</div>
 					{/if}
 				</div>
