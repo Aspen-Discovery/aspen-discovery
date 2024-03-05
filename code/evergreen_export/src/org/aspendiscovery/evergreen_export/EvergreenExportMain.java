@@ -1545,7 +1545,7 @@ public class EvergreenExportMain {
 													for (int l = 0; l < copyList.getLength(); l++) {
 														Element curCopy = (Element) copyList.item(l);
 														String deleted = curCopy.getAttribute("deleted");
-														if (deleted.equals("t")) {
+														if (deleted.equals("t") || deleted.equals("true")) {
 															continue;
 														}
 														opacVisible = curCopy.getAttribute("opac_visible");
