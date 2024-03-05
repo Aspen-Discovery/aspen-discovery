@@ -85,8 +85,8 @@ export const GetLoginForm = (props) => {
                               } else {
                                    getTermFromDictionary('en', 'catalog_offline_message');
                               }
+                              return;
                          }
-                         return;
                     }
                }
 
