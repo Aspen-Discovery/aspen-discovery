@@ -2,6 +2,7 @@ import { ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable
 import React from 'react';
 import * as Location from 'expo-location';
 import * as Linking from 'expo-linking';
+import { Platform } from 'react-native';
 
 import { useRoute } from '@react-navigation/native';
 import { LanguageContext, ThemeContext } from '../../../../context/initialContext';
@@ -96,14 +97,14 @@ const GeolocationPermissionUsage = () => {
 };
 
 const GeolocationPermissionUpdate = () => {
-     const { colorMode, theme } = React.useContext(ThemeContext);
+     const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      const [showAlertDialog, setShowAlertDialog] = React.useState(false);
 
      return (
           <Center>
-               <Button onPress={() => setShowAlertDialog(true)}>
-                    <ButtonText>{getTermFromDictionary(language, 'update_device_settings')}</ButtonText>
+               <Button onPress={() => setShowAlertDialog(true)} bgColor={theme['colors']['primary']['500']}>
+                    <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'update_device_settings')}</ButtonText>
                </Button>
                <AlertDialog
                     isOpen={showAlertDialog}
@@ -111,12 +112,12 @@ const GeolocationPermissionUpdate = () => {
                          setShowAlertDialog(false);
                     }}>
                     <AlertDialogBackdrop />
-                    <AlertDialogContent>
+                    <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
                          <AlertDialogHeader>
-                              <Heading>{getTermFromDictionary(language, 'update_device_settings')}</Heading>
+                              <Heading color={textColor}>{getTermFromDictionary(language, 'update_device_settings')}</Heading>
                          </AlertDialogHeader>
                          <AlertDialogBody>
-                              <Text>{getTermFromDictionary(language, 'update_geolocation')}</Text>
+                              <Text color={textColor}>{Platform.OS === 'android' ? getTermFromDictionary(language, 'update_geolocation_android') : getTermFromDictionary(language, 'update_geolocation_ios')}</Text>
                          </AlertDialogBody>
                          <AlertDialogFooter>
                               <ButtonGroup flexDirection="column" alignItems="stretch" w="100%">
@@ -124,11 +125,12 @@ const GeolocationPermissionUpdate = () => {
                                         onPress={() => {
                                              Linking.openSettings();
                                              setShowAlertDialog(false);
-                                        }}>
-                                        <ButtonText>{getTermFromDictionary(language, 'open_device_settings')}</ButtonText>
+                                        }}
+                                        bgColor={theme['colors']['primary']['500']}>
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'open_device_settings')}</ButtonText>
                                    </Button>
-                                   <Button>
-                                        <ButtonText>{getTermFromDictionary(language, 'not_now')}</ButtonText>
+                                   <Button variant="link">
+                                        <ButtonText color={textColor}>{getTermFromDictionary(language, 'not_now')}</ButtonText>
                                    </Button>
                               </ButtonGroup>
                          </AlertDialogFooter>
