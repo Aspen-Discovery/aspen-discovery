@@ -27,7 +27,7 @@
 	    {if !empty($sourceId)}
 			<input type='hidden' name='sourceId' value='{$sourceId}' id="sourceId" />
 	    {/if}
-		{if !empty($patronId)}
+		{if !empty($patronIdCheck)}
 			<input type="hidden" name="patronIdCheck" value={$patronIdCheck|escape}>
 		{else}
 			<input type="hidden" name="patronIdCheck" value=0>
