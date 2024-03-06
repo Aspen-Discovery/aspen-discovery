@@ -38,6 +38,11 @@ class WebBuilder_SubmitForm extends Action {
 					$processForm = false;
 				}
 			}
+			$user = UserAccount::getLoggedInUser();
+			$samePatron = true;
+			if ($_REQUEST['patronIdCheck'] != 0 && $_REQUEST['patronIdCheck'] != $user->id){
+				$processForm = false;
+			}
 
 			if ($processForm) {
 				//Get the form values

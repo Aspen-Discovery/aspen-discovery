@@ -27,6 +27,11 @@
 	    {if !empty($sourceId)}
 			<input type='hidden' name='sourceId' value='{$sourceId}' id="sourceId" />
 	    {/if}
+		{if !empty($patronId)}
+			<input type="hidden" name="patronIdCheck" value={$patronIdCheck|escape}>
+		{else}
+			<input type="hidden" name="patronIdCheck" value=0>
+		{/if}
 
 		{foreach from=$structure item=property}
 			{include file="DataObjectUtil/property.tpl"}
