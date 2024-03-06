@@ -300,7 +300,8 @@ class ExtractOverDriveInfo {
 					processRecordsToReload(logEntry);
 
 					//Finally, process any records that seem to be unlinked
-					processUnlinkedProducts();
+					//MDN 3/6/24 - This is no longer needed.
+					//processUnlinkedProducts();
 
 				}
 			}catch (SocketTimeoutException toe){
@@ -345,47 +346,47 @@ class ExtractOverDriveInfo {
 		return numProcessed[0];
 	}
 
-	private void processUnlinkedProducts() {
-		try {
-			PreparedStatement getUnlinkedProductsStmt = dbConn.prepareStatement("select id, overdriveId from overdrive_api_products where deleted = 0 and overdriveId in (select identifier from grouped_work_primary_identifiers where type='overdrive' and grouped_work_id not in (select id from grouped_work));", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet getUnlinkedProductsRS = getUnlinkedProductsStmt.executeQuery();
-			int numUnlinkedProductsProcessed = 0;
-			while (getUnlinkedProductsRS.next()) {
-				String overDriveId = getUnlinkedProductsRS.getString("overDriveId");
-				long aspenId = getUnlinkedProductsRS.getLong("id");
-				try {
-					overDriveId = overDriveId.toLowerCase();
-					OverDriveRecordInfo recordInfo = new OverDriveRecordInfo();
-					recordInfo.setId(overDriveId);
-					recordInfo.setDatabaseId(aspenId);
-
-					//Call API for the product to figure out what collections the record belongs to
-					for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections) {
-						//TODO: Do we need to validate this before updating metadata and availability?
-						recordInfo.addCollection(collectionInfo);
-					}
-
-					//Update the product in the database
-					updateOverDriveMetaData(recordInfo);
-					updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId(), false);
-
-					//Reindex
-					String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-
-					numUnlinkedProductsProcessed++;
-				}catch (Exception e) {
-					logEntry.incErrors("Error processing unlinked record " + overDriveId, e);
-				}
-			}
-			getUnlinkedProductsRS.close();
-			if (numUnlinkedProductsProcessed > 0) {
-				logEntry.addNote("Processed " + numUnlinkedProductsProcessed + " records that were not linked to a grouped work and that were not deleted");
-			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Could not load unlinked products", e);
-		}
-	}
+//	private void processUnlinkedProducts() {
+//		try {
+//			PreparedStatement getUnlinkedProductsStmt = dbConn.prepareStatement("select id, overdriveId from overdrive_api_products where deleted = 0 and overdriveId in (select identifier from grouped_work_primary_identifiers where type='overdrive' and grouped_work_id not in (select id from grouped_work));", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//			ResultSet getUnlinkedProductsRS = getUnlinkedProductsStmt.executeQuery();
+//			int numUnlinkedProductsProcessed = 0;
+//			while (getUnlinkedProductsRS.next()) {
+//				String overDriveId = getUnlinkedProductsRS.getString("overDriveId");
+//				long aspenId = getUnlinkedProductsRS.getLong("id");
+//				try {
+//					overDriveId = overDriveId.toLowerCase();
+//					OverDriveRecordInfo recordInfo = new OverDriveRecordInfo();
+//					recordInfo.setId(overDriveId);
+//					recordInfo.setDatabaseId(aspenId);
+//
+//					//Call API for the product to figure out what collections the record belongs to
+//					for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections) {
+//						//TODO: Do we need to validate this before updating metadata and availability?
+//						recordInfo.addCollection(collectionInfo);
+//					}
+//
+//					//Update the product in the database
+//					updateOverDriveMetaData(recordInfo);
+//					updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId(), false);
+//
+//					//Reindex
+//					String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
+//					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+//
+//					numUnlinkedProductsProcessed++;
+//				}catch (Exception e) {
+//					logEntry.incErrors("Error processing unlinked record " + overDriveId, e);
+//				}
+//			}
+//			getUnlinkedProductsRS.close();
+//			if (numUnlinkedProductsProcessed > 0) {
+//				logEntry.addNote("Processed " + numUnlinkedProductsProcessed + " records that were not linked to a grouped work and that were not deleted");
+//			}
+//		} catch (SQLException e) {
+//			logEntry.incErrors("Could not load unlinked products", e);
+//		}
+//	}
 
 	int processSingleWork(String singleWorkId, Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
 		int numChanges = 0;

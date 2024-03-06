@@ -42,6 +42,44 @@ function getUpdates24_02_10(): array {
 				'ALTER TABLE library ADD COLUMN deletePaymentHistoryOlderThan INT DEFAULT 0'
 			]
 		], //library_deletePaymentHistoryOlderThan
+		'overdrive_index_cross_ref_id' => [
+			'title' => 'OverDrive Index Cross Ref ID',
+			'description' => 'OverDrive Index Cross Ref ID',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE overdrive_api_products add index crossRefId(crossRefId)'
+			]
+		], //overdrive_index_cross_ref_id
+		'index_ils_barcode' => [
+			'title' => 'Add ILS Barcode index',
+			'description' => 'Add ILS Barcode index to user table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user add index ils_barcode(ils_barcode)'
+			]
+		], //index_ils_barcode
+		'index_common_timestamp_columns' => [
+			'title' => 'Index Common Timestamp Columns',
+			'description' => 'Add Indexes to some table that store timestamps',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE axis360_export_log add index startTime(startTime)',
+				'ALTER TABLE cached_values add index expirationTime(expirationTime)',
+				'ALTER TABLE cloud_library_export_log add index startTime(startTime)',
+				'ALTER TABLE cron_log add index startTime(startTime)',
+				'ALTER TABLE cron_process_log add index startTime(startTime)',
+				'ALTER TABLE errors add index timestamp(timestamp)',
+				'ALTER TABLE events_indexing_log add index startTime(startTime)',
+				'ALTER TABLE hoopla_export_log add index startTime(startTime)',
+				'ALTER TABLE ils_extract_log add index indexingProfileTime(indexingProfile, startTime)',
+				'ALTER TABLE list_indexing_log add index startTime(startTime)',
+				'ALTER TABLE overdrive_extract_log add index startTime(startTime)',
+				'ALTER TABLE palace_project_export_log add index startTime(startTime)',
+				'ALTER TABLE sideload_log add index startTime(startTime)',
+				'ALTER TABLE user_list add index dateUpdated(dateUpdated)',
+				'ALTER TABLE website_index_log add index startTime(startTime)',
+			]
+		], //index_common_timestamp_columns
 
 		//kirstien - ByWater
 
