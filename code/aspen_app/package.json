@@ -44,6 +44,7 @@
     "expo-brightness": "~11.4.1",
     "expo-cached-image": "47.0.0",
     "expo-calendar": "~11.3.2",
+    "expo-camera": "~13.4.4",
     "expo-constants": "~14.4.2",
     "expo-dev-client": "~2.4.13",
     "expo-device": "~5.4.0",

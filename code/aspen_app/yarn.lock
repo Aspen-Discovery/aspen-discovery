@@ -7757,6 +7757,13 @@ expo-calendar@~11.3.2:
   resolved "https://registry.yarnpkg.com/expo-calendar/-/expo-calendar-11.3.2.tgz#3062fde239586aecbffee836ba96e622b4769526"
   integrity sha512-6J+zWT5sX+Dd0puS1nUpqErtCyz20h9OB3AtIDIeZi3R+F07dna7ZYgDyBvSVYt1wHj6B5tTBF3TCXshoArv5Q==
 
+expo-camera@~13.4.4:
+  version "13.4.4"
+  resolved "https://registry.yarnpkg.com/expo-camera/-/expo-camera-13.4.4.tgz#e01ead31a3150398d37e94c307f6937480680690"
+  integrity sha512-7k54APbpSulUDR2CrD5SrmKjCdfdg4tqKRpbBOKc2J2MIBHhunExU77435JDYSejHRY5bfRHZsEp3yKwR862uw==
+  dependencies:
+    invariant "^2.2.4"
+
 expo-constants@~14.4.2:
   version "14.4.2"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-14.4.2.tgz#cac5e8b524069545739b8d8595ce96cc5be6578c"
