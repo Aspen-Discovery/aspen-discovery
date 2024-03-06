@@ -16,7 +16,7 @@
 	<php>
 		<ini name="memory_limit" value="2048M"/>
 	</php>
-	<testsuite name="Pika Unit Test Suite">
+	<testsuite name="Aspen Discovery Unit Test Suite">
 		<directory suffix="Test.php">./Tests</directory>
 	</testsuite>
 	<filter>
