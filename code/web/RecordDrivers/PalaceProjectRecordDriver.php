@@ -211,38 +211,40 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 			}
 
 			if ($loadDefaultActions) {
-				foreach ($this->palaceProjectRawMetadata->links as $link) {
-					if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-						$needsHold = false;
-						if (!empty($link->properties)) {
-							if (!empty($link->properties->availability)) {
-								if ($link->properties->availability->state != 'available') {
-									$needsHold = true;
+				if (!empty($this->palaceProjectRawMetadata)) {
+					foreach ($this->palaceProjectRawMetadata->links as $link) {
+						if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+							$needsHold = false;
+							if (!empty($link->properties)) {
+								if (!empty($link->properties->availability)) {
+									if ($link->properties->availability->state != 'available') {
+										$needsHold = true;
+									}
 								}
 							}
+							if (!$needsHold) {
+								$this->_actions[] = [
+									'title' => translate([
+										'text' => 'Check Out Palace Project',
+										'isPublicFacing' => true,
+									]),
+									'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
+									'requireLogin' => false,
+									'type' => 'palace_project_checkout',
+								];
+							} else {
+								$this->_actions[] = [
+									'title' => translate([
+										'text' => 'Place Hold Palace Project',
+										'isPublicFacing' => true,
+									]),
+									'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
+									'requireLogin' => false,
+									'type' => 'palace_project_hold',
+								];
+							}
+							break;
 						}
-						if (!$needsHold) {
-							$this->_actions[] = [
-								'title' => translate([
-									'text' => 'Check Out Palace Project',
-									'isPublicFacing' => true,
-								]),
-								'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
-								'requireLogin' => false,
-								'type' => 'palace_project_checkout',
-							];
-						} else {
-							$this->_actions[] = [
-								'title' => translate([
-									'text' => 'Place Hold Palace Project',
-									'isPublicFacing' => true,
-								]),
-								'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
-								'requireLogin' => false,
-								'type' => 'palace_project_hold',
-							];
-						}
-						break;
 					}
 				}
 			}
