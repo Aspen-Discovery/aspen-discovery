@@ -481,7 +481,7 @@ class Koha extends AbstractIlsDriver {
 			if ($dateDue) {
 				$curCheckout->renewalDate = $dateDue->getTimestamp();
 				$dueTime = $dateDue->getTimestamp();
-				$renewalDate = date('M j, y', $curCheckout->renewalDate);
+				$renewalDate = date('M j, Y', $curCheckout->renewalDate);
 			} else {
 				$renewalDate = 'Unknown';
 				$dueTime = null;
@@ -634,7 +634,7 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 						if ($curCheckout->renewError == $renewError && $noRenewalsBefore && $renewalDate) {
-							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
+							$days_before = date('M j, Y', strtotime($renewalDate . " -$noRenewalsBefore days"));
 							$curCheckout->renewError = translate([
 								'text' => 'No renewals before %1%.',
 								'1' => $days_before,
