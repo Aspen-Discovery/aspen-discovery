@@ -129,7 +129,7 @@ const ScreenBrightnessPermissionUpdate = () => {
                                         bgColor={theme['colors']['primary']['500']}>
                                         <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'open_device_settings')}</ButtonText>
                                    </Button>
-                                   <Button variant="link">
+                                   <Button variant="link" onPress={() => setShowAlertDialog(false)}>
                                         <ButtonText color={textColor}>{getTermFromDictionary(language, 'not_now')}</ButtonText>
                                    </Button>
                               </ButtonGroup>
