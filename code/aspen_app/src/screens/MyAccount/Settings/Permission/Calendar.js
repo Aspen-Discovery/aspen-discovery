@@ -75,7 +75,7 @@ const CalendarPermissionUsage = () => {
           <Accordion variant="unfilled" w="100%" size="sm">
                <AccordionItem value="description">
                     <AccordionHeader>
-                         <AccordionTrigger>
+                         <AccordionTrigger px="$0">
                               {({ isExpanded }) => {
                                    return (
                                         <>
@@ -86,7 +86,7 @@ const CalendarPermissionUsage = () => {
                               }}
                          </AccordionTrigger>
                     </AccordionHeader>
-                    <AccordionContent>
+                    <AccordionContent px="$0">
                          <AccordionContentText color={textColor}>
                               {Constants.expoConfig.name} {getTermFromDictionary(language, 'how_we_use_calendar_body')}
                          </AccordionContentText>
