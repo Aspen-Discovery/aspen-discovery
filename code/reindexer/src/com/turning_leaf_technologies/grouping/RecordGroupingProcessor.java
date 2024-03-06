@@ -65,7 +65,7 @@ public class RecordGroupingProcessor {
 	private final HashSet<String> recordsToNotGroup = new HashSet<>();
 	private final Long updateTime = new Date().getTime() / 1000;
 
-	private long numAuthorAuthoritiesUsed = 0;
+	protected static long numAuthorAuthoritiesUsed = 0;
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
