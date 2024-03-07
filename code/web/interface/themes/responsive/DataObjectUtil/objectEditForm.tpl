@@ -40,7 +40,7 @@
 		{if (!isset($canSave) || ($canSave == true))}
 			{if !empty($tos)}
 				<div class="form-group">
-					<input id="tosCheckbox" type="checkbox" {if $tosAccept}checked="checked"{/if}> {translate text="I have read and accept the " isPublicFacing=true} <a onclick="AspenDiscovery.Account.selfRegistrationTermsModal('{$selfRegTermsModalTitle}', '{$selfRegTerms}')"> {translate text="Terms of Service" isPublicFacing=true} </a>
+					<input id="tosCheckbox" type="checkbox" {if $tosAccept}checked="checked"{/if}> {translate text="I have read and accept the " isPublicFacing=true} <a onclick="AspenDiscovery.Account.selfRegistrationTermsModal('{$selfRegTermsModalTitle|escape}', '{$selfRegTerms|escape}')"> {translate text="Terms of Service" isPublicFacing=true} </a>
 				</div>
 			{/if}
 			{* Show Recaptcha spam control if set. *}
@@ -92,8 +92,8 @@
 {/if}
 	{if !empty($tos)}
 		<script type="text/javascript">
-			const checkbox = document.querySelector("#tosCheckbox");
-			const target = document.querySelector("div.form-group button[value='Register']");
+			var checkbox = document.querySelector("#tosCheckbox");
+			var target = document.querySelector("div.form-group button[value='Register']");
 			checkbox.onclick = function() {
 				if (checkbox.checked) {
 					target.disabled = false;}
