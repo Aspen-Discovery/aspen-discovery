@@ -1997,8 +1997,18 @@ AspenDiscovery.Account = (function () {
 				}
 			}
 		},
-		selfRegistrationTermsModal: function (title, body) {
-			AspenDiscovery.showMessage(title, body);
+
+		selfRegistrationTermsModal: function (termsId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				'method': 'getTermsModalContent',
+				termsId: termsId
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.message, false);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		saveEvent: function (trigger, source, id, vendor) {
