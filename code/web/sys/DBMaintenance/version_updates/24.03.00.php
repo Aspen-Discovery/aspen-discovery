@@ -43,7 +43,7 @@ function getUpdates24_03_00(): array {
 				"ALTER TABLE self_registration_form ADD COLUMN promptForSMSNoticesInSelfReg tinyint(1) NOT NULL DEFAULT 0",
 				"ALTER TABLE self_registration_form ADD COLUMN cityStateField tinyint(1) NOT NULL DEFAULT 0",
 				"ALTER TABLE self_registration_form ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
-				"UPDATE self_registration_form LEFT JOIN library ON (library.selfRegistrationFormId = self_registration_form.id)
+				"UPDATE self_registration_form LEFT JOIN library ON (library.selfRegistrationFormId = self_registration_form.id) AND library.selfRegistrationFormId > 0
 					SET self_registration_form.promptForParentInSelfReg = library.promptForParentInSelfReg,
 					self_registration_form.promptForSMSNoticesInSelfReg = library.promptForSMSNoticesInSelfReg,
 					self_registration_form.cityStateField = library.cityStateField,
