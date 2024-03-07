@@ -504,7 +504,9 @@ abstract class ObjectEditor extends Admin_Admin {
 			if ($existingObject != null) {
 				if ($existingObject->canActiveUserEdit()) {
 					$interface->assign('id', $id);
-					if (method_exists($existingObject, 'label')) {
+					$user = UserAccount::getActiveUserObj();
+					$interface->assign('patronIdCheck', $user->id);
+;					if (method_exists($existingObject, 'label')) {
 						$interface->assign('objectName', $existingObject->label());
 					}
 					$this->activeObject = $existingObject;
@@ -562,74 +564,91 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	function editObject($objectAction, $structure) {
 		$errorOccurred = false;
-		//Save or create a new object
-		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
-		if (empty($id) || $id < 0) {
-			//Insert a new record
-			$curObject = $this->insertObject($structure);
-			if ($curObject == false) {
-				//The session lastError is updated
-				$errorOccurred = true;
+		$user = UserAccount::getLoggedInUser();
+		$samePatron = true;
+		if ($_REQUEST['patronIdCheck'] != 0 && $_REQUEST['patronIdCheck'] != $user->id){
+			$samePatron = false;
+		}
+		if ($samePatron) {
+			//Save or create a new object
+			$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+			if (empty($id) || $id < 0) {
+				//Insert a new record
+				$curObject = $this->insertObject($structure);
+				if ($curObject == false) {
+					//The session lastError is updated
+					$errorOccurred = true;
+				} else {
+					$id = $curObject->getPrimaryKeyValue();
+				}
 			} else {
-				$id = $curObject->getPrimaryKeyValue();
-			}
-		} else {
-			//Work with an existing record
-			$curObject = $this->getExistingObjectById($id);
-			if (!is_null($curObject)) {
-				if ($objectAction == 'save') {
-					//Update the object
-					$user = UserAccount::getActiveUserObj();
-					$validationResults = $this->updateFromUI($curObject, $structure);
-					if ($validationResults['validatedOk']) {
-						//Always save since has changes does not check sub objects for changes (which it should)
-						$ret = $curObject->update($this->getContext());
-						if ($ret === false) {
-							if ($curObject->getLastError()) {
-								$errorDescription = $curObject->getLastError();
-							} else {
-								$errorDescription = translate([
-									'text' => 'Unknown Error',
-									'isPublicFacing' => true,
-								]);
+				//Work with an existing record
+				$curObject = $this->getExistingObjectById($id);
+				if (!is_null($curObject)) {
+					if ($objectAction == 'save') {
+						//Update the object
+						$user = UserAccount::getActiveUserObj();
+						$validationResults = $this->updateFromUI($curObject, $structure);
+						if ($validationResults['validatedOk']) {
+							//Always save since has changes does not check sub objects for changes (which it should)
+							$ret = $curObject->update($this->getContext());
+							if ($ret === false) {
+								if ($curObject->getLastError()) {
+									$errorDescription = $curObject->getLastError();
+								} else {
+									$errorDescription = translate([
+										'text' => 'Unknown Error',
+										'isPublicFacing' => true,
+									]);
+								}
+								$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+								$user->updateMessageIsError = true;
+								$user->update();
+								$errorOccurred = true;
 							}
-							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						} else {
+							$errorDescription = implode('<br/>', $validationResults['errors']);
+							$user->updateMessage = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
 							$user->updateMessageIsError = true;
 							$user->update();
 							$errorOccurred = true;
 						}
-					} else {
-						$errorDescription = implode('<br/>', $validationResults['errors']);
-						$user->updateMessage = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
-						$user->updateMessageIsError = true;
-						$user->update();
-						$errorOccurred = true;
+					} elseif ($objectAction == 'delete') {
+						//Delete the record
+						$ret = $curObject->delete();
+						if ($ret == 0) {
+							$user = UserAccount::getActiveUserObj();
+							$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
+							$user->updateMessageIsError = true;
+							$user->update();
+							$errorOccurred = true;
+						}
 					}
-				} elseif ($objectAction == 'delete') {
-					//Delete the record
-					$ret = $curObject->delete();
-					if ($ret == 0) {
-						$user = UserAccount::getActiveUserObj();
-						$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
-						$user->updateMessageIsError = true;
-						$user->update();
-						$errorOccurred = true;
-					}
+				} else {
+					//Couldn't find the record.  Something went haywire.
+					$user = UserAccount::getActiveUserObj();
+					$user->updateMessage = "An error occurred, could not find {$this->getObjectType()} with id of $id";
+					$user->updateMessageIsError = true;
+					$user->update();
+					$errorOccurred = true;
 				}
-			} else {
-				//Couldn't find the record.  Something went haywire.
-				$user = UserAccount::getActiveUserObj();
-				$user->updateMessage = "An error occurred, could not find {$this->getObjectType()} with id of $id";
-				$user->updateMessageIsError = true;
-				$user->update();
-				$errorOccurred = true;
 			}
-		}
-		if (!empty($id) && $objectAction == 'saveCopy') {
-			if (!empty($_REQUEST['sourceId'])) {
-				$sourceId = $_REQUEST['sourceId'];
-				$curObject->finishCopy($sourceId);
+			if (!empty($id) && $objectAction == 'saveCopy') {
+				if (!empty($_REQUEST['sourceId'])) {
+					$sourceId = $_REQUEST['sourceId'];
+					$curObject->finishCopy($sourceId);
+				}
 			}
+		} else {
+			$errorOccurred = true;
+			global $interface;
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle400');
+			require_once ROOT_DIR . "/services/Error/Handle400.php";
+			$interface->assign('errorMessage', translate(['text' => 'Invalid user information', 'isAdminFacing'=>true]));
+			$actionClass = new Error_Handle400();
+			$actionClass->launch();
+			die();
 		}
 		if (empty($id) && $errorOccurred) {
 			if ($this->canAddNew()) {

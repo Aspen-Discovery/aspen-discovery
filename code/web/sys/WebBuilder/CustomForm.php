@@ -266,6 +266,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 
 		if (!UserAccount::isLoggedIn()) {
 			if (!$this->requireLogin) {
+				$interface->assign('patronIdCheck', 0);
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 				$recaptcha = new RecaptchaSetting();
@@ -280,6 +281,9 @@ class CustomForm extends DB_LibraryLinkedObject {
 						'isPublicFacing' => true,
 					]) . "</div>";
 			}
+		} else {
+			$userId = UserAccount::getActiveUserId();
+			$interface->assign('patronIdCheck', $userId);
 		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
