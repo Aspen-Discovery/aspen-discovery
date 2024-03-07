@@ -92,8 +92,8 @@
 {/if}
 	{if !empty($tos)}
 		<script type="text/javascript">
-			const checkbox = document.querySelector("#tosCheckbox");
-			const target = document.querySelector("div.form-group button[value='Register']");
+			var checkbox = document.querySelector("#tosCheckbox");
+			var target = document.querySelector("div.form-group button[value='Register']");
 			checkbox.onclick = function() {
 				if (checkbox.checked) {
 					target.disabled = false;}
