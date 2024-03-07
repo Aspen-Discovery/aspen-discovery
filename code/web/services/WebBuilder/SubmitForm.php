@@ -21,7 +21,9 @@ class WebBuilder_SubmitForm extends Action {
 			$actionClass->launch();
 			die();
 		}
+
 		global $interface;
+		$interface->assign('formTitle', $this->form->title);
 		if (isset($_REQUEST['submit'])) {
 			$processForm = true;
 			if (!UserAccount::isLoggedIn()) {
@@ -92,7 +94,6 @@ class WebBuilder_SubmitForm extends Action {
 						$interface->assign('replyTo', UserAccount::getActiveUserObj()->email);
 					}
 					$mail = new Mailer();
-					$interface->assign('formTitle', $this->form->title);
 					$interface->assign('htmlData', $htmlData);
 
 					$interface->assign('includeIntroductoryTextInEmail', $this->form->includeIntroductoryTextInEmail);
@@ -112,9 +113,17 @@ class WebBuilder_SubmitForm extends Action {
 				} else {
 					$interface->assign('submissionResultText', $this->form->submissionResultText);
 				}
+			}else{
+				$interface->assign('submissionError', translate([
+					'text' => 'Wrong account credentials, please try again.',
+					'isPublicFacing' => true,
+				]));
 			}
 		} else {
-			$interface->assign('submissionError', 'The form was not submitted correctly');
+			$interface->assign('submissionError', translate([
+				'text' => 'The form was not submitted correctly.',
+				'isPublicFacing' => true,
+			]));
 		}
 
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
