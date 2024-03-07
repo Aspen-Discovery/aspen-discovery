@@ -40,7 +40,7 @@
 		{if (!isset($canSave) || ($canSave == true))}
 			{if !empty($tos)}
 				<div class="form-group">
-					<input id="tosCheckbox" type="checkbox" {if $tosAccept}checked="checked"{/if}> {translate text="I have read and accept the " isPublicFacing=true} <a onclick="AspenDiscovery.Account.selfRegistrationTermsModal('{$selfRegTermsModalTitle}', '{$selfRegTerms}')"> {translate text="Terms of Service" isPublicFacing=true} </a>
+					<input id="tosCheckbox" type="checkbox" {if $tosAccept}checked="checked"{/if}> {translate text="I have read and accept the " isPublicFacing=true} <a onclick="AspenDiscovery.Account.selfRegistrationTermsModal('{$selfRegTermsID}');"> {translate text="Terms of Service" isPublicFacing=true} </a>
 				</div>
 			{/if}
 			{* Show Recaptcha spam control if set. *}

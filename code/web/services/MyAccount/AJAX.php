@@ -424,6 +424,19 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getTermsModalContent() {
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$selfRegTerms = $catalog->getSelfRegistrationTerms();
+		return [
+			'title' => translate ([
+				'text' => 'Terms of Service',
+				'isPublicFacing' => true,
+			]),
+			'message' => $selfRegTerms->terms,
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm() {
 		global $interface;
 		global $library;
