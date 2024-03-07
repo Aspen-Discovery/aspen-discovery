@@ -424,6 +424,19 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getTermsModalContent() {
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$selfRegTerms = $catalog->getSelfRegistrationTerms();
+		return [
+			'title' => translate ([
+				'text' => 'Terms of Service',
+				'isPublicFacing' => true,
+			]),
+			'message' => $selfRegTerms->terms,
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm() {
 		global $interface;
 		global $library;
@@ -1810,6 +1823,13 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
+			$interface->assign('tos', false);
+			if ($catalog->accountProfile->ils = "symphony") {
+				$selfRegTerms = $catalog->getSelfRegistrationTerms();
+				if ($selfRegTerms != null) {
+					$interface->assign('tos', true);
+				}
+			}
 			$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
 			if (!$library->enableForgotPasswordLink) {
 				$interface->assign('forgotPasswordType', 'none');

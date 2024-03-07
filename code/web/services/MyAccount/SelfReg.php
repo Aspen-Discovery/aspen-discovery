@@ -120,12 +120,7 @@ class SelfReg extends Action {
 				$selfRegTerms = $catalog->getSelfRegistrationTerms();
 				if ($selfRegTerms != null){
 					$interface->assign('tos', true);
-					$interface->assign("selfRegTerms", $selfRegTerms->terms);
-					$selfRegTermsModalTitle = translate([
-						'text' => "Terms of Service",
-						"isPublicFacing" => true,
-					]);
-					$interface->assign("selfRegTermsModalTitle", $selfRegTermsModalTitle);
+					$interface->assign("selfRegTermsID", $selfRegTerms->id);
 					$tosAccept = false;
 					if (!empty($_REQUEST['tosAccept'])){
 						$tosAccept = $_REQUEST['tosAccept'];
