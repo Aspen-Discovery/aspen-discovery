@@ -3166,6 +3166,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		$fields = [];
 		if ($hasCustomSelfRegistrationFrom) {
+			$hiddenDefault = false;
 			if ($selfRegistrationForm->promptForParentInSelfReg){
 				$fields[] = [
 					'property' => 'cardType',

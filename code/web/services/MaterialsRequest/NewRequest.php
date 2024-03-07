@@ -83,6 +83,7 @@ class MaterialsRequest_NewRequest extends MyAccount {
 		}
 
 		$user = UserAccount::getActiveUserObj();
+		$interface->assign('patronIdCheck', $user->id);
 		if ($user) {
 			$request->phone = str_replace([
 				'### TEXT ONLY ',

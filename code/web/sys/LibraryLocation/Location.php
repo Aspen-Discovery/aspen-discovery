@@ -2292,7 +2292,7 @@ class Location extends DataObject {
 
 						$country = '';
 						foreach ($components as $component) {
-							if ($component->type[0] == 'country') {
+							if ($component->types[0] == 'country') {
 								$country = $component->short_name;
 							}
 						}

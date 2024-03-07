@@ -90,6 +90,7 @@ class Admin_DBMaintenance extends Admin_Admin {
 	}
 
 	function updateAllThemes() {
+		set_time_limit(0);
 		//Make sure themes are only updated once
 		$themeIdsUpdated = [];
 		$theme = new Theme();

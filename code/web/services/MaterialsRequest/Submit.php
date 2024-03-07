@@ -97,87 +97,100 @@ class MaterialsRequest_Submit extends Action {
 								'isPublicFacing' => true,
 							]) . "</a>.");
 					} else {
-						//Materials request can be submitted.
-						$materialsRequest = new MaterialsRequest();
-						$materialsRequest->format = empty($_REQUEST['format']) ? '' : strip_tags($_REQUEST['format']);
-						if (empty($materialsRequest->format)) {
-							$interface->assign('success', false);
-							$interface->assign('error', 'No format was specified.');
-						} else {
-							$materialsRequest->phone = isset($_REQUEST['phone']) ? substr(strip_tags($_REQUEST['phone']), 0, 15) : '';
-							$materialsRequest->email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
-							$materialsRequest->title = isset($_REQUEST['title']) ? strip_tags($_REQUEST['title']) : '';
-							$materialsRequest->season = isset($_REQUEST['season']) ? strip_tags($_REQUEST['season']) : '';
-							$materialsRequest->magazineTitle = isset($_REQUEST['magazineTitle']) ? strip_tags($_REQUEST['magazineTitle']) : '';
-							$materialsRequest->magazineDate = isset($_REQUEST['magazineDate']) ? strip_tags($_REQUEST['magazineDate']) : '';
-							$materialsRequest->magazineVolume = isset($_REQUEST['magazineVolume']) ? strip_tags($_REQUEST['magazineVolume']) : '';
-							$materialsRequest->magazineNumber = isset($_REQUEST['magazineNumber']) ? strip_tags($_REQUEST['magazineNumber']) : '';
-							$materialsRequest->magazinePageNumbers = isset($_REQUEST['magazinePageNumbers']) ? strip_tags($_REQUEST['magazinePageNumbers']) : '';
-							$materialsRequest->author = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
-							$materialsRequest->ageLevel = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
-							$materialsRequest->bookType = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
-							$materialsRequest->isbn = isset($_REQUEST['isbn']) ? substr(strip_tags($_REQUEST['isbn']), 0, 15) : '';
-							$materialsRequest->upc = isset($_REQUEST['upc']) ? strip_tags($_REQUEST['upc']) : '';
-							$materialsRequest->issn = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
-							$materialsRequest->oclcNumber = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
-							$materialsRequest->publisher = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
-							$materialsRequest->publicationYear = empty($_REQUEST['publicationYear']) ? '' : substr(strip_tags($_REQUEST['publicationYear']), 0, 4);
-							$materialsRequest->about = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
-							$materialsRequest->comments = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
-							$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0 : $_REQUEST['placeHoldWhenAvailable'];
-							$materialsRequest->holdPickupLocation = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
-							$materialsRequest->bookmobileStop = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
-							$materialsRequest->illItem = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
-
-							$materialsRequest->libraryId = $homeLibrary->libraryId;
-
-							$formatObject = $materialsRequest->getFormatObject();
-							if (!empty($formatObject->id)) {
-								$materialsRequest->formatId = $formatObject->id;
-							}
-
-							if (isset($_REQUEST['ebookFormat']) && $formatObject->hasSpecialFieldOption('Ebook format')) {
-								$materialsRequest->subFormat = strip_tags($_REQUEST['ebookFormat']);
-
-							} elseif (isset($_REQUEST['eaudioFormat']) && $formatObject->hasSpecialFieldOption('Eaudio format')) {
-								$materialsRequest->subFormat = strip_tags($_REQUEST['eaudioFormat']);
-							}
-
-							if (isset($_REQUEST['abridged'])) {
-								if ($_REQUEST['abridged'] == 'abridged') {
-									$materialsRequest->abridged = 1;
-								} elseif ($_REQUEST['abridged'] == 'unabridged') {
-									$materialsRequest->abridged = 0;
-								} else {
-									$materialsRequest->abridged = 2; //Not applicable
-								}
-							}
-
-							$defaultStatus = new MaterialsRequestStatus();
-							$defaultStatus->isDefault = 1;
-							$defaultStatus->libraryId = $homeLibrary->libraryId;
-							if (!$defaultStatus->find(true)) {
+						$user = UserAccount::getLoggedInUser();
+						$samePatron = true;
+						if ($_REQUEST['patronIdCheck'] != $user->id){
+							$samePatron = false;
+						}
+						if ($samePatron){
+							//Materials request can be submitted.
+							$materialsRequest = new MaterialsRequest();
+							$materialsRequest->format = empty($_REQUEST['format']) ? '' : strip_tags($_REQUEST['format']);
+							if (empty($materialsRequest->format)) {
 								$interface->assign('success', false);
-								$interface->assign('error', translate([
-									'text' => 'There was an error submitting your materials request, could not determine the default status.',
-									'isPublicFacing' => true,
-								]));
+								$interface->assign('error', 'No format was specified.');
 							} else {
-								$materialsRequest->status = $defaultStatus->id;
-								$materialsRequest->dateCreated = time();
-								$materialsRequest->createdBy = UserAccount::getActiveUserId();
-								$materialsRequest->dateUpdated = time();
+								$materialsRequest->phone = isset($_REQUEST['phone']) ? substr(strip_tags($_REQUEST['phone']), 0, 15) : '';
+								$materialsRequest->email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
+								$materialsRequest->title = isset($_REQUEST['title']) ? strip_tags($_REQUEST['title']) : '';
+								$materialsRequest->season = isset($_REQUEST['season']) ? strip_tags($_REQUEST['season']) : '';
+								$materialsRequest->magazineTitle = isset($_REQUEST['magazineTitle']) ? strip_tags($_REQUEST['magazineTitle']) : '';
+								$materialsRequest->magazineDate = isset($_REQUEST['magazineDate']) ? strip_tags($_REQUEST['magazineDate']) : '';
+								$materialsRequest->magazineVolume = isset($_REQUEST['magazineVolume']) ? strip_tags($_REQUEST['magazineVolume']) : '';
+								$materialsRequest->magazineNumber = isset($_REQUEST['magazineNumber']) ? strip_tags($_REQUEST['magazineNumber']) : '';
+								$materialsRequest->magazinePageNumbers = isset($_REQUEST['magazinePageNumbers']) ? strip_tags($_REQUEST['magazinePageNumbers']) : '';
+								$materialsRequest->author = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
+								$materialsRequest->ageLevel = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
+								$materialsRequest->bookType = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
+								$materialsRequest->isbn = isset($_REQUEST['isbn']) ? substr(strip_tags($_REQUEST['isbn']), 0, 15) : '';
+								$materialsRequest->upc = isset($_REQUEST['upc']) ? strip_tags($_REQUEST['upc']) : '';
+								$materialsRequest->issn = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
+								$materialsRequest->oclcNumber = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
+								$materialsRequest->publisher = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
+								$materialsRequest->publicationYear = empty($_REQUEST['publicationYear']) ? '' : substr(strip_tags($_REQUEST['publicationYear']), 0, 4);
+								$materialsRequest->about = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
+								$materialsRequest->comments = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
+								$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0 : $_REQUEST['placeHoldWhenAvailable'];
+								$materialsRequest->holdPickupLocation = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
+								$materialsRequest->bookmobileStop = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
+								$materialsRequest->illItem = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
 
-								if ($materialsRequest->insert()) {
-									header('Location: /MaterialsRequest/Results?success=true&id=' . $materialsRequest->id);
-								} else {
+								$materialsRequest->libraryId = $homeLibrary->libraryId;
+
+								$formatObject = $materialsRequest->getFormatObject();
+								if (!empty($formatObject->id)) {
+									$materialsRequest->formatId = $formatObject->id;
+								}
+
+								if (isset($_REQUEST['ebookFormat']) && $formatObject->hasSpecialFieldOption('Ebook format')) {
+									$materialsRequest->subFormat = strip_tags($_REQUEST['ebookFormat']);
+
+								} elseif (isset($_REQUEST['eaudioFormat']) && $formatObject->hasSpecialFieldOption('Eaudio format')) {
+									$materialsRequest->subFormat = strip_tags($_REQUEST['eaudioFormat']);
+								}
+
+								if (isset($_REQUEST['abridged'])) {
+									if ($_REQUEST['abridged'] == 'abridged') {
+										$materialsRequest->abridged = 1;
+									} elseif ($_REQUEST['abridged'] == 'unabridged') {
+										$materialsRequest->abridged = 0;
+									} else {
+										$materialsRequest->abridged = 2; //Not applicable
+									}
+								}
+
+								$defaultStatus = new MaterialsRequestStatus();
+								$defaultStatus->isDefault = 1;
+								$defaultStatus->libraryId = $homeLibrary->libraryId;
+								if (!$defaultStatus->find(true)) {
 									$interface->assign('success', false);
 									$interface->assign('error', translate([
-										'text' => 'There was an error submitting your materials request.',
+										'text' => 'There was an error submitting your materials request, could not determine the default status.',
 										'isPublicFacing' => true,
 									]));
+								} else {
+									$materialsRequest->status = $defaultStatus->id;
+									$materialsRequest->dateCreated = time();
+									$materialsRequest->createdBy = UserAccount::getActiveUserId();
+									$materialsRequest->dateUpdated = time();
+
+									if ($materialsRequest->insert()) {
+										header('Location: /MaterialsRequest/Results?success=true&id=' . $materialsRequest->id);
+									} else {
+										$interface->assign('success', false);
+										$interface->assign('error', translate([
+											'text' => 'There was an error submitting your materials request.',
+											'isPublicFacing' => true,
+										]));
+									}
 								}
 							}
+						} else {
+							$interface->assign('success', false);
+							$interface->assign('error', translate([
+								'text' => 'Wrong account credentials, please try again.',
+								'isPublicFacing' => true,
+							]));
 						}
 					}
 				}

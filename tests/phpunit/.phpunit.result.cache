@@ -1,0 +1,1 @@
+{"version":1,"defects":{"services\\API\\SystemAPITest::testGetCatalogStatus":5,"services\\API\\SystemAPITest::testGetLanguages":5,"services\\API\\SystemAPITest::testGetCatalogStatusOnline":7},"times":{"services\\API\\SystemAPITest::testGetCatalogStatus":0,"services\\API\\SystemAPITest::testGetLanguages":0,"services\\API\\SystemAPITest::testGetCatalogStatusOnline":0.026}}

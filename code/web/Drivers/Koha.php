@@ -481,7 +481,7 @@ class Koha extends AbstractIlsDriver {
 			if ($dateDue) {
 				$curCheckout->renewalDate = $dateDue->getTimestamp();
 				$dueTime = $dateDue->getTimestamp();
-				$renewalDate = date('M j, y', $curCheckout->renewalDate);
+				$renewalDate = date('M j, Y', $curCheckout->renewalDate);
 			} else {
 				$renewalDate = 'Unknown';
 				$dueTime = null;
@@ -634,7 +634,7 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 						if ($curCheckout->renewError == $renewError && $noRenewalsBefore && $renewalDate) {
-							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
+							$days_before = date('M j, Y', strtotime($renewalDate . " -$noRenewalsBefore days"));
 							$curCheckout->renewError = translate([
 								'text' => 'No renewals before %1%.',
 								'1' => $days_before,
@@ -912,6 +912,19 @@ class Koha extends AbstractIlsDriver {
 					$patronId = $jsonResponse->patron_id;
 					$authenticationSuccess = true;
 				} else {
+					if (!empty($jsonResponse) && !empty($jsonResponse->error) && $jsonResponse->error == 'Password expired') {
+						$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+
+						$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+						if ($lookupUserResult->num_rows > 0) {
+							$lookupUserRow = $lookupUserResult->fetch_assoc();
+
+							$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
+							if ($expiredPasswordResult != null) {
+								return $expiredPasswordResult;
+							}
+						}
+					}
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
@@ -988,42 +1001,9 @@ class Koha extends AbstractIlsDriver {
 						} else {
 							//Check to see if the patron password has expired, this is not available on all systems.
 							if (isset($jsonResponse->code) && $jsonResponse->code == 'PasswordExpired') {
-								try {
-									$patronId = $lookupUserRow['borrowernumber'];
-
-									/** @noinspection SqlResolve */
-									$sql = "SELECT password_expiration_date, cardnumber, userid from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
-									$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
-									if ($passwordExpirationResult->num_rows > 0) {
-										$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
-										if (!empty($passwordExpirationRow['password_expiration_date'])) {
-											$passwordExpirationTime = date_create($passwordExpirationRow['password_expiration_date']);
-											if ($passwordExpirationTime->getTimestamp() < date_create('now')->getTimestamp()) {
-												//PatronId is the borrower number, need to get the actual user id
-												$user = new User();
-												$user->username = $patronId;
-												$user->unique_ils_id = $patronId;
-												if (!$user->find(true)) {
-													$cardNumber = $passwordExpirationRow['cardnumber'];
-													$this->findNewUser($cardNumber, '');
-												}
-
-												require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
-												$pinResetToken = new PinResetToken();
-												$pinResetToken->userId = $user->id;
-												$pinResetToken->generateToken();
-												$pinResetToken->dateIssued = time();
-												$resetToken = '';
-												if ($pinResetToken->insert()) {
-													$resetToken = $pinResetToken->token;
-												}
-												require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
-												return new ExpiredPasswordError($patronId, $passwordExpirationRow['password_expiration_date'], $resetToken);
-											}
-										}
-									}
-								} catch (Exception $e) {
-									//This happens if password expiration is not enabled
+								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
+								if ($expiredPasswordResult != null) {
+									return $expiredPasswordResult;
 								}
 							}
 							//Check to see if the user has reached the maximum number of login attempts
@@ -1044,6 +1024,50 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			return null;
 		}
+	}/**
+ * @param $borrowernumber
+ * @return array
+ */
+	public function processExpiredPassword($borrowernumber, $barcode) : ?ExpiredPasswordError {
+		$result = null;
+		try {
+			$patronId = $borrowernumber;
+
+			/** @noinspection SqlResolve */
+			$sql = "SELECT password_expiration_date, cardnumber, userid from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+			$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
+			if ($passwordExpirationResult->num_rows > 0) {
+				$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
+				if (!empty($passwordExpirationRow['password_expiration_date'])) {
+					$passwordExpirationTime = date_create($passwordExpirationRow['password_expiration_date']);
+					if ($passwordExpirationTime->getTimestamp() < date_create('now')->getTimestamp()) {
+						//PatronId is the borrower number, need to get the actual user id
+						$user = new User();
+						$user->username = $patronId;
+						$user->unique_ils_id = $patronId;
+						if (!$user->find(true)) {
+							$cardNumber = $passwordExpirationRow['cardnumber'];
+							$this->findNewUser($cardNumber, '');
+						}
+
+						require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+						$pinResetToken = new PinResetToken();
+						$pinResetToken->userId = $user->id;
+						$pinResetToken->generateToken();
+						$pinResetToken->dateIssued = time();
+						$resetToken = '';
+						if ($pinResetToken->insert()) {
+							$resetToken = $pinResetToken->token;
+						}
+						require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
+						$result = new ExpiredPasswordError($patronId, $passwordExpirationRow['password_expiration_date'], $resetToken);
+					}
+				}
+			}
+		} catch (Exception $e) {
+			//This happens if password expiration is not enabled
+		}
+		return $result;
 	}
 
 	private function loadPatronInfoFromDB($patronId, $password, $suppliedUsernameOrBarcode) {
