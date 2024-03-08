@@ -129,7 +129,12 @@
 						{elseif $record->formatSelected && empty($record->overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Download Again" isPublicFacing=true}</a>
 						{elseif $fulfillmentMethod == "1"}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Access Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Access in %1%" 1=$readerName isPublicFacing=true}</a>
+						{/if}
+						{if array_key_exists('Palace Project', $enabledModules)}
+							{if $record->format == 'eBook' || $record->format == 'eAudiobook'}
+								<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
+							{/if}
 						{/if}
 						{if !empty($record->supplementalMaterials)}
 							{foreach from=$record->supplementalMaterials item=supplement}
