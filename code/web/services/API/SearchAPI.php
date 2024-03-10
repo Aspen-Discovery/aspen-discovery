@@ -244,7 +244,12 @@ class SearchAPI extends AbstractAPI {
 			$this->addServerStat($serverStats, '1 minute Load Average', $load[0]);
 			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
 			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
-			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
+			if ($numCPUs > 0) {
+				$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
+			} else {
+				//Got an error loading cpu's, ignore for now?
+			}
+
 			if ($load[1] > $numCPUs * 2.5) {
 				if ($load[0] >= $load[1]) {
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
