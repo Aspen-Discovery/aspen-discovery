@@ -128,6 +128,9 @@ public class CloudLibraryExporter {
 							numChanges += handler.getNumDocuments();
 							moreRecords = true;
 						}
+						if (numChanges % 500 == 0) {
+							getGroupedWorkIndexer().commitChanges();
+						}
 						logEntry.saveResults();
 					} catch (SAXException | ParserConfigurationException | IOException e) {
 						logger.error("Error parsing response", e);
