@@ -15559,8 +15559,10 @@ AspenDiscovery.PalaceProject = (function () {
 					cache: false,
 					success: function (data) {
 						if (data.success === true) {
-							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
-							AspenDiscovery.Account.loadMenuData();
+							AspenDiscovery.closeLightbox(function (){
+								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+								AspenDiscovery.Account.loadMenuData();
+							});
 						} else {
 							// noinspection JSUnresolvedVariable
 							if (data.noCopies === true) {
@@ -15722,6 +15724,20 @@ AspenDiscovery.PalaceProject = (function () {
 					AspenDiscovery.showMessage("Error Loading Instructions", "An error occurred loading instructions.  Please try again in a few minutes.", false);
 				}
 			});
+		},
+
+		processCheckoutPrompts: function () {
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.PalaceProject.doCheckOut(patronId, id);
+		},
+
+		processHoldPrompts: function () {
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.PalaceProject.doHold(patronId, id);
 		}
 	}
 }(AspenDiscovery.PalaceProject || {}));
