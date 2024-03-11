@@ -2,7 +2,7 @@
 <project version="4">
   <component name="PhpIncludePathManager">
     <include_path>
-      <path value="$PROJECT_DIR$/../../../../Bitnami/wampstack-7.3.3-1/php" />
+      <path value="$PROJECT_DIR$/../../../../xampp/php" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.0">
@@ -13,5 +13,10 @@
       <extension name="memcache" enabled="false" />
       <extension name="memcached" enabled="false" />
     </extensions>
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings load_method="PHPUNIT_PHAR" bootstrap_file_path="$PROJECT_DIR$/../../tests/phpunit/phpUnitBootstrap.php" configuration_file_path="$PROJECT_DIR$/../../tests/phpunit/phpunit.xml" custom_loader_path="" phpunit_phar_path="$PROJECT_DIR$/../../tests/phpunit/phpunit.phar" use_bootstrap_file="true" use_configuration_file="true" />
+    </phpunit_settings>
   </component>
 </project>

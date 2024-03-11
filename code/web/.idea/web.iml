@@ -8,5 +8,6 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="tests" />
   </component>
 </module>

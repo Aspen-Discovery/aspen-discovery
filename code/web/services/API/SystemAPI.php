@@ -83,6 +83,7 @@ class SystemAPI extends AbstractAPI {
 			$this->forbidAPIAccess();
 		}
 
+		return '';
 	}
 
 	/** @noinspection PhpUnused */
