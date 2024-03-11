@@ -255,20 +255,24 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getBorrowLink() {
-		$links = $this->palaceProjectRawMetadata->links;
-		foreach ($links as $link) {
-			if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-				return $link->href;
+		if (!empty($this->palaceProjectRawMetadata)) {
+			$links = $this->palaceProjectRawMetadata->links;
+			foreach ($links as $link) {
+				if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+					return $link->href;
+				}
 			}
 		}
 		return null;
 	}
 
 	function getPreviewUrl() {
-		$links = $this->palaceProjectRawMetadata->links;
-		foreach ($links as $link) {
-			if ($link->rel == 'preview' && $link->type == 'text/html') {
-				return $link->href;
+		if (!empty($this->palaceProjectRawMetadata)) {
+			$links = $this->palaceProjectRawMetadata->links;
+			foreach ($links as $link) {
+				if ($link->rel == 'preview' && $link->type == 'text/html') {
+					return $link->href;
+				}
 			}
 		}
 		return null;
