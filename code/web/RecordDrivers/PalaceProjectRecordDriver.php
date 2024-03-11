@@ -391,14 +391,22 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	 * @return array
 	 */
 	function getPublishers() {
-		return [];
+		$publishers = [];
+		if (!empty($this->palaceProjectRawMetadata->metadata->publisher)) {
+			$publishers[] = $this->palaceProjectRawMetadata->metadata->publisher->name;
+		}
+		return $publishers;
 	}
 
 	/**
 	 * @return array
 	 */
 	function getPublicationDates() {
-		return [];
+		$publicationDates = [];
+		if (!empty($this->palaceProjectRawMetadata->metadata->published)) {
+			$publicationDates[] = date('Y', strtotime($this->palaceProjectRawMetadata->metadata->published));
+		}
+		return $publicationDates;
 	}
 
 	public function getRecordType() {

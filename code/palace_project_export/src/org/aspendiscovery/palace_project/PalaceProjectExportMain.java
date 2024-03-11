@@ -37,7 +37,6 @@ public class PalaceProjectExportMain {
 	private static String palaceProjectBaseUrl;
 
 	private static Connection aspenConn;
-	private static PreparedStatement getAllExistingPalaceProjectTitlesStmt;
 	private static PreparedStatement addPalaceProjectTitleToDbStmt;
 	private static PreparedStatement updatePalaceProjectTitleInDbStmt;
 	private static PreparedStatement deletePalaceProjectTitleFromDbStmt;
@@ -450,6 +449,7 @@ public class PalaceProjectExportMain {
 				logEntry.incErrors("Error updating palace project data", e);
 			}
 		}
+		getGroupedWorkIndexer().commitChanges();
 	}
 
 	@SuppressWarnings("unused")
@@ -499,7 +499,6 @@ public class PalaceProjectExportMain {
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
-				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, collectionName, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
 				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, collectionName, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, COMPRESS(?), ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, collectionName = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
@@ -545,6 +544,7 @@ public class PalaceProjectExportMain {
 	private static void loadExistingTitles() {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
+			PreparedStatement getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, collectionName, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
 			ResultSet allRecordsRS = getAllExistingPalaceProjectTitlesStmt.executeQuery();
 			while (allRecordsRS.next()) {
 				String palaceProjectId = allRecordsRS.getString("palaceProjectId");
@@ -562,7 +562,6 @@ public class PalaceProjectExportMain {
 			//noinspection UnusedAssignment
 			allRecordsRS = null;
 			getAllExistingPalaceProjectTitlesStmt.close();
-			getAllExistingPalaceProjectTitlesStmt = null;
 		} catch (SQLException e) {
 			logger.error("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e);
@@ -575,11 +574,30 @@ public class PalaceProjectExportMain {
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='palace_project'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getIdForPalaceProjectIdStmt = aspenConn.prepareStatement("SELECT if from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				long palaceProjectId = getRecordsToReloadRS.getLong("identifier");
+				String rawPalaceProjectId = getRecordsToReloadRS.getString("identifier");
+				long palaceProjectId;
+				if (AspenStringUtils.isNumeric(rawPalaceProjectId)) {
+					palaceProjectId = Long.parseLong(rawPalaceProjectId);
+				}else{
+					getIdForPalaceProjectIdStmt.setString(1, rawPalaceProjectId);
+					ResultSet getIdForPalaceProjectIdRS = getIdForPalaceProjectIdStmt.executeQuery();
+					if (getIdForPalaceProjectIdRS.next()) {
+						palaceProjectId = getIdForPalaceProjectIdRS.getLong("id");
+						getIdForPalaceProjectIdRS.close();
+					}else{
+						logEntry.addNote("Could not get details for record to reload " + rawPalaceProjectId + " it has been deleted");
+						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+						markRecordToReloadAsProcessedStmt.executeUpdate();
+						numRecordsToReloadProcessed++;
+						getIdForPalaceProjectIdRS.close();
+						continue;
+					}
+				}
 				//Regroup the record
 				getItemDetailsForRecordStmt.setLong(1, palaceProjectId);
 				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();

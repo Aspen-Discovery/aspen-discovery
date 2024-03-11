@@ -401,6 +401,10 @@ public class Axis360Extractor {
 						}
 						indexAxis360Record(groupedWorkId);
 						numChanges++;
+
+						if (numChanges % 500 == 0) {
+							getGroupedWorkIndexer().commitChanges();
+						}
 					}
 				}
 			} catch (Exception e) {

@@ -664,7 +664,7 @@ public class HooplaExportMain {
 				logEntry.incErrors("Error updating hoopla data", e);
 			}
 		}
-
+		getGroupedWorkIndexer().commitChanges();
 	}
 
 	private static void indexRecord(String groupedWorkId) {

@@ -278,6 +278,7 @@ public class SideLoadingMain {
 							logEntry.addNote("Processing sideload file " + curFile.getFilename());
 							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
+							getGroupedWorkIndexer().commitChanges();
 						} else {
 							if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
 								logEntry.addNote("Marking " + curFile.getFilename() + " as deleted");
@@ -313,6 +314,9 @@ public class SideLoadingMain {
 							}
 
 							logEntry.incDeleted();
+							if (logEntry.getNumDeleted() % 500 == 0) {
+								getGroupedWorkIndexer().commitChanges();
+							}
 						}
 					}
 					deleteFromIlsMarcChecksums.close();
