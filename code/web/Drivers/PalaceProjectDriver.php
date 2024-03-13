@@ -61,7 +61,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		ExternalRequestLogEntry::logRequest('palaceProject.getCirculation', 'POST', $checkoutsUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 		if ($response != false) {
 			$jsonResponse = json_decode($response);
-			if (!empty($jsonResponse)) {
+			if (!empty($jsonResponse) && !empty($jsonResponse->publications)) {
 				foreach ($jsonResponse->publications as $publication) {
 					//Figure out if this is a hold or a checkout
 					$links = $publication->links;

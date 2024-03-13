@@ -41,8 +41,8 @@ class SystemAPI extends Action {
 					'getSystemMessages',
 					'dismissSystemMessage',
 					'getLibraryLinks',
-					'getLocations',
-					'getCatalogStatus'
+					'getCatalogStatus',
+					'getLocations'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -85,19 +85,24 @@ class SystemAPI extends Action {
 
 	}
 
+	/** @noinspection PhpUnused */
 	public function getCatalogStatus(): array {
 		$results = [
 			'success' => true,
 			'catalogStatus' => 0,
 			'message' => null,
+			'api' => [
+				'message' => null
+			]
 		];
 
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if ($systemVariables !== false) {
-			$results['catalogStatus'] = $systemVariables->catalogStatus;
+			$results['catalogStatus'] = (int)$systemVariables->catalogStatus;
 			if($systemVariables->catalogStatus > 0) {
-				$results['message'] = $systemVariables->offlineMessage;
+				$results['message'] = translate(['text'=>$systemVariables->offlineMessage, 'isPublicFacing'=>true]);
+				$results['api']['message'] = translate(['text'=>strip_tags($systemVariables->offlineMessage), 'isPublicFacing'=>true]);
 			}
 		}
 

@@ -1810,6 +1810,9 @@ public class GroupedWorkIndexer {
 		if (publicationDate == null){
 			return -1;
 		}
+		if (publicationDate.length() > 250) {
+			publicationDate = publicationDate.substring(0, 250);
+		}
 		Long id = publicationDateIds.get(publicationDate);
 		if (id == null){
 			try {

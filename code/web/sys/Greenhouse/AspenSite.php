@@ -92,7 +92,7 @@ class AspenSite extends DataObject {
 			'implementationStatus',
 			'appAccess',
 			'ils',
-			'isOnline'
+			'isOnline',
 		];
 	}
 
