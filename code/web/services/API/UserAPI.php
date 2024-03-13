@@ -1664,11 +1664,12 @@ class UserAPI extends Action {
 	function renewItem(): array {
 		$source = $_REQUEST['itemSource'] ?? null;
 		$itemBarcode = $_REQUEST['itemBarcode'] ?? null;
+		$recordId = $_REQUEST['recordId'] ?? null;
 
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
-				$result = $user->renewCheckout($user, $itemBarcode);
+				$result = $user->renewCheckout($recordId, $itemBarcode);
 
 				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
 					$action = $result['api']['action'] ?? null;
