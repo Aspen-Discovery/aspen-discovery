@@ -2,10 +2,10 @@
 
 
 abstract class ResultsAction extends Action {
-	function getResultsBreadcrumbs($searchType) {
+	function getResultsBreadcrumbs($searchTypeOrTerm, $translateTypeOrTerm = true) {
 		global $interface;
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb(null, $searchType);
+		$breadcrumbs[] = new Breadcrumb(null, $searchTypeOrTerm, $translateTypeOrTerm);
 		$recordCount = $interface->getVariable('recordCount');
 		if (empty($recordCount)) {
 			$resultCountText = translate([

@@ -72,6 +72,6 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 	}
 
 	function canCopy(): bool {
-		return this->canAddNew();
+		return $this->canAddNew();
 	}
 }

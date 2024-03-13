@@ -146,10 +146,16 @@ public class PalaceProjectProcessor {
 				}
 
 				if (metadata.has("publisher")) {
+					String publisher;
 					if (metadata.get("publisher") instanceof String) {
-						groupedWork.addPublisher(metadata.getString("publisher"));
+						publisher = metadata.getString("publisher");
+						groupedWork.addPublisher(publisher);
 					}else{
-						groupedWork.addPublisher(metadata.getJSONObject("publisher").getString("name"));
+						publisher = metadata.getJSONObject("publisher").getString("name");
+						groupedWork.addPublisher(publisher);
+					}
+					if (publisher != null) {
+						palaceProjectRecord.setPublisher(publisher);
 					}
 				}
 
@@ -157,6 +163,7 @@ public class PalaceProjectProcessor {
 					String published = metadata.getString("published");
 					String publicationYear = published.substring(0, 4);
 					groupedWork.addPublicationDate(publicationYear);
+					palaceProjectRecord.setPublicationDate(publicationYear);
 				}
 
 				if (metadata.has("description")) {

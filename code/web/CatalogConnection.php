@@ -387,6 +387,7 @@ class CatalogConnection {
 		];
 
 		$userToResetPin = new User();
+		$userToResetPin->source = $this->driver->accountProfile->name;
 		$userToResetPin->ils_barcode = $barcode;
 		if (!$userToResetPin->find(true)) {
 			$userToResetPin = $this->driver->findNewUser($barcode, '');

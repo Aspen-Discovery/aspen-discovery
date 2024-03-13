@@ -103,7 +103,7 @@ abstract class CircEntry extends DataObject {
 	public function getFormats() {
 		if (empty($this->format)) {
 			$recordDriver = $this->getRecordDriver();
-			if ($recordDriver != false) {
+			if ($recordDriver != false && $recordDriver != null) {
 				return $recordDriver->getFormats();
 			} else {
 				return 'Unknown';
@@ -241,7 +241,7 @@ abstract class CircEntry extends DataObject {
 	public function getRecordFormatCategory() {
 		$recordDriver = $this->getRecordDriver();
 		$record = $recordDriver->getRelatedRecord();
-		if ($record) {
+		if ($record != null) {
 			return $record->getFormat();
 		} else {
 			return "Unknown";

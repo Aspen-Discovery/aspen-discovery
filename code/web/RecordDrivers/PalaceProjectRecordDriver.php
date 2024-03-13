@@ -211,38 +211,40 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 			}
 
 			if ($loadDefaultActions) {
-				foreach ($this->palaceProjectRawMetadata->links as $link) {
-					if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-						$needsHold = false;
-						if (!empty($link->properties)) {
-							if (!empty($link->properties->availability)) {
-								if ($link->properties->availability->state != 'available') {
-									$needsHold = true;
+				if (!empty($this->palaceProjectRawMetadata)) {
+					foreach ($this->palaceProjectRawMetadata->links as $link) {
+						if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+							$needsHold = false;
+							if (!empty($link->properties)) {
+								if (!empty($link->properties->availability)) {
+									if ($link->properties->availability->state != 'available') {
+										$needsHold = true;
+									}
 								}
 							}
+							if (!$needsHold) {
+								$this->_actions[] = [
+									'title' => translate([
+										'text' => 'Check Out Palace Project',
+										'isPublicFacing' => true,
+									]),
+									'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
+									'requireLogin' => false,
+									'type' => 'palace_project_checkout',
+								];
+							} else {
+								$this->_actions[] = [
+									'title' => translate([
+										'text' => 'Place Hold Palace Project',
+										'isPublicFacing' => true,
+									]),
+									'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
+									'requireLogin' => false,
+									'type' => 'palace_project_hold',
+								];
+							}
+							break;
 						}
-						if (!$needsHold) {
-							$this->_actions[] = [
-								'title' => translate([
-									'text' => 'Check Out Palace Project',
-									'isPublicFacing' => true,
-								]),
-								'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
-								'requireLogin' => false,
-								'type' => 'palace_project_checkout',
-							];
-						} else {
-							$this->_actions[] = [
-								'title' => translate([
-									'text' => 'Place Hold Palace Project',
-									'isPublicFacing' => true,
-								]),
-								'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
-								'requireLogin' => false,
-								'type' => 'palace_project_hold',
-							];
-						}
-						break;
 					}
 				}
 			}
@@ -253,20 +255,24 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getBorrowLink() {
-		$links = $this->palaceProjectRawMetadata->links;
-		foreach ($links as $link) {
-			if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-				return $link->href;
+		if (!empty($this->palaceProjectRawMetadata)) {
+			$links = $this->palaceProjectRawMetadata->links;
+			foreach ($links as $link) {
+				if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
+					return $link->href;
+				}
 			}
 		}
 		return null;
 	}
 
 	function getPreviewUrl() {
-		$links = $this->palaceProjectRawMetadata->links;
-		foreach ($links as $link) {
-			if ($link->rel == 'preview' && $link->type == 'text/html') {
-				return $link->href;
+		if (!empty($this->palaceProjectRawMetadata)) {
+			$links = $this->palaceProjectRawMetadata->links;
+			foreach ($links as $link) {
+				if ($link->rel == 'preview' && $link->type == 'text/html') {
+					return $link->href;
+				}
 			}
 		}
 		return null;
@@ -389,14 +395,22 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	 * @return array
 	 */
 	function getPublishers() {
-		return [];
+		$publishers = [];
+		if (!empty($this->palaceProjectRawMetadata->metadata->publisher)) {
+			$publishers[] = $this->palaceProjectRawMetadata->metadata->publisher->name;
+		}
+		return $publishers;
 	}
 
 	/**
 	 * @return array
 	 */
 	function getPublicationDates() {
-		return [];
+		$publicationDates = [];
+		if (!empty($this->palaceProjectRawMetadata->metadata->published)) {
+			$publicationDates[] = date('Y', strtotime($this->palaceProjectRawMetadata->metadata->published));
+		}
+		return $publicationDates;
 	}
 
 	public function getRecordType() {

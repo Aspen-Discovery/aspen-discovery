@@ -297,6 +297,6 @@ class Author_Home extends ResultsAction {
 
 	function getBreadcrumbs(): array {
 		global $interface;
-		return parent::getResultsBreadcrumbs($interface->getVariable('authorName'));
+		return parent::getResultsBreadcrumbs($interface->getVariable('authorName'), false);
 	}
 }
