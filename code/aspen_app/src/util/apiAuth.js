@@ -121,16 +121,13 @@ export async function passUserToDiscovery(url, redirectTo, userId, backgroundCol
 
           if (sessionId && userId) {
                const accessUrl = url + '/Authentication/LiDA?init&session=' + sessionId + '&user=' + userId + '&goTo=' + redirectTo + '&minimalInterface=true';
-               try {
-                    await WebBrowser.openBrowserAsync(accessUrl, browserParams);
-               } catch (e) {
-                    console.log(e);
-               }
                await WebBrowser.openBrowserAsync(accessUrl, browserParams)
                     .then((res) => {
                          console.log(res);
-                         if (res.type === 'cancel') {
-                              console.log('User closed window.');
+                         if (res.type === 'cancel' || res.type === 'dismiss') {
+                              console.log('User closed or dismissed window.');
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
                          }
                     })
                     .catch(async (err) => {

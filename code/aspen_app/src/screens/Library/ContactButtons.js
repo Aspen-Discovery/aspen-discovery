@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { Box, Button, Center, Icon, useColorModeValue, useToken } from 'native-base';
 import React from 'react';
 import { showLocation } from 'react-native-map-link';
+import { popToast } from '../../components/loadError';
 import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -43,9 +44,71 @@ const ContactButtons = (data) => {
           };
 
           if (location.homeLink === '/') {
-               WebBrowser.openBrowserAsync(library.baseUrl, browserParams);
+               await WebBrowser.openBrowserAsync(location.baseUrl, browserParams)
+                    .then((res) => {
+                         console.log(res);
+                         if (res.type === 'cancel' || res.type === 'dismiss') {
+                              console.log('User closed or dismissed window.');
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
+                         }
+                    })
+                    .catch(async (err) => {
+                         if (err.message === 'Another WebBrowser is already being presented.') {
+                              try {
+                                   WebBrowser.dismissBrowser();
+                                   WebBrowser.coolDownAsync();
+                                   await WebBrowser.openBrowserAsync(location.baseUrl, browserParams)
+                                        .then((response) => {
+                                             console.log(response);
+                                             if (response.type === 'cancel') {
+                                                  console.log('User closed window.');
+                                             }
+                                        })
+                                        .catch(async (error) => {
+                                             console.log('Unable to close previous browser session.');
+                                        });
+                              } catch (error) {
+                                   console.log('Really borked.');
+                              }
+                         } else {
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              console.log(err);
+                         }
+                    });
           } else {
-               WebBrowser.openBrowserAsync(location.homeLink, browserParams);
+               await WebBrowser.openBrowserAsync(location.homeLink, browserParams)
+                    .then((res) => {
+                         console.log(res);
+                         if (res.type === 'cancel' || res.type === 'dismiss') {
+                              console.log('User closed or dismissed window.');
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
+                         }
+                    })
+                    .catch(async (err) => {
+                         if (err.message === 'Another WebBrowser is already being presented.') {
+                              try {
+                                   WebBrowser.dismissBrowser();
+                                   WebBrowser.coolDownAsync();
+                                   await WebBrowser.openBrowserAsync(location.homeLink, browserParams)
+                                        .then((response) => {
+                                             console.log(response);
+                                             if (response.type === 'cancel') {
+                                                  console.log('User closed window.');
+                                             }
+                                        })
+                                        .catch(async (error) => {
+                                             console.log('Unable to close previous browser session.');
+                                        });
+                              } catch (error) {
+                                   console.log('Really borked.');
+                              }
+                         } else {
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              console.log(err);
+                         }
+                    });
           }
      };
 
