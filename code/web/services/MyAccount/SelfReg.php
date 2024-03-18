@@ -116,7 +116,7 @@ class SelfReg extends Action {
 			}
 
 			$interface->assign('tos', false);
-			if ($catalog->accountProfile->ils = "symphony"){
+			if ($catalog->accountProfile != null && $catalog->accountProfile->ils == "symphony"){
 				$selfRegTerms = $catalog->getSelfRegistrationTerms();
 				if ($selfRegTerms != null){
 					$interface->assign('tos', true);
