@@ -1824,7 +1824,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
 			$interface->assign('tos', false);
-			if ($catalog->accountProfile->ils = "symphony") {
+			if ($catalog->accountProfile != null && $catalog->accountProfile->ils = "symphony") {
 				$selfRegTerms = $catalog->getSelfRegistrationTerms();
 				if ($selfRegTerms != null) {
 					$interface->assign('tos', true);
