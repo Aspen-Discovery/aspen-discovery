@@ -943,14 +943,13 @@ class Evergreen extends AbstractIlsDriver {
 				'Content-Type: application/x-www-form-urlencoded',
 			];
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$params = [
-				'service' => 'open-ils.circ',
-				'method' => 'open-ils.circ.holds.retrieve',
-				'param' => json_encode($authToken),
-			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$getHoldsParams = 'service=open-ils.circ';
+			$getHoldsParams .= '&method=open-ils.circ.holds.retrieve';
+			$getHoldsParams .= '&param=' . json_encode($authToken);
+			$getHoldsParams .= '&param=' . $patron->unique_ils_id;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getHoldsParams);
 
-			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getHoldsParams, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				foreach ($apiResponse->payload[0] as $payload) {
@@ -1674,6 +1673,40 @@ class Evergreen extends AbstractIlsDriver {
 			}
 		} else {
 			$user->homeLocationId = 0;
+		}
+
+		//Check patron pickup location the first time we see them.
+		if ($insert) {
+			$authToken = $this->getAPIAuthToken($user, true);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.patron.settings.retrieve';
+			if ($authToken == null) {
+				$request .= '&param=' . json_encode($staffUserInfo['authToken']);
+				$request .= '&param=' . json_encode($user->unique_ils_id);
+			} else {
+				$request .= '&param=' . json_encode($authToken);
+				$request .= '&param=' . json_encode($user->unique_ils_id);
+			}
+			$request .= '&param=' . json_encode([
+					'opac.default_pickup_location',
+				]);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				foreach ($apiResponse->payload[0] as $settingName => $settingValue) {
+					if ($settingName == 'opac.default_pickup_location') {
+						if (!empty($settingValue)) {
+							$location = new Location();
+							$location->historicCode = $settingValue;
+
+							if ($location->find(true)) {
+								$user->pickupLocationId = $location->locationId;
+							}
+						}
+					}
+				}
+			}
 		}
 
 		if ($insert) {

@@ -171,4 +171,8 @@ class SideLoadLogEntry implements BaseIndexingLogEntry {
 		this.numInvalidRecords++;
 		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
+
+	public int getNumDeleted() {
+		return numDeleted;
+	}
 }

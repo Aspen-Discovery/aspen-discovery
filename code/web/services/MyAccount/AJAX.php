@@ -4140,6 +4140,7 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		require_once ROOT_DIR . '/sys/Account/UserPaymentLine.php';
 		$payment = new UserPayment();
 		$payment->userId = $patronId;
 		$payment->completed = 0;
@@ -4157,7 +4158,15 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->aciToken = $_REQUEST['token'];
 		}
 
-		$paymentId = $payment->insert();
+		$paymentInsert = $payment->insert();
+		$paymentId = $payment->id;
+
+		//Add a line item for the donation
+		$paymentLine = new UserPaymentLine();
+		$paymentLine->paymentId = $payment->id;
+		$paymentLine->description = translate(['text'=>'Donation', 'inAttribute'=>true,'isPublicFacing'=>true]);
+		$paymentLine->amountPaid = $donationValue;
+		$paymentLine->insert();
 
 		require_once ROOT_DIR . '/sys/Donations/Donation.php';
 		$donation = new Donation();
@@ -4466,6 +4475,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			require_once ROOT_DIR . '/sys/Account/UserPaymentLine.php';
 			$payment = new UserPayment();
 			$payment->userId = $patronId;
 			$payment->completed = 0;
@@ -4507,7 +4517,28 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 			}
 
-			$paymentId = $payment->insert();
+			$paymentInsert = $payment->insert();
+			$paymentId = $payment->id;
+
+			//Add payment lines for each fine paid
+			foreach ($fines[$patronId] as $fine) {
+				$paymentLine = new UserPaymentLine();
+				$paymentLine->paymentId = $paymentId;
+				$description = $fine['reason'];
+				if (!empty($description)) {
+					$description .= " - ";
+				}
+				$description .= $fine['message'];
+				$paymentLine->description = $description;
+				if (isset($_REQUEST['amountToPay'][$fineId])) {
+					$fineAmount = $_REQUEST['amountToPay'][$fineId];
+				} else {
+					$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+				}
+				$paymentLine->amountPaid = $fineAmount;
+				$paymentLine->insert();
+			}
+
 			$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
 

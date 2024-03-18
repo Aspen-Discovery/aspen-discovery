@@ -278,8 +278,11 @@ class Donation extends DataObject {
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 		$payment = new UserPayment();
 		$payment->id = $paymentId;
-		$payment->find();
-		return $payment->totalPaid;
+		if ($payment->find(true)) {
+			return $payment->totalPaid;
+		}else{
+			return 0;
+		}
 	}
 
 	function getCurrencySymbol() {

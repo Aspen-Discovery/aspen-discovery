@@ -1,8 +1,8 @@
 <?php
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class API_RegistrationAPI extends Action {
+class API_RegistrationAPI extends AbstractAPI {
 	/**
 	 * Processes method to determine return type and calls the correct method.
 	 * Should not be called directly.

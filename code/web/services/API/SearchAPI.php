@@ -1,9 +1,9 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class SearchAPI extends Action {
+class SearchAPI extends AbstractAPI {
 
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -244,7 +244,12 @@ class SearchAPI extends Action {
 			$this->addServerStat($serverStats, '1 minute Load Average', $load[0]);
 			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
 			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
-			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
+			if ($numCPUs > 0) {
+				$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
+			} else {
+				//Got an error loading cpu's, ignore for now?
+			}
+
 			if ($load[1] > $numCPUs * 2.5) {
 				if ($load[0] >= $load[1]) {
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
@@ -3852,16 +3857,5 @@ class SearchAPI extends Action {
 			// do something with the term
 		}
 		return $results;
-	}
-
-	function checkIfLiDA() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'User-Agent' || $name == 'user-agent') {
-				if (strpos($value, "Aspen LiDA") !== false) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }

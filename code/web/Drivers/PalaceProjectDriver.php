@@ -79,6 +79,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						}
 					}
 
+					require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectTitle.php';
 					require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
 					if ($circulationType == 'checkout') {
 						$checkout = new Checkout();
@@ -87,6 +88,12 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						$checkout->userId = $patron->id;
 						$checkout->sourceId = $publication->metadata->identifier;
 						$checkout->recordId = $publication->metadata->identifier;
+						$palaceProjectTitle = new PalaceProjectTitle();
+						$palaceProjectTitle->palaceProjectId = $publication->metadata->identifier;
+						if ($palaceProjectTitle->find(true)) {
+							$checkout->sourceId = $palaceProjectTitle->id;
+							$checkout->recordId = $palaceProjectTitle->id;
+						}
 
 						$palaceProjectRecord = new PalaceProjectRecordDriver($checkout->sourceId);
 						if ($palaceProjectRecord->isValid()) {
@@ -98,6 +105,15 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 							if ($link->rel == 'http://librarysimplified.org/terms/rel/revoke') {
 								$checkout->canReturnEarly = true;
 								$checkout->earlyReturnUrl = $link->href;
+							}else if ($link->rel == 'http://opds-spec.org/acquisition') {
+								if (!empty($link->properties) && !empty($link->properties->availability)) {
+									if (!empty($link->properties->availability->since)) {
+										$checkout->checkoutDate = strtotime($link->properties->availability->since);
+									}
+									if (!empty($link->properties->availability->until)) {
+										$checkout->dueDate = strtotime($link->properties->availability->until);
+									}
+								}
 							}
 						}
 
@@ -110,6 +126,13 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						$hold->userId = $patron->id;
 						$hold->sourceId = $publication->metadata->identifier;
 						$hold->recordId = $publication->metadata->identifier;
+
+						$palaceProjectTitle = new PalaceProjectTitle();
+						$palaceProjectTitle->palaceProjectId = $publication->metadata->identifier;
+						if ($palaceProjectTitle->find(true)) {
+							$hold->sourceId = $palaceProjectTitle->id;
+							$hold->recordId = $palaceProjectTitle->id;
+						}
 
 						$palaceProjectRecord = new PalaceProjectRecordDriver($hold->sourceId);
 						if ($palaceProjectRecord->isValid()) {

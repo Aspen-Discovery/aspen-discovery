@@ -816,7 +816,9 @@ class User extends DataObject {
 				global $logger;
 				$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 			}
-			$this->pickupLocationId = $this->homeLocationId;
+			if (empty($this->pickupLocationId)) {
+				$this->pickupLocationId = $this->homeLocationId;
+			}
 		}
 		if (!isset($this->myLocation1Id)) {
 			$this->myLocation1Id = 0;
@@ -2460,6 +2462,54 @@ class User extends DataObject {
 		} else {
 			return false;
 		}
+	}
+
+	public function isPaymentHistoryEnabled() {
+		//Check to see if it's enabled by home library
+		$homeLibrary =  $this->getHomeLibrary();
+		if (!empty($homeLibrary)) {
+			return $homeLibrary->showPaymentHistory && $homeLibrary->finePaymentType > 1;
+		} else {
+			global $library;
+			return $library->showPaymentHistory && $library->finePaymentType > 1;
+		}
+	}
+
+	public function getPaymentHistory($page = 1, $recordsPerPage = 25) {
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		$userPayment = new UserPayment();
+		$userPayment->userId = $this->id;
+		$userPayment->whereAdd('completed = 1 OR cancelled = 1 OR error = 1');
+		$numPayments = $userPayment->count();
+		if ($recordsPerPage > 0) {
+			$firstIndex = ($page - 1) * $recordsPerPage;
+			$userPayment->limit($firstIndex, $recordsPerPage);
+		}
+		$userPayment->orderBy('transactionDate desc');
+		$userPayment->find();
+		$payments = [];
+		while ($userPayment->fetch()) {
+			if ($userPayment->completed) {
+				$completed = 'Yes';
+			}else {
+				$completed = 'No';
+			}
+			$payments[] = [
+				'id' => $userPayment->id,
+				'date' => $userPayment->transactionDate,
+				'type' => translate(['text'=> ucfirst($userPayment->transactionType), 'isPublicFacing' => true, 'inAttribute' => true]),
+				'completed' => translate(['text'=> $completed, 'isPublicFacing' => true, 'inAttribute' => true]),
+				'totalPaid' => StringUtils::formatCurrency($userPayment->totalPaid),
+			];
+		}
+
+		$paymentHistory = [
+			'numPayments' => $numPayments,
+			'payments' => $payments
+		];
+		return $paymentHistory;
 	}
 
 	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {

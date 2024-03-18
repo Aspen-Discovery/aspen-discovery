@@ -48,6 +48,14 @@
 						</div>
 					{/if}
 
+					{if !empty($record->checkoutDate)}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text="checked_out_user_account" defaultText="Checked Out" isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
+						</div>
+					{/if}
+
+
 					<div class="row">
 						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
 						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - {translate text="Palace Project" isPublicFacing=true}</div>
@@ -70,12 +78,19 @@
 							</div>
 						</div>
 					{/if}
+
+					{if !empty($record->dueDate)}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Expires' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->dueDate|date_format}</div>
+						</div>
+					{/if}
 				</div>
 
 				{* Actions for Title *}
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Palace Project Instructions' isPublicFacing=true}</a>
+						<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
 						{if $record->canReturnEarly}
 							<a href="#" onclick="return AspenDiscovery.PalaceProject.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-info">{translate text='Return Now' isPublicFacing=true}</a>
 						{/if}

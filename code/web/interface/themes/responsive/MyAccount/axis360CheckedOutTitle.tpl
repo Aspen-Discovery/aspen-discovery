@@ -95,6 +95,11 @@
 						{if !empty($record->accessOnlineUrl)}
 							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>
 						{/if}
+						{if array_key_exists('Palace Project', $enabledModules)}
+							{if $record->format == 'eBook' || $record->format == 'eAudiobook'}
+								<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
+							{/if}
+						{/if}
 						{if $record->canRenew}
 							<a href="#" onclick="return AspenDiscovery.Axis360.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>
 						{/if}

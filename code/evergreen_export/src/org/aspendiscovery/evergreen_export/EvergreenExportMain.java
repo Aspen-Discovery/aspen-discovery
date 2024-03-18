@@ -1517,8 +1517,24 @@ public class EvergreenExportMain {
 												String callNumber = curVolume.getAttribute("label");
 
 												String opacVisible = curVolume.getAttribute("opac_visible");
-												if (opacVisible.equals("f")) {
+												if (opacVisible.equals("f") || opacVisible.equals("false")) {
 													continue;
+												}
+
+												//Look for call number prefix and suffix
+												String prefix = "";
+												NodeList prefixNodeList = curVolume.getElementsByTagName("call_number_prefix");
+												if (prefixNodeList.getLength() > 0) {
+													Element prefixElement = (Element) prefixNodeList.item(0);
+													prefix = prefixElement.getAttribute("label");
+												}
+
+
+												String suffix = "";
+												NodeList suffixNodeList = curVolume.getElementsByTagName("call_number_suffix");
+												if (suffixNodeList.getLength() > 0) {
+													Element suffixElement = (Element) suffixNodeList.item(0);
+													suffix = suffixElement.getAttribute("label");
 												}
 
 												//Get all the copies within each volume
@@ -1529,11 +1545,11 @@ public class EvergreenExportMain {
 													for (int l = 0; l < copyList.getLength(); l++) {
 														Element curCopy = (Element) copyList.item(l);
 														String deleted = curCopy.getAttribute("deleted");
-														if (deleted.equals("t")) {
+														if (deleted.equals("t") || deleted.equals("true")) {
 															continue;
 														}
 														opacVisible = curCopy.getAttribute("opac_visible");
-														if (opacVisible.equals("f")) {
+														if (opacVisible.equals("f") || opacVisible.equals("false")) {
 															continue;
 														}
 														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
@@ -1555,7 +1571,13 @@ public class EvergreenExportMain {
 														String itemType = curCopy.getAttribute("circ_modifier");
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getITypeSubfield(), itemType));
 
+														if (!prefix.isEmpty()) {
+															curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPrestampSubfield(), prefix));
+														}
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
+														if (!suffix.isEmpty()) {
+															curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPoststampSubfield(), suffix));
+														}
 
 														String price = curCopy.getAttribute("price");
 														curItemField.addSubfield(marcFactory.newSubfield('y', price));
@@ -1573,7 +1595,7 @@ public class EvergreenExportMain {
 																		String statusCode = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), statusCode));
 																		String statusOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (statusOpacVisible.equals("f")) {
+																		if (statusOpacVisible.equals("f") || statusOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;
@@ -1581,7 +1603,7 @@ public class EvergreenExportMain {
 																		String shelfLocation = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelfLocation));
 																		String locOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (locOpacVisible.equals("f")) {
+																		if (locOpacVisible.equals("f") || locOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;
@@ -1589,7 +1611,7 @@ public class EvergreenExportMain {
 																		String locationCode = curCopySubElement.getAttribute("shortname");
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLocationSubfield(), locationCode));
 																		String libOpacVisible = curCopySubElement.getAttribute("opac_visible");
-																		if (libOpacVisible.equals("f")) {
+																		if (libOpacVisible.equals("f") || libOpacVisible.equals("false")) {
 																			isOpacVisible = false;
 																		}
 																		break;

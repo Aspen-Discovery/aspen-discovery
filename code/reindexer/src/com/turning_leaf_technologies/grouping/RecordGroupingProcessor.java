@@ -65,6 +65,8 @@ public class RecordGroupingProcessor {
 	private final HashSet<String> recordsToNotGroup = new HashSet<>();
 	private final Long updateTime = new Date().getTime() / 1000;
 
+	protected static long numAuthorAuthoritiesUsed = 0;
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
 	 *
@@ -236,7 +238,7 @@ public class RecordGroupingProcessor {
 			getAxis360DetailsForRecordStmt = dbConnection.prepareStatement("SELECT title, subtitle, primaryAuthor, formatType, rawResponse from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -875,7 +877,12 @@ public class RecordGroupingProcessor {
 				getAuthoritativeAuthorStmt.setString(1, originalAuthor);
 				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
 				if (authoritativeAuthorRS.next()) {
-					return authoritativeAuthorRS.getString("normalized");
+					String normalizedAuthoritativeAuthor = authoritativeAuthorRS.getString("normalized");
+					if (!normalizedAuthoritativeAuthor.equals(originalAuthor)) {
+						numAuthorAuthoritiesUsed++;
+					}
+
+					return normalizedAuthoritativeAuthor;
 				}
 			} catch (SQLException e) {
 				logEntry.incErrors("Error getting authoritative author", e);
@@ -1082,9 +1089,9 @@ public class RecordGroupingProcessor {
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
 	}
 
-	public String groupPalaceProjectRecord(String palaceProjectId) throws JSONException {
+	public String groupPalaceProjectRecord(long palaceProjectId) throws JSONException {
 		try {
-			getPalaceProjectRecordStmt.setString(1, palaceProjectId);
+			getPalaceProjectRecordStmt.setLong(1, palaceProjectId);
 			ResultSet getPalaceProjectRecordRS = getPalaceProjectRecordStmt.executeQuery();
 			if (getPalaceProjectRecordRS.next()){
 				String rawResponseString = new String(getPalaceProjectRecordRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
@@ -1098,17 +1105,13 @@ public class RecordGroupingProcessor {
 		return null;
 	}
 
-	public String groupPalaceProjectRecord(JSONObject titleDetails, String palaceProjectId) {
+	public String groupPalaceProjectRecord(JSONObject titleDetails, long palaceProjectId) {
 		String title;
 		String subTitle;
 
 		JSONObject titleMetadata = titleDetails.getJSONObject("metadata");
 
-		if (titleMetadata.has("sortAs")) {
-			title = titleMetadata.getString("sortAs");
-		} else {
-			title = titleMetadata.getString("title");
-		}
+		title = titleMetadata.getString("title");
 		if (titleMetadata.has("subtitle")){
 			subTitle = titleMetadata.getString("subtitle");
 		}else{
@@ -1139,11 +1142,15 @@ public class RecordGroupingProcessor {
 				break;
 		}
 
-		RecordIdentifier primaryIdentifier = new RecordIdentifier("palace_project", palaceProjectId);
+		RecordIdentifier primaryIdentifier = new RecordIdentifier("palace_project", Long.toString(palaceProjectId));
 
 		String language = titleMetadata.getString("language");
 		String languageCode = translateValue("two_to_three_character_language_codes", language.toLowerCase(Locale.ROOT));
 
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
+	}
+
+	public long getNumAuthoritiesUsed() {
+		return numAuthorAuthoritiesUsed;
 	}
 }

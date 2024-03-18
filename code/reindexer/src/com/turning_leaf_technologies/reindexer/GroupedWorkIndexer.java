@@ -601,8 +601,8 @@ public class GroupedWorkIndexer {
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 500 == 0) {
-				updateServer.commit(false, false, true);
+			if (totalRecordsHandled % 1000 == 0) {
+				this.commitChanges();
 			}
 
 			/*
@@ -876,6 +876,10 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
+			if (logEntry instanceof NightlyIndexLogEntry){
+				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + " times");
+			}
+
 			if (processEmptyGroupedWorks) {
 				processEmptyGroupedWorks();
 			}
@@ -1044,7 +1048,7 @@ public class GroupedWorkIndexer {
 				} else if (type.equals("hoopla")) {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				} else if (type.equals("palace_project")) {
-					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(identifier);
+					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(Long.parseLong(identifier));
 				}
 				if (newId == null) {
 					//The record is not valid, skip it.

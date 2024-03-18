@@ -66,6 +66,7 @@ abstract class Action
 		$enableSavedSearches = $interface->getVariable('enableSavedSearches');
 		$displayMaterialsRequest = $interface->getVariable('displayMaterialsRequest');
 		$enableReadingHistory = $interface->getVariable('enableReadingHistory');
+		$enablePaymentHistory = $interface->getVariable('enablePaymentHistory');
 		$allowAccountLinking = $interface->getVariable('allowAccountLinking');
 		$showUserPreferences = $interface->getVariable('showUserPreferences');
 		$showUserContactInformation = $interface->getVariable('showUserContactInformation');
@@ -79,7 +80,7 @@ abstract class Action
 		$interface->assign('showResetUsernameLink', $user->showResetUsernameLink());
 
 		$showMyAccount = false;
-		if ($showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory) {
+		if ($showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory || $enablePaymentHistory) {
 			$showMyAccount = true;
 		}
 

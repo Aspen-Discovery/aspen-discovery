@@ -22,13 +22,15 @@ public class PalaceProjectProcessor {
 	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
+	private PreparedStatement getProductIdForPalaceProjectIdStmt;
 
 	PalaceProjectProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, collectionName, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductIdForPalaceProjectIdStmt = dbConn.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, collectionName, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -36,7 +38,22 @@ public class PalaceProjectProcessor {
 
 	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseIndexingLogEntry logEntry) {
 		try {
-			getProductInfoStmt.setString(1, identifier);
+			long palaceProjectId;
+			if (!AspenStringUtils.isNumeric(identifier)) {
+				//Get the ID of the record based on the palace project id
+				getProductIdForPalaceProjectIdStmt.setString(1, identifier);
+				ResultSet getProductIdForPalaceProjectIdRS = getProductIdForPalaceProjectIdStmt.executeQuery();
+				if (getProductIdForPalaceProjectIdRS.next()) {
+					palaceProjectId = getProductIdForPalaceProjectIdRS.getLong("id");
+				}else{
+					logEntry.incErrors("Could not find palace project identifier " + identifier + " in the database");
+					return;
+				}
+				getProductIdForPalaceProjectIdRS.close();
+			}else{
+				palaceProjectId = Long.parseLong(identifier);
+			}
+			getProductInfoStmt.setLong(1, palaceProjectId);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
 			if (productRS.next()) {
 				byte[] rawResponseBytes = productRS.getBytes("rawResponse");
@@ -129,10 +146,16 @@ public class PalaceProjectProcessor {
 				}
 
 				if (metadata.has("publisher")) {
+					String publisher;
 					if (metadata.get("publisher") instanceof String) {
-						groupedWork.addPublisher(metadata.getString("publisher"));
+						publisher = metadata.getString("publisher");
+						groupedWork.addPublisher(publisher);
 					}else{
-						groupedWork.addPublisher(metadata.getJSONObject("publisher").getString("name"));
+						publisher = metadata.getJSONObject("publisher").getString("name");
+						groupedWork.addPublisher(publisher);
+					}
+					if (publisher != null) {
+						palaceProjectRecord.setPublisher(publisher);
 					}
 				}
 
@@ -140,6 +163,7 @@ public class PalaceProjectProcessor {
 					String published = metadata.getString("published");
 					String publicationYear = published.substring(0, 4);
 					groupedWork.addPublicationDate(publicationYear);
+					palaceProjectRecord.setPublicationDate(publicationYear);
 				}
 
 				if (metadata.has("description")) {
@@ -237,11 +261,11 @@ public class PalaceProjectProcessor {
 
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setItemIdentifier(identifier);
-				itemInfo.seteContentSource(collectionName + " - Palace Project");
+				itemInfo.seteContentSource(collectionName);
 				itemInfo.setIsEContent(true);
 				itemInfo.seteContentUrl(contentUrl);
-				itemInfo.setShelfLocation("Online " + collectionName + " - Palace Project");
-				itemInfo.setDetailedLocation("Online " + collectionName + " - Palace Project");
+				itemInfo.setShelfLocation("Online " + collectionName);
+				itemInfo.setDetailedLocation("Online " + collectionName);
 				itemInfo.setCallNumber("Online " + collectionName);
 				itemInfo.setSortableCallNumber("Online " + collectionName);
 				itemInfo.setFormat(primaryFormat);
