@@ -3024,13 +3024,14 @@ class Theme extends DataObject {
 		$primaryTheme = clone($this);
 		$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
 		$theme = $primaryTheme;
-		while (strlen($theme->extendsTheme) != 0) {
-			$extendsName = $theme->extendsTheme;
+		$extendsName = $theme->extendsTheme;
+		while (!empty($extendsName)) {
 			if (!array_key_exists($extendsName, $allAppliedThemes)) {
 				$theme = new Theme();
 				$theme->themeName = $extendsName;
 				if ($theme->find(true)) {
 					$allAppliedThemes[$theme->themeName] = clone $theme;
+					$extendsName = $theme->extendsTheme;
 				}
 			} else {
 				//We have a recursive situation
