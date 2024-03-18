@@ -7663,7 +7663,9 @@ AspenDiscovery.Account = (function () {
 						altFormat: "M j, Y",
 						"disable": [
 							function (date) {
-								return data.includes(date.getDay());
+								if(data.includes(date.getDay())) {
+									return data.includes(date.getDay())
+								}
 							}
 						],
 						"locale": {
