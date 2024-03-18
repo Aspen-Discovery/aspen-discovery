@@ -318,21 +318,24 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 					if (matTypeSubfield != null) {
 						String formatValue = matTypeSubfield.getData().trim();
 						if (hasTranslation("format", formatValue)) {
-							formatLoaded = true;
-							recordInfo.addFormat(translateValue("format", formatValue, recordInfo.getRecordIdentifier()));
-							recordInfo.addFormatCategory(translateValue("format_category", formatValue, recordInfo.getRecordIdentifier()));
-							String formatBoost = null;
-							if (hasTranslation("format_boost", formatValue)) {
-								formatBoost = translateValue("format_boost", formatValue, recordInfo.getRecordIdentifier());
-							}
-							try {
-								if (formatBoost != null && !formatBoost.isEmpty()) {
-									recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
+							String translatedFormat = translateValue("format", formatValue, recordInfo.getRecordIdentifier());
+							if (!translatedFormat.isEmpty()) {
+								formatLoaded = true;
+								recordInfo.addFormat(translateValue("format", formatValue, recordInfo.getRecordIdentifier()));
+								recordInfo.addFormatCategory(translateValue("format_category", formatValue, recordInfo.getRecordIdentifier()));
+								String formatBoost = null;
+								if (hasTranslation("format_boost", formatValue)) {
+									formatBoost = translateValue("format_boost", formatValue, recordInfo.getRecordIdentifier());
 								}
-							} catch (Exception e) {
-								if (!unhandledFormatBoosts.contains(formatValue)) {
-									unhandledFormatBoosts.add(formatValue);
-									logger.warn("Could not get boost for format " + formatValue);
+								try {
+									if (formatBoost != null && !formatBoost.isEmpty()) {
+										recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
+									}
+								} catch (Exception e) {
+									if (!unhandledFormatBoosts.contains(formatValue)) {
+										unhandledFormatBoosts.add(formatValue);
+										logger.warn("Could not get boost for format " + formatValue);
+									}
 								}
 							}
 						}
