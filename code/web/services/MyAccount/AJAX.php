@@ -7757,7 +7757,13 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 		$user = UserAccount::getActiveUserObj();
 		$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
-		return $pickupSettings['disabledDays'];
+		if($pickupSettings['disabledDays']) {
+			return $pickupSettings['disabledDays'];
+		}
+
+		return [
+			-1
+		];
 	}
 
 	function getCurbsidePickupAvailableTimes() {
