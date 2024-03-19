@@ -5973,6 +5973,12 @@ class Koha extends AbstractIlsDriver {
 				case "Auto_Renewals":
 					$messageType['label'] = 'Auto Renewals';
 					break;
+				case "Ill_update":
+					$messageType['label'] = 'ILL update';
+					break;
+				case "Hold_Reminder":
+					$messageType['label'] = 'Hold Reminder';
+					break;
 				default:
 					$messageType['label'] = $messageType['message_name'];
 			}
