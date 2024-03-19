@@ -7969,6 +7969,27 @@ AspenDiscovery.Account = (function () {
 				}
 			}
 
+			var sms4 = $('#sms4');
+			var phone4 = $('#phone4');
+			var email4 = $('#email4');
+			var digest4 = $('#digest4');
+			if (sms4.is(":checked") || phone4.is(":checked") || email4.is(":checked")) {
+				digest4.prop('disabled', false);
+			} else {
+				digest4.prop('disabled', true);
+				if(digest4.is(":checked")) {
+					digest4.prop('checked', false);
+				}
+			}
+
+			// only enable holds digest if koha allows
+			var allowDigests4 = document.querySelector("#digest4");
+			if(allowDigests4.dataset.allowdigests) {
+				if(allowDigests4.dataset.allowdigests === '0') {
+					digest4.prop('disabled', true);
+				}
+			}
+
 			var sms9 = $('#sms9');
 			var phone9 = $('#phone9');
 			var email9 = $('#email9');
