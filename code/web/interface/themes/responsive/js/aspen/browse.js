@@ -59,6 +59,12 @@ AspenDiscovery.Browse = (function(){
 				AspenDiscovery.Browse.changeBrowseCategory(categoryId);
 			});
 
+			// allow categories to update on keypress
+			browseCategoryCarousel.on('keypress', 'li', function(){
+				var categoryId = $(this).data('category-id');
+				AspenDiscovery.Browse.changeBrowseCategory(categoryId);
+			});
+
 			if ($('#browse-category-picker .jcarousel-control-prev').css('display') !== 'none') {
 				// only enable if the carousel features are being used.
 				// as of now, basalt & vail are not. plb 12-1-2014
