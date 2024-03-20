@@ -54,7 +54,7 @@
 							{if !empty($canSave)}
 								<select class="form-control form-control-sm" name="countryCode[{$phoneIndex}]">
 									{foreach from=$countryCodes key=countryCode item=displayName}
-										<option value="{$countryCode}" {if $countryCode == $phone.countryCode}selected{/if}>{$displayName}</option>
+										<option value="{$countryCode}" {if $countryCode == $phone.countryCode}selected{/if}>{$displayName|escape}</option>
 									{/foreach}
 								</select>
 							{else}

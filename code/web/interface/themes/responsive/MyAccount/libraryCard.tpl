@@ -23,7 +23,7 @@
 				{$profile->getBarcode()}
 			</div>
 			{if count($linkedCards) > 0}
-				<div>{$profile->displayName}</div>
+				<div>{$profile->displayName|escape}</div>
 			{/if}
 			{if !empty($showCardExpirationDate) && !empty($expirationDate)}
 				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}

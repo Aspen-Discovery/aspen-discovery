@@ -20,7 +20,7 @@
 				{* Modified Behavior: $propertyValue is used only as a display name to the user *}
 				{foreach from=$property.values item=propertyName key=propertyValue}
 					<label for="{$propName}_{$propertyValue|escapeCSS}">
-						<input class="{$propName}" id="{$propName}_{$propertyValue|escapeCSS}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}<br>
+						<input class="{$propName}" id="{$propName}_{$propertyValue|escapeCSS}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
 					</label>
 				{/foreach}
 			</div>
@@ -28,7 +28,7 @@
 			<div class="checkbox">
 				{*this assumes a simple array, eg list *}
 				{foreach from=$property.values item=propertyName}
-					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}<br>
+					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
 				{/foreach}
 			</div>
 		{/if}
@@ -36,7 +36,7 @@
 		<br />
 		<select name='{$propName}' id='{$propName}' multiple="multiple" {if !empty($property.readOnly)}readonly disabled{/if}>
 		{foreach from=$property.values item=propertyName key=propertyValue}
-			<option value='{$propertyValue}' {if $propValue == $propertyValue}selected='selected'{/if}>{if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}</option>
+			<option value='{$propertyValue}' {if $propValue == $propertyValue}selected='selected'{/if}>{if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}</option>
 		{/foreach}
 		</select>
 	{/if}

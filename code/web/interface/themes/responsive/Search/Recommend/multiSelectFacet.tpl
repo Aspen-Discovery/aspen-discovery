@@ -12,7 +12,7 @@
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
 				<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
-                {$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+                {$thisFacet.display|escape}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 			</label>
 		</div>
     {/foreach}
@@ -26,7 +26,7 @@
         {* Show more facet popup list *}
 		<div class="facetValue" id="more{$title}"><a href="#" onclick="return AspenDiscovery.Searches.showSearchFacetPopup('{$searchId}', '{$title}');">{translate text='more' isPublicFacing=true} ...</a></div>
     {else}
-		<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('{translate text='More %1%' inAttribute=true isPublicFacing=true 1=$cluster.displayNamePlural translateParameters=true}', '{$title}', '{translate text='Apply Filters' inAttribute=true isPublicFacing=true}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
+		<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('{translate text='More %1%' inAttribute=true isPublicFacing=true 1=$cluster.displayNamePlural translateParameters=true|escape}', '{$title}', '{translate text='Apply Filters' inAttribute=true isPublicFacing=true}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
 		<div id="moreFacetPopup_{$title}" style="display:none">
 			<p>{translate text="Please select one of the items below to narrow your search by %1%." 1=$cluster.label isPublicFacing=true}</p>
 			<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">
@@ -38,7 +38,7 @@
 									<label>
 										<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>
 										&nbsp;
-                                        {$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+                                        {$thisFacet.display|escape}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 									</label>
 								</div>
                             {/strip}
@@ -60,7 +60,7 @@
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
 				<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
-                {$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+                {$thisFacet.display|escape}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 			</label>
 		</div>
     {/foreach}

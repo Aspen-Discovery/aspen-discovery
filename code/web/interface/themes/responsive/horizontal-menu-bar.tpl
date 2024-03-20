@@ -79,9 +79,9 @@
 				{/if}
 				<span class="menu-bar-label hidden-inline-block-xs">
 					{if !empty($masqueradeMode)}
-						{translate text="Acting As %1%" 1=$userDisplayName isPublicFacing=true}
+						{translate text="Acting As %1%" 1=$userDisplayName|escape isPublicFacing=true}
 					{else}
-						{$userDisplayName}
+						{$userDisplayName|escape}
 					{/if}
 				</span>
 			</a>

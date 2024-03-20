@@ -71,7 +71,7 @@
 											{if is_string($location)}
 												<option value="undefined">{$location}</option>
 											{else}
-												<option value="{$location->code}" data-users="[{implode subject=$location->getPickupUsers() glue=','}]" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName}</option>
+												<option value="{$location->code}" data-users="[{implode subject=$location->getPickupUsers() glue=','}]" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName|escape}</option>
 											{/if}
 										{/foreach}
 									{else}
@@ -101,9 +101,9 @@
 						<script type="text/javascript">
 							$(function(){ldelim}
 								var userNames = {ldelim}
-								{$activeUserId}: "{$userDisplayName|escape:javascript} - {$user->getHomeLibrarySystemName()}",
+								{$activeUserId}: "{$userDisplayName|escape|escape:javascript} - {$user->getHomeLibrarySystemName()|escape|escape:javascript}",
 								{foreach from=$linkedUsers item=linkedUser}
-								{$linkedUser->id}: "{$linkedUser->displayName|escape:javascript} - {$linkedUser->getHomeLibrarySystemName()}",
+								{$linkedUser->id}: "{$linkedUser->displayName|escape|escape:javascript} - {$linkedUser->getHomeLibrarySystemName()|escape|escape:javascript}",
 								{/foreach}
 								{rdelim};
 								$('#pickupBranch').change(function(){ldelim}

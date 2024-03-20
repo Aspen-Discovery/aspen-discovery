@@ -33,7 +33,7 @@
 
 						{if !empty($result.description)}
 							<div class="row well-small">
-								<div class="col-tn-12 result-value">{$result.description|truncate_html:450:"..."|strip_tags|htmlentities}</div>
+								<div class="col-tn-12 result-value">{$result.description|truncate_html:450:"..."|strip_tags|escape}</div>
 							</div>
 						{/if}
 					</div>
