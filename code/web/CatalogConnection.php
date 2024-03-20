@@ -156,6 +156,32 @@ class CatalogConnection {
 		}
 
 		if ($user && !($user instanceof AspenError)) {
+			$invalidUser = false;
+			if (strip_tags($user->firstname) != $user->firstname) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->lastname) != $user->lastname) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->email) != $user->email) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->username) != $user->username) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->ils_username) != $user->ils_username) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->ils_barcode) != $user->ils_barcode) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->ils_password) != $user->ils_password) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->displayName) != $user->displayName) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->phone) != $user->phone) {
+				$invalidUser = true;
+			}elseif (strip_tags($user->patronType) != $user->patronType) {
+				$invalidUser = true;
+			}
+			if ($invalidUser) {
+				return new AspenError('Invalid User Account Information, please contact your library');
+			}
+
 			if ($parentAccount) {
 				$user->setParentUser($parentAccount);
 			} // only set when the parent account is passed.
@@ -173,7 +199,6 @@ class CatalogConnection {
 					$userUsage->insert();
 				}
 			}
-
 		}
 
 		return $user;
@@ -532,7 +557,7 @@ class CatalogConnection {
 	 * This is responsible for retrieving all fines by a specific patron.
 	 *
 	 * @param User $patron The patron from patronLogin
-	 * @param bool $includeMessages Whether or not messages should be included in the output
+	 * @param bool $includeMessages Whether messages should be included in the output
 	 *
 	 * @return mixed        Array of the patron's fines on success, AspenError
 	 * otherwise.
