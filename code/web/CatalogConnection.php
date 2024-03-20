@@ -1719,6 +1719,10 @@ class CatalogConnection {
 		return $this->driver->checkoutBySip($patron, $barcode, $locationId);
 	}
 
+	public function checkoutByAPI(User $patron, $barcode, $locationId): array {
+		return $this->driver->checkoutByAPI($patron, $barcode, $locationId);
+	}
+
 	public function allowUpdatesOfPreferredName(User $patron) : bool {
 		return $this->driver->allowUpdatesOfPreferredName($patron);
 	}

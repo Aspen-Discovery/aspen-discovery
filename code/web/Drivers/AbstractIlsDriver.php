@@ -796,6 +796,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
+	public function checkoutByAPI(User $patron, $barcode, $locationId): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
 	public function allowUpdatesOfPreferredName(User $patron) : bool {
 		return false;
 	}

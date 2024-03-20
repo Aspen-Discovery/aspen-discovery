@@ -8025,4 +8025,163 @@ class Koha extends AbstractIlsDriver {
 			return true;
 		}
 	}
+
+	public function checkoutByAPI(User $patron, $barcode, $locationId): array {
+		$item = [];
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'There was an error checking out this title.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Unable to checkout title',
+				'isPublicFacing' => true,
+			]),
+			'api' => [
+				'title' => translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error checking out this title.',
+					'isPublicFacing' => true,
+				]),
+			],
+			'itemData' => []
+		];
+
+		$oAuthToken = $this->getOAuthToken();
+		if($oAuthToken == false) {
+			$result['message'] = translate([
+				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'isPublicFacing' => true,
+			]);
+		} else {
+			$this->initDatabaseConnection();
+			/** @noinspection SqlResolve */
+			$sql = "SELECT itemnumber FROM items WHERE barcode = " . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+			$lookupItemResult = mysqli_query($this->dbConnection, $sql);
+			if ($lookupItemResult->num_rows == 1) {
+				$itemRow = $lookupItemResult->fetch_assoc();
+				$recordId = $itemRow['itemnumber'];
+				$checkoutParams = [
+					'patron_id' => (int)$patron->unique_ils_id,
+					'item_id' => (int)$recordId,
+					'library_id' => $locationId,
+				];
+				$postParams = json_encode($checkoutParams);
+
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oAuthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'Accept-Encoding: gzip, deflate',
+				], true);
+
+				$apiURL = $this->getWebServiceURL() . '/api/v1/checkouts';
+				$response = $this->apiCurlWrapper->curlPostBodyData($apiURL, $postParams, false);
+				$responseCode = $this->apiCurlWrapper->getResponseCode();
+				ExternalRequestLogEntry::logRequest('koha.addCheckout', 'POST', $apiURL, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+
+				$response = json_decode($response);
+
+				if($responseCode == 201) {
+					$result['success'] = true;
+					$result['message'] = translate([
+						'text' => 'You have successfully checked out this title.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['title'] = translate([
+						'text' => 'Checkout successful',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'You have successfully checked out this title.',
+						'isPublicFacing' => true,
+					]);
+
+					$title = 'Unknown Title';
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+					}
+
+					$result['itemData'] = [
+						'title' => $title,
+						'due' => $response->due_date ?? null,
+						'barcode' => $barcode,
+					];
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfCheckouts();
+				} else {
+					$result['message'] = translate([
+						'text' => 'Error (%1%) checking out this title.',
+						1 => $responseCode,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Error (%1%) checking out this title.',
+						1 => $responseCode,
+						'isPublicFacing' => true,
+					]);
+
+					if (isset($response->error)) {
+						$result['message'] .= '<br/>' . translate([
+								'text' => $response->error,
+								'isPublicFacing' => true,
+							]);
+						$result['api']['message'] .= ' ' . translate([
+								'text' => $response->error,
+								'isPublicFacing' => true,
+							]);
+					} elseif (isset($response->errors)) {
+						foreach ($response->errors as $error) {
+							$result['message'] .= '<br/>' . translate([
+									'text' => $error->message,
+									'isPublicFacing' => true,
+								]);
+							$result['api']['message'] .= ' ' . translate([
+									'text' => $error->message,
+									'isPublicFacing' => true,
+								]);
+						}
+					}
+				}
+			} else if ($lookupItemResult->num_rows > 1) {
+				$result['message'] = translate([
+					'text' => 'Unable to complete checkout because more than one item was found for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Unable to complete checkout because more than one item was found for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+			} else {
+				$result['message'] = translate([
+					'text' => 'Unable to checkout this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Unable to checkout this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+
+		return $result;
+	}
 }
