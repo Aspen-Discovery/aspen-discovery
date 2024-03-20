@@ -1,10 +1,10 @@
-FROM alpine:3.19.0
+FROM alpine:3.19
 
 ARG TUNNEL_User=tunnel
 ENV TUNNEL_User=${TUNNEL_User}
 
 
-#Install dependencies
+# Install dependencies
 RUN apk add --no-cache \
   openssh-client \
   ca-certificates \
@@ -22,17 +22,14 @@ RUN echo "${TUNNEL_User} ALL=(ALL) ALL" > /etc/sudoers.d/${TUNNEL_User} && \
 # Change to root user
 USER root
 
-#Update packages
+# Update packages
 RUN apk update
 
-#Create ssh directory
+# Create ssh directory
 RUN mkdir -p /home/${TUNNEL_User}/.ssh
 
-RUN touch /home/${TUNNEL_User}/.ssh/id_rsa
+# Adding tunnel content
+COPY docker/tunnel/tunnel.sh docker/tunnel/config /home/${TUNNEL_User}/.ssh/
 
-#Adding tunnel content
-COPY aspen-discovery/docker/tunnel/tunnel.sh aspen-discovery/docker/tunnel/config /home/${TUNNEL_User}/.ssh/
-
-#Add entrypoint
+# Add entrypoint
 ENTRYPOINT ["/bin/ash", "-c", "/home/${TUNNEL_User}/.ssh/tunnel.sh"]
-

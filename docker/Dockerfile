@@ -1,7 +1,6 @@
-#Base it on Debian 10
 FROM debian:buster
 
-#Install deps
+# Install deps
 RUN apt -y update \
 	&& apt -y install \
 	  apt-utils \
@@ -40,12 +39,11 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG en_US.UTF-8 
 ENV LC_ALL en_US.UTF-8
 
-#Add php repo
+# Add php repo
 RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
 	&& sh -c 'echo "deb https://packages.sury.org/php/ buster main" > /etc/apt/sources.list.d/php.list'
 
-
-#Install php deps
+# Install php deps
 RUN apt -y update \
 	&& apt install -y \
 	  php8.0 \
@@ -61,16 +59,16 @@ RUN apt -y update \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
-#Adding entrypoint file
-COPY aspen-discovery/docker/start.sh /start.sh
+# Adding entrypoint file
+COPY docker/start.sh /start.sh
 
 # Load apache modules
 RUN a2enmod rewrite
 
 # Add aspen-discovery
-COPY aspen-discovery /usr/local/aspen-discovery
+COPY . /usr/local/aspen-discovery
 
-#Delete sites
+# Delete sites
 RUN cd /usr/local/aspen-discovery/sites \
 	&& rm -rf *local* \
 	&& rm -rf *prod*  \
@@ -89,18 +87,4 @@ RUN cd /usr/local/aspen-discovery/install \
 	&& mkdir -p /var/log/aspen-discovery \
 	&& bash /usr/local/aspen-discovery/install/setup_aspen_user_debian.sh
 
-# Add Mariadb locally
-RUN apt -y update \
-	&& apt install -y \
-	   mariadb-server \
-	&& mv /etc/mysql/mariadb.cnf /etc/mysql/mariadb.cnf.old \
-	&& cp  /usr/local/aspen-discovery/install/mariadb.cnf /etc/mysql/mariadb.cnf
-
 ENTRYPOINT ["/start.sh"]
-
-# Increase entropy
-#RUN cp /usr/local/aspen-discovery/install/limits.conf /etc/security/limits.conf \
-#    && cp /usr/local/aspen-discovery/install/rngd.service /etc/systemd/system/rngd.service \
-#    && systemctl daemon-reload \
-#    && systemctl start rngd
-
