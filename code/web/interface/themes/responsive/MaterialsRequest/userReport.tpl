@@ -45,8 +45,8 @@
 			<tbody>
 				{foreach from=$userData item=userInfo key=userId}
 					<tr>
-						<td>{$userInfo.lastName}</td>
-						<td>{$userInfo.firstName}</td>
+						<td>{$userInfo.lastName|escape}</td>
+						<td>{$userInfo.firstName|escape}</td>
 						<td>{$userInfo.barcode}</td>
 						{foreach from=$statuses key=status item=statusLabel}
 							<th>{if !empty($userInfo.requestsByStatus.$status)}{$userInfo.requestsByStatus.$status}{else}0{/if}</th>

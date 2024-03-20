@@ -4222,11 +4222,22 @@ class MyAccount_AJAX extends JSON_Action {
 		$donation->comments = $comments;
 		$donation->donationSettingId = $_REQUEST['settingId'];
 		$donation->sendEmailToUser = 1;
-		$donation->address = $_REQUEST['address'];
-		$donation->address2 = $_REQUEST['address2'];
-		$donation->city = $_REQUEST['city'];
-		$donation->state = $_REQUEST['state'];
-		$donation->zip = $_REQUEST['zip'];
+
+		if (!empty($_REQUEST['address'])) {
+			$donation->address = $_REQUEST['address'];
+		}
+		if (!empty($_REQUEST['address2'])) {
+			$donation->address2 = $_REQUEST['address2'];
+		}
+		if (!empty($_REQUEST['city'])) {
+			$donation->city = $_REQUEST['city'];
+		}
+		if (!empty($_REQUEST['state'])) {
+			$donation->state = $_REQUEST['state'];
+		}
+		if (!empty($_REQUEST['zip'])) {
+			$donation->zip = $_REQUEST['zip'];
+		}
 
 		$donation->insert();
 
@@ -7516,7 +7527,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$result = [
 				'success' => true,
 				'title' => translate([
-					'text' => 'Schedule your pickup at ' . $pickupLocation["name"],
+					'text' => 'Schedule your pickup at ' . htmlentities($pickupLocation["name"]),
 					'isPublicFacing' => true,
 				]),
 				'body' => $interface->fetch('MyAccount/curbsidePickupsNew.tpl'),

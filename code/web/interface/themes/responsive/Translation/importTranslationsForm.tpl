@@ -21,7 +21,7 @@
 		{foreach from=$validLanguages item=language}
 			<div class="form-group">
 				<div class="checkbox">
-					<label for="import_{$language->code}" >{$language->displayName}
+					<label for="import_{$language->code}" >{$language->displayName|escape}
 						<input type="checkbox" name="import_{$language->code}" id="import_{$language->code}" />
 					</label>
 				</div>

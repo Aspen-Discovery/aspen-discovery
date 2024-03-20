@@ -49,7 +49,7 @@
 							<td class="myAccountCell">
 								{*{include file='GroupedWork/title-rating.tpl' shortId=$rating.shortId recordId=$rating.fullId ratingData=$rating.ratingData}*}
 								{include file='GroupedWork/title-rating.tpl' id=$rating.groupedWorkId summId=$rating.groupedWorkId ratingData=$rating.ratingData}
-								<p>{$rating.review}</p>
+								<p>{$rating.review|escape}</p>
 							</td>
 							<td class="myAccountCell">
 								<span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">{translate text="Clear" isPublicFacing=true}</span>

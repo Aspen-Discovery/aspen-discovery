@@ -9,7 +9,7 @@
 				<div class="controls">
 					<select name="patronId" id="patronId" class="form-control">
 						{foreach from=$users item=tmpUser}
-							<option value="{$tmpUser->id}">{$tmpUser->displayName} - {$tmpUser->getHomeLibrarySystemName()}</option>
+							<option value="{$tmpUser->id}">{$tmpUser->displayName|escape} - {$tmpUser->getHomeLibrarySystemName()|escape}</option>
 						{/foreach}
 					</select>
 				</div>

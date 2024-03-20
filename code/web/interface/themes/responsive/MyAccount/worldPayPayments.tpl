@@ -15,8 +15,8 @@
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
 	<input type="hidden" name="PostUrl" id="{$userId}PostUrl" value="{$aspenUrl}/WorldPay/Complete" />
 	<input type="hidden" name="UserPart1" id="PaymentId" value="0" />
-	<input type="hidden" name="UserPart2" value="{$profile->firstname}" />
-	<input type="hidden" name="UserPart3" value="{$profile->lastname}" />
+	<input type="hidden" name="UserPart2" value="{$profile->firstname|escape}" />
+	<input type="hidden" name="UserPart3" value="{$profile->lastname|escape}" />
 	<input type="hidden" name="UserPart4" value="{$profile->getBarcode()}" />
 	{if !empty($useLineItems)}
 		<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>

@@ -2,7 +2,7 @@
 <html lang="{$userLang->code}">
 <head prefix="og: http://ogp.me/ns#">
 	{strip}
-		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if empty($isMobile)} | {$librarySystemName}{/if}</title>
+		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if empty($isMobile)} | {$librarySystemName|escape}{/if}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -27,7 +27,7 @@
 			<meta property="og:url" content="{$og_url|escape:html}"/>
 		{/if}
 		<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">
-		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="/Search/OpenSearch?method=describe">
+		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title|escape} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 		{$themeCss}
 	{/strip}

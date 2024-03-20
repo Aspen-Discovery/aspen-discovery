@@ -36,7 +36,7 @@
 					<h2>{translate text="Default Lending Periods" isPublicFacing=true}</h2>
 					{foreach from=$options.lendingPeriods item=lendingPeriod}
 						<div class="form-group propertyRow">
-							<label class="control-label">{translate text=$lendingPeriod.formatType isPublicFacing=true}</label>
+							<label class="control-label">{translate text=$lendingPeriod.formatType isPublicFacing=true}&nbsp;</label>
 							<div class="btn-group btn-group-toggle" data-toggle="buttons">
 								{foreach from=$lendingPeriod.options key=value item=optionName}
 									<label class="btn btn-default {if $optionName == $lendingPeriod.lendingPeriod}active{/if}">&nbsp;
