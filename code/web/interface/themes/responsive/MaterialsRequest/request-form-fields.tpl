@@ -237,7 +237,7 @@
 					<div class="request_detail_field row">
 						<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
 						<div class="request_detail_field_value col-sm-9">
-							{$requestUser->firstname} {$requestUser->lastname}
+							{$requestUser->firstname|escape} {$requestUser->lastname|escape}
 						</div>
 					</div>
 				{/if}
@@ -286,7 +286,7 @@
 						<div class=" request_detail_field_value col-sm-9">
 							<select name="holdPickupLocation" id="pickupLocation" onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions();" class="form-control">
 								{foreach from=$pickupLocations item=location}
-									<option value="{$location.id}" {if !empty($location.selected)}selected="selected"{/if}>{$location.displayName}</option>
+									<option value="{$location.id}" {if !empty($location.selected)}selected="selected"{/if}>{$location.displayName|escape}</option>
 								{/foreach}
 							</select>
 						</div>

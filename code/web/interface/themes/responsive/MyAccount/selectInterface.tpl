@@ -8,7 +8,7 @@
 				<input type="hidden" name="gotoAction" value="{if !empty($gotoAction)}{$gotoAction}{/if}"/>
 				{foreach from=$libraries key=libraryKey item=libraryInfo}
 					<div class="selectLibraryOption col-tn-12">
-						<label for="library{$libraryKey}"><input type="radio" id="library{$libraryKey}" name="library" value="{$libraryKey}"/> {$libraryInfo.displayName}</label>
+						<label for="library{$libraryKey}"><input type="radio" id="library{$libraryKey}" name="library" value="{$libraryKey}"/> {$libraryInfo.displayName|escape}</label>
 					</div>
 				{/foreach}
 			</div>

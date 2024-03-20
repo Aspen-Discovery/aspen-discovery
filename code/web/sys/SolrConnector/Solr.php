@@ -1977,7 +1977,7 @@ abstract class Solr {
 		global $memCache;
 		global $solrScope;
 		$fields = $memCache->get("schema_dynamic_fields_{$solrScope}_{$this->index}");
-		if (!$fields || isset($_REQUEST['reload'])) {
+		if (!$fields || $fields == 'FALSE' || isset($_REQUEST['reload'])) {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . "/$this->index/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8";
 			$schema = simplexml_load_file($schemaUrl);

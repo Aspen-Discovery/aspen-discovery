@@ -31,9 +31,9 @@
                                         </th>
                                         <th class="text-right">
                                             {if !empty($location.pickupScheduled)}
-                                                <button class="btn btn-primary" disabled>{translate text="Pickup already scheduled at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
+                                                <button class="btn btn-primary" disabled>{translate text="Pickup already scheduled at %1%" 1=$location.name|escape isPublicFacing=true inAttribute=true}</button>
                                             {else}
-                                                <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$location.id}')">{translate text="Schedule a pickup at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
+                                                <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$location.id}')">{translate text="Schedule a pickup at %1%" 1=$location.name|escape isPublicFacing=true inAttribute=true}</button>
                                             {/if}
                                         </th>
                                     </tr>
@@ -55,7 +55,7 @@
             {else}
                 {if !empty($showScheduleButton)}
                     <div class="col-xs-12">
-                        <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$userHomePickupLocation->locationId}')">{translate text="Schedule a pickup at %1%" 1=$userHomePickupLocation->displayName isPublicFacing=true inAttribute=true}</button>
+                        <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$userHomePickupLocation->locationId}')">{translate text="Schedule a pickup at %1%" 1=$userHomePickupLocation->displayName|escape isPublicFacing=true inAttribute=true}</button>
                     </div>
                 {/if}
             {/if}

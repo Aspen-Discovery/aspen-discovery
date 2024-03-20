@@ -63,7 +63,7 @@
 				<div class="row">
 					<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 					<div class="col-tn-8 result-value">
-						{$record->getUserName()}
+						{$record->getUserName()|escape}
 					</div>
 				</div>
 				{/if}
@@ -71,7 +71,7 @@
 				<div class="row">
 					<div class="result-label col-tn-4">{translate text='Pickup Location' isPublicFacing=true}</div>
 					<div class="col-tn-8 result-value">
-						{$record->pickupLocationName}
+						{$record->pickupLocationName|escape}
 					</div>
 				</div>
 

@@ -81,7 +81,7 @@
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out To' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
-								{$record->getUserName()}
+								{$record->getUserName()|escape}
 							</div>
 						</div>
 					{/if}

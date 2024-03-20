@@ -1,7 +1,7 @@
 {strip}
 <div class="review" id="review_{$review->id}">
 	<div class="reviewHeader">
-			<h5>{if strlen($review->getDisplayName()) > 0}{translate text='By' isPublicFacing=true} <cite>{$review->getDisplayName()} </cite>{/if}
+			<h5>{if strlen($review->getDisplayName()|escape) > 0}{translate text='By' isPublicFacing=true} <cite>{$review->getDisplayName()|escape} </cite>{/if}
 			{if $review->dateRated != null && $review->dateRated > 0}
 				- <span class="reviewDate">{$review->dateRated|date_format}</span>
 			{/if}

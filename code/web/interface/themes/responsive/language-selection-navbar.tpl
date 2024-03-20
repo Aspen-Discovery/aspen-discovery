@@ -6,7 +6,7 @@
 					<select aria-label="{translate text="Select a language for the catalog" inAttribute=true isPublicFacing=true}" id="selected-language" class="form-control-sm" onchange="return AspenDiscovery.setLanguage();">
 						{foreach from=$validLanguages key=languageCode item=language}
 							<option value="{$languageCode}"{if $userLang->code==$languageCode} selected="selected"{/if}>
-								{$language->displayName}
+								{$language->displayName|escape}
 							</option>
 						{/foreach}
 					</select>

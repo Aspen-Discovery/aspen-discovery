@@ -137,7 +137,7 @@
 										<select name="pickupLocation" id="pickupLocation" class="form-control">
 											{if count($pickupLocations) > 0}
 												{foreach from=$pickupLocations item=location}
-													<option value="{$location->code}" {if $location->displayName|escape == $profile->_homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+													<option value="{$location->code}" {if $location->displayName == $profile->_homeLocation}selected="selected"{/if}>{$location->displayName|escape}</option>
 												{/foreach}
 											{else}
 												<option>placeholder</option>

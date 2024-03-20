@@ -8,7 +8,7 @@
 						{foreach from=$hooplaUsers item=tmpUser}
 						{assign var="userId" value=$tmpUser->id}
 							<option value="{$tmpUser->id}">
-								{$tmpUser->getNameAndLibraryLabel()}
+								{$tmpUser->getNameAndLibraryLabel()|escape}
 								{if !empty($hooplaUserStatuses[$userId])}
 									{assign var="hooplaPatronStatus" value=$hooplaUserStatuses[$userId]}
 									&nbsp;{translate text="(%1% check outs remaining this month)" 1=$hooplaPatronStatus->numCheckoutsRemaining isPublicFacing=true}

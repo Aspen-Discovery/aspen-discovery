@@ -5,16 +5,16 @@
     {if ($showDisplayNameInHeader && !empty($librarySystemName)) || !empty($headerText)}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-3 col-lg-3" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName|escape}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 		{* Heading Info Div *}
 		<div id="headingInfo" class="hidden-xs hidden-sm col-md-5 col-lg-5">
-			<h1 style="line-height:0; font-size: 0;"><span class="hidden">{$librarySystemName}</span></h1>
-			{if !empty($showDisplayNameInHeader) && $librarySystemName}
+			<h1 style="line-height:0; font-size: 0;"><span class="hidden">{$librarySystemName|escape}</span></h1>
+			{if !empty($showDisplayNameInHeader) && !empty($librarySystemName)}
 				<span id="library-name-header" class="hidden-xs visible-sm">
 					{if strlen($librarySystemName) < 30}<br/>{/if} {* Move the library system name down a little if it won't wrap *}
-					{$librarySystemName}
+					{$librarySystemName|escape}
 				</span>
 			{/if}
 
@@ -28,7 +28,7 @@
 		{* Show the logo full width *}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-8 col-lg-8" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName|escape}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 	{/if}
@@ -69,7 +69,7 @@
 					<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')" role="button">
 					{/if}
 						<div>
-							{$language->displayName}
+							{$language->displayName|escape}
 						</div>
 					{if $userLang->code!=$languageCode}
 					</a>
@@ -93,7 +93,7 @@
 					</button>
 					<ul id="select-language" class="dropdown-menu" aria-labelledby="language-selection-dropdown">
 						{foreach from=$validLanguages key=languageCode item=language}
-							<li><a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">{$language->displayName}</a></li>
+							<li><a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">{$language->displayName|escape}</a></li>
 						{/foreach}
 					</ul>
 				</div>

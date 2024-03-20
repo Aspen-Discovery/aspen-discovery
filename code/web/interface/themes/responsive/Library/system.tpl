@@ -1,6 +1,6 @@
 {strip}
 	<h1 class="notranslate">
-		{$library->displayName}
+		{$library->displayName|escape}
 	</h1>
 
 
@@ -9,7 +9,7 @@
 		<div class="col-sm-8 result-value">
 			<ul>
 				{foreach from=$branches item=branch}
-					<li><a href="{$branch.link}">{$branch.name}</a></li>
+					<li><a href="{$branch.link}">{$branch.name|escape}</a></li>
 				{/foreach}
 			</ul>
 		</div>

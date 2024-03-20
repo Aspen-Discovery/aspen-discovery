@@ -126,7 +126,7 @@
 					{if $userLang->code==$languageCode}
 						<i class="fas fa-check fa-fw"></i>&nbsp;
 					{/if}
-					{$language->displayName}
+					{$language->displayName|escape}
 				</div>
 			{if $userLang->code!=$languageCode}
 			</a>

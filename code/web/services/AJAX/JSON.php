@@ -359,9 +359,9 @@ class AJAX_JSON extends Action {
 		return [
 			'success' => true,
 			'twoFactor' => false,
-			'name' => $user->displayName,
-			'phone' => $user->phone,
-			'email' => $user->email,
+			'name' => htmlentities($user->displayName),
+			'phone' => htmlentities($user->phone),
+			'email' => htmlentities($user->email),
 			'homeLocation' => isset($patronHomeBranch) ? $patronHomeBranch->code : '',
 			'homeLocationId' => isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
 			'enableMaterialsRequest' => MaterialsRequest::enableAspenMaterialsRequest(true),

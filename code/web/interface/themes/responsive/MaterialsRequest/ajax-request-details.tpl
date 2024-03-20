@@ -161,7 +161,7 @@
 						<div class="request_detail_field row">
 							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
 							<div class="request_detail_field_value col-sm-9">
-								{$requestUser->firstname} {$requestUser->lastname}
+								{$requestUser->firstname|escape} {$requestUser->lastname|escape}
 							</div>
 						</div>
 					{/if}
@@ -200,7 +200,7 @@
 							<div class="request_detail_field row">
 								<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
 								<div class=" request_detail_field_value col-sm-9">
-									{$materialsRequest->location}
+									{$materialsRequest->location|escape}
 									{*{if $materialsRequest->bookmobileStop}{$materialsRequest->bookmobileStop}{/if}*}
 								</div>
 							</div>
