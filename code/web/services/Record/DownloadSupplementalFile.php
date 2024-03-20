@@ -51,6 +51,8 @@ class Record_DownloadSupplementalFile {
 							//Track usage of the record
 							require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 							$recordUsage = new ILSRecordUsage();
+							global $aspenUsage;
+							$recordUsage->instance = $aspenUsage->getInstance();
 							$recordUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 							$recordUsage->recordId = $this->recordDriver->getUniqueID();
 							$recordUsage->year = date('Y');

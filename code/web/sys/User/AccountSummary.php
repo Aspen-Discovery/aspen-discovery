@@ -35,6 +35,10 @@ class AccountSummary extends DataObject {
 		];
 	}
 
+	function objectHistoryEnabled() {
+		return false;
+	}
+
 	/**
 	 * @return int
 	 */

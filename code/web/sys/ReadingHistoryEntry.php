@@ -17,6 +17,10 @@ class ReadingHistoryEntry extends DataObject {
 	public $deleted;
 	public $isIll;
 
+	function objectHistoryEnabled() {
+		return false;
+	}
+
 	public function getUniquenessFields(): array {
 		return [
 			'userId',

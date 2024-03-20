@@ -87,7 +87,7 @@ class CatalogConnection {
 	 * @param User $parentAccount A parent account that we are linking from if any
 	 * @param boolean $validatedViaSSO True if the patron has already been validated via SSO.  If so we don't need to validation, just retrieve information
 	 *
-	 * @return User|null     User object or null if the user cannot be logged in
+	 * @return User|AspenError|null     User object or null if the user cannot be logged in
 	 * @access public
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
@@ -460,7 +460,7 @@ class CatalogConnection {
 						]);
 					$body .= "\r\n\r\n" . $pinResetToken->token;
 
-					$htmlBody = "<html></html><table><tr><td>" . translate([
+					$htmlBody = "<html><table><tr><td>" . translate([
 							'text' => 'Hi %1%,',
 							1 => $userToResetPin->firstname,
 							'isPublicFacing' => true,
@@ -902,6 +902,8 @@ class CatalogConnection {
 			//Track usage of the record
 			require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 			$recordUsage = new ILSRecordUsage();
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->indexingProfileId = $indexingProfileId;
 			$recordUsage->recordId = $recordId;
 			$recordUsage->year = date('Y');
@@ -936,6 +938,16 @@ class CatalogConnection {
 	}
 
 	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false): array {
+		//Make sure data is valid
+		foreach ($_REQUEST as $requestVar) {
+			if ($requestVar != strip_tags($requestVar)) {
+				return [
+					'success' => false,
+					'messages' => ['Invalid information provided, please try again.']
+				];
+			}
+		}
+
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade);
 	}
 
@@ -968,6 +980,16 @@ class CatalogConnection {
 	}
 
 	function selfRegister($viaSSO = false, $ssoUser = []): array {
+		//Make sure data is valid
+		foreach ($_REQUEST as $requestVar) {
+			if ($requestVar != strip_tags($requestVar)) {
+				return [
+					'success' => false,
+					'message' => 'Invalid information provided, please try again.'
+				];
+			}
+		}
+
 		if (!$viaSSO) {
 			$result = $this->driver->selfRegister();
 		} else {
@@ -1709,7 +1731,13 @@ class CatalogConnection {
 				];
 			} else {
 				//Get the user for this
-
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Patron reset by email is not currently supported.',
+						'isPublicFacing' => true,
+					])
+				];
 			}
 		} else {
 			return $this->driver->initiatePasswordResetByEmail();

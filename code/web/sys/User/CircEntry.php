@@ -15,6 +15,10 @@ abstract class CircEntry extends DataObject {
 	public $linkUrl;
 	public $format;
 
+	function objectHistoryEnabled() {
+		return false;
+	}
+
 	public function getShortId() {
 		if (!empty($this->shortId)) {
 			return $this->shortId;
