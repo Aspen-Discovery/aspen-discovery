@@ -13,7 +13,7 @@ services:
       - net-aspen
     tty: true
     volumes:
-      - ${ASPEN_Repo}:/mnt
+      - ${ASPEN_REPO}:/mnt
     depends_on:
       - db
 
@@ -41,7 +41,7 @@ services:
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - ${ASPEN_Repo}/solr_data:/var/solr
+      - ${ASPEN_REPO}/solr_data:/var/solr
     networks:
       - net-aspen
     depends_on:

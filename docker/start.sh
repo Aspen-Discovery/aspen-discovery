@@ -1,22 +1,12 @@
 #!/bin/bash
 
 if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE_Apache == "on" ] ; then
-	#Esta es la primera ejecucion
-	if [ $ASPEN_DBHost == "localhost" ]; then
-		#Start MySQL
-		service mysql start
-	fi
+	#First execution
 
-	#Espero que mysql esté funcionando
-	while ! nc -z $ASPEN_DBHost $ASPEN_DBPort; do sleep 3; done
-
-	if [ ! -z "$COMPOSE_RootPwd" ] || [ $ASPEN_DBHost == "localhost" ]; then
+	if [ ! -z "$COMPOSE_RootPwd" ] ; then
 		#Doy permisos a $DBUSER sobre $ASPEN_DBName
 		mysql -u$COMPOSE_DBRoot -p$COMPOSE_RootPwd -h$ASPEN_DBHost -P$ASPEN_DBPort -e "create user '$ASPEN_DBUser'@'%' identified by '$ASPEN_DBPwd'; grant all on $ASPEN_DBName.* to '$ASPEN_DBUser'@'%'; flush privileges;"
 	fi
-
-	#fix hardcode strings
-	sed -i "s/host=localhost/host={\$variables['aspenDBHost']}/g" /usr/local/aspen-discovery/install/createSite.php
 
   #Preparar el create site template
   cd /usr/local/aspen-discovery/install
@@ -64,18 +54,11 @@ if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE
 	#Cambio prioridad para ingreso de aspen
 	mysql -u$ASPEN_DBUser -p$ASPEN_DBPwd -h$ASPEN_DBHost -P$ASPEN_DBPort $ASPEN_DBName -e "update account_profiles set weight=0 where name='admin'; update account_profiles set weight=1 where name='ils';"
 
-	if [ $ASPEN_DBHost == "localhost" ]; then
-		service mysql stop
-	fi
-	
- 	rsync -avl /usr/local/aspen-discovery/data_dir_setup/solr7/ /data/aspen-discovery/$SITE_sitename/solr7
-
 	#Copio los datos a un volumen persistente
 	for i in ${COMPOSE_Dirs[@]}; do
 		dir=$(echo $i | sed 's/\//_/g'); 
 		rsync -al $i/ /mnt/$dir; 
 	done
-
 
 fi
 
@@ -85,11 +68,6 @@ for i in ${COMPOSE_Dirs[@]}; do
 	mv $i $i-back; 
 	ln -s /mnt/$dir $i; 
 done
-
-#Si la base de datos es local, arranco el mysql
-if [ $ASPEN_DBHost == "localhost" ]; then
-	service mysql start
-fi
 
 #Espero que mysql esté funcionando ya sea local o remoto
 while ! nc -z $ASPEN_DBHost $ASPEN_DBPort; do sleep 3; done
