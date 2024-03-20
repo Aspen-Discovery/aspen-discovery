@@ -48,7 +48,7 @@
 							<select id="profileLanguage" name="profileLanguage" class="form-control">
 								{foreach from=$validLanguages key=languageCode item=language}
 									<option value="{$languageCode}"{if $profile->interfaceLanguage==$languageCode} selected="selected"{/if}>
-										{$language->displayName}
+										{$language->displayName|escape}
 									</option>
 								{/foreach}
 							</select>
@@ -69,7 +69,7 @@
 					{/if}
 
 					<div class="form-group propertyRow" id="searchPreferenceLanguageGroup" {if $profile->interfaceLanguage=='en'}style="display:none"{/if}>
-						<label for="searchPreferenceLanguage" class="control-label">{translate text="Do you want prefer materials in %1%?" 1=$userLang->displayName isPublicFacing=true}</label>
+						<label for="searchPreferenceLanguage" class="control-label">{translate text="Do you want prefer materials in %1%?" 1=$userLang->displayName|escape isPublicFacing=true}</label>
 						<select name="searchPreferenceLanguage" id="searchPreferenceLanguage" class="form-control">
 							<option value="0" {if $profile->searchPreferenceLanguage == 0}selected{/if}>{translate text="No, show interfiled with other languages" isPublicFacing=true}</option>
 							<option value="1" {if $profile->searchPreferenceLanguage == 1}selected{/if}>{translate text="Yes, show above other languages" isPublicFacing=true}</option>
@@ -111,9 +111,9 @@
 									{if count($homeLibraryLocations) > 0}
 										{foreach from=$homeLibraryLocations item=location}
 											{if is_object($location)}
-												<option value="{$location->code}" {if $location->locationId == $profile->homeLocationId}selected="selected"{/if}>{$location->displayName}</option>
+												<option value="{$location->code}" {if $location->locationId == $profile->homeLocationId}selected="selected"{/if}>{$location->displayName|escape}</option>
 											{else}
-												<option value="">{$location}</option>
+												<option value="">{$location|escape}</option>
 											{/if}
 										{/foreach}
 									{else}
@@ -121,12 +121,12 @@
 									{/if}
 								</select>
 							{else}
-								&nbsp;{$profile->getHomeLocationName()}
+								&nbsp;{$profile->getHomeLocationName()|escape}
 							{/if}
 						</div>
 					{else}
 						<div class="form-group propertyRow">
-							<strong>{translate text='Home Library' isPublicFacing=true}</strong> {$profile->getHomeLocationName()}
+							<strong>{translate text='Home Library' isPublicFacing=true}</strong> {$profile->getHomeLocationName()|escape}
 						</div>
 					{/if}
 
@@ -139,7 +139,7 @@
 									{if count($pickupLocations) > 0}
 										{foreach from=$pickupLocations item=location}
 											{if is_object($location)}
-												<option value="{$location->locationId}" {if $location->locationId == $profile->pickupLocationId}selected="selected"{/if}>{$location->displayName}</option>
+												<option value="{$location->locationId}" {if $location->locationId == $profile->pickupLocationId}selected="selected"{/if}>{$location->displayName|escape}</option>
 											{else}
 												<option value="0">{$location}</option>
 											{/if}

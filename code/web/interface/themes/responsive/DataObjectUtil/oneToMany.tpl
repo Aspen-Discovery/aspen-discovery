@@ -48,7 +48,7 @@
 									{if $subObject->canActiveUserChangeSelection()}
 										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
 											{foreach from=$subProperty.values item=propertyName key=propertyValue}
-												<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
+												<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName|escape}{/if}</option>
 											{/foreach}
 										</select>
 									{else}
@@ -70,7 +70,7 @@
 										{assign var=subPropValue value=$subObject->$subPropName}
 										{foreach from=$subProperty.values item=propertyName}
 											<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if}{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
-											{$propertyName}
+											{$propertyName|escape}
 											<br>
 										{/foreach}
 									</div>

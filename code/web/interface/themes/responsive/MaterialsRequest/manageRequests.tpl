@@ -83,7 +83,7 @@
 								{foreach from=$assignees item=displayName key=assigneeId}
 									<div class="checkbox">
 										<label>
-											<input type="checkbox" name="assigneesFilter[]" value="{$assigneeId}" {if in_array($assigneeId, $assigneesFilter)}checked="checked"{/if} class="assigneesFilter">{$displayName}
+											<input type="checkbox" name="assigneesFilter[]" value="{$assigneeId}" {if in_array($assigneeId, $assigneesFilter)}checked="checked"{/if} class="assigneesFilter">{$displayName|escape}
 										</label>
 									</div>
 								{/foreach}
@@ -140,7 +140,7 @@
 										{* Date Columns*}
 										<td>{$request->$column|date_format}</td>
 									{elseif $column == 'createdBy'}
-										<td>{$request->getCreatedByLastName()}, {$request->getCreatedByFirstName()}<br>{$request->getCreatedByUserBarcode()}</td>
+										<td>{$request->getCreatedByLastName()|escape}, {$request->getCreatedByFirstName()|escape}<br>{$request->getCreatedByUserBarcode()}</td>
 
 									{elseif $column == 'emailSent' || $column == 'holdsCreated' || $column == 'illItem'}
 										{* Simple Boolean Columns *}
@@ -149,15 +149,15 @@
 									{elseif $column == 'email'}
 										<td>{$request->email}</td>
 									{elseif $column == 'placeHoldWhenAvailable'}
-										<td>{if $request->$column}{translate text="Yes" isAdminFacing=true}{if $request->location} - {$request->location}{/if}{else}{translate text="No" isAdminFacing=true}{/if}</td>
+										<td>{if $request->$column}{translate text="Yes" isAdminFacing=true}{if $request->location} - {$request->location|escape}{/if}{else}{translate text="No" isAdminFacing=true}{/if}</td>
 									{elseif $column == 'holdPickupLocation'}
 										<td>
-											{$request->getHoldLocationName($request->holdPickupLocation)}
+											{$request->getHoldLocationName($request->holdPickupLocation)|escape}
 										</td>
 									{elseif $column == 'bookmobileStop'}
 										<td>{$request->bookmobileStop}</td>
 									{elseif $column == 'assignedTo'}
-										<td>{$request->getAssigneeName()}</td>
+										<td>{$request->getAssigneeName()|escape}</td>
 									{else}
 										{* All columns that can be displayed with out special handling *}
 										<td>{$request->$column}</td>
@@ -187,7 +187,7 @@
 											<option value="unassign">{translate text="Un-assign (remove assignee)" inAttribute=true isAdminFacing=true}</option>
 
 											{foreach from=$assignees item=displayName key=assigneeId}
-												<option value="{$assigneeId}">{$displayName}</option>
+												<option value="{$assigneeId}">{$displayName|escape}</option>
 											{/foreach}
 
 										</select>

@@ -78,7 +78,7 @@
                     <div class="row" style="padding:0">
                         <div class="result-label col-sm-12 col-md-5">{translate text='Pickup Location' isPublicFacing=true}</div>
                         <div class="col-sm-12 col-md-7 result-value">
-                            {$record->pickupLocationName}
+                            {$record->pickupLocationName|escape}
                         </div>
                     </div>
 

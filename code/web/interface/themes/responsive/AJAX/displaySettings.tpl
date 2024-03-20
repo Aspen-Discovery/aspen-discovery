@@ -6,7 +6,7 @@
 				<select id="preferredLanguage" name="preferredLanguage" class="form-control">
 					{foreach from=$validLanguages key=languageCode item=language}
 						<option value="{$languageCode}"{if $userLang->code==$languageCode} selected="selected"{/if}>
-							{$language->displayName}
+							{$language->displayName|escape}
 						</option>
 					{/foreach}
 				</select>

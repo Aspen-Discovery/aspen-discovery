@@ -95,22 +95,22 @@
 							{if (!isset($property.hideInLists) || $property.hideInLists == false) && $property.type != 'section'}
 								{assign var=propName value=$property.property}
 								{assign var=propValue value=$dataItem->$propName}
-								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
+								<td aria-label="{$dataItem|escape} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
 										{if $dataItem->canActiveUserEdit()}
 											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>
 											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{/if}
-											{$propValue}
+											{$propValue|escape}
 											{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 										{else}
-											{$propValue}
+											{$propValue|escape}
 										{/if}
 									{/if}
 								{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
 									{$propValue|escape}
 								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
-									{$propValue}
+									{$propValue|escape}
 								{elseif $property.type == 'date'}
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
@@ -136,21 +136,21 @@
 									${$propValue|string_format:$propDisplayFormat}
 								{elseif $property.type == 'enum'}
 									{foreach from=$property.values item=propertyName key=propertyValue}
-										{if $propValue == $propertyValue}{$propertyName}{/if}
+										{if $propValue == $propertyValue}{$propertyName|escape}{/if}
 									{/foreach}
 								{elseif $property.type == 'multiSelect'}
 									{if is_array($propValue) && count($propValue) > 0}
 										{foreach from=$property.values item=propertyName key=propertyValue}
-											{if array_key_exists($propertyValue, $propValue)}{$propertyName}<br/>{/if}
+											{if array_key_exists($propertyValue, $propValue)}{$propertyName|escape}<br/>{/if}
 										{/foreach}
 									{else}
-										No values selected
+										{translate text="No values selected" isAdminFacing='true'}
 									{/if}
 								{elseif $property.type == 'oneToMany'}
 									{if is_array($propValue) && count($propValue) > 0}
 										{$propValue|@count}
 									{else}
-										Not set
+										{translate text="Not set" isAdminFacing='true'}
 									{/if}
 								{elseif $property.type == 'checkbox'}
 									{if ($propValue == 1)}{translate text="Yes" isAdminFacing=true}{elseif ($propValue == 0)}{translate text="No" isAdminFacing=true}{else}{$propValue}{/if}

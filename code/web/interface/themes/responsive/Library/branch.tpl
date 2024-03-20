@@ -1,6 +1,6 @@
 {strip}
 	<h1 class="notranslate">
-		{$location->displayName}
+		{$location->displayName|escape}
 	</h1>
 
 	<div class="row">

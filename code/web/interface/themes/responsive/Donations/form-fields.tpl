@@ -50,7 +50,7 @@
                             <select name="toLocation" id="{$formField->textId}" class="form-control input-lg">
                                 <option value=0 selected></option>
                                 {foreach from=$donationLocations item=value key=locationKey}
-                                    <option value="{$value}">{$locationKey}</option>
+                                    <option value="{$value|escape}">{$locationKey|escape}</option>
                                 {/foreach}
                             </select>
                         </div>
@@ -133,7 +133,7 @@
                         <div class="col-xs-6">
                         <div class="form-group {$formField->textId}">
                             <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
-                            <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg" {if $formField->textId == 'firstName' && $newDonation->firstName}value="{$newDonation->firstName}"{/if}{if $formField->textId == 'lastName' && $newDonation->lastName}value="{$newDonation->lastName}"{/if} autocomplete>
+                            <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg" {if $formField->textId == 'firstName' && $newDonation->firstName}value="{$newDonation->firstName|escape}"{/if}{if $formField->textId == 'lastName' && $newDonation->lastName}value="{$newDonation->lastName|escape}"{/if} autocomplete>
                         </div>
                         </div>
 
@@ -160,7 +160,7 @@
                         <div class="col-xs-6">
                             <div class="form-group {$formField->textId}">
                                 <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
-                                <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg" {if $formField->textId == 'firstName' && $newDonation->firstName}value="{$newDonation->firstName}"{/if}{if $formField->textId == 'lastName' && $newDonation->lastName}value="{$newDonation->lastName}"{/if} autocomplete>
+                                <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg" {if $formField->textId == 'firstName' && $newDonation->firstName}value="{$newDonation->firstName|escape}"{/if}{if $formField->textId == 'lastName' && $newDonation->lastName}value="{$newDonation->lastName|escape}"{/if} autocomplete>
                             </div>
                         </div>
 

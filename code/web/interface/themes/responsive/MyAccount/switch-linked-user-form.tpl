@@ -10,7 +10,7 @@
 
 						<select name="patronId" id="patronId" class="form-control" onchange="AspenDiscovery.Account.changeLinkedAccount()">
 							{foreach from=$linkedUsers item=tmpUser}
-								<option value="{$tmpUser->id}" {if $selectedUser == $tmpUser->id}selected="selected"{/if}>{$tmpUser->displayName} - {$tmpUser->getHomeLibrarySystemName()}</option>
+								<option value="{$tmpUser->id}" {if $selectedUser == $tmpUser->id}selected="selected"{/if}>{$tmpUser->displayName|escape} - {$tmpUser->getHomeLibrarySystemName()|escape}</option>
 							{/foreach}
 						</select>
 					</div>

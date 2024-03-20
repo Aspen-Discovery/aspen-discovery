@@ -19,7 +19,7 @@
 			<div class="input-group">
 				<label class="input-group-btn">
 					<span class="btn btn-primary">
-						{translate text="Select a file to import with %1% translations" 1=$userLang->displayName isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="importFile" id="importFile">
+						{translate text="Select a file to import with %1% translations" 1=$userLang->displayName|escape isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="importFile" id="importFile">
 					</span>
 				</label>
 				<input type="text" class="form-control" id="importFile-label" readonly>

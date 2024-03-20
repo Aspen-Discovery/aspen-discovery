@@ -7458,7 +7458,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$result = [
 				'success' => true,
 				'title' => translate([
-					'text' => 'Schedule your pickup at ' . $pickupLocation["name"],
+					'text' => 'Schedule your pickup at ' . htmlentities($pickupLocation["name"]),
 					'isPublicFacing' => true,
 				]),
 				'body' => $interface->fetch('MyAccount/curbsidePickupsNew.tpl'),
