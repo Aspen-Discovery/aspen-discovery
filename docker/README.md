@@ -17,11 +17,11 @@ It will be necessary to create:
 ```
 ASPEN_INSTANCE=nameOfYourInstance
 echo "export ASPEN_INSTANCE" >> ~/.bashrc
-echo "export ASPEN_Repo=~/aspen-repos/${ASPEN_Instance}" >> ~/.bashrc
+echo "export ASPEN_REPO=~/aspen-repos/${ASPEN_INSTANCE}" >> ~/.bashrc
 source ~/.bashrc
 
-mkdir -p ${ASPEN_Repo}/mariadb_data ${ASPEN_Repo}/solr_data
-cd ${ASPEN_Repo}
+mkdir -p ${ASPEN_REPO}/mariadb_data ${ASPEN_REPO}/solr_data
+cd ${ASPEN_REPO}
 git clone https://github.com/mdnoble73/aspen-discovery.git
 cp aspen-discovery/docker/docker-compose.yml .
 ```
