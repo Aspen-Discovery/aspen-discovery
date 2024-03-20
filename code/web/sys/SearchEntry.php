@@ -25,6 +25,10 @@ class SearchEntry extends DataObject {
 		];
 	}
 
+	function objectHistoryEnabled() {
+		return $this->saved;
+	}
+
 	/**
 	 * Get an array of SearchEntry objects for the specified user.
 	 *

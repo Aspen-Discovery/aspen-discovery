@@ -902,6 +902,8 @@ class CatalogConnection {
 			//Track usage of the record
 			require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 			$recordUsage = new ILSRecordUsage();
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->indexingProfileId = $indexingProfileId;
 			$recordUsage->recordId = $recordId;
 			$recordUsage->year = date('Y');

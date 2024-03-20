@@ -36,6 +36,10 @@ abstract class DataObject implements JsonSerializable {
 
 	public $_deleteOnSave;
 
+	function objectHistoryEnabled() {
+		return true;
+	}
+
 	/**
 	 * @return string[]
 	 */
@@ -386,15 +390,17 @@ abstract class DataObject implements JsonSerializable {
 
 		//Log the insert into object history
 		if (!empty($this->{$this->__primaryKey}) && !($this instanceof DataObjectHistory) && !($this instanceof AspenError)) {
-			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
-			$history = new DataObjectHistory();
-			$history->objectType = get_class($this);
-			$history->objectId = $this->{$this->__primaryKey};
-			$history->propertyName = '';
-			$history->actionType = 1;
-			$history->changedBy = UserAccount::getActiveUserId();
-			$history->changeDate = time();
-			$history->insert();
+			if ($this->objectHistoryEnabled()) {
+				require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+				$history = new DataObjectHistory();
+				$history->objectType = get_class($this);
+				$history->objectId = $this->{$this->__primaryKey};
+				$history->propertyName = '';
+				$history->actionType = 1;
+				$history->changedBy = UserAccount::getActiveUserId();
+				$history->changeDate = time();
+				$history->insert();
+			}
 		}
 
 		return $response;
@@ -535,15 +541,17 @@ abstract class DataObject implements JsonSerializable {
 		}
 		$timer->logTime($deleteQuery);
 		if ($result && !$useWhere) {
-			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
-			$history = new DataObjectHistory();
-			$history->objectType = get_class($this);
-			$history->objectId = $this->{$this->__primaryKey};
-			$history->propertyName = '';
-			$history->actionType = 3;
-			$history->changedBy = UserAccount::getActiveUserId();
-			$history->changeDate = time();
-			$history->insert();
+			if ($this->objectHistoryEnabled()) {
+				require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+				$history = new DataObjectHistory();
+				$history->objectType = get_class($this);
+				$history->objectId = $this->{$this->__primaryKey};
+				$history->propertyName = '';
+				$history->actionType = 3;
+				$history->changedBy = UserAccount::getActiveUserId();
+				$history->changeDate = time();
+				$history->insert();
+			}
 		}
 		return $result;
 	}
@@ -964,31 +972,33 @@ abstract class DataObject implements JsonSerializable {
 			}
 			//Add the change to the history unless tracking the history is off (passwords)
 			if ($propertyStructure['type'] != 'password' && $propertyStructure['type'] != 'storedPassword') {
-				require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
-				$history = new DataObjectHistory();
-				$history->objectType = get_class($this);
-				$primaryKey = $this->__primaryKey;
-				if (!empty($this->$primaryKey)) {
-					if (is_array($oldValue)) {
-						$oldValue = implode(',', $oldValue);
+				if ($this->objectHistoryEnabled()) {
+					require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+					$history = new DataObjectHistory();
+					$history->objectType = get_class($this);
+					$primaryKey = $this->__primaryKey;
+					if (!empty($this->$primaryKey)) {
+						if (is_array($oldValue)) {
+							$oldValue = implode(',', $oldValue);
+						}
+						if (is_array($newValue)) {
+							$newValue = implode(',', $newValue);
+						}
+						if (strlen($oldValue) >= 65535) {
+							$oldValue = 'Too long to track history';
+						}
+						if (strlen($newValue) >= 65535) {
+							$newValue = 'Too long to track history';
+						}
+						$history->actionType = 2;
+						$history->objectId = $this->$primaryKey;
+						$history->oldValue = $oldValue;
+						$history->propertyName = $propertyName;
+						$history->newValue = $newValue;
+						$history->changedBy = UserAccount::getActiveUserId();
+						$history->changeDate = time();
+						$history->insert();
 					}
-					if (is_array($newValue)) {
-						$newValue = implode(',', $newValue);
-					}
-					if (strlen($oldValue) >= 65535) {
-						$oldValue = 'Too long to track history';
-					}
-					if (strlen($newValue) >= 65535) {
-						$newValue = 'Too long to track history';
-					}
-					$history->actionType = 2;
-					$history->objectId = $this->$primaryKey;
-					$history->oldValue = $oldValue;
-					$history->propertyName = $propertyName;
-					$history->newValue = $newValue;
-					$history->changedBy = UserAccount::getActiveUserId();
-					$history->changeDate = time();
-					$history->insert();
 				}
 			}
 
