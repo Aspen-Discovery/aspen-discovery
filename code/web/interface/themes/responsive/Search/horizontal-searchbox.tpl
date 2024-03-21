@@ -69,11 +69,11 @@
 					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
 						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
 							{foreach from=$searchSources item=searchOption key=searchKey}
-								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true isPublicFacing=true}"
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description|escape}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true isPublicFacing=true}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
 										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
 										>
-									{translate text="in %1%" 1=$searchOption.name inAttribute=true isPublicFacing=true translateParameters=true}{if !empty($searchOption.external)} *{/if}
+									{translate text="in %1%" 1=$searchOption.name|escape inAttribute=true isPublicFacing=true translateParameters=true}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
 						</select>

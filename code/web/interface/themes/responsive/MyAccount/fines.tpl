@@ -33,7 +33,7 @@
 
             {foreach from=$userFines item=fines key=userId name=fineTable}
 				<form id="fines{$userId}" method="post">
-                    {if count($userFines) > 1}<h2>{$userAccountLabel.$userId}</h2>{/if}{* Only show account name if there is more than one account. *}
+                    {if count($userFines) > 1}<h2>{$userAccountLabel.$userId|escape}</h2>{/if}{* Only show account name if there is more than one account. *}
                     {if !empty($fines)}
 						<div class="table-responsive">
 							<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-condensed table-striped" style="table-layout: fixed">

@@ -1,7 +1,7 @@
 {strip}
 	{if !empty($hooplaUser)}{* Linked User that is not the main user *}
 		<p>
-			{translate text="Using card for %1%" 1=$hooplaUser->getNameAndLibraryLabel() isPublicFacing=true}
+			{translate text="Using card for %1%" 1=$hooplaUser->getNameAndLibraryLabel()|escape isPublicFacing=true}
 		</p>
 	{/if}
 	{if !empty($hooplaPatronStatus)}

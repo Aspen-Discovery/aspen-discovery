@@ -9,7 +9,7 @@
 				{if count($pickupLocations) > 0}
 					{foreach from=$pickupLocations item=location key=locationCode}
 						{if $location->code}
-							<option value="{$location->code}" {if is_object($location) && ($location->locationId == $currentLocation)}selected="selected"{/if}>{$location->displayName}</option>
+							<option value="{$location->code}" {if is_object($location) && ($location->locationId == $currentLocation)}selected="selected"{/if}>{$location->displayName|escape}</option>
 						{/if}
 					{/foreach}
 				{else}

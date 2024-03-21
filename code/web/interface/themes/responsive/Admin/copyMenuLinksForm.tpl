@@ -35,7 +35,7 @@
 			{foreach from=$libraryList key=$libraryId item=$libraryDisplayName}
 				<div class="form-group checkbox">
 					<label>
-						<input type="checkbox" name="library[{$libraryId}]" checked="checked" class="library"> {$libraryDisplayName}
+						<input type="checkbox" name="library[{$libraryId}]" checked="checked" class="library"> {$libraryDisplayName|escape}
 					</label>
 				</div>
 			{/foreach}

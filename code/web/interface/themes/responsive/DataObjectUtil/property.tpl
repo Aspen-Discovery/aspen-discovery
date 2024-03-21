@@ -240,7 +240,7 @@
 		{elseif  $property.type == 'barcode_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->getBarcode()})}{$user->getBarcode()}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'name_prefill'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->firstname}) && !empty({$user->lastname})}{$user->firstname} {$user->lastname}{elseif !empty({$user->firstname})}{$user->firstname}{elseif !empty({$user->lastname})}{$user->lastname}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->firstname}) && !empty({$user->lastname})}{$user->firstname|escape} {$user->lastname|escape}{elseif !empty({$user->firstname})}{$user->firstname|escape}{elseif !empty({$user->lastname})}{$user->lastname|escape}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'phone_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->phone})}{$user->phone}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'address_prefill'}
@@ -419,7 +419,7 @@
 			{include file="DataObjectUtil/currency.tpl"}
 
 		{elseif $property.type == 'label'}
-			<div id='{$propName}'>{$propValue}</div>
+			<div id='{$propName}'>{$propValue|escape}</div>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
@@ -513,7 +513,7 @@
 				<li role="presentation"class="active"><a href="#{$propName}_default_tab" aria-controls="{$propName}_default_tab" role="tab" data-toggle="tab">{translate text="Default" isAdminFacing=true}</a></li>
 				{foreach from=$validLanguages key=languageCode item=language}
 					{if $languageCode != 'ubb' && $languageCode != 'pig'}
-						<li role="presentation"><a href="#{$propName}_{$languageCode}_tab" aria-controls="{$propName}_{$languageCode}_tab" role="tab" data-toggle="tab">{$language->displayName}</a></li>
+						<li role="presentation"><a href="#{$propName}_{$languageCode}_tab" aria-controls="{$propName}_{$languageCode}_tab" role="tab" data-toggle="tab">{$language->displayName|escape}</a></li>
 					{/if}
 				{/foreach}
 			</ul>

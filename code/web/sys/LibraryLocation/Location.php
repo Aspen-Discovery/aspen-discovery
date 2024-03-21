@@ -2038,7 +2038,7 @@ class Location extends DataObject {
 							} else {
 								$libraryHoursMessage = translate([
 									'text' => '%1% is closed today for %2%.',
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									2 => $closureReason,
 									'isPublicFacing' => true
 								]);
@@ -2052,7 +2052,7 @@ class Location extends DataObject {
 							} else {
 								$libraryHoursMessage = translate([
 									'text' => '%1% is closed today.',
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									'isPublicFacing' => true
 								]);
 							}
@@ -2062,7 +2062,7 @@ class Location extends DataObject {
 						if (isset($closureReason)) {
 							$libraryHoursMessage = translate([
 								'text' => "%1% is closed today for %2%. It will reopen on %3% from %4%",
-								1 => $location->displayName,
+								1 => htmlentities($location->displayName),
 								2 => $closureReason,
 								3 => $nextDayOfWeek,
 								4 => $openMessage,
@@ -2071,7 +2071,7 @@ class Location extends DataObject {
 						} else {
 							$libraryHoursMessage = translate([
 								'text' => "%1% is closed today. It will reopen on %2% from %3%",
-								1 => $location->displayName,
+								1 => htmlentities($location->displayName),
 								2 => $nextDayOfWeek,
 								3 => $openMessage,
 								'isPublicFacing' => true,
@@ -2103,7 +2103,7 @@ class Location extends DataObject {
 						} else {
 							$libraryHoursMessage = translate([
 								'text' => '%1% will be open today from %2%',
-								1 => $location->displayName,
+								1 => htmlentities($location->displayName),
 								2 => Location::getOpenHoursMessage($todaysLibraryHours),
 								'isPublicFacing' => true
 							]);
@@ -2114,14 +2114,14 @@ class Location extends DataObject {
 							if (isset($tomorrowsLibraryHours['closureReason'])) {
 								$libraryHoursMessage = translate([
 									'text' => "%1% will be closed tomorrow for %2%",
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									2 => $tomorrowsLibraryHours['closureReason'],
 									'isPublicFacing' => true,
 								]);
 							} else {
 								$libraryHoursMessage = translate([
 									'text' => "%1% will be closed tomorrow",
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									'isPublicFacing' => true,
 								]);
 							}
@@ -2129,7 +2129,7 @@ class Location extends DataObject {
 							if($simpleOutput) {
 								$libraryHoursMessage = translate([
 									'text' => 'Closed tomorrow',
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									'isPublicFacing' => true,
 								]);
 							}
@@ -2138,14 +2138,14 @@ class Location extends DataObject {
 							if($simpleOutput) {
 								$libraryHoursMessage = translate([
 									'text' => 'Closed until tomorrow %2%',
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours, true, true),
 									'isPublicFacing' => true,
 								]);
 							} else {
 								$libraryHoursMessage = translate([
 									'text' => '%1% will be open tomorrow from %2%',
-									1 => $location->displayName,
+									1 => htmlentities($location->displayName),
 									2 => Location::getOpenHoursMessage($tomorrowsLibraryHours),
 									'isPublicFacing' => true,
 								]);
@@ -2161,7 +2161,7 @@ class Location extends DataObject {
 						} else {
 							$libraryHoursMessage = translate([
 								'text' => '%1% is open today from %2%',
-								1 => $location->displayName,
+								1 => htmlentities($location->displayName),
 								2 => Location::getOpenHoursMessage($todaysLibraryHours),
 								'isPublicFacing' => true
 							]);

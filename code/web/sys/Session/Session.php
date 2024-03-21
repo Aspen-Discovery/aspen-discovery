@@ -11,6 +11,10 @@ class Session extends DataObject {
 	protected $created;
 	protected $remember_me;
 
+	function objectHistoryEnabled() {
+		return false;
+	}
+
 	function getNumericColumnNames(): array {
 		return [
 			'remember_me',
