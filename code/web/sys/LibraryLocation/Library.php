@@ -170,6 +170,7 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$enableGenealogy;
 	public $showHoldCancelDate;
+	public $showHoldPosition;
 	public $showLogMeOutAfterPlacingHolds;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
@@ -1970,6 +1971,14 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Cancellation Date',
 								'description' => 'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.',
+								'hideInLists' => true,
+								'default' => 1,
+							],
+							'showHoldPosition' => [
+								'property' => 'showHoldPosition',
+								'type' => 'checkbox',
+								'label' => 'Show Hold Position',
+								'description' => 'Whether or not the patron should be able to see the hold positionif available in the ILS.',
 								'hideInLists' => true,
 								'default' => 1,
 							],
