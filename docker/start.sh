@@ -1,14 +1,17 @@
 #!/bin/bash
 
+for USER in mysql www-data solr;do
+        sudo usermod -a -G $LINUX_GROUP_ID $USER
+done
 if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE_Apache == "on" ] ; then
 	#First execution
 
 	if [ ! -z "$COMPOSE_RootPwd" ] ; then
-		#Doy permisos a $DBUSER sobre $ASPEN_DBName
+		#Assign permissions to $DBUSER over $ASPEN_DBName
 		mysql -u$COMPOSE_DBRoot -p$COMPOSE_RootPwd -h$ASPEN_DBHost -P$ASPEN_DBPort -e "create user '$ASPEN_DBUser'@'%' identified by '$ASPEN_DBPwd'; grant all on $ASPEN_DBName.* to '$ASPEN_DBUser'@'%'; flush privileges;"
 	fi
 
-  #Preparar el create site template
+  #Prepare createsite template
   cd /usr/local/aspen-discovery/install
 
   crudini --set createSiteTemplateVars.ini  Site sitename \$SITE_sitename
@@ -43,18 +46,18 @@ if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE
   crudini --set createSiteTemplateVars.ini  Koha ClientSecret \$KOHA_ClientSecret
   envsubst < createSiteTemplateVars.ini > createSiteTemplate.ini
 
-	#Genero el sitio nuevo
+	#Create new site
 	php createSite.php createSiteTemplate.ini
 
-	#Elimino sitio por defecto de apache
+	#Delete apache's default site
 	unlink /etc/apache2/sites-enabled/000-default.conf
 	unlink /etc/apache2/sites-enabled/httpd-$SITE_sitename.conf
 	cp /etc/apache2/sites-available/httpd-$SITE_sitename.conf  /etc/apache2/sites-enabled/httpd-$SITE_sitename.conf
 
-	#Cambio prioridad para ingreso de aspen
+	#Change the priority (for Aspen sign in purposes)
 	mysql -u$ASPEN_DBUser -p$ASPEN_DBPwd -h$ASPEN_DBHost -P$ASPEN_DBPort $ASPEN_DBName -e "update account_profiles set weight=0 where name='admin'; update account_profiles set weight=1 where name='ils';"
 
-	#Copio los datos a un volumen persistente
+	#Copy data within a persistent volume
 	for i in ${COMPOSE_Dirs[@]}; do
 		dir=$(echo $i | sed 's/\//_/g'); 
 		rsync -al $i/ /mnt/$dir; 
@@ -62,36 +65,36 @@ if [ ! -d /mnt/_usr_local_aspen-discovery_sites_${SITE_sitename} ] && [ $COMPOSE
 
 fi
 
-#Hago link simbolicos de los volumenes persistentes
+#Create symbolic links of persistent volumes
 for i in ${COMPOSE_Dirs[@]}; do
 	dir=$(echo $i | sed 's/\//_/g'); 
 	mv $i $i-back; 
 	ln -s /mnt/$dir $i; 
 done
 
-#Espero que mysql esté funcionando ya sea local o remoto
+#Wait for mysql responses
 while ! nc -z $ASPEN_DBHost $ASPEN_DBPort; do sleep 3; done
 
-#Arranque de Apache
+#Turn on apache
 if [ $COMPOSE_Apache == "on" ]; then
 	mkdir -p /var/log/aspen-discovery/$SITE_sitename
 	service apache2 start 
 fi
 
-#Arranque de Cron
+#Turn on Cron
 if [ $COMPOSE_Cron == "on" ]; then
 	service cron start 
 	php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php $SITE_sitename &
 fi
 
-#Asigno 'owner' correcto sobre distintos directorios dentro de Aspen
+#Assign correct owners to directories within Aspen
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/code/web
 chown -R www-data:aspen /data/aspen-discovery/$SITE_sitename/
 
-#Doy permisos de lectura y escritura a Aspen para subir imagenes
+#Assign permissions to Aspen 
 chmod -R 777 /usr/local/aspen-discovery/code/web
 chmod -R 777 /data/aspen-discovery/$SITE_sitename/
 
-#Espera infinita
+#Infinite loop
 /bin/bash -c "trap : TERM INT; sleep infinity & wait"
 
