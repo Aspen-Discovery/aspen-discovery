@@ -1977,8 +1977,8 @@ class Library extends DataObject {
 							'showHoldPosition' => [
 								'property' => 'showHoldPosition',
 								'type' => 'checkbox',
-								'label' => 'Show Hold Position',
-								'description' => 'Whether or not the patron should be able to see the hold positionif available in the ILS.',
+								'label' => 'Show ILS Hold Position',
+								'description' => 'Whether or not the patron should be able to see the hold position if available in the ILS.',
 								'hideInLists' => true,
 								'default' => 1,
 							],

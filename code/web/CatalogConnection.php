@@ -191,6 +191,8 @@ class CatalogConnection {
 			if ($indexingProfile != null) {
 				require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 				$userUsage = new UserILSUsage();
+				global $aspenUsage;
+				$userUsage->instance = $aspenUsage->getInstance();
 				$userUsage->userId = $user->id;
 				$userUsage->indexingProfileId = $this->accountProfile->getIndexingProfile()->id;
 				$userUsage->year = date('Y');
@@ -886,6 +888,8 @@ class CatalogConnection {
 			//Track usage by the user
 			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 			$userUsage = new UserILSUsage();
+			global $aspenUsage;
+			$userUsage->instance = $aspenUsage->getInstance();
 			$userUsage->userId = $patron->id;
 			$userUsage->indexingProfileId = $indexingProfileId;
 			$userUsage->year = date('Y');
@@ -999,6 +1003,8 @@ class CatalogConnection {
 			//Track usage by the user
 			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 			$userUsage = new UserILSUsage();
+			global $aspenUsage;
+			$userUsage->instance = $aspenUsage->getInstance();
 			$userUsage->userId = -1;
 			$userUsage->indexingProfileId = $this->driver->getIndexingProfile()->id;
 			$userUsage->year = date('Y');
