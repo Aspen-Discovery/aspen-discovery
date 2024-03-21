@@ -25,7 +25,7 @@ services:
     deploy:
       endpoint_mode: dnsrr
     volumes:
-      - ${ASPEN_Repo}/mariadb_data:/var/lib/mysql
+      - ${ASPEN_REPO}/mariadb_data:/var/lib/mysql
     networks:
       - net-aspen
 
