@@ -2149,12 +2149,12 @@ abstract class MarcRecordProcessor {
 					}else if (voxPattern.matcher(noteValue).matches()) {
 						result.add("VoxBooks");
 						break;
-					}else if (bluray4kComboRegex.matcher(noteValue).matches()) {
-						result.add("4K/Blu-ray");
-						break;
-					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
-						result.add("Blu-ray/DVD");
-						break;
+//					}else if (bluray4kComboRegex.matcher(noteValue).matches()) {
+//						result.add("4K/Blu-ray");
+//						break;
+//					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
+//						result.add("Blu-ray/DVD");
+//						break;
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("Wonderbook");
 						break;
