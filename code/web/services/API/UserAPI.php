@@ -1129,6 +1129,7 @@ class UserAPI extends AbstractAPI {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
+				global $library;
 				$unavailableSort = $_REQUEST['unavailableSort'] ?? 'sortTitle';
 				$availableSort = $_REQUEST['availableSort'] ?? 'expire';
 				$source = $_REQUEST['source'] ?? 'all';
@@ -1153,6 +1154,9 @@ class UserAPI extends AbstractAPI {
 						$reactivateDate = gmdate('M d, Y', $holdsToReturn['unavailable'][$key]['reactivateDate']);
 						$status = $holdsToReturn['unavailable'][$key]['status'];
 						$holdsToReturn['unavailable'][$key]['statusMessage'] = translate(['text' => "$status until %1%", 1 => $reactivateDate, 'isPublicFacing' => true]);
+					}
+					if (empty($library->showHoldPosition)){
+						$holdsToReturn['unavailable'][$key]['position'] = 0;
 					}
 				}
 				return [

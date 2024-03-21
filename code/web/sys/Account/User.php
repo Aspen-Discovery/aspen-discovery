@@ -3976,7 +3976,8 @@ class User extends DataObject {
 
 	public function showHoldPosition(): bool {
 		if ($this->hasIlsConnection()) {
-			return $this->getCatalogDriver()->showHoldPosition();
+			global $library;
+			return ($library->showHoldPosition == 1) && $this->getCatalogDriver()->showHoldPosition();
 		} else {
 			return false;
 		}
