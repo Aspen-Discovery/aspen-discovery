@@ -8,8 +8,7 @@ RUN apt-get update \
     sed \
     && rm -rf /var/lib/apt/lists/*
 
-#Copy necessary cores
-COPY aspen-discovery/data_dir_setup/solr7/ /opt/solr/server/solr/configsets
+COPY data_dir_setup/solr7/ /opt/solr/server/solr/configsets
 
 RUN chown -R solr:solr /opt/solr/server/solr/configsets/
 USER solr

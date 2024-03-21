@@ -1,0 +1,44 @@
+image: docker:stable-git
+
+services:
+  - docker:dind
+
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  BASEIMAGE: $DOCKER_BASEIMAGE
+
+before_script:
+  - docker login -u $PAUSER -p $PATOKEN registry.gitlab.com
+
+build:aspen:
+  stage: build
+  script:
+    - docker build . -f docker/Dockerfile -t $BASEIMAGE:$CI_COMMIT_TAG
+    - docker tag $BASEIMAGE:$CI_COMMIT_TAG $BASEIMAGE:latest
+    - docker push $BASEIMAGE:$CI_COMMIT_TAG
+    - docker push $BASEIMAGE:latest
+  only:
+    - tags
+
+build:solr:
+  stage: build
+  script:
+    - docker build . -f docker/solr/Dockerfile -t $BASEIMAGE/solr:$CI_COMMIT_TAG
+    - docker tag $BASEIMAGE/solr:$CI_COMMIT_TAG $BASEIMAGE/solr:latest
+    - docker push $BASEIMAGE/solr:$CI_COMMIT_TAG
+    - docker push $BASEIMAGE/solr:latest
+  only:
+    - tags
+
+build:tunnel:
+  stage: build
+  script:
+    - docker build . -f docker/tunnel/Dockerfile -t $BASEIMAGE/tunnel:$CI_COMMIT_TAG
+    - docker tag $BASEIMAGE/tunnel:$CI_COMMIT_TAG $BASEIMAGE/tunnel:latest
+    - docker push $BASEIMAGE/tunnel:$CI_COMMIT_TAG
+    - docker push $BASEIMAGE/tunnel:latest
+  only:
+    - tags
