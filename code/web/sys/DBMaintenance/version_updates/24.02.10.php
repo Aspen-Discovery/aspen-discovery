@@ -80,6 +80,15 @@ function getUpdates24_02_10(): array {
 				'ALTER TABLE website_index_log add index startTime(startTime)',
 			]
 		], //index_common_timestamp_columns
+		'index_common_timestamp_columns_pt_2' => [
+			'title' => 'Index Common Timestamp Columns Pt 2',
+			'description' => 'Add Indexes to some table that store timestamps pt 2',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE object_history add index changeDate(changeDate)',
+
+			]
+		], //index_common_timestamp_columns_pt_2
 
 		//kirstien - ByWater
 
