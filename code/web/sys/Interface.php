@@ -118,8 +118,10 @@ class UInterface extends Smarty {
 		global $enabledModules;
 		$this->assign('enabledModules', $enabledModules);
 
-		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
-		$this->assign('requestHasParams', strpos($_SERVER['REQUEST_URI'], '?') > 0);
+		if (isset($_SERVER['REQUEST_URI'])) {
+			$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
+			$this->assign('requestHasParams', strpos($_SERVER['REQUEST_URI'], '?') > 0);
+		}
 		if (isset($configArray['Site']['email'])) {
 			$this->assign('supportEmail', $configArray['Site']['email']);
 		}

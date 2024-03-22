@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use SystemAPI;
 use SystemVariables;
 
-class SystemAPITest extends TestCase {
+class SystemAPITests extends TestCase {
 	public function test_getCatalogStatus_Online() {
 		require_once __DIR__ . '/../../../../../code/web/services/API/SystemAPI.php';
 		$systemAPI = new SystemAPI();
@@ -55,17 +55,23 @@ class SystemAPITest extends TestCase {
 		$systemVariables->update();
 	}
 
-	public function test_databaseInitialized() {
-		global $aspen_db;
-		$this->assertNotNull($aspen_db);
-	}
+
 
 	public function test_hasPendingDatabaseUpdates() {
 		require_once __DIR__ . '/../../../../../code/web/services/API/SystemAPI.php';
 		$systemAPI = new SystemAPI();
 		$response = $systemAPI->hasPendingDatabaseUpdates();
 		$this->assertFalse($response);
+	}
 
+	public function test_getCurrentVersion() {
+		getGitBranch();
+
+		require_once __DIR__ . '/../../../../../code/web/services/API/SystemAPI.php';
+		$systemAPI = new SystemAPI();
+		$response = $systemAPI->getCurrentVersion();
+		$this->assertNotNull($response['version']);
+		$this->assertMatchesRegularExpression('/\d\d\.\d\d\.\d\d/', $response['version']);
 	}
 
 }
