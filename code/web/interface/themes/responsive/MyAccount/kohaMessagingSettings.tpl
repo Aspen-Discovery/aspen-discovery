@@ -107,7 +107,7 @@
 					<td>
 						{if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.allowDigests)}
 							{if !empty($canSave)}
-								<input type="checkbox" id="digest{$messageTypeId}" value="{$messageTypeId}" name="digest{$messageTypeId}" aria-label="Send Message for {$messageType.label} as digest" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.wantsDigest)}checked="checked"{else}disabled{/if}>
+								<input type="checkbox" id="digest{$messageTypeId}" value="{$messageTypeId}" name="digest{$messageTypeId}" data-allowDigests="{$messagingSettings.$messageTypeId.allowDigests}" aria-label="Send Message for {$messageType.label} as digest" {if !empty($messagingSettings.$messageTypeId) && !empty($messagingSettings.$messageTypeId.wantsDigest)}checked="checked"{else}disabled{/if}>
 							{else}
 								{if  $messagingSettings.$messageTypeId.allowDigests} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}

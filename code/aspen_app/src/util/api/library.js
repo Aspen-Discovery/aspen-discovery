@@ -183,3 +183,33 @@ export async function dismissSystemMessage(systemMessageId, url) {
      }
      return [];
 }
+
+/**
+ * Check if Aspen Discovery is in offline mode
+ * @param {string} url
+ **/
+export async function getCatalogStatus(url = null) {
+     const apiUrl = url ?? LIBRARY.url;
+     const api = create({
+          baseURL: apiUrl + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+     });
+     const response = await api.get('/SystemAPI?method=getCatalogStatus');
+     if (response.ok) {
+          console.log('Checked catalog status at Loading');
+          if (response?.data?.result) {
+               return {
+                    status: response?.data?.result?.catalogStatus ?? 0,
+                    message: response?.data?.result?.api?.message ?? null,
+               };
+          }
+     } else {
+          console.log(response);
+     }
+     return {
+          status: 0,
+          message: null,
+     };
+}

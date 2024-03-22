@@ -10,12 +10,13 @@ import { checkVersion } from 'react-native-check-version';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { createGlueTheme } from '../../themes/theme';
 import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
-import { getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
+import { getCatalogStatus, getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
+import { CatalogOffline } from './CatalogOffline';
 import { ForceLogout } from './ForceLogout';
 
 const prefix = Linking.createURL('/');
@@ -43,7 +44,7 @@ export const LoadingScreen = () => {
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
 
      const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
-     const { library, updateLibrary, updateMenu } = React.useContext(LibrarySystemContext);
+     const { library, updateLibrary, updateMenu, updateCatalogStatus, catalogStatus, catalogStatusMessage } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
@@ -79,8 +80,15 @@ export const LoadingScreen = () => {
           return unsubscribe;
      }, [navigation]);
 
-     const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
+     const { status: catalogStatusQueryStatus, data: catalogStatusQuery } = useQuery(['catalog_status', LIBRARY.url], () => getCatalogStatus(LIBRARY.url), {
           enabled: !!LIBRARY.url,
+          onSuccess: (data) => {
+               updateCatalogStatus(data);
+          },
+     });
+
+     const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
+          enabled: !!LIBRARY.url && !!catalogStatusQuery,
           onSuccess: (data) => {
                setProgress(10);
                updateDictionary(translationsLibrary);
@@ -225,7 +233,12 @@ export const LoadingScreen = () => {
           return <ForceLogout />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading' || themeQueryStatus === 'loading') {
+     if (catalogStatus > 0) {
+          // catalog is offline
+          return <CatalogOffline />;
+     }
+
+     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading' || themeQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -240,7 +253,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success' || themeQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success' || themeQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);

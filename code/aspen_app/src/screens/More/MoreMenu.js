@@ -5,6 +5,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { Box, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
 import React from 'react';
+import { popToast } from '../../components/loadError';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -48,7 +49,7 @@ const MyLibrary = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
 
-     const contrastTextColor = useToken('colors', useContrastText('primary.400'));
+     const contrastTextColor = useToken('colors', 'primary.400-text');
 
      let isClosedToday = false;
      let hoursLabel = '';
@@ -157,7 +158,38 @@ const PrivacyPolicy = () => {
      const openURL = async () => {
           const url = appendQuery(LIBRARY.appSettings.privacyPolicy ?? GLOBALS.privacyPolicy, 'minimalInterface=true');
           console.log(url);
-          WebBrowser.openBrowserAsync(url, browserParams);
+          await WebBrowser.openBrowserAsync(url, browserParams)
+               .then((res) => {
+                    console.log(res);
+                    if (res.type === 'cancel' || res.type === 'dismiss') {
+                         console.log('User closed window.');
+                         WebBrowser.dismissBrowser();
+                         WebBrowser.coolDownAsync();
+                    }
+               })
+               .catch(async (err) => {
+                    if (err.message === 'Another WebBrowser is already being presented.') {
+                         try {
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
+                              await WebBrowser.openBrowserAsync(url, browserParams)
+                                   .then((response) => {
+                                        console.log(response);
+                                        if (response.type === 'cancel') {
+                                             console.log('User closed window.');
+                                        }
+                                   })
+                                   .catch(async (error) => {
+                                        console.log('Unable to close previous browser session.');
+                                   });
+                         } catch (error) {
+                              console.log('Really borked.');
+                         }
+                    } else {
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         console.log(err);
+                    }
+               });
      };
 
      return (
@@ -194,29 +226,68 @@ const MenuLink = (payload) => {
      const [expanded, setExpanded] = React.useState(false);
 
      function isValidHttpUrl(str) {
-          const pattern = new RegExp(
-               '^([a-zA-Z]+:\\/\\/)?' + // protocol
-                    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR IP (v4) address
-                    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                    '(\\#[-a-z\\d_]*)?$', // fragment locator
-               'i'
-          );
-          return pattern.test(str);
+          if (str.startsWith('http://') || str.startsWith('https://')) {
+               return true;
+          }
+          return false;
      }
 
      const openURL = async (url) => {
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'automatic',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+
           let formattedUrl = url;
           if (!isValidHttpUrl(url)) {
                /* Assume the URL is a relative one to Aspen Discovery */
+               console.log('URL not valid!');
                formattedUrl = _.trimEnd(library.baseUrl, '/') + '/' + _.trimStart(url, '/');
           }
           if (formattedUrl.includes(library.baseUrl)) {
                /* If Aspen Discovery, append minimalInterface to clean up the UI */
                formattedUrl = appendQuery(formattedUrl, 'minimalInterface=true');
           }
-          WebBrowser.openBrowserAsync(formattedUrl, browserParams);
+
+          await WebBrowser.openBrowserAsync(formattedUrl, browserParams)
+               .then(async (res) => {
+                    console.log(res);
+                    if (res.type === 'cancel' || res.type === 'dismiss') {
+                         console.log('User closed window.');
+                         WebBrowser.dismissBrowser();
+                         WebBrowser.coolDownAsync();
+                    }
+               })
+               .catch(async (err) => {
+                    console.log(err);
+                    if (err.message === 'Another WebBrowser is already being presented.') {
+                         try {
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
+                              await WebBrowser.openBrowserAsync(formattedUrl, browserParams)
+                                   .then(async (response) => {
+                                        console.log(response);
+                                        if (response.type === 'cancel' || response.type === 'dismiss') {
+                                             console.log('User closed window.');
+                                             WebBrowser.dismissBrowser();
+                                             WebBrowser.coolDownAsync();
+                                        }
+                                   })
+                                   .catch(async (error) => {
+                                        console.log('Unable to close previous browser session.');
+                                   });
+                         } catch (error) {
+                              console.log('Really borked.');
+                         }
+                    } else {
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         console.log(err);
+                    }
+               });
      };
 
      if (hasMultiple) {

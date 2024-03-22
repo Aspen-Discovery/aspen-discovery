@@ -44,7 +44,7 @@
 				.jcarouselPagination({
 					perPage: 1,
 					item: function(page) {
-						return '<a href="#' + page + '" tabindex="-1">' + page + '</a>';
+						return '<a href="#' + page + '" role="button" tabindex="0">' + page + '</a>';
 					}
 				});
 	});

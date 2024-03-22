@@ -18,7 +18,7 @@ const LaunchStackNavigator = () => {
                               <LanguageContext.Consumer>
                                    {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
                                         <LibrarySystemContext.Consumer>
-                                             {(library, version, url, menu) => (
+                                             {(library, version, url, menu, catalogStatus, catalogStatusMessage) => (
                                                   <LibraryBranchContext.Consumer>
                                                        {(location, locations) => (
                                                             <SearchContext.Consumer>

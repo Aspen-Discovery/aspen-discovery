@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
 import React from 'react';
+import { popToast } from '../../components/loadError';
 
 // custom components and helper files
 import { LanguageContext, LibrarySystemContext, ThemeContext } from '../../context/initialContext';
@@ -81,7 +82,38 @@ export const DisplayEventResult = (props) => {
                controlsColor: textColor,
                secondaryToolbarColor: backgroundColor,
           };
-          WebBrowser.openBrowserAsync(url, browserParams);
+          await WebBrowser.openBrowserAsync(url, browserParams)
+               .then((res) => {
+                    console.log(res);
+                    if (res.type === 'cancel' || res.type === 'dismiss') {
+                         console.log('User closed or dismissed window.');
+                         WebBrowser.dismissBrowser();
+                         WebBrowser.coolDownAsync();
+                    }
+               })
+               .catch(async (err) => {
+                    if (err.message === 'Another WebBrowser is already being presented.') {
+                         try {
+                              WebBrowser.dismissBrowser();
+                              WebBrowser.coolDownAsync();
+                              await WebBrowser.openBrowserAsync(url, browserParams)
+                                   .then((response) => {
+                                        console.log(response);
+                                        if (response.type === 'cancel') {
+                                             console.log('User closed window.');
+                                        }
+                                   })
+                                   .catch(async (error) => {
+                                        console.log('Unable to close previous browser session.');
+                                   });
+                         } catch (error) {
+                              console.log('Really borked.');
+                         }
+                    } else {
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         console.log(err);
+                    }
+               });
      };
 
      return (

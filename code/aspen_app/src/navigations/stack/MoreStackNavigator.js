@@ -9,6 +9,12 @@ import { MoreMenu } from '../../screens/More/MoreMenu';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import { Settings_LanguageScreen } from '../../screens/MyAccount/Settings/Language';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
+import { CalendarPermissionDescription } from '../../screens/MyAccount/Settings/Permission/Calendar';
+import { CameraPermissionDescription } from '../../screens/MyAccount/Settings/Permission/Camera';
+import { GeolocationPermissionDescription } from '../../screens/MyAccount/Settings/Permission/Geolocation';
+import { NotificationPermissionDescription } from '../../screens/MyAccount/Settings/Permission/Notifications';
+import { ScreenBrightnessPermissionDescription } from '../../screens/MyAccount/Settings/Permission/ScreenBrightness';
+import { PermissionsDashboard } from '../../screens/MyAccount/Settings/Permissions';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { SupportScreen } from '../../screens/MyAccount/Settings/Support';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -52,6 +58,14 @@ const MoreStackNavigator = () => {
                     <Stack.Screen name="MyPreferences_Appearance" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="MyDevice_Notifications" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                     <Stack.Screen name="MyDevice_Support" component={SupportScreen} options={{ title: getTermFromDictionary(language, 'support') }} />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen name="PermissionDashboard" component={PermissionsDashboard} options={{ title: getTermFromDictionary(language, 'device_permissions') }} />
+                    <Stack.Screen name="PermissionCameraDescription" component={CameraPermissionDescription} options={{ title: getTermFromDictionary(language, 'camera_permission') }} />
+                    <Stack.Screen name="PermissionCalendarDescription" component={CalendarPermissionDescription} options={{ title: getTermFromDictionary(language, 'calendar_permission') }} />
+                    <Stack.Screen name="PermissionGeolocationDescription" component={GeolocationPermissionDescription} options={{ title: getTermFromDictionary(language, 'geolocation_permission') }} />
+                    <Stack.Screen name="PermissionNotificationDescription" component={NotificationPermissionDescription} options={{ title: getTermFromDictionary(language, 'notification_permission') }} />
+                    <Stack.Screen name="PermissionScreenBrightnessDescription" component={ScreenBrightnessPermissionDescription} options={{ title: getTermFromDictionary(language, 'screen_brightness_permission') }} />
                </Stack.Group>
           </Stack.Navigator>
      );
