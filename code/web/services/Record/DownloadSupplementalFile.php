@@ -35,6 +35,8 @@ class Record_DownloadSupplementalFile {
 							if (UserAccount::isLoggedIn()) {
 								require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 								$userUsage = new UserILSUsage();
+								global $aspenUsage;
+								$userUsage->instance = $aspenUsage->getInstance();
 								$userUsage->userId = UserAccount::getActiveUserId();
 								$userUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 								$userUsage->year = date('Y');
