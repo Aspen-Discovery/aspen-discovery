@@ -2,6 +2,7 @@
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text="ILS Usage Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
+
 		{foreach from=$profiles item=profileName key=profileId}
 			<h1>{translate text="Selected Profile" isAdminFacing=true} - {$profileName}</h1>
 			<div class="row">
@@ -105,6 +106,32 @@
 						<div class="col-tn-6">
 							<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsAllTime.$profileId.numRecordsUsed}</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="dashboardCategory col-sm-6">
+					<div class="row">
+						<div class="col-sm-10 col-sm-offset-1">
+							<h2 class="dashboardCategoryLabel">{translate text="Total Holds" isAdminFacing=true}</h2>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+							<div class="dashboardValue">{$activeRecordsThisMonth.$profileId.totalHolds}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+							<div class="dashboardValue">{$activeRecordsLastMonth.$profileId.totalHolds}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+							<div class="dashboardValue">{$activeRecordsThisYear.$profileId.totalHolds}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+							<div class="dashboardValue">{$activeRecordsAllTime.$profileId.totalHolds}</div>
 						</div>
 					</div>
 				</div>

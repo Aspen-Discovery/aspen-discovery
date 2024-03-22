@@ -127,6 +127,7 @@ class ILS_Dashboard extends Admin_Dashboard {
 
 		$usage->selectAdd('COUNT(*) as numRecordViewed');
 		$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
+		$usage->selectAdd('SUM(timesUsed) as totalHolds');
 		$usage->selectAdd('SUM(pdfDownloadCount) as numPDFsDownloaded');
 		$usage->selectAdd('SUM(pdfViewCount) as numPDFsViewed');
 		$usage->selectAdd('SUM(supplementalFileDownloadCount) as numSupplementalFileDownloadCount');
@@ -138,6 +139,7 @@ class ILS_Dashboard extends Admin_Dashboard {
 			$usageStats[$id] = [
 				'numRecordViewed' => 0,
 				'numRecordsUsed' => 0,
+				'totalHolds' => 0,
 				'numPDFsDownloaded' => 0,
 				'numPDFsViewed' => 0,
 				'numSupplementalFileDownloadCount' => 0,
@@ -148,6 +150,7 @@ class ILS_Dashboard extends Admin_Dashboard {
 			$usageStats[$usage->indexingProfileId] = [
 				'numRecordViewed' => $usage->numRecordViewed,
 				'numRecordsUsed' => $usage->numRecordsUsed,
+				'totalHolds' =>  $usage->totalHolds,
 				'numPDFsDownloaded' => $usage->numPDFsDownloaded,
 				'numPDFsViewed' => $usage->numPDFsViewed,
 				'numSupplementalFileDownloadCount' => $usage->numSupplementalFileDownloadCount,
