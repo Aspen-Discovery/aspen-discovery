@@ -49,7 +49,7 @@ const MyLibrary = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
 
-     const contrastTextColor = useToken('colors', useContrastText('primary.400'));
+     const contrastTextColor = useToken('colors', 'primary.400-text');
 
      let isClosedToday = false;
      let hoursLabel = '';
@@ -226,16 +226,10 @@ const MenuLink = (payload) => {
      const [expanded, setExpanded] = React.useState(false);
 
      function isValidHttpUrl(str) {
-          const pattern = new RegExp(
-               '^([a-zA-Z]+:\\/\\/)?' + // protocol
-                    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR IP (v4) address
-                    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                    '(\\#[-a-z\\d_]*)?$', // fragment locator
-               'i'
-          );
-          return pattern.test(str);
+          if (str.startsWith('http://') || str.startsWith('https://')) {
+               return true;
+          }
+          return false;
      }
 
      const openURL = async (url) => {
@@ -251,12 +245,14 @@ const MenuLink = (payload) => {
           let formattedUrl = url;
           if (!isValidHttpUrl(url)) {
                /* Assume the URL is a relative one to Aspen Discovery */
+               console.log('URL not valid!');
                formattedUrl = _.trimEnd(library.baseUrl, '/') + '/' + _.trimStart(url, '/');
           }
           if (formattedUrl.includes(library.baseUrl)) {
                /* If Aspen Discovery, append minimalInterface to clean up the UI */
                formattedUrl = appendQuery(formattedUrl, 'minimalInterface=true');
           }
+
           await WebBrowser.openBrowserAsync(formattedUrl, browserParams)
                .then(async (res) => {
                     console.log(res);
