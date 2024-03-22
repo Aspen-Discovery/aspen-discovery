@@ -3980,6 +3980,14 @@ CREATE TABLE `placards` (
   PRIMARY KEY (`id`),
   KEY `title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS processes_to_stop;
+CREATE TABLE processes_to_stop (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `processId` INT(11) NOT NULL,
+  `processName` VARCHAR(255) NOT NULL,
+  `stopAttempted` TINYINT DEFAULT 0,
+  `stopResults` TEXT
+) ENGINE = INNODB;
 DROP TABLE IF EXISTS propay_settings;
 CREATE TABLE `propay_settings` (
   `id` int NOT NULL AUTO_INCREMENT,
