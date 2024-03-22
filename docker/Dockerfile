@@ -29,6 +29,7 @@ RUN apt -y update \
 	  gnupg2 \
 	  netcat \
 	  crudini \
+	  rsync \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -56,6 +57,7 @@ RUN apt -y update \
 	  php8.0-intl \
 	  php8.0-mbstring \
 	  php8.0-xdebug \
+	  php8.0-imagick
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
