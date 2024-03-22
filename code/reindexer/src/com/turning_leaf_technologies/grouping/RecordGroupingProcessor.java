@@ -58,6 +58,8 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getHooplaRecordStmt;
 	private PreparedStatement getPalaceProjectRecordStmt;
 
+	private PreparedStatement getProductIdForPalaceProjectIdStmt;
+
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
@@ -123,6 +125,7 @@ public class RecordGroupingProcessor {
 			getCloudLibraryDetailsForRecordStmt.close();
 			getHooplaRecordStmt.close();
 			getPalaceProjectRecordStmt.close();
+			getProductIdForPalaceProjectIdStmt.close();
 
 		} catch (Exception e) {
 			logEntry.incErrors("Error closing prepared statements in record grouping processor", e);
@@ -239,6 +242,7 @@ public class RecordGroupingProcessor {
 			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductIdForPalaceProjectIdStmt = dbConnection.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -1089,8 +1093,23 @@ public class RecordGroupingProcessor {
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
 	}
 
-	public String groupPalaceProjectRecord(long palaceProjectId) throws JSONException {
+	public String groupPalaceProjectRecord(String identifier) throws JSONException {
 		try {
+			long palaceProjectId;
+			if (!AspenStringUtils.isNumeric(identifier)) {
+				//Get the ID of the record based on the palace project id
+				getProductIdForPalaceProjectIdStmt.setString(1, identifier);
+				ResultSet getProductIdForPalaceProjectIdRS = getProductIdForPalaceProjectIdStmt.executeQuery();
+				if (getProductIdForPalaceProjectIdRS.next()) {
+					palaceProjectId = getProductIdForPalaceProjectIdRS.getLong("id");
+				}else{
+					logEntry.incErrors("Could not find palace project identifier " + identifier + " in the database");
+					return null;
+				}
+				getProductIdForPalaceProjectIdRS.close();
+			}else{
+				palaceProjectId = Long.parseLong(identifier);
+			}
 			getPalaceProjectRecordStmt.setLong(1, palaceProjectId);
 			ResultSet getPalaceProjectRecordRS = getPalaceProjectRecordStmt.executeQuery();
 			if (getPalaceProjectRecordRS.next()){
@@ -1100,7 +1119,7 @@ public class RecordGroupingProcessor {
 				return groupPalaceProjectRecord(rawResponse, palaceProjectId);
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error grouping palace project record " + palaceProjectId, e);
+			logEntry.incErrors("Error grouping palace project record " + identifier, e);
 		}
 		return null;
 	}
