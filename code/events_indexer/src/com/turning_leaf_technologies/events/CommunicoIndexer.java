@@ -382,20 +382,22 @@ class CommunicoIndexer {
 			}
 		}
 
-		logger.warn("Checking for duplicates of events");
-		for(CommunicoEvent eventInfo : existingEvents.values()){
-			try {
-				deleteEventStmt.setLong(1, eventInfo.getId());
-				deleteEventStmt.executeUpdate();
-			} catch (SQLException e) {
-				logEntry.incErrors("Error deleting event ", e);
+		if (runFullIndexCommunico){
+			logger.warn("Checking for duplicates of events");
+			for(CommunicoEvent eventInfo : existingEvents.values()){
+				try {
+					deleteEventStmt.setLong(1, eventInfo.getId());
+					deleteEventStmt.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error deleting event ", e);
+				}
+				try {
+					solrUpdateServer.deleteById("communico_" + settingsId + "_" + eventInfo.getExternalId());
+				} catch (Exception e) {
+					logEntry.incErrors("Error deleting event by id ", e);
+				}
+				logEntry.incDeleted();
 			}
-			try {
-				solrUpdateServer.deleteById("communico_" + settingsId + "_" + eventInfo.getExternalId());
-			} catch (Exception e) {
-				logEntry.incErrors("Error deleting event by id ", e);
-			}
-			logEntry.incDeleted();
 		}
 
 		logger.warn("Updating solr");
