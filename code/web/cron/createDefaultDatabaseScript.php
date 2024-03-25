@@ -33,7 +33,7 @@ foreach ($allTables as $table) {
 	}
 
 	if ($exportData) {
-		$dumpCommand = "mariadb-dump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
 		/** @noinspection PhpConditionAlreadyCheckedInspection */
 		exec_advanced($dumpCommand, $debug);
 	}else{

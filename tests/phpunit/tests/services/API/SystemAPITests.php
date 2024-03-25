@@ -55,8 +55,6 @@ class SystemAPITests extends TestCase {
 		$systemVariables->update();
 	}
 
-
-
 	public function test_hasPendingDatabaseUpdates() {
 		require_once __DIR__ . '/../../../../../code/web/services/API/SystemAPI.php';
 		$systemAPI = new SystemAPI();
