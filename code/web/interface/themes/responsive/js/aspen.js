@@ -7699,22 +7699,23 @@ AspenDiscovery.Account = (function () {
 								var morningSlots = 0;
 								var afternoonSlots = 0;
 								var eveningSlots = 0;
+								var morningTimeSlotContainer = document.getElementById("morningTimeSlots");
+								morningTimeSlotContainer.innerHTML = "";
+								var afternoonTimeSlotContainer = document.getElementById("afternoonTimeSlots");
+								afternoonTimeSlotContainer.innerHTML = "";
+								var eveningTimeSlotContainer = document.getElementById("eveningTimeSlots");
+								eveningTimeSlotContainer.innerHTML = "";
 								for (var i = 0; i < numOfSlots; i++) {
+									var slot = moment(data[i], "HH:mm").format("h:mm a");
 									if (data[i] < "12:00") {
 										morningSlots++;
-										var timeSlotContainer = document.getElementById("morningTimeSlots");
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+										morningTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									} else if (data[i] < "17:00") {
 										afternoonSlots++;
-										var timeSlotContainer = document.getElementById("afternoonTimeSlots");
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+										afternoonTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									} else {
 										eveningSlots++;
-										var timeSlotContainer = document.getElementById("eveningTimeSlots");
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+										eveningTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									}
 								}
 
