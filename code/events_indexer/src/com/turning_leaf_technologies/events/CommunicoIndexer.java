@@ -524,8 +524,9 @@ class CommunicoIndexer {
 					boolean hasMoreRecords = true;
 					boolean runFullIndexCommunico = false;
 
-					long currentTimestamp = System.currentTimeMillis();
-					long fullDayAgo = currentTimestamp - (24*60*60);
+					long now = new Date().getTime() / 1000;
+					//Remove anything more than 24 hours old
+					long fullDayAgo = now - 24 * 60 * 60;
 					if (lastUpdateOfAllEvents < fullDayAgo){
 						runFullIndexCommunico = true;
 					}
