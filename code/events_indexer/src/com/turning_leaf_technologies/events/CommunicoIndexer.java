@@ -49,6 +49,7 @@ class CommunicoIndexer {
 	private final String clientSecret;
 	private final int numberOfDaysToIndex;
 	private final long lastUpdateOfAllEvents;
+	private boolean runFullIndexCommunico = false;
 
 	private final Connection aspenConn;
 	private final EventsIndexerLogEntry logEntry;
@@ -164,14 +165,16 @@ class CommunicoIndexer {
 			return;
 		}
 
-		try {
-			solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
-			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
-			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
-			System.exit(-1);
-		} catch (Exception e) {
-			logEntry.incErrors("Error deleting from index ", e);
+		if (runFullIndexCommunico){
+			try {
+				solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
+				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
+				logEntry.incErrors("Solr is not running properly, try restarting " + rse);
+				System.exit(-1);
+			} catch (Exception e) {
+				logEntry.incErrors("Error deleting from index ", e);
+			}
 		}
 
 		Date lastDateToIndex = new Date();
@@ -389,10 +392,10 @@ class CommunicoIndexer {
 			}
 			try {
 				solrUpdateServer.deleteById("communico_" + settingsId + "_" + eventInfo.getExternalId());
+				logEntry.incDeleted();
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting event by id ", e);
 			}
-			logEntry.incDeleted();
 		}
 
 		logger.warn("Updating solr");
@@ -522,25 +525,23 @@ class CommunicoIndexer {
 					int limit = 200;
 					int totalRecords = 0;
 					boolean hasMoreRecords = true;
-					boolean runFullIndexCommunico = false;
 
 					long now = new Date().getTime() / 1000;
 					long fullDayAgo = now - 24 * 60 * 60;
 					if (lastUpdateOfAllEvents < fullDayAgo){
 						runFullIndexCommunico = true;
 					}
+					LocalDate localNow = LocalDate.now();
+					LocalDate lastDateToIndex = localNow.plusDays(numberOfDaysToIndex);
 
 					//we don't need to always run a full index, most important on the first ever index
 					if (runFullIndexCommunico || lastUpdateOfAllEvents==0) {
-
-						LocalDate today = LocalDate.now();
-						LocalDate lastDateToIndex = today.plusDays(numberOfDaysToIndex);
-
 						while (hasMoreRecords) {
+							hasMoreRecords = false;
 							//max limit of 250, need to rebuild URL for each run to set correct start number
 							String apiEventsURL = "https://api.communico.co/v3/attend/events";
 							apiEventsURL += "?start=" + start + "&limit=200";
-							apiEventsURL += "&startDate=" + today;
+							apiEventsURL += "&startDate=" + localNow;
 							apiEventsURL += "&endDate=" + lastDateToIndex;
 							//Need to request the fields we want as many are "optional" and aren't returned unless asked for
 							//noinspection SpellCheckingInspection
@@ -570,9 +571,8 @@ class CommunicoIndexer {
 										if (start + limit < totalRecords) {
 											hasMoreRecords = true;
 											start = start + limit;
-										}else{
-											hasMoreRecords = false;
 										}
+										break;
 									} else {
 										if (j == 2) {
 											logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
@@ -607,6 +607,7 @@ class CommunicoIndexer {
 							//max limit of 250
 							String apiEventsURL = "https://api.communico.co/v3/attend/events";
 							apiEventsURL += "?start=" + start + "&limit=200";
+							apiEventsURL += "&endDate=" + lastDateToIndex;
 							//Need to request the fields we want as many are "optional" and aren't returned unless asked for
 							//noinspection SpellCheckingInspection
 							apiEventsURL += "&privateEvents=false&staffOnly=false&fields=ages,searchTags,registration,eventImage,eventType,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types&sortBy=eventLastUpdated&sortOrder=descending";
@@ -639,9 +640,8 @@ class CommunicoIndexer {
 										totalRecords = data.getInt("total");
 										if (start + limit < totalRecords && hasMoreRecords) {
 											start = start + limit;
-										} else {
-											hasMoreRecords = false;
 										}
+										break;
 									} else {
 										if (j == 2) {
 											logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
