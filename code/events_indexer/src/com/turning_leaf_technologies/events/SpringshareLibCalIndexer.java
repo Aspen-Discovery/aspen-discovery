@@ -56,6 +56,9 @@ class SpringshareLibCalIndexer {
 
 	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
+	private String oAuthTokenType;
+	private String oAuthAccessToken;
+
 	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
@@ -474,19 +477,17 @@ class SpringshareLibCalIndexer {
 			params.add(new BasicNameValuePair("client_secret", clientSecret));
 			HttpPost authTokenRequest = new HttpPost(authTokenUrl);
 			authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-			String accessToken = "";
-			String tokenType = "";
 			try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
 				StatusLine status = response1.getStatusLine();
 				HttpEntity entity1 = response1.getEntity();
 				if (status.getStatusCode() == 200) {
 					String response = EntityUtils.toString(entity1);
 					JSONObject authData = new JSONObject(response);
-					tokenType = authData.getString("token_type");
-					accessToken = authData.getString("access_token");
+					oAuthTokenType = authData.getString("token_type");
+					oAuthAccessToken = authData.getString("access_token");
 				}
 			}
-			ArrayList <Integer> calIds = getLibCalCalIds(httpclient, tokenType, accessToken);
+			ArrayList <Integer> calIds = getLibCalCalIds(httpclient);
 			JSONArray events = new JSONArray();
 			for (Integer calId : calIds) {
 				// Springshare LibCal API currently allows max 500 events returned per call. We will attempt to retrieve 500 events for each month
@@ -505,7 +506,7 @@ class SpringshareLibCalIndexer {
 					apiEventsURL += "&days=" + daysThisMonth;
 					apiEventsURL += "&limit=500";
 					apiRequest = new HttpGet(apiEventsURL);
-					apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
+					apiRequest.addHeader("Authorization", oAuthTokenType + " " + oAuthAccessToken);
 					try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
 						StatusLine status = response1.getStatusLine();
 						HttpEntity entity1 = response1.getEntity();
@@ -534,31 +535,12 @@ class SpringshareLibCalIndexer {
 			JSONArray eventRegistrations;
 			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 				HttpRequestBase apiRequest;
-				String authTokenUrl = baseUrl + "/1.1/oauth/token";
-				ArrayList<NameValuePair> params = new ArrayList<>();
-				params.add(new BasicNameValuePair("grant_type", "client_credentials"));
-				params.add(new BasicNameValuePair("client_id", clientId));
-				params.add(new BasicNameValuePair("client_secret", clientSecret));
-				HttpPost authTokenRequest = new HttpPost(authTokenUrl);
-				authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-				String accessToken = "";
-				String tokenType = "";
-				try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
-					StatusLine status = response1.getStatusLine();
-					HttpEntity entity1 = response1.getEntity();
-					if (status.getStatusCode() == 200) {
-						String response = EntityUtils.toString(entity1);
-						JSONObject authData = new JSONObject(response);
-						tokenType = authData.getString("token_type");
-						accessToken = authData.getString("access_token");
-					}
-				}
 
 				eventRegistrations = new JSONArray();
 				//noinspection SpellCheckingInspection
 				String apiRegistrationsURL = baseUrl + "/1.1/events/" + eventId + "/registrations?waitlist=1";
 				apiRequest = new HttpGet(apiRegistrationsURL);
-				apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
+				apiRequest.addHeader("Authorization", oAuthTokenType + " " + oAuthAccessToken);
 				try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
 					StatusLine status = response1.getStatusLine();
 					HttpEntity entity1 = response1.getEntity();
@@ -584,12 +566,12 @@ class SpringshareLibCalIndexer {
 		return null;
 	}
 
-	private ArrayList <Integer> getLibCalCalIds(CloseableHttpClient httpclient, String tokenType, String accessToken) {
+	private ArrayList <Integer> getLibCalCalIds(CloseableHttpClient httpclient) {
 		ArrayList <Integer> values = new ArrayList<>();
 		if (calId.isEmpty()) {
 			String apiCalendarsURL = baseUrl + "/1.1/calendars";
 			HttpRequestBase apiRequest = new HttpGet(apiCalendarsURL);
-			apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
+			apiRequest.addHeader("Authorization", oAuthTokenType + " " + oAuthAccessToken);
 			try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
 				StatusLine status = response1.getStatusLine();
 				HttpEntity entity1 = response1.getEntity();
