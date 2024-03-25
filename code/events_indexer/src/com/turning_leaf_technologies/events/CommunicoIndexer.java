@@ -392,10 +392,10 @@ class CommunicoIndexer {
 			}
 			try {
 				solrUpdateServer.deleteById("communico_" + settingsId + "_" + eventInfo.getExternalId());
-				logEntry.incDeleted();
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting event by id ", e);
 			}
+			logEntry.incDeleted();
 		}
 
 		logger.warn("Updating solr");
