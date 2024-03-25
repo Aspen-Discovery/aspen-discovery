@@ -142,6 +142,9 @@ class CourseReservesIndexer {
 
 			String courseLibrary = allCourseReservesRS.getString("courseLibrary");
 			String courseInstructor = allCourseReservesRS.getString("courseInstructor");
+			if (courseInstructor == null) {
+				courseInstructor = "";
+			}
 			String[] courseInstructors = courseInstructor.split("\\|",0);
 			String displayInstructors = String.join(", ", courseInstructors);
 			String courseNumber = allCourseReservesRS.getString("courseNumber");

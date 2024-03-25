@@ -1048,7 +1048,7 @@ public class GroupedWorkIndexer {
 				} else if (type.equals("hoopla")) {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				} else if (type.equals("palace_project")) {
-					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(Long.parseLong(identifier));
+					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(identifier);
 				}
 				if (newId == null) {
 					//The record is not valid, skip it.
