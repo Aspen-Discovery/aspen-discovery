@@ -48,6 +48,7 @@ class CommunicoIndexer {
 	private final String clientId;
 	private final String clientSecret;
 	private final int numberOfDaysToIndex;
+	private final long lastUpdateOfAllEvents;
 
 	private final Connection aspenConn;
 	private final EventsIndexerLogEntry logEntry;
@@ -65,10 +66,12 @@ class CommunicoIndexer {
 	private PreparedStatement addRegistrantStmt;
 	private PreparedStatement deleteRegistrantStmt;
 
+	private final Long startTimeForLogging;
+
 
 	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
-	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex , long lastUpdateOfAllEvents, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -84,8 +87,11 @@ class CommunicoIndexer {
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 		this.numberOfDaysToIndex = numberOfDaysToIndex;
+		this.lastUpdateOfAllEvents = lastUpdateOfAllEvents;
 
 		logEntry = new EventsIndexerLogEntry("Communico " + name, aspenConn, logger);
+		Date startTime = new Date();
+		startTimeForLogging = startTime.getTime() / 1000;
 
 		try {
 			addEventStmt = aspenConn.prepareStatement("INSERT INTO communico_events SET settingsId = ?, externalId = ?, title = ?, rawChecksum =?, rawResponse = ?, deleted = 0 ON DUPLICATE KEY UPDATE title = VALUES(title), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), deleted = 0", Statement.RETURN_GENERATED_KEYS);
@@ -512,70 +518,149 @@ class CommunicoIndexer {
 					.setConnectionRequestTimeout(timeout * 1000)
 					.setSocketTimeout(timeout * 1000).build();
 				try (CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).build()) {
+					int start = 0;
+					int limit = 200;
+					int totalRecords = 0;
+					boolean hasMoreRecords = true;
+					boolean runFullIndexCommunico = false;
 
-					LocalDate today = LocalDate.now();
-					for (int m = 0; m < 13; m++) {
+					long currentTimestamp = System.currentTimeMillis();
+					long fullDayAgo = currentTimestamp - (24*60*60);
+					if (lastUpdateOfAllEvents < fullDayAgo){
+						runFullIndexCommunico = true;
+					}
 
-						LocalDate firstOfMonth;
-						if (m == 0) {
-							firstOfMonth = today;
-						} else {
-							firstOfMonth = today.plusMonths(m).with(TemporalAdjusters.firstDayOfMonth());
-						}
-						LocalDate endOfMonth = today.plusMonths(m).with(TemporalAdjusters.lastDayOfMonth());
-						//a limit of 2000 should return all results for the month
-						String apiEventsURL = "https://api.communico.co/v3/attend/events";
-						apiEventsURL += "?limit=2000";
-						apiEventsURL += "&startDate=" + firstOfMonth;
-						apiEventsURL += "&endDate=" + endOfMonth;
+					//we don't need to always run a full index, most important on the first ever index
+					if (runFullIndexCommunico || lastUpdateOfAllEvents==0) {
 
-						//Need to request the fields we want as many are "optional" and aren't returned unless asked for
-						//noinspection SpellCheckingInspection
-						apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,privateEvent,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
-						HttpGet apiRequest = new HttpGet(apiEventsURL);
-						apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
-						logEntry.addNote("Loading events from " + apiEventsURL);
-						logEntry.saveResults();
+						LocalDate today = LocalDate.now();
+						LocalDate lastDateToIndex = today.plusDays(numberOfDaysToIndex);
 
-						boolean successfulCall = false;
-						//Retry if the server is slow to respond
-						for (int j = 0; j < 3; j++) {
-							try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
-								StatusLine status = response1.getStatusLine();
-								HttpEntity entity1 = response1.getEntity();
-								if (status.getStatusCode() == 200) {
-									successfulCall = true;
-									String response = EntityUtils.toString(entity1);
-									JSONObject response2 = new JSONObject(response);
-									JSONObject data = response2.getJSONObject("data");
-									JSONArray events1 = data.getJSONArray("entries");
-									for (int i = 0; i < events1.length(); i++) {
-										JSONObject event = events1.getJSONObject(i);
-										if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))) {
-											events.put(events1.get(i));
+						while (hasMoreRecords) {
+							//max limit of 250, need to rebuild URL for each run to set correct start number
+							String apiEventsURL = "https://api.communico.co/v3/attend/events";
+							apiEventsURL += "?start=" + start + "&limit=200";
+							apiEventsURL += "&startDate=" + today;
+							apiEventsURL += "&endDate=" + lastDateToIndex;
+							//Need to request the fields we want as many are "optional" and aren't returned unless asked for
+							//noinspection SpellCheckingInspection
+							apiEventsURL += "&privateEvents=false&staffOnly=false&fields=ages,searchTags,registration,eventImage,eventType,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types&sortBy=eventStart&sortOrder=ascending";
+							HttpGet apiRequest = new HttpGet(apiEventsURL);
+							apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+							logEntry.addNote("Loading events from " + apiEventsURL);
+							logEntry.saveResults();
+
+							//Process all the events
+							for (int j = 0; j < 3; j++) {
+								try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+									StatusLine status = response1.getStatusLine();
+									HttpEntity entity1 = response1.getEntity();
+									if (status.getStatusCode() == 200) {
+										String response = EntityUtils.toString(entity1);
+										JSONObject response2 = new JSONObject(response);
+										JSONObject data = response2.getJSONObject("data");
+										JSONArray events1 = data.getJSONArray("entries");
+										for (int i = 0; i < events1.length(); i++) {
+											JSONObject event = events1.getJSONObject(i);
+											if ((!event.getString("modified").equals("canceled"))) {
+												events.put(events1.get(i));
+											}
+										}
+										totalRecords = data.getInt("total");
+										if (start + limit < totalRecords) {
+											hasMoreRecords = true;
+											start = start + limit;
+										}else{
+											hasMoreRecords = false;
+										}
+									} else {
+										if (j == 2) {
+											logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+										}else {
+											Thread.sleep(500);
 										}
 									}
-								} else {
+								} catch (Exception e) {
 									if (j == 2) {
-										logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+										logEntry.incErrors("Error getting events from " + apiEventsURL, e);
 									}else {
 										Thread.sleep(500);
 									}
 								}
-							} catch (Exception e) {
-								if (j == 2) {
-									logEntry.incErrors("Error getting events from " + apiEventsURL, e);
-								}else {
-									Thread.sleep(500);
-								}
-							}
-							if (successfulCall) {
-								break;
 							}
 						}
-						logEntry.addNote("Finished loading events");
-						logEntry.saveResults();
+						if (!logEntry.hasErrors()) {
+							//Update the last time we ran the update in settings
+							PreparedStatement updateExtractTime;
+							updateExtractTime = aspenConn.prepareStatement("UPDATE communico_settings set lastUpdateOfAllEvents = ? WHERE id = ?");
+							updateExtractTime.setLong(1, startTimeForLogging);
+							updateExtractTime.setLong(2, this.settingsId);
+							updateExtractTime.executeUpdate();
+						} else {
+							logEntry.addNote("Not setting last extract time since there were problems extracting products from the API");
+						}
+					} else {
+						Date today = new Date();
+						today.setTime(System.currentTimeMillis());
+						Date yesterday = new Date(today.getTime() - (1000 * 60 * 60 * 24));
+						while (hasMoreRecords) {
+							//max limit of 250
+							String apiEventsURL = "https://api.communico.co/v3/attend/events";
+							apiEventsURL += "?start=" + start + "&limit=200";
+							//Need to request the fields we want as many are "optional" and aren't returned unless asked for
+							//noinspection SpellCheckingInspection
+							apiEventsURL += "&privateEvents=false&staffOnly=false&fields=ages,searchTags,registration,eventImage,eventType,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types&sortBy=eventLastUpdated&sortOrder=descending";
+							HttpGet apiRequest = new HttpGet(apiEventsURL);
+							apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+							logEntry.addNote("Loading events from " + apiEventsURL);
+							logEntry.saveResults();
+
+							//Process all the events
+							for (int j = 0; j < 3; j++) {
+								try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+									StatusLine status = response1.getStatusLine();
+									HttpEntity entity1 = response1.getEntity();
+									if (status.getStatusCode() == 200) {
+										String response = EntityUtils.toString(entity1);
+										JSONObject response2 = new JSONObject(response);
+										JSONObject data = response2.getJSONObject("data");
+										JSONArray events1 = data.getJSONArray("entries");
+										for (int i = 0; i < events1.length(); i++) {
+											JSONObject event = events1.getJSONObject(i);
+											if ((!event.getString("modified").equals("canceled"))) {
+												events.put(events1.get(i));
+											}
+											Date updateDate = getDateForKey(event, "eventLastUpdated");
+											if (Objects.requireNonNull(updateDate).before(yesterday)) {
+												hasMoreRecords = false;
+												break;
+											}
+										}
+										totalRecords = data.getInt("total");
+										if (start + limit < totalRecords && hasMoreRecords) {
+											start = start + limit;
+										} else {
+											hasMoreRecords = false;
+										}
+									} else {
+										if (j == 2) {
+											logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
+										} else {
+											Thread.sleep(500);
+										}
+									}
+								} catch (Exception e) {
+									if (j == 2) {
+										logEntry.incErrors("Error getting events from " + apiEventsURL, e);
+									} else {
+										Thread.sleep(500);
+									}
+								}
+							}
+						}
 					}
+					logEntry.addNote("Finished loading events");
+					logEntry.saveResults();
 				} catch (Exception e) {
 					logEntry.incErrors("Error creating HTTP client", e);
 				}

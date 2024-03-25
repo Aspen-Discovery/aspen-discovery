@@ -85,6 +85,16 @@ function getUpdates24_03_00(): array {
 		],
 		//self_reg_form_update
 
+		'communico_full_index' => [
+			'title' => 'Communico Last Full Update',
+			'description' => 'Adds variable for last full index of Communico events',
+			'sql' => [
+				'ALTER TABLE communico_settings ADD COLUMN lastUpdateOfAllEvents INT(11) DEFAULT 0',
+			],
+		],
+		//communico_full_index
+
+
 
 		//lucas - Theke
 
