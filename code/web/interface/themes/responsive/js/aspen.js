@@ -7706,17 +7706,15 @@ AspenDiscovery.Account = (function () {
 								var eveningTimeSlotContainer = document.getElementById("afternoonTimeSlots");
 								eveningTimeSlotContainer.innerHTML = "";
 								for (var i = 0; i < numOfSlots; i++) {
+									var slot = moment(data[i], "HH:mm").format("h:mm a");
 									if (data[i] < "12:00") {
 										morningSlots++;
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
 										morningTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									} else if (data[i] < "17:00") {
 										afternoonSlots++;
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
 										afternoonTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									} else {
 										eveningSlots++;
-										var slot = moment(data[i], "HH:mm").format("h:mm a");
 										eveningTimeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									}
 								}
