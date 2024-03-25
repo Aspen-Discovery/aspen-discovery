@@ -3167,7 +3167,7 @@ class Koha extends AbstractIlsDriver {
 	function getBasicAuthToken() {
 		if ($this->basicAuthToken == null) {
 			$client = UserAccount::getActiveUserObj();
-			$client_id = $client->ils_username;
+			$client_id = $client->ils_username ?? $client->ils_barcode;
 			$client_secret = $client->getPasswordOrPin();
 			$this->basicAuthToken = base64_encode($client_id . ":" . $client_secret);
 		}
