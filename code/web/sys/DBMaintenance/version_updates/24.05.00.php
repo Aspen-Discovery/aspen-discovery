@@ -82,6 +82,15 @@ function getUpdates24_05_00(): array {
 			]
 		]
 		//other
+		//jacob - PTFS Europe
+		'Snippet_Contains_Analytics_Cookies' => [
+			 'title' => 'JS Snippet Contains Analytics Cookies',
+			 'description' => 'Add a toggle for if a JS snippet contains analytics cookies or not.',
+			 'continueOnError' => true,
+			 'sql' => [
+				 'ALTER TABLE javascript_snippets ADD COLUMN containsAnalyticsCookies TINYINT(1)'
+			 ]
+		 ], //Snippet_Contains_Marketing_Cookies
 
 
 	];
