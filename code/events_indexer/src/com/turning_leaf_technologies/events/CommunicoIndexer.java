@@ -327,7 +327,7 @@ class CommunicoIndexer {
 
 				logger.warn("Fetching registration info for event " + eventId);
 				//Fetch registrations here and add to DB - for events that require registration ONLY
-				if (curEvent.getBoolean("registration")){
+				if (curEvent.getBoolean("registration") && curEvent.getInt("totalRegistrants") != 0){
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
 					HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
 
