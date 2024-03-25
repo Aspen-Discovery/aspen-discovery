@@ -817,9 +817,9 @@ abstract class DataObject implements JsonSerializable {
 				$where .= $name . ' = ' . $aspen_db->quote($value);
 			}
 		}
-		if (strlen($this->__where) > 0 && strlen($where) > 0) {
+		if (!empty($this->__where) && !empty($where)) {
 			$where = ' WHERE ' . $this->__where . ' AND ' . $where;
-		} elseif (strlen($this->__where) > 0) {
+		} elseif (!empty($this->__where)) {
 			$where = ' WHERE ' . $this->__where;
 		} elseif (strlen($where) > 0) {
 			$where = ' WHERE ' . $where;
