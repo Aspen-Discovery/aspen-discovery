@@ -1275,6 +1275,9 @@ class Evergreen extends AbstractIlsDriver {
 			$sessionInfo = $this->getStaffUserInfo();
 		} else {
 			$sessionInfo = $this->validatePatronAndGetAuthToken($patron->getBarcode(), $patron->getPasswordOrPin());
+			if (!$sessionInfo['userValid'] && $allowStaffToken && UserAccount::isUserMasquerading()) {
+				$sessionInfo = $this->getStaffUserInfo();
+			}
 		}
 		if ($sessionInfo['userValid']) {
 			return $sessionInfo['authToken'];
