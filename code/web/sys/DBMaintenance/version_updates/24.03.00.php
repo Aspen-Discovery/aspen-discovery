@@ -20,6 +20,14 @@ function getUpdates24_03_00(): array {
 				"ALTER TABLE library ADD COLUMN showHoldPosition TINYINT(1) DEFAULT 1",
 			],
 		], //library_toggle_hold_position
+		'remove_old_payment_lines' => [
+			'title' => 'Remove Old Payment Lines',
+			'description' => 'Remove Old Payment Lines',
+			'continueOnError' => false,
+			'sql' => [
+				'TRUNCATE TABLE user_payment_lines'
+			]
+		], //remove_old_payment_lines
 
 		//kirstien - ByWater
 		'add_lida_event_reg_body' => [
