@@ -4560,21 +4560,36 @@ class MyAccount_AJAX extends JSON_Action {
 
 			//Add payment lines for each fine paid
 			foreach ($fines[$patronId] as $fine) {
-				$paymentLine = new UserPaymentLine();
-				$paymentLine->paymentId = $paymentId;
-				$description = $fine['reason'];
-				if (!empty($description)) {
-					$description .= " - ";
-				}
-				$description .= $fine['message'];
-				$paymentLine->description = $description;
-				if (isset($_REQUEST['amountToPay'][$fineId])) {
-					$fineAmount = $_REQUEST['amountToPay'][$fineId];
+				$addToOrder = false;
+				if ($paymentLibrary->finesToPay == 0) {
+					$addToOrder = true;
 				} else {
-					$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+					foreach ($selectedFines as $fineId => $status) {
+						if ($fine['fineId'] == $fineId) {
+							$addToOrder = true;
+							break;
+						}
+					}
 				}
-				$paymentLine->amountPaid = $fineAmount;
-				$paymentLine->insert();
+
+				if ($addToOrder) {
+					$fineId = $fine['fineId'];
+					$paymentLine = new UserPaymentLine();
+					$paymentLine->paymentId = $paymentId;
+					$description = $fine['reason'];
+					if (!empty($description)) {
+						$description .= " - ";
+					}
+					$description .= $fine['message'];
+					$paymentLine->description = $description;
+					if (isset($_REQUEST['amountToPay'][$fineId])) {
+						$fineAmount = $_REQUEST['amountToPay'][$fineId];
+					} else {
+						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+					}
+					$paymentLine->amountPaid = $fineAmount;
+					$paymentLine->insert();
+				}
 			}
 
 			$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
