@@ -4,6 +4,8 @@ requireSystemLibrariesAspen();
 $timer->logTime("Finished load library and location");
 loadSearchInformation();
 
+spl_autoload_register('aspen_autoloader', true, false);
+
 function requireSystemLibrariesAspen() {
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
@@ -149,5 +151,43 @@ function loadSearchInformation() {
 		}
 	} catch (PDOException $e) {
 		//Ignore, the tables have not been created yet.
+	}
+}
+
+// Set up autoloader (needed for YAML)
+function aspen_autoloader($class) {
+	if (substr($class, 0, 4) == 'CAS_') {
+		if (CAS_autoload($class)) {
+			return;
+		}
+	}
+	// Don't get involved if we're being called for a SimpleSAML method
+	if (substr($class, 0, 10) == 'SimpleSAML' || substr($class, 0, 6) == 'sspmod') {
+		return;
+	}
+	if (strpos($class, '.php') > 0) {
+		$class = substr($class, 0, strpos($class, '.php'));
+	}
+	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
+	try {
+		if (strpos($class, 'Smarty_') === 0) {
+			Smarty_Autoloader::autoload($class);
+			return;
+		} elseif (strpos($class, 'PHPUnit') === 0) {
+			return;
+		} elseif (file_exists('sys/' . $class . '.php')) {
+			$className = ROOT_DIR . '/sys/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('Drivers/' . $class . '.php')) {
+			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('services/MyAccount/lib/' . $class . '.php')) {
+			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
+			require_once $className;
+		} else {
+			require_once $nameSpaceClass;
+		}
+	} catch (Exception $e) {
+		AspenError::raiseError("Error loading class $class");
 	}
 }

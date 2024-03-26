@@ -233,7 +233,7 @@ abstract class DataObject implements JsonSerializable {
 			if (is_array($fieldsToOrder)) {
 				$fieldsToOrder = implode(',', $fieldsToOrder);
 			}
-			if (strlen($this->__orderBy) > 0) {
+			if (!empty($this->__orderBy)) {
 				$this->__orderBy .= ', ' . $fieldsToOrder;
 			} else {
 				$this->__orderBy .= ' ORDER BY ' . $fieldsToOrder;
@@ -267,7 +267,7 @@ abstract class DataObject implements JsonSerializable {
 		if ($cond == false) {
 			$this->__where = null;
 		} else {
-			if (strlen($this->__where) > 0) {
+			if (!empty($this->__where)) {
 				$this->__where .= ' ' . $logic . ' (' . $cond . ')';
 			} else {
 				$this->__where .= '(' . $cond . ')';

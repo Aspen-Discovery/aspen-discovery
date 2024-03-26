@@ -15,7 +15,8 @@
 	<php>
 		<ini name="memory_limit" value="2048M"/>
 	</php>
-	<testsuite name="Aspen Discovery Unit Test Suite">
-		<directory suffix="Tests.php">./tests</directory>
+	<testsuite name="Aspen Discovery Unit Tests">
+		<directory suffix="InitializationTests.php">./tests</directory>
+		<directory suffix="Tests.php">./tests/services/API</directory>
 	</testsuite>
 </phpunit>

@@ -16,4 +16,10 @@ class InitializationTests extends TestCase {
 		$this->assertNotNull($gitBranch);
 		$this->assertMatchesRegularExpression('/\d\d\.\d\d\.\d\d/', $gitBranch);
 	}
+
+	public function test_solrRunning() {
+		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
+		$pingResult = $solrSearcher->ping();
+		$this->assertTrue($pingResult);
+	}
 }
