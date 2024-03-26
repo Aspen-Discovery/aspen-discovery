@@ -5509,7 +5509,7 @@ class Koha extends AbstractIlsDriver {
 
 	function aspenDateToKohaApiDate($date) {
 		if (strlen($date) == 0) {
-			return $date;
+			return NULL;
 		} else {
 			$date = date_create($date);
 			$formattedDate = date_format($date, "Y-m-d");
