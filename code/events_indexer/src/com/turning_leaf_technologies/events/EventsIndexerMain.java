@@ -113,6 +113,7 @@ public class EventsIndexerMain {
 							eventsSitesRS.getString("clientId"),
 							eventsSitesRS.getString("clientSecret"),
 							eventsSitesRS.getInt("numberOfDaysToIndex"),
+							eventsSitesRS.getLong("lastUpdateOfAllEvents"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
