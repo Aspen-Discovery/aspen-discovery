@@ -4498,7 +4498,12 @@ class User extends DataObject {
 	}
 
 	function checkoutItem($barcode, $locationId): array {
-		$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $locationId);
+		$result = $this->getCatalogDriver()->checkoutByAPI($this, $barcode, $locationId);
+
+		if(!$result['success'] && $result['message'] == 'This functionality has not been implemented for this ILS') {
+			$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $locationId);
+		}
+
 		if ($result['success']) {
 			$this->forceReloadOfCheckouts();
 		}

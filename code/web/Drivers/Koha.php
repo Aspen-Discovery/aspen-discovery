@@ -8064,7 +8064,7 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
-			$sql = "SELECT itemnumber FROM items WHERE barcode = " . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+			$sql = "SELECT itemnumber, biblionumber FROM items WHERE barcode = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 			$lookupItemResult = mysqli_query($this->dbConnection, $sql);
 			if ($lookupItemResult->num_rows == 1) {
 				$itemRow = $lookupItemResult->fetch_assoc();
@@ -8072,12 +8072,12 @@ class Koha extends AbstractIlsDriver {
 				$checkoutParams = [
 					'patron_id' => (int)$patron->unique_ils_id,
 					'item_id' => (int)$recordId,
-					'library_id' => $locationId,
 				];
 				$postParams = json_encode($checkoutParams);
 
 				$this->apiCurlWrapper->addCustomHeaders([
 					'Authorization: Bearer ' . $oAuthToken,
+					'x-koha-library: ' . $locationId,
 					'User-Agent: Aspen Discovery',
 					'Accept: */*',
 					'Cache-Control: no-cache',
@@ -8093,6 +8093,13 @@ class Koha extends AbstractIlsDriver {
 
 				$response = json_decode($response);
 
+				$title = 'Unknown Title';
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $itemRow['biblionumber']);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+				}
+
 				if($responseCode == 201) {
 					$result['success'] = true;
 					$result['message'] = translate([
@@ -8107,13 +8114,6 @@ class Koha extends AbstractIlsDriver {
 						'text' => 'You have successfully checked out this title.',
 						'isPublicFacing' => true,
 					]);
-
-					$title = 'Unknown Title';
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
-					if ($recordDriver->isValid()) {
-						$title = $recordDriver->getTitle();
-					}
 
 					$result['itemData'] = [
 						'title' => $title,
@@ -8156,6 +8156,12 @@ class Koha extends AbstractIlsDriver {
 								]);
 						}
 					}
+
+					$result['itemData'] = [
+						'title' => $title,
+						'due' => null,
+						'barcode' => $barcode,
+					];
 				}
 			} else if ($lookupItemResult->num_rows > 1) {
 				$result['message'] = translate([
@@ -8168,6 +8174,7 @@ class Koha extends AbstractIlsDriver {
 					1 => $barcode,
 					'isPublicFacing' => true,
 				]);
+
 			} else {
 				$result['message'] = translate([
 					'text' => 'Unable to checkout this item. Cannot find item for barcode %1%.',
