@@ -82,7 +82,7 @@ CREATE TABLE `account_profiles` (
   `ssoSettingId` tinyint(4) DEFAULT '-1',
   `iiiLoginConfiguration` enum('','barcode_pin','name_barcode','name_barcode_pin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `overrideCode` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `carlXViewVersion` enum('','v','v2') COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `carlXViewVersion` enum('','v','v2') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -105,9 +105,9 @@ CREATE TABLE `aci_speedpay_settings` (
 DROP TABLE IF EXISTS administration_field_lock;
 CREATE TABLE `administration_field_lock` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `module` varchar(30) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `toolName` varchar(100) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `field` varchar(100) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `module` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `toolName` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `field` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS amazon_ses_settings;
@@ -166,9 +166,9 @@ CREATE TABLE `aspen_lida_branded_settings` (
   `showFavicons` int(11) DEFAULT '0',
   `logoNotification` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `appName` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `privacyPolicyContactAddress` longtext COLLATE utf8mb4_general_ci,
-  `privacyPolicyContactPhone` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `privacyPolicyContactEmail` varchar(250) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `privacyPolicyContactAddress` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `privacyPolicyContactPhone` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `privacyPolicyContactEmail` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slugName` (`slugName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -286,13 +286,13 @@ DROP TABLE IF EXISTS aspen_lida_self_check_barcode;
 CREATE TABLE `aspen_lida_self_check_barcode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `selfCheckSettingsId` int(11) NOT NULL DEFAULT '-1',
-  `barcodeStyle` varchar(75) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `barcodeStyle` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS aspen_lida_self_check_settings;
 CREATE TABLE `aspen_lida_self_check_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `isEnabled` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
@@ -446,7 +446,7 @@ CREATE TABLE `aspen_usage` (
   `summonSearches` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS author_authorities;
 CREATE TABLE `author_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -749,7 +749,7 @@ CREATE TABLE `cloud_library_availability` (
   `settingId` int(11) DEFAULT NULL,
   `availabilityType` smallint(6) NOT NULL DEFAULT '1',
   `typeRawChecksum` bigint(20) DEFAULT NULL,
-  `typeRawResponse` mediumtext COLLATE utf8mb4_general_ci,
+  `typeRawResponse` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cloudLibraryId` (`cloudLibraryId`,`settingId`),
   KEY `lastChange` (`lastChange`)
@@ -818,7 +818,7 @@ CREATE TABLE `cloud_library_title` (
   `subTitle` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `format` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `targetAudience` varchar(25) COLLATE utf8mb4_general_ci DEFAULT 'ADULT',
+  `targetAudience` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ADULT',
   `rawChecksum` bigint(20) DEFAULT NULL,
   `rawResponse` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `dateFirstDetected` bigint(20) DEFAULT NULL,
@@ -897,15 +897,15 @@ CREATE TABLE `communico_settings` (
   `bypassAspenEventPages` tinyint(1) DEFAULT '0',
   `registrationModalBody` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `numberOfDaysToIndex` int(11) DEFAULT '365',
-  `registrationModalBodyApp` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registrationModalBodyApp` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS companion_system;
 CREATE TABLE `companion_system` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `serverName` varchar(72) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `serverUrl` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `serverName` varchar(72) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `serverUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS component_development_epic_link;
@@ -1239,10 +1239,10 @@ CREATE TABLE `donations` (
   `notificationCity` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notificationState` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notificationZip` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address2` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `city` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `state` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address2` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `zip` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1401,7 +1401,7 @@ CREATE TABLE `errors` (
   `userAgent` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   KEY `timestamp` (`timestamp`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS event_library_map_values;
 CREATE TABLE `event_library_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1416,13 +1416,13 @@ DROP TABLE IF EXISTS events_facet;
 CREATE TABLE `events_facet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `facetGroupId` int(11) NOT NULL,
-  `displayName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `displayNamePlural` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `facetName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayNamePlural` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `facetName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `weight` int(11) NOT NULL DEFAULT '0',
   `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT '5',
   `showAsDropDown` tinyint(4) NOT NULL DEFAULT '0',
-  `sortMode` enum('alphabetically','num_results') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
+  `sortMode` enum('alphabetically','num_results') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
   `showAboveResults` tinyint(4) NOT NULL DEFAULT '0',
   `showInResults` tinyint(4) NOT NULL DEFAULT '1',
   `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT '1',
@@ -1433,15 +1433,15 @@ CREATE TABLE `events_facet` (
   `canLock` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS events_facet_groups;
 CREATE TABLE `events_facet_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `eventFacetCountsToShow` tinyint(4) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS events_indexing_log;
 CREATE TABLE `events_indexing_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log entry',
@@ -1505,7 +1505,7 @@ CREATE TABLE `external_request_log` (
 DROP TABLE IF EXISTS failed_logins_by_ip_address;
 CREATE TABLE `failed_logins_by_ip_address` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ipAddress` varchar(25) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `ipAddress` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `timestamp` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ipAddress` (`ipAddress`)
@@ -1826,8 +1826,8 @@ CREATE TABLE `grouped_work_variation` (
 DROP TABLE IF EXISTS hide_series;
 CREATE TABLE `hide_series` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `seriesTerm` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
-  `seriesNormalized` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
+  `seriesTerm` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `seriesNormalized` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `seriesTerm` (`seriesTerm`),
   UNIQUE KEY `seriesNormalized` (`seriesNormalized`)
@@ -2674,8 +2674,8 @@ CREATE TABLE `library` (
   `allowCancellingInTransitHolds` tinyint(1) DEFAULT '1',
   `stripeSettingId` int(11) DEFAULT '-1',
   `summonSettingsId` int(11) DEFAULT '-1',
-  `summonApiId` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `summonApiPassword` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `summonApiId` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `summonApiPassword` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `showPaymentHistory` tinyint(4) DEFAULT '0',
   `deletePaymentHistoryOlderThan` int(11) DEFAULT '0',
   `showHoldPosition` tinyint(1) DEFAULT '1',
@@ -2724,7 +2724,7 @@ DROP TABLE IF EXISTS library_ill_item_type;
 CREATE TABLE `library_ill_item_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
-  `code` varchar(75) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `code` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS library_link_language;
@@ -2866,7 +2866,7 @@ CREATE TABLE `library_web_builder_quick_poll` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
   `pollId` int(11) NOT NULL,
-  `label` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`pollId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -2936,7 +2936,7 @@ CREATE TABLE `lm_library_calendar_settings` (
   `bypassAspenEventPages` tinyint(1) DEFAULT '0',
   `registrationModalBody` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `numberOfDaysToIndex` int(11) DEFAULT '365',
-  `registrationModalBodyApp` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registrationModalBodyApp` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3443,7 +3443,7 @@ CREATE TABLE `object_history` (
   KEY `changedBy` (`changedBy`),
   KEY `actionType` (`actionType`),
   KEY `changeDate` (`changeDate`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS offline_circulation;
 CREATE TABLE `offline_circulation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -3510,7 +3510,7 @@ CREATE TABLE `open_archives_collection` (
   `imageRegex` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `deleted` tinyint(1) DEFAULT '0',
   `defaultCover` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-  `metadataFormat` varchar(10) COLLATE utf8mb4_general_ci DEFAULT (_utf8mb4'oai_dc'),
+  `metadataFormat` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT (_utf8mb4'oai_dc'),
   `indexAllSets` tinyint(1) DEFAULT (0),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3533,20 +3533,20 @@ CREATE TABLE `open_archives_export_log` (
 DROP TABLE IF EXISTS open_archives_facet_groups;
 CREATE TABLE `open_archives_facet_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS open_archives_facets;
 CREATE TABLE `open_archives_facets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `facetGroupId` int(11) NOT NULL,
-  `displayName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `displayNamePlural` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `facetName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayNamePlural` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `facetName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `weight` int(11) NOT NULL DEFAULT '0',
   `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT '5',
-  `sortMode` enum('alphabetically','num_results') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
+  `sortMode` enum('alphabetically','num_results') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
   `collapseByDefault` tinyint(4) DEFAULT '1',
   `useMoreFacetPopup` tinyint(4) DEFAULT '1',
   `translate` tinyint(4) DEFAULT '1',
@@ -3554,7 +3554,7 @@ CREATE TABLE `open_archives_facets` (
   `canLock` tinyint(4) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS open_archives_record;
 CREATE TABLE `open_archives_record` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -3812,7 +3812,7 @@ CREATE TABLE `palace_project_export_log` (
 DROP TABLE IF EXISTS palace_project_record_usage;
 CREATE TABLE `palace_project_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `instance` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `palaceProjectId` int(11) DEFAULT NULL,
   `year` int(4) NOT NULL,
   `month` int(2) NOT NULL,
@@ -3825,15 +3825,15 @@ CREATE TABLE `palace_project_record_usage` (
 DROP TABLE IF EXISTS palace_project_scopes;
 CREATE TABLE `palace_project_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `settingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS palace_project_settings;
 CREATE TABLE `palace_project_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `apiUrl` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `libraryId` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `apiUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `libraryId` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `regroupAllRecords` tinyint(1) DEFAULT '0',
   `runFullUpdate` tinyint(1) DEFAULT '0',
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
@@ -3844,11 +3844,11 @@ DROP TABLE IF EXISTS palace_project_title;
 CREATE TABLE `palace_project_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `palaceProjectId` varchar(125) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `title` varchar(750) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(750) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `rawChecksum` bigint(20) DEFAULT NULL,
   `rawResponse` mediumblob,
   `dateFirstDetected` bigint(20) DEFAULT NULL,
-  `collectionName` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `collectionName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `palaceProjectId` (`palaceProjectId`,`collectionName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4030,9 +4030,9 @@ DROP TABLE IF EXISTS processes_to_stop;
 CREATE TABLE `processes_to_stop` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `processId` int(11) NOT NULL,
-  `processName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `processName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `stopAttempted` tinyint(4) DEFAULT '0',
-  `stopResults` text COLLATE utf8mb4_general_ci,
+  `stopResults` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `dateSet` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4410,27 +4410,27 @@ CREATE TABLE `self_reg_form_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `selfRegistrationFormId` int(11) NOT NULL,
   `weight` int(11) NOT NULL DEFAULT '0',
-  `symphonyName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `displayName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `fieldType` enum('text','date') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'text',
-  `patronUpdate` enum('read_only','hidden','editable','editable_required') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'editable',
+  `symphonyName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `fieldType` enum('text','date') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'text',
+  `patronUpdate` enum('read_only','hidden','editable','editable_required') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'editable',
   `required` tinyint(4) NOT NULL DEFAULT '0',
-  `note` varchar(75) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `section` enum('librarySection','identitySection','mainAddressSection','contactInformationSection') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'identitySection',
+  `note` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `section` enum('librarySection','identitySection','mainAddressSection','contactInformationSection') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'identitySection',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupValue` (`selfRegistrationFormId`,`symphonyName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS self_registration_form;
 CREATE TABLE `self_registration_form` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `selfRegistrationBarcodePrefix` varchar(10) COLLATE utf8mb4_unicode_520_ci DEFAULT '',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `selfRegistrationBarcodePrefix` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT '',
   `selfRegBarcodeSuffixLength` int(11) DEFAULT '0',
   `noDuplicateCheck` tinyint(4) DEFAULT '0',
   `promptForParentInSelfReg` tinyint(1) NOT NULL DEFAULT '0',
   `promptForSMSNoticesInSelfReg` tinyint(1) NOT NULL DEFAULT '0',
   `cityStateField` tinyint(1) NOT NULL DEFAULT '0',
-  `selfRegistrationUserProfile` varchar(20) COLLATE utf8mb4_unicode_520_ci DEFAULT 'SELFREG',
+  `selfRegistrationUserProfile` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT 'SELFREG',
   `termsOfServiceSetting` int(11) NOT NULL DEFAULT '-1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
@@ -4438,9 +4438,9 @@ CREATE TABLE `self_registration_form` (
 DROP TABLE IF EXISTS self_registration_tos;
 CREATE TABLE `self_registration_tos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(75) COLLATE utf8mb4_general_ci NOT NULL,
-  `terms` mediumtext COLLATE utf8mb4_general_ci,
-  `redirect` mediumtext COLLATE utf8mb4_general_ci,
+  `name` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `terms` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `redirect` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4463,7 +4463,7 @@ CREATE TABLE `session` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `session_id` (`session_id`),
   KEY `last_used` (`last_used`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS shared_content;
 CREATE TABLE `shared_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -4482,8 +4482,8 @@ CREATE TABLE `shared_content` (
 DROP TABLE IF EXISTS shared_session;
 CREATE TABLE `shared_session` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sessionId` varchar(40) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `userId` varchar(11) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `sessionId` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `userId` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `createdOn` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -4629,7 +4629,7 @@ CREATE TABLE `slow_ajax_request` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`,`method`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS slow_page;
 CREATE TABLE `slow_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -4644,7 +4644,7 @@ CREATE TABLE `slow_page` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS springshare_libcal_events;
 CREATE TABLE `springshare_libcal_events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -4669,18 +4669,18 @@ CREATE TABLE `springshare_libcal_settings` (
   `bypassAspenEventPages` tinyint(1) DEFAULT '0',
   `registrationModalBody` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `numberOfDaysToIndex` int(11) DEFAULT '365',
-  `registrationModalBodyApp` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registrationModalBodyApp` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS square_settings;
 CREATE TABLE `square_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `sandboxMode` tinyint(1) DEFAULT '0',
-  `applicationId` varchar(80) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `accessToken` varchar(80) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `locationId` varchar(80) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `applicationId` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `accessToken` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `locationId` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -4797,30 +4797,30 @@ CREATE TABLE `status_map_values` (
 DROP TABLE IF EXISTS stripe_settings;
 CREATE TABLE `stripe_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `stripePublicKey` varchar(500) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `stripeSecretKey` varchar(500) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `stripePublicKey` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `stripeSecretKey` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS summon_settings;
 CREATE TABLE `summon_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `summonBaseApi` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
-  `summonApiId` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
-  `summonApiPassword` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `summonBaseApi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `summonApiId` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+  `summonApiPassword` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS summon_usage;
 CREATE TABLE `summon_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `summonId` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `summonId` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `month` int(2) NOT NULL,
   `year` int(4) NOT NULL,
   `timesViewedInSearch` int(11) NOT NULL,
   `timesUsed` int(11) NOT NULL,
-  `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `instance` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`summonId`,`year`,`month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -4933,10 +4933,10 @@ CREATE TABLE `system_variables` (
 DROP TABLE IF EXISTS text_block_translation;
 CREATE TABLE `text_block_translation` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `objectType` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `objectType` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `objectId` int(11) NOT NULL,
   `languageId` int(11) NOT NULL,
-  `translation` mediumtext COLLATE utf8mb4_general_ci,
+  `translation` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `objectType` (`objectType`,`objectId`,`languageId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5360,7 +5360,7 @@ CREATE TABLE `translation_terms` (
   PRIMARY KEY (`id`),
   KEY `url` (`samplePageUrl`),
   KEY `term` (`term`(500))
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS translations;
 CREATE TABLE `translations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -5373,14 +5373,14 @@ CREATE TABLE `translations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `term_language` (`termId`,`languageId`),
   KEY `translation_status` (`languageId`,`translated`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS twilio_settings;
 CREATE TABLE `twilio_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `phone` varchar(15) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `accountSid` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `authToken` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `accountSid` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `authToken` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -5588,7 +5588,7 @@ CREATE TABLE `user_checkout` (
   `linkUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `renewError` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isIll` tinyint(1) DEFAULT '0',
-  `earlyReturnUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `earlyReturnUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`source`,`recordId`),
   KEY `userId_2` (`userId`,`groupedWorkId`)
@@ -5700,7 +5700,7 @@ CREATE TABLE `user_hold` (
   `linkUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `isIll` tinyint(1) DEFAULT '0',
   `pendingCancellation` tinyint(1) DEFAULT '0',
-  `cancellationUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cancellationUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`source`,`recordId`),
   KEY `userId_2` (`userId`,`groupedWorkId`)
@@ -5863,7 +5863,7 @@ CREATE TABLE `user_overdrive_usage` (
 DROP TABLE IF EXISTS user_palace_project_usage;
 CREATE TABLE `user_palace_project_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `instance` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userId` int(11) NOT NULL,
   `year` int(4) NOT NULL,
   `month` int(2) NOT NULL,
@@ -5876,7 +5876,7 @@ DROP TABLE IF EXISTS user_payment_lines;
 CREATE TABLE `user_payment_lines` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `paymentId` int(11) NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `amountPaid` float DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -5968,7 +5968,7 @@ CREATE TABLE `user_summon_usage` (
   `month` int(2) NOT NULL,
   `year` int(4) NOT NULL,
   `usageCount` int(11) DEFAULT NULL,
-  `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `instance` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6019,7 +6019,7 @@ CREATE TABLE `user_work_review` (
 DROP TABLE IF EXISTS usps_settings;
 CREATE TABLE `usps_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `clientId` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `clientId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `clientSecret` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -6163,7 +6163,7 @@ CREATE TABLE `web_builder_custom_form_field_submission` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `formSubmissionId` int(11) NOT NULL,
   `submissionFieldId` int(11) NOT NULL,
-  `formFieldContent` text COLLATE utf8mb4_unicode_520_ci,
+  `formFieldContent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `formSubmissionId` (`formSubmissionId`,`submissionFieldId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -6256,8 +6256,8 @@ CREATE TABLE `web_builder_portal_row` (
 DROP TABLE IF EXISTS web_builder_quick_poll;
 CREATE TABLE `web_builder_quick_poll` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `urlAlias` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `urlAlias` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `introText` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `submissionResultText` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `requireLogin` tinyint(1) DEFAULT NULL,
@@ -6274,7 +6274,7 @@ CREATE TABLE `web_builder_quick_poll_option` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `weight` int(11) DEFAULT '0',
   `pollId` int(11) NOT NULL,
-  `label` varchar(100) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_quick_poll_submission;
@@ -6283,8 +6283,8 @@ CREATE TABLE `web_builder_quick_poll_submission` (
   `pollId` int(11) NOT NULL,
   `libraryId` int(11) NOT NULL,
   `userId` int(11) DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `dateSubmitted` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -6345,20 +6345,20 @@ CREATE TABLE `web_builder_resource_usage` (
 DROP TABLE IF EXISTS website_facet_groups;
 CREATE TABLE `website_facet_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS website_facets;
 CREATE TABLE `website_facets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `facetGroupId` int(11) NOT NULL,
-  `displayName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `displayNamePlural` varchar(50) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `facetName` varchar(50) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `displayNamePlural` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `facetName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `weight` int(11) NOT NULL DEFAULT '0',
   `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT '5',
-  `sortMode` enum('alphabetically','num_results') COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
+  `sortMode` enum('alphabetically','num_results') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'num_results',
   `collapseByDefault` tinyint(4) DEFAULT '1',
   `useMoreFacetPopup` tinyint(4) DEFAULT '1',
   `translate` tinyint(4) DEFAULT '1',
@@ -6366,7 +6366,7 @@ CREATE TABLE `website_facets` (
   `canLock` tinyint(4) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS website_index_log;
 CREATE TABLE `website_index_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
