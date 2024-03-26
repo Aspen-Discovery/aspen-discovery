@@ -3657,6 +3657,8 @@ class Koha extends AbstractIlsDriver {
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
 		if ($type != 'selfReg' && array_key_exists('PatronSelfModificationBorrowerMandatoryField', $kohaPreferences)) {
 			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerMandatoryField']);
+		}elseif ($type != 'selfReg' && array_key_exists('PatronSelfModificationMandatoryField', $kohaPreferences)) {
+			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationMandatoryField']);
 		}
 		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
 			$validLibraries = [];
@@ -5509,7 +5511,7 @@ class Koha extends AbstractIlsDriver {
 
 	function aspenDateToKohaApiDate($date) {
 		if (strlen($date) == 0) {
-			return $date;
+			return null;
 		} else {
 			$date = date_create($date);
 			$formattedDate = date_format($date, "Y-m-d");
