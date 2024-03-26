@@ -17,6 +17,7 @@ class CommunicoSetting extends DataObject {
 	public /** @noinspection PhpUnused */
 		$clientSecret;
 	public $eventsInLists;
+	public $lastUpdateOfAllEvents;
 	public $bypassAspenEventPages;
 	public $registrationModalBody;
 	public $registrationModalBodyApp;
@@ -92,6 +93,12 @@ class CommunicoSetting extends DataObject {
 				'label' => 'Bypass event pages in Aspen',
 				'description' => 'Whether or not a user will be redirected to an Aspen event page or the page for the native event platform.',
 				'default' => 0,
+			],
+			'lastUpdateOfAllEvents' => [
+				'property' => 'lastUpdateOfAllEvents',
+				'type' => 'timestamp',
+				'label' => 'Last Full Index (clear to force a new full index)',
+				'description' => 'When all events were last indexed',
 			],
 			'registrationModalBody' => [
 				'property' => 'registrationModalBody',
