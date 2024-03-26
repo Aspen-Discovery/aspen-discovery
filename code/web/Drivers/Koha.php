@@ -3092,7 +3092,7 @@ class Koha extends AbstractIlsDriver
 	function aspenDateToKohaApiDate($date)
 	{
 		if (strlen($date) == 0) {
-			return $date;
+			return NULL;
 		} else {
 			if (strpos($date, '/') !== false){
 				list($month, $day, $year) = explode('/', $date);
