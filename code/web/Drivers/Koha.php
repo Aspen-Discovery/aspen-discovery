@@ -8067,7 +8067,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
-				$sql = "SELECT itemnumber, biblionumber, location FROM items WHERE barcode = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+				$sql = "SELECT itemnumber, biblionumber, holdingbranch FROM items WHERE barcode = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 				$lookupItemResult = mysqli_query($this->dbConnection, $sql);
 				if ($lookupItemResult->num_rows == 1) {
 					$itemRow = $lookupItemResult->fetch_assoc();
