@@ -538,7 +538,7 @@ class PortalCell extends DataObject {
 					'image' => $locationToProcess->locationImage ? $configArray['Site']['url'] . '/files/original/' . $locationToProcess->locationImage : null,
 					'longitude' => floatval($locationToProcess->longitude),
 					'latitude' => floatval($locationToProcess->latitude),
-					'homeLink' => !empty($locationToProcess->homeLink) ? $locationToProcess->homeLink : (!is_null($locationToProcess->getParentLibrary()) ? $locationToProcess->getParentLibrary()->homeLink : null),
+					'homeLink' => (!empty($locationToProcess->homeLink) && ($locationToProcess->homeLink != 'default')) ? $locationToProcess->homeLink : (!is_null($locationToProcess->getParentLibrary()) ? $locationToProcess->getParentLibrary()->homeLink : null),
 					'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
 				];
 
