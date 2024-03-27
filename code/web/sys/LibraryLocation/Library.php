@@ -1785,14 +1785,6 @@ class Library extends DataObject {
 								'readonly' => false,
 								'permissions' => ['Library ILS Options'],
 							],
-							'minSelfRegAge' => [
-								'property' => 'minSelfRegAge',
-								'type' => 'integer',
-								'maxLength' => 2,
-								'label' => 'Minimum Age',
-								'description' => 'Minimum age required for self-registration.',
-								'default' => '',
-							],
 							'useAllCapsWhenUpdatingProfile' => [
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
@@ -2332,6 +2324,14 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Prompt For Birth Date',
 								'description' => 'Whether or not to prompt for birth date when self registering',
+							],
+							'minSelfRegAge' => [
+								'property' => 'minSelfRegAge',
+								'type' => 'integer',
+								'maxLength' => 2,
+								'label' => 'Minimum Age',
+								'description' => 'Minimum age required for self-registration.',
+								'default' => '',
 							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
