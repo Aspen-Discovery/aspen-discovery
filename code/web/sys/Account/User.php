@@ -3006,7 +3006,7 @@ class User extends DataObject {
 		if (strlen($this->firstname) > 50) {
 			$this->__set('firstname', substr($this->firstname, 0, 50));
 		}
-		if (strlen($this->displayName) > 60) {
+		if (!empty($this->displayName) && strlen($this->displayName) > 60) {
 			$this->__set('displayName', substr($this->displayName, 0, 60));
 		}
 	}

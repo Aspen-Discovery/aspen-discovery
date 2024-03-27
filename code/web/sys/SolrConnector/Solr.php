@@ -175,8 +175,8 @@ abstract class Solr {
 
 	private static $serversPinged = [];
 
-	public function pingServer($failOnError = true) {
-		/** @var Memcache $memCache */ global $memCache;
+	public function pingServer($failOnError = true) : bool {
+		global $memCache;
 		global $timer;
 		global $configArray;
 		global $logger;
@@ -189,7 +189,7 @@ abstract class Solr {
 			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
 			if ($pingDone !== false) {
 				Solr::$serversPinged[$this->host] = $pingDone;
-				return Solr::$serversPinged[$this->host];
+				return (bool)Solr::$serversPinged[$this->host];
 			} else {
 				$pingDone = false;
 			}
@@ -197,49 +197,46 @@ abstract class Solr {
 			$pingDone = false;
 		}
 
-		if ($pingDone == false) {
-			// Test to see solr is online
-			$test_url = $this->host . "/admin/ping";
-			$test_client = new CurlWrapper();
-			//We can get false positives if the Solr server is busy and timeouts are short.
-			//$test_client->setTimeout(1);
-			//$test_client->setConnectTimeout(1);
-			$result = $test_client->curlGetPage($test_url);
-			if ($result !== false) {
-				// Even if we get a response, make sure it's a 'good' one.
-				if ($test_client->getResponseCode() != 200) {
-					$pingResult = 'false';
-					Solr::$serversPinged[$this->host] = false;
-					if ($failOnError) {
-						AspenError::raiseError('Solr index is offline.');
-					} else {
-						$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
-						return false;
-					}
-				} else {
-					$pingResult = 'true';
-				}
-			} else {
+		// Test to see solr is online
+		$test_url = $this->host . "/admin/ping";
+		$test_client = new CurlWrapper();
+		//We can get false positives if the Solr server is busy and timeouts are short.
+		//$test_client->setTimeout(1);
+		//$test_client->setConnectTimeout(1);
+		$result = $test_client->curlGetPage($test_url);
+		if ($result !== false) {
+			// Even if we get a response, make sure it's a 'good' one.
+			if ($test_client->getResponseCode() != 200) {
 				$pingResult = 'false';
 				Solr::$serversPinged[$this->host] = false;
 				if ($failOnError) {
-					AspenError::raiseError('The Solr Server is offline, please try your request again in a few minutes.');
+					AspenError::raiseError('Solr index is offline.');
 				} else {
 					$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
 					return false;
 				}
+			} else {
+				$pingResult = 'true';
 			}
-
-			//Don't cache that we are done to be sure ASpen recovers as quickly as possible.
-			if ($memCache && $pingResult === 'true') {
-				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, $configArray['Caching']['solr_ping']);
-			}
-			Solr::$serversPinged[$hostEscaped] = $pingResult;
-			$timer->logTime('Ping Solr instance ' . $this->host);
 		} else {
-			Solr::$serversPinged[$hostEscaped] = true;
+			$pingResult = 'false';
+			Solr::$serversPinged[$this->host] = false;
+			if ($failOnError) {
+				AspenError::raiseError('The Solr Server is offline, please try your request again in a few minutes.');
+			} else {
+				$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
+				return false;
+			}
 		}
-		return Solr::$serversPinged[$hostEscaped];
+
+		//Don't cache that we are done to be sure ASpen recovers as quickly as possible.
+		if ($memCache && $pingResult === 'true') {
+			$memCache->set('solr_ping_' . $hostEscaped, $pingResult, $configArray['Caching']['solr_ping']);
+		}
+		Solr::$serversPinged[$hostEscaped] = $pingResult;
+		$timer->logTime('Ping Solr instance ' . $this->host);
+
+		return (bool)Solr::$serversPinged[$hostEscaped];
 	}
 
 	public function setTimeout($timeout) {

@@ -92,7 +92,7 @@ class UserAccount {
 				//Need to check cas just in case the user logged in from another site
 				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Aspen
 				global $library;
-				if ($library && strlen($library->casHost) > 0) {
+				if ($library && !empty($library->casHost)) {
 					$checkCAS = false;
 					$curTime = time();
 					if (!isset($_SESSION['lastCASCheck'])) {

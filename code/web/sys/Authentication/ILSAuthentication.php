@@ -8,6 +8,7 @@ class ILSAuthentication implements Authentication {
 	private $driverName;
 	/** @var  AccountProfile */
 	private $accountProfile;
+	/** @var CatalogConnection|null  */
 	private $catalogConnection;
 
 	public function __construct($additionalInfo) {

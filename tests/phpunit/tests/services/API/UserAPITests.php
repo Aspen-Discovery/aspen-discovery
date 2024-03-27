@@ -30,8 +30,14 @@ class UserAPITests extends TestCase {
 		require_once __DIR__ . '/../../../../../code/web/services/API/UserAPI.php';
 		$userAPI = new UserAPI();
 
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
 		$_POST['username'] = 'test_user';
-		$_POST['username'] = 'password';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
 		$result = $userAPI->login();
 		$this->assertTrue($result['success']);
 		$this->assertEquals('Test User', $result['name']);
@@ -39,5 +45,7 @@ class UserAPITests extends TestCase {
 
 		$isLoggedIn = $userAPI->isLoggedIn();
 		$this->assertTrue($isLoggedIn);
+
+		unset($_POST);
 	}
 }

@@ -157,25 +157,25 @@ class CatalogConnection {
 
 		if ($user && !($user instanceof AspenError)) {
 			$invalidUser = false;
-			if (strip_tags($user->firstname) != $user->firstname) {
+			if (!empty($user->firstname) && (strip_tags($user->firstname) != $user->firstname)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->lastname) != $user->lastname) {
+			}elseif (!empty($user->lastname) && (strip_tags($user->lastname) != $user->lastname)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->email) != $user->email) {
+			}elseif (!empty($user->email) && (strip_tags($user->email) != $user->email)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->username) != $user->username) {
+			}elseif (!empty($user->username) && (strip_tags($user->username) != $user->username)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->ils_username) != $user->ils_username) {
+			}elseif (!empty($user->ils_username) && (strip_tags($user->ils_username) != $user->ils_username)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->ils_barcode) != $user->ils_barcode) {
+			}elseif (!empty($user->ils_barcode) && (strip_tags($user->ils_barcode) != $user->ils_barcode)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->ils_password) != $user->ils_password) {
+			}elseif (!empty($user->ils_password) && (strip_tags($user->ils_password) != $user->ils_password)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->displayName) != $user->displayName) {
+			}elseif (!empty($user->displayName) && (strip_tags($user->displayName) != $user->displayName)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->phone) != $user->phone) {
+			}elseif (!empty($user->phone) && (strip_tags($user->phone) != $user->phone)) {
 				$invalidUser = true;
-			}elseif (strip_tags($user->patronType) != $user->patronType) {
+			}elseif (!empty($user->patronType) && (strip_tags($user->patronType) != $user->patronType)) {
 				$invalidUser = true;
 			}
 			if ($invalidUser) {
