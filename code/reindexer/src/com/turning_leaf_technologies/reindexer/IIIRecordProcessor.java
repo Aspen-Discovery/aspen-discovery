@@ -319,7 +319,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 						String formatValue = matTypeSubfield.getData().trim();
 						if (hasTranslation("format", formatValue)) {
 							String translatedFormat = translateValue("format", formatValue, recordInfo.getRecordIdentifier());
-							if (!translatedFormat.isEmpty()) {
+							if (translatedFormat != null && !translatedFormat.isEmpty()) {
 								formatLoaded = true;
 								recordInfo.addFormat(translateValue("format", formatValue, recordInfo.getRecordIdentifier()));
 								recordInfo.addFormatCategory(translateValue("format_category", formatValue, recordInfo.getRecordIdentifier()));
