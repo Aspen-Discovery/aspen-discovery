@@ -337,7 +337,11 @@ class LibraryMarketLibraryCalendarIndexer {
 						return keyObj.getString(keyName);
 					}else{
 						for (String objKey: keyObj.keySet()){
-							return keyObj.getString(objKey);
+							if (keyObj.isNull(objKey)) {
+								return null;
+							}else {
+								return keyObj.getString(objKey);
+							}
 						}
 						return null;
 					}
