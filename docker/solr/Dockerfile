@@ -1,4 +1,4 @@
-FROM solr:7.6.0-slim
+FROM solr:8.11.2
 USER root
 #Install dependencies
 RUN apt-get update \
