@@ -6,8 +6,12 @@ use PHPUnit\Framework\TestCase;
 use UserAPI;
 
 class UserAPITests extends TestCase {
-	public function testIsLoggedIn() {
+	public function __construct(string $name) {
+		parent::__construct($name);
 		require_once __DIR__ . '/../../../../../code/web/services/API/UserAPI.php';
+	}
+
+	public function testIsLoggedIn() {
 		$userAPI = new UserAPI();
 
 		$isLoggedIn = $userAPI->isLoggedIn();
@@ -15,7 +19,6 @@ class UserAPITests extends TestCase {
 	}
 
 	public function testLoginFailure() {
-		require_once __DIR__ . '/../../../../../code/web/services/API/UserAPI.php';
 		$userAPI = new UserAPI();
 
 		$result = $userAPI->login();
@@ -27,7 +30,6 @@ class UserAPITests extends TestCase {
 	}
 
 	public function testLogin() {
-		require_once __DIR__ . '/../../../../../code/web/services/API/UserAPI.php';
 		$userAPI = new UserAPI();
 
 		global $_POST;
@@ -46,6 +48,89 @@ class UserAPITests extends TestCase {
 		$isLoggedIn = $userAPI->isLoggedIn();
 		$this->assertTrue($isLoggedIn);
 
+		$userAPI->logout();
+
 		unset($_POST);
+		unset($_REQUEST);
+	}
+
+	public function testFailedLogin() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'wrong_password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'wrong_password';
+		$result = $userAPI->login();
+		$this->assertFalse($result['success']);
+
+		$isLoggedIn = $userAPI->isLoggedIn();
+		$this->assertFalse($isLoggedIn);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
+	}
+
+	public function testRepeatedLogins() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->login();
+		$this->assertTrue($result['success']);
+		$this->assertEquals('Test User', $result['name']);
+		$this->assertNotNull($result['session']);
+
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->login();
+		$this->assertTrue($result['success']);
+
+		$isLoggedIn = $userAPI->isLoggedIn();
+		$this->assertTrue($isLoggedIn);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
+	}
+
+	public function testValidateAccount() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->validateAccount();
+		$this->assertIsObject($result['success']);
+		$resultingUser = $result['success'];
+		$this->assertEquals('Test', $resultingUser->firstname);
+		$this->assertEquals('User', $resultingUser->lastname);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
 	}
 }
