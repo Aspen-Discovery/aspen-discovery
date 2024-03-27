@@ -1982,7 +1982,7 @@ class SearchAPI extends AbstractAPI {
 									$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
 									$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12, true);
 									$formattedSavedSearchResults = [];
-									if (count($savedSearchResults) > 0) {
+									if (!empty($savedSearchResults)) {
 										foreach ($savedSearchResults as $savedSearchResult) {
 											$formattedSavedSearchResults[] = [
 												'id' => $savedSearchResult['id'],
@@ -2010,7 +2010,7 @@ class SearchAPI extends AbstractAPI {
 					} elseif ($categoryInformation->textId == ("system_user_lists")) {
 						$userLists = $listApi->getUserLists();
 						$allUserLists = $userLists['lists'] ?? [];
-						if (count($allUserLists) > 0) {
+						if (!empty($allUserLists)) {
 							foreach ($allUserLists as $userList) {
 								if ($userList['id'] != "recommendations") {
 									require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -2116,7 +2116,7 @@ class SearchAPI extends AbstractAPI {
 									}
 								} while ($listEntry->fetch() && $count < 12);
 
-								if (count($categoryResponse['lists']) != 0 || count($categoryResponse['records']) != 0) {
+								if (!empty($categoryResponse['lists']) || !empty($categoryResponse['records'])) {
 									$formattedCategories[] = $categoryResponse;
 									$numCategoriesProcessed++;
 									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
@@ -2144,7 +2144,7 @@ class SearchAPI extends AbstractAPI {
 								'records' => [],
 							];
 
-							if (count($suggestions) > 0) {
+							if (!empty($suggestions)) {
 								foreach ($suggestions as $suggestion) {
 									$categoryResponse['records'][] = [
 										'id' => $suggestion['titleInfo']['id'],
@@ -2160,10 +2160,10 @@ class SearchAPI extends AbstractAPI {
 						}
 					} elseif ($categoryInformation->source == 'Events') {
 						$subCategories = $categoryInformation->getSubCategories();
-						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
+						if (empty($subCategories) && !$categoryInformation->isDismissed($appUser)) {
 							$eventsSearchResults = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12, true);
 							$formattedEventsResults = [];
-							if(count($eventsSearchResults) > 0) {
+							if(!empty($eventsSearchResults)) {
 								foreach ($eventsSearchResults as $event) {
 									$formattedEventsResults[] = [
 										'id' => $event['key'],
@@ -2186,7 +2186,7 @@ class SearchAPI extends AbstractAPI {
 							$numCategoriesProcessed++;
 						}
 						if ($includeSubCategories) {
-							if (count($subCategories) > 0) {
+							if (!empty($subCategories)) {
 								foreach ($subCategories as $subCategory) {
 									$temp = new BrowseCategory();
 									$temp->id = $subCategory->subCategoryId;
@@ -2194,7 +2194,7 @@ class SearchAPI extends AbstractAPI {
 										if ($temp->isValidForDisplay($appUser)) {
 											if ($temp->source != '') {
 												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
-												if(count($records) > 0) {
+												if(!empty($records)) {
 													$parent = new BrowseCategory();
 													$parent->id = $subCategory->browseCategoryId;
 													if ($parent->find(true)) {
@@ -2230,9 +2230,9 @@ class SearchAPI extends AbstractAPI {
 						}
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
-						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
+						if (empty($subCategories) && !$categoryInformation->isDismissed($appUser)) {
 							$records = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12, true);
-								if(count($records) > 0) {
+								if(!empty($records)) {
 									$categoryResponse = [
 										'key' => $categoryInformation->textId,
 										'title' => $categoryInformation->label,
@@ -2247,7 +2247,7 @@ class SearchAPI extends AbstractAPI {
 								}
 						}
 						if ($includeSubCategories) {
-							if (count($subCategories) > 0) {
+							if (!empty($subCategories)) {
 								foreach ($subCategories as $subCategory) {
 									$temp = new BrowseCategory();
 									$temp->id = $subCategory->subCategoryId;
@@ -2255,7 +2255,7 @@ class SearchAPI extends AbstractAPI {
 										if ($temp->isValidForDisplay($appUser)) {
 											if ($temp->source != '') {
 												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
-												if(count($records) > 0) {
+												if(!empty($records)) {
 													$parent = new BrowseCategory();
 													$parent->id = $subCategory->browseCategoryId;
 													if ($parent->find(true)) {
