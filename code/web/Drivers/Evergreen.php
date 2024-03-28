@@ -1470,8 +1470,9 @@ class Evergreen extends AbstractIlsDriver {
 			$userData = $this->fetchSession($session['authToken']);
 			if ($userData != null) {
 				$user = $this->loadPatronInformation($userData, $username, $password);
-
-				$user->password = $password;
+				if ($user != null) {
+					$user->password = $password;
+				}
 
 				return $user;
 			} else {
