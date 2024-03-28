@@ -18,50 +18,58 @@ class SelfReg extends Action {
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
-				if (!$recaptchaValid) {
-					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
+				if ($recaptchaValid) {
+					//$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 				} else {
 					require_once ROOT_DIR . '/sys/Administration/USPS.php';
 					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
 					$uspsInfo = USPS::getUSPSInfo();
+					$streetAddress = '';
+					$city = '';
+					$state = '';
+					$zip = '';
+					$dob = '';
 
-					//if there's no USPS info, don't bother trying to validate
-					if ($uspsInfo){
-						$streetAddress = '';
-						$city = '';
-						$state = '';
-						$zip = '';
-
-						//get the correct _REQUEST names as they differ across ILSes
-						foreach ($_REQUEST as $selfRegValue => $val){
-							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue) && !(preg_match('/(.*?)address2(.*)/', $selfRegValue))){
-								$streetAddress = $val;
-							}
-							elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
-								$city = $val;
-							}
-							elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
-								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
-								if (strlen($val) == 2){
-									$state = $val;
-								}
-							}
-							elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
-								$zip = $val;
+					//get the correct _REQUEST names as they differ across ILSes
+					foreach ($_REQUEST as $selfRegValue => $val){
+						if (preg_match('/(.*?)address|street(.*)/', $selfRegValue) && !(preg_match('/(.*?)address2(.*)/', $selfRegValue))){
+							$streetAddress = $val;
+						}
+						elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
+							$city = $val;
+						}
+						elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
+							//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+							if (strlen($val) == 2){
+								$state = $val;
 							}
 						}
+						elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
+							$zip = $val;
+						}
+						elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)){
+							$dob = $val;
+						}
+					}
+					//if there's no USPS info, don't bother trying to validate
+					if ($uspsInfo){
 						//Submit form to ILS if address is validated
 						if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)){
 							//Submit form to ILS if age is validated
-							if (SystemUtils::validateAge($library->minSelfRegAge, $_REQUEST['dob'])){
+							if (!empty($dob)) {
+								if (SystemUtils::validateAge($library->minSelfRegAge, $dob)) {
+									$result = $catalog->selfRegister();
+									$interface->assign('selfRegResult', $result);
+								}else {
+									$ageMessage = translate([
+										'text' => 'Age not valid.',
+										'isPublicFacing' => true
+									]);
+									$interface->assign('ageMessage', $ageMessage);
+								}
+							} else {
 								$result = $catalog->selfRegister();
 								$interface->assign('selfRegResult', $result);
-							} else {
-								$ageMessage = translate([
-									'text' => 'Age not valid.',
-									'isPublicFacing' => true
-								]);
-								$interface->assign('ageMessage', $ageMessage);
 							}
 						} else {
 							$addressMessage = translate([
@@ -72,20 +80,23 @@ class SelfReg extends Action {
 						}
 					} else {
 						//Submit form to ILS if age is validated
-						if (SystemUtils::validateAge($library->minSelfRegAge, $_REQUEST['dob'])){
+						if (!empty($dob)) {
+							if (SystemUtils::validateAge($library->minSelfRegAge, $dob)){
+								$result = $catalog->selfRegister();
+								$interface->assign('selfRegResult', $result);
+							} else {
+								$ageMessage = translate([
+									'text' => 'Age should be at least' . $library->minSelfRegAge . ' years. Please enter a valid Date of Birth.',
+									'isPublicFacing' => true
+								]);
+								$interface->assign('ageMessage', $ageMessage);
+							}
+						} else {
 							$result = $catalog->selfRegister();
 							$interface->assign('selfRegResult', $result);
-						} else {
-							$ageMessage = translate([
-								'text' => 'Age should be at least' . $library->minSelfRegAge . ' years. Please enter a valid Date of Birth.',
-								'isPublicFacing' => true
-							]);
-							$interface->assign('ageMessage', $ageMessage);
 						}
 					}
-
 				}
-
 				// Pre-fill form with user supplied data
 				foreach ($selfRegFields as &$property) {
 					if ($property['type'] == 'section') {
