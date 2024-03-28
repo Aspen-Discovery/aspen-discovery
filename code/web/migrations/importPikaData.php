@@ -1049,6 +1049,8 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 			}
 			if (array_key_exists($id, $bibNumberMap)) {
 				$id = $bibNumberMap[$id];
+			}else if (array_key_exists('ils:' . $id, $bibNumberMap)) {
+				$id = $bibNumberMap['ils:' . $id];
 			}
 			$groupedWorkPrimaryIdentifier->identifier = $id;
 			if ($groupedWorkPrimaryIdentifier->find(true)) {
