@@ -864,8 +864,11 @@ class Millennium extends AbstractIlsDriver {
 											$value = $locationParts[1];
 										}
 									} elseif ($label == 'holdings') {
-										//Change the lable to avoid conflicts with actual holdings
+										//Change the label to avoid conflicts with actual holdings
 										$label = 'holdingStatement';
+									} elseif ($label == 'itemLoc') {
+										//Change the label for consistency
+										$label = 'location';
 									}
 									$issueSummary[$label] = $value;
 								}

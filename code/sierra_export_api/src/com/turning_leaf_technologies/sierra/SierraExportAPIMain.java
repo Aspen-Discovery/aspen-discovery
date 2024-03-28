@@ -459,17 +459,18 @@ public class SierraExportAPIMain {
 	private static void getBibsWithHoldings(Connection sierraConn) {
 		bibsWithHoldings.clear();
 		try {
-		PreparedStatement bibHoldingsStmt = sierraConn.prepareStatement("select distinct(record_num) as record_num from sierra_view.bib_record_holding_record_link INNER JOIN sierra_view.record_metadata ON bib_record_id = record_metadata.id where record_type_code = 'b'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		ResultSet bibHoldingsRS = bibHoldingsStmt.executeQuery();
-		while (bibHoldingsRS.next()){
-			String bibId = bibHoldingsRS.getString("record_num");
-			//Don't need the .b and checksum for this
-			bibsWithHoldings.add(bibId);
-		}
+			PreparedStatement bibHoldingsStmt = sierraConn.prepareStatement("select distinct(record_num) as record_num from sierra_view.bib_record_holding_record_link INNER JOIN sierra_view.record_metadata ON bib_record_id = record_metadata.id where record_type_code = 'b'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet bibHoldingsRS = bibHoldingsStmt.executeQuery();
+			while (bibHoldingsRS.next()){
+				String bibId = bibHoldingsRS.getString("record_num");
+				//Don't need the .b and checksum for this
+				bibsWithHoldings.add(bibId);
+			}
 			bibHoldingsRS.close();
 		} catch (Exception e) {
 			logger.error("Unable to get bibs with holdings from Sierra", e);
 		}
+
 		logEntry.addNote("Finished getting bibs with holdings " + dateTimeFormatter.format(new Date()));
 	}
 
@@ -1063,6 +1064,11 @@ public class SierraExportAPIMain {
 										JSONObject subfield = subfields.getJSONObject(k);
 										holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
 									}
+									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
+								}else if (curVarField.has("fieldTag") && curVarField.get("fieldTag").equals("h")) {
+									DataField holdingField = marcFactory.newDataField("866", ' ', ' ');
+									marcRecord.addVariableField(holdingField);
+									holdingField.addSubfield(marcFactory.newSubfield('a', curVarField.getString("content")));
 									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
 								}
 							}
