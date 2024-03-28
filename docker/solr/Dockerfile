@@ -9,6 +9,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY data_dir_setup/solr7/ /opt/solr/server/solr/configsets
-
+RUN chown -R solr:solr /var/solr
 RUN chown -R solr:solr /opt/solr/server/solr/configsets/
 USER solr
