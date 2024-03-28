@@ -117,7 +117,7 @@ public class WebsiteIndexerMain {
 						ResultSet librariesForSettingsRS = getLibrariesForSettingsStmt.executeQuery();
 						while (librariesForSettingsRS.next()){
 							String subdomain = librariesForSettingsRS.getString("subdomain");
-							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_-]", "");
 							scopesToInclude.add(subdomain.toLowerCase());
 						}
 
@@ -127,10 +127,10 @@ public class WebsiteIndexerMain {
 							String subLocation = locationsForSettingsRS.getString("subLocation");
 							String scopeName;
 							if (!locationsForSettingsRS.wasNull() && !subLocation.isEmpty()){
-								scopeName = subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+								scopeName = subLocation.replaceAll("[^a-zA-Z0-9_-]", "").toLowerCase();
 							}else {
 								String code = locationsForSettingsRS.getString("code");
-								scopeName = code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+								scopeName = code.replaceAll("[^a-zA-Z0-9_-]", "").toLowerCase();
 							}
 							if (scopesToInclude.contains(scopeName)){
 								scopeName += "loc";

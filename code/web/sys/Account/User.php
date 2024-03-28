@@ -3407,7 +3407,7 @@ class User extends DataObject {
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
 		$sections['local_enrichment']->addAction(new AdminAction('Bad Words List', 'Define the list of words to be censored.', '/Admin/BadWords'), ['Administer Bad Words']);
-		$browseCategoryGroupsAction = new AdminAction('Browse Category Groups', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/BrowseCategoryGroups');
+		$browseCategoryGroupsAction = new AdminAction('Browse Category Groups', 'Configure the Browse Categories that are shown on the library home page.', '/Admin/BrowseCategoryGroups');
 		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), [
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
@@ -3418,7 +3418,7 @@ class User extends DataObject {
 			'Administer Library Browse Categories',
 			'Administer Selected Browse Category Groups'
 		]);
-		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), [
+		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define spotlights that can be embedded within Aspen custom pages or other websites.', '/Admin/CollectionSpotlights'), [
 			'Administer All Collection Spotlights',
 			'Administer Library Collection Spotlights',
 		]);

@@ -683,7 +683,7 @@ class UserAccount {
 		global $library;
 		global $logger;
 		$validatedViaSSO = false;
-		if (strlen($library->casHost) > 0 && $username == null && $password == null) {
+		if (!empty($library->casHost) && $username == null && $password == null) {
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
@@ -781,7 +781,7 @@ class UserAccount {
 			unset($_COOKIE['cookieConsent]']);
 		}
 
-		session_regenerate_id(true);
+		@session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}
 

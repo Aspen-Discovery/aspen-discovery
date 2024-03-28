@@ -558,7 +558,7 @@ class Theme extends DataObject {
 
 		//Load Valid Fonts
 		$validHeadingFonts = [
-			'Arial',
+			'Arimo',
 			'Catamaran',
 			'Gothic A1',
 			'Gothic A1-Black',
@@ -578,7 +578,7 @@ class Theme extends DataObject {
 			'Ubuntu',
 		];
 		$validBodyFonts = [
-			'Arial',
+			'Arimo',
 			'Droid Serif',
 			'Gothic A1',
 			'Gothic A1-Black',

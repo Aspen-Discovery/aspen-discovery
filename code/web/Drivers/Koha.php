@@ -3691,7 +3691,8 @@ class Koha extends AbstractIlsDriver {
 						$pickupLocations[$location->code] = $location->displayName;
 					}
 				}
-				asort($pickupLocations);
+				//Do not sort branches because they sorted by main branch and then display name above.
+				//asort($pickupLocations);
 			}
 		} else {
 			if (UserAccount::isLoggedIn()) {

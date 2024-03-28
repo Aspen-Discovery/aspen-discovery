@@ -57,7 +57,7 @@ RUN apt -y update \
 	  php8.0-intl \
 	  php8.0-mbstring \
 	  php8.0-xdebug \
-	  php8.0-imagick
+	  php8.0-imagick \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 

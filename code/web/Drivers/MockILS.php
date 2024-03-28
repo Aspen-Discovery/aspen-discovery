@@ -37,7 +37,7 @@ class MockILS extends AbstractIlsDriver{
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO) {
-		if ($username == 'test_user') {
+		if ($username == 'test_user' && $password == 'password') {
 			$user = new User();
 			$user->source = 'ils';
 			$user->firstname = 'Test';
