@@ -18,8 +18,8 @@ class SelfReg extends Action {
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
-				if ($recaptchaValid) {
-					//$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
+				if (!$recaptchaValid) {
+					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 				} else {
 					require_once ROOT_DIR . '/sys/Administration/USPS.php';
 					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
