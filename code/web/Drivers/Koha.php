@@ -120,10 +120,10 @@ class Koha extends AbstractIlsDriver {
 			$result['messages'][] = "Profile Information can not be updated.";
 		} else {
 			global $library;
+			$patronUpdateForm = $this->getPatronUpdateForm($patron);
+			global $interface;
+			$patronUpdateFields = $interface->getVariable('structure');
 			if ($library->bypassReviewQueueWhenUpdatingProfile) {
-				$patronUpdateForm = $this->getPatronUpdateForm($patron);
-				global $interface;
-				$patronUpdateFields = $interface->getVariable('structure');
 				require_once ROOT_DIR . '/sys/Utils/FormUtils.php';
 				$validFieldsToUpdate = FormUtils::getModifiableFieldKeys($patronUpdateFields);
 
@@ -344,6 +344,20 @@ class Koha extends AbstractIlsDriver {
 						//TODO: Should this be capitalized? This does not seem to save to Koha
 						$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
 						$postVariables = $this->setPostField($postVariables, 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
+					}
+
+					//check to see if any form values are required but not set and if so resend the default
+					require_once ROOT_DIR . '/sys/Utils/FormUtils.php';
+					$requiredFields = FormUtils::getRequiredFields($patronUpdateFields);
+					foreach ($requiredFields as $requiredField) {
+						if (!isset($postVariables[$requiredField['property']])) {
+							$fieldName = $requiredField['property'];
+							if ($fieldName == 'borrower_dateofbirth') {
+								$postVariables[$fieldName] = $this->aspenDateToKohaDate2($patron->$fieldName);
+							}else{
+								$postVariables[$fieldName] = $patron->$fieldName;
+							}
+						}
 					}
 
 					$postVariables['csrf_token'] = $csr_token;
@@ -5502,6 +5516,34 @@ class Koha extends AbstractIlsDriver {
 					$month,
 					$day,
 				] = explode('-', $date);
+				if ($this->getKohaVersion() > 20.11) {
+					return "$year-$month-$day";
+				} else {
+					return "$month/$day/$year";
+				}
+
+			} else {
+				return $date;
+			}
+		}
+	}
+
+	/**
+	 * Converts the string for submission to the web form which is different than the
+	 * format within the database.
+	 * @param string $date
+	 * @return string
+	 */
+	function aspenDateToKohaDate2($date) {
+		if (strlen($date) == 0) {
+			return $date;
+		} else {
+			if (strpos($date, '/') !== false) {
+				[
+					$month,
+					$day,
+					$year,
+				] = explode('/', $date);
 				if ($this->getKohaVersion() > 20.11) {
 					return "$year-$month-$day";
 				} else {
