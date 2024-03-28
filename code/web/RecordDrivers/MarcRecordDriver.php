@@ -2724,7 +2724,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						if ($marcSubfieldB != false) {
 							//handle sierra quirks of location codes where the library can be indicated with the first part of a location code
 							$owningLibraryCode = trim(strtolower($marcSubfieldB->getData()));
-							for ($i = strlen($owningLibraryCode); $i >= 2; $i--) {
+							$owningLibrary = $owningLibraryCode;
+							for ($i = strlen($owningLibraryCode); $i >= 1; $i--) {
 								$tmpOwningLibraryCode = substr($owningLibraryCode, 0, $i);
 								if (array_key_exists($tmpOwningLibraryCode, $libraryCodeToDisplayName)) {
 									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode];
@@ -2733,8 +2734,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 								} elseif (array_key_exists($tmpOwningLibraryCode . 'z', $libraryCodeToDisplayName)) {
 									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode . 'z'];
 									break;
-								} else if ($i == strlen($owningLibraryCode)){
-									$owningLibrary = $tmpOwningLibraryCode;
 								}
 							}
 							$marcHolding['library'] = $owningLibrary;
@@ -2744,8 +2743,17 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						$marcSubfieldC = $marc852Field->getSubfield('c');
 						if ($marcSubfieldC != false) {
 							$shelfLocation = trim(strtolower($marcSubfieldC->getData()));
-							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
-								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+							if ($shelfLocationTranslationMap->usesRegularExpressions) {
+								foreach ($shelfLocationTranslationMapValues as $value => $translation) {
+									if (preg_match($value, $shelfLocation)) {
+										$shelfLocation = $translation;
+										break;
+									}
+								}
+							}else {
+								if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
+									$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+								}
 							}
 							$marcHolding['shelfLocation'] = $shelfLocation;
 						} else {
