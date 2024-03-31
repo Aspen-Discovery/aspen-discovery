@@ -794,13 +794,13 @@ class Record_AJAX extends Action {
 							//Only update remember hold pickup location and the preferred pickup location if the  hold is successful
 							if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')) {
 								if ($patron->rememberHoldPickupLocation == 0) {
-									$patron->rememberHoldPickupLocation = 1;
+									$patron->setRememberHoldPickupLocation(1);
 									$patron->update();
 								}
 								$pickupLocation = new Location();
 								if ($pickupLocation->get('code', $pickupBranch)) {
 									if ($pickupLocation->locationId != $user->pickupLocationId) {
-										$patron->pickupLocationId = $pickupLocation->locationId;
+										$patron->setPickupLocationId($pickupLocation->locationId);
 										$patron->update();
 									}
 								}
