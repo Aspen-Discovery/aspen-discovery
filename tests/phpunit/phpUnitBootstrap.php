@@ -16,14 +16,14 @@ $curDir = __DIR__;
 $baseAspenSQL = "$curDir/../../install/aspen.sql";
 
 //Import blank database
-/*$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $baseAspenSQL";
-exec($importCommand);*/
+$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $baseAspenSQL";
+exec($importCommand);
 
 ////Import unit test specific data
-/*$unitTestsSQL = "$curDir/../../tests/unit_tests.sql";
+$unitTestsSQL = "$curDir/../../tests/unit_tests.sql";
 $importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $unitTestsSQL";
 $results = [];
-exec($importCommand, $results);*/
+exec($importCommand, $results);
 
 //Make sure solr is running?
 
