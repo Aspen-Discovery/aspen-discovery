@@ -245,6 +245,11 @@ const CreateLibraryCard = (data) => {
           }
      }
 
+     let showExpirationDate = true;
+     if (library.showCardExpiration === '0' || library.showCardExpiration === 0) {
+          showExpirationDate = false;
+     }
+
      let icon = library.favicon;
      if (library.logoApp) {
           icon = library.logoApp;
@@ -274,7 +279,7 @@ const CreateLibraryCard = (data) => {
                          <Text color="darkText" bold fontSize="xl">
                               {barcodeValue}
                          </Text>
-                         {expirationDate && !neverExpires ? (
+                         {showExpirationDate && expirationDate && !neverExpires ? (
                               <Text color="darkText" fontSize={10}>
                                    {expirationText}
                               </Text>
@@ -312,9 +317,9 @@ const CreateLibraryCard = (data) => {
                     </>
                ) : null}
                <Center>
-                    {expirationDate && !neverExpires && numCards > 1 ? <Text color={cardText}>{expirationText}</Text> : null}
+                    {showExpirationDate && expirationDate && !neverExpires && numCards > 1 ? <Text color={cardText}>{expirationText}</Text> : null}
                     {numCards > 1 ? <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError} language={language} /> : <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />}
-                    {expirationDate && !neverExpires && numCards === 1 ? (
+                    {showExpirationDate && expirationDate && !neverExpires && numCards === 1 ? (
                          <Text color={cardText} fontSize={10} pt={2}>
                               {expirationText}
                          </Text>

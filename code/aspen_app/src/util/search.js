@@ -418,7 +418,7 @@ export function buildParamsForUrl() {
                          facet = facet.replaceAll(' ', '+');
                          params = params.concat('&filter[]=' + field + ':' + facet);
                     } else {
-                         params = params.concat('&filter[]=' + encodeURIComponent(field + ':' + facet));
+                         params = params.concat('&filter[]=' + field + ':' + facet);
                     }
                });
           }
