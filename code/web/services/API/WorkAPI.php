@@ -291,38 +291,7 @@ class WorkAPI extends AbstractAPI {
 			return $record['isbn'];
 		}
 	}
-
-	private function loadUsernameAndPassword() {
-		$username = $_REQUEST['username'] ?? '';
-		$password = $_REQUEST['password'] ?? '';
-
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return [$username, $password];
-	}
-
-	/**
-	 * @return bool|User
-	 */
-	protected function getUserForApiCall() {
-		$user = false;
-		[$username, $password] = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user !== false && $user->source == 'admin') {
-			return false;
-		}
-		return $user;
-	}
-
+	
 	function getBreadcrumbs(): array {
 		return [];
 	}
