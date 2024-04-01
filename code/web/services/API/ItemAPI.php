@@ -1272,7 +1272,17 @@ class ItemAPI extends AbstractAPI {
 							'showItsHere' => (int)$library->showItsHere,
 							'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 						];
-						$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
+
+						$buttons = [];
+						$actionButtons = $relatedRecord->getActions();
+						foreach ($actionButtons as $key => $actionButton) {
+							$buttons[$key]['id'] = $actionButton['id'] . '_' . $key;
+							$buttons[$key]['type'] = $actionButton['type'];
+							$buttons[$key]['title'] = $actionButton['title'];
+							$buttons[$key]['requireLogin'] = $actionButton['requireLogin'];
+						}
+
+						$records[$relatedRecord->id]['actions'] = $buttons;
 						//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
 						if ($source == 'hoopla') {
