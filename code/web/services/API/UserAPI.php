@@ -3963,32 +3963,6 @@ class UserAPI extends AbstractAPI {
 		return $result;
 	}
 
-	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		$username = $_REQUEST['username'] ?? '';
-		$password = $_REQUEST['password'] ?? '';
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return [
-			$username,
-			$password,
-		];
-	}
-
 	/** @noinspection PhpUnused */
 	function getBarcodeForPatron(): array {
 		$results = [
@@ -4651,7 +4625,7 @@ class UserAPI extends AbstractAPI {
 	/**
 	 * @return bool|User
 	 */
-	protected function getUserForApiCall() {
+	function getUserForApiCall() {
 		if ($this->context == 'internal') {
 			return UserAccount::getActiveUserObj();
 		} else {
@@ -4708,27 +4682,6 @@ class UserAPI extends AbstractAPI {
 			}
 		}
 		return 0;
-	}
-
-	function getLiDASession() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
-				$sessionId = explode(' ', $value);
-				return $sessionId[0];
-			}
-		}
-		return false;
-	}
-
-	function getLiDAUserAgent() {
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'User-Agent' || $name == 'user-agent') {
-				if(str_contains($value, 'Aspen LiDA') || str_contains($value, 'aspen lida')) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	function getLinkedAccounts() {

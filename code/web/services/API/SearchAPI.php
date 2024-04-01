@@ -2668,50 +2668,6 @@ class SearchAPI extends AbstractAPI {
 		return $response;
 	}
 
-	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		if (isset($_REQUEST['username'])) {
-			$username = $_REQUEST['username'];
-		} else {
-			$username = '';
-		}
-		if (isset($_REQUEST['password'])) {
-			$password = $_REQUEST['password'];
-		} else {
-			$password = '';
-		}
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return [
-			$username,
-			$password,
-		];
-	}
-
-	protected function getUserForApiCall() {
-		$user = false;
-		[$username, $password] = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user !== false && $user->source == 'admin') {
-			return false;
-		}
-		return $user;
-	}
-
 	/** @noinspection PhpUnused */
 	function getAppSearchResults(): array {
 		global $configArray;

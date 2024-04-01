@@ -309,32 +309,6 @@ class ListAPI extends AbstractAPI {
 	}
 
 	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		$username = $_REQUEST['username'] ?? '';
-		$password = $_REQUEST['password'] ?? '';
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return [
-			$username,
-			$password,
-		];
-	}
-
-	/**
 	 * Get's RSS Feed
 	 * @noinspection PhpUnused
 	 */
