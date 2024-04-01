@@ -24,6 +24,15 @@ function getUpdates24_04_00(): array {
 		 ], //replace_arial_fonts
 
 		//kirstien - ByWater
+		'self_check_checkout_location' => [
+			'title' => 'Add self-check option to set checkout location',
+			'description' => 'Add self-check option to set checkout location',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE aspen_lida_self_check_settings ADD COLUMN checkoutLocation TINYINT(1) DEFAULT 0',
+			],
+		],
+		//self_check_checkout_location
 
 		//kodi - ByWater
 

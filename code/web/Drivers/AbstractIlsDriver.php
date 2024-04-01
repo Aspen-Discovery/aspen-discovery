@@ -717,7 +717,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function checkoutBySip(User $patron, $barcode, $locationId) {
+	public function checkoutBySip(User $patron, $barcode, $currentLocationId) {
 		$checkout_result = [];
 		$success = false;
 		$title = translate([
@@ -734,6 +734,17 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				'isPublicFacing' => true,
 			]),
 		];
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+		$scoSettings = new AspenLiDASelfCheckSetting();
+		$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocationId);
+		$checkoutLocation = $currentLocationId; // assign checkout to current location logged into (default)
+		if($checkoutLocationSetting == 1) {
+			// assign checkout to user home location
+			$checkoutLocation = $patron->getHomeLocationCode();
+		} /* else if ($checkoutLocationSetting == 2) {
+			// not yet supported with SIP since we can't easily find the item off barcode only
+		} */
 
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
@@ -755,7 +766,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				$mySip->patron = $patron->getBarcode();
 				$mySip->patronpwd = $patron->getPasswordOrPin();
 
-				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $locationId);
+				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $checkoutLocation);
 				$msg_result = $mySip->get_message($in);
 
 				$checkoutResponse = null;
@@ -796,7 +807,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $locationId): array {
+	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',
