@@ -2731,6 +2731,14 @@ class User extends DataObject {
 		$this->__set('materialsRequestEmailSignature', $materialsRequestEmailSignature);
 	}
 
+	public function setPickupLocationId(int $pickupLocationId) {
+		$this->__set('pickupLocationId', $pickupLocationId);
+	}
+
+	public function setRememberHoldPickupLocation(bool $rememberPickupLocation) {
+		$this->__set('rememberHoldPickupLocation', $rememberPickupLocation);
+	}
+
 	function setNumMaterialsRequests($val) {
 		$this->_numMaterialsRequests = $val;
 	}

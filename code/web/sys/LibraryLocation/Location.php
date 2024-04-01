@@ -1492,9 +1492,9 @@ class Location extends DataObject {
 						Location::$activeLocation = null;
 					}
 				} else {
-					//Check to see if we can get the active location based off the sublocation
+					//Check to see if we can get the active location based off the subdomain
 					$activeLocation = new Location();
-					$activeLocation->code = $locationCode;
+					$activeLocation->subdomain = $locationCode;
 					if ($activeLocation->find(true)) {
 						//Only use the location if we are in the subdomain for the parent library
 						if ($library->libraryId == $activeLocation->libraryId) {
@@ -1504,10 +1504,10 @@ class Location extends DataObject {
 							Location::$activeLocation = null;
 						}
 					} else {
-						//Check to see if we can get the active location based off the sublocation
+						//Check to see if we can get the active location based off the location code
 						$activeLocation = new Location();
-						$activeLocation->subdomain = $locationCode;
-						if ($activeLocation->find(true)) {
+						$activeLocation->code = $locationCode;
+						if ($activeLocation->find(true) && empty($activeLocation->subdomain)) {
 							//Only use the location if we are in the subdomain for the parent library
 							if ($library->libraryId == $activeLocation->libraryId) {
 								Location::$activeLocation = clone $activeLocation;

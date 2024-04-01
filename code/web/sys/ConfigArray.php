@@ -327,38 +327,39 @@ function updateConfigForScoping($configArray) {
 					if ($Location->getNumResults() == 1) {
 						$Location->fetch();
 						//We found a location for the subdomain, get the library.
+						if (($Location->subdomain == $subdomain) || (empty($Location->subdomain))) {
+							global $librarySingleton;
+							$library = $librarySingleton->getLibraryForLocation($Location->locationId);
+							$locationSingleton->setActiveLocation(clone $Location);
+							$timer->logTime("found the location and library based on subdomain");
+							break;
+						}
+					}
 
-						global $librarySingleton;
-						$library = $librarySingleton->getLibraryForLocation($Location->locationId);
-						$locationSingleton->setActiveLocation(clone $Location);
-						$timer->logTime("found the location and library based on subdomain");
+					//Check to see if there is only one library in the system
+					$Library = new Library();
+					$Library->find();
+					if ($Library->getNumResults() == 1) {
+						$Library->fetch();
+						$library = $Library;
+						$timer->logTime("there is only one library for this install");
 						break;
 					} else {
-						//Check to see if there is only one library in the system
-						$Library = new Library();
-						$Library->find();
-						if ($Library->getNumResults() == 1) {
-							$Library->fetch();
-							$library = $Library;
-							$timer->logTime("there is only one library for this install");
-							break;
-						} else {
-							//If we are on the last subdomain to test, grab the default.
-							if ($i == count($subdomainsToTest) - 1) {
-								//Get the default library
-								$Library = new Library();
-								$Library->isDefault = 1;
-								$Library->find();
-								if ($Library->getNumResults() == 1) {
-									$Library->fetch();
-									$library = $Library;
-									$timer->logTime("found the library based on the default");
-								} else {
-									//Just grab the first library sorted alphabetically by subdomain
-									$library = new Library();
-									$library->orderBy('subdomain');
-									$library->find(true);
-								}
+						//If we are on the last subdomain to test, grab the default.
+						if ($i == count($subdomainsToTest) - 1) {
+							//Get the default library
+							$Library = new Library();
+							$Library->isDefault = 1;
+							$Library->find();
+							if ($Library->getNumResults() == 1) {
+								$Library->fetch();
+								$library = $Library;
+								$timer->logTime("found the library based on the default");
+							} else {
+								//Just grab the first library sorted alphabetically by subdomain
+								$library = new Library();
+								$library->orderBy('subdomain');
+								$library->find(true);
 							}
 						}
 					}

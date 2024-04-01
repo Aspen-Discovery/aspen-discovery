@@ -356,7 +356,12 @@ class Koha extends AbstractIlsDriver {
 					$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
 
 					$messageInformation = [];
-					if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
+					if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $postResults, $messageInformation)) {
+						$error = $messageInformation[1];
+						$error = str_replace('<h3>', '<h4>', $error);
+						$error = str_replace('</h3>', '</h4>', $error);
+						$result['messages'][] = trim($error);
+					} elseif (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 						$error = $messageInformation[1];
 						$error = str_replace('<h3>', '<h4>', $error);
 						$error = str_replace('</h3>', '</h4>', $error);
@@ -1271,8 +1276,8 @@ class Koha extends AbstractIlsDriver {
 
 					if ($homeLocationChanged) {
 						//reset the patrons preferred pickup location to their new home library
-						$user->pickupLocationId = $user->homeLocationId;
-						$user->rememberHoldPickupLocation = 0;
+						$user->setPickupLocationId($user->homeLocationId);
+						$user->setRememberHoldPickupLocation(0);
 					}
 				}
 			}

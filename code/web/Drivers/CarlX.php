@@ -162,8 +162,8 @@ class CarlX extends AbstractIlsDriver {
 							}
 							if ($homeLocationChanged) {
 								//reset the patrons preferred pickup location to their new home library
-								$user->pickupLocationId = $user->homeLocationId;
-								$user->rememberHoldPickupLocation = 0;
+								$user->setPickupLocationId($user->homeLocationId);
+								$user->setRememberHoldPickupLocation(0);
 							}
 						}
 					}

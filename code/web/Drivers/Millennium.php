@@ -837,6 +837,7 @@ class Millennium extends AbstractIlsDriver {
 							//Get each line within the summary
 							$issueSummary = [];
 							$issueSummary['type'] = 'issueSummary';
+							$issueSummary['location'] = '';
 							$summaryLines = [];
 							preg_match_all('/<tr\\s*>(.*?)<\/tr>/s', $summaryData, $summaryLines, PREG_SET_ORDER);
 							for ($matchi = 0; $matchi < count($summaryLines); $matchi++) {
@@ -863,8 +864,11 @@ class Millennium extends AbstractIlsDriver {
 											$value = $locationParts[1];
 										}
 									} elseif ($label == 'holdings') {
-										//Change the lable to avoid conflicts with actual holdings
+										//Change the label to avoid conflicts with actual holdings
 										$label = 'holdingStatement';
+									} elseif ($label == 'itemLoc') {
+										//Change the label for consistency
+										$label = 'location';
 									}
 									$issueSummary[$label] = $value;
 								}
