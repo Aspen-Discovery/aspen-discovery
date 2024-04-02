@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Alert, Button, Center, Heading, HStack, Icon, ScrollView, Text, Toast, VStack, Box, AlertDialog, IconButton, CloseIcon } from 'native-base';
+import { Alert, Button, Center, Heading, HStack, Icon, Text, Toast, VStack, Box } from '@gluestack-ui/themed-native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 

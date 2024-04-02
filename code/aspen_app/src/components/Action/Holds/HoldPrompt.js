@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { CheckIcon, CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormControlLabel, FormControlLabelText, Heading, Select, Button, ButtonGroup, ButtonText, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, ButtonSpinner } from '@gluestack-ui/themed';
+import { CheckIcon, CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormControlLabel, FormControlLabelText, Heading, Select, Button, ButtonGroup, ButtonText, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, ButtonSpinner, SelectScrollView } from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import { HoldsContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
@@ -177,7 +177,7 @@ export const HoldPrompt = (props) => {
                                    />
                               ) : null}
                               {!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? <SelectItemHold theme={theme} id={id} item={item} setItem={setItem} language={language} data={data} holdType={holdType} setHoldType={setHoldType} holdTypeForFormat={holdTypeForFormat} url={library.baseUrl} showModal={showModal} textColor={textColor} /> : null}
-                              {promptForHoldType || holdType === 'volume' ? <SelectVolume id={id} language={language} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} holdType={holdType} setHoldType={setHoldType} showModal={showModal} url={library.baseUrl} textColor={textColor} /> : null}
+                              {promptForHoldType || holdType === 'volume' ? <SelectVolume theme={theme} id={id} language={language} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} holdType={holdType} setHoldType={setHoldType} showModal={showModal} url={library.baseUrl} textColor={textColor} /> : null}
                               {_.isArray(locations) && _.size(locations) > 1 && !isEContent ? (
                                    <FormControl mt="$1">
                                         <FormControlLabel>
@@ -185,7 +185,7 @@ export const HoldPrompt = (props) => {
                                                   {getTermFromDictionary(language, 'select_pickup_location')}
                                              </FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select isReadOnly={Platform.OS === 'android'} name="pickupLocations" selectedValue={location} initialLabel="Test" minWidth={200} mt="$1" mb="$2" onValueChange={(itemValue) => setLocation(itemValue)}>
+                                        <Select name="pickupLocations" selectedValue={location} initialLabel="Test" minWidth={200} mt="$1" mb="$2" onValueChange={(itemValue) => setLocation(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   {locations.map((selectedLocation, index) => {
                                                        if (selectedLocation.code === location) {
@@ -200,12 +200,14 @@ export const HoldPrompt = (props) => {
                                                        <SelectDragIndicatorWrapper>
                                                             <SelectDragIndicator />
                                                        </SelectDragIndicatorWrapper>
-                                                       {locations.map((availableLocations, index) => {
-                                                            if (availableLocations.code === location) {
-                                                                 return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} />;
-                                                            }
-                                                            return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} />;
-                                                       })}
+                                                       <SelectScrollView>
+                                                            {locations.map((availableLocations, index) => {
+                                                                 if (availableLocations.code === location) {
+                                                                      return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} />;
+                                                                 }
+                                                                 return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} />;
+                                                            })}
+                                                       </SelectScrollView>
                                                   </SelectContent>
                                              </SelectPortal>
                                         </Select>
@@ -216,7 +218,7 @@ export const HoldPrompt = (props) => {
                                         <FormControlLabel>
                                              <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select isReadOnly={Platform.OS === 'android'} name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
+                                        <Select name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   <SelectInput color={textColor} />
                                                   <SelectIcon as={ChevronDownIcon} mr="$3" />
@@ -227,10 +229,12 @@ export const HoldPrompt = (props) => {
                                                        <SelectDragIndicatorWrapper>
                                                             <SelectDragIndicator />
                                                        </SelectDragIndicatorWrapper>
-                                                       <SelectItem label={user.displayName} value={user.id} />
-                                                       {accounts.map((item, index) => {
-                                                            return <SelectItem label={item.displayName} value={item.id} key={index} />;
-                                                       })}
+                                                       <SelectScrollView>
+                                                            <SelectItem label={user.displayName} value={user.id} />
+                                                            {accounts.map((item, index) => {
+                                                                 return <SelectItem label={item.displayName} value={item.id} key={index} />;
+                                                            })}
+                                                       </SelectScrollView>
                                                   </SelectContent>
                                              </SelectPortal>
                                         </Select>

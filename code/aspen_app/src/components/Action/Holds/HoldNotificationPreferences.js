@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, FormControlLabel, FormControlLabelText, FormControlHelper, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, Input, InputField, Checkbox, CheckboxLabel, Text, CheckIcon, CheckboxIndicator, CheckboxIcon, FormControlHelperText } from '@gluestack-ui/themed';
+import { FormControl, FormControlLabel, FormControlLabelText, FormControlHelper, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, Input, InputField, Checkbox, CheckboxLabel, Text, CheckIcon, CheckboxIndicator, CheckboxIcon, FormControlHelperText, SelectScrollView } from '@gluestack-ui/themed';
 import _ from 'lodash';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
@@ -32,6 +32,7 @@ export const HoldNotificationPreferences = (props) => {
                     <FormControl mb="$2">
                          <Checkbox
                               size="sm"
+                              value={emailNotification}
                               name="emailNotification"
                               defaultIsChecked={emailNotification}
                               onChange={(value) => {
@@ -116,12 +117,14 @@ export const HoldNotificationPreferences = (props) => {
                                                        <SelectDragIndicatorWrapper>
                                                             <SelectDragIndicator />
                                                        </SelectDragIndicatorWrapper>
-                                                       {_.map(smsCarriers, function (carrier, index, array) {
-                                                            if (index === smsCarrier) {
-                                                                 return <SelectItem key={index} label={carrier} value={index} bgColor={theme['colors']['tertiary']['300']} />;
-                                                            }
-                                                            return <SelectItem key={index} label={carrier} value={index} />;
-                                                       })}
+                                                       <SelectScrollView>
+                                                            {_.map(smsCarriers, function (carrier, index, array) {
+                                                                 if (index === smsCarrier) {
+                                                                      return <SelectItem key={index} label={carrier} value={index} bgColor={theme['colors']['tertiary']['300']} />;
+                                                                 }
+                                                                 return <SelectItem key={index} label={carrier} value={index} />;
+                                                            })}
+                                                       </SelectScrollView>
                                                   </SelectContent>
                                              </SelectPortal>
                                         </Select>

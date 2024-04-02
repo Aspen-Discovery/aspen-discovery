@@ -1,4 +1,4 @@
-import { FormControl, Select, CheckIcon, Radio } from 'native-base';
+import { Icon, ChevronDownIcon, FormControl, FormControlLabel, FormControlLabelText, SelectScrollView, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, CheckIcon, Radio, RadioGroup, RadioIndicator, RadioIcon, RadioLabel, CircleIcon } from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectVolume = (props) => {
-     const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType, language, url } = props;
+     const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType, language, url, textColor, theme } = props;
 
      const { status, data, error, isFetching } = useQuery({
           queryKey: ['volumes', id, url],
@@ -33,29 +33,35 @@ export const SelectVolume = (props) => {
                     <>
                          {promptForHoldType ? (
                               <FormControl>
-                                   <Radio.Group
+                                   <RadioGroup
                                         name="holdTypeGroup"
                                         defaultValue={holdType}
                                         value={holdType}
                                         onChange={(nextValue) => {
                                              setHoldType(nextValue);
                                              setVolume('');
-                                        }}
-                                        accessibilityLabel="">
-                                        <Radio value="item" my={1} size="sm">
-                                             {getTermFromDictionary(language, 'first_available')}
+                                        }}>
+                                        <Radio value="item" my="$1" size="sm">
+                                             <RadioIndicator mr="$1">
+                                                  <RadioIcon as={CircleIcon} strokeWidth={1} />
+                                             </RadioIndicator>
+                                             <RadioLabel color={textColor}>{getTermFromDictionary(language, 'first_available')}</RadioLabel>
                                         </Radio>
-                                        <Radio value="volume" my={1} size="sm">
-                                             {getTermFromDictionary(language, 'specific_volume')}
+                                        <Radio value="volume" my="$1" size="sm">
+                                             <RadioIndicator mr="$1">
+                                                  <RadioIcon as={CircleIcon} strokeWidth={1} />
+                                             </RadioIndicator>
+                                             <RadioLabel color={textColor}>{getTermFromDictionary(language, 'specific_volume')}</RadioLabel>
                                         </Radio>
-                                   </Radio.Group>
+                                   </RadioGroup>
                               </FormControl>
                          ) : null}
                          {holdType === 'volume' ? (
                               <FormControl>
-                                   <FormControl.Label>{getTermFromDictionary(language, 'select_volume')}</FormControl.Label>
+                                   <FormControlLabel>
+                                        <FormControlLabelText color={textColor}>{getTermFromDictionary(language, 'select_volume')}</FormControlLabelText>
+                                   </FormControlLabel>
                                    <Select
-                                        isReadOnly={Platform.OS === 'android'}
                                         name="volumeForHold"
                                         selectedValue={volume}
                                         defaultValue={volume}
@@ -68,9 +74,32 @@ export const SelectVolume = (props) => {
                                         mt={1}
                                         mb={2}
                                         onValueChange={(itemValue) => setVolume(itemValue)}>
-                                        {_.map(data, function (item, index, array) {
-                                             return <Select.Item label={item.label} value={item.volumeId} key={index} />;
-                                        })}
+                                        <SelectTrigger variant="outline" size="md">
+                                             {_.map(data, function (item, index, array) {
+                                                  if (item.volumeId === volume) {
+                                                       return <SelectInput value={item.volumeId} color={textColor} />;
+                                                  }
+                                             })}
+                                             <SelectIcon mr="$3">
+                                                  <Icon as={ChevronDownIcon} color={textColor} />
+                                             </SelectIcon>
+                                        </SelectTrigger>
+                                        <SelectPortal>
+                                             <SelectBackdrop />
+                                             <SelectContent p="$5">
+                                                  <SelectDragIndicatorWrapper>
+                                                       <SelectDragIndicator />
+                                                  </SelectDragIndicatorWrapper>
+                                                  <SelectScrollView>
+                                                       {_.map(data, function (item, index, array) {
+                                                            if (item.volumeId === volume) {
+                                                                 return <SelectItem label={item.label} value={item.volumeId} key={index} bgColor={theme['colors']['tertiary']['300']} />;
+                                                            }
+                                                            return <SelectItem label={item.label} value={item.volumeId} key={index} />;
+                                                       })}
+                                                  </SelectScrollView>
+                                             </SelectContent>
+                                        </SelectPortal>
                                    </Select>
                               </FormControl>
                          ) : null}
