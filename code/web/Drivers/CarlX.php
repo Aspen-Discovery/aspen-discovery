@@ -1040,7 +1040,7 @@ class CarlX extends AbstractIlsDriver {
 			$request->PagingParameters->StartPos = 0;
 			$request->PagingParameters->NoOfRecords = 20;
 			$request->Modifiers = new stdClass();
-			$request->Modifiers->InstitutionCode = 'NASH';
+			$request->Modifiers->InstitutionCode = $library->institutionCode;
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
 				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'No matching records found');
@@ -1054,17 +1054,38 @@ class CarlX extends AbstractIlsDriver {
 
 					// SEND EMAIL TO DUPLICATE EMAIL ADDRESS
 					try {
-						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_email'));
+						require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+						$emailTemplate = EmailTemplate::getActiveTemplate('duplicateEmail');
+						if ($emailTemplate != null) {
+							$newUser = [
+								'firstname' => $firstName,
+								'lastname' => $lastName,
+								'ils_barcode' => $tempPatronID,
+								'email' => $email,
+							];
+							if (!empty($newUser->email)) {
+								$parameters = [
+									'user' => $newUser,
+									'library' => $library
+								];
+								$emailTemplate->sendEmail($newUser->email, $parameters);
+							}
+						}
+/*						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_email'));
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you have an account!';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						// SendGrid Failed
 					}
 					return [
 						'success' => false,
-						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',
+						'message' => translate([
+							'text' => 'This email address already exists in our database. Please contact your library for account information or use a different email.',
+							'isPublicFacing' => true,
+						]),
+/*						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',*/
 						'barcode' => $tempPatronID,
 					];
 				}
@@ -1088,7 +1109,7 @@ class CarlX extends AbstractIlsDriver {
 			$request->PagingParameters->StartPos = 0;
 			$request->PagingParameters->NoOfRecords = 20;
 			$request->Modifiers = new stdClass();
-			$request->Modifiers->InstitutionCode = 'NASH';
+			$request->Modifiers->InstitutionCode = $library->institutionCode;
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
 				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'No matching records found');
@@ -1102,17 +1123,38 @@ class CarlX extends AbstractIlsDriver {
 
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
-						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_name+birthdate'));
+						require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+						$emailTemplate = EmailTemplate::getActiveTemplate('duplicateNameDOB');
+						if ($emailTemplate != null) {
+							$newUser = [
+								'firstname' => $firstName,
+								'lastname' => $lastName,
+								'ils_barcode' => $tempPatronID,
+								'email' => $email,
+							];
+							if (!empty($newUser->email)) {
+								$parameters = [
+									'user' => $newUser,
+									'library' => $library
+								];
+								$emailTemplate->sendEmail($newUser->email, $parameters);
+							}
+						}
+/*						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_name+birthdate'));
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you might already have an account!';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						//SendGrid failed
 					}
 					return [
 						'success' => false,
-						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',
+						'message' => translate([
+							'text' => 'This user already exists in our database. Please contact your library for account information.',
+							'isPublicFacing' => true,
+						]),
+/*						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',*/
 						'barcode' => $tempPatronID,
 					];
 				}
@@ -1154,7 +1196,8 @@ class CarlX extends AbstractIlsDriver {
 			$request->Patron->RegBranch = $configArray['Catalog']['selfRegRegBranch'];
 			$request->Patron->RegisteredBy = $configArray['Catalog']['selfRegRegisteredBy'];
 
-			// VALIDATE BIRTH DATE.
+			// This is now done through setting minimum age required in Primary Configuration
+/*			// VALIDATE BIRTH DATE.
 			// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
 			if ($library && $library->promptForBirthDateInSelfReg) {
 				$birthDate = trim($_REQUEST['birthDate']);
@@ -1171,7 +1214,7 @@ class CarlX extends AbstractIlsDriver {
 						'message' => 'You must be 13 years old to register.',
 					];
 				}
-			}
+			}*/
 			$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
 				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
@@ -1232,19 +1275,37 @@ class CarlX extends AbstractIlsDriver {
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 					try {
-						$body = $firstName . " " . $lastName . "\n\n";
+						require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+						$emailTemplate = EmailTemplate::getActiveTemplate('welcome');
+						if ($emailTemplate != null) {
+							$newUser = [
+								'firstname' => $firstName,
+								'lastname' => $lastName,
+								'ils_barcode' => $tempPatronID,
+								'email' => $email,
+							];
+							if (!empty($newUser->email)) {
+								$parameters = [
+									'user' => $newUser,
+									'library' => $library
+								];
+								$emailTemplate->sendEmail($newUser->email, $parameters);
+							}
+						}
+/*						$body = $firstName . " " . $lastName . "\n\n";
 						$body .= translate([
 							'text' => 'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:',
 							'isPublicFacing' => true,
 							'isAdminEnteredData' => true,
 						]);
 						$body .= "\n\n" . $tempPatronID . "\n\n";
-						$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
+						$body_template = EmailTemplate::getActiveTemplate('welcome');
+						//$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
 						$body .= $body_template;
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Welcome to the Nashville Public Library';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						// SendGrid Failed
 					}

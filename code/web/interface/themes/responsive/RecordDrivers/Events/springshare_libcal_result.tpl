@@ -44,7 +44,7 @@
 					{/if}
 				</div>
 			</div>
-			{if !empty($room)}
+			{if !empty($recordDriver->getBranch())}
 				<div class="row">
 					<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
 					<div class="result-value col-tn-6 notranslate">
@@ -58,11 +58,6 @@
 					<div class="result-value col-tn-6 notranslate">
 						{$room}
 					</div>
-				{elseif !empty($recordDriver->getBranch())}
-						<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
-						<div class="result-value col-tn-6 notranslate">
-							{$recordDriver->getBranch()}
-						</div>
 				{else}
 					{*Empty div so buttons display correctly even without location info*}
 					<div class="result-label col-tn-8"></div>

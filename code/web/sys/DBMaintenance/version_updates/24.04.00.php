@@ -35,7 +35,14 @@ function getUpdates24_04_00(): array {
 		//self_check_checkout_location
 
 		//kodi - ByWater
-
+		'institution_code' => [
+			'title' => 'Institution Code',
+			'description' => 'Add institution code for CarlX self registration to library table',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN institutionCode varchar(100) default ''",
+			],
+		],
 		//lucas - Theke
 
 		//alexander - PTFS Europe
