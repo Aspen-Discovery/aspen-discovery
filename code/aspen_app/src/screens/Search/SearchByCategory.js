@@ -20,14 +20,23 @@ export const SearchResultsForBrowseCategory = () => {
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const { systemMessages } = React.useContext(SystemMessagesContext);
 
-     const [paginationLabel, setPaginationLabel] = React.useState('1 of 1');
      const category = useRoute().params.id ?? '';
+     const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
 
      const { status, data, error, isFetching, isPreviousData } = useQuery({
           queryKey: ['searchResultsForBrowseCategory', category, page, 25, library.baseUrl, language],
           queryFn: () => fetchSearchResultsForBrowseCategory(category, page, 25, library.baseUrl, language),
           keepPreviousData: true,
           staleTime: 1000,
+          onSuccess: (data) => {
+               if (data.totalPages) {
+                    let tmp = getTermFromDictionary(language, 'page_of_page');
+                    tmp = tmp.replace('%1%', page);
+                    tmp = tmp.replace('%2%', data.totalPages);
+                    console.log(tmp);
+                    setPaginationLabel(tmp);
+               }
+          },
      });
 
      const systemMessagesForScreen = [];
@@ -41,17 +50,6 @@ export const SearchResultsForBrowseCategory = () => {
                });
           }
      }, [systemMessages]);
-
-     const { data: paginationLabelData, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', library.baseUrl, page, category, language],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
-          enabled: !!data,
-          onSuccess: (data) => {
-               if (!data.includes('%')) {
-                    setPaginationLabel(data);
-               }
-          },
-     });
 
      const Paging = () => {
           if (data.totalPages > 1) {
@@ -111,7 +109,7 @@ export const SearchResultsForBrowseCategory = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
-               {status === 'loading' || isFetching || translationIsFetching ? (
+               {status === 'loading' || isFetching ? (
                     loadingSpinner('Fetching results...')
                ) : status === 'error' ? (
                     loadError('Error', '')
