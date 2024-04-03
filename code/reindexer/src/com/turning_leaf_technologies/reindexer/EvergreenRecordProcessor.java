@@ -82,4 +82,15 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 	}
+
+	protected boolean isItemHoldableUnscoped(ItemInfo itemInfo){
+		//Koha uses subfield 7 to determine if a record is holdable or not.
+		Subfield subfieldX = itemInfo.getMarcField().getSubfield('x');
+		if (subfieldX != null) {
+			if (subfieldX.getData() != null && subfieldX.getData().equalsIgnoreCase("unholdable")) {
+				return false;
+			}
+		}
+		return super.isItemHoldableUnscoped(itemInfo);
+	}
 }

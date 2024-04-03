@@ -1563,7 +1563,13 @@ public class EvergreenExportMain {
 														//String createDate = curCopy.getAttribute("create_date");
 														//createDate = createDate.substring(0, createDate.indexOf("T"));
 														//curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
-														//String holdable = curCopy.getAttribute("holdable");
+														String holdable = curCopy.getAttribute("holdable");
+														if (holdable.equals("false")) {
+															holdable = "unholdable";
+														}else{
+															holdable = "";
+														}
+														curItemField.addSubfield(marcFactory.newSubfield('x', holdable));
 														//TODO: Figure out where the holdable flag should go
 														//TODO: Do we need to load circulate, ref, or deposit flags?
 														String barcode = curCopy.getAttribute("barcode");
