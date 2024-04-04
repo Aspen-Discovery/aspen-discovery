@@ -3669,6 +3669,12 @@ class User extends DataObject {
 			} else {
 				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
 			}
+			$palaceProjectCollectionsAction = new AdminAction('Collections', 'Defines the collections within a Palace Project Account.', '/PalaceProject/Collections');
+			if ($sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project')) {
+				$palaceProjectSettingsAction->addSubAction($palaceProjectCollectionsAction, 'Administer Palace Project');
+			} else {
+				$sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project');
+			}
 			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',

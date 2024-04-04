@@ -7,6 +7,9 @@ class Axis360Scope extends DataObject {
 	public $id;
 	public $settingId;
 	public $name;
+	public $includeAdult;
+	public $includeTeen;
+	public $includeKids;
 
 	private $_libraries;
 	private $_locations;
@@ -42,6 +45,34 @@ class Axis360Scope extends DataObject {
 				'description' => 'The Name of the scope',
 				'maxLength' => 50,
 			],
+			'includeAdult' => [
+				'property' => 'includeAdult',
+				'type' => 'checkbox',
+				'label' => 'Include Adult Titles',
+				'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches',
+				'hideInLists' => true,
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeTeen' => [
+				'property' => 'includeTeen',
+				'type' => 'checkbox',
+				'label' => 'Include Teen Titles',
+				'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches',
+				'hideInLists' => true,
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeKids' => [
+				'property' => 'includeKids',
+				'type' => 'checkbox',
+				'label' => 'Include Kids Titles',
+				'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches',
+				'hideInLists' => true,
+				'default' => true,
+				'forcesReindex' => true,
+			],
+
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',

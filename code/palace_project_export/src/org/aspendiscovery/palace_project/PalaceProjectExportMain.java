@@ -219,6 +219,9 @@ public class PalaceProjectExportMain {
 		boolean updatesRun = false;
 		try{
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from palace_project_settings");
+			PreparedStatement getCollectionsForSettingStmt = aspenConn.prepareStatement("SELECT * from palace_project_collections where settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement insertCollectionStmt = aspenConn.prepareStatement("INSERT INTO palace_project_collections (settingId, palaceProjectName, displayName, hasCirculation, includeInAspen) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement setLastIndexedStmt = aspenConn.prepareStatement("UPDATE palace_project_collections set lastIndexed = ? where id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			int numSettings = 0;
@@ -248,6 +251,21 @@ public class PalaceProjectExportMain {
 				//Get a list of all existing records in the database
 				loadExistingTitles();
 
+				//Get a list of collections within Aspen
+				getCollectionsForSettingStmt.setLong(1, settingsId);
+				ResultSet collectionsForSettingsRS =  getCollectionsForSettingStmt.executeQuery();
+				HashMap <String, PalaceProjectCollection> palaceProjectCollections = new HashMap<>();
+				while (collectionsForSettingsRS.next()) {
+					PalaceProjectCollection collection = new PalaceProjectCollection();
+					collection.id = collectionsForSettingsRS.getLong("id");
+					collection.palaceProjectName = collectionsForSettingsRS.getString("palaceProjectName");
+					collection.displayName = collectionsForSettingsRS.getString("displayName");
+					collection.hasCirculation = collectionsForSettingsRS.getBoolean("hasCirculation");
+					collection.includeInAspen = collectionsForSettingsRS.getBoolean("includeInAspen");
+					collection.lastIndexed = collectionsForSettingsRS.getLong("lastIndexed");
+					palaceProjectCollections.put(collection.palaceProjectName, collection);
+				}
+
 				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Accept", "application/opds+json");
@@ -276,40 +294,71 @@ public class PalaceProjectExportMain {
 											continue;
 										}
 										validCollections.put(linkTitle, link.getString("href"));
+										if (!palaceProjectCollections.containsKey(linkTitle)) {
+											//Add the collection to the database
+											insertCollectionStmt.setLong(1, settingsId);
+											insertCollectionStmt.setString(2, linkTitle);
+											insertCollectionStmt.setString(3, linkTitle);
+											insertCollectionStmt.setBoolean(4, linkTitle.toLowerCase().contains("marketplace"));
+											insertCollectionStmt.setBoolean(5, true);
+											insertCollectionStmt.executeUpdate();
+											ResultSet generatedKeys = insertCollectionStmt.getGeneratedKeys();
+											if (generatedKeys.next()){
+												long collectionId = generatedKeys.getLong(1);
+												PalaceProjectCollection collection = new PalaceProjectCollection();
+												collection.id = collectionId;
+												collection.palaceProjectName = linkTitle;
+												collection.displayName = linkTitle;
+												collection.hasCirculation = linkTitle.toLowerCase().contains("marketplace");
+												collection.includeInAspen = true;
+												palaceProjectCollections.put(collection.palaceProjectName, collection);
+											}
+										}
 									}
 								}
 							}
 						}
 					}
 
+					long nowInSeconds = new Date().getTime() / 1000;
+					long yesterdayInSeconds = nowInSeconds - 24 * 60 * 60;
 					for (String collectionName : validCollections.keySet()) {
-						String collectionUrl = validCollections.get(collectionName);
-						while (collectionUrl != null) {
-							WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
-							if (!response.isSuccess()) {
-								logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
-							} else {
-								JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
-								if (collectionResponseJSON.has("publications")) {
-									JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
-									if (responseTitles != null && !responseTitles.isEmpty()) {
-										updateTitlesInDB(collectionName, responseTitles, doFullReload);
-										logEntry.saveResults();
-									}
-								}
-								collectionUrl = null;
-								//Get the next URL
-								if (collectionResponseJSON.has("links")) {
-									JSONArray links = collectionResponseJSON.getJSONArray("links");
-									for (int i = 0; i < links.length(); i++) {
-										JSONObject curLink = links.getJSONObject(i);
-										if (curLink.getString("rel").equals("next")) {
-											collectionUrl = curLink.getString("href");
-											break;
+						//Index the collection if the collection has circulation or the collection has not been updated for 24 hours
+						PalaceProjectCollection collection = palaceProjectCollections.get(collectionName);
+						if (collection.includeInAspen) {
+							if (collection.hasCirculation || collection.lastIndexed < yesterdayInSeconds) {
+								//Index all records in the collection
+								String collectionUrl = validCollections.get(collectionName);
+								while (collectionUrl != null) {
+									WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
+									if (!response.isSuccess()) {
+										logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
+									} else {
+										JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
+										if (collectionResponseJSON.has("publications")) {
+											JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
+											if (responseTitles != null && !responseTitles.isEmpty()) {
+												updateTitlesInDB(collectionName, responseTitles, doFullReload);
+												logEntry.saveResults();
+											}
+										}
+										collectionUrl = null;
+										//Get the next URL
+										if (collectionResponseJSON.has("links")) {
+											JSONArray links = collectionResponseJSON.getJSONArray("links");
+											for (int i = 0; i < links.length(); i++) {
+												JSONObject curLink = links.getJSONObject(i);
+												if (curLink.getString("rel").equals("next")) {
+													collectionUrl = curLink.getString("href");
+													break;
+												}
+											}
 										}
 									}
 								}
 							}
+						}else{
+							//TODO: Remove all currently indexed porjects from solr
 						}
 					}
 				}
@@ -466,23 +515,23 @@ public class PalaceProjectExportMain {
 				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 
-				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
-				HashMap<String, String> headers = new HashMap<>();
-				headers.put("Accept", "application/opds+json");
-				headers.put("User-Agent", "Aspen Discovery");
-				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
-				if (!response.isSuccess()){
-					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
-				}else {
-					JSONObject responseJSON = new JSONObject(response.getMessage());
-					if (responseJSON.has("publications")) {
-						JSONArray responseTitles = responseJSON.getJSONArray("publications");
-						if (responseTitles != null && !responseTitles.isEmpty()) {
-							//updateTitlesInDB(responseTitles, false);
-							logEntry.saveResults();
-						}
-					}
-				}
+//				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
+//				HashMap<String, String> headers = new HashMap<>();
+//				headers.put("Accept", "application/opds+json");
+//				headers.put("User-Agent", "Aspen Discovery");
+//				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
+//				if (!response.isSuccess()){
+//					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
+//				}else {
+//					JSONObject responseJSON = new JSONObject(response.getMessage());
+//					if (responseJSON.has("publications")) {
+//						JSONArray responseTitles = responseJSON.getJSONArray("publications");
+//						if (responseTitles != null && !responseTitles.isEmpty()) {
+//							//updateTitlesInDB(responseTitles, false);
+//							logEntry.saveResults();
+//						}
+//					}
+//				}
 			}
 			if (numSettings == 0){
 				logger.error("Unable to find settings for Palace Project, please add settings to the database");

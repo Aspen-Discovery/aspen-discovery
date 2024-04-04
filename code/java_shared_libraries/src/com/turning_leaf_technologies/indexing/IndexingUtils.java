@@ -114,6 +114,9 @@ public class IndexingUtils {
 				axis360Scope.setId(axis360ScopesRS.getLong("id"));
 				axis360Scope.setName(axis360ScopesRS.getString("name"));
 				axis360Scope.setSettingId(axis360ScopesRS.getLong("settingId"));
+				axis360Scope.setIncludeAdult(axis360ScopesRS.getBoolean("includeAdult"));
+				axis360Scope.setIncludeTeen(axis360ScopesRS.getBoolean("includeTeen"));
+				axis360Scope.setIncludeKids(axis360ScopesRS.getBoolean("includeKids"));
 
 				axis360Scopes.put(axis360Scope.getId(), axis360Scope);
 			}
@@ -135,6 +138,9 @@ public class IndexingUtils {
 				palaceProjectScope.setId(palaceProjectScopesRS.getLong("id"));
 				palaceProjectScope.setName(palaceProjectScopesRS.getString("name"));
 				palaceProjectScope.setSettingId(palaceProjectScopesRS.getLong("settingId"));
+				palaceProjectScope.setIncludeAdult(palaceProjectScopesRS.getBoolean("includeAdult"));
+				palaceProjectScope.setIncludeTeen(palaceProjectScopesRS.getBoolean("includeTeen"));
+				palaceProjectScope.setIncludeKids(palaceProjectScopesRS.getBoolean("includeKids"));
 
 				palaceProjectScopes.put(palaceProjectScope.getId(), palaceProjectScope);
 			}
