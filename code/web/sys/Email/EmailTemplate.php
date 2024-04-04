@@ -14,10 +14,26 @@ class EmailTemplate extends DataObject {
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
+		$isCarlX = false;
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Email Templates'));
-		$availableTemplates = [
-			'welcome' => 'Welcome'
-		];
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'carlx') {
+				$isCarlX = true;
+			}
+		}
+		if ($isCarlX){
+			$availableTemplates = [
+				'welcome' => 'Welcome',
+				'duplicateNameDOB' => 'Duplicate Name and Birthdate',
+				'duplicateEmail' => 'Duplicate Email'
+			];
+		} else {
+			$availableTemplates = [
+				'welcome' => 'Welcome'
+			];
+		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
 		$validLanguage = new Language();
 		$validLanguage->orderBy("weight");
