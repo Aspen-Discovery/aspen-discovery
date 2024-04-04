@@ -4,6 +4,9 @@ public class PalaceProjectScope {
 	private long id;
 	private String name;
 	private long settingId;
+	private boolean includeAdult;
+	private boolean includeTeen;
+	private boolean includeKids;
 
 	public long getId() {
 		return id;
@@ -27,6 +30,26 @@ public class PalaceProjectScope {
 
 	public void setSettingId(long settingId) {
 		this.settingId = settingId;
+	}
+
+	void setIncludeAdult(boolean includeAdult) {
+		this.includeAdult = includeAdult;
+	}
+
+	public boolean isIncludeTeen() {
+		return includeTeen;
+	}
+
+	void setIncludeTeen(boolean includeTeen) {
+		this.includeTeen = includeTeen;
+	}
+
+	public boolean isIncludeKids() {
+		return includeKids;
+	}
+
+	void setIncludeKids(boolean includeKids) {
+		this.includeKids = includeKids;
 	}
 
 }
