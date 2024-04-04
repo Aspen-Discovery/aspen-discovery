@@ -42,6 +42,7 @@ export const MyList = () => {
      const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
      const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
      const systemMessagesForScreen = [];
+     const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
 
      React.useEffect(() => {
           if (_.isArray(systemMessages)) {
@@ -87,12 +88,15 @@ export const MyList = () => {
      const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id, sort, page], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
           keepPreviousData: false,
           staleTime: 1000,
-     });
-
-     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', library.baseUrl, page, id],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
-          enabled: !!data,
+          onSuccess: (data) => {
+               if (data.totalPages) {
+                    let tmp = getTermFromDictionary(language, 'page_of_page');
+                    tmp = tmp.replace('%1%', page);
+                    tmp = tmp.replace('%2%', data.totalPages);
+                    console.log(tmp);
+                    setPaginationLabel(tmp);
+               }
+          },
      });
 
      const handleOpenItem = (id, title) => {
@@ -432,7 +436,7 @@ export const MyList = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
-               {status === 'loading' || isFetching || translationIsFetching ? (
+               {status === 'loading' || isFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')

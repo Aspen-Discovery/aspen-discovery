@@ -31,6 +31,7 @@ export const MyReadingHistory = () => {
      const url = library.baseUrl;
      const pageSize = 25;
      const systemMessagesForScreen = [];
+     const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -51,14 +52,15 @@ export const MyReadingHistory = () => {
           staleTime: 1000,
           onSuccess: (data) => {
                updateReadingHistory(data);
+               if (data.totalPages) {
+                    let tmp = getTermFromDictionary(language, 'page_of_page');
+                    tmp = tmp.replace('%1%', page);
+                    tmp = tmp.replace('%2%', data.totalPages);
+                    console.log(tmp);
+                    setPaginationLabel(tmp);
+               }
           },
           onSettle: (data) => setLoading(false),
-     });
-
-     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, language],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page, data.totalPages], language, library.baseUrl),
-          enabled: !!data,
      });
 
      useFocusEffect(

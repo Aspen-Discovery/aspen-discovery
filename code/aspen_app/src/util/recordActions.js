@@ -1,12 +1,11 @@
 import { create } from 'apisauce';
 import _ from 'lodash';
 import * as WebBrowser from 'expo-web-browser';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // custom components and helper files
 import { popAlert, popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
-import { LIBRARY } from './loadLibrary';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 // complete the action on the item, i.e. checkout, hold, or view sample

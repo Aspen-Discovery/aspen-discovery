@@ -335,10 +335,10 @@ export const DiscoverHomeScreen = () => {
                               $dark-color="$textLight50"
                               sx={{
                                    '@base': {
-                                        fontSize: '$16',
+                                        fontSize: 16,
                                    },
                                    '@lg': {
-                                        fontSize: '$22',
+                                        fontSize: 22,
                                    },
                               }}>
                               {title}

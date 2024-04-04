@@ -1,8 +1,7 @@
-import { Icon, ChevronDownIcon, FormControl, FormControlLabel, FormControlLabelText, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, CheckIcon, Radio, RadioGroup, RadioIndicator, RadioIcon, RadioLabel, CircleIcon } from '@gluestack-ui/themed';
+import { Icon, ChevronDownIcon, FormControl, SelectScrollView, FormControlLabel, FormControlLabelText, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, CheckIcon, Radio, RadioGroup, RadioIndicator, RadioIcon, RadioLabel, CircleIcon } from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import _ from 'lodash';
-import { ThemeContext } from '../../../context/initialContext';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectItemHold = (props) => {
@@ -54,7 +53,6 @@ export const SelectItemHold = (props) => {
                               <FormControlLabelText color={textColor}>{getTermFromDictionary(language, 'select_item')}</FormControlLabelText>
                          </FormControlLabel>
                          <Select
-                              isReadOnly={Platform.OS === 'android'}
                               name="itemForHold"
                               selectedValue={defaultItem}
                               minWidth={200}
@@ -85,13 +83,15 @@ export const SelectItemHold = (props) => {
                                         <SelectDragIndicatorWrapper>
                                              <SelectDragIndicator />
                                         </SelectDragIndicatorWrapper>
-                                        {_.map(Object.keys(copies), function (item, index, array) {
-                                             let copy = copies[item];
-                                             if (copy.id === defaultItem) {
-                                                  return <SelectItem label={copy.location} value={copy.id} key={copy.id} bgColor={theme['colors']['tertiary']['300']} />;
-                                             }
-                                             return <SelectItem label={copy.location} value={copy.id} key={copy.id} />;
-                                        })}
+                                        <SelectScrollView>
+                                             {_.map(Object.keys(copies), function (item, index, array) {
+                                                  let copy = copies[item];
+                                                  if (copy.id === defaultItem) {
+                                                       return <SelectItem label={copy.location} value={copy.id} key={copy.id} bgColor={theme['colors']['tertiary']['300']} />;
+                                                  }
+                                                  return <SelectItem label={copy.location} value={copy.id} key={copy.id} />;
+                                             })}
+                                        </SelectScrollView>
                                    </SelectContent>
                               </SelectPortal>
                          </Select>

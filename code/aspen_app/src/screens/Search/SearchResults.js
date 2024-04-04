@@ -36,7 +36,7 @@ export const SearchResults = () => {
      const { currentIndex, currentSource, updateCurrentIndex, updateCurrentSource, updateIndexes, updateSources } = React.useContext(SearchContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const url = library.baseUrl;
-     const [paginationLabel, setPaginationLabel] = React.useState('1 of 1');
+     const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
 
      const queryClient = useQueryClient();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
@@ -85,6 +85,13 @@ export const SearchResults = () => {
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
+               if (data.totalPages) {
+                    let tmp = getTermFromDictionary(language, 'page_of_page');
+                    tmp = tmp.replace('%1%', page);
+                    tmp = tmp.replace('%2%', data.totalPages);
+                    console.log(tmp);
+                    setPaginationLabel(tmp);
+               }
                if ((data.totalResults === 1 || data.totalResults === '1') && isScannerSearch) {
                     const result = data.results[0];
                     if (result.key) {
@@ -95,17 +102,6 @@ export const SearchResults = () => {
                               libraryContext: library,
                          });
                     }
-               }
-          },
-     });
-
-     const { data: paginationLabelData, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, term, scope, params, language, currentIndex, currentSource],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page ?? 1, data?.totalPages ?? 1], language, library.baseUrl),
-          enabled: !!data,
-          onSuccess: (data) => {
-               if (!data.includes('%')) {
-                    setPaginationLabel(data);
                }
           },
      });
@@ -193,7 +189,7 @@ export const SearchResults = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
-               {status === 'loading' || isFetching || translationIsFetching ? (
+               {status === 'loading' || isFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
