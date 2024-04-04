@@ -8034,7 +8034,7 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $locationId): array {
+	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
 		if($this->getKohaVersion() >= 23.11) {
 			$item = [];
 			$result = [
@@ -8071,6 +8071,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			} else {
+				require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+				$scoSettings = new AspenLiDASelfCheckSetting();
+				$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocationId);
+
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
 				$sql = "SELECT itemnumber, biblionumber, holdingbranch FROM items WHERE barcode = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
@@ -8078,15 +8082,25 @@ class Koha extends AbstractIlsDriver {
 				if ($lookupItemResult->num_rows == 1) {
 					$itemRow = $lookupItemResult->fetch_assoc();
 					$recordId = $itemRow['itemnumber'];
+					$holdingBranch = $itemRow['holdingbranch'];
 					$checkoutParams = [
 						'patron_id' => (int)$patron->unique_ils_id,
 						'item_id' => (int)$recordId,
 					];
 					$postParams = json_encode($checkoutParams);
 
+					$checkoutLocation = $currentLocationId; // assign checkout to current location logged into (default)
+					if($checkoutLocationSetting == 1) {
+						// assign checkout to user home location
+						$checkoutLocation = $patron->getHomeLocationCode();
+					} else if ($checkoutLocationSetting == 2) {
+						// assign checkout to item location/holding branch
+						$checkoutLocation = $holdingBranch;
+					}
+
 					$this->apiCurlWrapper->addCustomHeaders([
 						'Authorization: Bearer ' . $oAuthToken,
-						'x-koha-library: ' . $locationId,
+						'x-koha-library: ' . $checkoutLocation,
 						'User-Agent: Aspen Discovery',
 						'Accept: */*',
 						'Cache-Control: no-cache',

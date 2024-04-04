@@ -106,7 +106,16 @@ export async function getThemeInfo(url = null) {
 
 const getColorNumber = (index) => (index === 0 ? 50 : index * 100);
 
-const getContrastText = (color) => (chroma.contrast(color, '#ffffff') < 6 ? '#000000' : '#ffffff');
+const getContrastText = (color) => {
+     let ratioOnWhite = chroma.contrast(color, '#ffffff');
+     let ratioOnBlack = chroma.contrast(color, '#000000');
+
+     if (ratioOnBlack > ratioOnWhite) {
+          return '#000000';
+     } else {
+          return '#ffffff';
+     }
+};
 
 function generateSwatches(swatch) {
      const LIGHTNESS_MAP = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05];

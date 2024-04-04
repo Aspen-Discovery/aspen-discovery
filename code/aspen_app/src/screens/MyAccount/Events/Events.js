@@ -32,7 +32,7 @@ export const MyEvents = () => {
      const systemMessagesForScreen = [];
 
      const [filterBy, setFilterBy] = React.useState('upcoming');
-
+     const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
      const [events, updateEvents] = React.useState([]);
 
      React.useLayoutEffect(() => {
@@ -57,14 +57,15 @@ export const MyEvents = () => {
           staleTime: 1000,
           onSuccess: (data) => {
                updateSavedEvents(data.events);
+               if (data.totalPages) {
+                    let tmp = getTermFromDictionary(language, 'page_of_page');
+                    tmp = tmp.replace('%1%', page);
+                    tmp = tmp.replace('%2%', data.totalPages);
+                    console.log(tmp);
+                    setPaginationLabel(tmp);
+               }
           },
           onSettle: (data) => setLoading(false),
-     });
-
-     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, language],
-          queryFn: () => getTranslationsWithValues('page_of_page', [page, data.totalPages], language, library.baseUrl),
-          enabled: !!data,
      });
 
      const getActionButtons = () => {
@@ -177,7 +178,7 @@ export const MyEvents = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {getActionButtons()}
-               {status === 'loading' || isFetching || translationIsFetching ? (
+               {status === 'loading' || isFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')

@@ -2668,50 +2668,6 @@ class SearchAPI extends AbstractAPI {
 		return $response;
 	}
 
-	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		if (isset($_REQUEST['username'])) {
-			$username = $_REQUEST['username'];
-		} else {
-			$username = '';
-		}
-		if (isset($_REQUEST['password'])) {
-			$password = $_REQUEST['password'];
-		} else {
-			$password = '';
-		}
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return [
-			$username,
-			$password,
-		];
-	}
-
-	protected function getUserForApiCall() {
-		$user = false;
-		[$username, $password] = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user !== false && $user->source == 'admin') {
-			return false;
-		}
-		return $user;
-	}
-
 	/** @noinspection PhpUnused */
 	function getAppSearchResults(): array {
 		global $configArray;
@@ -3283,9 +3239,55 @@ class SearchAPI extends AbstractAPI {
 					$items[$recordKey]['language'] = $record['language'][0];
 					$items[$recordKey]['summary'] = $record['display_description'];
 					$items[$recordKey]['itemList'] = [];
+					$items[$recordKey]['lastCheckOut'] = null;
+					$items[$recordKey]['appearsOnLists'] = [];
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
 					if ($groupedWorkDriver->isValid()) {
+						$user = $this->getUserForApiCall();
+						if ($user && !($user instanceof AspenError)) {
+							require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+							$readingHistoryEntry = new ReadingHistoryEntry();
+							$readingHistoryEntry->userId = $user->id;
+							$readingHistoryEntry->deleted = 0;
+							$readingHistoryEntry->groupedWorkPermanentId = $groupedWorkDriver->getPermanentId();
+							$readingHistoryEntry->groupBy('groupedWorkPermanentId');
+							$readingHistoryEntry->selectAdd();
+							$readingHistoryEntry->selectAdd('MAX(checkOutDate) as checkOutDate');
+							if ($readingHistoryEntry->find(true)) {
+								$items[$recordKey]['lastCheckOut'] = $readingHistoryEntry->checkOutDate;
+							}
+
+							$userLists = [];
+							require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+							require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+							$userListEntry = new UserListEntry();
+							$userListEntry->source = 'GroupedWork';
+							$userListEntry->sourceId = $groupedWorkDriver->getPermanentId();
+							$userListEntry->find();
+							while ($userListEntry->fetch()) {
+								$userList = new UserList();
+								$userList->id = $userListEntry->listId;
+								if ($userList->find(true))  {
+									$okToShow = false;
+									$key = $userList->id;
+									if (!$userList->deleted) {
+										if($user->id == $userList->user_id || ($userList->public == 1 && $userList->searchable == 1)) {
+											$okToShow = true;
+										}
+									}
+
+									if ($okToShow) {
+										$userLists[$key] = [
+											'id' => $userList->id,
+											'title' => $userList->title,
+										];
+									}
+								}
+							}
+							ksort($userLists);
+							$items[$recordKey]['appearsOnLists'] = $userLists;
+						}
 						$i = 0;
 						$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
 						foreach ($relatedManifestations as $relatedManifestation) {

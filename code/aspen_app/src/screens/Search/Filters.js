@@ -28,7 +28,6 @@ export const FiltersScreen = () => {
 
      console.log('currentIndex: ' + currentIndex);
      console.log('currentSource: ' + currentSource);
-     console.log(SEARCH.availableFacets);
 
      let facets = SEARCH.availableFacets ? Object.keys(SEARCH.availableFacets) : [];
      let pendingFilters = SEARCH.pendingFilters ?? [];

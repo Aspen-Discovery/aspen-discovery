@@ -244,13 +244,32 @@ export const MyHolds = () => {
                showSelectOptions = true;
           }
 
+          let pendingSortLength = 8 * sortBy.title.length + 80;
+          if (pendingSortMethod === 'author') {
+               pendingSortLength = 8 * sortBy.author.length + 80;
+          } else if (pendingSortMethod === 'format') {
+               pendingSortLength = 8 * sortBy.format.length + 80;
+          } else if (pendingSortMethod === 'status') {
+               pendingSortLength = 8 * sortBy.status.length + 80;
+          } else if (pendingSortMethod === 'placed') {
+               pendingSortLength = 8 * sortBy.date_placed.length + 80;
+          } else if (pendingSortMethod === 'position') {
+               pendingSortLength = 8 * sortBy.position.length + 80;
+          } else if (pendingSortMethod === 'location') {
+               pendingSortLength = 8 * sortBy.pickup_location.length + 80;
+          } else if (pendingSortMethod === 'libraryAccount') {
+               pendingSortLength = 8 * sortBy.library_account.length + 80;
+          } else if (pendingSortMethod === 'sortTitle') {
+               pendingSortLength = 8 * sortBy.title.length + 80;
+          }
+
           if (section === 'pending') {
                if (showSelectOptions) {
                     return (
                          <Box safeArea={2}>
                               <ScrollView horizontal>
                                    <HStack space={2}>
-                                        <FormControl w={150}>
+                                        <FormControl w={pendingSortLength}>
                                              <Select
                                                   isReadOnly={Platform.OS === 'android'}
                                                   name="sortBy"
@@ -285,7 +304,7 @@ export const MyHolds = () => {
                     <Box safeArea={2}>
                          <ScrollView horizontal>
                               <HStack space={2}>
-                                   <FormControl w={150}>
+                                   <FormControl w={pendingSortLength}>
                                         <Select
                                              isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
@@ -313,12 +332,33 @@ export const MyHolds = () => {
                );
           }
 
+          let readySortLength = 8 * sortBy.expiration.length + 80;
+          if (readySortMethod === 'author') {
+               readySortLength = 8 * sortBy.author.length + 80;
+          } else if (readySortMethod === 'format') {
+               readySortLength = 8 * sortBy.format.length + 80;
+          } else if (readySortMethod === 'status') {
+               readySortLength = 8 * sortBy.status.length + 80;
+          } else if (readySortMethod === 'placed') {
+               readySortLength = 8 * sortBy.date_placed.length + 80;
+          } else if (readySortMethod === 'position') {
+               readySortLength = 8 * sortBy.position.length + 80;
+          } else if (readySortMethod === 'location') {
+               readySortLength = 8 * sortBy.pickup_location.length + 80;
+          } else if (readySortMethod === 'libraryAccount') {
+               readySortLength = 8 * sortBy.library_account.length + 80;
+          } else if (readySortMethod === 'sortTitle') {
+               readySortLength = 8 * sortBy.title.length + 80;
+          } else if (readySortMethod === 'expire') {
+               readySortLength = 8 * sortBy.expiration.length + 80;
+          }
+
           if (section === 'ready') {
                return (
                     <Box safeArea={2}>
                          <ScrollView horizontal>
                               <HStack space={2}>
-                                   <FormControl w={150}>
+                                   <FormControl w={readySortLength}>
                                         <Select
                                              isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
@@ -366,7 +406,7 @@ export const MyHolds = () => {
                                    }}>
                                    {getTermFromDictionary(language, 'holds_reload')}
                               </Button>
-                              <FormControl w={175}>
+                              <FormControl w={250}>
                                    <Select
                                         isReadOnly={Platform.OS === 'android'}
                                         name="holdSource"

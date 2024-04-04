@@ -1166,10 +1166,19 @@ class ItemAPI extends AbstractAPI {
 			/** @var File_MARC_Control_Field $oclcNumber */
 			$oclcNumber = $relatedRecordDriver->getOCLCNumber();
 
+			$actionButtons = [];
+			$actions = $relatedVariation->getActions();
+			foreach ($actions as $key => $action) {
+				$actionButtons[$key]['id'] = $action['id'] . '_' . $key;
+				$actionButtons[$key]['type'] = $action['type'];
+				$actionButtons[$key]['title'] = $action['title'];
+				$actionButtons[$key]['requireLogin'] = $action['requireLogin'];
+			}
+
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
 			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
-			$variations[$relatedVariation->label]['actions'] = $relatedVariation->getActions();
+			$variations[$relatedVariation->label]['actions'] = $actionButtons;
 			$variations[$relatedVariation->label]['variationId'] = $relatedVariation->databaseId;
 			$variations[$relatedVariation->label]['holdType'] = $holdType;
 			$variations[$relatedVariation->label]['statusIndicator'] = [
@@ -1272,7 +1281,17 @@ class ItemAPI extends AbstractAPI {
 							'showItsHere' => (int)$library->showItsHere,
 							'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 						];
-						$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
+
+						$buttons = [];
+						$actionButtons = $relatedRecord->getActions();
+						foreach ($actionButtons as $key => $actionButton) {
+							$buttons[$key]['id'] = $actionButton['id'] . '_' . $key;
+							$buttons[$key]['type'] = $actionButton['type'];
+							$buttons[$key]['title'] = $actionButton['title'];
+							$buttons[$key]['requireLogin'] = $actionButton['requireLogin'];
+						}
+
+						$records[$relatedRecord->id]['actions'] = $buttons;
 						//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
 						if ($source == 'hoopla') {

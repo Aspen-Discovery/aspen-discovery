@@ -1,4 +1,4 @@
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Badge, BadgeText, FlatList, Heading, Select, VStack, Button, ButtonGroup, ButtonIcon, ButtonText, Box, Center, HStack, Text, SafeAreaView, ScrollView, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon } from '@gluestack-ui/themed';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Badge, BadgeText, FlatList, Heading, Select, VStack, Button, ButtonGroup, ButtonIcon, ButtonText, Box, Center, HStack, Text, SafeAreaView, ScrollView, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, SelectScrollView } from '@gluestack-ui/themed';
 import { MapPinIcon } from 'lucide-react-native';
 import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -219,9 +219,11 @@ export const Variations = (props) => {
                                                                  <SelectDragIndicatorWrapper>
                                                                       <SelectDragIndicator />
                                                                  </SelectDragIndicatorWrapper>
-                                                                 {_.map(holdSelectItemResponse.items, function (item, index, array) {
-                                                                      return <SelectItem label={item.callNumber} value={item.itemNumber} key={index} />;
-                                                                 })}
+                                                                 <SelectScrollView>
+                                                                      {_.map(holdSelectItemResponse.items, function (item, index, array) {
+                                                                           return <SelectItem label={item.callNumber} value={item.itemNumber} key={index} />;
+                                                                      })}
+                                                                 </SelectScrollView>
                                                             </SelectContent>
                                                        </SelectPortal>
                                                   </Select>

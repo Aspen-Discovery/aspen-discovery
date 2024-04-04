@@ -7,6 +7,7 @@ class AspenLiDASelfCheckSetting extends DataObject {
 	public $id;
 	public $name;
 	public $isEnabled;
+	public $checkoutLocation;
 
 	private $_locations;
 	private $_barcodeStyles;
@@ -25,6 +26,12 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		}
 
 		$allBarcodeStyles = AspenLiDASelfCheckBarcode::getObjectStructure($context);
+
+		$checkout_location_options = [
+			'0' => 'Current Location User is Logged Into',
+			'1' => 'User Home Location',
+			'2' => 'Item Location (Koha 23.11+ Only)'
+		];
 
 		$structure = [
 			'id' => [
@@ -46,6 +53,14 @@ class AspenLiDASelfCheckSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Enable Self-Check',
 				'description' => 'Whether or not patrons can self-check using Aspen LiDA',
+				'required' => false,
+			],
+			'checkoutLocation' => [
+				'property' => 'checkoutLocation',
+				'type' => 'enum',
+				'values' => $checkout_location_options,
+				'label' => 'Assign Checkouts To',
+				'description' => 'Location where a checkout should be assigned',
 				'required' => false,
 			],
 			'barcodeStyles' => [
@@ -185,6 +200,20 @@ class AspenLiDASelfCheckSetting extends DataObject {
 			$this->saveOneToManyOptions($this->_barcodeStyles, 'selfCheckSettingsId');
 			unset($this->_barcodeStyles);
 		}
+	}
+
+	public function getCheckoutLocationSetting($locationId) {
+		$location = new Location();
+		$location->code = $locationId;
+		if ($location->find(true)) {
+			$scoSettings = new AspenLiDASelfCheckSetting();
+			$scoSettings->id = $location->lidaSelfCheckSettingId;
+			if ($scoSettings->find(true)) {
+				return $scoSettings->checkoutLocation;
+			}
+		}
+
+		return false;
 	}
 
 	function getEditLink($context): string {

@@ -31,19 +31,16 @@ export const MyHold = (props) => {
      const [holdPosition, setHoldPosition] = React.useState(null);
 
      React.useEffect(() => {
-          async function fetchTranslations() {
-               if (hold.holdQueueLength) {
-                    await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then((result) => {
-                         let term = result;
-                         if (!term.includes('%')) {
-                              setUsesHoldPosition(true);
-                              setHoldPosition(term);
-                         }
-                    });
+          if (hold.holdQueueLength) {
+               let tmp = getTermFromDictionary(language, 'hold_position_with_queue');
+               if (hold.holdQueueLength && hold.position) {
+                    tmp = tmp.replace('%1%', hold.position);
+                    tmp = tmp.replace('%2%', hold.holdQueueLength);
+                    console.log(tmp);
+                    setUsesHoldPosition(true);
+                    setHoldPosition(tmp);
                }
           }
-
-          fetchTranslations();
      }, [language]);
 
      if (hold.canFreeze === true) {

@@ -2384,6 +2384,14 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 'default',
 							],
+							'institutionCode' => [
+								'property' => 'institutionCode',
+								'type' => 'text',
+								'label' => 'Institution Code',
+								'description' => 'The institution code for self registration (CarlX Only).',
+								'hideInLists' => true,
+								'default' => '',
+							],
 						],
 					],
 					'thirdPartyRegistrationSection' => [
