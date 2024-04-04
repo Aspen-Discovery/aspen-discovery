@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectCollection.php';
 
 class PalaceProjectSetting extends DataObject {
 	public $__table = 'palace_project_settings';    // table name
@@ -12,11 +13,15 @@ class PalaceProjectSetting extends DataObject {
 	public $lastUpdateOfAllRecords;
 
 	private $_scopes;
+	private $_collections;
 	protected $_instructionsForUsage;
 
 	public static function getObjectStructure($context = ''): array {
 		$palaceProjectScopeStructure = PalaceProjectScope::getObjectStructure($context);
 		unset($palaceProjectScopeStructure['settingId']);
+
+		$palaceProjectCollectionStructure = PalaceProjectCollection::getObjectStructure($context);
+		unset($palaceProjectCollectionStructure['settingId']);
 
 		return [
 			'id' => [
@@ -91,6 +96,23 @@ class PalaceProjectSetting extends DataObject {
 				'canDelete' => true,
 				'additionalOneToManyActions' => [],
 			],
+			'collections' => [
+				'property' => 'collections',
+				'type' => 'oneToMany',
+				'label' => 'Collections',
+				'description' => 'A list of collections for the settings',
+				'keyThis' => 'id',
+				'keyOther' => 'settingId',
+				'subObjectType' => 'PalaceProjectCollection',
+				'structure' => $palaceProjectCollectionStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => true,
+				'canAddNew' => false,
+				'canDelete' => false,
+				'additionalOneToManyActions' => [],
+			]
 		];
 	}
 
@@ -143,6 +165,17 @@ class PalaceProjectSetting extends DataObject {
 				}
 			}
 			return $this->_scopes;
+		} elseif ($name == "collections") {
+			if (!isset($this->_collections) && $this->id) {
+				$this->_collections = [];
+				$collection = new PalaceProjectCollection();
+				$collection->settingId = $this->id;
+				$collection->find();
+				while ($collection->fetch()) {
+					$this->_collections[$collection->id] = clone($collection);
+				}
+			}
+			return $this->_collections;
 		} else {
 			return parent::__get($name);
 		}
@@ -151,6 +184,8 @@ class PalaceProjectSetting extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "scopes") {
 			$this->_scopes = $value;
+		} elseif ($name == "collections") {
+			$this->_collections = $value;
 		} else {
 			parent::__set($name, $value);
 		}
