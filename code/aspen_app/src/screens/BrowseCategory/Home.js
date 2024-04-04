@@ -54,6 +54,7 @@ export const DiscoverHomeScreen = () => {
      const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
      const { theme, mode, textColor } = React.useContext(ThemeContext);
      const [unlimited, setUnlimitedCategories] = React.useState(false);
+     const [numFailedSessions, setNumFailedSessions] = React.useState(0);
 
      navigation.setOptions({
           headerLeft: () => {
@@ -243,7 +244,13 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
                if (data === false || data === 'false') {
-                    setInvalidSession(true);
+                    setNumFailedSessions(numFailedSessions + 1);
+                    if (numFailedSessions >= 2) {
+                         setInvalidSession(true);
+                    }
+                    setInvalidSession(false);
+               } else {
+                    setNumFailedSessions(0);
                }
           },
      });
