@@ -74,7 +74,7 @@ public class IndexingUtils {
 				hooplaScope.setName(hooplaScopesRS.getString("name"));
 				hooplaScope.setExcludeTitlesWithCopiesFromOtherVendors(hooplaScopesRS.getInt("excludeTitlesWithCopiesFromOtherVendors"));
 				hooplaScope.setIncludeEBooks(hooplaScopesRS.getBoolean("includeEBooks"));
-				hooplaScope.setMaxCostPerCheckoutEBooks(hooplaScopesRS.getLong("maxCostPerCheckoutEBooks"));
+				hooplaScope.setMaxCostPerCheckoutEBooks(hooplaScopesRS.getFloat("maxCostPerCheckoutEBooks"));
 				hooplaScope.setIncludeEComics(hooplaScopesRS.getBoolean("includeEComics"));
 				hooplaScope.setMaxCostPerCheckoutEComics(hooplaScopesRS.getFloat("maxCostPerCheckoutEComics"));
 				hooplaScope.setIncludeEAudiobook(hooplaScopesRS.getBoolean("includeEAudiobook"));

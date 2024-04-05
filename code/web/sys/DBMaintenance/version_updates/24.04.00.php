@@ -80,7 +80,19 @@ function getUpdates24_04_00(): array {
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN institutionCode varchar(100) default ''",
 			],
-		],
+		],//institution_code
+		'include_children_kids' => [
+			'title' => 'Rename includeChildren to includeKids for indexing',
+			'description' => 'Rename includeChildren to includeKids for indexing',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE axis360_scopes DROP COLUMN includeChildren',
+				'ALTER TABLE axis360_scopes ADD COLUMN includeKids TINYINT DEFAULT 1',
+				'ALTER TABLE palace_project_scopes DROP COLUMN includeChildren',
+				'ALTER TABLE palace_project_scopes ADD COLUMN includeKids TINYINT DEFAULT 1',
+			]
+		], //include_children_kids
+
 		//lucas - Theke
 
 		//alexander - PTFS Europe
