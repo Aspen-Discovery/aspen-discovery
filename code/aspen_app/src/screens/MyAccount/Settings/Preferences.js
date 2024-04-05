@@ -52,12 +52,6 @@ export const PreferencesScreen = () => {
                                         <Text fontWeight="500">{getTermFromDictionary(language, 'manage_browse_categories')}</Text>
                                    </HStack>
                               </Pressable>
-                              <Pressable py="3" onPress={() => navigate('MyDevice_Notifications')}>
-                                   <HStack space="1" alignItems="center">
-                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                                        <Text fontWeight="500">{getTermFromDictionary(language, 'notifications')}</Text>
-                                   </HStack>
-                              </Pressable>
                               <Pressable py="3" onPress={() => navigate('PermissionDashboard')}>
                                    <HStack space="1" alignItems="center">
                                         <Icon as={MaterialIcons} name="chevron-right" size="7" />

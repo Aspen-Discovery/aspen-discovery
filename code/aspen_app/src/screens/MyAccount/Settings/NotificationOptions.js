@@ -150,7 +150,7 @@ export const Settings_NotificationOptions = () => {
                                    toggleSwitch();
                                    updateAspenToken().then((r) => console.log(r));
                               }}
-                              isChecked={toggled}
+                              defaultValue={toggled}
                               isDisabled={allowNotifications}
                          />
                     </HStack>
@@ -217,6 +217,7 @@ const EnableAllNotifications = (data) => {
                               console.log(r);
                          });
                     }}
+                    defaultValue={toggled}
                     isChecked={toggled}
                />
           </HStack>

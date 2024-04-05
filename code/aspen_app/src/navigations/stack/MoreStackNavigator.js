@@ -56,7 +56,6 @@ const MoreStackNavigator = () => {
                     <Stack.Screen name="MyPreferences_ManageBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="MyPreferences_Language" component={Settings_LanguageScreen} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="MyPreferences_Appearance" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
-                    <Stack.Screen name="MyDevice_Notifications" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                     <Stack.Screen name="MyDevice_Support" component={SupportScreen} options={{ title: getTermFromDictionary(language, 'support') }} />
                </Stack.Group>
                <Stack.Group>
