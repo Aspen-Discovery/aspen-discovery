@@ -3,4 +3,5 @@
 /dataSources/
 dataSources.local.xml
 dataSources.xml
-/code/aspen_app/.tmp
+/code/aspen_app/.tmp# GitHub Copilot persisted chat sessions
+/copilot/chatSessions

@@ -881,6 +881,9 @@ class BookCoverProcessor {
 			// Display the image:
 			$this->returnImage($finalFile);
 
+            // Change group to aspen_apache to ensure Aspen cron can dispose the file properly
+            chgrp($finalFile, 'aspen_apache');
+
 			$this->logTime("Finished processing image url");
 
 			$this->setBookCoverInfo($source, $width, $height);

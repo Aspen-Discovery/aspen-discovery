@@ -446,6 +446,7 @@ class Nashville extends CarlX {
 				left join location_v2 l on irb.location = l.locnumber
 				left join media_v2 m on irb.media = m.mednumber
 				left join systemitemcodes_v2 c on irb.status = c.code
+				where c.type not in ('A','D') -- exclude Acquisitions Dummy and Circulation Dummy status types
 			)
 			select
 				*
