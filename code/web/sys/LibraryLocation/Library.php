@@ -2331,7 +2331,7 @@ class Library extends DataObject {
 								'maxLength' => 2,
 								'label' => 'Minimum Age',
 								'description' => 'Minimum age required for self-registration.',
-								'default' => '',
+								'default' => 0,
 							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
