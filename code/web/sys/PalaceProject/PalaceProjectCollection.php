@@ -8,6 +8,7 @@ class PalaceProjectCollection extends DataObject {
 	public $palaceProjectName;
 	public $displayName;
 	public $hasCirculation;
+	public $includeInAspen;
 	public $lastIndexed;
 
 	public function getUniquenessFields(): array {

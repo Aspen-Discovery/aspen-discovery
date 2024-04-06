@@ -358,7 +358,7 @@ public class PalaceProjectExportMain {
 								}
 							}
 						}else{
-							//TODO: Remove all currently indexed porjects from solr
+							//TODO: Remove all currently indexed products from solr
 						}
 					}
 				}

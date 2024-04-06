@@ -215,6 +215,7 @@ public class PalaceProjectProcessor {
 					groupedWork.addTopic(generes);
 				}
 				if (audience == null) {
+					audience = "Unknown";
 					groupedWork.addTargetAudience("Unknown");
 					groupedWork.addTargetAudienceFull("Unknown");
 				}else {
@@ -281,11 +282,28 @@ public class PalaceProjectProcessor {
 				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 				itemInfo.setDateAdded(dateAdded);
 
+				boolean isAdult = audience.equals("Adult");
+				boolean isTeen = audience.equals("Young Adult");
+				boolean isKids = audience.equals("Juvenile");
 				for (Scope scope : indexer.getScopes()) {
 					boolean okToAdd = false;
 					PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
 					if (palaceProjectScope != null) {
 						okToAdd = true;
+					}
+					if (okToAdd) {
+						//Check based on the audience as well
+						okToAdd = false;
+						//noinspection RedundantIfStatement
+						if (isAdult && palaceProjectScope.isIncludeAdult()) {
+							okToAdd = true;
+						}
+						if (isTeen && palaceProjectScope.isIncludeTeen()) {
+							okToAdd = true;
+						}
+						if (isKids && palaceProjectScope.isIncludeKids()) {
+							okToAdd = true;
+						}
 					}
 					if (okToAdd) {
 						ScopingInfo scopingInfo = itemInfo.addScope(scope);

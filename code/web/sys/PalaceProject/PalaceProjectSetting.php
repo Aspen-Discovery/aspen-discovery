@@ -124,6 +124,7 @@ class PalaceProjectSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
+			$this->saveCollections();
 			$this->saveTextBlockTranslations('instructionsForUsage');
 		}
 		return true;
@@ -150,6 +151,13 @@ class PalaceProjectSetting extends DataObject {
 		if (isset ($this->_scopes) && is_array($this->_scopes)) {
 			$this->saveOneToManyOptions($this->_scopes, 'settingId');
 			unset($this->_scopes);
+		}
+	}
+
+	public function saveCollections() {
+		if (isset ($this->_collections) && is_array($this->_collections)) {
+			$this->saveOneToManyOptions($this->_collections, 'settingId');
+			unset($this->_collections);
 		}
 	}
 
