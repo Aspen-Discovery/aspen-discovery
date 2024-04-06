@@ -1169,10 +1169,10 @@ class ItemAPI extends AbstractAPI {
 			$actionButtons = [];
 			$actions = $relatedVariation->getActions();
 			foreach ($actions as $key => $action) {
-				$actionButtons[$key]['id'] = $action['id'] . '_' . $key;
+				$actionButtons[$key]['id'] = $key;
 				$actionButtons[$key]['type'] = $action['type'];
 				$actionButtons[$key]['title'] = $action['title'];
-				$actionButtons[$key]['requireLogin'] = $action['requireLogin'];
+				$actionButtons[$key]['requireLogin'] = $action['requireLogin'] ?? false;
 			}
 
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;

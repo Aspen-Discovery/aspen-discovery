@@ -436,6 +436,7 @@ class WebsiteIndexer {
 					}
 				} else{
 					logger.info("Got error processing the page");
+					logEntry.addNote("Received " + connection.response().statusCode() + " error code");
 					WebPage existingPage = existingPages.get(pageToProcess);
 					if (existingPage != null && !existingPage.isDeleted()){
 						deletePageStmt.setString(1, "Received " + connection.response().statusCode() + " error code");

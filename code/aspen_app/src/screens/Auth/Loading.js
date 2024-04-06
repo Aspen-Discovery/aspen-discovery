@@ -52,6 +52,7 @@ export const LoadingScreen = () => {
      const { theme, updateTheme, updateColorMode } = React.useContext(ThemeContext);
 
      const [loadingText, setLoadingText] = React.useState('');
+     const [loadingTheme, setLoadingTheme] = React.useState(true);
 
      React.useEffect(() => {
           const unsubscribe = navigation.addListener('focus', async () => {
@@ -74,6 +75,11 @@ export const LoadingScreen = () => {
                     // so just set it to the default: light
                     updateColorMode('light');
                }
+
+               await createGlueTheme(LIBRARY.url).then((result) => {
+                    updateTheme(result);
+                    setLoadingTheme(false);
+               });
           });
 
           // Return the function to unsubscribe from the event so it gets removed on unmount
@@ -81,7 +87,7 @@ export const LoadingScreen = () => {
      }, [navigation]);
 
      const { status: catalogStatusQueryStatus, data: catalogStatusQuery } = useQuery(['catalog_status', LIBRARY.url], () => getCatalogStatus(LIBRARY.url), {
-          enabled: !!LIBRARY.url,
+          enabled: !!LIBRARY.url && !loadingTheme,
           onSuccess: (data) => {
                updateCatalogStatus(data);
           },
@@ -100,13 +106,6 @@ export const LoadingScreen = () => {
           enabled: !!translationQuery,
           onSuccess: (data) => {
                updateLanguages(data);
-          },
-     });
-
-     const { status: themeQueryStatus, data: themeQuery } = useQuery(['theme', LIBRARY.url], () => createGlueTheme(LIBRARY.url), {
-          enabled: !!languagesQuery,
-          onSuccess: (data) => {
-               updateTheme(data);
           },
      });
 
@@ -138,7 +137,7 @@ export const LoadingScreen = () => {
      }, []);
 
      const { status: librarySystemQueryStatus, data: librarySystemQuery } = useQuery(['library_system', LIBRARY.url], () => getLibraryInfo(LIBRARY.url), {
-          enabled: !!themeQuery,
+          enabled: !!languagesQuery,
           onSuccess: (data) => {
                setProgress(20);
                updateLibrary(data);
@@ -238,7 +237,7 @@ export const LoadingScreen = () => {
           return <CatalogOffline />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading' || themeQueryStatus === 'loading') {
+     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -253,7 +252,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success' || themeQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);

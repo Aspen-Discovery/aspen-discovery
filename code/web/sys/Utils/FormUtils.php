@@ -14,4 +14,19 @@ class FormUtils {
 		}
 		return $modifiableFieldKeys;
 	}
+
+	static function getRequiredFields ($formStructure) : array {
+		$requiredFields = [];
+		foreach ($formStructure as $field){
+			if ($field['type'] == 'section') {
+				$sectionFieldKeys = FormUtils::getRequiredFields($field['properties']);
+				$requiredFields = array_merge($requiredFields, $sectionFieldKeys);
+			}else if ($field['type'] != 'hidden') {
+				if (!empty($field['required'])) {
+					$requiredFields[$field['property']] = $field;
+				}
+			}
+		}
+		return $requiredFields;
+	}
 }

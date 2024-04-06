@@ -1,9 +1,10 @@
 import { ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable, Icon, Text, Center, Button, ButtonText, ButtonIcon, ButtonGroup, Heading, Box, Accordion, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AccordionItem, AccordionContent, AccordionContentText, AccordionHeader, AccordionTrigger, AccordionTitleText, AccordionIcon } from '@gluestack-ui/themed';
+import { Camera } from 'expo-camera';
 import React from 'react';
 import * as Calendar from 'expo-calendar';
 import { useRoute } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { LanguageContext, ThemeContext } from '../../../../context/initialContext';
 import { navigate } from '../../../../helpers/RootNavigator';
@@ -16,11 +17,28 @@ export const CalendarPermissionStatus = () => {
      const { colorMode, textColor } = React.useContext(ThemeContext);
      const [permissionStatus, setPermissionStatus] = React.useState(false);
 
+     const appState = React.useRef(AppState.currentState);
+     const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
+
      React.useEffect(() => {
           (async () => {
                const { status } = await Calendar.getCalendarPermissionsAsync();
                setPermissionStatus(status === 'granted');
           })();
+
+          const subscription = AppState.addEventListener('change', async (nextAppState) => {
+               if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+                    const { status } = await Calendar.getCalendarPermissionsAsync();
+                    setPermissionStatus(status === 'granted');
+               }
+
+               appState.current = nextAppState;
+               setAppStateVisible(appState.current);
+          });
+
+          return () => {
+               subscription.remove();
+          };
      }, []);
 
      return (
@@ -40,7 +58,7 @@ export const CalendarPermissionStatus = () => {
 
 export const CalendarPermissionDescription = () => {
      const { colorMode, textColor } = React.useContext(ThemeContext);
-     const permissionStatus = useRoute().params?.permissionStatus ?? false;
+     const [permissionStatus, setPermissionStatus] = React.useState(useRoute().params?.permissionStatus ?? false);
      const { language } = React.useContext(LanguageContext);
 
      return (
@@ -61,7 +79,7 @@ export const CalendarPermissionDescription = () => {
                          </Text>
                          <CalendarPermissionUsage />
                     </Box>
-                    <CalendarPermissionUpdate />
+                    <CalendarPermissionUpdate permissionStatus={permissionStatus} setPermissionStatus={setPermissionStatus} />
                </VStack>
           </ScrollView>
      );
@@ -96,14 +114,43 @@ const CalendarPermissionUsage = () => {
      );
 };
 
-const CalendarPermissionUpdate = () => {
+const CalendarPermissionUpdate = (payload) => {
      const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      const [showAlertDialog, setShowAlertDialog] = React.useState(false);
+     const [manuallyPromptPermission, setManuallyPromptPermission] = React.useState(false);
+     const setPermissionStatus = payload.setPermissionStatus;
+     const permissionStatus = payload.permissionStatus;
+
+     const manuallyRequestPermission = async () => {
+          await Calendar.requestCalendarPermissionsAsync().then(async () => {
+               setManuallyPromptPermission(false);
+               const { status } = await Calendar.getCalendarPermissionsAsync();
+               setPermissionStatus(status === 'granted');
+          });
+     };
+
+     React.useEffect(() => {
+          (async () => {
+               const { status } = await Calendar.getCalendarPermissionsAsync();
+               setPermissionStatus(status === 'granted');
+               if (status === 'undetermined') {
+                    setManuallyPromptPermission(true);
+               }
+          })();
+     }, []);
 
      return (
           <Center>
-               <Button onPress={() => setShowAlertDialog(true)} bgColor={theme['colors']['primary']['500']}>
+               <Button
+                    onPress={async () => {
+                         if (manuallyPromptPermission) {
+                              await manuallyRequestPermission();
+                         } else {
+                              setShowAlertDialog(true);
+                         }
+                    }}
+                    bgColor={theme['colors']['primary']['500']}>
                     <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'update_device_settings')}</ButtonText>
                </Button>
                <AlertDialog
