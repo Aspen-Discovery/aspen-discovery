@@ -5,12 +5,17 @@ import _ from 'lodash';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectItemHold = (props) => {
-     const { id, data, item, setItem, holdType, setHoldType, showModal, holdTypeForFormat, language, url, textColor, theme } = props;
+     const { id, data, item, setItem, setHoldType, showModal, holdTypeForFormat, language, url, textColor, theme } = props;
 
+     let holdType = props.holdType;
      let copies = data.copies;
      let copyKeys = Object.keys(copies);
      let key = copyKeys[0];
      let defaultItem = copies[key].id;
+
+     if (holdType === 'either') {
+          holdType = 'default';
+     }
 
      if (item) {
           defaultItem = item;
