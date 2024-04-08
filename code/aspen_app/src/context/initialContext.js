@@ -251,10 +251,16 @@ export const LibrarySystemProvider = ({ children }) => {
      const updateCatalogStatus = (data) => {
           if (data.status) {
                setCatalogStatus(data.status);
+               console.log('updated catalog status');
+          } else {
+               setCatalogStatus(0);
           }
 
           if (data.message) {
                setCatalogStatusMessage(data.message);
+               console.log('updated catalog status message');
+          } else {
+               setCatalogStatusMessage('');
           }
      };
 

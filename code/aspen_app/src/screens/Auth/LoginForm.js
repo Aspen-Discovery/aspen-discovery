@@ -67,10 +67,14 @@ export const GetLoginForm = (props) => {
      }, [navigation, barcode]);
 
      const initialValidation = async () => {
+          setLoginError(false);
+          setLoginErrorMessage('');
+          updateCatalogStatus({
+               message: null,
+               status: 0,
+          });
           const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
           if (result.success) {
-               setLoginError(false);
-               setLoginErrorMessage('');
                const version = formatDiscoveryVersion(result.library.discoveryVersion);
 
                // check if catalog is in offline mode
@@ -95,7 +99,10 @@ export const GetLoginForm = (props) => {
                          } else {
                               console.log('catalog online');
                               console.log(catalogStatus);
-                              updateCatalogStatus(currentStatus);
+                              updateCatalogStatus({
+                                   status: 0,
+                                   message: null,
+                              });
                          }
                     }
                }

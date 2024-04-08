@@ -198,7 +198,6 @@ export async function getCatalogStatus(url = null) {
      });
      const response = await api.get('/SystemAPI?method=getCatalogStatus');
      if (response.ok) {
-          console.log('Checked catalog status at Loading');
           if (response?.data?.result) {
                let catalogMessage = null;
                if (response?.data?.result?.api?.message) {
