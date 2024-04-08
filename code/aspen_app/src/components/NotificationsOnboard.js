@@ -88,7 +88,7 @@ export const NotificationsOnboard = (props) => {
                                    colorScheme="danger"
                                    onPress={() => {
                                         setIsLoading(true);
-                                        onClose().then(() => navigateStack('MoreTab', 'PermissionNotificationDescription', {}));
+                                        onClose().then(() => navigateStack('MoreTab', 'PermissionNotificationDescription', { prevRoute: 'notifications_onboard' }));
                                    }}>
                                    {onboardingButton}
                               </Button>

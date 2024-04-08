@@ -503,7 +503,11 @@ export async function addLinkedAccount(username = '', password = '', url, langua
                if (status !== true) {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
+                    try {
+                         popAlert(response.data.result.title, response.data.result.message, 'true');
+                    } catch (e) {
+                         console.log(e);
+                    }
                }
           }
           return status;
@@ -517,8 +521,9 @@ export async function addLinkedAccount(username = '', password = '', url, langua
  * Remove an account that the user has created a link to
  * @param {string} patronToRemove
  * @param {string} url
+ * @param {string} language
  **/
-export async function removeLinkedAccount(patronToRemove, url) {
+export async function removeLinkedAccount(patronToRemove, url, language) {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -527,6 +532,7 @@ export async function removeLinkedAccount(patronToRemove, url) {
           auth: createAuthTokens(),
           params: {
                idToRemove: patronToRemove,
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=removeAccountLink', postBody);
@@ -537,7 +543,11 @@ export async function removeLinkedAccount(patronToRemove, url) {
                if (status !== true) {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
-                    popAlert(response.data.result.title, response.data.result.message, 'true');
+                    try {
+                         popAlert(response.data.result.title, response.data.result.message, 'true');
+                    } catch (e) {
+                         console.log(e);
+                    }
                }
           }
           return status;

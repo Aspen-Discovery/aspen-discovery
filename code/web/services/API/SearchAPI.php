@@ -2339,6 +2339,8 @@ class SearchAPI extends AbstractAPI {
 			]),
 		];
 
+		$items = [];
+
 		if (strpos($thisId, "system_saved_searches") !== false) {
 			if ($id) {
 				$result = $this->getSavedSearchBrowseCategoryResults($pageSize, $id, $appUser);
@@ -2494,8 +2496,6 @@ class SearchAPI extends AbstractAPI {
 
 						// Shutdown the search object
 						$searchObject->close();
-
-						$items = [];
 						foreach ($records as $recordKey => $record) {
 							if($browseCategory->source === 'Events') {
 								if(str_starts_with($record['id'], 'lc')) {
