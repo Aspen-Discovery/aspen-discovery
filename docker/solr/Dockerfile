@@ -19,7 +19,7 @@ ENV SOLR_HOME=$SOLR_INSTALL_DIR/server/solr
 RUN usermod -d $SOLR_HOME ${SOLR_USER}
 
 #Copy configset for each core
-COPY aspen-discovery/data_dir_setup/solr7/ ${SOLR_HOME}/configsets
+COPY data_dir_setup/solr7/ ${SOLR_HOME}/configsets
 RUN chown -R ${SOLR_USER}:${SOLR_GROUP} ${SOLR_HOME}/configsets
  
 #Do to solr owner of /var/solr to let this user write on it
