@@ -153,7 +153,11 @@ class HooplaProcessor {
 				}
 
 				boolean children = rawResponse.getBoolean("children");
+				boolean isAdult = false;
+				boolean isTeen = false;
+				boolean isKids = false;
 				if (children){
+					isKids = true;
 					groupedWork.addTargetAudience("Juvenile");
 					groupedWork.addTargetAudienceFull("Juvenile");
 				}else {
@@ -163,18 +167,22 @@ class HooplaProcessor {
 						JSONArray genres = rawResponse.getJSONArray("genres");
 						for (int i = 0; i < genres.length(); i++) {
 							if (genres.getString(i).equals("Teen")) {
+								isTeen = true;
 								groupedWork.addTargetAudience("Young Adult");
 								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 								foundAudience = true;
 							} else if (genres.getString(i).startsWith("Young Adult")) {
+								isTeen = true;
 								groupedWork.addTargetAudience("Young Adult");
 								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 								foundAudience = true;
 							} else if (genres.getString(i).equals("Children's")) {
+								isKids = true;
 								groupedWork.addTargetAudience("Juvenile");
 								groupedWork.addTargetAudienceFull("Juvenile");
 								foundAudience = true;
 							} else if (genres.getString(i).equals("Adult")) {
+								isAdult = true;
 								groupedWork.addTargetAudience("Adult");
 								groupedWork.addTargetAudienceFull("Adult");
 								foundAudience = true;
@@ -184,7 +192,9 @@ class HooplaProcessor {
 
 					if (!foundAudience && rawResponse.has("rating")) {
 						String rating = rawResponse.getString("rating");
+						//noinspection SpellCheckingInspection
 						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")) {
+							isAdult = true;
 							groupedWork.addTargetAudience("Adult");
 							groupedWork.addTargetAudienceFull("Adult");
 						} else {
@@ -195,15 +205,19 @@ class HooplaProcessor {
 									case "NRA":
 									case "NRM":
 									case "NC-17":
+										isAdult = true;
 										groupedWork.addTargetAudience("Adult");
 										groupedWork.addTargetAudienceFull("Adult");
 										break;
 									case "PG-13":
 									case "PG13":
 									case "PG":
+										//noinspection SpellCheckingInspection
 									case "TVPG":
 									case "TV14":
 									case "NRT":
+										isAdult = true;
+										isTeen = true;
 										groupedWork.addTargetAudience("Young Adult");
 										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 										groupedWork.addTargetAudience("Adult");
@@ -212,11 +226,15 @@ class HooplaProcessor {
 									case "TVY":
 									case "TVY7":
 									case "NRC":
+										isKids = true;
 										groupedWork.addTargetAudience("Juvenile");
 										groupedWork.addTargetAudienceFull("Juvenile");
 										break;
 									case "TVG":
 									case "G":
+										isKids = true;
+										isTeen = true;
+										isAdult = true;
 										groupedWork.addTargetAudience("General");
 										groupedWork.addTargetAudienceFull("General");
 										break;
@@ -228,20 +246,25 @@ class HooplaProcessor {
 							} else if (kind.equals("COMIC")) {
 								switch (rating) {
 									case "E":
+										isKids = true;
 										groupedWork.addTargetAudience("Juvenile");
 										groupedWork.addTargetAudienceFull("Juvenile");
 										break;
 									case "PA":
 									case "EX":
+										isAdult = true;
 										groupedWork.addTargetAudience("Adult");
 										groupedWork.addTargetAudienceFull("Adult");
 										break;
 									case "T":
+										isTeen = true;
 										groupedWork.addTargetAudience("Young Adult");
 										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 										break;
 									case "T+":
 									default:
+										isAdult = true;
+										isTeen = true;
 										groupedWork.addTargetAudience("Young Adult");
 										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 										groupedWork.addTargetAudience("Adult");
@@ -249,6 +272,8 @@ class HooplaProcessor {
 								}
 
 							} else {
+								isAdult = true;
+								isTeen = true;
 								groupedWork.addTargetAudience("Young Adult");
 								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 								groupedWork.addTargetAudience("Adult");
@@ -256,6 +281,7 @@ class HooplaProcessor {
 							}
 						}
 					} else if (!foundAudience) {
+						isAdult = true;
 						groupedWork.addTargetAudience("Adult");
 						groupedWork.addTargetAudienceFull("Adult");
 					}
@@ -317,10 +343,10 @@ class HooplaProcessor {
 						Util.addToMapWithCount(literaryFormFull, "Non Fiction");
 					}
 				}
-				if (literaryForm.size() > 0){
+				if (!literaryForm.isEmpty()){
 					groupedWork.addLiteraryForms(literaryForm);
 				}
-				if (literaryFormFull.size() > 0){
+				if (!literaryFormFull.isEmpty()){
 					groupedWork.addLiteraryFormsFull(literaryFormFull);
 				}
 
@@ -379,7 +405,7 @@ class HooplaProcessor {
 					boolean okToAdd;
 					HooplaScope hooplaScope = scope.getHooplaScope();
 					if (hooplaScope != null){
-						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, children, rating, genresToAdd, logger);
+						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, isAdult, isTeen, isKids, rating, genresToAdd, logger);
 					}else{
 						okToAdd = false;
 					}

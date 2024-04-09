@@ -444,7 +444,7 @@ public class GroupedWorkIndexer {
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 		overDriveRecordGrouper = new OverDriveRecordGrouper(dbConn, serverName, logEntry, logger);
 
-		cloudLibraryProcessor = new CloudLibraryProcessor(this, "cloud_library", dbConn, logger);
+		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
