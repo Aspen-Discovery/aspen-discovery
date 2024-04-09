@@ -74,12 +74,14 @@ export const ScreenBrightnessPermissionDescription = () => {
                               {Constants.expoConfig.name} {permissionStatus === true ? getTermFromDictionary(language, 'allowed_screen_brightness') : getTermFromDictionary(language, 'not_allowed_screen_brightness')}
                          </Text>
 
-                         <Text color={textColor} mt="$5">
-                              {getTermFromDictionary(language, 'to_update_settings')}
-                         </Text>
+                         {permissionStatus === true && Platform.OS !== 'android' ? null : (
+                              <Text color={textColor} mt="$5">
+                                   {getTermFromDictionary(language, 'to_update_settings')}
+                              </Text>
+                         )}
                          <ScreenBrightnessPermissionUsage />
                     </Box>
-                    <ScreenBrightnessPermissionUpdate permissionStatus={permissionStatus} setPermissionStatus={setPermissionStatus} />
+                    {permissionStatus === true && Platform.OS !== 'android' ? null : <ScreenBrightnessPermissionUpdate permissionStatus={permissionStatus} setPermissionStatus={setPermissionStatus} />}
                </VStack>
           </ScrollView>
      );

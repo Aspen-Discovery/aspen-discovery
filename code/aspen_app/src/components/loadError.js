@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { Alert, Button, Center, Heading, HStack, Icon, Text, Toast, VStack, Box } from '@gluestack-ui/themed-native-base';
+import React from 'react';
+import { Alert, Button, Center, Heading, HStack, Icon, Text, VStack, Box } from '@gluestack-ui/themed-native-base';
+import { useToast, Toast } from '@gluestack-ui/themed';
 import { MaterialIcons } from '@expo/vector-icons';
-import _ from 'lodash';
 
 // custom components and helper files
 import { getTermFromDictionary } from '../translations/TranslationService';
@@ -43,7 +43,8 @@ export function loadError(error, reloadAction = '') {
  * Display a toast if Aspen LiDA is unable to connect to the server when fetching data
  **/
 export function badServerConnectionToast() {
-     return Toast.show({
+     const toast = useToast();
+     return toast.show({
           title: getTermFromDictionary('en', 'error_no_server_connection'),
           description: getTermFromDictionary('en', 'error_no_library_connection'),
           status: 'error',
@@ -77,7 +78,8 @@ export function badServerConnectionToast() {
  * @param {string} status
  **/
 export function popToast(title, description, status) {
-     return Toast.show({
+     const toast = useToast();
+     return toast.show({
           title: title,
           description: description,
           status: status,
@@ -111,7 +113,8 @@ export function popToast(title, description, status) {
  * @param {string} status
  **/
 export function popAlert(title, description, status) {
-     return Toast.show({
+     const toast = useToast();
+     return toast.show({
           duration: 5000,
           accessibilityAnnouncement: description,
           avoidKeyboard: true,
