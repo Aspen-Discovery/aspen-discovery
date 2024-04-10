@@ -15,7 +15,7 @@ class Files_WatchVideo extends Action {
 			global $interface;
 			$title = $this->fileUpload->title;
 			$interface->assign('title', $title);
-			$fileSize = filesize($this->fileUpload->fullPath);
+			$fileSize = strlen($this->fileUpload->uploadedFileData);
 			$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
 			global $configArray;
 			$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');

@@ -8,6 +8,7 @@ class GroupedWork_DownloadPDF {
 
 	function launch() {
 		$id = strip_tags($_REQUEST['id']);
+		error_log("LGM INTENTO DESCARGAR");
 		$fileId = $_REQUEST['fileId'];
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -25,7 +26,9 @@ class GroupedWork_DownloadPDF {
 				$fileUpload = new FileUpload();
 				$fileUpload->id = $fileId;
 				if ($fileUpload->find(true)) {
-					if (file_exists($fileUpload->fullPath)) {
+					error_log("LGM ID : " . print_r($fileUpload->id,true));
+					if (isset($fileUpload->uploadedFileData)) {
+						error_log("LGM TENGO DATA");
 						$this->recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
 						if ($this->recordDriver->getIndexingProfile() != null) {
 							//Record the usage of the PDF
@@ -66,31 +69,13 @@ class GroupedWork_DownloadPDF {
 						}
 
 						set_time_limit(300);
-						$chunkSize = 2 * (1024 * 1024);
-
-						$size = intval(sprintf("%u", filesize($fileUpload->fullPath)));
+						$size = strlen($fileUpload->uploadedFileData);
 
 						header('Content-Type: application/octet-stream');
 						header('Content-Transfer-Encoding: binary');
 						header('Content-Length: ' . $size);
-						$fileName = str_replace($this->recordDriver->getUniqueID() . '_', '', basename($fileUpload->fullPath));
-						header('Content-Disposition: attachment;filename="' . $fileName . '"');
-
-						if ($size > $chunkSize) {
-							$handle = fopen($fileUpload->fullPath, 'rb');
-
-							while (!feof($handle)) {
-								set_time_limit(300);
-								print(@fread($handle, $chunkSize));
-
-								ob_flush();
-								flush();
-							}
-
-							fclose($handle);
-						} else {
-							readfile($fileUpload->fullPath);
-						}
+						$fileName = str_replace($this->recordDriver->getUniqueID() . '_', '', $fileUpload->getFileName());
+						header('Content-Disposition: attachment;filename="' . $fileName . ".pdf");
 
 						die();
 					} else {

@@ -60,9 +60,11 @@ class ViewPDF extends Action {
 			global $interface;
 			$this->title = $fileUpload->title;
 			$interface->assign('title', $this->title);
-			$fileSize = filesize($fileUpload->fullPath);
+			$fileSize = strlen($fileUpload->uploadedFileData);
+			$encodedData = base64_encode($fileUpload->uploadedFileData);
 			$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
 			global $configArray;
+			$interface->assign('pdfData',$encodedData);
 			$interface->assign('pdfPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
 			$this->display('pdfViewer.tpl', $this->title, '');
 		} else {
