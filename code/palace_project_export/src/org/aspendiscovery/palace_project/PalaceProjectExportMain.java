@@ -309,7 +309,6 @@ public class PalaceProjectExportMain {
 	private static void removePalaceProjectTitleFromCollection(long availabilityId, long titleId, long collectionId) throws SQLException {
 		//Mark the title availability deleted
 		deletePalaceProjectAvailabilityStmt.setLong(1, availabilityId);
-		deletePalaceProjectAvailabilityStmt.setLong(2, collectionId);
 		deletePalaceProjectAvailabilityStmt.executeUpdate();
 		//check to see if the title has any availability
 		getAvailabilityForTitleStmt.setLong(1, availabilityId);
