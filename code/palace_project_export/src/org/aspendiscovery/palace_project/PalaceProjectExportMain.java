@@ -342,6 +342,7 @@ public class PalaceProjectExportMain {
 		while (collectionsForSettingsRS.next()) {
 			PalaceProjectCollection collection = new PalaceProjectCollection();
 			collection.id = collectionsForSettingsRS.getLong("id");
+			collection.settingId = collectionsForSettingsRS.getLong("settingId");
 			collection.palaceProjectName = collectionsForSettingsRS.getString("palaceProjectName");
 			collection.displayName = collectionsForSettingsRS.getString("displayName");
 			collection.hasCirculation = collectionsForSettingsRS.getBoolean("hasCirculation");
@@ -374,6 +375,7 @@ public class PalaceProjectExportMain {
 	}
 
 	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, WebServiceResponse response, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
+		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
 		//Index all records in the collection
 		String collectionUrl = validCollections.get(collectionName);
 		while (collectionUrl != null) {
