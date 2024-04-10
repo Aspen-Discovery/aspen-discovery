@@ -312,6 +312,8 @@ public class PalaceProjectProcessor {
 						PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
 						if (palaceProjectScope != null) {
 							okToAdd = true;
+						}else{
+							continue;
 						}
 						if (palaceProjectScope.getSettingId() != collection.settingId) {
 							okToAdd = false;
