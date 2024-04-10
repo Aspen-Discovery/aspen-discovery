@@ -109,8 +109,8 @@
 									{/if}
 								{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
 									{$propValue|escape}
-								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
-									{$propValue|escape}
+								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'db_file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
+									{$propValue}
 								{elseif $property.type == 'date'}
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}

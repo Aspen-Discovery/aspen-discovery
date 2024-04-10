@@ -555,7 +555,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
 				$contentType = DataObjectUtil::getFormContentType($property['properties'], $contentType);
-			} elseif ($property['type'] == 'image' || $property['type'] == 'file') {
+			} elseif ($property['type'] == 'image' || $property['type'] == 'file' || $property['type'] == 'db_file' ) {
 				$contentType = 'multipart/form-data';
 			}
 		}

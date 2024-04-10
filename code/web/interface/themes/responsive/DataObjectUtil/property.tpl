@@ -436,7 +436,7 @@
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 
-		{elseif $property.type == 'image' || $property.type == 'file'}
+		{elseif $property.type == 'image' || $property.type == 'file' || $property.type == 'db_file' }
 			{if !empty($propValue) && $property.type == 'image'}
 				{if !empty($property.thumbWidth)}
 					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
