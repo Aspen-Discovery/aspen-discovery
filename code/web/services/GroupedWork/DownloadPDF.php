@@ -8,7 +8,6 @@ class GroupedWork_DownloadPDF {
 
 	function launch() {
 		$id = strip_tags($_REQUEST['id']);
-		error_log("LGM INTENTO DESCARGAR");
 		$fileId = $_REQUEST['fileId'];
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -26,9 +25,7 @@ class GroupedWork_DownloadPDF {
 				$fileUpload = new FileUpload();
 				$fileUpload->id = $fileId;
 				if ($fileUpload->find(true)) {
-					error_log("LGM ID : " . print_r($fileUpload->id,true));
 					if (isset($fileUpload->uploadedFileData)) {
-						error_log("LGM TENGO DATA");
 						$this->recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
 						if ($this->recordDriver->getIndexingProfile() != null) {
 							//Record the usage of the PDF
