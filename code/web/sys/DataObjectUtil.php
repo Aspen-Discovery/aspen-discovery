@@ -31,7 +31,7 @@ class DataObjectUtil {
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
 				$contentType = DataObjectUtil::getFormContentType($property['properties'], $contentType);
-			} elseif ($property['type'] == 'image' || $property['type'] == 'file') {
+			} elseif ($property['type'] == 'image' || $property['type'] == 'file' || $property['type'] == 'db_file') {
 				$contentType = 'multipart/form-data';
 			}
 		}
@@ -410,7 +410,6 @@ class DataObjectUtil {
 					if (substr($destFolder, -1) == '/') {
 						$destFolder = substr($destFolder, 0, -1);
 					}
-
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult) {
@@ -428,6 +427,14 @@ class DataObjectUtil {
 					$object->setProperty($propertyName, $destFullPath, $property);
 				}
 			}
+		} elseif ($property['type'] == 'db_file'){
+			$newFileUploads = new FileUpload();
+			$newFileUploads->title = $_REQUEST['title'];
+			$newFileUploads->uploadedFileData = file_get_contents($_FILES[$propertyName]["tmp_name"]);
+			$newFileUploads->fullPath = "justForFillTheFieldOut";
+			$newFileUploads->type = 'web_builder_pdf';
+			$newFileUploads->insert();
+
 		} elseif ($property['type'] == 'uploaded_font') {
 			//Make sure that the type is correct (jpg, png, or gif)
 			if (isset($_REQUEST["remove{$propertyName}"])) {
