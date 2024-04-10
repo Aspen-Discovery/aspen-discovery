@@ -422,7 +422,7 @@ public class PalaceProjectExportMain {
 				removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"), collection.id);
 			}
 		}catch (Exception e) {
-			logEntry.incErrors("Unable to remove titles from collection after indexing");
+			logEntry.incErrors("Unable to remove titles from collection after indexing", e);
 		}
 	}
 
