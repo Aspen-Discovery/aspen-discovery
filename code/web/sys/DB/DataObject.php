@@ -1359,6 +1359,39 @@ abstract class DataObject implements JsonSerializable {
 			}
 		}
 	}
+	protected function tempdir($dir = null, $prefix = 'tmp_', $mode = 0700, $maxAttempts = 1000) {
+		if (is_null($dir)) {
+			$dir = sys_get_temp_dir();
+		}
+		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
+		if (!is_dir($dir) || !is_writable($dir)) {
+			return false;
+		}
+		if (strpbrk($prefix, '\\/:*?"<>|') !== false) {
+			return false;
+		}
+		/* Attempt to create a random directory until it works. Abort if we reach
+		 * $maxAttempts. Something screwy could be happening with the filesystem
+		 * and our loop could otherwise become endless.
+		 */
+		$attempts = 0;
+		do {
+			$path = sprintf('%s%s%s%s', $dir, DIRECTORY_SEPARATOR, $prefix, mt_rand(100000, mt_getrandmax()));
+		} while (
+			!mkdir($path, $mode) &&
+			$attempts++ < $maxAttempts
+		);
+		return $path;
+	}
+
+	protected function getFormatTitle($title) {
+		$title = strtolower($title);
+		$title = str_replace(" ", "", $title);
+		$title = preg_replace("/[^a-z0-9]/", "", $title);
+		$extension = pathinfo($title, PATHINFO_EXTENSION);
+
+		return $title;
+	}
 
 	public function getFieldDefinition($fieldName, $objectStructure) {
 		foreach ($objectStructure as $field) {
