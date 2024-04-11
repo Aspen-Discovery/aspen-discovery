@@ -1070,7 +1070,15 @@ public class SierraExportAPIMain {
 								}else if (curVarField.has("fieldTag") && curVarField.get("fieldTag").equals("h")) {
 									DataField holdingField = marcFactory.newDataField("866", ' ', ' ');
 									marcRecord.addVariableField(holdingField);
-									holdingField.addSubfield(marcFactory.newSubfield('a', curVarField.getString("content")));
+									if (curVarField.has("content")) {
+										holdingField.addSubfield(marcFactory.newSubfield('a', curVarField.getString("content")));
+									}else if (curVarField.has("subfields")) {
+										JSONArray subfields = curVarField.getJSONArray("subfields");
+										for (int k = 0; k < subfields.length(); k++) {
+											JSONObject subfield = subfields.getJSONObject(k);
+											holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+										}
+									}
 									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
 								}
 							}
