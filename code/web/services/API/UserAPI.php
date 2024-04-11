@@ -90,7 +90,8 @@ class UserAPI extends AbstractAPI {
 					'validateSession',
 					'prepareSharedSession',
 					'updateScreenBrightnessStatus',
-					'validateUserCredentials'
+					'validateUserCredentials',
+					'getAppPreferencesForUser'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -5283,6 +5284,23 @@ class UserAPI extends AbstractAPI {
 					'tokens' => $result,
 				];
 			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	function getAppPreferencesForUser(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			return [
+				'success' => true,
+				'onboardAppNotifications' => $user->onboardAppNotifications,
+				'shouldAskBrightness' => $user->shouldAskBrightness,
+				'notification_preferences' => $user->getNotificationPreferencesByUser(),
+			];
 		} else {
 			return [
 				'success' => false,
