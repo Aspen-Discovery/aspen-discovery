@@ -504,7 +504,7 @@ export async function addLinkedAccount(username = '', password = '', url, langua
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
                     try {
-                         popAlert(response.data.result.title, response.data.result.message, 'true');
+                         popAlert(response.data.result.title, response.data.result.message, 'success');
                     } catch (e) {
                          console.log(e);
                     }
