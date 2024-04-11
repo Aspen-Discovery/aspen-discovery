@@ -32,6 +32,7 @@
 			<div class="form-group col-xs-12">
 				<label for="receiptId" class="control-label">{translate text="Receipt ID" isAdminFacing=true}</label>
 				<input name="receiptId" type="text" class="form-control">
+				<span id="receiptIdHelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {translate text="It's recommended to wait 15 minutes before checking a receipt status. Receipts are only valid for 24 hours after the notification is sent." isAdminFacing=true}</small></span>
 			</div>
 			<div class="form-group col-xs-12">
 				<input type="hidden" id="getNotificationReceipt" name="getNotificationReceipt" value="true">
