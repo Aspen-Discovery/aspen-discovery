@@ -18,5 +18,6 @@
 	<testsuite name="Aspen Discovery Unit Tests">
 		<directory suffix="InitializationTests.php">./tests</directory>
 		<directory suffix="Tests.php">./tests/services/API</directory>
+		<directory suffix="FinalizationTests.php">./tests</directory>
 	</testsuite>
 </phpunit>

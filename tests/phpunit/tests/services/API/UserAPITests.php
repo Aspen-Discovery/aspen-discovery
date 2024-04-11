@@ -133,4 +133,71 @@ class UserAPITests extends TestCase {
 		unset($_POST);
 		unset($_REQUEST);
 	}
+
+	public function testValidateUserCredentialsOneTime() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->validateUserCredentials();
+		$this->assertTrue($result['valid']);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
+	}
+
+	public function testValidateUserCredentialsTwoTimes() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->validateUserCredentials();
+		$this->assertTrue($result['valid']);
+		sleep(1);
+		$result = $userAPI->validateUserCredentials();
+		$this->assertTrue($result['valid']);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
+	}
+
+	public function testValidateUserCredentialsWithIncorrectInfo() {
+		$userAPI = new UserAPI();
+
+		global $_POST;
+		global $_REQUEST;
+		$_POST = [];
+		$_POST['username'] = 'test_user';
+		$_POST['password'] = 'password';
+		$_REQUEST = [];
+		$_REQUEST['username'] = 'test_user';
+		$_REQUEST['password'] = 'password';
+		$result = $userAPI->validateUserCredentials();
+		$this->assertTrue($result['valid']);
+		$_POST['password'] = 'wrong_password';
+		$_REQUEST['password'] = 'wrong_password';
+		$result = $userAPI->validateUserCredentials();
+		$this->assertFalse($result['valid']);
+
+		$userAPI->logout();
+
+		unset($_POST);
+		unset($_REQUEST);
+	}
 }
