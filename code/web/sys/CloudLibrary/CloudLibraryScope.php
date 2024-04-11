@@ -11,8 +11,9 @@ class CloudLibraryScope extends DataObject {
 		$includeEAudiobook;
 	public /** @noinspection PhpUnused */
 		$includeEBooks;
-	public /** @noinspection PhpUnused */
-		$restrictToChildrensMaterial;
+	public $includeAdult;
+	public $includeTeen;
+	public $includeKids;
 
 	private $_libraries;
 	private $_locations;
@@ -66,12 +67,28 @@ class CloudLibraryScope extends DataObject {
 				'default' => 1,
 				'forcesReindex' => true,
 			],
-			'restrictToChildrensMaterial' => [
-				'property' => 'restrictToChildrensMaterial',
+			'includeAdult' => [
+				'property' => 'includeAdult',
 				'type' => 'checkbox',
-				'label' => 'Include Children\'s Materials Only',
-				'description' => 'If checked only includes titles identified as children by cloudLibrary',
-				'default' => 0,
+				'label' => 'Include Adult Titles',
+				'description' => 'Whether or not adult titles from the Palace Project collection should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeTeen' => [
+				'property' => 'includeTeen',
+				'type' => 'checkbox',
+				'label' => 'Include Teen Titles',
+				'description' => 'Whether or not teen titles from cloudLibrary should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeKids' => [
+				'property' => 'includeKids',
+				'type' => 'checkbox',
+				'label' => 'Include Kids Titles',
+				'description' => 'Whether or not kids titles from cloudLibrary should be included in searches',
+				'default' => true,
 				'forcesReindex' => true,
 			],
 			'libraries' => [

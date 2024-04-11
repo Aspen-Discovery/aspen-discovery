@@ -527,7 +527,7 @@ class UInterface extends Smarty {
 
 		//Load JavaScript Snippets
 		$customJavascript = '';
-		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript']) || !isset($_REQUEST['noCustom'])) {
+		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustom'])) {
 			try {
 				if (isset($location)) {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
@@ -671,7 +671,7 @@ class UInterface extends Smarty {
 		}
 
 		$additionalCSS = '';
-		if (!isset($_REQUEST['noCustomCSS']) || !isset($_REQUEST['noCustom'])) {
+		if (!isset($_REQUEST['noCustomCSS']) && !isset($_REQUEST['noCustom'])) {
 			if (!empty($library->additionalCss)) {
 				$additionalCSS = $library->additionalCss;
 			}

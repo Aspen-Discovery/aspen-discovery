@@ -51,4 +51,8 @@ public class Axis360Scope {
 	void setIncludeKids(boolean includeKids) {
 		this.includeKids = includeKids;
 	}
+
+	public boolean isIncludeAdult() {
+		return includeAdult;
+	}
 }

@@ -25,7 +25,9 @@ public class HooplaScope {
 	private float maxCostPerCheckoutTelevision;
 	private boolean includeBingePass;
 	private float maxCostPerCheckoutBingePass;
-	private boolean restrictToChildrensMaterial;
+	private boolean includeAdult;
+	private boolean includeTeen;
+	private boolean includeKids;
 	private String[] ratingsToExclude;
 	private boolean excludeAbridged;
 	private boolean excludeParentalAdvisory;
@@ -160,12 +162,28 @@ public class HooplaScope {
 		this.maxCostPerCheckoutBingePass = maxCostPerCheckoutBingePass;
 	}
 
-	public boolean isRestrictToChildrensMaterial() {
-		return restrictToChildrensMaterial;
+	void setIncludeAdult(boolean includeAdult) {
+		this.includeAdult = includeAdult;
 	}
 
-	void setRestrictToChildrensMaterial(boolean restrictToChildrensMaterial) {
-		this.restrictToChildrensMaterial = restrictToChildrensMaterial;
+	public boolean isIncludeTeen() {
+		return includeTeen;
+	}
+
+	void setIncludeTeen(boolean includeTeen) {
+		this.includeTeen = includeTeen;
+	}
+
+	public boolean isIncludeKids() {
+		return includeKids;
+	}
+
+	void setIncludeKids(boolean includeKids) {
+		this.includeKids = includeKids;
+	}
+
+	public boolean isIncludeAdult() {
+		return includeAdult;
 	}
 
 	private final HashMap<String, Boolean> excludedRatings = new HashMap<>();
@@ -230,7 +248,7 @@ public class HooplaScope {
 
 	private String lastIdentifier = null;
 	private boolean lastIdentifierResult = false;
-	public boolean isOkToAdd(String identifier, String kind, float price, boolean abridged, boolean pa, boolean profanity, boolean children, String rating, HashSet<String> genres, Logger logger) {
+	public boolean isOkToAdd(String identifier, String kind, float price, boolean abridged, boolean pa, boolean profanity, boolean isAdult, boolean isTeen, boolean isKids, String rating, HashSet<String> genres, Logger logger) {
 		if (lastIdentifier != null && lastIdentifier.equals(identifier)){
 			return lastIdentifierResult;
 		}
@@ -255,7 +273,6 @@ public class HooplaScope {
 			case "MUSIC":
 				okToAdd = (includeMusic && price <= maxCostPerCheckoutMusic);
 				break;
-			//noinspection SpellCheckingInspection
 			case "BINGEPASS":
 				okToAdd = (includeBingePass && price <= maxCostPerCheckoutBingePass);
 				break;
@@ -271,8 +288,20 @@ public class HooplaScope {
 		if (okToAdd && excludeProfanity && profanity) {
 			okToAdd = false;
 		}
-		if (okToAdd &&restrictToChildrensMaterial && !children) {
+		//Check audiences
+		if (okToAdd) {
+			//Check based on the audience as well
 			okToAdd = false;
+			//noinspection RedundantIfStatement
+			if (isAdult && includeAdult) {
+				okToAdd = true;
+			}
+			if (isTeen && includeTeen) {
+				okToAdd = true;
+			}
+			if (isKids && includeKids) {
+				okToAdd = true;
+			}
 		}
 		if (okToAdd && isRatingExcluded(rating)) {
 			okToAdd = false;

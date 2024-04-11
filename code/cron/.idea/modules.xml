@@ -27,6 +27,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../sites/sites.iml" filepath="$PROJECT_DIR$/../../sites/sites.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../sites/default/solr-7.6.0/solr-7.6.0.iml" filepath="$PROJECT_DIR$/../../sites/default/solr-7.6.0/solr-7.6.0.iml" />
       <module fileurl="file://$PROJECT_DIR$/../symphony_export/symphony_export.iml" filepath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../tests/tests.iml" filepath="$PROJECT_DIR$/../../tests/tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" filepath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../web_indexer/web_indexer.iml" filepath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" />
     </modules>

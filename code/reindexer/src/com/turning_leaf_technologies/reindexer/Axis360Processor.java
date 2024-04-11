@@ -84,11 +84,11 @@ class Axis360Processor {
 				groupedWork.setAuthorDisplay(primaryAuthor);
 
 				String series = getFieldValue(rawResponse,"series");
-				if (series.length() > 0){
+				if (!series.isEmpty()){
 					groupedWork.addSeries(series);
 				}
 
-				loadAxis360Subjects(groupedWork, rawResponse);
+				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse);
 
 				//Believe these are all
 				axis360Record.setPrimaryLanguage("English");
@@ -101,7 +101,7 @@ class Axis360Processor {
 				axis360Record.setFormatBoost(formatBoost);
 
 				ArrayList<String> narrators = getFieldValues(rawResponse, "narrators");
-				if (narrators.size() > 0) {
+				if (!narrators.isEmpty()) {
 					HashSet<String> narratorsToAdd = new HashSet<>();
 					HashSet<String> narratorsWithRoleToAdd = new HashSet<>();
 					for (String narratorName : narrators) {
@@ -160,11 +160,28 @@ class Axis360Processor {
 					}
 					itemInfo.setHoldable(true);
 					itemInfo.setInLibraryUseOnly(false);
+					boolean isAdult = targetAudience.equals("Adult");
+					boolean isTeen = targetAudience.equals("Young Adult");
+					boolean isKids = targetAudience.equals("Juvenile");
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
 						Axis360Scope axis360Scope = scope.getAxis360Scope();
 						if (axis360Scope != null) {
 							if (axis360Scope.getSettingId() == settingId) {
+								okToAdd = true;
+							}
+						}
+						if (okToAdd) {
+							//Check based on the audience as well
+							okToAdd = false;
+							//noinspection RedundantIfStatement
+							if (isAdult && axis360Scope.isIncludeAdult()) {
+								okToAdd = true;
+							}
+							if (isTeen && axis360Scope.isIncludeTeen()) {
+								okToAdd = true;
+							}
+							if (isKids && axis360Scope.isIncludeKids()) {
 								okToAdd = true;
 							}
 						}
@@ -197,8 +214,10 @@ class Axis360Processor {
 	 * @param groupedWork     The Grouped Work being updated
 	 * @param titleData JSON representing the raw data metadata from Libby
 	 * @throws JSONException Exception if something goes horribly wrong
+	 *
+	 * @return String the targetAudience of the record
 	 */
-	private void loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
+	private String loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
 		//Load subject data
 
 		HashSet<String> topics = new HashSet<>();
@@ -240,16 +259,18 @@ class Axis360Processor {
 			groupedWork.addGenre(genres);
 			groupedWork.addGenreFacet(genres);
 			groupedWork.addSubjects(topics);
-			if (literaryForm.size() > 0) {
+			if (!literaryForm.isEmpty()) {
 				groupedWork.addLiteraryForms(literaryForm);
 			}
-			if (literaryFormFull.size() > 0) {
+			if (!literaryFormFull.isEmpty()) {
 				groupedWork.addLiteraryFormsFull(literaryFormFull);
 			}
 		}
 
 		groupedWork.addTargetAudience(targetAudience);
 		groupedWork.addTargetAudienceFull(targetAudienceFull);
+
+		return targetAudience;
 	}
 
 	private static String getFieldValue(JSONObject itemDetails, String fieldName) {
@@ -258,7 +279,7 @@ class Axis360Processor {
 			JSONObject field = fields.getJSONObject(i);
 			if (field.getString("name").equals(fieldName)){
 				JSONArray fieldValues = field.getJSONArray("values");
-				if (fieldValues.length() == 0) {
+				if (fieldValues.isEmpty()) {
 					return "";
 				}else if (fieldValues.length() == 1) {
 					return fieldValues.getString(0);
@@ -272,18 +293,6 @@ class Axis360Processor {
 			}
 		}
 		return "";
-	}
-
-	private static boolean fieldHasMultipleValues(JSONObject itemDetails, String fieldName) {
-		JSONArray fields = itemDetails.getJSONArray("fields");
-		for (int i = 0; i < fields.length(); i++){
-			JSONObject field = fields.getJSONObject(i);
-			if (field.getString("name").equals(fieldName)){
-				JSONArray fieldValues = field.getJSONArray("values");
-				return fieldValues.length() > 1;
-			}
-		}
-		return false;
 	}
 
 	private static ArrayList<String> getFieldValues(JSONObject itemDetails, String fieldName) {
