@@ -1,15 +1,14 @@
-import { FlatList, Switch, ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable, Icon, Text, Center, Button, ButtonText, ButtonIcon, ButtonGroup, Heading, Box, Accordion, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AccordionItem, AccordionContent, AccordionContentText, AccordionHeader, AccordionTrigger, AccordionTitleText, AccordionIcon } from '@gluestack-ui/themed';
+import { ChevronLeftIcon, FlatList, Switch, ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable, Icon, Text, Center, Button, ButtonText, ButtonIcon, ButtonGroup, Heading, Box, Accordion, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AccordionItem, AccordionContent, AccordionContentText, AccordionHeader, AccordionTrigger, AccordionTitleText, AccordionIcon } from '@gluestack-ui/themed';
 import { useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { ChevronLeftIcon } from 'native-base';
 import React from 'react';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { AppState, Platform } from 'react-native';
 
-import { useNavigation, useRoute, StackActions } from '@react-navigation/native';
+import { useNavigation, useRoute, StackActions, useFocusEffect } from '@react-navigation/native';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
-import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../../components/Notifications';
+import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, savePushToken, setNotificationPreference } from '../../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../../context/initialContext';
 import { navigate } from '../../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../../translations/TranslationService';
@@ -61,6 +60,7 @@ export const NotificationPermissionStatus = () => {
 };
 
 export const NotificationPermissionDescription = () => {
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      const prevRoute = useRoute().params?.prevRoute ?? null;
      const { colorMode, textColor, theme } = React.useContext(ThemeContext);
@@ -68,7 +68,7 @@ export const NotificationPermissionDescription = () => {
      const { language } = React.useContext(LanguageContext);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [isLoading, setLoading] = React.useState(false);
-     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken, aspenToken } = React.useContext(UserContext);
+     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken, updateExpoToken, aspenToken, updateAspenToken } = React.useContext(UserContext);
      const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
      const [notifyCustom, setNotifyCustom] = React.useState(false);
      const [notifyAccount, setNotifyAccount] = React.useState(false);
@@ -77,10 +77,10 @@ export const NotificationPermissionDescription = () => {
      const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
 
      React.useLayoutEffect(() => {
-          if (prevRoute === 'navigation_onboard') {
+          if (prevRoute === 'notifications_onboard') {
                navigation.setOptions({
                     headerLeft: () => (
-                         <Pressable onPress={() => navigation.dispatch(StackActions.popToTop())} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <Pressable onPress={() => navigate('PermissionDashboard')} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                               <ChevronLeftIcon size="$5" color={theme['colors']['primary']['baseContrast']} />
                          </Pressable>
                     ),
@@ -88,23 +88,79 @@ export const NotificationPermissionDescription = () => {
           }
      }, [navigation]);
 
+     useFocusEffect(
+          React.useCallback(() => {
+               const update = async () => {
+                    await createChannelsAndCategories();
+                    if (expoToken) {
+                         if (aspenToken) {
+                              await getPreferences();
+                         }
+                    }
+               };
+               update().then(() => {
+                    return () => update();
+               });
+          }, [])
+     );
+
      React.useEffect(() => {
           (async () => {
                const { status } = await Notifications.getPermissionsAsync();
                setPermissionStatus(status === 'granted');
-               await getPreferences();
+
+               if (status === 'granted') {
+                    const token = (
+                         await Notifications.getExpoPushTokenAsync({
+                              projectId: Constants.expoConfig.extra.eas.projectId,
+                         })
+                    ).data;
+
+                    if (token) {
+                         if (!_.isEmpty(user.notification_preferences)) {
+                              const tokenStorage = user.notification_preferences;
+                              if (_.find(tokenStorage, _.matchesProperty('token', token))) {
+                                   updateAspenToken(true);
+                                   updateExpoToken(token);
+                              }
+                         }
+                    }
+                    await getPreferences();
+               }
           })();
 
           const subscription = AppState.addEventListener('change', async (nextAppState) => {
                if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+                    console.log('app is active again!');
                     const { status } = await Notifications.getPermissionsAsync();
+                    console.log('new status: ' + status);
                     setPermissionStatus(status === 'granted');
                     if (status === 'granted') {
+                         const token = (
+                              await Notifications.getExpoPushTokenAsync({
+                                   projectId: Constants.expoConfig.extra.eas.projectId,
+                              })
+                         ).data;
+
+                         if (token) {
+                              if (!_.isEmpty(user.notification_preferences)) {
+                                   const tokenStorage = user.notification_preferences;
+                                   if (_.find(tokenStorage, _.matchesProperty('token', token))) {
+                                        updateAspenToken(true);
+                                        updateExpoToken(token);
+                                   }
+                              }
+                         }
                          await addNotificationPermissions();
+                         await getPreferences();
                     }
 
                     if (status === 'denied') {
+                         console.log('removing notification preferences from Discovery...');
                          await revokeNotificationPermissions();
+                         await getPreferences();
+                         updateExpoToken(false);
+                         updateAspenToken(false);
                     }
                }
 
@@ -118,42 +174,53 @@ export const NotificationPermissionDescription = () => {
      }, []);
 
      const addNotificationPermissions = async () => {
+          console.log('Adding notification permissions...');
           await createChannelsAndCategories();
-          if (expoToken && aspenToken) {
-               await getPreferences();
-          }
 
+          console.log('Registering push notifications...');
           await registerForPushNotificationsAsync(library.baseUrl).then(async (result) => {
                if (!result) {
-                    console.log('unable to update preference');
-                    setLoading(false);
-                    return false;
+                    console.log('Unable to register push notifications!');
                } else {
-                    await refreshProfile(library.baseUrl).then(async (result) => {
-                         updateUser(result);
-                         await getPreferences();
-                    });
-                    setLoading(false);
-                    return true;
+                    console.log('Registered for push notifications!');
+                    console.log('Saving push token to Discovery...');
+                    await savePushToken(library.baseUrl, result);
+                    updateExpoToken(result);
+                    updateAspenToken(true);
                }
+          });
+
+          await refreshProfile(library.baseUrl).then(async (result) => {
+               console.log('Refreshing user profile...');
+               updateUser(result);
+               await getPreferences();
           });
      };
 
      const revokeNotificationPermissions = async () => {
           setLoading(true);
-          await deletePushToken(library.baseUrl, expoToken, true);
-          await refreshProfile(library.baseUrl).then(async (result) => {
-               updateUser(result);
-               await getPreferences();
+          await deletePushToken(library.baseUrl, expoToken);
+          await setNotificationPreference(library.baseUrl, expoToken, 'notifySavedSearch', false, false);
+          await setNotificationPreference(library.baseUrl, expoToken, 'notifyCustom', false, false);
+          await setNotificationPreference(library.baseUrl, expoToken, 'notifyAccount', false, false);
+          setNotifySavedSearch(false);
+          setNotifyCustom(false);
+          setNotifyAccount(false);
+          await reloadProfile(library.baseUrl).then((data) => {
+               updateUser(data);
+               updateNotificationSettings(data.notification_preferences, language);
           });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           setLoading(false);
-          return true;
      };
 
      const getPreferences = async () => {
-          setLoading(true);
+          console.log('Getting notification preference options...');
           if (_.isObject(notificationSettings)) {
+               console.log('Notification preferences found as object!');
                const currentPreferences = Object.values(notificationSettings);
+               console.log(currentPreferences);
+               setLoading(true);
                for await (const pref of currentPreferences) {
                     const i = _.findIndex(currentPreferences, ['option', pref.option]);
                     const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
@@ -161,23 +228,25 @@ export const NotificationPermissionDescription = () => {
                          let prevSettings = notificationSettings[i];
                          if (result.success) {
                               if (pref.option === 'notifySavedSearch') {
-                                   console.log('result.allow: ' + result.allow);
+                                   console.log('Updated saved search notifications');
                                    setNotifySavedSearch(result.allow);
                                    _.set(prevSettings, prevSettings.allow, result.allow);
                               }
                               if (pref.option === 'notifyCustom') {
+                                   console.log('Updated custom notifications');
                                    _.set(prevSettings, prevSettings.allow, result.allow);
                                    setNotifyCustom(result.allow);
                               }
                               if (pref.option === 'notifyAccount') {
+                                   console.log('Updated account notifications');
                                    _.set(prevSettings, prevSettings.allow, result.allow);
                                    setNotifyAccount(result.allow);
                               }
                          }
                     }
                }
+               setLoading(false);
           }
-          setLoading(false);
      };
 
      if (isLoading) {
@@ -201,7 +270,7 @@ export const NotificationPermissionDescription = () => {
                               {getTermFromDictionary(language, 'to_update_settings')}
                          </Text>
                          <NotificationPermissionUsage />
-                         {permissionStatus === true && _.isObject(notificationSettings) ? (
+                         {permissionStatus === true && _.isObject(notificationSettings) && !_.isEmpty(notificationSettings) ? (
                               <Box mb="$5">
                                    <NotificationToggleAll revokeNotificationPermissions={revokeNotificationPermissions} addNotificationPermissions={addNotificationPermissions} setLoading={setLoading} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />
                                    <FlatList
@@ -263,10 +332,12 @@ const NotificationPermissionUpdate = (payload) => {
                const { status } = await Notifications.getPermissionsAsync();
                setPermissionStatus(status === 'granted');
                if (status === 'granted') {
+                    console.log('Status manually granted. Adding permissions.');
                     await addNotificationPermissions();
                }
 
                if (status === 'denied') {
+                    console.log('Status manually denied. Revoking permissions.');
                     await revokeNotificationPermissions();
                }
           });
@@ -277,6 +348,7 @@ const NotificationPermissionUpdate = (payload) => {
                const { status } = await Notifications.getPermissionsAsync();
                setPermissionStatus(status === 'granted');
                if (status === 'undetermined') {
+                    console.log('Status undetermined. Manually requesting permissions.');
                     setManuallyPromptPermission(true);
                }
                if (status === 'granted') {
@@ -361,10 +433,8 @@ const NotificationToggle = (data) => {
      const toggleSwitch = () => setToggle((previousState) => !previousState);
 
      const updatePreference = async (pref, value) => {
-          console.log(pref);
-          console.log(value);
           let allowNotification = true;
-          if (value === 0) {
+          if (value === 0 || value === 'false' || value === false) {
                allowNotification = true;
           } else {
                allowNotification = false;
@@ -382,6 +452,7 @@ const NotificationToggle = (data) => {
                }
                await reloadProfile(library.baseUrl).then((result) => {
                     updateUser(result);
+                    updateNotificationSettings(data.notification_preferences, language);
                });
           }
      };
@@ -415,7 +486,6 @@ const NotificationToggleAll = (data) => {
      const toggleSwitch = () => setToggle((previousState) => !previousState);
 
      const enableAllNotifications = async (value) => {
-          console.log(value);
           setLoading(true);
           let allowAllNotifications = true;
           if (value === 0 || value === 'false' || value === false) {
@@ -431,10 +501,10 @@ const NotificationToggleAll = (data) => {
                await reloadProfile(library.baseUrl).then((data) => {
                     updateUser(data);
                     updateNotificationSettings(data.notification_preferences, language);
-                    setLoading(false);
                });
                queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           }
+          setLoading(false);
      };
 
      return (

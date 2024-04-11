@@ -435,12 +435,71 @@ export const UserProvider = ({ children }) => {
      };
 
      const updateNotificationSettings = async (data, language, userOnboardStatus) => {
-          if (Device.isDevice) {
-               if (!_.isEmpty(data)) {
-                    const device = Device.modelName;
-                    if (_.find(data, _.matchesProperty('device', device))) {
-                         console.log('Found settings for this device model');
-                         const deviceSettings = _.filter(data, { device: device });
+          if (!_.isEmpty(data)) {
+               const device = Device.modelName;
+               if (_.find(data, _.matchesProperty('device', device))) {
+                    console.log('Found settings for this device model');
+                    const deviceSettings = _.filter(data, { device: device });
+                    const savedSearches = await getTermFromDictionary(language, 'saved_searches');
+                    const alertsFromLibrary = await getTermFromDictionary(language, 'alerts_from_library');
+                    const alertsAboutAccount = await getTermFromDictionary(language, 'alerts_about_account');
+                    const settings = [];
+                    settings.push(
+                         {
+                              id: 0,
+                              label: savedSearches,
+                              option: 'notifySavedSearch',
+                              description: null,
+                              allow: deviceSettings[0].notifySavedSearch ?? 0,
+                         },
+                         {
+                              id: 1,
+                              label: alertsFromLibrary,
+                              option: 'notifyCustom',
+                              description: null,
+                              allow: deviceSettings[0].notifyCustom ?? 0,
+                         },
+                         {
+                              id: 2,
+                              label: alertsAboutAccount,
+                              option: 'notifyAccount',
+                              description: null,
+                              allow: deviceSettings[0].notifyAccount ?? 0,
+                         }
+                    );
+                    setNotificationSettings(settings);
+                    setExpoToken(deviceSettings[0]?.token ?? false);
+                    setAspenToken(true);
+
+                    if (deviceSettings && _.isObject(deviceSettings)) {
+                         if (_.isObject(deviceSettings[0])) {
+                              const settings = deviceSettings[0];
+                              if (!_.isUndefined(settings.onboardStatus)) {
+                                   setNotificationOnboard(settings.onboardStatus);
+                              }
+                         }
+                    } else {
+                         // probably connecting to a Discovery version earlier than 23.07.00
+                         setNotificationOnboard(0);
+                    }
+               } else {
+                    console.log('No settings found for this device model yet');
+                    setExpoToken(false);
+                    setAspenToken(false);
+
+                    // let's not intentionally bombard the user with prompts at every boot without knowing their preferences
+                    setNotificationOnboard(0);
+
+                    const deviceSettings = _.filter(data, { device: 'Unknown' });
+                    if (deviceSettings && _.isObject(deviceSettings)) {
+                         if (_.isObject(deviceSettings[0])) {
+                              const settings = deviceSettings[0];
+                              if (!_.isUndefined(settings.onboardStatus)) {
+                                   setNotificationOnboard(settings.onboardStatus);
+                              }
+                         }
+                    } else {
+                         // fall back to the fall back
                          const savedSearches = await getTermFromDictionary(language, 'saved_searches');
                          const alertsFromLibrary = await getTermFromDictionary(language, 'alerts_from_library');
                          const alertsAboutAccount = await getTermFromDictionary(language, 'alerts_about_account');
@@ -451,73 +510,39 @@ export const UserProvider = ({ children }) => {
                                    label: savedSearches,
                                    option: 'notifySavedSearch',
                                    description: null,
-                                   allow: deviceSettings[0].notifySavedSearch ?? 0,
+                                   allow: 0,
                               },
                               {
                                    id: 1,
                                    label: alertsFromLibrary,
                                    option: 'notifyCustom',
                                    description: null,
-                                   allow: deviceSettings[0].notifyCustom ?? 0,
+                                   allow: 0,
                               },
                               {
                                    id: 2,
                                    label: alertsAboutAccount,
                                    option: 'notifyAccount',
                                    description: null,
-                                   allow: deviceSettings[0].notifyAccount ?? 0,
+                                   allow: 0,
                               }
                          );
                          setNotificationSettings(settings);
-                         setExpoToken(deviceSettings[0]?.token ?? false);
-                         setAspenToken(true);
-
-                         if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (_.isObject(deviceSettings[0])) {
-                                   const settings = deviceSettings[0];
-                                   if (!_.isUndefined(settings.onboardStatus)) {
-                                        setNotificationOnboard(settings.onboardStatus);
-                                   }
-                              }
-                         } else {
-                              // probably connecting to a Discovery version earlier than 23.07.00
-                              setNotificationOnboard(0);
-                         }
-                    } else {
-                         console.log('No settings found for this device model yet');
                          setExpoToken(false);
-                         setAspenToken(false);
-
-                         // let's not intentionally bombard the user with prompts at every boot without knowing their preferences
-                         setNotificationOnboard(0);
-
-                         const deviceSettings = _.filter(data, { device: 'Unknown' });
-                         if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (_.isObject(deviceSettings[0])) {
-                                   const settings = deviceSettings[0];
-                                   if (!_.isUndefined(settings.onboardStatus)) {
-                                        setNotificationOnboard(settings.onboardStatus);
-                                   }
-                              }
-                         }
-
-                         if (userOnboardStatus) {
-                              setNotificationOnboard(userOnboardStatus);
-                         }
+                         setAspenToken(true);
                     }
-               } else {
-                    // something went wrong when receiving data from Discovery API
-                    setExpoToken(false);
-                    setAspenToken(false);
-                    setNotificationOnboard(0);
+
+                    if (userOnboardStatus) {
+                         setNotificationOnboard(userOnboardStatus);
+                    }
                }
           } else {
+               // something went wrong when receiving data from Discovery API
                setExpoToken(false);
                setAspenToken(false);
-
-               // this is not a device that can use notifications, ignore
                setNotificationOnboard(0);
           }
+
           //maybe set allowNotifications at this point for initial load?
           console.log('updated notification settings in UserContext');
      };
