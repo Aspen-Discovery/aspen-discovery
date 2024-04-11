@@ -23,7 +23,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getAvailabilityStmt;
 
-	CloudLibraryProcessor(GroupedWorkIndexer groupedWorkIndexer, String curType, Connection dbConn, Logger logger) {
+	CloudLibraryProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		super(groupedWorkIndexer, "cloud_library", dbConn, logger);
 
 		try {
@@ -73,6 +73,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 				String rawMarc = productRS.getString("rawResponse");
 				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+				String targetAudience = "Adult";
 				if (reader.hasNext()) {
 					org.marc4j.marc.Record marcRecord = reader.next();
 					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
@@ -88,11 +89,15 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 
 					//get target audience from Marc
-					String targetAudience = productRS.getString("targetAudience");
+					targetAudience = productRS.getString("targetAudience");
 					groupedWork.addTargetAudience(targetAudience);
 				} else {
 					logEntry.incErrors("Error getting MARC record for cloudLibrary record from database");
 				}
+
+				boolean isAdult = targetAudience.equals("Adult");
+				boolean isTeen = targetAudience.equals("Young Adult");
+				boolean isKids = targetAudience.equals("Juvenile");
 
 				//Update to create one item per settings so we can have uniform availability at the item level
 				getAvailabilityStmt.setString(1, identifier);
@@ -121,8 +126,6 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					itemInfo.setDateAdded(dateAdded);
 
 					itemInfo.setDetailedStatus("Available Online");
-
-					boolean isChildrens = groupedWork.getTargetAudiences().contains("Juvenile");
 
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);
@@ -160,8 +163,18 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 							} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
 								okToAdd = true;
 							}
-							if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
+							if (okToAdd) {
 								okToAdd = false;
+								//noinspection RedundantIfStatement
+								if (isAdult && cloudLibraryScope.isIncludeAdult()) {
+									okToAdd = true;
+								}
+								if (isTeen && cloudLibraryScope.isIncludeTeen()) {
+									okToAdd = true;
+								}
+								if (isKids && cloudLibraryScope.isIncludeKids()) {
+									okToAdd = true;
+								}
 							}
 						}
 						if (okToAdd) {

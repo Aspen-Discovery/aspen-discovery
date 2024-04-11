@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class PalaceProject_Collections extends ObjectEditor {
 	function getObjectType(): string {
-		return 'PalaceProjectCollections';
+		return 'PalaceProjectCollection';
 	}
 
 	function getToolName(): string {

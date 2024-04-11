@@ -8,6 +8,7 @@ class PalaceProjectCollection extends DataObject {
 	public $palaceProjectName;
 	public $displayName;
 	public $hasCirculation;
+	public $includeInAspen;
 	public $lastIndexed;
 
 	public function getUniquenessFields(): array {
@@ -50,18 +51,21 @@ class PalaceProjectCollection extends DataObject {
 				'type' => 'text',
 				'label' => 'Aspen Display Name',
 				'description' => 'The name of the collection for display within Asepn',
+				'forcesReindex' => true,
 			],
 			'hasCirculation' => [
 				'property' => 'hasCirculation',
 				'type' => 'checkbox',
 				'label' => 'Has Circulation',
 				'description' => 'If the collection has circulation. Collections with circulation will be indexed continuously.',
+				'forcesReindex' => true,
 			],
 			'includeInAspen' => [
 				'property' => 'includeInAspen',
 				'type' => 'checkbox',
 				'label' => 'Include In Aspen',
 				'description' => 'Whether the collection is included within Aspen.',
+				'forcesReindex' => true,
 			],
 			'lastIndexed' => [
 				'property' => 'lastIndexed',

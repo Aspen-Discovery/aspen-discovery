@@ -484,7 +484,7 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		if (customMarcFieldsToIndexAsKeyword != null && customMarcFieldsToIndexAsKeyword.length() > 0) {
+		if (customMarcFieldsToIndexAsKeyword != null && !customMarcFieldsToIndexAsKeyword.isEmpty()) {
 			try {
 				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
 			}catch (Exception e){

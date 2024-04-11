@@ -5,7 +5,6 @@ import com.turning_leaf_technologies.indexing.SideLoadScope;
 import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -81,17 +80,20 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private void scopeItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record){
+		boolean isAdult = groupedWork.getTargetAudiences().contains("Adult");
+		boolean isTeen = groupedWork.getTargetAudiences().contains("Young Adult");
+		boolean isKids = groupedWork.getTargetAudiences().contains("Juvenile");
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
+			loadScopeInfoForEContentItem(groupedWork, itemInfo, record, isAdult, isTeen, isKids);
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
+	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record, boolean isAdult, boolean isTeen, boolean isKids) {
 		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
-				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
+				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isAdult);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);

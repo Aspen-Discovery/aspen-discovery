@@ -3664,15 +3664,12 @@ class User extends DataObject {
 			$sections['palace_project'] = new AdminSection('Palace Project');
 			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
 			$palaceProjectScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/PalaceProject/Scopes');
+			$palaceProjectCollectionsAction = new AdminAction('Collections', 'Defines the collections within a Palace Project Account.', '/PalaceProject/Collections');
 			if ($sections['palace_project']->addAction($palaceProjectSettingsAction, 'Administer Palace Project')) {
 				$palaceProjectSettingsAction->addSubAction($palaceProjectScopesAction, 'Administer Palace Project');
-			} else {
-				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
-			}
-			$palaceProjectCollectionsAction = new AdminAction('Collections', 'Defines the collections within a Palace Project Account.', '/PalaceProject/Collections');
-			if ($sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project')) {
 				$palaceProjectSettingsAction->addSubAction($palaceProjectCollectionsAction, 'Administer Palace Project');
 			} else {
+				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
 				$sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project');
 			}
 			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [

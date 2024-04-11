@@ -1125,7 +1125,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 
 						if ($success == 0) {
-							$alertStatus = 'alert-error';
+							$alertStatus = 'alert-danger';
 						}else if ($success != $total) {
 							$alertStatus = 'alert-warning';
 						}else {
@@ -1389,7 +1389,14 @@ class MyAccount_AJAX extends JSON_Action {
 							}
 						}
 
-						$message = '<div class="alert alert-success">' . translate([
+						if ($success == 0) {
+							$alertStatus = 'alert-danger';
+						}else if ($success != $total) {
+							$alertStatus = 'alert-warning';
+						}else {
+							$alertStatus = 'alert-success';
+						}
+						$message = '<div class="alert ' . $alertStatus . '">' . translate([
 								'text' => '%1% of %2% holds were thawed',
 								1 => $success,
 								2 => $total,

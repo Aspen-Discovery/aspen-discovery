@@ -370,7 +370,7 @@ class Koha extends AbstractIlsDriver {
 					$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
 
 					$messageInformation = [];
-					if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $postResults, $messageInformation)) {
+					if (preg_match('%<div class="alert alert-danger">(.*?)</div>%s', $postResults, $messageInformation)) {
 						$error = $messageInformation[1];
 						$error = str_replace('<h3>', '<h4>', $error);
 						$error = str_replace('</h3>', '</h4>', $error);
@@ -5085,7 +5085,7 @@ class Koha extends AbstractIlsDriver {
 				];
 				$catalogUrl = $this->accountProfile->vendorOpacUrl;
 				$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
-				if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
+				if (preg_match('%<div class="alert alert-danger">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
 					return [
 						'success' => false,
 						'message' => $matches[1],
@@ -6214,7 +6214,7 @@ class Koha extends AbstractIlsDriver {
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron);
-				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
+				$maxReserves = $this->getKohaSystemPreference('maxreserves', 999);
 				$totalHolds = $accountSummary->getNumHolds();
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3) {
@@ -6398,7 +6398,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		//Check maximum holds
-		$maxHolds = $this->getKohaSystemPreference('maxreserves', 50);
+		$maxHolds = $this->getKohaSystemPreference('maxreserves', 999);
 		//Get total holds
 		$currentHoldsForUser = $accountSummary->getNumHolds();
 		if ($currentHoldsForUser >= $maxHolds) {
