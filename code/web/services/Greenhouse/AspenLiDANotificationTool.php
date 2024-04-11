@@ -8,6 +8,7 @@ require_once ROOT_DIR . '/sys/CurlWrapper.php';
 class Greenhouse_AspenLiDANotificationTool extends Admin_Admin {
 	function launch() {
 		global $interface;
+		$interface->assign('instructions', $this->getInstructions());
 
 		require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 		$expo = new ExpoNotification();
@@ -53,7 +54,7 @@ class Greenhouse_AspenLiDANotificationTool extends Admin_Admin {
 	}
 
 	function getInstructions(): string {
-		return '';
+		return 'https://docs.expo.dev/push-notifications/sending-notifications/#errors';
 	}
 
 	function getBreadcrumbs(): array {

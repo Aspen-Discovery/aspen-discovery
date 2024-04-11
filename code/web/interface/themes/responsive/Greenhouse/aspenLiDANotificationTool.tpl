@@ -3,6 +3,9 @@
 		<div class="col-xs-12 col-md-9">
 			<h1 id="pageTitle">{$pageTitleShort}</h1>
 		</div>
+		<div class="col-xs-12 col-md-3 help-link">
+            {if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle" role="presentation"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
+		</div>
 	</div>
 
 	<div id="main-content" class="col-md-12">
