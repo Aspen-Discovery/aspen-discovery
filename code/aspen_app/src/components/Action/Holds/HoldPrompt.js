@@ -189,6 +189,7 @@ export const HoldPrompt = (props) => {
                                              <SelectTrigger variant="outline" size="md">
                                                   {locations.map((selectedLocation, index) => {
                                                        if (selectedLocation.code === location) {
+                                                            setLocation(location);
                                                             return <SelectInput value={selectedLocation.name} color={textColor} />;
                                                        }
                                                   })}
