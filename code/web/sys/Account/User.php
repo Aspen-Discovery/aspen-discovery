@@ -3552,10 +3552,6 @@ class User extends DataObject {
 			'View Location Collection Reports',
 			'View All Collection Reports',
 		]);
-        $sections['circulation_reports']->addAction(new AdminAction('Weeding Report', 'View a collection weeding report for all items for a branch.', '/Report/WeedingReport'), [
-            'View Location Collection Reports',
-            'View All Collection Reports',
-        ]);
 
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['boundless'] = new AdminSection('Boundless');
