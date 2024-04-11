@@ -209,7 +209,7 @@ public class Scope implements Comparable<Scope>{
 
 	void setAdditionalLocationsToShowAvailabilityFor(String additionalLocationsToShowAvailabilityFor) {
 		this.additionalLocationsToShowAvailabilityFor = additionalLocationsToShowAvailabilityFor;
-		if (!additionalLocationsToShowAvailabilityFor.isEmpty()){
+		if (additionalLocationsToShowAvailabilityFor != null && !additionalLocationsToShowAvailabilityFor.isEmpty()){
 			additionalLocationsToShowAvailabilityForPattern = Pattern.compile(additionalLocationsToShowAvailabilityFor);
 		}
 	}
