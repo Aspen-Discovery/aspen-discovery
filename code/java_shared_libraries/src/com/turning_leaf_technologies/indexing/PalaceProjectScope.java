@@ -52,4 +52,7 @@ public class PalaceProjectScope {
 		this.includeKids = includeKids;
 	}
 
+	public boolean isIncludeAdult() {
+		return includeAdult;
+	}
 }

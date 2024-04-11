@@ -4672,18 +4672,6 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
-	function getLiDAVersion() {
-		global $logger;
-		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				return $version[0];
-			}
-		}
-		return 0;
-	}
-
 	function getLinkedAccounts() {
 		$user = $this->getUserForApiCall();
 

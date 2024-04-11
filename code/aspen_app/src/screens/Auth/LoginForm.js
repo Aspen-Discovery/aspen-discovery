@@ -17,7 +17,7 @@ import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getCatalogStatus, getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
 import { getLocationInfo } from '../../util/api/location';
 import { loginToLiDA, reloadProfile, validateUser } from '../../util/api/user';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { createAuthTokens, decodeHTML, getHeaders, stripHTML } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, reloadBrowseCategories } from '../../util/loadLibrary';
 import { PATRON } from '../../util/loadPatron';
@@ -67,6 +67,12 @@ export const GetLoginForm = (props) => {
      }, [navigation, barcode]);
 
      const initialValidation = async () => {
+          setLoginError(false);
+          setLoginErrorMessage('');
+          updateCatalogStatus({
+               message: null,
+               status: 0,
+          });
           const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
           if (result.success) {
                const version = formatDiscoveryVersion(result.library.discoveryVersion);
@@ -75,17 +81,28 @@ export const GetLoginForm = (props) => {
                if (version >= '24.03.00') {
                     const currentStatus = await getCatalogStatus(patronsLibrary['baseUrl']);
                     if (currentStatus) {
+                         console.log(currentStatus);
                          updateCatalogStatus(currentStatus);
-                         if (currentStatus.status > 0) {
+                         if (currentStatus.status >= 1) {
                               // catalog is offline
+                              console.log('catalog is offline');
                               setLoading(false);
                               setLoginError(true);
                               if (currentStatus.message) {
-                                   setLoginErrorMessage(currentStatus.message);
+                                   let tmp = stripHTML(currentStatus.message);
+                                   tmp = tmp.trim();
+                                   setLoginErrorMessage(tmp);
                               } else {
                                    getTermFromDictionary('en', 'catalog_offline_message');
                               }
                               return;
+                         } else {
+                              console.log('catalog online');
+                              console.log(catalogStatus);
+                              updateCatalogStatus({
+                                   status: 0,
+                                   message: null,
+                              });
                          }
                     }
                }

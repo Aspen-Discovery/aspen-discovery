@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import _ from 'lodash';
-import { createAuthTokens, getHeaders, postData } from '../apiAuth';
+import { createAuthTokens, getHeaders, postData, stripHTML } from '../apiAuth';
 import { GLOBALS } from '../globals';
 import { LIBRARY } from '../loadLibrary';
 
@@ -198,11 +198,14 @@ export async function getCatalogStatus(url = null) {
      });
      const response = await api.get('/SystemAPI?method=getCatalogStatus');
      if (response.ok) {
-          console.log('Checked catalog status at Loading');
           if (response?.data?.result) {
+               let catalogMessage = null;
+               if (response?.data?.result?.api?.message) {
+                    catalogMessage = stripHTML(response?.data?.result?.api.message);
+               }
                return {
                     status: response?.data?.result?.catalogStatus ?? 0,
-                    message: response?.data?.result?.api?.message ?? null,
+                    message: catalogMessage,
                };
           }
      } else {

@@ -7,8 +7,9 @@ class SideLoadScope extends DataObject {
 	public $id;
 	public $name;
 	public $sideLoadId;
-	public /** @noinspection PhpUnused */
-		$restrictToChildrensMaterial;
+	public $includeAdult;
+	public $includeTeen;
+	public $includeKids;
 
 	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
 	public /** @noinspection PhpUnused */
@@ -62,12 +63,29 @@ class SideLoadScope extends DataObject {
 				'description' => 'The Name of the scope',
 				'maxLength' => 50,
 			],
-			'restrictToChildrensMaterial' => [
-				'property' => 'restrictToChildrensMaterial',
+			'includeAdult' => [
+				'property' => 'includeAdult',
 				'type' => 'checkbox',
-				'label' => 'Include Children\'s Materials Only',
-				'description' => 'If checked only includes titles identified as children',
-				'default' => 0,
+				'label' => 'Include Adult Titles',
+				'description' => 'Whether or not adult titles from the Palace Project collection should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeTeen' => [
+				'property' => 'includeTeen',
+				'type' => 'checkbox',
+				'label' => 'Include Teen Titles',
+				'description' => 'Whether or not teen titles from the Side Load collection should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeKids' => [
+				'property' => 'includeKids',
+				'type' => 'checkbox',
+				'label' => 'Include Kids Titles',
+				'description' => 'Whether or not kids titles from the Side Load collection should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
 			],
 			'marcTagToMatch' => [
 				'property' => 'marcTagToMatch',

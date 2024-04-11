@@ -64,6 +64,8 @@ export const DiscoverHomeScreen = () => {
 
      useQuery(['catalog_status', library.baseUrl], () => getCatalogStatus(library.baseUrl), {
           enabled: !!library.baseUrl,
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
           onSuccess: (data) => {
                updateCatalogStatus(data);
           },
@@ -367,7 +369,11 @@ export const DiscoverHomeScreen = () => {
 
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
-               type = item.source;
+               if (item.source === 'library_calendar') {
+                    type = 'Event';
+               } else {
+                    type = item.source;
+               }
           }
 
           if (!_.isUndefined(item.recordtype)) {

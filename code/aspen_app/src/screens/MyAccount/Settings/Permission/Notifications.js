@@ -1,12 +1,13 @@
 import { FlatList, Switch, ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable, Icon, Text, Center, Button, ButtonText, ButtonIcon, ButtonGroup, Heading, Box, Accordion, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AccordionItem, AccordionContent, AccordionContentText, AccordionHeader, AccordionTrigger, AccordionTitleText, AccordionIcon } from '@gluestack-ui/themed';
 import { useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
+import { ChevronLeftIcon } from 'native-base';
 import React from 'react';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { AppState, Platform } from 'react-native';
 
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, StackActions } from '@react-navigation/native';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
 import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../../context/initialContext';
@@ -60,7 +61,9 @@ export const NotificationPermissionStatus = () => {
 };
 
 export const NotificationPermissionDescription = () => {
-     const { colorMode, textColor } = React.useContext(ThemeContext);
+     const navigation = useNavigation();
+     const prevRoute = useRoute().params?.prevRoute ?? null;
+     const { colorMode, textColor, theme } = React.useContext(ThemeContext);
      const [permissionStatus, setPermissionStatus] = React.useState(useRoute().params?.permissionStatus ?? false);
      const { language } = React.useContext(LanguageContext);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
@@ -73,7 +76,17 @@ export const NotificationPermissionDescription = () => {
      const appState = React.useRef(AppState.currentState);
      const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
 
-     console.log(notificationSettings);
+     React.useLayoutEffect(() => {
+          if (prevRoute === 'navigation_onboard') {
+               navigation.setOptions({
+                    headerLeft: () => (
+                         <Pressable onPress={() => navigation.dispatch(StackActions.popToTop())} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                              <ChevronLeftIcon size="$5" color={theme['colors']['primary']['baseContrast']} />
+                         </Pressable>
+                    ),
+               });
+          }
+     }, [navigation]);
 
      React.useEffect(() => {
           (async () => {

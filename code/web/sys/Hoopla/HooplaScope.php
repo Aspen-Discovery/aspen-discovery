@@ -37,8 +37,9 @@ class HooplaScope extends DataObject {
 		$includeBingePass;
 	public /** @noinspection PhpUnused */
 		$maxCostPerCheckoutBingePass;
-	public /** @noinspection PhpUnused */
-		$restrictToChildrensMaterial;
+	public $includeAdult;
+	public $includeTeen;
+	public $includeKids;
 	public /** @noinspection PhpUnused */
 		$ratingsToExclude;
 	public /** @noinspection PhpUnused */
@@ -216,12 +217,28 @@ class HooplaScope extends DataObject {
 				'default' => 5,
 				'forcesReindex' => true,
 			],
-			'restrictToChildrensMaterial' => [
-				'property' => 'restrictToChildrensMaterial',
+			'includeAdult' => [
+				'property' => 'includeAdult',
 				'type' => 'checkbox',
-				'label' => 'Include Children\'s Materials Only',
-				'description' => 'If checked only includes titles identified as children by Hoopla',
-				'default' => 0,
+				'label' => 'Include Adult Titles',
+				'description' => 'Whether or not adult titles from Hoopla should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeTeen' => [
+				'property' => 'includeTeen',
+				'type' => 'checkbox',
+				'label' => 'Include Teen Titles',
+				'description' => 'Whether or not teen titles from Hoopla should be included in searches',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+			'includeKids' => [
+				'property' => 'includeKids',
+				'type' => 'checkbox',
+				'label' => 'Include Kids Titles',
+				'description' => 'Whether or not kids titles from Hoopla should be included in searches',
+				'default' => true,
 				'forcesReindex' => true,
 			],
 			'ratingsToExclude' => [

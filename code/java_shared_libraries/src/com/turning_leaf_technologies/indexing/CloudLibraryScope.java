@@ -6,7 +6,9 @@ public class CloudLibraryScope {
 	private String name;
 	private boolean includeEBooks;
 	private boolean includeEAudiobook;
-	private boolean restrictToChildrensMaterial;
+	private boolean includeAdult;
+	private boolean includeTeen;
+	private boolean includeKids;
 
 	public long getId() {
 		return id;
@@ -40,12 +42,28 @@ public class CloudLibraryScope {
 		this.includeEAudiobook = includeEAudiobook;
 	}
 
-	public boolean isRestrictToChildrensMaterial() {
-		return restrictToChildrensMaterial;
+	void setIncludeAdult(boolean includeAdult) {
+		this.includeAdult = includeAdult;
 	}
 
-	void setRestrictToChildrensMaterial(boolean restrictToChildrensMaterial) {
-		this.restrictToChildrensMaterial = restrictToChildrensMaterial;
+	public boolean isIncludeTeen() {
+		return includeTeen;
+	}
+
+	void setIncludeTeen(boolean includeTeen) {
+		this.includeTeen = includeTeen;
+	}
+
+	public boolean isIncludeKids() {
+		return includeKids;
+	}
+
+	void setIncludeKids(boolean includeKids) {
+		this.includeKids = includeKids;
+	}
+
+	public boolean isIncludeAdult() {
+		return includeAdult;
 	}
 
 	public long getSettingId() {
