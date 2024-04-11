@@ -125,6 +125,7 @@
 						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Greenhouse/AspenLiDABuildTracker">{translate text="Aspen LiDA Build Tracker" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/AspenLiDASiteListingCache">{translate text="Aspen LiDA Site Listing Cache" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/AspenLiDANotificationTool">{translate text="Aspen LiDA Notification Tool" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>
