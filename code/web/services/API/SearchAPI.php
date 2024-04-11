@@ -407,9 +407,11 @@ class SearchAPI extends AbstractAPI {
 								} elseif (empty($sideLoadLogEntry->endTime)){
 									$sideloadIndexNote .= $sideload->name . ' has not finished indexing on the last 2 tries<br/>';
 								}
-							} else {
+							} else if ($sideload->lastUpdateOfAllRecords == null && $sideload->lastUpdateOfChangedRecords == null){
 								$sideloadIndexNote .= $sideload->name . ' has never finished indexing<br/>';
 							}
+						}elseif ($sideLoadLogEntry->startTime < time() - 24 * 60 * 60){
+							$sideloadIndexNote .= $sideload->name . ' has been indexing for more than 24 hours<br/>';
 						}
 					}else{
 						if ($sideload->lastUpdateOfAllRecords == null && $sideload->lastUpdateOfChangedRecords == null){

@@ -123,6 +123,15 @@ function getUpdates24_04_00(): array {
 				'ALTER TABLE sideload_scopes DROP COLUMN restrictToChildrensMaterial',
 			]
 		], //sideload_restrict_scopes_by_audience
+		'update_user_list_module_log_settings' => [
+			'title' => 'Update User List Module Log Settings',
+			'description' => 'Update User List Module Log Settings',
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE modules set logClassPath = '/sys/UserLists/ListIndexingLogEntry.php', logClassName='ListIndexingLogEntry', settingsClassPath = '/sys/UserLists/ListIndexingSettings.php', settingsClassName = 'ListIndexingSettings' where name = 'User Lists'",
+			]
+		], //update_user_list_module_log_settings
+
 
 		//kirstien - ByWater
 		'self_check_checkout_location' => [
