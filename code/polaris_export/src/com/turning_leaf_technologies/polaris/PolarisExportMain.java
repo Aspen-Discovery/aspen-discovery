@@ -715,10 +715,11 @@ public class PolarisExportMain {
 				if (!indexingProfile.isRunFullUpdate()) {
 					lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 					if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
-						//Give a buffer of 15 minutes to account for server time differences and allow Polaris to record changes
-						//With one minute all changes were not captured.
-						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 15 * 60 * 1000 ;
+						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords();
 					}
+					//Give a buffer of 15 minutes to account for server time differences and allow Polaris to record changes
+					//With one minute all changes were not captured.
+					lastExtractTime = lastExtractTime - 15 * 60 * 1000;
 				} else {
 					getRecordGroupingProcessor().loadExistingTitles(logEntry);
 				}
