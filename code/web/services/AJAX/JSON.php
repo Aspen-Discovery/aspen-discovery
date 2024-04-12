@@ -616,9 +616,11 @@ class AJAX_JSON extends Action {
 		}
 
 		$activeThemeId = $interface->getVariable('activeThemeId');
-		$preferredTheme = strip_tags($_REQUEST['preferredTheme']);
-		if ($activeThemeId != $preferredTheme) {
-			$_SESSION['preferredTheme'] = $preferredTheme;
+		if (isset($_REQUEST['preferredTheme'])) {
+			$preferredTheme = strip_tags($_REQUEST['preferredTheme']);
+			if ($activeThemeId != $preferredTheme) {
+				$_SESSION['preferredTheme'] = $preferredTheme;
+			}
 		}
 
 		return [
