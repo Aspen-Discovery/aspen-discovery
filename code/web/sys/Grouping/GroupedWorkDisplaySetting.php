@@ -688,7 +688,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		if ($return) {
 			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {
 				// convert to array retrieving from database
-				$unSerialized = unserialize($this->showInSearchResultsMainDetails);
+				$unSerialized = @unserialize($this->showInSearchResultsMainDetails);
 				if (!empty($unSerialized)) {
 					$this->showInSearchResultsMainDetails = array_combine($unSerialized, $unSerialized);
 					if (!$this->showInSearchResultsMainDetails) {
@@ -702,9 +702,13 @@ class GroupedWorkDisplaySetting extends DataObject {
 			if (isset($this->showInMainDetails) && is_string($this->showInMainDetails) && !empty($this->showInMainDetails)) {
 				// convert to array retrieving from database
 				try {
-					$unSerialized = unserialize($this->showInMainDetails);
-					$this->showInMainDetails = array_combine($unSerialized, $unSerialized);
-					if (!$this->showInMainDetails) {
+					$unSerialized = @unserialize($this->showInMainDetails);
+					if (!empty($unSerialized)) {
+						$this->showInMainDetails = array_combine($unSerialized, $unSerialized);
+						if (!$this->showInMainDetails) {
+							$this->showInMainDetails = [];
+						}
+					}else{
 						$this->showInMainDetails = [];
 					}
 				} catch (Exception $e) {
