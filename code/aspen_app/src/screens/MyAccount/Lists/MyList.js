@@ -385,6 +385,16 @@ export const MyList = () => {
      };
 
      const getActionButtons = () => {
+          let sortLength = 8 * sortBy.dateAdded.length + 80;
+          if (sort === 'title') {
+               sortLength = 8 * sortBy.title.length + 80;
+          } else if (sort === 'recentlyAdded') {
+               sortLength = 8 * sortBy.recentlyAdded.length + 80;
+          } else if (sort === 'custom') {
+               sortLength = 8 * sortBy.custom.length + 80;
+          } else if (sort === 'dateAdded') {
+               sortLength = 8 * sortBy.dateAdded.length + 80;
+          }
           return (
                <Box
                     safeArea={2}
@@ -398,7 +408,7 @@ export const MyList = () => {
                     flexWrap="nowrap">
                     <ScrollView horizontal>
                          <HStack space={2}>
-                              <FormControl w={150}>
+                              <FormControl w={sortLength}>
                                    <Select
                                         isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"

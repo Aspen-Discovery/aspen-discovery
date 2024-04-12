@@ -6,6 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NativeBaseProvider, StatusBar } from 'native-base';
 import React from 'react';
+import Toast from 'react-native-toast-message';
+
 // Access any @sentry/react-native exports via:
 // Sentry.Native.*
 import { LogBox } from 'react-native';
@@ -31,8 +33,26 @@ const queryClient = new QueryClient({
 });
 
 // Hide log error/warning popups in simulator (useful for demoing)
-LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+const IGNORED_LOGS = ['Non-serializable values were found in the navigation state', 'Warning: ...', 'Warn: ...', 'If you do not provide children, you must specify an aria-label for accessibility '];
+LogBox.ignoreLogs(IGNORED_LOGS);
 LogBox.ignoreAllLogs(); //Ignore all log notifications
+// Workaround for Expo 45
+if (__DEV__) {
+     const withoutIgnored =
+          (logger) =>
+          (...args) => {
+               const output = args.join(' ');
+
+               if (!IGNORED_LOGS.some((log) => output.includes(log))) {
+                    logger(...args);
+               }
+          };
+
+     console.log = withoutIgnored(console.log);
+     console.info = withoutIgnored(console.info);
+     console.warn = withoutIgnored(console.warn);
+     console.error = withoutIgnored(console.error);
+}
 
 export default function AppContainer() {
      const [isLoading, setLoading] = React.useState(true);
@@ -98,6 +118,7 @@ export default function AppContainer() {
                          </GluestackUIProvider>
                     </Sentry.Native.TouchEventBoundary>
                </SSRProvider>
+               <Toast />
           </QueryClientProvider>
      );
 }

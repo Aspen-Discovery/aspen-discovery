@@ -52,6 +52,7 @@ export const SearchResults = () => {
 
      const type = useRoute().params.type ?? 'catalog';
      const id = useRoute().params.id ?? null;
+     const barcodeType = useRoute().params.barcodeType ?? null;
 
      const systemMessagesForScreen = [];
 
@@ -81,7 +82,7 @@ export const SearchResults = () => {
 
      const { status, data, error, isFetching, isPreviousData } = useQuery({
           queryKey: ['searchResults', url, page, term, scope, params, type, id, language, currentIndex, currentSource],
-          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language, currentIndex, currentSource),
+          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language, currentIndex, currentSource, barcodeType),
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
@@ -680,7 +681,7 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url, type, id, language, index, source) {
+async function fetchSearchResults(term, page, scope, url, type, id, language, index, source, barcodeType) {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -698,6 +699,7 @@ async function fetchSearchResults(term, page, scope, url, type, id, language, in
                includeSortList: true,
                source: source,
                searchIndex: index,
+               barcodeType,
           },
      });
 
