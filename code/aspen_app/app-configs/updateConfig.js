@@ -188,6 +188,7 @@ const app_config = {
                },
           ],
           ['expo-calendar', { calendarPermission: 'This app can add library events to your calendar' }],
+          ['expo-camera', { cameraPermission: 'This app uses your camera to scan barcodes when searching for items in the library catalog or when scanning your library card.' }],
      ],
 };
 
