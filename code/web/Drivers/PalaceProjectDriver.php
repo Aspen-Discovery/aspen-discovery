@@ -379,7 +379,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, true);
 			$response = $this->curlWrapper->curlGetPage($borrowLink);
-			ExternalRequestLogEntry::logRequest('palaceProject.checkoutTitle', 'POST', $borrowLink, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
+			ExternalRequestLogEntry::logRequest('palaceProject.placeHold', 'POST', $borrowLink, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			if ($response != false) {
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse == false) {
