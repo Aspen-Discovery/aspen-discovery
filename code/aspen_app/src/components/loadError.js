@@ -1,7 +1,7 @@
 import React from 'react';
-import { Alert, Button, Center, Heading, HStack, Icon, Text, VStack, Box } from '@gluestack-ui/themed-native-base';
-import { useToast, Toast } from '@gluestack-ui/themed';
+import { Button, Center, Heading, HStack, Icon, Text } from '@gluestack-ui/themed-native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 
 // custom components and helper files
 import { getTermFromDictionary } from '../translations/TranslationService';
@@ -78,16 +78,11 @@ export function badServerConnectionToast() {
  * @param {string} status
  **/
 export function popToast(title, description, status) {
-     const toast = useToast();
-     return toast.show({
-          title: title,
-          description: description,
-          status: status,
-          isClosable: true,
-          duration: 5000,
-          accessibilityAnnouncement: description,
-          zIndex: 9999,
-          placement: 'top',
+     Toast.show({
+          position: 'bottom',
+          type: status,
+          text1: title,
+          text2: description,
      });
 }
 
@@ -106,39 +101,17 @@ export function popToast(title, description, status) {
  * <li>Success</li>
  * <li>Error</li>
  * <li>Info</li>
- * <li>Warning</li>
  * </ul>
  * @param {string} title
  * @param {string} description
  * @param {string} status
  **/
 export function popAlert(title, description, status) {
-     const toast = useToast();
-     return toast.show({
-          duration: 5000,
-          accessibilityAnnouncement: description,
-          avoidKeyboard: true,
-          render: () => {
-               return (
-                    <Center>
-                         <Alert maxW="400" status={status} colorScheme={status}>
-                              <VStack space={2} flexShrink={1} w="100%">
-                                   <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-                                        <HStack flexShrink={1} space={2} alignItems="center">
-                                             <Alert.Icon />
-                                             <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolGray.800' }}>
-                                                  {title}
-                                             </Text>
-                                        </HStack>
-                                   </HStack>
-                                   <Box pl="6" _dark={{ _text: { color: 'coolGray.600' } }}>
-                                        {description}
-                                   </Box>
-                              </VStack>
-                         </Alert>
-                    </Center>
-               );
-          },
+     Toast.show({
+          position: 'bottom',
+          type: status,
+          text1: title,
+          text2: description,
      });
 }
 

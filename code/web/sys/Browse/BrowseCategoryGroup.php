@@ -178,7 +178,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		return $this->_browseCategories;
 	}
 
-	public function getBrowseCategoriesForLiDA($max = null, $appUser = null, $checkDismiss = true): array {
+	public function getBrowseCategoriesForLiDA($max = null, User $user, $checkDismiss = true): array {
 		if (!isset($this->_browseCategories) && $this->id) {
 			if ($max) {
 				$count = 0;
@@ -191,7 +191,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 						if ($count >= $max) {
 							break;
 						}
-						if ($browseCategory->isValidForDisplay($appUser, $checkDismiss)) {
+						if ($browseCategory->isValidForDisplayInApp($user, $checkDismiss)) {
 							$thisCategory = $browseCategory->getBrowseCategory();
 							if ($thisCategory->textId != "system_saved_searches" && $thisCategory->textId != "system_user_lists") {
 								$count++;
@@ -207,7 +207,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 				$browseCategory->orderBy('weight');
 				$browseCategory->find();
 				while ($browseCategory->fetch()) {
-					if ($browseCategory->isValidForDisplay($appUser, $checkDismiss)) {
+					if ($browseCategory->isValidForDisplayInApp($user, $checkDismiss)) {
 						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
 					}
 				}

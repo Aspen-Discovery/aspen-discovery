@@ -195,6 +195,16 @@ export const MyReadingHistory = () => {
      };
 
      const getActionButtons = () => {
+          let sortLength = 8 * sortBy.last_used.length + 80;
+          if (sort === 'author') {
+               sortLength = 8 * sortBy.author.length + 80;
+          } else if (sort === 'format') {
+               sortLength = 8 * sortBy.format.length + 80;
+          } else if (sort === 'title') {
+               sortLength = 8 * sortBy.title.length + 80;
+          } else if (sort === 'checkedOut') {
+               sortLength = 8 * sortBy.last_used.length + 80;
+          }
           return (
                <Box
                     safeArea={2}
@@ -208,7 +218,7 @@ export const MyReadingHistory = () => {
                     flexWrap="nowrap">
                     <ScrollView horizontal>
                          <HStack space={2}>
-                              <FormControl w={150}>
+                              <FormControl w={sortLength}>
                                    <Select
                                         isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"

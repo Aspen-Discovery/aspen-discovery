@@ -21,10 +21,6 @@ export const SelectItemHold = (props) => {
           defaultItem = item;
      }
 
-     /*if (defaultItem && !item) {
-          setItem(defaultItem);
-     }*/
-
      return (
           <>
                {holdTypeForFormat === 'either' ? (
@@ -57,24 +53,12 @@ export const SelectItemHold = (props) => {
                          <FormControlLabel>
                               <FormControlLabelText color={textColor}>{getTermFromDictionary(language, 'select_item')}</FormControlLabelText>
                          </FormControlLabel>
-                         <Select
-                              name="itemForHold"
-                              selectedValue={defaultItem}
-                              minWidth={200}
-                              defaultValue={defaultItem}
-                              accessibilityLabel={getTermFromDictionary(language, 'select_item')}
-                              _selectedItem={{
-                                   bg: 'tertiary.300',
-                                   endIcon: <CheckIcon size="5" />,
-                              }}
-                              mt="$1"
-                              mb="$2"
-                              onValueChange={(itemValue) => setItem(itemValue)}>
+                         <Select name="itemForHold" selectedValue={defaultItem} minWidth={200} accessibilityLabel={getTermFromDictionary(language, 'select_item')} mt="$1" mb="$2" onValueChange={(itemValue) => setItem(itemValue)}>
                               <SelectTrigger variant="outline" size="md">
                                    {_.map(Object.keys(copies), function (item, index, array) {
                                         let copy = copies[item];
-                                        console.log(copy);
                                         if (copy.id === defaultItem) {
+                                             setItem(defaultItem);
                                              return <SelectInput value={copy.location} color={textColor} />;
                                         }
                                    })}
