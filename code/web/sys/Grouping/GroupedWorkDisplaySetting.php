@@ -689,8 +689,12 @@ class GroupedWorkDisplaySetting extends DataObject {
 			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {
 				// convert to array retrieving from database
 				$unSerialized = unserialize($this->showInSearchResultsMainDetails);
-				$this->showInSearchResultsMainDetails = array_combine($unSerialized, $unSerialized);
-				if (!$this->showInSearchResultsMainDetails) {
+				if (!empty($unSerialized)) {
+					$this->showInSearchResultsMainDetails = array_combine($unSerialized, $unSerialized);
+					if (!$this->showInSearchResultsMainDetails) {
+						$this->showInSearchResultsMainDetails = [];
+					}
+				}else{
 					$this->showInSearchResultsMainDetails = [];
 				}
 			}
