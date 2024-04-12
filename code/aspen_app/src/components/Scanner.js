@@ -31,7 +31,7 @@ export default function Scanner() {
           if (!scanned) {
                data = cleanBarcode(data, type);
                setScanned(true);
-               navigateStack('BrowseTab', 'SearchResults', { term: data, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: true });
+               navigateStack('BrowseTab', 'SearchResults', { term: data, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: true, barcodeType: type });
                setLoading(false);
           } else {
                setLoading(false);
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
 function cleanBarcode(barcode, type) {
      barcode = barcode.toUpperCase();
 
-     if ((type === '512' || type === 'org.gs1.UPC-A') && Platform.OS === 'ios') {
+     if ((type === 512 || type === '512' || type === 'org.gs1.UPC-A' || type === 'org.gs1.EAN-13') && Platform.OS === 'ios') {
           barcode = barcode.substring(1);
      }
 
