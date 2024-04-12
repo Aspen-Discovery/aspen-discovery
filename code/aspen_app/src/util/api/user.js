@@ -398,6 +398,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
           const primaryCard = {
                key: 0,
                displayName: primaryUser.displayName,
+               userId: primaryUser.id,
                ils_barcode: primaryUser.ils_barcode ?? primaryUser.cat_username,
                expired: primaryUser.expired,
                expires: primaryUser.expires,
@@ -414,6 +415,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                               const card = {
                                    key: count,
                                    displayName: account.displayName,
+                                   userId: account.id,
                                    ils_barcode: account.ils_barcode ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
@@ -425,6 +427,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                               const card = {
                                    key: count,
                                    displayName: account.displayName,
+                                   userId: account.id,
                                    cat_username: account.cat_username ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
@@ -504,7 +507,7 @@ export async function addLinkedAccount(username = '', password = '', url, langua
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
                     try {
-                         popAlert(response.data.result.title, response.data.result.message, 'true');
+                         popAlert(response.data.result.title, response.data.result.message, 'success');
                     } catch (e) {
                          console.log(e);
                     }

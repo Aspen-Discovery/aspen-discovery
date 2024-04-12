@@ -62,7 +62,14 @@ export async function registerForPushNotificationsAsync(url) {
                await savePushToken(url, token);
           }
      } else {
-          alert('Push notifications require a physical device');
+          console.log('Creating a fake token for simulators...');
+          token = (
+               await Notifications.getExpoPushTokenAsync({
+                    projectId: Constants.expoConfig.extra.eas.projectId,
+               })
+          ).data;
+          console.log('token: ' + token);
+          return token;
      }
 
      return token;
@@ -79,18 +86,7 @@ export async function savePushToken(url, pushToken) {
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
-     console.log('saveNotificationPushToken: ' + response);
-     if (response.ok) {
-          if (response.data.result.success) {
-               popAlert(response.data.result.title, response.data.result.message, 'success');
-          } else {
-               popAlert(response.data.result.title, response.data.result.message, 'error');
-          }
-     } else {
-          const problem = problemCodeMap(response.problem);
-          popAlert(problem.title ?? 'Error', problem.message ?? 'Unknown error saving setting', 'warning');
-          console.log(response);
-     }
+     return response.ok;
 }
 
 export async function getPushToken(libraryUrl) {
@@ -124,22 +120,7 @@ export async function deletePushToken(libraryUrl, pushToken, shouldAlert = false
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=deleteNotificationPushToken', postBody);
-     if (response.ok) {
-          //console.log(response);
-          if (shouldAlert) {
-               if (response.data.result.success) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
-                    popAlert(response.data.result.title, response.data.result.message, 'error');
-               }
-          }
-          return true;
-     } else {
-          const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
-          console.log(response);
-          return false;
-     }
+     return response.ok;
 }
 
 async function createNotificationChannelGroup(id, name, description = null) {
@@ -272,28 +253,11 @@ export async function setNotificationPreference(url, pushToken, type, value, sho
           },
      });
      const response = await api.post('/UserAPI?method=setNotificationPreference', postBody);
-     if (response.ok) {
-          if (response.data.result.success === true) {
-               if (showToast) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               }
-               return response.data.result;
-          } else {
-               if (showToast) {
-                    popAlert(response.data.result.title ?? 'Unknown Error', response.data.result.message, 'error');
-               }
-               return false;
-          }
-     } else {
-          const problem = problemCodeMap(response.problem);
-          if (showToast) {
-               popToast(problem.title, problem.message, 'warning');
-          }
-          return false;
-     }
+     return response.ok;
 }
 
 export async function createChannelsAndCategories() {
+     console.log('Creating channels and categories for notifications...');
      const updatesChannelGroup = await getNotificationChannelGroup('updates');
      if (!updatesChannelGroup) {
           await createNotificationChannelGroup('updates', 'Updates');

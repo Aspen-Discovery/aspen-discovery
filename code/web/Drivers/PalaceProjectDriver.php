@@ -93,12 +93,19 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						if ($palaceProjectTitle->find(true)) {
 							$checkout->sourceId = $palaceProjectTitle->id;
 							$checkout->recordId = $palaceProjectTitle->id;
-						}
-
-						$palaceProjectRecord = new PalaceProjectRecordDriver($checkout->sourceId);
-						if ($palaceProjectRecord->isValid()) {
-							$checkout->updateFromRecordDriver($palaceProjectRecord);
-							$checkout->format = $checkout->getRecordFormatCategory();
+							$palaceProjectRecord = new PalaceProjectRecordDriver($checkout->sourceId);
+							if ($palaceProjectRecord->isValid()) {
+								$checkout->updateFromRecordDriver($palaceProjectRecord);
+								$checkout->format = $palaceProjectRecord->getPrimaryFormat();
+							}
+						}else{
+							//We can't find this title locally, it is either from another eContent vendor or no longer exists,
+							// don't show it
+							continue;
+//							$checkout->title = $publication->metadata->title;
+//							if (!empty($publication->metadata->author)) {
+//								$checkout->author = $publication->metadata->author->name;
+//							}
 						}
 
 						foreach ($links as $link) {
@@ -132,12 +139,15 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						if ($palaceProjectTitle->find(true)) {
 							$hold->sourceId = $palaceProjectTitle->id;
 							$hold->recordId = $palaceProjectTitle->id;
-						}
-
-						$palaceProjectRecord = new PalaceProjectRecordDriver($hold->sourceId);
-						if ($palaceProjectRecord->isValid()) {
-							$hold->updateFromRecordDriver($palaceProjectRecord);
-							$hold->format = $hold->getRecordFormatCategory();
+							$palaceProjectRecord = new PalaceProjectRecordDriver($hold->sourceId);
+							if ($palaceProjectRecord->isValid()) {
+								$hold->updateFromRecordDriver($palaceProjectRecord);
+								$hold->format = $palaceProjectRecord->getPrimaryFormat();
+							}
+						}else{
+							//We can't find this title locally, it is either from another eContent vendor or no longer exists,
+							// don't show it
+							continue;
 						}
 
 						$hold->userId = $patron->id;

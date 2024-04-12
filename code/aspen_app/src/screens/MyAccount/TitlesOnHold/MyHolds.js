@@ -233,7 +233,7 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['holds', user.id, , library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           setLoading(false);
      };

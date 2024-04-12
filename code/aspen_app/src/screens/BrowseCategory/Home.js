@@ -246,13 +246,19 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
                if (data === false || data === 'false') {
-                    setNumFailedSessions(numFailedSessions + 1);
-                    if (numFailedSessions >= 2) {
+                    let tmp = numFailedSessions;
+                    tmp = tmp + 1;
+                    setNumFailedSessions(tmp);
+                    console.log('Added +1 to numFailedSessions');
+                    if (tmp >= 2) {
+                         console.log('More than two failed sessions, logging user out');
                          setInvalidSession(true);
                     }
                     setInvalidSession(false);
                } else {
+                    console.log('Resetting numFailedSessions to 0');
                     setNumFailedSessions(0);
+                    setInvalidSession(false);
                }
           },
      });
@@ -369,7 +375,7 @@ export const DiscoverHomeScreen = () => {
 
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
-               if (item.source === 'library_calendar') {
+               if (item.source === 'library_calendar' || item.source === 'springshare_libcal' || item.source === 'communico') {
                     type = 'Event';
                } else {
                     type = item.source;

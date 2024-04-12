@@ -202,17 +202,14 @@ class BrowseCategoryGroupEntry extends DataObject {
 			if ($browseCategory->endDate != 0 && $browseCategory->endDate < $curTime) {
 				return false;
 			}
-			if (!is_null($appUser)) {
-				$user = $appUser;
-			}
+
+			$user = UserAccount::getActiveUserObj();
+
 			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you') {
-				if (UserAccount::isLoggedIn() || $appUser != null) {
-					if (is_null($appUser)) {
-						$user = UserAccount::getActiveUserObj();
-					}
+				if (UserAccount::isLoggedIn()) {
 					if ($browseCategory->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
 						if ($checkDismiss) {
-							if ($this->isDismissed($user)) {
+							if ($this->isDismissed()) {
 								return false;
 							}
 						}
@@ -220,7 +217,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 					}
 					if ($browseCategory->textId == 'system_user_lists' && $user->hasLists()) {
 						if ($checkDismiss) {
-							if ($this->isDismissed($user)) {
+							if ($this->isDismissed()) {
 								return false;
 							}
 						}
@@ -228,7 +225,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 					}
 					if ($browseCategory->textId == 'system_recommended_for_you' && $user->hasRatings()) {
 						if ($checkDismiss) {
-							if ($this->isDismissed($user)) {
+							if ($this->isDismissed()) {
 								return false;
 							}
 						}
@@ -241,15 +238,74 @@ class BrowseCategoryGroupEntry extends DataObject {
 		}
 
 		if ($checkDismiss) {
-			if (UserAccount::isLoggedIn() || $appUser != null) {
-				if (is_null($appUser)) {
-					$user = UserAccount::getActiveUserObj();
-				}
-				if ($this->isDismissed($user)) {
+			if (UserAccount::isLoggedIn()) {
+				if ($this->isDismissed()) {
 					return false;
 				}
 			}
 		}
+
 		return true;
+	}
+
+	public function isValidForDisplayInApp(User $user, $checkDismiss = false): bool {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$browseCategory = new BrowseCategory();
+		$browseCategory->id = $this->browseCategoryId;
+
+		if ($browseCategory->find(true)) {
+			$curTime = time();
+			if ($browseCategory->startDate != 0 && $browseCategory->startDate > $curTime) {
+				return false;
+			}
+			if ($browseCategory->endDate != 0 && $browseCategory->endDate < $curTime) {
+				return false;
+			}
+
+			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you') {
+				if ($user && !($user instanceof AspenError)) {
+					if ($browseCategory->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
+						if ($checkDismiss) {
+							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+							$browseCategoryDismissal = new BrowseCategoryDismissal();
+							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+							$browseCategoryDismissal->userId = $user->id;
+							if ($browseCategoryDismissal->find(true)) {
+								return false;
+							}
+						}
+						return true;
+					}
+					if ($browseCategory->textId == 'system_user_lists' && $user->hasLists()) {
+						if ($checkDismiss) {
+							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+							$browseCategoryDismissal = new BrowseCategoryDismissal();
+							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+							$browseCategoryDismissal->userId = $user->id;
+							if ($browseCategoryDismissal->find(true)) {
+								return false;
+							}
+						}
+						return true;
+					}
+					if ($browseCategory->textId == 'system_recommended_for_you' && $user->hasRatings()) {
+						if ($checkDismiss) {
+							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+							$browseCategoryDismissal = new BrowseCategoryDismissal();
+							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+							$browseCategoryDismissal->userId = $user->id;
+							if ($browseCategoryDismissal->find(true)) {
+								return false;
+							}
+						}
+						return true;
+					}
+
+				}
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }
