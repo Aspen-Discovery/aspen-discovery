@@ -100,6 +100,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private final int numRetriesForBibLookups;
 	private final int numMillisecondsToPauseAfterBibLookups;
 	private final int numExtractionThreads;
+	private String indexingClass;
+
+	public IndexingProfile(){
+		//This is only intended to be used for unit testing
+		numRetriesForBibLookups = 0;
+		numMillisecondsToPauseAfterBibLookups = 1000;
+		numExtractionThreads = 1;
+	}
 
 	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -168,6 +176,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setSubLocationSubfield(getCharFromRecordSet(indexingProfileRS,"subLocation"));
 
 		this.setGroupingClass(indexingProfileRS.getString("groupingClass"));
+		this.setIndexingClass(indexingProfileRS.getString("indexingClass"));
 		this.setFormatSource(indexingProfileRS.getString("formatSource"));
 		this.setFallbackFormatField(indexingProfileRS.getString("fallbackFormatField"));
 		this.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
@@ -291,7 +300,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.filenamesToInclude = filenamesToInclude;
 	}
 
-	private void setGroupingClass(String groupingClass) {
+	public void setGroupingClass(String groupingClass) {
 		this.groupingClass = groupingClass;
 	}
 
@@ -299,7 +308,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.specifiedFormatCategory = specifiedFormatCategory;
 	}
 
-	private void setFormatSource(String formatSource) {
+	public void setFormatSource(String formatSource) {
 		this.formatSource = formatSource;
 	}
 
@@ -371,7 +380,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.createFolderFromLeadingCharacters = createFolderFromLeadingCharacters;
 	}
 
-	private void setRecordNumberTag(String recordNumberTag) {
+	public void setRecordNumberTag(String recordNumberTag) {
 		this.recordNumberTag = recordNumberTag;
 		this.recordNumberTagInt = Integer.parseInt(recordNumberTag);
 	}
@@ -380,7 +389,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return itemRecordNumberSubfield;
 	}
 
-	private void setItemRecordNumberSubfield(char itemRecordNumberSubfield) {
+	public void setItemRecordNumberSubfield(char itemRecordNumberSubfield) {
 		this.itemRecordNumberSubfield = itemRecordNumberSubfield;
 	}
 
@@ -440,7 +449,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return locationSubfield;
 	}
 
-	private void setLocationSubfield(char locationSubfield) {
+	public void setLocationSubfield(char locationSubfield) {
 		this.locationSubfield = locationSubfield;
 	}
 
@@ -480,7 +489,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return iTypeSubfield;
 	}
 
-	private void setITypeSubfield(char iTypeSubfield) {
+	public void setITypeSubfield(char iTypeSubfield) {
 		this.iTypeSubfield = iTypeSubfield;
 	}
 
@@ -488,7 +497,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return shelvingLocationSubfield;
 	}
 
-	private void setShelvingLocationSubfield(char shelvingLocationSubfield) {
+	public void setShelvingLocationSubfield(char shelvingLocationSubfield) {
 		this.shelvingLocationSubfield = shelvingLocationSubfield;
 	}
 
@@ -596,7 +605,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return barcodeSubfield;
 	}
 
-	private void setBarcodeSubfield(char barcodeSubfield) {
+	public void setBarcodeSubfield(char barcodeSubfield) {
 		this.barcodeSubfield = barcodeSubfield;
 	}
 
@@ -664,7 +673,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.itemUrlDescription = itemUrlDescription;
 	}
 
-	private void setRecordNumberSubfield(char recordNumberSubfield) {
+	public void setRecordNumberSubfield(char recordNumberSubfield) {
 		this.recordNumberSubfield = recordNumberSubfield;
 	}
 
@@ -869,5 +878,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public int getNumExtractionThreads() {
 		return numExtractionThreads;
+	}
+
+	public void setIndexingClass(String indexingClass) {
+		this.indexingClass = indexingClass;
+	}
+
+	public String getIndexingClass() {
+		return indexingClass;
 	}
 }

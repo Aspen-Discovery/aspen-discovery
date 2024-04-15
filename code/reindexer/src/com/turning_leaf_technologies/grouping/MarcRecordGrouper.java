@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -53,7 +54,10 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		super.loadAuthorities(dbConnection);
 
-		loadTranslationMaps(dbConnection);
+		// This only happens during unit tests when we are adding translation maps manually
+		if (profile.getId() != null) {
+			loadTranslationMaps(dbConnection);
+		}
 
 		try {
 			getExistingParentRecordsStmt = dbConnection.prepareStatement("SELECT * FROM record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -229,7 +233,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
 			groupingFormat = getFormatFromItems(marcRecord, profile.getFormatSubfield());
-			if (groupingFormat == null || groupingFormat.length() == 0){
+			if (groupingFormat == null || groupingFormat.isEmpty()){
 				//Do a bib level determination
 				String format = getFormatFromBib(marcRecord);
 				groupingFormat = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
@@ -383,5 +387,16 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			}
 		}
 		return parentRecords;
+	}
+
+	public void addTranslationMap(TranslationMap translationMap) {
+		this.translationMaps.put(translationMap.getMapName(), translationMap.getTranslationValues());
+	}
+
+	public void addTranslationMapValue(String mapName, String value, String translation) {
+		if (!this.translationMaps.containsKey(mapName)) {
+			this.translationMaps.put(mapName, new HashMap<>());
+		}
+		this.translationMaps.get(mapName).put(value, translation);
 	}
 }

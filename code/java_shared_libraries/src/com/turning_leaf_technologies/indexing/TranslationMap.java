@@ -113,4 +113,8 @@ public class TranslationMap {
 	public long getId() {
 		return id;
 	}
+
+	public HashMap<String, String> getTranslationValues() {
+		return translationValues;
+	}
 }
