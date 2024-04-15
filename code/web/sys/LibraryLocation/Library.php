@@ -180,6 +180,7 @@ class Library extends DataObject {
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
+	public $institutionCode;
 
 	public $enableCardRenewal;
 	public $showCardRenewalWhenExpirationIsClose;
