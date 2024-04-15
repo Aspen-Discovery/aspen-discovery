@@ -161,7 +161,7 @@ abstract class RecordInterface {
 		if ($interface->getVariable('enableInnReachIntegration')) {
 			$moreDetailsOptions['innReach'] = [
 				'label' => 'More Copies In ' . $library->interLibraryLoanName,
-				'body' => '<div id="inInnReachlaceholder">' . translate(['text'=>"Loading $library->interLibraryLoanName Copies...", 'isPublicFacing'=> true]) . '</div>',
+				'body' => '<div id="inInnReachPlaceholder">' . translate(['text'=>"Loading $library->interLibraryLoanName Copies...", 'isPublicFacing'=> true]) . '</div>',
 				'hideByDefault' => false,
 			];
 		}
