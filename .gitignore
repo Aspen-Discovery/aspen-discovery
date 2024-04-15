@@ -43,7 +43,6 @@ tests/selenium/*
 tests/conf/config.ini
 data-import
 config.pwd.ini
-*.csv
 author_authorities.properties.temp
 author_authorities.v1.properties
 hcl_solr_bib_export.properties
@@ -94,7 +93,6 @@ sites/default/solr/jetty/logs
 
 # MARC records #
 ################
-*.mrc
 *.marc
 
 # IDE Files #

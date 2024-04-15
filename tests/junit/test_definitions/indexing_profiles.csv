@@ -1,0 +1,6 @@
+name,groupingClass,indexingClass,formatSource,recordNumberTag,recordNumberSubfield,itemTag,itemRecordNumberSubfield,locationSubfield,shelvingLocationSubfield,barcodeSubfield,iTypeSubfield,formatSubfield
+koha,MarcRecordGrouper,Koha,item,999,c,952,9,1,c,p,y,y
+sierra,MarcRecordGrouper,Sierra,bib,907,a,949,y,l,l,i,t,t
+symphony,MarcRecordGrouper,Symphony,bib,901,a,999,i,m,l,i,t,t
+carlx,MarcRecordGrouper,CarlX,bib,910,a,949,b,j,l,b,m,m
+nashville,MarcRecordGrouper,NashvilleCarlX,bib,910,a,949,b,j,l,b,m,m

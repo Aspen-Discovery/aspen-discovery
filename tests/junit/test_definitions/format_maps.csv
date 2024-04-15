@@ -1,0 +1,6 @@
+name,value,format_category,format
+koha,BOOK,Books,Book
+koha,DVD,Movies,DVD
+koha,CD,Music,CD
+koha,VGAME,"Other",""
+sierra,n,Other,Console Game

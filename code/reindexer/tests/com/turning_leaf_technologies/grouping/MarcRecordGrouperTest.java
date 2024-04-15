@@ -76,7 +76,7 @@ class MarcRecordGrouperTest {
 
 		GroupedWork testGroupedWork = new GroupedWork(testGrouper);
 		String groupingCategory = testGrouper.setGroupingCategoryForWork(marcRecord, testGroupedWork);
-		Assertions.assertEquals(expectedGroup, groupingCategory, description);
+		Assertions.assertEquals(expectedGroup, groupingCategory);
 	}
 
 	private static Record getMarcRecord(String fileToProcess, IndexingProfile profile) {
