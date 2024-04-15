@@ -304,9 +304,11 @@ public class PalaceProjectProcessor {
 					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 					itemInfo.setDateAdded(dateAdded);
 
-					boolean isAdult = audience.equals("Adult");
 					boolean isTeen = audience.equals("Young Adult");
 					boolean isKids = audience.equals("Juvenile");
+					//Account for cases where audience is Unknown, General, etc
+					boolean isAdult = !isKids && !isTeen;
+
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
 						PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
