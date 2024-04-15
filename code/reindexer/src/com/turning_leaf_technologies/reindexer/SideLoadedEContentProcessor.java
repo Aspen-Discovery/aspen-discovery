@@ -80,9 +80,10 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private void scopeItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record){
-		boolean isAdult = groupedWork.getTargetAudiences().contains("Adult");
 		boolean isTeen = groupedWork.getTargetAudiences().contains("Young Adult");
 		boolean isKids = groupedWork.getTargetAudiences().contains("Juvenile");
+		//Account for cases where audience is Unknown, General, etc
+		boolean isAdult = !isKids && !isTeen;
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 			loadScopeInfoForEContentItem(groupedWork, itemInfo, record, isAdult, isTeen, isKids);
 		}
