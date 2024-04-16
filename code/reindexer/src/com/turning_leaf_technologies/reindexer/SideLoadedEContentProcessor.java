@@ -24,8 +24,6 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
 
-			includePersonalAndCorporateNamesInTopics = sideLoadSettingsRS.getBoolean("includePersonalAndCorporateNamesInTopics");
-
 			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up side load processor");

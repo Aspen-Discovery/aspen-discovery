@@ -29,8 +29,6 @@ abstract class MarcRecordProcessor {
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?[+\\\\/]\\s?dvd.*)|(blu-ray 3d\\s?[+\\\\/]\\s?dvd.*)|(.*dvd\\s?[+\\\\/]\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
-	String customMarcFieldsToIndexAsKeyword = null;
-	boolean includePersonalAndCorporateNamesInTopics;
 
 	PreparedStatement addRecordToDBStmt;
 	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
@@ -110,12 +108,12 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
 						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopicFacet(curSubfield.getData());
 							}
 						} else if (curSubfield.getCode() == 'v') {
@@ -137,7 +135,7 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
@@ -447,9 +445,9 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		if (customMarcFieldsToIndexAsKeyword != null && !customMarcFieldsToIndexAsKeyword.isEmpty()) {
+		if (settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
 			try {
-				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, settings.getCustomMarcFieldsToIndexAsKeyword()));
 			}catch (Exception e){
 				if (!loggedCustomMarcError) {
 					indexer.getLogEntry().incErrors("Error processing custom marc fields to index as keyword", e);

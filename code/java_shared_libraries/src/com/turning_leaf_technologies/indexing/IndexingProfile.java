@@ -220,6 +220,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
 		this.hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
+		this.includePersonalAndCorporateNamesInTopics = indexingProfileRS.getBoolean("includePersonalAndCorporateNamesInTopics");
+
 		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
 
 		this.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));

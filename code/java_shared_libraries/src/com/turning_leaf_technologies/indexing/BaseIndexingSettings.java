@@ -27,6 +27,7 @@ public class BaseIndexingSettings {
 	String treatUnknownLanguageAs;
 	String treatUndeterminedLanguageAs;
 	String customMarcFieldsToIndexAsKeyword;
+	boolean includePersonalAndCorporateNamesInTopics;
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		String subfieldString = indexingProfilesRS.getString(fieldName);
@@ -123,5 +124,13 @@ public class BaseIndexingSettings {
 
 	public void setTreatUndeterminedLanguageAs(String treatUndeterminedLanguageAs) {
 		this.treatUndeterminedLanguageAs = treatUndeterminedLanguageAs;
+	}
+
+	public boolean isIncludePersonalAndCorporateNamesInTopics() {
+		return includePersonalAndCorporateNamesInTopics;
+	}
+
+	public void setIncludePersonalAndCorporateNamesInTopics(boolean includePersonalAndCorporateNamesInTopics) {
+		this.includePersonalAndCorporateNamesInTopics = includePersonalAndCorporateNamesInTopics;
 	}
 }

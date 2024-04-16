@@ -35,11 +35,11 @@ import org.marc4j.marc.VariableField;
  * Class to handle loading data from MARC records
  */
 public class MarcUtil {
-	private static HashMap<String, Set<String>> marcRecordFieldListCache = new HashMap<>();
+	private static final HashMap<String, Set<String>> marcRecordFieldListCache = new HashMap<>();
 	private static long lastRecordHashCode;
 	/**
 	 * Get Set of Strings as indicated by tagStr. For each field spec in the
-	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type fieldspec), the
+	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type field spec), the
 	 * result string is the concatenation of all the specific subfields.
 	 *
 	 * @param record
@@ -87,24 +87,24 @@ public class MarcUtil {
 			// Process Subfields
 			String subfield = tag1.substring(3);
 			boolean havePattern = false;
-			int subend = 0;
+			int subfieldEnd = 0;
 			// brackets indicate parsing for individual characters or as pattern
 			int bracket = tag1.indexOf('[');
 			if (bracket != -1) {
-				String[] sub = tag1.substring(bracket + 1).split("[\\]\\[\\-, ]+");
+				String[] sub = tag1.substring(bracket + 1).split("[]\\[\\-, ]+");
 				try {
 					// if bracket expression is digits, expression is treated as character
 					// positions
-					int substart = Integer.parseInt(sub[0]);
-					subend = (sub.length > 1) ? Integer.parseInt(sub[1]) + 1 : substart + 1;
-					String subfieldWObracket = subfield.substring(0, bracket - 3);
-					result.addAll(getSubfieldDataAsSet(record, tag, subfieldWObracket, substart, subend));
+					int subfieldStart = Integer.parseInt(sub[0]);
+					subfieldEnd = (sub.length > 1) ? Integer.parseInt(sub[1]) + 1 : subfieldStart + 1;
+					String subfieldWithoutBracket = subfield.substring(0, bracket - 3);
+					result.addAll(getSubfieldDataAsSet(record, tag, subfieldWithoutBracket, subfieldStart, subfieldEnd));
 				} catch (NumberFormatException e) {
 					// assume brackets expression is a pattern such as [a-z]
 					havePattern = true;
 				}
 			}
-			if (subend == 0) // don't want specific characters.
+			if (subfieldEnd == 0) // don't want specific characters.
 			{
 				String separator = null;
 				if (subfield.indexOf('\'') != -1) {
@@ -162,17 +162,16 @@ public class MarcUtil {
 		}
 
 		// Loop through Data and Control Fields
-		List<VariableField> varFlds = record.getVariableFields(fldTag);
-		for (VariableField vf : varFlds) {
-			if (!isControlField(fldTag) && subfield != null) {
-				// Data Field
-				DataField dfield = (DataField) vf;
-				resultSet.addAll(dfield.getSubfieldDataAsSet(subfield, beginIx, endIx));
-			} else // Control Field
-			{
-				String cfldData = ((ControlField) vf).getData();
-				if (cfldData.length() >= endIx)
-					resultSet.add(cfldData.substring(beginIx, endIx));
+		List<VariableField> variableFields = record.getVariableFields(fldTag);
+		for (VariableField vf : variableFields) {
+			if (isControlField(fldTag) && subfield != null) {
+				String controlFieldData = ((ControlField) vf).getData();
+				if (controlFieldData.length() >= endIx) {
+					resultSet.add(controlFieldData.substring(beginIx, endIx));
+				}
+			} else  {
+				DataField dataField = (DataField) vf;
+				resultSet.addAll(dataField.getSubfieldDataAsSet(subfield, beginIx, endIx));
 			}
 		}
 		return resultSet;
@@ -187,8 +186,7 @@ public class MarcUtil {
 	 * @param subfieldsStr
 	 *          - the string containing the desired subfields
 	 * @param separator
-	 *          - the separator string to insert between subfield items (if null,
-	 *          a " " will be used)
+	 *          - the separator string to insert between subfield items (if null, a " " will be used)
 	 * @return a Set of String, where each string is the concatenated contents of
 	 *          all the desired subfield values from a single instance of the
 	 *          fldTag
@@ -210,15 +208,15 @@ public class MarcUtil {
 
 		// Loop through Data and Control Fields
 		// int iTag = new Integer(fldTag).intValue();
-		List<VariableField> varFlds = record.getVariableFields(fldTag);
-		if (varFlds == null){
+		List<VariableField> variableFields = record.getVariableFields(fldTag);
+		if (variableFields == null){
 			return resultSet;
 		}
-		for (VariableField vf : varFlds) {
+		for (VariableField vf : variableFields) {
 			if (!isControlField(fldTag) && subfieldsStr != null) {
 				// DataField
-				DataField dfield = (DataField) vf;
-				resultSet.addAll(dfield.getSubfieldDataAsSet(subfieldsStr, separator));
+				DataField dataField = (DataField) vf;
+				resultSet.addAll(dataField.getSubfieldDataAsSet(subfieldsStr, separator));
 			} else {
 				// Control Field
 				resultSet.add(((ControlField) vf).getData().trim());
@@ -227,16 +225,11 @@ public class MarcUtil {
 		return resultSet;
 	}
 
-	private static Pattern controlFieldPattern = Pattern.compile("00[0-9]");
-	private static boolean isControlField(String fieldTag) {
-		return controlFieldPattern.matcher(fieldTag).matches();
-	}
-
 	private static boolean isControlField(int fieldTag) {
 		return fieldTag <= 9;
 	}
 
-	private static HashMap<String, Pattern> subfieldPatterns = new HashMap<>();
+	private static final HashMap<String, Pattern> subfieldPatterns = new HashMap<>();
 	/**
 	 * Given a tag for a field, and a list (or regex) of one or more subfields get
 	 * any linked 880 fields and include the appropriate subfields as a String
@@ -252,8 +245,7 @@ public class MarcUtil {
 	 *          be interpreted as particular bytes, NOT a pattern 100abcd denotes
 	 *          subfields a, b, c, d are desired from the linked 880.
 	 * @param separator
-	 *          - the separator string to insert between subfield items (if null,
-	 *          a " " will be used)
+	 *          - the separator string to insert between subfield items (if null, a " " will be used)
 	 *
 	 * @return set of Strings containing the values of the designated 880
 	 *         field(s)/subfield(s)
@@ -270,10 +262,10 @@ public class MarcUtil {
 			}
 		}
 		List<DataField> fields = record.getDataFields(880);
-		for (DataField dfield : fields) {
-			Subfield link = dfield.getSubfield('6');
+		for (DataField dataField : fields) {
+			Subfield link = dataField.getSubfield('6');
 			if (link != null && link.getData().startsWith(tag)) {
-				List<Subfield> subList = dfield.getSubfields();
+				List<Subfield> subList = dataField.getSubfields();
 				StringBuilder buf = new StringBuilder();
 				for (Subfield subF : subList) {
 					boolean addIt = false;
@@ -332,13 +324,13 @@ public class MarcUtil {
 			String fldTag = fldTag1.substring(0, 3);
 			int fldTagAsInt = Integer.parseInt(fldTag);
 
-			String subfldTags = fldTag1.substring(3);
+			String subfieldTags = fldTag1.substring(3);
 
 			List<DataField> marcFieldList = record.getDataFields(fldTagAsInt);
 			if (!marcFieldList.isEmpty()) {
 				for (DataField marcField : marcFieldList) {
 
-					StringBuilder buffer = getSpecifiedSubfieldsAsString(marcField, subfldTags, separator);
+					StringBuilder buffer = getSpecifiedSubfieldsAsString(marcField, subfieldTags, separator);
 					if (buffer.length() > 0) {
 						result.add(AspenStringUtils.cleanDataForSolr(buffer.toString()));
 					}
@@ -353,7 +345,7 @@ public class MarcUtil {
 		StringBuilder buffer = new StringBuilder();
 		List<Subfield> subFields = marcField.getSubfields();
 		for (Subfield subfield : subFields) {
-			if (validSubfields.length() == 0 || validSubfields.contains("" + subfield.getCode())){
+			if (validSubfields.isEmpty() || validSubfields.contains("" + subfield.getCode())){
 				if (buffer.length() > 0) {
 					buffer.append(separator != null ? separator : " ");
 				}
@@ -382,10 +374,8 @@ public class MarcUtil {
 	public static ControlField getControlField(Record marcRecord, String tag){
 		List<ControlField> variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
-		for (Object variableField : variableFields){
-			if (variableField instanceof ControlField){
-				variableFieldReturn = (ControlField)variableField;
-			}
+		for (ControlField variableField : variableFields){
+			variableFieldReturn = variableField;
 		}
 		return variableFieldReturn;
 	}
@@ -393,17 +383,15 @@ public class MarcUtil {
 	public static ControlField getControlField(Record marcRecord, int tag){
 		List<ControlField> variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
-		for (Object variableField : variableFields){
-			if (variableField instanceof ControlField){
-				variableFieldReturn = (ControlField)variableField;
-			}
+		for (ControlField variableField : variableFields){
+			variableFieldReturn = variableField;
 		}
 		return variableFieldReturn;
 	}
 
 	/**
-	 * Loops through all datafields and creates a field for "keywords"
-	 * searching. Shameless stolen from Vufind Indexer Custom Code
+	 * Loops through all data fields and creates a field for "keywords"
+	 * searching. Shameless stolen from VuFind Indexer Custom Code
 	 *
 	 * @param lowerBound
 	 *          - the "lowest" marc field to include (e.g. 100)
@@ -414,12 +402,12 @@ public class MarcUtil {
 	 *         range indicated by the bound string arguments.
 	 */
 	public static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
-		StringBuilder buffer = new StringBuilder("");
+		StringBuilder buffer = new StringBuilder();
 		List<DataField> fields = record.getDataFields();
 		for (DataField field : fields) {
 			// Get all fields starting with the 100 and ending with the 839
 			// This will ignore any "code" fields and only use textual fields
-			int tag = localParseInt(field.getTag(), -1);
+			int tag = localParseInt(field.getTag());
 			if ((tag >= lowerBound) && (tag < upperBound)) {
 				// Loop through subfields
 				List<Subfield> subfields = field.getSubfields();
@@ -439,7 +427,7 @@ public class MarcUtil {
 
 	public static String getFirstFieldVal(Record record, String fieldSpec) {
 		Set<String> result = MarcUtil.getFieldList(record, fieldSpec);
-		if (result.size() == 0){
+		if (result.isEmpty()){
 			return null;
 		}else{
 			return result.iterator().next();
@@ -450,11 +438,9 @@ public class MarcUtil {
 	 * return an int for the passed string
 	 *
 	 * @param str The String value of the integer to prompt
-	 * @param defValue
-	 *          - default value, if string doesn't parse into int
 	 */
-	private static int localParseInt(String str, int defValue) {
-		int value = defValue;
+	private static int localParseInt(String str) {
+		int value = -1;
 		try {
 			value = Integer.parseInt(str);
 		} catch (NumberFormatException nfe) {
@@ -464,7 +450,7 @@ public class MarcUtil {
 		return (value);
 	}
 
-	private static Pattern specialCharPattern = Pattern.compile("\\p{C}");
+	private static final Pattern specialCharPattern = Pattern.compile("\\p{C}");
 	public static long getChecksum(Record marcRecord) {
 		CRC32 crc32 = new CRC32();
 		String marcRecordContents = marcRecord.toString();
@@ -489,9 +475,9 @@ public class MarcUtil {
 		writer2.close();
 	}
 
-	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
-	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
-	public synchronized static Long getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile, Logger logger) {
+	private static final SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
+	private static final SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
+	public synchronized static Long getDateAddedForRecord(Record marcRecord, File individualFile, Logger logger) {
 		//Set first detection date based on the creation date of the file
 		Long timeAdded = null;
 		if (individualFile.exists()){
@@ -556,7 +542,7 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			//These will now show up in the suppression so we don't need to add them to notes.
+			//These will now show up in the suppression, so we don't need to add them to notes.
 			//logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){
@@ -564,7 +550,7 @@ public class MarcUtil {
 			//logEntry.addNote("Could not read marc file, loading permissive " + marcFile.getAbsolutePath() + e.toString());
 		}
 
-		//If we got here, it didn't read successfully.  Try again using the Permissinve Reader
+		//If we got here, it didn't read successfully.  Try again using the Permissive Reader
 		//The Permissive Reader allows reading large files.
 		return readMarcRecordFromFilePermissive(marcFile, logEntry);
 	}
@@ -597,20 +583,11 @@ public class MarcUtil {
 			try{
 				Record marcRecord = streamReader.next();
 				marcFileStream.close();
-				streamReader = null;
 				return marcRecord;
-			}catch (JSONException jse){
-			}catch (JsonParser.Escape jse){
+			}catch (JSONException | JsonParser.Escape | MarcException | NullPointerException jse){
 				logEntry.incInvalidRecords(identifier);
 				logEntry.addNote(jse.getMessage());
-			}catch (MarcException me){
-				logEntry.incInvalidRecords(identifier);
-				logEntry.addNote(me.getMessage());
-			}catch (NullPointerException npe){
-				logEntry.incInvalidRecords(identifier);
-				logEntry.addNote(npe.getMessage());
 			}
-			streamReader = null;
 			marcFileStream.close();
 		}catch (Exception e){
 			logEntry.incErrors("Could not parse marc in json format for " + identifier, e);

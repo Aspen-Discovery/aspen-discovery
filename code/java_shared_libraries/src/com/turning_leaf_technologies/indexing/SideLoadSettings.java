@@ -28,6 +28,7 @@ public class SideLoadSettings extends BaseIndexingSettings {
 		this.specifiedFormatCategory = settings.getString("specifiedFormatCategory");
 		this.specifiedFormatBoost = settings.getInt("specifiedFormatBoost");
 		this.treatUnknownLanguageAs = settings.getString("treatUnknownLanguageAs");
+		this.includePersonalAndCorporateNamesInTopics = settings.getBoolean("includePersonalAndCorporateNamesInTopics");
 
 		String deletedIdString = settings.getString("deletedRecordsIds");
 		if (deletedIdString != null && deletedIdString.trim().length() > 0) {
