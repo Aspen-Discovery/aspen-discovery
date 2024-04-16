@@ -84,7 +84,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
-				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isAdult);
+				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isKids);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
