@@ -1,8 +1,8 @@
-marc_record_grouper_001.mrc,koha,koha,book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
-marc_record_grouper_002.mrc,koha,koha,movie,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
-marc_record_grouper_003.mrc,koha,koha,music,"Can't Take Me Home - Koha Record with Music format based on item iType",""
-marc_record_grouper_004.mrc,sierra,sierra,book,"NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
-marc_record_grouper_005.mrc,sierra,sierra,book,"NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
+marc_record_grouper_001.mrc,koha,koha,Book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
+marc_record_grouper_002.mrc,koha,koha,Movie,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
+marc_record_grouper_003.mrc,koha,koha,Music,"Can't Take Me Home - Koha Record with Music format based on item iType",""
+marc_record_grouper_004.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
+marc_record_grouper_005.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
 marc_record_grouper_006.mrc,symphony,symphony,book,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
 marc_record_grouper_007.mrc,nashville,nashville,book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
 marc_record_grouper_008.mrc,koha,koha,movie,"Minions : the rise of Gru" (https://discover.ajaxlibrary.ca/Record/235602)",108101
