@@ -17,17 +17,16 @@ public class SideLoadSettings extends BaseIndexingSettings {
 		this.runFullUpdate = settings.getBoolean("runFullUpdate");
 		this.groupingClass = settings.getString("groupingClass");
 		this.marcPath = settings.getString("marcPath");
-		this.individualMarcPath = settings.getString("individualMarcPath");
 		this.filenamesToInclude = settings.getString("filenamesToInclude");
 		this.marcEncoding = settings.getString("marcEncoding");
-		this.numCharsToCreateFolderFrom = settings.getInt("numCharsToCreateFolderFrom");
-		this.createFolderFromLeadingCharacters = settings.getBoolean("createFolderFromLeadingCharacters");
 		this.recordNumberTag = settings.getString("recordNumberTag");
 		this.recordNumberTagInt = settings.getInt("recordNumberTag");
 		this.recordNumberPrefix = settings.getString("recordNumberPrefix");
 		this.recordNumberSubfield = getCharFromRecordSet(settings, "recordNumberSubfield");
 		this.formatSource = settings.getString("formatSource");
+		this.specifiedFormat = settings.getString("specifiedFormat");
 		this.specifiedFormatCategory = settings.getString("specifiedFormatCategory");
+		this.specifiedFormatBoost = settings.getInt("specifiedFormatBoost");
 		this.treatUnknownLanguageAs = settings.getString("treatUnknownLanguageAs");
 
 		String deletedIdString = settings.getString("deletedRecordsIds");

@@ -68,8 +68,8 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 		}
-		if (iTypeSubfield != ' '){
-			Subfield iTypeSubfieldValue = curItem.getSubfield(iTypeSubfield);
+		if (settings.getITypeSubfield() != ' '){
+			Subfield iTypeSubfieldValue = curItem.getSubfield(settings.getITypeSubfield());
 			if (iTypeSubfieldValue != null){
 				String iTypeValue = iTypeSubfieldValue.getData();
 				if (iTypesToSuppress != null && iTypesToSuppress.matcher(iTypeValue).matches()){

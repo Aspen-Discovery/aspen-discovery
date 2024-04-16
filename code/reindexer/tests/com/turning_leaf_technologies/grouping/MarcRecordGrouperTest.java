@@ -103,6 +103,7 @@ class MarcRecordGrouperTest {
 				while ((indexingProfileData = reader.readNext()) != null){
 					IndexingProfile profile = new IndexingProfile();
 					profile.setName(indexingProfileData[0]);
+					profile.setMarcEncoding("UTF8");
 					profile.setGroupingClass(indexingProfileData[1]);
 					profile.setIndexingClass(indexingProfileData[2]);
 					profile.setFormatSource(indexingProfileData[3]);

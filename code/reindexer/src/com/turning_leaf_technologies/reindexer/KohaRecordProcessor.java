@@ -272,7 +272,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	private final HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+		String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
 		if (inTransitItems.contains(itemIdentifier)){
 			return "In Transit";
 		}
@@ -388,14 +388,14 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		for (DataField itemField : itemRecords){
-			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+			String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
 			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
 			suppressionNotes = isSuppressed.notes;
 			if (!isSuppressed.result){
 				//Check to see if the item has an eContent indicator
 				boolean isEContent = false;
-				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
+				if (itemField.getSubfield(settings.getITypeSubfield()) != null){
+					String iType = itemField.getSubfield(settings.getITypeSubfield()).getData().toLowerCase().trim();
 					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 					}
@@ -414,7 +414,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		for (DataField itemField : itemRecords){
-			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+			String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
 			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
 			suppressionNotes = isSuppressed.notes;
 			if (!isSuppressed.result){
@@ -424,8 +424,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isHoopla = false;
 				boolean isCloudLibrary = false;
 				boolean isOneClickDigital = false;
-				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
+				if (itemField.getSubfield(settings.getITypeSubfield()) != null){
+					String iType = itemField.getSubfield(settings.getITypeSubfield()).getData().toLowerCase().trim();
 					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
@@ -555,8 +555,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			suppressed = curItem.getSubfield('i').getData().equals("1");
 			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" subfield i set to 1<br/>");
 		}
-		if (!suppressed && curItem.getSubfield(iTypeSubfield) != null) {
-			suppressed = curItem.getSubfield(iTypeSubfield).getData().equalsIgnoreCase("ill");
+		if (!suppressed && curItem.getSubfield(settings.getITypeSubfield()) != null) {
+			suppressed = curItem.getSubfield(settings.getITypeSubfield()).getData().equalsIgnoreCase("ill");
 			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" iType is ILL<br/>");
 		}
 		if (curItem.getSubfield('0') != null) {
@@ -576,7 +576,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String shelfLocationCode = getSubfieldData(curItem, settings.getShelvingLocationSubfield());
 		String subLocation = getSubfieldData(curItem, settings.getSubLocationSubfield());
 		String collectionCode = getSubfieldData(curItem, settings.getCollectionSubfield());
-		String itemType = getSubfieldData(curItem, iTypeSubfield);
+		String itemType = getSubfieldData(curItem, settings.getITypeSubfield());
 		if (shelfLocationCode != null && formatsToSuppress.contains(shelfLocationCode.toUpperCase())){
 			suppressed = true;
 			suppressionNotes.append("Item ").append(itemIdentifier).append(" shelf location suppressed in formats table<br/>");

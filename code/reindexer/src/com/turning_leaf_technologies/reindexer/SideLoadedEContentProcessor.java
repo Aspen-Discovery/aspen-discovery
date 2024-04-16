@@ -23,16 +23,6 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		try{
 			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
-			numCharsToCreateFolderFrom = sideLoadSettingsRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters = sideLoadSettingsRS.getBoolean("createFolderFromLeadingCharacters");
-			individualMarcPath = sideLoadSettingsRS.getString("individualMarcPath");
-			formatSource = sideLoadSettingsRS.getString("formatSource");
-			specifiedFormat = sideLoadSettingsRS.getString("specifiedFormat");
-			specifiedFormatCategory = sideLoadSettingsRS.getString("specifiedFormatCategory");
-			specifiedFormatBoost = sideLoadSettingsRS.getInt("specifiedFormatBoost");
-
-			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
-			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
 
 			includePersonalAndCorporateNamesInTopics = sideLoadSettingsRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 
@@ -154,14 +144,14 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private void loadEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
-		if (formatSource.equals("specified")){
+		if (settings.getFormatSource().equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
-			translatedFormats.add(specifiedFormat);
+			translatedFormats.add(settings.getSpecifiedFormat());
 			HashSet<String> translatedFormatCategories = new HashSet<>();
-			translatedFormatCategories.add(specifiedFormatCategory);
+			translatedFormatCategories.add(settings.getSpecifiedFormatCategory());
 			econtentRecord.addFormats(translatedFormats);
 			econtentRecord.addFormatCategories(translatedFormatCategories);
-			econtentRecord.setFormatBoost(specifiedFormatBoost);
+			econtentRecord.setFormatBoost(settings.getSpecifiedFormatBoost());
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, econtentRecord);
 			//Convert formats from print to eContent version

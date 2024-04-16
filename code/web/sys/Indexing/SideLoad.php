@@ -20,9 +20,6 @@ class SideLoad extends DataObject {
 
 	public /** @noinspection PhpUnused */
 		$marcEncoding;
-	public $individualMarcPath;
-	public $numCharsToCreateFolderFrom;
-	public $createFolderFromLeadingCharacters;
 	public /** @noinspection PhpUnused */
 		$groupingClass;
 	public /** @noinspection PhpUnused */
@@ -170,36 +167,6 @@ class SideLoad extends DataObject {
 				'default' => 'UTF8',
 				'forcesReindex' => true,
 			],
-			'individualMarcPath' => [
-				'property' => 'individualMarcPath',
-				'type' => 'text',
-				'label' => 'Individual MARC Path',
-				'maxLength' => 100,
-				'description' => 'The path on the server where individual MARC records can be found',
-				'required' => true,
-				'default' => "/data/aspen-discovery/{$serverName}/{sideload_name}/marc_recs",
-				'forcesReindex' => true,
-			],
-			'numCharsToCreateFolderFrom' => [
-				'property' => 'numCharsToCreateFolderFrom',
-				'type' => 'integer',
-				'label' => 'Number of characters to create folder from',
-				'maxLength' => 50,
-				'description' => 'The number of characters to use when building a sub folder for individual marc records',
-				'required' => false,
-				'default' => '4',
-				'forcesReindex' => true,
-			],
-			'createFolderFromLeadingCharacters' => [
-				'property' => 'createFolderFromLeadingCharacters',
-				'type' => 'checkbox',
-				'label' => 'Create Folder From Leading Characters',
-				'description' => 'Whether we should look at the start or end of the folder when .',
-				'hideInLists' => true,
-				'default' => 0,
-				'forcesReindex' => true,
-			],
-
 			'groupingClass' => [
 				'property' => 'groupingClass',
 				'type' => 'text',
@@ -467,11 +434,6 @@ class SideLoad extends DataObject {
 				chgrp($this->marcPath, 'aspen_apache');
 				chmod($this->marcPath, 0775);
 			}
-			if (!file_exists($this->individualMarcPath)) {
-				mkdir($this->individualMarcPath, 0775, true);
-				chgrp($this->individualMarcPath, 'aspen_apache');
-				chmod($this->individualMarcPath, 0775);
-			}
 			$this->saveScopes();
 		}
 		return true;
@@ -484,11 +446,6 @@ class SideLoad extends DataObject {
 				mkdir($this->marcPath, 0775, true);
 				chgrp($this->marcPath, 'aspen_apache');
 				chmod($this->marcPath, 0775);
-			}
-			if (!file_exists($this->individualMarcPath)) {
-				mkdir($this->individualMarcPath, 0775, true);
-				chgrp($this->individualMarcPath, 'aspen_apache');
-				chmod($this->individualMarcPath, 0775);
 			}
 
 			if (empty($this->_scopes)) {
