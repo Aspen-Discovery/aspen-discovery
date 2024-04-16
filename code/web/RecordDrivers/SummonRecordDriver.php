@@ -336,8 +336,8 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getAuthor() {
-		if(isset($this->record['Author'][0])) {
-			$author=$this->record['Author'][0];
+		if(isset($this->record['Author_xml'][0]['fullname'])) {
+			$author=$this->record['Author_xml'][0]['fullname'];
 		} else {
 			$author='Unknown Title';
 		}
