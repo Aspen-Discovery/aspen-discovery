@@ -113,4 +113,55 @@ class ExpoNotification extends DataObject {
 		}
 		return $token;
 	}
+
+	public function sendExpoTestPushNotification($title, $body, $pushToken) {
+		$notificationBody = [
+			'to' => $pushToken,
+			'title' => $title,
+			'body' => $body,
+		];
+
+		$bearerAuthToken = $this->getNotificationAccessToken();
+		$url = 'https://exp.host/--/api/v2/push/send';
+		$this->expoCurlWrapper = new CurlWrapper();
+		$headers = [
+			'Host: exp.host',
+			'Accept: application/json',
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json',
+			'Authorization: Bearer ' . $bearerAuthToken,
+		];
+		$this->expoCurlWrapper->addCustomHeaders($headers, true);
+
+		global $logger;
+		$logger->log('Sending test notification to Expo servers', Logger::LOG_ERROR);
+
+		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($notificationBody));
+		ExternalRequestLogEntry::logRequest('ExpoTestPushNotification.Send', 'POST', $url, $this->expoCurlWrapper->getHeaders(), json_encode($notificationBody), $this->expoCurlWrapper->getResponseCode(), $response, []);
+		return json_decode($response, true);
+	}
+
+	public function getExpoTestPushNotificationReceipt($receiptId) {
+		$bearerAuthToken = $this->getNotificationAccessToken();
+		$url = 'https://exp.host/--/api/v2/push/getReceipts';
+		$this->expoCurlWrapper = new CurlWrapper();
+		$headers = [
+			'Host: exp.host',
+			'Accept: application/json',
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json',
+			'Authorization: Bearer ' . $bearerAuthToken,
+		];
+		$this->expoCurlWrapper->addCustomHeaders($headers, true);
+
+		$body = ['ids' => [$receiptId]];
+		global $logger;
+		$logger->log('Fetching test notification receipt from Expo servers', Logger::LOG_ERROR);
+		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
+
+		ExternalRequestLogEntry::logRequest('ExpoTestPushNotification.Receipt', 'POST', $url, $this->expoCurlWrapper->getHeaders(), json_encode($body), $this->expoCurlWrapper->getResponseCode(), $response, []);
+		return json_decode($response, true);
+
+	}
+
 }

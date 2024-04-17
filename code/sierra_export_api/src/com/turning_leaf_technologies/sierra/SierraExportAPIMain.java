@@ -1057,18 +1057,28 @@ public class SierraExportAPIMain {
 							for (int j = 0; j < varFields.length(); j++) {
 								JSONObject curVarField = varFields.getJSONObject(j);
 								if (curVarField.has("marcTag")) {
-									DataField holdingField = marcFactory.newDataField(curVarField.getString("marcTag"), curVarField.getString("ind1").charAt(0), curVarField.getString("ind2").charAt(0));
-									marcRecord.addVariableField(holdingField);
-									JSONArray subfields = curVarField.getJSONArray("subfields");
-									for (int k = 0; k < subfields.length(); k++) {
-										JSONObject subfield = subfields.getJSONObject(k);
-										holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+									if (curVarField.has("subfields")) {
+										DataField holdingField = marcFactory.newDataField(curVarField.getString("marcTag"), curVarField.getString("ind1").charAt(0), curVarField.getString("ind2").charAt(0));
+										marcRecord.addVariableField(holdingField);
+										JSONArray subfields = curVarField.getJSONArray("subfields");
+										for (int k = 0; k < subfields.length(); k++) {
+											JSONObject subfield = subfields.getJSONObject(k);
+											holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+										}
+										holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
 									}
-									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
 								}else if (curVarField.has("fieldTag") && curVarField.get("fieldTag").equals("h")) {
 									DataField holdingField = marcFactory.newDataField("866", ' ', ' ');
 									marcRecord.addVariableField(holdingField);
-									holdingField.addSubfield(marcFactory.newSubfield('a', curVarField.getString("content")));
+									if (curVarField.has("content")) {
+										holdingField.addSubfield(marcFactory.newSubfield('a', curVarField.getString("content")));
+									}else if (curVarField.has("subfields")) {
+										JSONArray subfields = curVarField.getJSONArray("subfields");
+										for (int k = 0; k < subfields.length(); k++) {
+											JSONObject subfield = subfields.getJSONObject(k);
+											holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+										}
+									}
 									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
 								}
 							}

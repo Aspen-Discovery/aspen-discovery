@@ -380,6 +380,11 @@ class LibraryLink extends DataObject {
 		if (!in_array($activeLanguage->id, $validLanguages)) {
 			return false;
 		}
+
+		if (!$this->published) {
+			return false;
+		}
+
 		if ($this->showToLoggedInUsersOnly) {
 			$userPatronType = $user->patronType;
 			$userId = $user->id;

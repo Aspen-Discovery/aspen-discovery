@@ -407,9 +407,11 @@ class SearchAPI extends AbstractAPI {
 								} elseif (empty($sideLoadLogEntry->endTime)){
 									$sideloadIndexNote .= $sideload->name . ' has not finished indexing on the last 2 tries<br/>';
 								}
-							} else {
+							} else if ($sideload->lastUpdateOfAllRecords == null && $sideload->lastUpdateOfChangedRecords == null){
 								$sideloadIndexNote .= $sideload->name . ' has never finished indexing<br/>';
 							}
+						}elseif ($sideLoadLogEntry->startTime < time() - 24 * 60 * 60){
+							$sideloadIndexNote .= $sideload->name . ' has been indexing for more than 24 hours<br/>';
 						}
 					}else{
 						if ($sideload->lastUpdateOfAllRecords == null && $sideload->lastUpdateOfChangedRecords == null){
@@ -2339,6 +2341,8 @@ class SearchAPI extends AbstractAPI {
 			]),
 		];
 
+		$items = [];
+
 		if (strpos($thisId, "system_saved_searches") !== false) {
 			if ($id) {
 				$result = $this->getSavedSearchBrowseCategoryResults($pageSize, $id, $appUser);
@@ -2494,8 +2498,6 @@ class SearchAPI extends AbstractAPI {
 
 						// Shutdown the search object
 						$searchObject->close();
-
-						$items = [];
 						foreach ($records as $recordKey => $record) {
 							if($browseCategory->source === 'Events') {
 								if(str_starts_with($record['id'], 'lc')) {

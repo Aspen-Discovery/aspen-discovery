@@ -74,7 +74,7 @@ public class IndexingUtils {
 				hooplaScope.setName(hooplaScopesRS.getString("name"));
 				hooplaScope.setExcludeTitlesWithCopiesFromOtherVendors(hooplaScopesRS.getInt("excludeTitlesWithCopiesFromOtherVendors"));
 				hooplaScope.setIncludeEBooks(hooplaScopesRS.getBoolean("includeEBooks"));
-				hooplaScope.setMaxCostPerCheckoutEBooks(hooplaScopesRS.getLong("maxCostPerCheckoutEBooks"));
+				hooplaScope.setMaxCostPerCheckoutEBooks(hooplaScopesRS.getFloat("maxCostPerCheckoutEBooks"));
 				hooplaScope.setIncludeEComics(hooplaScopesRS.getBoolean("includeEComics"));
 				hooplaScope.setMaxCostPerCheckoutEComics(hooplaScopesRS.getFloat("maxCostPerCheckoutEComics"));
 				hooplaScope.setIncludeEAudiobook(hooplaScopesRS.getBoolean("includeEAudiobook"));
@@ -87,7 +87,9 @@ public class IndexingUtils {
 				hooplaScope.setMaxCostPerCheckoutTelevision(hooplaScopesRS.getFloat("maxCostPerCheckoutTelevision"));
 				hooplaScope.setIncludeBingePass(hooplaScopesRS.getBoolean("includeBingePass"));
 				hooplaScope.setMaxCostPerCheckoutBingePass(hooplaScopesRS.getFloat("maxCostPerCheckoutBingePass"));
-				hooplaScope.setRestrictToChildrensMaterial(hooplaScopesRS.getBoolean("restrictToChildrensMaterial"));
+				hooplaScope.setIncludeAdult(hooplaScopesRS.getBoolean("includeAdult"));
+				hooplaScope.setIncludeTeen(hooplaScopesRS.getBoolean("includeTeen"));
+				hooplaScope.setIncludeKids(hooplaScopesRS.getBoolean("includeKids"));
 				hooplaScope.setRatingsToExclude(hooplaScopesRS.getString("ratingsToExclude"));
 				hooplaScope.setExcludeAbridged(hooplaScopesRS.getBoolean("excludeAbridged"));
 				hooplaScope.setExcludeParentalAdvisory(hooplaScopesRS.getBoolean("excludeParentalAdvisory"));
@@ -188,7 +190,9 @@ public class IndexingUtils {
 				cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
 				cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
 				cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));
-				cloudLibraryScope.setRestrictToChildrensMaterial(cloudLibraryScopesRS.getBoolean("restrictToChildrensMaterial"));
+				cloudLibraryScope.setIncludeAdult(cloudLibraryScopesRS.getBoolean("includeAdult"));
+				cloudLibraryScope.setIncludeTeen(cloudLibraryScopesRS.getBoolean("includeTeen"));
+				cloudLibraryScope.setIncludeKids(cloudLibraryScopesRS.getBoolean("includeKids"));
 
 				cloudLibraryScopes.put(cloudLibraryScope.getId(), cloudLibraryScope);
 			}
@@ -210,7 +214,9 @@ public class IndexingUtils {
 				sideLoadScope.setId(sideLoadScopesRS.getLong("id"));
 				sideLoadScope.setName(sideLoadScopesRS.getString("name"));
 				sideLoadScope.setSideLoadId(sideLoadScopesRS.getLong("sideLoadId"));
-				sideLoadScope.setRestrictToChildrensMaterial(sideLoadScopesRS.getBoolean("restrictToChildrensMaterial"));
+				sideLoadScope.setIncludeAdult(sideLoadScopesRS.getBoolean("includeAdult"));
+				sideLoadScope.setIncludeTeen(sideLoadScopesRS.getBoolean("includeTeen"));
+				sideLoadScope.setIncludeKids(sideLoadScopesRS.getBoolean("includeKids"));
 				sideLoadScope.setMarcTagToMatch(sideLoadScopesRS.getString("marcTagToMatch"));
 				sideLoadScope.setMarcValueToMatch(sideLoadScopesRS.getString("marcValueToMatch"));
 				sideLoadScope.setIncludeExcludeMatches(sideLoadScopesRS.getBoolean("includeExcludeMatches"));

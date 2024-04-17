@@ -5,20 +5,21 @@ import _ from 'lodash';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectItemHold = (props) => {
-     const { id, data, item, setItem, holdType, setHoldType, showModal, holdTypeForFormat, language, url, textColor, theme } = props;
+     const { id, data, item, setItem, setHoldType, showModal, holdTypeForFormat, language, url, textColor, theme } = props;
 
+     let holdType = props.holdType;
      let copies = data.copies;
      let copyKeys = Object.keys(copies);
      let key = copyKeys[0];
      let defaultItem = copies[key].id;
 
+     if (holdType === 'either') {
+          holdType = 'default';
+     }
+
      if (item) {
           defaultItem = item;
      }
-
-     /*if (defaultItem && !item) {
-          setItem(defaultItem);
-     }*/
 
      return (
           <>
@@ -52,24 +53,12 @@ export const SelectItemHold = (props) => {
                          <FormControlLabel>
                               <FormControlLabelText color={textColor}>{getTermFromDictionary(language, 'select_item')}</FormControlLabelText>
                          </FormControlLabel>
-                         <Select
-                              name="itemForHold"
-                              selectedValue={defaultItem}
-                              minWidth={200}
-                              defaultValue={defaultItem}
-                              accessibilityLabel={getTermFromDictionary(language, 'select_item')}
-                              _selectedItem={{
-                                   bg: 'tertiary.300',
-                                   endIcon: <CheckIcon size="5" />,
-                              }}
-                              mt="$1"
-                              mb="$2"
-                              onValueChange={(itemValue) => setItem(itemValue)}>
+                         <Select name="itemForHold" selectedValue={defaultItem} minWidth={200} accessibilityLabel={getTermFromDictionary(language, 'select_item')} mt="$1" mb="$2" onValueChange={(itemValue) => setItem(itemValue)}>
                               <SelectTrigger variant="outline" size="md">
                                    {_.map(Object.keys(copies), function (item, index, array) {
                                         let copy = copies[item];
-                                        console.log(copy);
                                         if (copy.id === defaultItem) {
+                                             setItem(defaultItem);
                                              return <SelectInput value={copy.location} color={textColor} />;
                                         }
                                    })}

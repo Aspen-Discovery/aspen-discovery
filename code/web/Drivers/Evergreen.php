@@ -834,6 +834,9 @@ class Evergreen extends AbstractIlsDriver {
 					if (empty($circEntryMapped['source_circ'])) {
 						$modsForCopy = $this->getModsForCopy($circEntryMapped['target_copy']);
 						if ($modsForCopy != null) {
+							if (is_integer($modsForCopy['doc_id'])){
+								$modsForCopy['doc_id'] = strval($modsForCopy['doc_id']);
+							}
 							$curTitle = [];
 							$curTitle['id'] = $modsForCopy['doc_id'];
 							$curTitle['shortId'] = $modsForCopy['doc_id'];

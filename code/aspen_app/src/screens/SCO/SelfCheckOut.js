@@ -46,9 +46,13 @@ export const SelfCheckOut = () => {
      //console.log(activeAccount);
      if (_.find(cards, ['ils_barcode', activeAccount])) {
           activeAccount = _.find(cards, ['ils_barcode', activeAccount]);
+          activeAccount = activeAccount.userId;
      } else {
           activeAccount = _.find(cards, ['cat_username', activeAccount]);
+          activeAccount = activeAccount.userId;
      }
+
+     console.log(activeAccount);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({

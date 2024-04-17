@@ -395,7 +395,7 @@ if (!$siteOnWindows){
 if (!$siteOnWindows){
 	//Start solr
 	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
-	execInBackground($siteDir . "/{$sitename}.sh");
+	execInBackground($siteDir . "/{$sitename}.sh start");
 	//Link cron to /etc/cron.d folder
 	exec("ln -s /usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
 }

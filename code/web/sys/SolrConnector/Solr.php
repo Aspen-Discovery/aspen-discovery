@@ -175,26 +175,30 @@ abstract class Solr {
 
 	private static $serversPinged = [];
 
-	public function pingServer($failOnError = true) : bool {
+	public function pingServer($failOnError = true, $forceCheck = false) : bool {
 		global $memCache;
 		global $timer;
 		global $configArray;
 		global $logger;
 		$hostEscaped = str_replace('/' . $this->index, '', $this->host);
 		$hostEscaped = preg_replace('[\W]', '_', $hostEscaped);
-		if (array_key_exists($hostEscaped, Solr::$serversPinged)) {
-			return Solr::$serversPinged[$hostEscaped];
-		}
-		if ($memCache) {
-			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
-			if ($pingDone !== false) {
-				Solr::$serversPinged[$this->host] = $pingDone;
-				return (bool)Solr::$serversPinged[$this->host];
+		if ($forceCheck) {
+			$pingDone = false;
+		}else{
+			if (array_key_exists($hostEscaped, Solr::$serversPinged)) {
+				return Solr::$serversPinged[$hostEscaped];
+			}
+			if ($memCache) {
+				$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
+				if ($pingDone !== false) {
+					Solr::$serversPinged[$this->host] = $pingDone;
+					return (bool)Solr::$serversPinged[$this->host];
+				} else {
+					$pingDone = false;
+				}
 			} else {
 				$pingDone = false;
 			}
-		} else {
-			$pingDone = false;
 		}
 
 		// Test to see solr is online

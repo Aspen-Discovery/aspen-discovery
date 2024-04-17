@@ -94,7 +94,7 @@ abstract class SearchObject_BaseSearcher {
 		$timer->logTime('Setup Base Search Object');
 	}
 
-	function ping() {
+	function ping($forceCheck) {
 		return true;
 	}
 

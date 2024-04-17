@@ -185,7 +185,7 @@ export const HoldPrompt = (props) => {
                                                   {getTermFromDictionary(language, 'select_pickup_location')}
                                              </FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select name="pickupLocations" selectedValue={location} initialLabel="Test" minWidth={200} mt="$1" mb="$2" onValueChange={(itemValue) => setLocation(itemValue)}>
+                                        <Select name="pickupLocations" selectedValue={location} minWidth={200} mt="$1" mb="$2" onValueChange={(itemValue) => setLocation(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   {locations.map((selectedLocation, index) => {
                                                        if (selectedLocation.code === location) {
@@ -220,8 +220,14 @@ export const HoldPrompt = (props) => {
                                         </FormControlLabel>
                                         <Select name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
-                                                  <SelectInput color={textColor} />
-                                                  <SelectIcon as={ChevronDownIcon} mr="$3" />
+                                                  {accounts.map((item, index) => {
+                                                       if (item.id === activeAccount) {
+                                                            return <SelectInput value={item.displayName} />;
+                                                       } else if (user.id === activeAccount) {
+                                                            return <SelectInput value={user.displayName} />;
+                                                       }
+                                                  })}
+                                                  <SelectIcon mr="$3" as={ChevronDownIcon} color={textColor} />
                                              </SelectTrigger>
                                              <SelectPortal>
                                                   <SelectBackdrop />

@@ -1,8 +1,9 @@
 import { ScrollView, AlertDialog, AlertDialogBackdrop, HStack, VStack, Pressable, Icon, Text, Center, Button, ButtonText, ButtonIcon, ButtonGroup, Heading, Box, Accordion, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AccordionItem, AccordionContent, AccordionContentText, AccordionHeader, AccordionTrigger, AccordionTitleText, AccordionIcon } from '@gluestack-ui/themed';
+import { Camera } from 'expo-camera';
 import React from 'react';
 import * as Location from 'expo-location';
 import * as Linking from 'expo-linking';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { useRoute } from '@react-navigation/native';
 import { LanguageContext, ThemeContext } from '../../../../context/initialContext';
@@ -16,11 +17,28 @@ export const GeolocationPermissionStatus = () => {
      const { colorMode, textColor } = React.useContext(ThemeContext);
      const [permissionStatus, setPermissionStatus] = React.useState(false);
 
+     const appState = React.useRef(AppState.currentState);
+     const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
+
      React.useEffect(() => {
           (async () => {
                const { status } = await Location.getForegroundPermissionsAsync();
                setPermissionStatus(status === 'granted');
           })();
+
+          const subscription = AppState.addEventListener('change', async (nextAppState) => {
+               if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+                    const { status } = await Location.getForegroundPermissionsAsync();
+                    setPermissionStatus(status === 'granted');
+               }
+
+               appState.current = nextAppState;
+               setAppStateVisible(appState.current);
+          });
+
+          return () => {
+               subscription.remove();
+          };
      }, []);
 
      return (
@@ -40,7 +58,7 @@ export const GeolocationPermissionStatus = () => {
 
 export const GeolocationPermissionDescription = () => {
      const { colorMode, textColor } = React.useContext(ThemeContext);
-     const permissionStatus = useRoute().params?.permissionStatus ?? false;
+     const [permissionStatus, setPermissionStatus] = React.useState(useRoute().params?.permissionStatus ?? false);
      const { language } = React.useContext(LanguageContext);
 
      return (
@@ -61,7 +79,7 @@ export const GeolocationPermissionDescription = () => {
                          </Text>
                          <GeolocationPermissionUsage />
                     </Box>
-                    <GeolocationPermissionUpdate />
+                    <GeolocationPermissionUpdate permissionStatus={permissionStatus} setPermissionStatus={setPermissionStatus} />
                </VStack>
           </ScrollView>
      );
@@ -96,10 +114,31 @@ const GeolocationPermissionUsage = () => {
      );
 };
 
-const GeolocationPermissionUpdate = () => {
+const GeolocationPermissionUpdate = (payload) => {
      const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      const [showAlertDialog, setShowAlertDialog] = React.useState(false);
+     const [manuallyPromptPermission, setManuallyPromptPermission] = React.useState(false);
+     const setPermissionStatus = payload.setPermissionStatus;
+     const permissionStatus = payload.permissionStatus;
+
+     const manuallyRequestPermission = async () => {
+          await Location.requestForegroundPermissionsAsync().then(async () => {
+               setManuallyPromptPermission(false);
+               const { status } = await Location.getForegroundPermissionsAsync();
+               setPermissionStatus(status === 'granted');
+          });
+     };
+
+     React.useEffect(() => {
+          (async () => {
+               const { status } = await Location.getForegroundPermissionsAsync();
+               setPermissionStatus(status === 'granted');
+               if (status === 'undetermined') {
+                    setManuallyPromptPermission(true);
+               }
+          })();
+     }, []);
 
      return (
           <Center>

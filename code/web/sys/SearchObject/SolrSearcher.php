@@ -46,8 +46,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		$this->spellcheckEnabled = true;
 	}
 
-	function ping() {
-		return $this->indexEngine->pingServer(false);
+	function ping($forceCheck) {
+		return $this->indexEngine->pingServer(false, $forceCheck);
 	}
 
 	function setTimeout($timeout) {

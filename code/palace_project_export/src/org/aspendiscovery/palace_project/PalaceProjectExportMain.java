@@ -10,6 +10,7 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import com.turning_leaf_technologies.reindexer.PalaceProjectTitleAvailability;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
@@ -19,10 +20,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.*;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.zip.CRC32;
 
 
@@ -40,6 +39,12 @@ public class PalaceProjectExportMain {
 	private static PreparedStatement addPalaceProjectTitleToDbStmt;
 	private static PreparedStatement updatePalaceProjectTitleInDbStmt;
 	private static PreparedStatement deletePalaceProjectTitleFromDbStmt;
+	private static PreparedStatement addPalaceProjectAvailabilityStmt;
+	private static PreparedStatement updatePalaceProjectAvailabilityStmt;
+	private static PreparedStatement deletePalaceProjectAvailabilityStmt;
+	private static PreparedStatement updateCollectionLastIndexedStmt;
+	private static PreparedStatement getAvailabilityForTitleStmt;
+	private static PreparedStatement getTitlesToRemoveFromCollectionStmt;
 
 	//Record grouper
 	private static GroupedWorkIndexer groupedWorkIndexer;
@@ -222,6 +227,7 @@ public class PalaceProjectExportMain {
 			PreparedStatement getCollectionsForSettingStmt = aspenConn.prepareStatement("SELECT * from palace_project_collections where settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement insertCollectionStmt = aspenConn.prepareStatement("INSERT INTO palace_project_collections (settingId, palaceProjectName, displayName, hasCirculation, includeInAspen) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			PreparedStatement setLastIndexedStmt = aspenConn.prepareStatement("UPDATE palace_project_collections set lastIndexed = ? where id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement getTitlesForCollectionStmt = aspenConn.prepareStatement("SELECT * FROM palace_project_title_availability where collectionId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			int numSettings = 0;
@@ -229,17 +235,9 @@ public class PalaceProjectExportMain {
 				long settingsId = getSettingsRS.getLong("id");
 				numSettings++;
 
-				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
-				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
-				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
-
-				//Check to see if we should run.  For Palace Project we only need to check for updates once an hour.
-				Date now = new Date();
-				if ((now.getTime()  / 1000 - lastUpdate) < 60 * 60) {
-					//Don't update since it hasn't been an hour
-					//logger.warn("Not running since it hasn't been an hour.");
-					continue;
-				}
+				//Setup times that we'll use later to determine if we need to index a collection
+				long nowInSeconds = new Date().getTime() / 1000;
+				long yesterdayInSeconds = nowInSeconds - 24 * 60 * 60;
 
 				logEntry.addNote("Starting update from Palace Project");
 				logEntry.saveResults();
@@ -249,166 +247,55 @@ public class PalaceProjectExportMain {
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 
 				//Get a list of all existing records in the database
+				//Load existing titles, so we can optimize updates
 				loadExistingTitles();
 
 				//Get a list of collections within Aspen
-				getCollectionsForSettingStmt.setLong(1, settingsId);
-				ResultSet collectionsForSettingsRS =  getCollectionsForSettingStmt.executeQuery();
-				HashMap <String, PalaceProjectCollection> palaceProjectCollections = new HashMap<>();
-				while (collectionsForSettingsRS.next()) {
-					PalaceProjectCollection collection = new PalaceProjectCollection();
-					collection.id = collectionsForSettingsRS.getLong("id");
-					collection.palaceProjectName = collectionsForSettingsRS.getString("palaceProjectName");
-					collection.displayName = collectionsForSettingsRS.getString("displayName");
-					collection.hasCirculation = collectionsForSettingsRS.getBoolean("hasCirculation");
-					collection.includeInAspen = collectionsForSettingsRS.getBoolean("includeInAspen");
-					collection.lastIndexed = collectionsForSettingsRS.getLong("lastIndexed");
-					palaceProjectCollections.put(collection.palaceProjectName, collection);
-				}
+				HashMap<String, PalaceProjectCollection> palaceProjectCollections = getExistingCollectionsInAspenForSetting(getCollectionsForSettingStmt, settingsId);
 
-				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
+				//Setup default headers
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Accept", "application/opds+json");
 				headers.put("User-Agent", "Aspen Discovery");
 
+				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
+
+				//Load a list of collections within Palace Project
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()) {
 					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
 				} else {
-					JSONObject responseJSON = new JSONObject(response.getMessage());
+					JSONObject initialCrawlableResponseJSON = new JSONObject(response.getMessage());
+					HashMap<String, String> validCollections = getValidCollectionsFromPalaceProject(initialCrawlableResponseJSON, palaceProjectCollections, insertCollectionStmt, settingsId);
 
-					//Loop through facets to get a list of all collections for palace project
-					HashMap<String, String> validCollections = new HashMap<>();
-					if (responseJSON.has("facets")) {
-						JSONArray facetList = responseJSON.getJSONArray("facets");
-						for (int i = 0; i < facetList.length(); i++) {
-							JSONObject curFacet = facetList.getJSONObject(i);
-							if (curFacet.has("metadata")) {
-								JSONObject facetMetadata = curFacet.getJSONObject("metadata");
-								if (facetMetadata.getString("title").equals("Collection Name")) {
-									JSONArray links = curFacet.getJSONArray("links");
-									for (int j = 0; j < links.length(); j++) {
-										JSONObject link = links.getJSONObject(j);
-										String linkTitle = link.getString("title");
-										if (linkTitle.equals("All") || linkTitle.contains("OverDrive") || linkTitle.contains("Axis 360") || linkTitle.contains("Boundless") || linkTitle.contains("Bibliotheca")) {
-											continue;
-										}
-										validCollections.put(linkTitle, link.getString("href"));
-										if (!palaceProjectCollections.containsKey(linkTitle)) {
-											//Add the collection to the database
-											insertCollectionStmt.setLong(1, settingsId);
-											insertCollectionStmt.setString(2, linkTitle);
-											insertCollectionStmt.setString(3, linkTitle);
-											insertCollectionStmt.setBoolean(4, linkTitle.toLowerCase().contains("marketplace"));
-											insertCollectionStmt.setBoolean(5, true);
-											insertCollectionStmt.executeUpdate();
-											ResultSet generatedKeys = insertCollectionStmt.getGeneratedKeys();
-											if (generatedKeys.next()){
-												long collectionId = generatedKeys.getLong(1);
-												PalaceProjectCollection collection = new PalaceProjectCollection();
-												collection.id = collectionId;
-												collection.palaceProjectName = linkTitle;
-												collection.displayName = linkTitle;
-												collection.hasCirculation = linkTitle.toLowerCase().contains("marketplace");
-												collection.includeInAspen = true;
-												palaceProjectCollections.put(collection.palaceProjectName, collection);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					long nowInSeconds = new Date().getTime() / 1000;
-					long yesterdayInSeconds = nowInSeconds - 24 * 60 * 60;
 					for (String collectionName : validCollections.keySet()) {
 						//Index the collection if the collection has circulation or the collection has not been updated for 24 hours
 						PalaceProjectCollection collection = palaceProjectCollections.get(collectionName);
+						//Get a list of all titles for this collection
+						HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection = getTitlesForCollection(getTitlesForCollectionStmt, collection);
+
 						if (collection.includeInAspen) {
 							if (collection.hasCirculation || collection.lastIndexed < yesterdayInSeconds) {
-								//Index all records in the collection
-								String collectionUrl = validCollections.get(collectionName);
-								while (collectionUrl != null) {
-									WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
-									if (!response.isSuccess()) {
-										logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
-									} else {
-										JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
-										if (collectionResponseJSON.has("publications")) {
-											JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
-											if (responseTitles != null && !responseTitles.isEmpty()) {
-												updateTitlesInDB(collectionName, responseTitles, doFullReload);
-												logEntry.saveResults();
-											}
-										}
-										collectionUrl = null;
-										//Get the next URL
-										if (collectionResponseJSON.has("links")) {
-											JSONArray links = collectionResponseJSON.getJSONArray("links");
-											for (int i = 0; i < links.length(); i++) {
-												JSONObject curLink = links.getJSONObject(i);
-												if (curLink.getString("rel").equals("next")) {
-													collectionUrl = curLink.getString("href");
-													break;
-												}
-											}
-										}
-									}
-								}
+								extractRecordsForPalaceProjectCollection(collectionName, validCollections, headers, response, collection, titlesForCollection, doFullReload, nowInSeconds);
+							}else{
+								//Not time to index, leave things as is.
 							}
 						}else{
-							//TODO: Remove all currently indexed porjects from solr
-						}
-					}
-				}
+							//Remove all currently indexed products from solr
+							for (PalaceProjectTitleAvailability titleAvailability : titlesForCollection.values()) {
+								if (!titleAvailability.deleted) {
+									removePalaceProjectTitleFromCollection(titleAvailability.id, titleAvailability.titleId, titleAvailability.collectionId);
 
-				//remove any remaining titles that we did not find
-				if (!logEntry.hasErrors()) {
-					int numDeleted = 0;
-					for (PalaceProjectTitle existingTitle : existingRecords.values()) {
-						if (!existingTitle.isFoundInExport()) {
-							deletePalaceProjectTitleFromDbStmt.setLong(1, existingTitle.getId());
-							deletePalaceProjectTitleFromDbStmt.executeUpdate();
-							//TODO: This needs to also account for the collection
-							RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", existingTitle.getPalaceProjectId());
-							if (result.reindexWork) {
-								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-							} else if (result.deleteWork) {
-								//Delete the work from solr and the database
-								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								}
 							}
-							numDeleted++;
-							logEntry.incDeleted();
 						}
-					}
-					if (numDeleted > 0) {
-						logEntry.saveResults();
-						logger.warn("Deleted " + numDeleted + " old titles");
 					}
 				}
 
 				updatesRun = true;
 
 				//Set the extract time
-				PreparedStatement updateSettingsStmt = null;
-				if (doFullReload){
-					if (!logEntry.hasErrors()) {
-						updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfAllRecords = ? where id = ?");
-					} else {
-						//force another full update
-						PreparedStatement reactiveFullUpdateStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set runFullUpdate = 1 where id = ?");
-						reactiveFullUpdateStmt.setLong(1, settingsId);
-						reactiveFullUpdateStmt.executeUpdate();
-					}
-				}else{
-					updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfChangedRecords = ? where id = ?");
-				}
-				if (updateSettingsStmt != null) {
-					updateSettingsStmt.setLong(1, startTimeForLogging);
-					updateSettingsStmt.setLong(2, settingsId);
-					updateSettingsStmt.executeUpdate();
-				}
+				setLastUpdateTimeForSetting(doFullReload, settingsId);
 			}
 			if (numSettings == 0){
 				logger.error("Unable to find settings for Palace Project, please add settings to the database");
@@ -419,7 +306,195 @@ public class PalaceProjectExportMain {
 		return updatesRun;
 	}
 
-	private static void updateTitlesInDB(String collectionName, JSONArray responseTitles, boolean doFullReload) {
+	private static void removePalaceProjectTitleFromCollection(long availabilityId, long titleId, long collectionId) throws SQLException {
+		//Mark the title availability deleted
+		deletePalaceProjectAvailabilityStmt.setLong(1, availabilityId);
+		deletePalaceProjectAvailabilityStmt.executeUpdate();
+		//check to see if the title has any availability
+		getAvailabilityForTitleStmt.setLong(1, availabilityId);
+		ResultSet availabilityForTitleRS = getAvailabilityForTitleStmt.executeQuery();
+		boolean hasAvailability = false;
+		if (availabilityForTitleRS.next()) {
+			hasAvailability = availabilityForTitleRS.getLong("availabilityCount") > 0;
+		}
+		availabilityForTitleRS.close();
+
+		if (hasAvailability) {
+			//The title still has availability, mark it for reindex
+			getGroupedWorkIndexer().forceRecordReindex("palace_project", Long.toString(titleId));
+
+		}else{
+			//The title no longer exists, remove it from the work
+			RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", Long.toString(titleId));
+			if (result.reindexWork) {
+				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+			} else if (result.deleteWork) {
+				//Delete the work from solr and the database
+				getGroupedWorkIndexer().deleteRecord(result.permanentId);
+			}
+		}
+	}
+
+	private static HashMap<String, PalaceProjectCollection> getExistingCollectionsInAspenForSetting(PreparedStatement getCollectionsForSettingStmt, long settingsId) throws SQLException {
+		getCollectionsForSettingStmt.setLong(1, settingsId);
+		ResultSet collectionsForSettingsRS =  getCollectionsForSettingStmt.executeQuery();
+		HashMap <String, PalaceProjectCollection> palaceProjectCollections = new HashMap<>();
+		while (collectionsForSettingsRS.next()) {
+			PalaceProjectCollection collection = new PalaceProjectCollection();
+			collection.id = collectionsForSettingsRS.getLong("id");
+			collection.settingId = collectionsForSettingsRS.getLong("settingId");
+			collection.palaceProjectName = collectionsForSettingsRS.getString("palaceProjectName");
+			collection.displayName = collectionsForSettingsRS.getString("displayName");
+			collection.hasCirculation = collectionsForSettingsRS.getBoolean("hasCirculation");
+			collection.includeInAspen = collectionsForSettingsRS.getBoolean("includeInAspen");
+			collection.lastIndexed = collectionsForSettingsRS.getLong("lastIndexed");
+			palaceProjectCollections.put(collection.palaceProjectName, collection);
+		}
+		return palaceProjectCollections;
+	}
+
+	private static void setLastUpdateTimeForSetting(boolean doFullReload, long settingsId) throws SQLException {
+		PreparedStatement updateSettingsStmt = null;
+		if (doFullReload){
+			if (!logEntry.hasErrors()) {
+				updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfAllRecords = ? where id = ?");
+			} else {
+				//force another full update
+				PreparedStatement reactiveFullUpdateStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set runFullUpdate = 1 where id = ?");
+				reactiveFullUpdateStmt.setLong(1, settingsId);
+				reactiveFullUpdateStmt.executeUpdate();
+			}
+		}else{
+			updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfChangedRecords = ? where id = ?");
+		}
+		if (updateSettingsStmt != null) {
+			updateSettingsStmt.setLong(1, startTimeForLogging);
+			updateSettingsStmt.setLong(2, settingsId);
+			updateSettingsStmt.executeUpdate();
+		}
+	}
+
+	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, WebServiceResponse response, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
+		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
+		//Index all records in the collection
+		String collectionUrl = validCollections.get(collectionName);
+		while (collectionUrl != null) {
+			WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
+			if (!response.isSuccess()) {
+				logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
+			} else {
+				JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
+				if (collectionResponseJSON.has("publications")) {
+					JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
+					if (responseTitles != null && !responseTitles.isEmpty()) {
+						updateTitlesInDB(collectionName, collection.id, responseTitles, titlesForCollection, doFullReload);
+						logEntry.saveResults();
+					}
+				}
+				collectionUrl = null;
+				//Get the next URL
+				if (collectionResponseJSON.has("links")) {
+					JSONArray links = collectionResponseJSON.getJSONArray("links");
+					for (int i = 0; i < links.length(); i++) {
+						JSONObject curLink = links.getJSONObject(i);
+						if (curLink.getString("rel").equals("next")) {
+							collectionUrl = curLink.getString("href");
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		//Set last indexed for the collection
+		try {
+			updateCollectionLastIndexedStmt.setLong(1, indexStartTime);
+			updateCollectionLastIndexedStmt.setLong(2, collection.id);
+			updateCollectionLastIndexedStmt.executeUpdate();
+		}catch (Exception e) {
+			logEntry.incErrors("Error updating collection last indexed time", e);
+		}
+
+		//Remove availability for anything that we didn't see during this run
+		try {
+			getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
+			ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
+			while (titlesToRemoveFromCollectionRS.next()) {
+				removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"), collection.id);
+			}
+		}catch (Exception e) {
+			logEntry.incErrors("Unable to remove titles from collection after indexing", e);
+		}
+	}
+
+	private static HashMap<String, String> getValidCollectionsFromPalaceProject(JSONObject initialCrawlableResponseJSON, HashMap<String, PalaceProjectCollection> palaceProjectCollections, PreparedStatement insertCollectionStmt, long settingsId) throws SQLException {
+		//Loop through facets to get a list of all collections for palace project
+		HashMap<String, String> validCollections = new HashMap<>();
+		if (initialCrawlableResponseJSON.has("facets")) {
+			JSONArray facetList = initialCrawlableResponseJSON.getJSONArray("facets");
+			for (int i = 0; i < facetList.length(); i++) {
+				JSONObject curFacet = facetList.getJSONObject(i);
+				if (curFacet.has("metadata")) {
+					JSONObject facetMetadata = curFacet.getJSONObject("metadata");
+					if (facetMetadata.getString("title").equals("Collection Name")) {
+						JSONArray links = curFacet.getJSONArray("links");
+						for (int j = 0; j < links.length(); j++) {
+							JSONObject link = links.getJSONObject(j);
+							String linkTitle = link.getString("title");
+							if (linkTitle.equals("All") || linkTitle.contains("OverDrive") || linkTitle.contains("Axis 360") || linkTitle.contains("Boundless") || linkTitle.contains("Bibliotheca")) {
+								continue;
+							}
+							validCollections.put(linkTitle, link.getString("href"));
+							if (!palaceProjectCollections.containsKey(linkTitle)) {
+								//Add the collection to the database
+								insertCollectionStmt.setLong(1, settingsId);
+								insertCollectionStmt.setString(2, linkTitle);
+								insertCollectionStmt.setString(3, linkTitle);
+								insertCollectionStmt.setBoolean(4, linkTitle.toLowerCase().contains("marketplace"));
+								insertCollectionStmt.setBoolean(5, true);
+								insertCollectionStmt.executeUpdate();
+								ResultSet generatedKeys = insertCollectionStmt.getGeneratedKeys();
+								if (generatedKeys.next()){
+									long collectionId = generatedKeys.getLong(1);
+									PalaceProjectCollection collection = new PalaceProjectCollection();
+									collection.id = collectionId;
+									collection.palaceProjectName = linkTitle;
+									collection.displayName = linkTitle;
+									collection.hasCirculation = linkTitle.toLowerCase().contains("marketplace");
+									collection.includeInAspen = true;
+									palaceProjectCollections.put(collection.palaceProjectName, collection);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return validCollections;
+	}
+
+	private static HashMap<Long, PalaceProjectTitleAvailability> getTitlesForCollection(PreparedStatement getTitlesForCollectionStmt, PalaceProjectCollection collection) {
+		HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection = new HashMap<>();
+		try {
+			getTitlesForCollectionStmt.setLong(1, collection.id);
+			ResultSet titlesForCollectionRS = getTitlesForCollectionStmt.executeQuery();
+			while (titlesForCollectionRS.next()) {
+				PalaceProjectTitleAvailability title = new PalaceProjectTitleAvailability();
+				title.id = titlesForCollectionRS.getLong("id");
+				title.titleId = titlesForCollectionRS.getLong("titleId");
+				title.collectionId = titlesForCollectionRS.getLong("collectionId");
+				title.lastSeen = titlesForCollectionRS.getLong("lastSeen");
+				title.deleted = titlesForCollectionRS.getBoolean("deleted");
+				titlesForCollection.put(title.titleId, title);
+			}
+		}catch (SQLException e) {
+			logEntry.incErrors("Unable to load titles for collection", e);
+		}
+		return titlesForCollection;
+	}
+
+	private static void updateTitlesInDB(String collectionName, long collectionId, JSONArray responseTitles, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload) {
+		long indexTime = new Date().getTime() / 1000;
 		logEntry.incNumProducts(responseTitles.length());
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
@@ -434,7 +509,7 @@ public class PalaceProjectExportMain {
 				String palaceProjectId = curTitleMetadata.getString("identifier");
 				String title = curTitleMetadata.getString("title");
 
-				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId + collectionName);
+				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId);
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
 					//Record exists
@@ -452,13 +527,14 @@ public class PalaceProjectExportMain {
 					title = title.substring(0, 750);
 				}
 
+				boolean regroupAndIndexRecord = false;
+				long titleId = -1;
 				if (existingTitle == null){
 					addPalaceProjectTitleToDbStmt.setString(1, palaceProjectId);
 					addPalaceProjectTitleToDbStmt.setString(2, title);
-					addPalaceProjectTitleToDbStmt.setString(3, collectionName);
-					addPalaceProjectTitleToDbStmt.setLong(4, rawChecksum);
-					addPalaceProjectTitleToDbStmt.setString(5, rawResponse);
-					addPalaceProjectTitleToDbStmt.setLong(6, startTimeForLogging);
+					addPalaceProjectTitleToDbStmt.setLong(3, rawChecksum);
+					addPalaceProjectTitleToDbStmt.setString(4, rawResponse);
+					addPalaceProjectTitleToDbStmt.setLong(5, startTimeForLogging);
 					try {
 						addPalaceProjectTitleToDbStmt.executeUpdate();
 
@@ -470,8 +546,11 @@ public class PalaceProjectExportMain {
 							logEntry.incErrors("Could not add " + palaceProjectId + " to the database, did not get the Aspen ID back");
 						}
 
-						String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(curTitle, palaceProjectAspenId);
-						indexRecord(groupedWorkId);
+						//Update availability
+						titleId = palaceProjectAspenId;
+						updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, palaceProjectAspenId);
+
+						regroupAndIndexRecord = true;
 					}catch (DataTruncation e) {
 						logEntry.addNote("Record " + palaceProjectId + " " + title + " contained invalid data " + e);
 					}catch (SQLException e){
@@ -479,26 +558,58 @@ public class PalaceProjectExportMain {
 					}
 				}else if (recordUpdated || doFullReload){
 					updatePalaceProjectTitleInDbStmt.setString(1, title);
-					updatePalaceProjectTitleInDbStmt.setString(2, collectionName);
-					updatePalaceProjectTitleInDbStmt.setLong(3, rawChecksum);
-					updatePalaceProjectTitleInDbStmt.setString(4, rawResponse);
-					updatePalaceProjectTitleInDbStmt.setLong(5, existingTitle.getId());
+					updatePalaceProjectTitleInDbStmt.setLong(2, rawChecksum);
+					updatePalaceProjectTitleInDbStmt.setString(3, rawResponse);
+					updatePalaceProjectTitleInDbStmt.setLong(4, existingTitle.getId());
+					regroupAndIndexRecord = true;
+					titleId = existingTitle.getId();
 					try {
 						updatePalaceProjectTitleInDbStmt.executeUpdate();
-
-						String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(curTitle, existingTitle.getId());
-						indexRecord(groupedWorkId);
+						updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, titleId);
 					}catch (DataTruncation e) {
 						logEntry.addNote("Record " + palaceProjectId + " " + title + " contained invalid data " + e);
 					}catch (SQLException e){
 						logEntry.incErrors("Error updating Palace Project data in database for record " + palaceProjectId + " " + title, e);
 					}
+				} else {
+					//Update availability
+					titleId = existingTitle.getId();
+					regroupAndIndexRecord = updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, titleId);
+				}
+
+				if (regroupAndIndexRecord && titleId > 0) {
+					String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(curTitle, titleId);
+					indexRecord(groupedWorkId);
 				}
 			}catch (Exception e){
 				logEntry.incErrors("Error updating palace project data", e);
 			}
 		}
 		getGroupedWorkIndexer().commitChanges();
+	}
+
+	private static boolean updatePalaceProjectTitleAvailability(long collectionId, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, long indexTime, long titleId) throws SQLException {
+		boolean availabilityChanged = false;
+		//We might not have availability already if this title exists in another collection or settings and is new to this collection
+		if (titlesForCollection.containsKey(titleId)){
+			PalaceProjectTitleAvailability existingAvailability = titlesForCollection.get(titleId);
+			//availability was deleted, need to restore and reindex
+			if (existingAvailability.deleted) {
+				availabilityChanged = true;
+			}
+			updatePalaceProjectAvailabilityStmt.setLong(1, indexTime);
+			updatePalaceProjectAvailabilityStmt.setLong(2, titleId);
+			updatePalaceProjectAvailabilityStmt.setLong(3, collectionId);
+			updatePalaceProjectAvailabilityStmt.executeUpdate();
+		}else{
+			//Add availability for the title within the collection
+			addPalaceProjectAvailabilityStmt.setLong(1, titleId);
+			addPalaceProjectAvailabilityStmt.setLong(2, collectionId);
+			addPalaceProjectAvailabilityStmt.setLong(3, indexTime);
+			addPalaceProjectAvailabilityStmt.executeUpdate();
+			availabilityChanged = true;
+		}
+		return availabilityChanged;
 	}
 
 	@SuppressWarnings("unused")
@@ -548,9 +659,15 @@ public class PalaceProjectExportMain {
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
-				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, collectionName, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, COMPRESS(?), ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, collectionName = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
+				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, COMPRESS(?), ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
+				addPalaceProjectAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title_availability (titleId, collectionId, lastSeen, deleted) VALUES (?, ?, ?, 0)");
+				updatePalaceProjectAvailabilityStmt = aspenConn.prepareStatement("UPDATE palace_project_title_availability SET lastSeen = ?, deleted = 0 WHERE titleId = ? AND collectionId = ?");
+				deletePalaceProjectAvailabilityStmt = aspenConn.prepareStatement("UPDATE palace_project_title_availability SET deleted = 1 WHERE id = ?");
+				updateCollectionLastIndexedStmt = aspenConn.prepareStatement("UPDATE palace_project_collections SET lastIndexed = ? where id =?");
+				getAvailabilityForTitleStmt = aspenConn.prepareStatement("SELECT COUNT(*) as availabilityCount from palace_project_title_availability WHERE titleId = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getTitlesToRemoveFromCollectionStmt = aspenConn.prepareStatement("SELECT palace_project_title_availability.id, titleId FROM palace_project_title_availability inner JOIN palace_project_collections on collectionId = palace_project_collections.id where collectionId = ? AND lastSeen < lastIndexed", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}else{
 				logger.error("Aspen database connection information was not provided");
 				System.exit(1);
@@ -593,19 +710,17 @@ public class PalaceProjectExportMain {
 	private static void loadExistingTitles() {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
-			PreparedStatement getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, collectionName, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
+			PreparedStatement getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
 			ResultSet allRecordsRS = getAllExistingPalaceProjectTitlesStmt.executeQuery();
 			while (allRecordsRS.next()) {
 				String palaceProjectId = allRecordsRS.getString("palaceProjectId");
-				String collectionName = allRecordsRS.getString("collectionName");
 				PalaceProjectTitle newTitle = new PalaceProjectTitle(
 						allRecordsRS.getLong("id"),
 						palaceProjectId,
-						collectionName,
 						allRecordsRS.getLong("rawChecksum"),
 						allRecordsRS.getLong("rawResponseLength")
 				);
-				existingRecords.put(palaceProjectId+collectionName, newTitle);
+				existingRecords.put(palaceProjectId, newTitle);
 			}
 			allRecordsRS.close();
 			//noinspection UnusedAssignment

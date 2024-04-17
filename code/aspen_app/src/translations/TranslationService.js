@@ -266,6 +266,10 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                key: 'titles_on_hold_for_boundless',
                value: getTermFromDictionary(language, 'boundless'),
           },
+          {
+               key: 'titles_on_hold_for_palace_project',
+               value: getTermFromDictionary(language, 'palace_project'),
+          },
      ];
      const checkouts = [
           {
@@ -288,6 +292,10 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                key: 'checkouts_for_boundless',
                value: getTermFromDictionary(language, 'boundless'),
           },
+          {
+               key: 'checkouts_for_palace_project',
+               value: getTermFromDictionary(language, 'palace_project'),
+          },
      ];
      const filterBy = [
           {
@@ -309,6 +317,10 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
           {
                key: 'filter_by_boundless',
                value: getTermFromDictionary(language, 'boundless'),
+          },
+          {
+               key: 'filter_by_palace_project',
+               value: getTermFromDictionary(language, 'palace_project'),
           },
           {
                key: 'filter_by_all',

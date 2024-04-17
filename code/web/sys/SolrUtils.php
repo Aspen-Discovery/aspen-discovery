@@ -56,4 +56,87 @@ class SolrUtils {
 		return trim(preg_replace($regs, $replace, $query));
 	}
 
+	public static function startSolr() {
+		global $configArray;
+		global $serverName;
+		if ($configArray['System']['operatingSystem'] == 'windows') {
+			/** @noinspection SpellCheckingInspection */
+			exec("WMIC PROCESS get Processid,Commandline", $processes);
+			$solrRegex = "/$serverName\\\\solr7/ix";
+		} else {
+			exec("ps -ef | grep java", $processes);
+			$solrRegex = "/$serverName\/solr7/ix";
+		}
+
+		$results = "";
+
+		$solrRunning = false;
+		foreach ($processes as $processInfo) {
+			if (preg_match($solrRegex, $processInfo)) {
+				$solrRunning = true;
+			}
+		}
+
+		if (!$solrRunning) {
+			$results .= "Solr is not running for $serverName\r\n";
+			if ($configArray['System']['operatingSystem'] == 'windows') {
+				$solrCmd = "/D \"c:\\web\\aspen-discovery\\sites\\$serverName\\\" $serverName.bat start";
+			} else {
+				if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
+					$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh does not exist";
+				} elseif (!is_executable("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
+					$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh is not executable";
+				}
+				$solrCmd = "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh start";
+			}
+			SolrUtils::execInBackground($solrCmd);
+		}
+	}
+
+	public static function stopSolr() {
+		global $configArray;
+		global $serverName;
+		if ($configArray['System']['operatingSystem'] == 'windows') {
+			/** @noinspection SpellCheckingInspection */
+			exec("WMIC PROCESS get Processid,Commandline", $processes);
+			$solrRegex = "/$serverName\\\\solr7/ix";
+		} else {
+			exec("ps -ef | grep java", $processes);
+			$solrRegex = "/$serverName\/solr7/ix";
+		}
+
+		$results = "";
+
+		$solrRunning = false;
+		foreach ($processes as $processInfo) {
+			if (preg_match($solrRegex, $processInfo)) {
+				$solrRunning = true;
+			}
+		}
+
+		if ($solrRunning) {
+			$results .= "Solr is running for $serverName\r\n";
+			if ($configArray['System']['operatingSystem'] == 'windows') {
+				$solrCmd = "/D \"c:\\web\\aspen-discovery\\sites\\$serverName\\\" $serverName.bat stop";
+			} else {
+				if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
+					$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh does not exist";
+				} elseif (!is_executable("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
+					$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh is not executable";
+				}
+				$solrCmd = "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh stop";
+			}
+			SolrUtils::execInBackground($solrCmd);
+		}
+	}
+
+	private static function execInBackground($cmd) {
+		/** @noinspection PhpStrFunctionsInspection */
+		if (substr(php_uname(), 0, 7) == "Windows") {
+			$fullCommand = "start /B " . $cmd;
+			pclose(popen($fullCommand, 'r'));
+		} else {
+			exec($cmd . " > /dev/null &");
+		}
+	}
 }

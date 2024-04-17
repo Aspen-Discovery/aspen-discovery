@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { Alert, Button, Center, Heading, HStack, Icon, Text, Toast, VStack, Box } from '@gluestack-ui/themed-native-base';
+import React from 'react';
+import { Button, Center, Heading, HStack, Icon, Text } from '@gluestack-ui/themed-native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import _ from 'lodash';
+import Toast from 'react-native-toast-message';
 
 // custom components and helper files
 import { getTermFromDictionary } from '../translations/TranslationService';
@@ -43,7 +43,8 @@ export function loadError(error, reloadAction = '') {
  * Display a toast if Aspen LiDA is unable to connect to the server when fetching data
  **/
 export function badServerConnectionToast() {
-     return Toast.show({
+     const toast = useToast();
+     return toast.show({
           title: getTermFromDictionary('en', 'error_no_server_connection'),
           description: getTermFromDictionary('en', 'error_no_library_connection'),
           status: 'error',
@@ -77,15 +78,11 @@ export function badServerConnectionToast() {
  * @param {string} status
  **/
 export function popToast(title, description, status) {
-     return Toast.show({
-          title: title,
-          description: description,
-          status: status,
-          isClosable: true,
-          duration: 5000,
-          accessibilityAnnouncement: description,
-          zIndex: 9999,
-          placement: 'top',
+     Toast.show({
+          position: 'bottom',
+          type: status,
+          text1: title,
+          text2: description,
      });
 }
 
@@ -104,38 +101,17 @@ export function popToast(title, description, status) {
  * <li>Success</li>
  * <li>Error</li>
  * <li>Info</li>
- * <li>Warning</li>
  * </ul>
  * @param {string} title
  * @param {string} description
  * @param {string} status
  **/
 export function popAlert(title, description, status) {
-     return Toast.show({
-          duration: 5000,
-          accessibilityAnnouncement: description,
-          avoidKeyboard: true,
-          render: () => {
-               return (
-                    <Center>
-                         <Alert maxW="400" status={status} colorScheme={status}>
-                              <VStack space={2} flexShrink={1} w="100%">
-                                   <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-                                        <HStack flexShrink={1} space={2} alignItems="center">
-                                             <Alert.Icon />
-                                             <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolGray.800' }}>
-                                                  {title}
-                                             </Text>
-                                        </HStack>
-                                   </HStack>
-                                   <Box pl="6" _dark={{ _text: { color: 'coolGray.600' } }}>
-                                        {description}
-                                   </Box>
-                              </VStack>
-                         </Alert>
-                    </Center>
-               );
-          },
+     Toast.show({
+          position: 'bottom',
+          type: status,
+          text1: title,
+          text2: description,
      });
 }
 

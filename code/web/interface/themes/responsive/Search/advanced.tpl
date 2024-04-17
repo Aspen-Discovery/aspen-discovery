@@ -143,9 +143,9 @@
 																	{assign var=thisyear value=$smarty.now|date_format:"%Y"}
 																	{translate text="Published in the last" isPublicFacing=true}<br/>
 																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="year" isPublicFacing=true}</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="5 years" isPublicFacing=true}</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="10 years" isPublicFacing=true}</a>
-																</div>`
+																	&nbsp;&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="5 years" isPublicFacing=true}</a>
+																	&nbsp;&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="10 years" isPublicFacing=true}</a>
+																</div>
 															</div>
 														{elseif $facetInfo.facetName == "lexile_score"}
 															<div class="row">

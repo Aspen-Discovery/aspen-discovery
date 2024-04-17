@@ -398,6 +398,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
           const primaryCard = {
                key: 0,
                displayName: primaryUser.displayName,
+               userId: primaryUser.id,
                ils_barcode: primaryUser.ils_barcode ?? primaryUser.cat_username,
                expired: primaryUser.expired,
                expires: primaryUser.expires,
@@ -414,6 +415,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                               const card = {
                                    key: count,
                                    displayName: account.displayName,
+                                   userId: account.id,
                                    ils_barcode: account.ils_barcode ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
@@ -425,6 +427,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                               const card = {
                                    key: count,
                                    displayName: account.displayName,
+                                   userId: account.id,
                                    cat_username: account.cat_username ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
@@ -503,7 +506,11 @@ export async function addLinkedAccount(username = '', password = '', url, langua
                if (status !== true) {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
+                    try {
+                         popAlert(response.data.result.title, response.data.result.message, 'success');
+                    } catch (e) {
+                         console.log(e);
+                    }
                }
           }
           return status;
@@ -517,8 +524,9 @@ export async function addLinkedAccount(username = '', password = '', url, langua
  * Remove an account that the user has created a link to
  * @param {string} patronToRemove
  * @param {string} url
+ * @param {string} language
  **/
-export async function removeLinkedAccount(patronToRemove, url) {
+export async function removeLinkedAccount(patronToRemove, url, language) {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -527,6 +535,7 @@ export async function removeLinkedAccount(patronToRemove, url) {
           auth: createAuthTokens(),
           params: {
                idToRemove: patronToRemove,
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=removeAccountLink', postBody);
@@ -537,7 +546,11 @@ export async function removeLinkedAccount(patronToRemove, url) {
                if (status !== true) {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
                } else {
-                    popAlert(response.data.result.title, response.data.result.message, 'true');
+                    try {
+                         popAlert(response.data.result.title, response.data.result.message, 'true');
+                    } catch (e) {
+                         console.log(e);
+                    }
                }
           }
           return status;

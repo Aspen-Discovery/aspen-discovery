@@ -54,6 +54,7 @@ export const DiscoverHomeScreen = () => {
      const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
      const { theme, mode, textColor } = React.useContext(ThemeContext);
      const [unlimited, setUnlimitedCategories] = React.useState(false);
+     const [numFailedSessions, setNumFailedSessions] = React.useState(0);
 
      navigation.setOptions({
           headerLeft: () => {
@@ -63,6 +64,8 @@ export const DiscoverHomeScreen = () => {
 
      useQuery(['catalog_status', library.baseUrl], () => getCatalogStatus(library.baseUrl), {
           enabled: !!library.baseUrl,
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
           onSuccess: (data) => {
                updateCatalogStatus(data);
           },
@@ -243,7 +246,19 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
                if (data === false || data === 'false') {
-                    setInvalidSession(true);
+                    let tmp = numFailedSessions;
+                    tmp = tmp + 1;
+                    setNumFailedSessions(tmp);
+                    console.log('Added +1 to numFailedSessions');
+                    if (tmp >= 2) {
+                         console.log('More than two failed sessions, logging user out');
+                         setInvalidSession(true);
+                    }
+                    setInvalidSession(false);
+               } else {
+                    console.log('Resetting numFailedSessions to 0');
+                    setNumFailedSessions(0);
+                    setInvalidSession(false);
                }
           },
      });
@@ -360,7 +375,11 @@ export const DiscoverHomeScreen = () => {
 
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
-               type = item.source;
+               if (item.source === 'library_calendar' || item.source === 'springshare_libcal' || item.source === 'communico') {
+                    type = 'Event';
+               } else {
+                    type = item.source;
+               }
           }
 
           if (!_.isUndefined(item.recordtype)) {

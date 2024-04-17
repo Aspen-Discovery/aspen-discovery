@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class PalaceProjectProcessor {
@@ -23,6 +24,8 @@ public class PalaceProjectProcessor {
 
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getProductIdForPalaceProjectIdStmt;
+	private PreparedStatement getAvailabilityForPalaceProjectTitleStmt;
+	private HashMap<Long, PalaceProjectCollection> allCollections = new HashMap<>();
 
 	PalaceProjectProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
@@ -30,7 +33,20 @@ public class PalaceProjectProcessor {
 
 		try {
 			getProductIdForPalaceProjectIdStmt = dbConn.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, collectionName, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getAvailabilityForPalaceProjectTitleStmt = dbConn.prepareStatement("SELECT collectionId from palace_project_title_availability where titleId = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getCollectionInfoStmt = dbConn.prepareStatement("SELECT * from palace_project_collections", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			ResultSet collectionInfoRS = getCollectionInfoStmt.executeQuery();
+			while (collectionInfoRS.next()) {
+				PalaceProjectCollection collectionInfo = new PalaceProjectCollection();
+				collectionInfo.id = collectionInfoRS.getLong("id");
+				collectionInfo.settingId = collectionInfoRS.getLong("settingId");
+				collectionInfo.palaceProjectName = collectionInfoRS.getString("palaceProjectName");
+				collectionInfo.displayName = collectionInfoRS.getString("displayName");
+				collectionInfo.hasCirculation = collectionInfoRS.getBoolean("hasCirculation");
+				collectionInfo.includeInAspen = collectionInfoRS.getBoolean("includeInAspen");
+				allCollections.put(collectionInfo.id, collectionInfo);
+			}
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -64,7 +80,6 @@ public class PalaceProjectProcessor {
 				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);
 				JSONObject rawResponse = new JSONObject(rawResponseString);
 				JSONObject metadata = rawResponse.getJSONObject("metadata");
-				String collectionName = productRS.getString("collectionName");
 
 				RecordInfo palaceProjectRecord = groupedWork.addRelatedRecord("palace_project", identifier);
 				palaceProjectRecord.setRecordIdentifier("palace_project", identifier);
@@ -215,6 +230,7 @@ public class PalaceProjectProcessor {
 					groupedWork.addTopic(generes);
 				}
 				if (audience == null) {
+					audience = "Unknown";
 					groupedWork.addTargetAudience("Unknown");
 					groupedWork.addTargetAudienceFull("Unknown");
 				}else {
@@ -259,43 +275,75 @@ public class PalaceProjectProcessor {
 					}
 				}
 
-				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.setItemIdentifier(identifier);
-				itemInfo.seteContentSource(collectionName);
-				itemInfo.setIsEContent(true);
-				itemInfo.seteContentUrl(contentUrl);
-				itemInfo.setShelfLocation("Online " + collectionName);
-				itemInfo.setDetailedLocation("Online " + collectionName);
-				itemInfo.setCallNumber("Online " + collectionName);
-				itemInfo.setSortableCallNumber("Online " + collectionName);
-				itemInfo.setFormat(primaryFormat);
-				itemInfo.setFormatCategory(formatCategory);
-				//TODO: Check availability and update.  For now, assume 1 copy with unlimited use
-				itemInfo.setNumCopies(1);
-				itemInfo.setAvailable(available);
-				itemInfo.setDetailedStatus("Available Online");
-				itemInfo.setGroupedStatus("Available Online");
-				itemInfo.setHoldable(false);
-				itemInfo.setInLibraryUseOnly(false);
+				//Get a list of availability for the project
+				getAvailabilityForPalaceProjectTitleStmt.setLong(1, palaceProjectId);
+				ResultSet collectionsForTitleRS = getAvailabilityForPalaceProjectTitleStmt.executeQuery();
+				while (collectionsForTitleRS.next()) {
+					long collectionId = collectionsForTitleRS.getLong("collectionId");
+					PalaceProjectCollection collection = allCollections.get(collectionId);
+					String collectionName = collection.displayName;
+					ItemInfo itemInfo = new ItemInfo();
+					itemInfo.setItemIdentifier(identifier);
+					itemInfo.seteContentSource(collectionName);
+					itemInfo.setIsEContent(true);
+					itemInfo.seteContentUrl(contentUrl);
+					itemInfo.setShelfLocation("Online " + collectionName);
+					itemInfo.setDetailedLocation("Online " + collectionName);
+					itemInfo.setCallNumber("Online " + collectionName);
+					itemInfo.setSortableCallNumber("Online " + collectionName);
+					itemInfo.setFormat(primaryFormat);
+					itemInfo.setFormatCategory(formatCategory);
+					//Palace Project does not currently provide more info so can't give accurate number of copies, but we can tell if it's available or not
+					itemInfo.setNumCopies(1);
+					itemInfo.setAvailable(available);
+					itemInfo.setDetailedStatus("Available Online");
+					itemInfo.setGroupedStatus("Available Online");
+					itemInfo.setHoldable(false);
+					itemInfo.setInLibraryUseOnly(false);
 
-				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-				itemInfo.setDateAdded(dateAdded);
+					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+					itemInfo.setDateAdded(dateAdded);
 
-				for (Scope scope : indexer.getScopes()) {
-					boolean okToAdd = false;
-					PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
-					if (palaceProjectScope != null) {
-						okToAdd = true;
+					boolean isTeen = audience.equals("Young Adult");
+					boolean isKids = audience.equals("Juvenile");
+					//Account for cases where audience is Unknown, General, etc
+					boolean isAdult = !isKids && !isTeen;
+
+					for (Scope scope : indexer.getScopes()) {
+						boolean okToAdd = false;
+						PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
+						if (palaceProjectScope != null) {
+							okToAdd = true;
+						}else{
+							continue;
+						}
+						if (palaceProjectScope.getSettingId() != collection.settingId) {
+							okToAdd = false;
+						}
+						if (okToAdd) {
+							//Check based on the audience as well
+							okToAdd = false;
+							//noinspection RedundantIfStatement
+							if (isAdult && palaceProjectScope.isIncludeAdult()) {
+								okToAdd = true;
+							}
+							if (isTeen && palaceProjectScope.isIncludeTeen()) {
+								okToAdd = true;
+							}
+							if (isKids && palaceProjectScope.isIncludeKids()) {
+								okToAdd = true;
+							}
+							if (okToAdd) {
+								ScopingInfo scopingInfo = itemInfo.addScope(scope);
+								groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
+								scopingInfo.setLibraryOwned(true);
+								scopingInfo.setLocallyOwned(true);
+							}
+						}
 					}
-					if (okToAdd) {
-						ScopingInfo scopingInfo = itemInfo.addScope(scope);
-						groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
-						scopingInfo.setLibraryOwned(true);
-						scopingInfo.setLocallyOwned(true);
-					}
+
+					palaceProjectRecord.addItem(itemInfo);
 				}
-
-				palaceProjectRecord.addItem(itemInfo);
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
