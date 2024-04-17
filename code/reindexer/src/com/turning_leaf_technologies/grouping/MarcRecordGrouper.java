@@ -24,10 +24,6 @@ import java.util.regex.Pattern;
  */
 public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private final IndexingProfile profile;
-	private final String itemTag;
-	private final int itemTagInt;
-	private final boolean useEContentSubfield;
-	private final char eContentDescriptor;
 	private PreparedStatement getExistingParentRecordsStmt;
 	private PreparedStatement addParentRecordStmt;
 	private PreparedStatement deleteParentRecordStmt;
@@ -43,11 +39,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
-
-		itemTag = profile.getItemTag();
-		itemTagInt = profile.getItemTagInt();
-		eContentDescriptor = profile.getEContentDescriptor();
-		useEContentSubfield = profile.getEContentDescriptor() != ' ';
 
 		super.setupDatabaseStatements(dbConnection);
 
@@ -115,7 +106,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 
 	private String getFormatFromItems(org.marc4j.marc.Record record, char formatSubfield) {
-		List<DataField> itemFields = getDataFields(record, itemTagInt);
+		List<DataField> itemFields = getDataFields(record, profile.getItemTagInt());
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
@@ -236,7 +227,11 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			if (groupingFormat == null || groupingFormat.isEmpty()){
 				//Do a bib level determination
 				String format = getFormatFromBib(marcRecord);
-				groupingFormat = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
+				if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
+					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(format.toLowerCase()), "other");
+				}else{
+					groupingFormat = "other";
+				}
 				workForTitle.setGroupingCategory(groupingFormat);
 			}else {
 				workForTitle.setGroupingCategory(groupingFormat);
@@ -252,15 +247,15 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		if (indexingProfile.isDoAutomaticEcontentSuppression()) {
 			//Check to see if the record is an overdrive record
-			if (useEContentSubfield) {
+			if (profile.useEContentSubfield()) {
 				boolean allItemsSuppressed = true;
 
-				List<DataField> itemFields = getDataFields(marcRecord, itemTagInt);
+				List<DataField> itemFields = getDataFields(marcRecord, profile.getItemTagInt());
 				int numItems = itemFields.size();
 				for (DataField itemField : itemFields) {
-					if (itemField.getSubfield(eContentDescriptor) != null) {
+					if (itemField.getSubfield(profile.getEContentDescriptor()) != null) {
 						//Check the protection types and sources
-						String eContentData = itemField.getSubfield(eContentDescriptor).getData();
+						String eContentData = itemField.getSubfield(profile.getEContentDescriptor()).getData();
 						if (eContentData.indexOf(':') >= 0) {
 							String[] eContentFields = eContentData.split(":");
 							String sourceType = eContentFields[0].toLowerCase().trim();
@@ -319,10 +314,10 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	protected String getFormatFromBib(org.marc4j.marc.Record record) {
 		//Check to see if the title is eContent based on the 989 field
-		if (useEContentSubfield) {
-			List<DataField> itemFields = getDataFields(record, itemTag);
+		if (profile.useEContentSubfield()) {
+			List<DataField> itemFields = getDataFields(record, profile.getItemTagInt());
 			for (DataField itemField : itemFields) {
-				if (itemField.getSubfield(eContentDescriptor) != null) {
+				if (itemField.getSubfield(profile.getEContentDescriptor()) != null) {
 					//The record is some type of eContent.  For this purpose, we don't care what type.
 					return "eContent";
 				}

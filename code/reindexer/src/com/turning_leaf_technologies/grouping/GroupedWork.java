@@ -334,7 +334,7 @@ public class GroupedWork implements Cloneable {
 		this.author = normalizeAuthor(author);
 	}
 
-	private static final Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|other)$");
 
 	public void setGroupingCategory(String groupingCategory) {
 		groupingCategory = groupingCategory.toLowerCase();

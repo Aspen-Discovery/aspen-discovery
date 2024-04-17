@@ -86,7 +86,7 @@ public class NashvilleCarlXRecordProcessor extends CarlXRecordProcessor{
 				int numUsages = printFormats.get(printFormat);
 				logger.info("  " + printFormat + " used " + numUsages + " times");
 				if (numUsages > maxPrintFormats) {
-					if (selectedFormat.length() > 0) {
+					if (!selectedFormat.isEmpty()) {
 						logger.info("Record " + ilsRecord.getRecordIdentifier() + " " + printFormat + " has more usages (" + numUsages + ") than " + selectedFormat + " (" + maxPrintFormats + ")");
 					}
 					selectedFormat = printFormat;
@@ -118,23 +118,5 @@ public class NashvilleCarlXRecordProcessor extends CarlXRecordProcessor{
 			}
 		}
 		ilsRecord.setFormatBoost(formatBoost);
-	}
-
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Nashville CARL.X, load audiences based on location code rather than based on the 008 and 006 fields
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String location = printItem.getShelfLocationCode();
-			if (location != null) {
-				//Get the first character from the location
-				if (location.length() > 0){
-					targetAudiences.add(location.substring(0, 1));
-				}
-			}
-		}
-
-		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier, true);
-		groupedWork.addTargetAudiences(translatedAudiences);
-		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}
 }

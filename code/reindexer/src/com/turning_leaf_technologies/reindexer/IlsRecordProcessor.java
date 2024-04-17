@@ -1757,7 +1757,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					doLargePrintCheck = true;
 				}
 				if (doLargePrintCheck) {
-					LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+					LinkedHashSet<String> printFormats = getFormatsFromBib(record);
 					if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
 						String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
 						for (ItemInfo item : recordInfo.getRelatedItems()) {
@@ -1775,7 +1775,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	void loadPrintFormatFromBib(RecordInfo recordInfo, org.marc4j.marc.Record record) {
-		LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+		LinkedHashSet<String> printFormats = getFormatsFromBib(record);
 
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.isEmpty()){
