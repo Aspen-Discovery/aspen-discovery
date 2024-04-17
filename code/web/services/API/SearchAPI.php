@@ -2095,6 +2095,16 @@ class SearchAPI extends AbstractAPI {
 													];
 													$count++;
 												}
+											} elseif (preg_match('`^assabet`', $listEntry->sourceId)){
+												require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+												$recordDriver = new AssabetEventRecordDriver($listEntry->sourceId);
+												if ($recordDriver->isValid()) {
+													$categoryResponse['events'][] = [
+														'sourceId' => $listEntry->sourceId,
+														'title' => $listEntry->title,
+													];
+													$count++;
+												}
 											} else {
 												require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 												$recordDriver = new LibraryCalendarEventRecordDriver($listEntry->sourceId);
@@ -2413,9 +2423,11 @@ class SearchAPI extends AbstractAPI {
 						$lmBypass = false;
 						$commmunicoBypass = false;
 						$springshareBypass = false;
+						$assabetBypass = false;
 						$lmAddToList = false;
 						$communicoAddToList = false;
 						$springshareAddToList = false;
+						$assabetAddToList = false;
 						$libraryEventSettings = [];
 
 						if($browseCategory->source === 'Events') {
@@ -2442,7 +2454,7 @@ class SearchAPI extends AbstractAPI {
 									$eventSetting->id = $id;
 									if($eventSetting->find(true)) {
 										$commmunicoBypass = $eventSetting->bypassAspenEventPages;
-										$commmunicoBypass = $eventSetting->eventsInLists;
+										$commmunicoAddToList = $eventSetting->eventsInLists;
 									}
 								} else if ($source == 'springshare') {
 									require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
@@ -2450,7 +2462,15 @@ class SearchAPI extends AbstractAPI {
 									$eventSetting->id = $id;
 									if($eventSetting->find(true)) {
 										$springshareBypass = $eventSetting->bypassAspenEventPages;
-										$springshareBypass = $eventSetting->eventsInLists;
+										$springshareAddToList = $eventSetting->eventsInLists;
+									}
+								} else if ($source == 'assabet') {
+									require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+									$eventSetting = new AssabetSetting();
+									$eventSetting->id = $id;
+									if($eventSetting->find(true)) {
+										$assabetBypass = $eventSetting->bypassAspenEventPages;
+										$assabetAddToList = $eventSetting->eventsInLists;
 									}
 								} else {
 									// invalid event source
@@ -2512,6 +2532,10 @@ class SearchAPI extends AbstractAPI {
 									$eventSource = 'springshare_libcal';
 									$bypass = $springshareBypass;
 									$addToList = $springshareAddToList;
+								} else if (str_starts_with($record['id'], 'assabet')) {
+									$eventSource = 'assabet';
+									$bypass = $assabetBypass;
+									$addToList = $assabetAddToList;
 								} else {
 									$eventSource = 'unknown';
 									$bypass = false;
@@ -3058,9 +3082,11 @@ class SearchAPI extends AbstractAPI {
 		$lmBypass = false;
 		$commmunicoBypass = false;
 		$springshareBypass = false;
+		$assabetBypass = false;
 		$lmAddToList = false;
 		$communicoAddToList = false;
 		$springshareAddToList = false;
+		$assabetAddToList = false;
 		$libraryEventSettings = [];
 		if($searchEngine == 'Events') {
 			$searchLibrary = Library::getSearchLibrary(null);
@@ -3086,7 +3112,7 @@ class SearchAPI extends AbstractAPI {
 					$eventSetting->id = $id;
 					if($eventSetting->find(true)) {
 						$commmunicoBypass = $eventSetting->bypassAspenEventPages;
-						$commmunicoBypass = $eventSetting->eventsInLists;
+						$commmunicoAddToList = $eventSetting->eventsInLists;
 					}
 				} else if ($source == 'springshare') {
 					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
@@ -3094,7 +3120,15 @@ class SearchAPI extends AbstractAPI {
 					$eventSetting->id = $id;
 					if($eventSetting->find(true)) {
 						$springshareBypass = $eventSetting->bypassAspenEventPages;
-						$springshareBypass = $eventSetting->eventsInLists;
+						$springshareAddToList = $eventSetting->eventsInLists;
+					}
+				} else if ($source == 'assabet') {
+					require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+					$eventSetting = new AssabetSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$assabetBypass = $eventSetting->bypassAspenEventPages;
+						$assabetAddToList = $eventSetting->eventsInLists;
 					}
 				} else {
 					// invalid event source
@@ -3185,6 +3219,10 @@ class SearchAPI extends AbstractAPI {
 						$eventSource = 'springshare_libcal';
 						$bypass = $springshareBypass;
 						$addToList = $springshareAddToList;
+					} else if (str_starts_with($record['id'], 'assabet')) {
+						$eventSource = 'assabet';
+						$bypass = $assabetBypass;
+						$addToList = $assabetAddToList;
 					} else {
 						$eventSource = 'unknown';
 						$bypass = false;

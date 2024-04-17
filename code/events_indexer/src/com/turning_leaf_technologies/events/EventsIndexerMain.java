@@ -118,6 +118,19 @@ public class EventsIndexerMain {
 					indexer.indexEvents();
 				}
 
+				// Assabet
+				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from assabet_settings");
+				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
+				while (eventsSitesRS.next()) {
+					AssabetIndexer indexer = new AssabetIndexer(
+							eventsSitesRS.getLong("id"),
+							eventsSitesRS.getString("name"),
+							eventsSitesRS.getString("baseUrl"),
+							eventsSitesRS.getInt("numberOfDaysToIndex"),
+							solrUpdateServer, aspenConn, logger);
+					indexer.indexEvents();
+				}
+
 				//Index events from other source here
 				try {
 					solrUpdateServer.close();

@@ -83,6 +83,8 @@ class EventAPI extends AbstractAPI {
 			return $this->getLMEventDetails();
 		} else if ($source == 'springshare') {
 			return $this->getSpringshareEventDetails();
+		} else if ($source == 'assabet') {
+			return $this->getAssabetEventDetails();
 		} else {
 			return [
 				'success' => false,
@@ -239,6 +241,60 @@ class EventAPI extends AbstractAPI {
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
 				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($springshareDriver->getSource());
 			}
+
+			return $itemData;
+		}
+		return [
+			'success' => false,
+			'message' => 'Event id not valid',
+		];
+	}
+
+	function getAssabetEventDetails(): array {
+		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+		$assabetDriver = new AssabetEventRecordDriver($_REQUEST['id']);
+		if($assabetDriver->isValid()) {
+			$registrationInformation = null;
+			if($assabetDriver->getRegistrationModalBodyForAPI()) {
+				$registrationInformation = strip_tags($assabetDriver->getRegistrationModalBodyForAPI());
+			} elseif ($assabetDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($assabetDriver->getRegistrationModalBody());
+			}
+
+			$itemData['success'] = true;
+			$itemData['id'] = $_REQUEST['id'];
+			$itemData['title'] = $assabetDriver->getTitle();
+			$itemData['isAllDay'] = (bool)$assabetDriver->isAllDayEvent();
+			$itemData['startDate'] = $assabetDriver->getStartDate();
+			$itemData['endDate'] = $assabetDriver->getEndDate();
+			$itemData['description'] = strip_tags($assabetDriver->getDescription());
+			$itemData['registrationRequired'] = $assabetDriver->isRegistrationRequired();
+			$itemData['userIsRegistered'] = false;
+			$itemData['inUserEvents'] = false;
+			$itemData['registrationBody'] = $registrationInformation;
+			$itemData['bypass'] = (bool)$assabetDriver->getBypassSetting();
+			$itemData['cover'] = $assabetDriver->getEventCoverUrl();
+			$itemData['url'] = $assabetDriver->getExternalUrl();
+			$itemData['audiences'] = $assabetDriver->getAudiences();
+			$itemData['categories'] = null;
+			$itemData['programTypes'] = null;
+			$itemData['room'] = null;
+
+			// check if event has passed
+			$today = new DateTime('now');
+			$eventDay = $assabetDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
+
+			$itemData['location'] = $this->getDiscoveryBranchDetails($assabetDriver->getBranch());
+			$itemData['canAddToList'] = false;
+
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
+				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($assabetDriver->getSource());
+			}
+
 
 			return $itemData;
 		}
