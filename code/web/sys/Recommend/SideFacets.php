@@ -115,6 +115,13 @@ class SideFacets implements RecommendationInterface {
 				if ($eventSettings->find(true)){
 					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
 				}
+			}else if ($facetSettings->settingSource == 'assabet'){
+				require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+				$eventSettings = new AssabetSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
 			}else {
 				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
 				$eventSettings = new LMLibraryCalendarSetting;

@@ -472,6 +472,12 @@ class UserList extends DataObject {
 							$coverUrl = "/bookcover.php?id={$id}&size=medium&type=library_calendar_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
+						} elseif (preg_match('`^assabet`', $listEntryInfo['sourceId'])){
+							$id = explode("assabet_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id={$id}&size=medium&type=assabet_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
 						}
 					}
 

@@ -77,6 +77,9 @@ class UserListEntry extends DataObject {
 			} elseif (preg_match('`^lc_`', $this->sourceId)){
 				require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 				return new LibraryCalendarEventRecordDriver($this->sourceId);
+			} elseif (preg_match('`^assabet`', $this->sourceId)){
+				require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+				return new AssabetEventRecordDriver($this->sourceId);
 			}
 		} elseif ($this->source == 'Lists') {
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
