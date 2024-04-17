@@ -51,6 +51,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 		try {
 			settings = new IndexingProfile(indexingProfileRS, indexer.getLogEntry());
+			super.settings = this.settings;
 			profileType = indexingProfileRS.getString("name");
 
 			try {
