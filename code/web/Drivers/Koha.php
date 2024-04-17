@@ -2060,6 +2060,7 @@ class Koha extends AbstractIlsDriver {
 					'message' => translate([
 						'text' => "Error (%1%) placing a hold on this volume.",
 						1 => $responseCode,
+						'isPublicFacing' => true
 					]),
 				];
 
@@ -2071,6 +2072,7 @@ class Koha extends AbstractIlsDriver {
 				$result['api']['message'] = translate([
 					'text' => "Error (%1%) placing a hold on this volume.",
 					1 => $responseCode,
+					'isPublicFacing' => true
 				]);
 			}
 		}
