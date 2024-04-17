@@ -1211,6 +1211,13 @@ class ListAPI extends AbstractAPI {
 									$title = $recordDriver->getTitle();
 									$userListEntry->title = substr($title, 0, 50);
 								}
+							} elseif (preg_match('`^assabet_`', $id)){
+								require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+								$recordDriver = new AssabetEventRecordDriver($id);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
 							}
 						} else {
 							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';

@@ -19,8 +19,6 @@ import java.util.HashMap;
 public class EvergreenRecordProcessor extends IlsRecordProcessor {
 	HashMap<String, String> barcodeCreatedByDates = new HashMap<>();
 
-	private PreparedStatement getVolumesForBibStmt;
-
 	EvergreenRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 		this.suppressRecordsWithNoCollection = false;
@@ -28,19 +26,19 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 	}
 
 	private void loadSupplementalFiles() {
-		File supplementalDirectory = new File(marcPath + "/../supplemental");
+		File supplementalDirectory = new File(settings.getMarcPath() + "/../supplemental");
 		if (supplementalDirectory.exists()){
 			try {
-				File barcodeActiveDatesFile = new File(marcPath + "/../supplemental/barcode_active_dates.csv");
+				File barcodeActiveDatesFile = new File(settings.getMarcPath() + "/../supplemental/barcode_active_dates.csv");
 				if (barcodeActiveDatesFile.exists()){
-					BufferedReader barcodeActiveDatesReader = new BufferedReader(new FileReader(marcPath + "/../supplemental/barcode_active_dates.csv"));
+					BufferedReader barcodeActiveDatesReader = new BufferedReader(new FileReader(settings.getMarcPath() + "/../supplemental/barcode_active_dates.csv"));
 					String curValuesStr = barcodeActiveDatesReader.readLine();
 					while (curValuesStr != null){
 						String[] curValues = curValuesStr.split("\\|");
 						String barcode = curValues[0];
 						if (curValues.length >= 2){
 							String date = curValues[1].trim();
-							if (date.length() > 0){
+							if (!date.isEmpty()){
 								barcodeCreatedByDates.put(barcode, date);
 							}
 						}
@@ -48,7 +46,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 					}
 					barcodeActiveDatesReader.close();
 				}else{
-					indexer.getLogEntry().incErrors("Error barcode_active_dates.csv did not exist within " + marcPath);
+					indexer.getLogEntry().incErrors("Error barcode_active_dates.csv did not exist within " + settings.getMarcPath());
 				}
 			}catch (IOException e){
 				indexer.getLogEntry().incErrors("Error reading barcode active dates", e);
@@ -63,7 +61,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
-	private SimpleDateFormat createdByFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private final SimpleDateFormat createdByFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		Subfield itemBarcodeSubfield = itemField.getSubfield(settings.getBarcodeSubfield());
 		if (itemBarcodeSubfield != null){

@@ -1,13 +1,13 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,18 +29,6 @@ abstract class MarcRecordProcessor {
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?[+\\\\/]\\s?dvd.*)|(blu-ray 3d\\s?[+\\\\/]\\s?dvd.*)|(.*dvd\\s?[+\\\\/]\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
-	int numCharsToCreateFolderFrom;
-	boolean createFolderFromLeadingCharacters;
-	String individualMarcPath;
-	String formatSource;
-	String fallbackFormatField; //Only used for IlsRecordProcessor, but defined here
-	String specifiedFormat;
-	String specifiedFormatCategory;
-	int specifiedFormatBoost;
-	String treatUnknownLanguageAs = null;
-	String treatUndeterminedLanguageAs = null;
-	String customMarcFieldsToIndexAsKeyword = null;
-	boolean includePersonalAndCorporateNamesInTopics;
 
 	PreparedStatement addRecordToDBStmt;
 	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
@@ -86,18 +74,13 @@ abstract class MarcRecordProcessor {
 		if (!isSuppressed) {
 			org.marc4j.marc.Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
 			if (record == null) {
-				record = loadMarcRecordFromDisk(identifier, logEntry);
-				if (record != null) {
-					indexer.saveMarcRecordToDatabase(settings, identifier, record);
-				} else {
-					try {
-						//We don't have data for this MARC record, mark it as suppressed for not having MARC data
-						marcRecordAsSuppressedNoMarcStmt.setString(1, this.profileType);
-						marcRecordAsSuppressedNoMarcStmt.setString(2, identifier);
-						marcRecordAsSuppressedNoMarcStmt.executeUpdate();
-					} catch (SQLException e) {
-						logEntry.incErrors("Error marking record as suppressed for not having MARC", e);
-					}
+				try {
+					//We don't have data for this MARC record, mark it as suppressed for not having MARC data
+					marcRecordAsSuppressedNoMarcStmt.setString(1, this.profileType);
+					marcRecordAsSuppressedNoMarcStmt.setString(2, identifier);
+					marcRecordAsSuppressedNoMarcStmt.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error marking record as suppressed for not having MARC", e);
 				}
 			}
 
@@ -109,28 +92,6 @@ abstract class MarcRecordProcessor {
 				}
 			}
 		}
-	}
-
-	private org.marc4j.marc.Record loadMarcRecordFromDisk(String identifier, BaseIndexingLogEntry logEntry) {
-		String individualFilename = getFileForIlsRecord(identifier);
-		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
-	}
-
-	private String getFileForIlsRecord(String recordNumber) {
-		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
-		while (shortId.length() < 9) {
-			shortId.insert(0, "0");
-		}
-
-		String subFolderName;
-		if (createFolderFromLeadingCharacters) {
-			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
-		} else {
-			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
-		}
-
-		String basePath = individualMarcPath + "/" + subFolderName;
-		return basePath + "/" + shortId + ".mrc";
 	}
 
 	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record){
@@ -147,12 +108,12 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
 						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopicFacet(curSubfield.getData());
 							}
 						} else if (curSubfield.getCode() == 'v') {
@@ -174,7 +135,7 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (includePersonalAndCorporateNamesInTopics) {
+							if (settings.isIncludePersonalAndCorporateNamesInTopics()) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
@@ -484,9 +445,9 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		if (customMarcFieldsToIndexAsKeyword != null && !customMarcFieldsToIndexAsKeyword.isEmpty()) {
+		if (settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
 			try {
-				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, settings.getCustomMarcFieldsToIndexAsKeyword()));
 			}catch (Exception e){
 				if (!loggedCustomMarcError) {
 					indexer.getLogEntry().incErrors("Error processing custom marc fields to index as keyword", e);
@@ -572,7 +533,7 @@ abstract class MarcRecordProcessor {
 
 	void loadEditions(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
-		if (editions.size() > 0) {
+		if (!editions.isEmpty()) {
 			String edition = editions.iterator().next();
 			for (RecordInfo ilsRecord : ilsRecords) {
 				ilsRecord.setEdition(edition);
@@ -583,7 +544,7 @@ abstract class MarcRecordProcessor {
 
 	void loadPhysicalDescription(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		if (physicalDescriptions.size() > 0){
+		if (!physicalDescriptions.isEmpty()){
 			String physicalDescription = physicalDescriptions.iterator().next();
 			for(RecordInfo ilsRecord : ilsRecords){
 				ilsRecord.setPhysicalDescription(physicalDescription);
@@ -670,12 +631,12 @@ abstract class MarcRecordProcessor {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				}
-				if (targetAudiences.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+				if (targetAudiences.isEmpty() && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
 					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
-				} else if (targetAudiences.size() == 0) {
+				} else if (targetAudiences.isEmpty()) {
 					targetAudiences.add(unknownAudienceLabel);
 				}
 			} else {
@@ -687,7 +648,7 @@ abstract class MarcRecordProcessor {
 			targetAudiences.add(unknownAudienceLabel);
 		}
 
-		if (targetAudiences.size() == 0) {
+		if (targetAudiences.isEmpty()) {
 			targetAudiences.add(unknownAudienceLabel);
 		}
 
@@ -730,7 +691,7 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 33) {
+				if (literaryForms.isEmpty() && ohOhEightField != null && ohOhEightField.getData().length() > 33) {
 					literaryFormChar = Character.toUpperCase(ohOhEightField.getData().charAt(33));
 					if (literaryFormChar != ' ') {
 						literaryForms.add(Character.toString(literaryFormChar));
@@ -887,7 +848,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
-	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
+	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, @SuppressWarnings("SameParameterValue") int numberToAdd){
 		for (String elementToAdd : elementsToAdd) {
 			addToMapWithCount(map, elementToAdd, numberToAdd);
 		}
@@ -1029,7 +990,7 @@ abstract class MarcRecordProcessor {
 		return placesOfPublication;
 	}
 
-	private static HashMap<String, String> countryList = new HashMap<>();
+	private static final HashMap<String, String> countryList = new HashMap<>();
 	public static String codeToCountry(String code) {
 		code = code.toUpperCase().trim();
 
@@ -1396,10 +1357,10 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
-			if (treatUnknownLanguageAs != null && !treatUnknownLanguageAs.isEmpty() && translatedLanguage.equals("Unknown")){
-				translatedLanguage = treatUnknownLanguageAs;
-			}else if (treatUndeterminedLanguageAs != null && !treatUndeterminedLanguageAs.isEmpty() && translatedLanguage.equals("Undetermined")){
-				translatedLanguage = treatUndeterminedLanguageAs;
+			if (settings.getTreatUnknownLanguageAs() != null && !settings.getTreatUnknownLanguageAs().isEmpty() && translatedLanguage.equals("Unknown")){
+				translatedLanguage = settings.getTreatUnknownLanguageAs();
+			}else if (settings.getTreatUndeterminedLanguageAs() != null && !settings.getTreatUndeterminedLanguageAs().isEmpty() && translatedLanguage.equals("Undetermined")){
+				translatedLanguage = settings.getTreatUndeterminedLanguageAs();
 			}
 			translatedLanguages.add(translatedLanguage);
 			if (isFirstLanguage){
@@ -1420,16 +1381,16 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		if (translatedLanguages.isEmpty()){
-			translatedLanguages.add(treatUnknownLanguageAs);
+			translatedLanguages.add(settings.getTreatUnknownLanguageAs());
 			for (RecordInfo ilsRecord : ilsRecords){
-				ilsRecord.setPrimaryLanguage(treatUnknownLanguageAs);
+				ilsRecord.setPrimaryLanguage(settings.getTreatUnknownLanguageAs());
 			}
-			String languageBoost = indexer.translateSystemValue("language_boost", treatUnknownLanguageAs, identifier);
+			String languageBoost = indexer.translateSystemValue("language_boost", settings.getTreatUnknownLanguageAs(), identifier);
 			if (languageBoost != null){
 				Long languageBoostVal = Long.parseLong(languageBoost);
 				groupedWork.setLanguageBoost(languageBoostVal);
 			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", treatUnknownLanguageAs, identifier);
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", settings.getTreatUnknownLanguageAs(), identifier);
 			if (languageBoostEs != null){
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
 				groupedWork.setLanguageBoostSpanish(languageBoostVal);
@@ -1637,8 +1598,11 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		if (printFormats.isEmpty() && fallbackFormatField != null && !fallbackFormatField.isEmpty()){
-			getFormatFromFallbackField(record, printFormats);
+		if (settings instanceof IndexingProfile) {
+			IndexingProfile indexingProfile = (IndexingProfile) settings;
+			if (printFormats.isEmpty() && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
+				getFormatFromFallbackField(record, printFormats);
+			}
 		}
 		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			if (printFormats.size() == 1 && printFormats.contains("Book")){

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.indexing;
 
-import java.io.File;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -9,9 +10,6 @@ public class BaseIndexingSettings {
 	protected String name;
 	protected String marcPath;
 	String marcEncoding;
-	String individualMarcPath;
-	int numCharsToCreateFolderFrom;
-	boolean createFolderFromLeadingCharacters;
 	String groupingClass;
 	String recordNumberTag;
 	int recordNumberTagInt;
@@ -19,43 +17,25 @@ public class BaseIndexingSettings {
 	String recordNumberPrefix;
 	String filenamesToInclude;
 	String formatSource;
+	String specifiedFormat;
 	String specifiedFormatCategory;
+	int specifiedFormatBoost;
 	long lastUpdateOfChangedRecords;
 	long lastUpdateOfAllRecords;
 	boolean runFullUpdate;
 	boolean regroupAllRecords;
 	String treatUnknownLanguageAs;
+	String treatUndeterminedLanguageAs;
 	String customMarcFieldsToIndexAsKeyword;
+	boolean includePersonalAndCorporateNamesInTopics;
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
-		char result = ' ';
-		String databaseValue = indexingProfilesRS.getString(fieldName);
-		if (!indexingProfilesRS.wasNull() && !databaseValue.isEmpty()) {
-			result = databaseValue.charAt(0);
-		}
-		return result;
+		String subfieldString = indexingProfilesRS.getString(fieldName);
+		return AspenStringUtils.convertStringToChar(subfieldString);
 	}
 
 	public String getFilenamesToInclude() {
 		return filenamesToInclude;
-	}
-
-	public File getFileForIlsRecord(String recordNumber) {
-		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
-		while (shortId.length() < 9) {
-			shortId.insert(0, "0");
-		}
-
-		String subFolderName;
-		if (isCreateFolderFromLeadingCharacters()) {
-			subFolderName = shortId.substring(0, getNumCharsToCreateFolderFrom());
-		} else {
-			subFolderName = shortId.substring(0, shortId.length() - getNumCharsToCreateFolderFrom());
-		}
-
-		String basePath = getIndividualMarcPath() + "/" + subFolderName;
-		String individualFilename = basePath + "/" + shortId + ".mrc";
-		return new File(individualFilename);
 	}
 
 	public Long getId() {
@@ -64,18 +44,6 @@ public class BaseIndexingSettings {
 
 	public String getName() {
 		return name;
-	}
-
-	private String getIndividualMarcPath() {
-		return individualMarcPath;
-	}
-
-	private int getNumCharsToCreateFolderFrom() {
-		return numCharsToCreateFolderFrom;
-	}
-
-	private boolean isCreateFolderFromLeadingCharacters() {
-		return createFolderFromLeadingCharacters;
 	}
 
 	public String getRecordNumberTag() {
@@ -133,4 +101,36 @@ public class BaseIndexingSettings {
 	}
 
 	public String getCustomMarcFieldsToIndexAsKeyword() { return customMarcFieldsToIndexAsKeyword; }
+
+	public String getSpecifiedFormat() {
+		return specifiedFormat;
+	}
+
+	public void setSpecifiedFormat(String specifiedFormat) {
+		this.specifiedFormat = specifiedFormat;
+	}
+
+	public int getSpecifiedFormatBoost() {
+		return specifiedFormatBoost;
+	}
+
+	public void setSpecifiedFormatBoost(int specifiedFormatBoost) {
+		this.specifiedFormatBoost = specifiedFormatBoost;
+	}
+
+	public String getTreatUndeterminedLanguageAs() {
+		return treatUndeterminedLanguageAs;
+	}
+
+	public void setTreatUndeterminedLanguageAs(String treatUndeterminedLanguageAs) {
+		this.treatUndeterminedLanguageAs = treatUndeterminedLanguageAs;
+	}
+
+	public boolean isIncludePersonalAndCorporateNamesInTopics() {
+		return includePersonalAndCorporateNamesInTopics;
+	}
+
+	public void setIncludePersonalAndCorporateNamesInTopics(boolean includePersonalAndCorporateNamesInTopics) {
+		this.includePersonalAndCorporateNamesInTopics = includePersonalAndCorporateNamesInTopics;
+	}
 }

@@ -1,11 +1,11 @@
 <?php
 
 require_once 'IndexRecordDriver.php';
-require_once ROOT_DIR . '/sys/Events/SpringshareLibCalEvent.php';
+require_once ROOT_DIR . '/sys/Events/AssabetEvent.php';
 
-class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
+class AssabetEventRecordDriver extends IndexRecordDriver {
 	private $valid;
-	/** @var SpringshareLibCalEvent */
+	/** @var AssabetEventRecordDriver */
 	private $eventObject;
 
 	public function __construct($recordData) {
@@ -40,7 +40,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$this->getSearchResult('list', false);
 
 		global $interface;
-		$interface->assign('eventVendor', 'springshare');
+		$interface->assign('eventVendor', 'assabet');
 
 		//Switch template
 		return 'RecordDrivers/Events/listEntry.tpl';
@@ -60,9 +60,6 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('id', $this->getId());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('eventUrl', $this->getLinkUrl());
-		$interface->assign('externalUrl', $this->getExternalUrl());
-		$interface->assign('branch', $this->getBranch());
-		$interface->assign('room', $this->getRoom());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', $this->fields['description']);
@@ -94,15 +91,14 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			$interface->assign('summExplain', $this->getExplain());
 		}
 
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting;
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
 			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
 		}
 		$interface->assign('isStaff', UserAccount::isStaff());
-
 
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 		$eventsUsage = new EventsUsage();
@@ -120,7 +116,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			$eventsUsage->insert();
 		}
 
-		return 'RecordDrivers/Events/springshare_libcal_result.tpl';
+		return 'RecordDrivers/Events/assabet_result.tpl';
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
@@ -131,25 +127,13 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		} else {
 			$bookCoverUrl = '';
 		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=springshare_libcal_event";
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=assabet_event";
 
 		return $bookCoverUrl;
 	}
 
 	public function getModule(): string {
-		return 'SpringshareLibCal'; // TODO: verify module name 2022 03 16 James
-	}
-
-	public function getMoreDetailsOptions() {
-		global $interface;
-		$moreDetailsOptions = new StdClass();
-		if ($interface->getVariable('showStaffView')) {
-			$moreDetailsOptions['staff'] = [
-				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
-			];
-		}
-		return $moreDetailsOptions;
+		return 'AssabetEvents';
 	}
 
 	public function getStaffView() {
@@ -165,6 +149,11 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getFullDescription() {
+		$description = $this->getEventObject()->getDecodedData();
+		return $description->description;
+	}
+
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user
@@ -173,35 +162,26 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-
-	public function getPermanentID() {
-		return $this->getUniqueID();
-	}
-
 	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-	public function getExternalUrl($absolutePath = false) {
-		return $this->fields['url'];
-	}
-
 	public function getLinkUrl($absolutePath = false) {
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting;
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			if ($eventSettings->bypassAspenEventPages){
 				return $this->fields['url'];
 			} else {
-				return '/Springshare/' . $this->getId() . '/Event';
+				return '/Assabet/' . $this->getId() . '/Event';
 			}
 		}
 	}
 
 	public function getRegistrationModalBody() {
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting;
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			if ($eventSettings->registrationModalBody){
@@ -213,8 +193,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getRegistrationModalBodyForAPI() {
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting;
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting;
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			if (!empty($eventSettings->registrationModalBodyApp)){
@@ -225,8 +205,32 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
-	private function getType() {
-		return $this->fields['type'];
+	public function getExternalUrl($absolutePath = false) {
+		return $this->fields['url'];
+	}
+
+	public function getAudiences() {
+		if (array_key_exists('age_group', $this->fields)){
+			return $this->fields['age_group'];
+		}
+	}
+
+	public function getProgramTypes() {
+		if (array_key_exists('program_type', $this->fields)){
+			return $this->fields['program_type'];
+		}
+	}
+
+	public function getBranch() {
+		return implode(", ", $this->fields['branch']);
+	}
+
+	public function getRoom() {
+		return implode(", ", $this->fields['room']);
+	}
+
+	public function getType() {
+		return $this->fields['event_type'];
 	}
 
 	public function getIntegration() {
@@ -238,12 +242,16 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	function getEventCoverUrl() {
-		return $this->fields['image_url'];
+		$decodedData = $this->getEventObject()->getDecodedData();
+		if (!empty($decodedData->image->url)) {
+			return $decodedData->image->url;
+		}
+		return null;
 	}
 
 	function getEventObject() {
 		if ($this->eventObject == null) {
-			$this->eventObject = new SpringshareLibCalEvent();
+			$this->eventObject = new AssabetEvent();
 			$this->eventObject->externalId = $this->getIdentifier();
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
@@ -254,8 +262,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 
 	function getStartDateFromDB($id) : ?object {
 		if ($this->eventObject == null) {
-			$this->eventObject = new SpringshareLibCalEvent();
-			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);
+			$this->eventObject = new AssabetEvent();
+			$this->eventObject->externalId = preg_replace('/^assabet_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
@@ -264,7 +272,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$data = $this->eventObject->getDecodedData();
 
 		try {
-			$startDate = new DateTime($data->start);
+			$startDate = new DateTime($data->start_date . " " . $data->start_time);
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			return $startDate;
 		} catch (Exception $e) {
@@ -275,8 +283,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 
 	function getTitleFromDB($id) {
 		if ($this->eventObject == null) {
-			$this->eventObject = new SpringshareLibCalEvent();
-			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);
+			$this->eventObject = new AssabetEvent();
+			$this->eventObject->externalId = preg_replace('/^assabet_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
@@ -291,12 +299,23 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		return $this->fields['identifier'];
 	}
 
-	// TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-	public function getStartDate(): ?object {
+	public function getStartDate() {
 		try {
+			//Need to specify timezone since we start as a timstamp
 			$startDate = new DateTime($this->fields['start_date']);
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			return $startDate;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
+	public function getEndDate() {
+		try {
+			//Need to specify timezone since we start as a timstamp
+			$endDate = new DateTime($this->fields['end_date']);
+			$endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $endDate;
 		} catch (Exception $e) {
 			return null;
 		}
@@ -334,65 +353,6 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
-	// TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-	public function getStartDateString() {
-		try {
-			return $this->fields['start_date'];
-		} catch (Exception $e) {
-			return null;
-		}
-	}
-
-	public function getEndDate(): ?object {
-		try {
-			$endDate = new DateTime($this->fields['end_date']);
-			$endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-			return $endDate;
-		} catch (Exception $e) {
-			return null;
-		}
-	}
-
-	public function getEndDateString() {
-		try {
-			return $this->fields['end_date'];
-		} catch (Exception $e) {
-			return null;
-		}
-	}
-
-	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
-		$result = parent::getSpotlightResult($collectionSpotlight, $index);
-		if ($collectionSpotlight->style == 'text-list') {
-			global $interface;
-			$interface->assign('start_date', $this->fields['start_date']);
-			$interface->assign('end_date', $this->fields['end_date']);
-			$result['formattedTextOnlyTitle'] = $interface->fetch('RecordDrivers/Events/formattedTextOnlyTitle.tpl');
-		}
-
-		return $result;
-	}
-
-	public function getAudiences() {
-		if (array_key_exists('age_group', $this->fields)){
-			return $this->fields['age_group'];
-		}
-	}
-
-	public function getCategories() {
-		if (array_key_exists('program_type', $this->fields)){
-			return $this->fields['program_type'];
-		}
-	}
-
-	public function getBranch() {
-		return implode(", ", $this->fields['branch']);
-	}
-
-	public function getRoom() {
-		return implode(", ", $this->fields['room']);
-	}
-
 	public function isRegistrationRequired(): bool {
 		if ($this->fields['registration_required'] == "Yes") {
 			return true;
@@ -417,9 +377,21 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
+		$result = parent::getSpotlightResult($collectionSpotlight, $index);
+		if ($collectionSpotlight->style == 'text-list') {
+			global $interface;
+			$interface->assign('start_date', $this->fields['start_date']);
+			$interface->assign('end_date', $this->fields['end_date']);
+			$result['formattedTextOnlyTitle'] = $interface->fetch('RecordDrivers/Events/formattedTextOnlyTitle.tpl');
+		}
+
+		return $result;
+	}
+
 	public function getBypassSetting() {
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting();
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting();
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			return $eventSettings->bypassAspenEventPages;
@@ -429,8 +401,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getAllowInListsSetting() {
-		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-		$eventSettings = new SpringshareLibCalSetting();
+		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+		$eventSettings = new AssabetSetting();
 		$eventSettings->id = $this->getSource();
 		if ($eventSettings->find(true)){
 			return $eventSettings->eventsInLists;
@@ -442,7 +414,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	public function getSummaryInformation() {
 		return [
 			'id' => $this->getUniqueID(),
-			'shortId' => $this->getPermanentId(),
+			'shortId' => $this->getIdentifier(),
 			'recordtype' => 'event',
 			'image' => $this->getBookcoverUrl('medium'),
 			'title' => $this->getTitle(),
@@ -453,7 +425,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			'registration_required' => $this->isRegistrationRequired(),
 			'bypass' => $this->getBypassSetting(),
 			'url' => $this->getExternalUrl(),
-			'source' => 'springshare',
+			'source' => 'assabet',
 			'author' => null,
 			'format' => null,
 			'ratingData' => null,

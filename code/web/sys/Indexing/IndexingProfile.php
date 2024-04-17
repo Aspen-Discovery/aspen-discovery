@@ -17,9 +17,6 @@ class IndexingProfile extends DataObject {
 		$marcEncoding;
 	public /** @noinspection PhpUnused */
 		$filenamesToInclude;
-	public $individualMarcPath;
-	public $numCharsToCreateFolderFrom;
-	public $createFolderFromLeadingCharacters;
 	public /** @noinspection PhpUnused */
 		$groupingClass;
 	public /** @noinspection PhpUnused */
@@ -204,8 +201,6 @@ class IndexingProfile extends DataObject {
 
 	public function getNumericColumnNames(): array {
 		return [
-			'numCharsToCreateFolderFrom',
-			'createFolderFromLeadingCharacters',
 			'processRecordLinking',
 			'index856Links',
 			'determineAudienceBy',
@@ -316,40 +311,6 @@ class IndexingProfile extends DataObject {
 					'BESTGUESS' => 'BESTGUESS',
 				],
 				'default' => 'MARC8',
-				'forcesReindex' => true,
-			],
-
-			'individualMarcPath' => [
-				'property' => 'individualMarcPath',
-				'hiddenByDefault' => true,
-				'type' => 'text',
-				'label' => 'Individual MARC Path',
-				'maxLength' => 100,
-				'description' => 'The path on the server where individual MARC records can be found',
-				'required' => true,
-				'forcesReindex' => true,
-			],
-
-			'numCharsToCreateFolderFrom' => [
-				'property' => 'numCharsToCreateFolderFrom',
-				'hiddenByDefault' => true,
-				'type' => 'integer',
-				'label' => 'Number of characters to create folder from',
-				'maxLength' => 50,
-				'description' => 'The number of characters to use when building a sub folder for individual marc records',
-				'required' => false,
-				'default' => '4',
-				'forcesReindex' => true,
-			],
-
-			'createFolderFromLeadingCharacters' => [
-				'property' => 'createFolderFromLeadingCharacters',
-				'hiddenByDefault' => true,
-				'type' => 'checkbox',
-				'label' => 'Create Folder From Leading Characters',
-				'description' => 'Whether we should look at the start or end of the folder when .',
-				'hideInLists' => true,
-				'default' => 0,
 				'forcesReindex' => true,
 			],
 

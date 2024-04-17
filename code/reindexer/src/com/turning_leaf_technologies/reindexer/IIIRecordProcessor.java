@@ -157,7 +157,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasTangibleItems){
-		if (hasTangibleItems && hideOrderRecordsForBibsWithPhysicalItems) {
+		if (hasTangibleItems && settings.isHideOrderRecordsForBibsWithPhysicalItems()) {
 			return;
 		}
 		if (!orderInfoFromExport.isEmpty()){
@@ -261,8 +261,8 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
-		if (iCode2Subfield != ' '){
-			Subfield iCode2SubfieldValue = curItem.getSubfield(iCode2Subfield);
+		if (settings.getICode2Subfield() != ' '){
+			Subfield iCode2SubfieldValue = curItem.getSubfield(settings.getICode2Subfield());
 			if (iCode2SubfieldValue != null){
 				String iCode2Value = iCode2SubfieldValue.getData();
 				if (iCode2sToSuppress != null && iCode2sToSuppress.matcher(iCode2Value).matches()){
@@ -290,7 +290,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 					}
 				}
 
-				if (checkSierraMatTypeForFormat) {
+				if (settings.isCheckSierraMatTypeForFormat()) {
 					Subfield matTypeSubfield = sierraFixedField.getSubfield(exportFieldMapping.getMaterialTypeSubfield());
 					if (matTypeSubfield != null) {
 						String formatValue = matTypeSubfield.getData();
@@ -311,7 +311,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		boolean formatLoaded = false;
 		if (exportFieldMapping != null) {
-			if (checkSierraMatTypeForFormat) {
+			if (settings.isCheckSierraMatTypeForFormat()) {
 				DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 				if (sierraFixedField != null) {
 					Subfield matTypeSubfield = sierraFixedField.getSubfield(exportFieldMapping.getMaterialTypeSubfield());

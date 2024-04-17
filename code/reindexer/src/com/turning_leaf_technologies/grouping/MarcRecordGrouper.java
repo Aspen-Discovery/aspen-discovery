@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -161,6 +160,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 						if (titleField == null) {
 							title = "";
 						}else{
+							//noinspection SpellCheckingInspection
 							title = titleField.getSubfieldsAsString("abfgnp", " ");
 						}
 
@@ -204,7 +204,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					}catch (Exception e){
 						logEntry.incErrors("Error adding parent records to the database", e);
 					}
-					//MDN 9/24/22 even if the record has parents, we want to group it so we have information about
+					//MDN 9/24/22 even if the record has parents, we want to group it, so we have information about
 					//the record, and it's items in the database.
 					//return null;
 
@@ -355,7 +355,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				String groupedWorkId = processMarcRecord(marcRecord, false, null, indexer);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
-					//process records to regroup after every 1000 changes so we keep up with the changes.
+					//process records to regroup after every 1000 changes, so we keep up with the changes.
 					if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
 						indexer.processScheduledWorks(logEntry, false, -1);
 					}
@@ -387,10 +387,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			}
 		}
 		return parentRecords;
-	}
-
-	public void addTranslationMap(TranslationMap translationMap) {
-		this.translationMaps.put(translationMap.getMapName(), translationMap.getTranslationValues());
 	}
 
 	public void addTranslationMapValue(String mapName, String value, String translation) {

@@ -1211,6 +1211,7 @@ public class SymphonyExportMain {
 					}
 					line = ordersReader.readLine();
 				}
+				ordersReader.close();
 				writer.close();
 				logger.info("Finished writing Orders to MARC record");
 				logger.info("Wrote " + numOrderRecordsWritten);

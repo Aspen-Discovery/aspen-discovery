@@ -12,9 +12,6 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 public class IndexingProfile extends BaseIndexingSettings {
-	private char callNumberCutterSubfield;
-	private char callNumberPoststampSubfield;
-	private char volume;
 	private char itemUrl;
 	private char itemUrlDescription;
 	private char totalRenewalsSubfield;
@@ -47,8 +44,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char shelvingLocationSubfield;
 	private char yearToDateCheckoutsSubfield;
 	private char totalCheckoutsSubfield;
+	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
+	private char callNumberPrestamp2Subfield;
 	private char callNumberSubfield;
+	private char callNumberCutterSubfield;
+	private char callNumberPoststampSubfield;
+	private char volume;
 	private char dateCreatedSubfield;
 	private char dueDateSubfield;
 	private SimpleDateFormat dueDateFormatter;
@@ -71,13 +73,21 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private long lastChangeProcessed;
 	private Pattern suppressRecordsWithUrlsMatching;
 	private String fallbackFormatField;
-	private String customMarcFieldsToIndexAsKeyword;
 	private boolean processRecordLinking;
 	private int evergreenOrgUnitSchema;
 	private String orderRecordsStatusesToInclude;
 	private boolean hideOrderRecordsForBibsWithPhysicalItems;
 	private int orderRecordsToSuppressByDate;
 	private boolean checkSierraMatTypeForFormat;
+	private boolean index856Links;
+	private String treatUnknownAudienceAs;
+
+	//Fields for loading order information
+	private String orderTag;
+	private char orderLocationSubfield;
+	private char singleOrderLocationSubfield;
+	private char orderCopiesSubfield;
+	private char orderStatusSubfield;
 
 	//Custom Facets
 	private String customFacet1SourceField;
@@ -160,15 +170,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
 		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
 		this.setDateCreatedFormat(indexingProfileRS.getString("dateCreatedFormat"));
-		this.setCallNumberPrestampSubfield(getCharFromRecordSet(indexingProfileRS,"callNumberPrestamp"));
-		this.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
 		this.setTotalCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"totalCheckouts"));
 		this.setYearToDateCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"yearToDateCheckouts"));
 
-		this.setIndividualMarcPath(indexingProfileRS.getString("individualMarcPath"));
 		this.setName(indexingProfileRS.getString("name"));
-		this.setNumCharsToCreateFolderFrom(indexingProfileRS.getInt("numCharsToCreateFolderFrom"));
-		this.setCreateFolderFromLeadingCharacters(indexingProfileRS.getBoolean("createFolderFromLeadingCharacters"));
 
 		this.setShelvingLocationSubfield(getCharFromRecordSet(indexingProfileRS,"shelvingLocation"));
 		this.setITypeSubfield(getCharFromRecordSet(indexingProfileRS,"iType"));
@@ -179,7 +184,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setIndexingClass(indexingProfileRS.getString("indexingClass"));
 		this.setFormatSource(indexingProfileRS.getString("formatSource"));
 		this.setFallbackFormatField(indexingProfileRS.getString("fallbackFormatField"));
-		this.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
+
+		//Indexing Profiles do not support specified format, specified format category, and specified format boost
+
 		this.setFormatSubfield(getCharFromRecordSet(indexingProfileRS, "format"));
 		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
 
@@ -195,6 +202,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
 		this.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
+		this.useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+		this.setCallNumberPrestampSubfield(getCharFromRecordSet(indexingProfileRS,"callNumberPrestamp"));
+		callNumberPrestamp2Subfield = getCharFromRecordSet(indexingProfileRS, "callNumberPrestamp2");
+		this.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
 		this.setCallNumberCutterSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberCutter"));
 		this.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 		this.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
@@ -208,6 +219,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.literaryFormSubfield = getCharFromRecordSet(indexingProfileRS, "literaryFormSubfield");
 		this.hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
 		this.hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
+
+		this.includePersonalAndCorporateNamesInTopics = indexingProfileRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 
 		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
 
@@ -223,16 +236,26 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
 
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
+		treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
 		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
 		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
 		this.evergreenOrgUnitSchema = indexingProfileRS.getInt("evergreenOrgUnitSchema");
+
+		orderTag = indexingProfileRS.getString("orderTag");
+		orderLocationSubfield = getCharFromRecordSet(indexingProfileRS, "orderLocation");
+		singleOrderLocationSubfield = getCharFromRecordSet(indexingProfileRS, "orderLocationSingle");
+		orderCopiesSubfield = getCharFromRecordSet(indexingProfileRS, "orderCopies");
+		orderStatusSubfield = getCharFromRecordSet(indexingProfileRS, "orderStatus");
 
 		this.orderRecordsStatusesToInclude = indexingProfileRS.getString("orderRecordsStatusesToInclude");
 		this.hideOrderRecordsForBibsWithPhysicalItems = indexingProfileRS.getBoolean("hideOrderRecordsForBibsWithPhysicalItems");
 		this.orderRecordsToSuppressByDate = indexingProfileRS.getInt("orderRecordsToSuppressByDate");
 
 		this.checkSierraMatTypeForFormat = indexingProfileRS.getBoolean("checkSierraMatTypeForFormat");
+
+		index856Links = indexingProfileRS.getBoolean("index856Links");
+		treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
 
 		//Custom Facet 1
 		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
@@ -304,10 +327,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.groupingClass = groupingClass;
 	}
 
-	private void setSpecifiedFormatCategory(String specifiedFormatCategory) {
-		this.specifiedFormatCategory = specifiedFormatCategory;
-	}
-
 	public void setFormatSource(String formatSource) {
 		this.formatSource = formatSource;
 	}
@@ -366,18 +385,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	private void setIndividualMarcPath(String individualMarcPath) {
-		this.individualMarcPath = individualMarcPath;
-	}
-
-	private void setNumCharsToCreateFolderFrom(int numCharsToCreateFolderFrom) {
-		this.numCharsToCreateFolderFrom = numCharsToCreateFolderFrom;
-	}
-
-	private void setCreateFolderFromLeadingCharacters(boolean createFolderFromLeadingCharacters) {
-		this.createFolderFromLeadingCharacters = createFolderFromLeadingCharacters;
 	}
 
 	public void setRecordNumberTag(String recordNumberTag) {
@@ -553,7 +560,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.marcPath = marcPath;
 	}
 
-	private void setMarcEncoding(String marcEncoding) {
+	public void setMarcEncoding(String marcEncoding) {
 		this.marcEncoding = marcEncoding;
 	}
 
@@ -886,5 +893,109 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public String getIndexingClass() {
 		return indexingClass;
+	}
+
+	public boolean isUseItemBasedCallNumbers() {
+		return useItemBasedCallNumbers;
+	}
+
+	public void setUseItemBasedCallNumbers(boolean useItemBasedCallNumbers) {
+		this.useItemBasedCallNumbers = useItemBasedCallNumbers;
+	}
+
+	public char getCallNumberPrestamp2Subfield() {
+		return callNumberPrestamp2Subfield;
+	}
+
+	public void setCallNumberPrestamp2Subfield(char callNumberPrestamp2Subfield) {
+		this.callNumberPrestamp2Subfield = callNumberPrestamp2Subfield;
+	}
+
+	public int getDetermineLiteraryFormBy() {
+		return determineLiteraryFormBy;
+	}
+
+	public void setDetermineLiteraryFormBy(int determineLiteraryFormBy) {
+		this.determineLiteraryFormBy = determineLiteraryFormBy;
+	}
+
+	public char getLiteraryFormSubfield() {
+		return literaryFormSubfield;
+	}
+
+	public void setLiteraryFormSubfield(char literaryFormSubfield) {
+		this.literaryFormSubfield = literaryFormSubfield;
+	}
+
+	public boolean isHideUnknownLiteraryForm() {
+		return hideUnknownLiteraryForm;
+	}
+
+	public boolean isHideNotCodedLiteraryForm() {
+		return hideNotCodedLiteraryForm;
+	}
+
+	public void setHideNotCodedLiteraryForm(boolean hideNotCodedLiteraryForm) {
+		this.hideNotCodedLiteraryForm = hideNotCodedLiteraryForm;
+	}
+
+	public boolean isCheckSierraMatTypeForFormat() {
+		return checkSierraMatTypeForFormat;
+	}
+
+	public void setCheckSierraMatTypeForFormat(boolean checkSierraMatTypeForFormat) {
+		this.checkSierraMatTypeForFormat = checkSierraMatTypeForFormat;
+	}
+
+	public String getOrderTag() {
+		return orderTag;
+	}
+
+	public void setOrderTag(String orderTag) {
+		this.orderTag = orderTag;
+	}
+
+	public char getOrderLocationSubfield() {
+		return orderLocationSubfield;
+	}
+
+	public void setOrderLocationSubfield(char orderLocationSubfield) {
+		this.orderLocationSubfield = orderLocationSubfield;
+	}
+
+	public char getSingleOrderLocationSubfield() {
+		return singleOrderLocationSubfield;
+	}
+
+	public char getOrderCopiesSubfield() {
+		return orderCopiesSubfield;
+	}
+
+	public void setOrderCopiesSubfield(char orderCopiesSubfield) {
+		this.orderCopiesSubfield = orderCopiesSubfield;
+	}
+
+	public char getOrderStatusSubfield() {
+		return orderStatusSubfield;
+	}
+
+	public void setOrderStatusSubfield(char orderStatusSubfield) {
+		this.orderStatusSubfield = orderStatusSubfield;
+	}
+
+	public boolean isIndex856Links() {
+		return index856Links;
+	}
+
+	public void setIndex856Links(boolean index856Links) {
+		this.index856Links = index856Links;
+	}
+
+	public String getTreatUnknownAudienceAs() {
+		return treatUnknownAudienceAs;
+	}
+
+	public void setTreatUnknownAudienceAs(String treatUnknownAudienceAs) {
+		this.treatUnknownAudienceAs = treatUnknownAudienceAs;
 	}
 }

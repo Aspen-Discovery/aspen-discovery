@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.koha_export;
 
-import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
@@ -1224,6 +1223,7 @@ public class KohaExportMain {
 			}
 
 			PreparedStatement coursesStmt = kohaConn.prepareStatement("select ci.itemnumber , i.holdingbranch , c.course_number, c.course_id , c.course_name from courses c left join course_reserves r on c.course_id = r.course_id left join course_items ci on r.ci_id = ci.ci_id left join items i on ci.itemnumber = i.itemnumber where c.enabled = 'yes'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			@SuppressWarnings("SpellCheckingInspection")
 			PreparedStatement instructorsForCourseStmt = kohaConn.prepareStatement("select course_id , group_concat(distinct concat(if(b.title is null or b.title = '', '', concat(b.title,' ')), if(b.firstname is null or b.firstname = '', '', concat(b.firstname,' ')), if(b.surname is null or b.surname = '', '', b.surname)) order by ifnull(b.surname, '') asc separator '|' ) as course_instructor_names from course_instructors p left join borrowers b on p.borrowernumber = b.borrowernumber  WHERE course_id=?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet coursesRS = coursesStmt.executeQuery();
 			while (coursesRS.next()) {

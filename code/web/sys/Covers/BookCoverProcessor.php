@@ -78,6 +78,10 @@ class BookCoverProcessor {
 			if ($this->getCommunicoCover($this->id)){
 				return true;
 			}
+		} elseif ($this->type == 'assabet_event') {
+			if ($this->getAssabetCover($this->id)){
+				return true;
+			}
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
@@ -1665,6 +1669,55 @@ class BookCoverProcessor {
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 		$driver = new CommunicoEventRecordDriver($id);
+		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$coverBuilder = new EventCoverBuilder();
+			$userEntry = new UserEventsEntry();
+			$userEntry->sourceId = $id;
+			if ($userEntry->find(true)){
+				$startDate = new DateTime("@$userEntry->eventDate");
+				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$props = [
+					'eventDate' => $startDate,
+					'isPastEvent' => true,
+				];
+				$title = $userEntry->title;
+			} else{
+				$props = [
+					'eventDate' => $driver->getStartDateFromDB($id),
+					'isPastEvent' => true,
+				];
+				$title = $driver->getTitleFromDB($id);
+			}
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		} else if ($driver) {
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
+			$props = [
+				'eventDate' => $driver->getStartDate(),
+				'isPastEvent' => $isPast,
+			];
+			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		}
+		return false;
+	}
+
+	private function getAssabetCover($id) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+		$driver = new AssabetEventRecordDriver($id);
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';

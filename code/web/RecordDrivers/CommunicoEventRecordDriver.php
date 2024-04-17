@@ -263,7 +263,7 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 	function getStartDateFromDB($id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new CommunicoEvent();
-			$this->eventObject->externalId = $id;
+			$this->eventObject->externalId = preg_replace('/^communico_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
@@ -284,7 +284,7 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 	function getTitleFromDB($id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new CommunicoEvent();
-			$this->eventObject->externalId = $id;
+			$this->eventObject->externalId = preg_replace('/^communico_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;

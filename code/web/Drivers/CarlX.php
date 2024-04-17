@@ -966,7 +966,7 @@ class CarlX extends AbstractIlsDriver {
 			'autocomplete' => false,
 		];
 		$fields[] = [
-			'default' => 'TN',
+			'default' => '',
 			'property' => 'state',
 			'type' => 'text',
 			'label' => 'State',

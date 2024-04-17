@@ -12,7 +12,7 @@
 		<h2 id="notificationTool">{translate text="Send A Test Notification" isAdminFacing=true}</h2>
 		<form class="row">
 			<div class="form-group col-xs-12">
-				<label for="pushToken" class="control-label">{translate text="Receipt Expo Push Token" isAdminFacing=true}</label>
+				<label for="pushToken" class="control-label">{translate text="Recipient Expo Push Token" isAdminFacing=true}</label>
 					<input name="pushToken" type="text" class="form-control">
 			</div>
 			<div class="form-group col-xs-12">

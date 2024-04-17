@@ -23,18 +23,6 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		try{
 			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
-			numCharsToCreateFolderFrom = sideLoadSettingsRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters = sideLoadSettingsRS.getBoolean("createFolderFromLeadingCharacters");
-			individualMarcPath = sideLoadSettingsRS.getString("individualMarcPath");
-			formatSource = sideLoadSettingsRS.getString("formatSource");
-			specifiedFormat = sideLoadSettingsRS.getString("specifiedFormat");
-			specifiedFormatCategory = sideLoadSettingsRS.getString("specifiedFormatCategory");
-			specifiedFormatBoost = sideLoadSettingsRS.getInt("specifiedFormatBoost");
-
-			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
-			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
-
-			includePersonalAndCorporateNamesInTopics = sideLoadSettingsRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 
 			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
@@ -94,7 +82,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
-				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isAdult);
+				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isKids);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
@@ -154,14 +142,14 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private void loadEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
-		if (formatSource.equals("specified")){
+		if (settings.getFormatSource().equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
-			translatedFormats.add(specifiedFormat);
+			translatedFormats.add(settings.getSpecifiedFormat());
 			HashSet<String> translatedFormatCategories = new HashSet<>();
-			translatedFormatCategories.add(specifiedFormatCategory);
+			translatedFormatCategories.add(settings.getSpecifiedFormatCategory());
 			econtentRecord.addFormats(translatedFormats);
 			econtentRecord.addFormatCategories(translatedFormatCategories);
-			econtentRecord.setFormatBoost(specifiedFormatBoost);
+			econtentRecord.setFormatBoost(settings.getSpecifiedFormatBoost());
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, econtentRecord);
 			//Convert formats from print to eContent version

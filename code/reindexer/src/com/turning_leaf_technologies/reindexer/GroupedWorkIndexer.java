@@ -2580,13 +2580,7 @@ public class GroupedWorkIndexer {
 					returnValue = MarcStatus.CHANGED;
 				}
 			}else{
-				File marcFile = indexingProfile.getFileForIlsRecord(ilsId);
-				long lastModified;
-				if (marcFile.exists()) {
-					lastModified = marcFile.lastModified() / 1000;
-				}else{
-					lastModified = new Date().getTime() / 1000;
-				}
+				long lastModified = new Date().getTime() / 1000;
 
 				addRecordToDBStmt.setString(1, ilsId);
 				addRecordToDBStmt.setString(2, indexingProfile.getName());
@@ -2596,9 +2590,6 @@ public class GroupedWorkIndexer {
 				addRecordToDBStmt.setLong(6, lastModified);
 				addRecordToDBStmt.executeUpdate();
 				returnValue = MarcStatus.NEW;
-				if (marcFile.exists() && !marcFile.delete()) {
-					logEntry.incErrors("Could not delete individual marc " + marcFile.getAbsolutePath());
-				}
 			}
 
 		}catch (Exception e){

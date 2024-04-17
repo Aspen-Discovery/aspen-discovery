@@ -13,7 +13,6 @@
       <module fileurl="file://$PROJECT_DIR$/../evolve_export/evolve_export.iml" filepath="$PROJECT_DIR$/../evolve_export/evolve_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../folio_export/folio_export.iml" filepath="$PROJECT_DIR$/../folio_export/folio_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" filepath="$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../horizon_export/horizon_export.iml" filepath="$PROJECT_DIR$/../horizon_export/horizon_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../install/install.iml" filepath="$PROJECT_DIR$/../../install/install.iml" />
       <module fileurl="file://$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" />
       <module fileurl="file://$PROJECT_DIR$/../koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../koha_export/koha_export.iml" />

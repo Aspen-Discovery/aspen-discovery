@@ -2,12 +2,11 @@
 require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
 
-
 /**
- * Settings for Communico integration
+ * Settings for Assabet integration
  */
-class CommunicoSetting extends DataObject {
-	public $__table = 'communico_settings';
+class AssabetSetting extends DataObject {
+	public $__table = 'assabet_settings';
 	public $id;
 	public $name;
 	public $baseUrl;
@@ -16,7 +15,6 @@ class CommunicoSetting extends DataObject {
 	public /** @noinspection PhpUnused */
 		$clientSecret;
 	public $eventsInLists;
-	public $lastUpdateOfAllEvents;
 	public $bypassAspenEventPages;
 	public $registrationModalBody;
 	public $registrationModalBodyApp;
@@ -29,7 +27,7 @@ class CommunicoSetting extends DataObject {
 
 
 	public static function getObjectStructure($context = ''): array {
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Communico Settings'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Assabet Settings'));
 
 		$branchMapStructure = EventsBranchMapping::getObjectStructure($context);
 
@@ -49,22 +47,8 @@ class CommunicoSetting extends DataObject {
 			'baseUrl' => [
 				'property' => 'baseUrl',
 				'type' => 'url',
-				'label' => 'Base URL (i.e. https://attend.yoursite.com/events)',
+				'label' => 'Base URL (i.e. https://yoursite.assabetinteractive.com/calendar/upcoming-events)',
 				'description' => 'The URL for the site',
-			],
-			'clientId' => [
-				'property' => 'clientId',
-				'type' => 'text',
-				'label' => 'Client Key',
-				'description' => 'Client Key',
-			],
-			'clientSecret' => [
-				'property' => 'clientSecret',
-				'type' => 'storedPassword',
-				'label' => 'Client Secret',
-				'description' => 'Client Secret',
-				'maxLength' => 36,
-				'hideInLists' => true,
 			],
 			'numberOfDaysToIndex' => [
 				'property' => 'numberOfDaysToIndex',
@@ -92,12 +76,6 @@ class CommunicoSetting extends DataObject {
 				'label' => 'Bypass event pages in Aspen',
 				'description' => 'Whether or not a user will be redirected to an Aspen event page or the page for the native event platform.',
 				'default' => 0,
-			],
-			'lastUpdateOfAllEvents' => [
-				'property' => 'lastUpdateOfAllEvents',
-				'type' => 'timestamp',
-				'label' => 'Last Full Index (clear to force a new full index)',
-				'description' => 'When all events were last indexed',
 			],
 			'registrationModalBody' => [
 				'property' => 'registrationModalBody',
@@ -183,9 +161,10 @@ class CommunicoSetting extends DataObject {
 	public function __get($name) {
 		if ($name == "libraries") {
 			return $this->getLibraries();
-		} if ($name == "locationMap") {
+		}
+		if ($name == "locationMap") {
 			return $this->getLocationMap();
-		}else {
+		} else {
 			return parent::__get($name);
 		}
 	}
@@ -210,7 +189,7 @@ class CommunicoSetting extends DataObject {
 		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
 			$library = new LibraryEventsSetting();
-			$library->settingSource = 'communico';
+			$library->settingSource = 'assabet';
 			$library->settingId = $this->id;
 			$library->find();
 			while ($library->fetch()) {
@@ -241,7 +220,7 @@ class CommunicoSetting extends DataObject {
 			foreach ($this->_libraries as $libraryId) {
 				$libraryEventSetting = new LibraryEventsSetting();
 
-				$libraryEventSetting->settingSource = 'communico';
+				$libraryEventSetting->settingSource = 'assabet';
 				$libraryEventSetting->settingId = $this->id;
 				$libraryEventSetting->libraryId = $libraryId;
 				$libraryEventSetting->insert();
@@ -255,7 +234,7 @@ class CommunicoSetting extends DataObject {
 			foreach ($this->_locationMap as $location) {
 				$locationMap = new EventsBranchMapping();
 				$locationMap->locationId = $location->locationId;
-				if ($locationMap->find(true)){
+				if ($locationMap->find(true)) {
 					$locationMap->eventsLocation = $location->eventsLocation;
 					$locationMap->update();
 				}
@@ -267,7 +246,7 @@ class CommunicoSetting extends DataObject {
 	private function clearLibraries() {
 		//Delete links to the libraries
 		$libraryEventSetting = new LibraryEventsSetting();
-		$libraryEventSetting->settingSource = 'communico';
+		$libraryEventSetting->settingSource = 'assabet';
 		$libraryEventSetting->settingId = $this->id;
 		return $libraryEventSetting->delete(true);
 	}
