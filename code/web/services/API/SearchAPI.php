@@ -3220,7 +3220,7 @@ class SearchAPI extends AbstractAPI {
 						$bypass = $springshareBypass;
 						$addToList = $springshareAddToList;
 					} else if (str_starts_with($record['id'], 'assabet')) {
-						$eventSource = 'springshare_libcal';
+						$eventSource = 'assabet';
 						$bypass = $assabetBypass;
 						$addToList = $assabetAddToList;
 					} else {

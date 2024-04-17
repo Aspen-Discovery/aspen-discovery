@@ -675,11 +675,14 @@ class UserList extends DataObject {
 		}
 
 		$lmBypass = false;
-		$commmunicoBypass = false;
-		$springshareBypass = false;
 		$lmAddToList = false;
+		$commmunicoBypass = false;
 		$communicoAddToList = false;
+		$springshareBypass = false;
 		$springshareAddToList = false;
+		$assabetBypass = false;
+		$assabetAddToList = false;
+
 		$libraryEventSettings = [];
 
 		//Load catalog items
@@ -710,7 +713,7 @@ class UserList extends DataObject {
 						$eventSetting->id = $id;
 						if($eventSetting->find(true)) {
 							$commmunicoBypass = $eventSetting->bypassAspenEventPages;
-							$commmunicoBypass = $eventSetting->eventsInLists;
+							$commmunicoAddToList = $eventSetting->eventsInLists;
 						}
 					} else if ($source == 'springshare') {
 						require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
@@ -718,9 +721,17 @@ class UserList extends DataObject {
 						$eventSetting->id = $id;
 						if($eventSetting->find(true)) {
 							$springshareBypass = $eventSetting->bypassAspenEventPages;
-							$springshareBypass = $eventSetting->eventsInLists;
+							$springshareAddToList = $eventSetting->eventsInLists;
 						}
-					} else {
+					} else if ($source == 'assabet') {
+						require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+						$eventSetting = new AssabetSetting();
+						$eventSetting->id = $id;
+						if($eventSetting->find(true)) {
+							$assabetBypass = $eventSetting->bypassAspenEventPages;
+							$assabetAddToList = $eventSetting->eventsInLists;
+						}
+					}else {
 						// invalid event source
 					}
 				}
@@ -749,6 +760,10 @@ class UserList extends DataObject {
 							$eventSource = 'springshare_libcal';
 							$bypass = $springshareBypass;
 							$addToList = $springshareAddToList;
+						} else if (str_starts_with($record->getId(), 'assabet')) {
+							$eventSource = 'assabet';
+							$bypass = $assabetBypass;
+							$addToList = $assabetAddToList;
 						} else {
 							$eventSource = 'unknown';
 							$bypass = false;
