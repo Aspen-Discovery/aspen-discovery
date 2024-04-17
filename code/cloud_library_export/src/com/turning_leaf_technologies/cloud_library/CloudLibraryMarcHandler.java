@@ -247,10 +247,18 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 
 
-		String targetAudiences = MarcUtil.getFirstFieldVal(marcRecord, "650a");
+		Set<String> subjects = MarcUtil.getFieldList(marcRecord, "650a");
 		String targetAudience = "Adult";
-		if (targetAudiences != null && targetAudiences.contains("JUVENILE")) {
-			targetAudience = "Juvenile";
+		if (subjects != null) {
+			for (String subject : subjects) {
+				if (subject.startsWith("JUVENILE")) {
+					targetAudience = "Juvenile";
+					break;
+				}else if (subject.startsWith("YOUNG ADULT")) {
+					targetAudience = "Young Adult";
+					break;
+				}
+			}
 		}
 
 		Set<String> formatFields = MarcUtil.getFieldList(marcRecord, "538a");

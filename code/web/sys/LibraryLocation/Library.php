@@ -180,6 +180,7 @@ class Library extends DataObject {
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
+	public $institutionCode;
 
 	public $enableCardRenewal;
 	public $showCardRenewalWhenExpirationIsClose;
@@ -2906,6 +2907,7 @@ class Library extends DataObject {
 								'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.',
 								'size' => '20',
 								'hideInLists' => true,
+								'forcesReindex' => true,
 							],
 						],
 					],
