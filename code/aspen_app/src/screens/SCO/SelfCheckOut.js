@@ -46,13 +46,9 @@ export const SelfCheckOut = () => {
      //console.log(activeAccount);
      if (_.find(cards, ['ils_barcode', activeAccount])) {
           activeAccount = _.find(cards, ['ils_barcode', activeAccount]);
-          activeAccount = activeAccount.userId;
-     } else {
+     } else if (_.find(cards, ['cat_username', activeAccount])) {
           activeAccount = _.find(cards, ['cat_username', activeAccount]);
-          activeAccount = activeAccount.userId;
      }
-
-     console.log(activeAccount);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -87,7 +83,7 @@ export const SelfCheckOut = () => {
                          } else {
                               // do the checkout
                               setIsProcessingCheckout(true);
-                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
+                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount.userId ?? user.id, barcode, location.locationId, barcodeType).then((result) => {
                                    if (!result.success) {
                                         // prompt error
                                         setHasError(true);
