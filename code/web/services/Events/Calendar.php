@@ -140,6 +140,9 @@ class Events_Calendar extends Action {
 						elseif (preg_match('`^lc_`', $result['id'])){
 							$url = '/LibraryMarket/' . $result['id'] . '/Event';
 						}
+						elseif (preg_match('`^assabet`', $result['id'])){
+							$url = '/Assabet/' . $result['id'] . '/Event';
+						}
 						$eventDayObj['events'][] = [
 							'id' => $result['id'],
 							'title' => $result['title'],

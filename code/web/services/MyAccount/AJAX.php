@@ -1559,6 +1559,13 @@ class MyAccount_AJAX extends JSON_Action {
 									$title = $recordDriver->getTitle();
 									$userListEntry->title = substr($title, 0, 50);
 								}
+							} elseif (preg_match('`^assabet`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+								$recordDriver = new AssabetEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
 							} else {
 								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 								$recordDriver = new LibraryCalendarEventRecordDriver($userListEntry->sourceId);
@@ -6641,6 +6648,24 @@ class MyAccount_AJAX extends JSON_Action {
 						$externalUrl = $recordDriver->getExternalUrl();
 					}
 				}
+				elseif (preg_match('`^assabet_`', $userEventsEntry->sourceId)){
+					require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+					$recordDriver = new AssabetEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()){
+							$regRequired = 1;
+						}else{
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
+					}
+				}
 				$existingEntry = false;
 
 				if ($userEventsEntry->find(true)) {
@@ -6836,6 +6861,13 @@ class MyAccount_AJAX extends JSON_Action {
 							} elseif (preg_match('`^lc_`', $userListEntry->sourceId)){
 								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 								$recordDriver = new LibraryCalendarEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^assabet_`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+								$recordDriver = new AssabetEventRecordDriver($userListEntry->sourceId);
 								if ($recordDriver->isValid()) {
 									$title = $recordDriver->getTitle();
 									$userListEntry->title = substr($title, 0, 50);

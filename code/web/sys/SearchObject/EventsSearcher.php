@@ -366,7 +366,10 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		} else if (substr($current['type'], 0, 15) == 'event_communico') {
 			require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 			return new CommunicoEventRecordDriver($current);
-		}else {
+		} else if (substr($current['type'], 0, 13) == 'event_assabet') {
+			require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+			return new AssabetEventRecordDriver($current);
+		} else {
 			// TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
 			require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 			return new LibraryCalendarEventRecordDriver($current);

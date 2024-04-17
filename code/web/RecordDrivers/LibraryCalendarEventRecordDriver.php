@@ -249,7 +249,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	function getStartDateFromDB($id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
-			$this->eventObject->externalId = $id;
+			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
@@ -270,7 +270,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	function getTitleFromDB($id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
-			$this->eventObject->externalId = $id;
+			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
