@@ -67,7 +67,7 @@ public class Util {
 		return crSeparatedString.toString();
 	}
 
-	static String getCsvSeparatedString(Set<String> values) {
+	public static String getCsvSeparatedString(Set<String> values) {
 		if (values.size() == 0){
 			return "";
 		}else if (values.size() == 1){
