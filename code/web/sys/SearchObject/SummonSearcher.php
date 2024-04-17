@@ -41,7 +41,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     protected $searchType = 'basic';
 
 /** Values for the options array*/
-	protected $holdings = false;
+	protected $holdings = true;
 	protected $didYouMean = false;
 	protected $language = 'en';
 	protected $idsToFetch = array();
