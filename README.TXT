@@ -15,7 +15,9 @@ Code contributions have been sponsored by many public, academic, and school libr
 
 Aspen Discovery also uses an number of open source libraries to provide functionality.  These libraries are credited within the source code .
 
-For more information about setting up or contributing to Aspen Discovery, visit https://dev.aspendiscovery.org.  For information about using Aspen Discovery, please see https://help.aspendiscovery.org. 
+For more information about setting up or contributing to Aspen Discovery, visit https://dev.aspendiscovery.org.  
+For information about using Aspen Discovery, please see https://help.aspendiscovery.org. 
+For information about joinign the Aspen Discovery community, please see https://community.aspendiscovery.org/. 
 
 Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network however there have been many changes to the code since.  We would like to thank both of these projects for their inspiration.
 
