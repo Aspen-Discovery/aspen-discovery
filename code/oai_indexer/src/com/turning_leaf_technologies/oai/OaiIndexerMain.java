@@ -336,69 +336,75 @@ public class OaiIndexerMain {
 								}
 							}
 
-							try {
-								logger.info("Loading from " + oaiUrl);
-								HashMap<String, String> headers = new HashMap<>();
-								headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
-								headers.put("Accept-Encoding", "gzip");
-								headers.put("Accept-Language", "en-US");
-								headers.put("Pragma", "no-cache");
-								WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
-								if (oaiResponse.isSuccess()) {
-									DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-									factory.setValidating(false);
-									factory.setIgnoringElementContentWhitespace(true);
-									DocumentBuilder builder = factory.newDocumentBuilder();
+							for (int j = 0; j < 3; j++) {
+								try {
+									logger.info("Loading from " + oaiUrl);
+									HashMap<String, String> headers = new HashMap<>();
+									headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+									headers.put("Accept-Encoding", "gzip");
+									headers.put("Accept-Language", "en-US");
+									headers.put("Pragma", "no-cache");
+									WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
+									if (oaiResponse.isSuccess()) {
+										DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+										factory.setValidating(false);
+										factory.setIgnoringElementContentWhitespace(true);
+										DocumentBuilder builder = factory.newDocumentBuilder();
 
-									byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
-									ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
-									//String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
-									InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
+										byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
+										ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
+										//String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
+										InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
 
-									Document doc = builder.parse(soapResponseInputSource);
+										Document doc = builder.parse(soapResponseInputSource);
 
-									Element docElement = doc.getDocumentElement();
-									//Normally we get list records, but if we are at the end of the list OAI may return an
-									//error rather than ListRecords (even though it gave us a resumption token)
-									NodeList listRecords = docElement.getElementsByTagName("ListRecords");
-									if (listRecords.getLength() > 0) {
-										Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
-										NodeList allRecords = listRecordsElement.getElementsByTagName("record");
-										for (int i = 0; i < allRecords.getLength(); i++) {
-											Node curRecordNode = allRecords.item(i);
-											if (curRecordNode instanceof Element) {
-												logEntry.incNumRecords();
-												Element curRecordElement = (Element) curRecordNode;
-												if (indexElement(curRecordElement, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude, startTime)) {
-													numRecordsLoaded++;
-												} else {
-													numRecordsSkipped++;
+										Element docElement = doc.getDocumentElement();
+										//Normally we get list records, but if we are at the end of the list OAI may return an
+										//error rather than ListRecords (even though it gave us a resumption token)
+										NodeList listRecords = docElement.getElementsByTagName("ListRecords");
+										if (listRecords.getLength() > 0) {
+											Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
+											NodeList allRecords = listRecordsElement.getElementsByTagName("record");
+											for (int i = 0; i < allRecords.getLength(); i++) {
+												Node curRecordNode = allRecords.item(i);
+												if (curRecordNode instanceof Element) {
+													logEntry.incNumRecords();
+													Element curRecordElement = (Element) curRecordNode;
+													if (indexElement(curRecordElement, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude, startTime)) {
+														numRecordsLoaded++;
+													} else {
+														numRecordsSkipped++;
+													}
+												}
+											}
+
+											//Check to see if there are more records to load and if so continue
+											NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
+											if (resumptionTokens.getLength() > 0) {
+												Node resumptionTokenNode = resumptionTokens.item(0);
+												if (resumptionTokenNode instanceof Element) {
+													Element resumptionTokenElement = (Element) resumptionTokenNode;
+													resumptionToken = resumptionTokenElement.getTextContent();
+													if (!resumptionToken.isEmpty()) {
+														continueLoading = true;
+													}
 												}
 											}
 										}
-
-										//Check to see if there are more records to load and if so continue
-										NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
-										if (resumptionTokens.getLength() > 0) {
-											Node resumptionTokenNode = resumptionTokens.item(0);
-											if (resumptionTokenNode instanceof Element) {
-												Element resumptionTokenElement = (Element) resumptionTokenNode;
-												resumptionToken = resumptionTokenElement.getTextContent();
-												if (!resumptionToken.isEmpty()) {
-													continueLoading = true;
-												}
-											}
+										break;
+									} else {
+										if (j==2){
+											logEntry.incErrors("Could not retrieve records from " + oaiUrl + " response code " + oaiResponse.getResponseCode());
+											logger.error(oaiResponse.getMessage());
+										} else {
+											Thread.sleep(500);
 										}
 									}
-								}else{
-									logEntry.incErrors("Could not retrieve records from " + oaiUrl + " response code " + oaiResponse.getResponseCode());
-									logger.error(oaiResponse.getMessage());
+								} catch (Exception e) {
+									logEntry.incErrors("Error parsing OAI data" , e);
 								}
-							} catch (Exception e) {
-								logEntry.incErrors("Error parsing OAI data" , e);
-
+								logEntry.saveResults();
 							}
-							logEntry.saveResults();
 						}
 						if (!fullReload) {
 							try {
