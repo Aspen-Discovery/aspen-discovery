@@ -41,8 +41,15 @@ export async function getManifestation(itemId, format, language, url) {
  * @param {string} format
  * @param {string} language
  * @param {string} url
+ * @param {array} variation
  **/
-export async function getVariations(itemId, format, language, url) {
+export async function getVariations(itemId, format, language, url, variation) {
+     console.log(variation);
+     let recordId = null;
+     if (variation.recordId) {
+          recordId = variation.recordId;
+     }
+
      const { data } = await axios.get('/ItemAPI?method=getVariations', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -52,6 +59,7 @@ export async function getVariations(itemId, format, language, url) {
                id: itemId,
                format: format,
                language,
+               recordId,
           },
      });
 

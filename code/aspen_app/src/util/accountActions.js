@@ -159,7 +159,7 @@ export async function renewAllCheckouts(url) {
                popAlert(result.title, result.renewalMessage[0], 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -192,7 +192,7 @@ export async function confirmRenewAllCheckouts(url) {
                popAlert(result.title, result.renewalMessage[0], 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -231,7 +231,7 @@ export async function returnCheckout(userId, id, source, overDriveId = null, url
                     popAlert(result.title, result.message, 'error');
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
                console.log(response);
           }
      } else {
@@ -257,7 +257,7 @@ export async function returnCheckout(userId, id, source, overDriveId = null, url
                     popAlert(result.title, result.message, 'error');
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
                console.log(response);
           }
      }
@@ -297,17 +297,17 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                              console.log(response);
                                         })
                                         .catch(async (error) => {
-                                             popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                                             popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                                         });
                               } catch (error) {
                                    console.log('Really borked.');
                               }
                          } else {
-                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                          }
                     });
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           }
      } else {
           await WebBrowser.openBrowserAsync(accessOnlineUrl)
@@ -324,14 +324,14 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                    })
                                    .catch((error) => {
                                         console.log(error);
-                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                                    });
                          } catch (error) {
                               console.log(error);
                               console.log('Unable to open.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                     }
                });
      }
@@ -377,11 +377,11 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, url) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                     }
                });
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -432,7 +432,7 @@ export async function freezeHold(cancelId, recordId, source, url, patronId, sele
                popAlert('Unable to freeze hold', result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -482,7 +482,7 @@ export async function freezeHolds(data, url, selectedReactivationDate = null) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -532,7 +532,7 @@ export async function thawHold(cancelId, recordId, source, url, patronId) {
                popAlert('Unable to thaw hold', result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -568,7 +568,7 @@ export async function thawHolds(data, url) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -619,7 +619,7 @@ export async function cancelHold(cancelId, recordId, source, url, patronId) {
 
           //await getProfile();
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -656,7 +656,7 @@ export async function cancelHolds(data, url) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -706,7 +706,7 @@ export async function changeHoldPickUpLocation(holdId, newLocation, url = null, 
                popAlert(result.title, result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -734,7 +734,7 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
           // reload patron data in the background
           return result;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -756,7 +756,7 @@ export async function dismissBrowseCategory(libraryUrl, browseCategoryId, patron
                return response.data;
           } else {
                const problem = problemCodeMap(response.problem);
-               popToast(problem.title, problem.message, 'warning');
+               popToast(problem.title, problem.message, 'error');
                console.log(response);
           }
      } else {
@@ -776,7 +776,7 @@ export async function dismissBrowseCategory(libraryUrl, browseCategoryId, patron
                return response.data;
           } else {
                const problem = problemCodeMap(response.problem);
-               popToast(problem.title, problem.message, 'warning');
+               popToast(problem.title, problem.message, 'error');
                console.log(response);
           }
      }
@@ -801,7 +801,7 @@ export async function showBrowseCategory(browseCategoryId, patronId, language = 
                return response.data;
           } else {
                const problem = problemCodeMap(response.problem);
-               popToast(problem.title, problem.message, 'warning');
+               popToast(problem.title, problem.message, 'error');
                console.log(response);
           }
      } else {
@@ -823,7 +823,7 @@ export async function showBrowseCategory(browseCategoryId, patronId, language = 
                return response.data;
           } else {
                const problem = problemCodeMap(response.problem);
-               popToast(problem.title, problem.message, 'warning');
+               popToast(problem.title, problem.message, 'error');
                console.log(response);
           }
      }
@@ -849,7 +849,7 @@ async function addLinkedAccount(username, password) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
           console.log(response);
      }
 }
@@ -873,7 +873,7 @@ export async function removeLinkedAccount(id, url) {
           return response.data?.result;
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
           console.log(response);
      }
 }
@@ -897,7 +897,7 @@ export async function removeLinkedViewerAccount(id, url) {
           return response.data?.result;
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
           console.log(response);
      }
 }
@@ -924,7 +924,7 @@ export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popAlert(problem.title, problem.message, 'warning');
+          popAlert(problem.title, problem.message, 'error');
           console.log(response);
      }
 }
