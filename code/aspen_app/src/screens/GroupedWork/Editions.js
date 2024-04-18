@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { Text, CheckIcon, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView } from '@gluestack-ui/themed';
+import { Text, CheckIcon, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView } from '@gluestack-ui/themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -192,18 +192,7 @@ export const Editions = () => {
                                         <AlertDialogBody>
                                              <Text color={textColor}>{holdSelectItemResponse?.message ? decodeMessage(holdSelectItemResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</Text>
                                              {holdSelectItemResponse?.items ? (
-                                                  <Select
-                                                       isReadOnly={Platform.OS === 'android'}
-                                                       name="itemForHold"
-                                                       minWidth={200}
-                                                       accessibilityLabel={getTermFromDictionary(language, 'select_item')}
-                                                       _selectedItem={{
-                                                            bg: 'tertiary.300',
-                                                            endIcon: <CheckIcon size="5" />,
-                                                       }}
-                                                       mt="$1"
-                                                       mb="$2"
-                                                       onValueChange={(itemValue) => setSelectedItem(itemValue)}>
+                                                  <Select name="itemForHold" minWidth={200} accessibilityLabel={getTermFromDictionary(language, 'select_item')} mt="$1" mb="$2" onValueChange={(itemValue) => setSelectedItem(itemValue)}>
                                                        <SelectTrigger>
                                                             <SelectInput placeholder="Select option" />
                                                             <SelectIcon mr="$3">
