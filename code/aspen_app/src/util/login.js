@@ -64,7 +64,7 @@ export async function makeGreenhouseRequestNearby() {
           return true;
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
      }
      return false;
 }

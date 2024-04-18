@@ -91,7 +91,7 @@ export async function checkoutItem(url, itemId, source, patronId, barcode = '', 
 
           return responseData.result;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -180,7 +180,7 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      if (response.ok) {
           return response.data.result;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -225,11 +225,11 @@ export async function overDriveSample(url, formatId, itemId, sampleNumber) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                     }
                });
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -250,19 +250,19 @@ export async function openSideLoad(redirectUrl) {
                                    })
                                    .catch(async (error) => {
                                         console.log('Unable to close previous browser session.');
-                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                                    });
                          } catch (error) {
                               console.log('Tried to open again but still unable');
-                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                          }
                     } else {
                          console.log('Unable to open browser window.');
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                     }
                });
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_no_valid_url'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_no_valid_url'), 'error');
           console.log(response);
      }
 }
@@ -284,7 +284,7 @@ export async function getItemDetails(url, id, format) {
      if (response.ok) {
           return response.data;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -320,7 +320,7 @@ export async function submitVdxRequest(url, request) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popAlert(problem.title, problem.message, 'warning');
+          popAlert(problem.title, problem.message, 'error');
           console.log(response);
      }
 }

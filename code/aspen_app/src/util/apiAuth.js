@@ -149,17 +149,17 @@ export async function passUserToDiscovery(url, redirectTo, userId, backgroundCol
                                    console.log('Really borked.');
                               }
                          } else {
-                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                               console.log(err);
                          }
                     });
           } else {
                // unable to validate the user
-               popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+               popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                console.log('unable to validate user');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
