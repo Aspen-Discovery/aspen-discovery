@@ -44,7 +44,7 @@ export async function makeGreenhouseRequest(method, fetchAll = false) {
           return response.data;
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
      }
 }
 
@@ -150,7 +150,7 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           };
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
      }
 
      return {

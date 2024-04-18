@@ -202,7 +202,7 @@ export async function getNotificationPreferences(libraryUrl, pushToken) {
           return response.data.result;
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
           console.log(response);
           return false;
      }
@@ -231,7 +231,7 @@ export async function getNotificationPreference(url, pushToken, type) {
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          popToast(problem.title, problem.message, 'error');
           //console.log(response);
           return false;
      }

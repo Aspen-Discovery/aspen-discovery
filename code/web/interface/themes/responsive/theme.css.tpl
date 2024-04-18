@@ -823,6 +823,7 @@ label{ldelim}
 	background-color: {$primaryBackgroundColor};
 	color: {$primaryForegroundColor};
 	margin-bottom: .75em;
+    font-size: unset;
 {rdelim}
 
 .sidebar-label a, .sidebar-label a:hover, .sidebar-label a:visited, .searchSettingsColor, .searchSettingsColor:hover, .searchSettingsColor:visited{ldelim}

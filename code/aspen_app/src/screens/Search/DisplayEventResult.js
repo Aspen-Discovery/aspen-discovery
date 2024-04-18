@@ -110,7 +110,7 @@ export const DisplayEventResult = (props) => {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
                          console.log(err);
                     }
                });

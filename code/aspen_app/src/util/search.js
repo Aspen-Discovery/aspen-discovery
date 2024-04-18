@@ -58,7 +58,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
           SEARCH.term = response.data.result.lookfor;
           return response;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
           return response;
      }

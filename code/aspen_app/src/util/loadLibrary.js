@@ -276,7 +276,7 @@ export async function getVdxForm(url, id) {
           LIBRARY.vdx = response.data.result;
           return response.data.result;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }

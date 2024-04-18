@@ -4,7 +4,7 @@
 		<h2 aria-label="Filter Results" class="hiddenTitle">{translate text="Filter Results" isPublicFacing=true}</h2>
 		{* Filters that have been applied *}
 		{if !empty($filterList)}
-			<div id="remove-search-label" class="sidebar-label">{translate text='Applied Filters' isPublicFacing=true}</div>
+			<h3 id="remove-search-label" class="sidebar-label">{translate text='Applied Filters' isPublicFacing=true}</h3>
 			<div class="applied-filters">
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
@@ -16,7 +16,7 @@
 
 		{* Available filters *}
 		{if !empty($sideFacetSet)}
-			<div id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search' isPublicFacing=true}</div>
+			<h3 id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search' isPublicFacing=true}</h3>
 			<div id="facet-accordion" class="accordion">
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}

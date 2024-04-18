@@ -195,18 +195,7 @@ export const Variations = (props) => {
                                         <AlertDialogBody>
                                              <Text color={textColor}>{holdSelectItemResponse?.message ? decodeMessage(holdSelectItemResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</Text>
                                              {holdSelectItemResponse?.items ? (
-                                                  <Select
-                                                       isReadOnly={Platform.OS === 'android'}
-                                                       name="itemForHold"
-                                                       minWidth={200}
-                                                       accessibilityLabel={getTermFromDictionary(language, 'select_item')}
-                                                       _selectedItem={{
-                                                            bg: 'tertiary.300',
-                                                            endIcon: <CheckIcon size="5" />,
-                                                       }}
-                                                       mt="$1"
-                                                       mb="$2"
-                                                       onValueChange={(itemValue) => setSelectedItem(itemValue)}>
+                                                  <Select name="itemForHold" minWidth={200} accessibilityLabel={getTermFromDictionary(language, 'select_item')} mt="$1" mb="$2" onValueChange={(itemValue) => setSelectedItem(itemValue)}>
                                                        <SelectTrigger>
                                                             <SelectInput placeholder="Select option" />
                                                             <SelectIcon mr="$3">

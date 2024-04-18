@@ -1091,7 +1091,7 @@ class ItemAPI extends AbstractAPI {
 		foreach($relatedManifestation->getVariations() as $relatedVariation) {
 			$relatedRecord = $relatedVariation->getFirstRecord();
 
-			$holdType = 'item';
+			$holdType = 'bib';
 			global $indexingProfiles;
 			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
 			$formatMap = $indexingProfile->formatMap;
@@ -1201,6 +1201,30 @@ class ItemAPI extends AbstractAPI {
 						$recordType = $recordInfo[0];
 						$recordId = $recordInfo[1];
 						$source = $relatedRecord->source;
+
+						$holdType = 'bib';
+
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$marcRecord = new MarcRecordDriver($groupedWorkId);
+						global $indexingProfiles;
+						$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+						$formatMap = $indexingProfile->formatMap;
+						/** @var FormatMapValue $formatMapValue */
+						foreach ($formatMap as $formatMapValue) {
+							if ($formatMapValue->format === $format) {
+								$holdType = $formatMapValue->holdType;
+							}
+						}
+
+						if ($holdType == 'either') {
+							//Check for an override at the library level
+							if ($library->treatBibOrItemHoldsAs == 2) {
+								$holdType = 'bib';
+							} elseif ($library->treatBibOrItemHoldsAs == 3) {
+								$holdType = 'item';
+							}
+						}
+
 						$records[$relatedRecord->id]['id'] = $relatedRecord->id;
 						$records[$relatedRecord->id]['source'] = $relatedRecord->source;
 						$records[$relatedRecord->id]['recordId'] = $recordId;
@@ -1214,6 +1238,8 @@ class ItemAPI extends AbstractAPI {
 						$records[$relatedRecord->id]['placeOfPublication'] = $relatedRecord->placeOfPublication;
 						$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
 						$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
+						$records[$relatedRecord->id]['variationId'] = $recordVariation->databaseId;
+						$records[$relatedRecord->id]['holdType'] = $holdType;
 						$records[$relatedRecord->id]['statusIndicator'] = [
 							'isAvailable' => $relatedRecord->getStatusInformation()->isAvailable(),
 							'isEContent' => $relatedRecord->getStatusInformation()->isEContent(),

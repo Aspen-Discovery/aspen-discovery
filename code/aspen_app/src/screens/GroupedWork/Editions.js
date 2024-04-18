@@ -1,21 +1,27 @@
 import React from 'react';
 import _ from 'lodash';
-import { Text, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop } from '@gluestack-ui/themed';
+import { Text, CheckIcon, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView } from '@gluestack-ui/themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Platform } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
+import { confirmHold } from '../../util/api/circulation';
 import { getRecords } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
+import { refreshProfile } from '../../util/api/user';
+import { stripHTML } from '../../util/apiAuth';
+import { placeHold } from '../../util/recordActions';
 import { getStatusIndicator } from './StatusIndicator';
 import { ActionButton } from '../../components/Action/ActionButton';
 import { LanguageContext, LibrarySystemContext, ThemeContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const Editions = () => {
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      let route = navigation.getParent().getState().routes;
      route = _.filter(route, { name: 'EditionsModal' });
@@ -23,7 +29,10 @@ export const Editions = () => {
      const { id, recordId, format, source, volumeInfo, prevRoute } = params;
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const [isLoading, setLoading] = React.useState(false);
+     const [confirmingHold, setConfirmingHold] = React.useState(false);
+     const [selectedItem, setSelectedItem] = React.useState('');
 
      const { status, data, error, isFetching } = useQuery({
           queryKey: ['records', id, source, format, language, library.baseUrl],
@@ -34,6 +43,16 @@ export const Editions = () => {
      const onResponseClose = () => setResponseIsOpen(false);
      const cancelResponseRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
+     const [holdConfirmationIsOpen, setHoldConfirmationIsOpen] = React.useState(false);
+     const onHoldConfirmationClose = () => setHoldConfirmationIsOpen(false);
+     const cancelHoldConfirmationRef = React.useRef(null);
+     const [holdConfirmationResponse, setHoldConfirmationResponse] = React.useState('');
+
+     const [holdItemSelectIsOpen, setHoldItemSelectIsOpen] = React.useState(false);
+     const onHoldItemSelectClose = () => setHoldItemSelectIsOpen(false);
+     const cancelHoldItemSelectRef = React.useRef(null);
+     const [holdSelectItemResponse, setHoldSelectItemResponse] = React.useState('');
+     const [placingItemHold, setPlacingItemHold] = React.useState(false);
 
      const handleNavigation = (action) => {
           if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults' || prevRoute === 'HomeScreen') {
@@ -55,6 +74,10 @@ export const Editions = () => {
           }
      };
 
+     const decodeMessage = (string) => {
+          return stripHTML(string);
+     };
+
      if (isLoading) {
           return loadingSpinner();
      }
@@ -67,22 +90,153 @@ export const Editions = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
+                         <FlatList
+                              data={Object.keys(data.records)}
+                              renderItem={({ item }) => (
+                                   <Edition
+                                        records={data.records[item]}
+                                        id={id}
+                                        format={format}
+                                        volumeInfo={volumeInfo}
+                                        prevRoute={prevRoute}
+                                        setResponseIsOpen={setResponseIsOpen}
+                                        responseIsOpen={responseIsOpen}
+                                        onResponseClose={onResponseClose}
+                                        cancelResponseRef={cancelResponseRef}
+                                        response={response}
+                                        setResponse={setResponse}
+                                        setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                        holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                        onHoldConfirmationClose={onHoldConfirmationClose}
+                                        cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                        holdConfirmationResponse={holdConfirmationResponse}
+                                        setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                        setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                        holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                        onHoldItemSelectClose={onHoldItemSelectClose}
+                                        cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                        holdSelectItemResponse={holdSelectItemResponse}
+                                        setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                   />
+                              )}
+                         />
                          <Center>
                               <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
                                    <AlertDialogBackdrop />
-                                   <AlertDialogContent>
+                                   <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
                                         <AlertDialogHeader>
-                                             <Heading>{response?.title}</Heading>
+                                             <Heading color={textColor}>{response?.title}</Heading>
                                         </AlertDialogHeader>
                                         <AlertDialogBody>
-                                             <Text>{response?.message}</Text>
+                                             <Text color={textColor}>{response?.message}</Text>
                                         </AlertDialogBody>
                                         <AlertDialogFooter>
                                              <ButtonGroup space="sm">
-                                                  {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                                  <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
-                                                       <ButtonText>{getTermFromDictionary(language, 'button_ok')}</ButtonText>
+                                                  {response?.action ? (
+                                                       <Button onPress={() => handleNavigation(response.action)}>
+                                                            <ButtonText>{response.action}</ButtonText>
+                                                       </Button>
+                                                  ) : null}
+                                                  <Button variant="outline" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
+                                                       <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'button_ok')}</ButtonText>
+                                                  </Button>
+                                             </ButtonGroup>
+                                        </AlertDialogFooter>
+                                   </AlertDialogContent>
+                              </AlertDialog>
+                              <AlertDialog leastDestructiveRef={cancelHoldConfirmationRef} isOpen={holdConfirmationIsOpen} onClose={onHoldConfirmationClose}>
+                                   <AlertDialogBackdrop />
+                                   <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                                        <AlertDialogHeader>
+                                             <Heading color={textColor}>{holdConfirmationResponse?.title ? holdConfirmationResponse.title : 'Unknown Error'}</Heading>
+                                        </AlertDialogHeader>
+                                        <AlertDialogBody>
+                                             <Text color={textColor}>{holdConfirmationResponse?.message ? decodeMessage(holdConfirmationResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</Text>
+                                        </AlertDialogBody>
+                                        <AlertDialogFooter>
+                                             <ButtonGroup space="md">
+                                                  <Button variant="link" onPress={() => setHoldConfirmationIsOpen(false)}>
+                                                       <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
+                                                  </Button>
+                                                  <Button
+                                                       isLoading={confirmingHold}
+                                                       isLoadingText="Placing hold..."
+                                                       onPress={async () => {
+                                                            setConfirmingHold(true);
+                                                            await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async (result) => {
+                                                                 setResponse(result);
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
+                                                                 await refreshProfile(library.baseUrl).then((result) => {
+                                                                      updateUser(result);
+                                                                 });
+
+                                                                 setHoldConfirmationIsOpen(false);
+                                                                 setConfirmingHold(false);
+                                                                 if (result) {
+                                                                      setResponseIsOpen(true);
+                                                                 }
+                                                            });
+                                                       }}>
+                                                       <ButtonText>{getTermFromDictionary(language, 'confirm_place_hold')}</ButtonText>
+                                                  </Button>
+                                             </ButtonGroup>
+                                        </AlertDialogFooter>
+                                   </AlertDialogContent>
+                              </AlertDialog>
+                              <AlertDialog leastDestructiveRef={cancelHoldItemSelectRef} isOpen={holdItemSelectIsOpen} onClose={onHoldItemSelectClose}>
+                                   <AlertDialogBackdrop />
+                                   <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                                        <AlertDialogHeader>
+                                             <Heading color={textColor}>{holdSelectItemResponse?.title ? holdSelectItemResponse.title : 'Unknown Error'}</Heading>
+                                        </AlertDialogHeader>
+                                        <AlertDialogBody>
+                                             <Text color={textColor}>{holdSelectItemResponse?.message ? decodeMessage(holdSelectItemResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</Text>
+                                             {holdSelectItemResponse?.items ? (
+                                                  <Select name="itemForHold" minWidth={200} accessibilityLabel={getTermFromDictionary(language, 'select_item')} mt="$1" mb="$2" onValueChange={(itemValue) => setSelectedItem(itemValue)}>
+                                                       <SelectTrigger>
+                                                            <SelectInput placeholder="Select option" />
+                                                            <SelectIcon mr="$3">
+                                                                 <Icon as={CheckIcon} />
+                                                            </SelectIcon>
+                                                       </SelectTrigger>
+                                                       <SelectPortal>
+                                                            <SelectBackdrop />
+                                                            <SelectContent>
+                                                                 <SelectDragIndicatorWrapper>
+                                                                      <SelectDragIndicator />
+                                                                 </SelectDragIndicatorWrapper>
+                                                                 <SelectScrollView>
+                                                                      {_.map(holdSelectItemResponse.items, function (item, index, array) {
+                                                                           return <SelectItem label={item.callNumber} value={item.itemNumber} key={index} />;
+                                                                      })}
+                                                                 </SelectScrollView>
+                                                            </SelectContent>
+                                                       </SelectPortal>
+                                                  </Select>
+                                             ) : null}
+                                        </AlertDialogBody>
+                                        <AlertDialogFooter>
+                                             <ButtonGroup space="md">
+                                                  <Button variant="link" onPress={() => setHoldItemSelectIsOpen(false)}>
+                                                       <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
+                                                  </Button>
+                                                  <Button
+                                                       isLoading={placingItemHold}
+                                                       isLoadingText="Placing hold..."
+                                                       onPress={async () => {
+                                                            setPlacingItemHold(true);
+                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
+                                                                 setResponse(result);
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', holdSelectItemResponse.patronId, library.baseUrl, language] });
+                                                                 queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                                 setHoldItemSelectIsOpen(false);
+                                                                 setPlacingItemHold(false);
+                                                                 if (result) {
+                                                                      setResponseIsOpen(true);
+                                                                 }
+                                                            });
+                                                       }}>
+                                                       <ButtonText>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>
@@ -98,7 +252,7 @@ export const Editions = () => {
 const Edition = (payload) => {
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor } = React.useContext(ThemeContext);
-     const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = payload;
+     const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, holdSelectItemResponse, setHoldSelectItemResponse, holdItemSelectIsOpen, setHoldItemSelectIsOpen, onHoldItemSelectClose, cancelHoldItemSelectRef } = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
      const id = payload.id;
@@ -114,6 +268,8 @@ const Edition = (payload) => {
      const publisher = records.publisher ?? null;
      const isbn = records.isbn ?? null;
      const oclcNumber = records.oclcNumber ?? null;
+     const holdTypeForFormat = records.holdType ?? 'default';
+     const variationId = records.variationId ?? null;
 
      const handleOnPress = () => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
@@ -148,7 +304,43 @@ const Edition = (payload) => {
                     <ButtonGroup direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
                          <FlatList
                               data={actions}
-                              renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />}
+                              renderItem={({ item }) => (
+                                   <ActionButton
+                                        language={language}
+                                        groupedWorkId={id}
+                                        recordId={recordId}
+                                        recordSource={source}
+                                        fullRecordId={fullRecordId}
+                                        variationId={variationId}
+                                        holdTypeForFormat={holdTypeForFormat}
+                                        title={title}
+                                        author={author}
+                                        publisher={publisher}
+                                        isbn={isbn}
+                                        oclcNumber={oclcNumber}
+                                        actions={item}
+                                        volumeInfo={volumeInfo}
+                                        prevRoute={prevRoute}
+                                        setResponseIsOpen={setResponseIsOpen}
+                                        responseIsOpen={responseIsOpen}
+                                        onResponseClose={onResponseClose}
+                                        cancelResponseRef={cancelResponseRef}
+                                        response={response}
+                                        setResponse={setResponse}
+                                        setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                        holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                        onHoldConfirmationClose={onHoldConfirmationClose}
+                                        cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                        holdConfirmationResponse={holdConfirmationResponse}
+                                        setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                        setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                        holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                        onHoldItemSelectClose={onHoldItemSelectClose}
+                                        cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                        holdSelectItemResponse={holdSelectItemResponse}
+                                        setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                   />
+                              )}
                          />
                     </ButtonGroup>
                </HStack>

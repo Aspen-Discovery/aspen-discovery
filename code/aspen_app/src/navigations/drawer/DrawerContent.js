@@ -120,7 +120,7 @@ export const DrawerContent = () => {
                     if (finesSummary) {
                          message = finesSummary;
                     }
-                    return showILSMessage('warning', message);
+                    return showILSMessage('error', message);
                }
           }
 
