@@ -90,8 +90,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Language,or,1,30',
 		'DatabaseName,or,1,30',
 		'SourceType,or,1,30',	
-		//'IsPeerReviewed,and,1,30',
-		//'isScholarly,and,1,30',
 	];
 
 	protected $limits = [
@@ -514,16 +512,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $availableFacets;
 	}
 
-	// public function createLimitList($recordData) {
-	// 	foreach($recordData['facetFields'] as $facet) {
-	// 		//foreach($facet as $limit)
-	// 		if(in_array($facet['displayName'], $this->limitOptions)) {
-	// 			$this->limits[$facet['displayName']] = $facet['hasAppliedValue'];
-	// 		}
-	// 	}
-	// 	return;
-	// }
-
 	public function getLimitList() {
 
 		$availableLimits=[];
@@ -535,7 +523,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			
 				foreach($limitOption['counts'] as $value){
 					if ($value['value'] == 'true') {
-						$isApplied = $value['isApplied'];
 						$availableLimits[$limitId] = [
 							'display' => $displayName." (".$value['count'].")",
 							'value' => $limitId,
@@ -633,10 +620,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$settings = $this->getSettings();
 		$this->startQueryTimer();
 		$query = array();
-		// foreach ($this->limiters as $limiter => $limiterOptions) {
-		// 	if ($limiterOptions['isApplied']) {
-		// 		$this->limitList[] = $limiterOptions[];
-		// 	}
 		$options = $this->getOptions();
 		$this->searchTerms;
 		foreach ($options as $key => $value) {
