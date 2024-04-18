@@ -1377,10 +1377,12 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
-			if (settings.getTreatUnknownLanguageAs() != null && !settings.getTreatUnknownLanguageAs().isEmpty() && translatedLanguage.equals("Unknown")){
-				translatedLanguage = settings.getTreatUnknownLanguageAs();
-			}else if (settings.getTreatUndeterminedLanguageAs() != null && !settings.getTreatUndeterminedLanguageAs().isEmpty() && translatedLanguage.equals("Undetermined")){
-				translatedLanguage = settings.getTreatUndeterminedLanguageAs();
+			if (settings != null) {
+				if (settings.getTreatUnknownLanguageAs() != null && !settings.getTreatUnknownLanguageAs().isEmpty() && translatedLanguage.equals("Unknown")) {
+					translatedLanguage = settings.getTreatUnknownLanguageAs();
+				} else if (settings.getTreatUndeterminedLanguageAs() != null && !settings.getTreatUndeterminedLanguageAs().isEmpty() && translatedLanguage.equals("Undetermined")) {
+					translatedLanguage = settings.getTreatUndeterminedLanguageAs();
+				}
 			}
 			translatedLanguages.add(translatedLanguage);
 			if (isFirstLanguage){
