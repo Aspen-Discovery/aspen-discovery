@@ -1091,7 +1091,7 @@ class ItemAPI extends AbstractAPI {
 		foreach($relatedManifestation->getVariations() as $relatedVariation) {
 			$relatedRecord = $relatedVariation->getFirstRecord();
 
-			$holdType = 'item';
+			$holdType = 'bib';
 			global $indexingProfiles;
 			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
 			$formatMap = $indexingProfile->formatMap;
