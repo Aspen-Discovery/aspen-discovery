@@ -253,10 +253,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			's.rec.topic.max' => $this->maxTopics,
 			//Filters
 			's.fvgf' => $this->groupFilters,
-			//Filters
-			's.rf' => $this->rangeFilters,
 			//Range Facets
 			's.rff' => $this->rangeFacets,
+			//Filters
+			's.rf' => $this->rangeFilters,
 			//Order results
 			's.sort' => $this->getSort(),
 			//False by default
@@ -292,7 +292,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->filters = $recordData['query']['facetValueFilters'];
 				$splitFacets = $this->splitFacets($recordData['facetFields']);
 				$recordData['rangeFacetFields'] = isset($recordData['rangeFacetFields']) && is_array($recordData['rangeFacetFields']) ? $recordData['rangeFacetFields'] : [];
-				$this->facetFields = array_merge($splitFacets['facetFields'], $recordData['rangeFacetFields']);	
+				$this->facetFields = $splitFacets['facetFields'];
 				$this->limitFields = $splitFacets['limitFields'];
 			}
 			return $recordData;
@@ -463,7 +463,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 */
 	public function getFacetSet() {
 		$availableFacets = [];
-		$label = '';
 		$this->filters = [];
 		if (isset($this->facetFields)) {
 			foreach ($this->facetFields as $facetField) {
