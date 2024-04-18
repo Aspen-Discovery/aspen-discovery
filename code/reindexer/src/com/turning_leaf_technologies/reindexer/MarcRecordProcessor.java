@@ -446,7 +446,8 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		if (settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
+		//Settings are nullable for eContent that is in MARC format (i.e. cloudLibrary)
+		if (settings != null && settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
 			try {
 				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, settings.getCustomMarcFieldsToIndexAsKeyword()));
 			}catch (Exception e){
@@ -1376,10 +1377,12 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
-			if (settings.getTreatUnknownLanguageAs() != null && !settings.getTreatUnknownLanguageAs().isEmpty() && translatedLanguage.equals("Unknown")){
-				translatedLanguage = settings.getTreatUnknownLanguageAs();
-			}else if (settings.getTreatUndeterminedLanguageAs() != null && !settings.getTreatUndeterminedLanguageAs().isEmpty() && translatedLanguage.equals("Undetermined")){
-				translatedLanguage = settings.getTreatUndeterminedLanguageAs();
+			if (settings != null) {
+				if (settings.getTreatUnknownLanguageAs() != null && !settings.getTreatUnknownLanguageAs().isEmpty() && translatedLanguage.equals("Unknown")) {
+					translatedLanguage = settings.getTreatUnknownLanguageAs();
+				} else if (settings.getTreatUndeterminedLanguageAs() != null && !settings.getTreatUndeterminedLanguageAs().isEmpty() && translatedLanguage.equals("Undetermined")) {
+					translatedLanguage = settings.getTreatUndeterminedLanguageAs();
+				}
 			}
 			translatedLanguages.add(translatedLanguage);
 			if (isFirstLanguage){
