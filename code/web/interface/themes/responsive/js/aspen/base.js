@@ -723,7 +723,7 @@ var AspenDiscovery = (function(){
 
 			// If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
 			if (y > 0) {
-				scrollToTopButton.className = "top-link show";
+				scrollToTopButton.className = "top-link show hidden-xs hidden-sm";
 			} else {
 				scrollToTopButton.className = "top-link hide";
 			}
