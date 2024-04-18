@@ -118,6 +118,7 @@ abstract class RecordInterface {
 
 	public function getBaseMoreDetailsOptions($isbn) {
 		global $interface;
+		/** Library $library */
 		global $library;
 		global $timer;
 		$hasSyndeticsUnbound = false;
@@ -130,6 +131,23 @@ abstract class RecordInterface {
 			}
 		}
 		$interface->assign('hasSyndeticsUnbound');
+
+		$hasNovelistAllInOne = false;
+		if ($library->novelistSettingId > 0) {
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+			$novelistSetting = new NovelistSetting();
+			$novelistSetting->id = $library->novelistSettingId;
+			if ($novelistSetting->find(true)) {
+				$interface->assign('novelistProfile', $novelistSetting->profile);
+				$interface->assign('novelistKey', $novelistSetting->pwd);
+				$primaryISBN = $this->getCleanISBN();
+				if (!empty($primaryISBN)) {
+					$interface->assign('primaryISBN', $primaryISBN);
+					$hasNovelistAllInOne = true;
+				}
+			}
+		}
+
 
 		$moreDetailsOptions = [];
 		$moreDetailsOptions['description'] = [
@@ -162,6 +180,13 @@ abstract class RecordInterface {
 			$moreDetailsOptions['innReach'] = [
 				'label' => 'More Copies In ' . $library->interLibraryLoanName,
 				'body' => '<div id="inInnReachPlaceholder">' . translate(['text'=>"Loading $library->interLibraryLoanName Copies...", 'isPublicFacing'=> true]) . '</div>',
+				'hideByDefault' => false,
+			];
+		}
+		if ($hasNovelistAllInOne) {
+			$moreDetailsOptions['novelist'] = [
+				'label' => 'Novelist',
+				'body' => $interface->fetch('GroupedWork/novelist.tpl'),
 				'hideByDefault' => false,
 			];
 		}
@@ -292,6 +317,7 @@ abstract class RecordInterface {
 			'subjects' => 'Subjects',
 			'moreDetails' => 'More Details',
 			'syndeticsUnbound' => 'Syndetics Unbound',
+			'novelist' => 'Novelist (All in One)',
 			'similarSeries' => 'Similar Series From NoveList',
 			'similarTitles' => 'Similar Titles From NoveList',
 			'similarAuthors' => 'Similar Authors From NoveList',
@@ -401,4 +427,11 @@ abstract class RecordInterface {
 		return $this->listEntryWeight;
 	}
 
+	function getPrimaryISBN() {
+		return null;
+	}
+
+	function getCleanISBN() {
+		return null;
+	}
 }
