@@ -7,18 +7,15 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ============================================================================
-Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network. Significant changes have been made in this fork of the application. 
+All code is covered by the GNU General Public License version 2
 
-All code is covered by the GNU General Public License version 2 with notable contributions by:
-- Mark Noble - ByWater Solutions, Turning Leaf Technologies, and Marmot Library Network
-- Pascal Brammeier - Marmot Library Network
-- James Staub - Nashville Public Library
-- Demian Katz - Villanova University 
-- Chris Hallberg - Villanova University
-- Many other developers have contributed, especially to VuFind and we thank any unnamed developers that have contributed.
+All contributors to the code may be found at: https://github.com/Aspen-Discovery/aspen-discovery/graphs/contributors. We thank all of our contributors for their hard work. 
 
 Code contributions have been sponsored by many public, academic, and school libraries in the form of direct code contributions as well as service subscriptions.  We thank all sponsors for their generous support. 
 
-Aspen Discovery also uses an number of open source libraries to provide functionality.  These libraries are credited within the source code 
+Aspen Discovery also uses an number of open source libraries to provide functionality.  These libraries are credited within the source code .
 
-For more information about setting up or contributing to Aspen Discovery, visit https://bywatersolutions.com/projects/aspen-discovery.
+For more information about setting up or contributing to Aspen Discovery, visit https://dev.aspendiscovery.org.  For information about using Aspen Discovery, please see https://help.aspendiscovery.org. 
+
+Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network however there have been many changes to the code since.  We would like to thank both of these projects for their inspiration.
+
