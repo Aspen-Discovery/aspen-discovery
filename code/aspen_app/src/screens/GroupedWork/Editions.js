@@ -50,7 +50,7 @@ export const Editions = () => {
 
      const [holdItemSelectIsOpen, setHoldItemSelectIsOpen] = React.useState(false);
      const onHoldItemSelectClose = () => setHoldItemSelectIsOpen(false);
-     const selectItemSelectRef = React.useRef(null);
+     const cancelHoldItemSelectRef = React.useRef(null);
      const [holdSelectItemResponse, setHoldSelectItemResponse] = React.useState('');
      const [placingItemHold, setPlacingItemHold] = React.useState(false);
 
@@ -132,7 +132,11 @@ export const Editions = () => {
                                         </AlertDialogBody>
                                         <AlertDialogFooter>
                                              <ButtonGroup space="sm">
-                                                  {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
+                                                  {response?.action ? (
+                                                       <Button onPress={() => handleNavigation(response.action)}>
+                                                            <ButtonText>{response.action}</ButtonText>
+                                                       </Button>
+                                                  ) : null}
                                                   <Button variant="outline" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
                                                        <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'button_ok')}</ButtonText>
                                                   </Button>
@@ -179,7 +183,7 @@ export const Editions = () => {
                                         </AlertDialogFooter>
                                    </AlertDialogContent>
                               </AlertDialog>
-                              <AlertDialog leastDestructiveRef={selectItemSelectRef} isOpen={holdItemSelectIsOpen} onClose={onHoldItemSelectClose}>
+                              <AlertDialog leastDestructiveRef={cancelHoldItemSelectRef} isOpen={holdItemSelectIsOpen} onClose={onHoldItemSelectClose}>
                                    <AlertDialogBackdrop />
                                    <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
                                         <AlertDialogHeader>
@@ -275,6 +279,8 @@ const Edition = (payload) => {
      const publisher = records.publisher ?? null;
      const isbn = records.isbn ?? null;
      const oclcNumber = records.oclcNumber ?? null;
+     const holdTypeForFormat = records.holdType ?? 'default';
+     const variationId = records.variationId ?? null;
 
      const handleOnPress = () => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });

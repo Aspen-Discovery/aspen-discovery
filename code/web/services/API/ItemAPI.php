@@ -1238,6 +1238,7 @@ class ItemAPI extends AbstractAPI {
 						$records[$relatedRecord->id]['placeOfPublication'] = $relatedRecord->placeOfPublication;
 						$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
 						$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
+						$records[$relatedRecord->id]['variationId'] = $recordVariation->databaseId;
 						$records[$relatedRecord->id]['holdType'] = $holdType;
 						$records[$relatedRecord->id]['statusIndicator'] = [
 							'isAvailable' => $relatedRecord->getStatusInformation()->isAvailable(),
