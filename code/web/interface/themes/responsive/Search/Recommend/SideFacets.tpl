@@ -21,7 +21,7 @@
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
-							<div class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" onkeypress="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" tabindex="0" role="group">
+							<div id="facetToggle_{$title}" aria-controls="facetDetails_{$title}" class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}collapsed{else}expanded{/if}" tabindex="0" role="button" aria-expanded="{if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}false{else}true{/if}">
 								{translate text=$cluster.label isPublicFacing=true}
 
 								{if !empty($cluster.canLock)}
@@ -32,7 +32,7 @@
 								{/if}
 
 							</div>
-							<div id="facetDetails_{$title}" class="facetDetails" {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}style="display:none"{/if}>
+							<div id="facetDetails_{$title}" class="facetDetails" {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}style="display:none"{/if} role="region" aria-labelledby="facetToggle_{$title}">
 
 								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear' || $title == 'publishDateSort'}
 									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
@@ -51,6 +51,24 @@
 								{/if}
 							</div>
 						</div>
+						<script type="text/javascript">
+                            {* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
+                            {literal}
+							$("#facetToggle_{/literal}{$title}{literal}").click(function() {
+								var toggleButton = $(this);
+								$(this).toggleClass('expanded');
+								$(this).toggleClass('collapsed');
+								$('#facetDetails_{/literal}{$title}{literal}').toggle()
+								if (toggleButton.attr("aria-expanded") === "true") {
+									$(this).attr("aria-expanded","false");
+								}
+								else if (toggleButton.attr("aria-expanded") === "false") {
+									$(this).attr("aria-expanded","true");
+								}
+								return false;
+							})
+                            {/literal}
+						</script>
 					{/if}
 				{/foreach}
 			</div>

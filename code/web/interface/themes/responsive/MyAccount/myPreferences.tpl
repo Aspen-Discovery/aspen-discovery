@@ -35,9 +35,9 @@
 						<div class="form-group propertyRow">
 							<label for="username">{translate text="Username" isPublicFacing=true}</label>
 							<input type="text" name="username" id="username" value="{$editableUsername|escape}" size="25" minlength="6" maxlength="25" class="form-control">
-							<a href="#" onclick="$('#usernameHelp').toggle()">{translate text="What is this?" isPublicFacing=true}</a>
+							<a id="usernameHelpButton" href="#" role="button" aria-controls="usernameHelp" aria-expanded="false"><i class="fa fa-question-circle" role="presentation"></i> {translate text="What is this?" isPublicFacing=true}</a>
 							<div id="usernameHelp" style="display:none">
-								{translate text="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)." isPublicFacing=true}
+								<p>{translate text="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)." isPublicFacing=true}</p>
 							</div>
 						</div>
 					{/if}
@@ -232,6 +232,18 @@
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
 					$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
+					$("#usernameHelpButton").click(function() {
+						var helpButton = $(this);
+						if (helpButton.attr("aria-expanded") === "true") {
+							$("#usernameHelp").css('display', 'none');
+							$("#usernameHelpButton").attr("aria-expanded","false");
+						}
+						else if (helpButton.attr("aria-expanded") === "false") {
+							$("#usernameHelp").css('display', 'block');
+							$("#usernameHelpButton").attr("aria-expanded","true");
+						}
+						return false;
+					})
 					{/literal}
 				</script>
 			{/if}
