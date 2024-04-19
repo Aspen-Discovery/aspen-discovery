@@ -34,6 +34,8 @@ class PortalCell extends DataObject {
 	public $pdfView;
 	public $imgAction;
 	public $imgAlt;
+	public $colorScheme;
+	public $invertColor;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -43,7 +45,7 @@ class PortalCell extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['frameHeight'];
+		return ['frameHeight', 'invertColor'];
 	}
 
 	static function getObjectStructure($context = ''): array {
