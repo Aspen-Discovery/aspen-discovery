@@ -1315,8 +1315,8 @@ EOT;
                 select '917.3','United States-Geography','-10','-16' from dual union all
                 select '918','South America-Geography','-10','-16' from dual union all
                 select '919','Other Areas-Geography','-10','-16' from dual union all
-                select '920','Collective Biography','-20','-26' from dual union all
-                select '921','Individual Biography','-10','-22' from dual union all
+                select '920','Collective Biography','-13','-20' from dual union all
+                select '921','Individual Biography','-13','-20' from dual union all
                 select '929','Genealogy/Names/Insignia','-10','-22' from dual union all
                 select '930','Ancient World-History*','-20','-29' from dual union all
                 select '931','Ancient China','-20','-29' from dual union all
@@ -1424,12 +1424,7 @@ EOT;
                 select to_char(to_number(standard_hash('REF','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reference', '-13', '-19' from dual union all
                 select to_char(to_number(standard_hash('RESRV','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reserves', '1000', '-1000' from dual union all
                 select to_char(to_number(standard_hash('TECH','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'technology/computers', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('TEXT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'textured bags', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('ARAB','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'arabic', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('CSLL','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'CS Lending Library', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('GAME','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'videogame', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('SPA','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'Spanish', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('SUP','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'suppressed', '1000', '-1000' from dual
+                select to_char(to_number(standard_hash('TEXT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'textured bags', '1000', '-1000' from dual
             ), 
             drange as ( -- "deranged" because James thinks he's funny
                 select
@@ -1503,6 +1498,11 @@ EOT;
                     when to_number(publishingdate) < (to_number(to_char(sysdate, 'YYYY')) + to_number(x.discardyear)) then 'DISCARD'
                     else 'EVALUATE'
                 end as action
+                , case
+                    when x.cumulativehistory >= 30
+                        then 'EVALUATE FOR WEAR AND TEAR'
+                    else ''
+                end as grubby
             from x
 EOT;
         $stid = oci_parse($this->dbConnection, $sql);
