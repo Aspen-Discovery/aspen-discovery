@@ -98,7 +98,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	];
 
 	protected $rangeFacets = [
-		'PublicationDate,0000:9999',
 	];
 
 	protected $limitList = [];
@@ -291,7 +290,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->resultsTotal = $recordData['recordCount'];
 				$this->filters = $recordData['query']['facetValueFilters'];
 				$splitFacets = $this->splitFacets($recordData['facetFields']);
-				$recordData['rangeFacetFields'] = isset($recordData['rangeFacetFields']) && is_array($recordData['rangeFacetFields']) ? $recordData['rangeFacetFields'] : [];
 				$this->facetFields = $splitFacets['facetFields'];
 				$this->limitFields = $splitFacets['limitFields'];
 			}
@@ -470,9 +468,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				//results array does not return human readable option
 				$parts = preg_split('/(?=[A-Z])/', $facetId, -1, PREG_SPLIT_NO_EMPTY);
 				$displayName = implode(' ', $parts);
-				if ($facetId == 'PublicationDate') {
-					$facetId = 'publishDate';
-				}
 				$availableFacets[$facetId] = [
 					'collapseByDefault' => true,
 					'multiSelect' =>true,
