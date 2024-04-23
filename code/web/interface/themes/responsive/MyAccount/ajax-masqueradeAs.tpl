@@ -8,7 +8,7 @@
 				<input type="text" name="cardNumber" id="cardNumber" value="" size="28" class="form-control">
 			</div>
 		</div>
-		{if $supportsLoginWithUsername}
+		{if $supportsLoginWithUsername && $allowMasqueradeWithUsername}
 			<div id="masqueradeAsChoice" class="form-group">
 				<div class="col-xs-12 col-sm-8 col-sm-offset-4">
 					{translate text="- or -" isPublicFacing=true}
