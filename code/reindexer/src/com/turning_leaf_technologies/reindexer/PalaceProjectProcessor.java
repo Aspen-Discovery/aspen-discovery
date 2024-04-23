@@ -208,7 +208,7 @@ public class PalaceProjectProcessor {
 								if (audience.equalsIgnoreCase("Children")) {
 									audience = "Juvenile";
 								}else if (audience.equalsIgnoreCase("Adults Only")) {
-									audience = "Adults";
+									audience = "Adult";
 								}
 								break;
 							case "http://schema.org/typicalAgeRange":
