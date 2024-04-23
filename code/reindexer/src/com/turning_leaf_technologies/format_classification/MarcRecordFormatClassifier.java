@@ -1,9 +1,6 @@
 package com.turning_leaf_technologies.format_classification;
 
-import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.reindexer.Util;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -539,14 +536,89 @@ public class MarcRecordFormatClassifier {
 					result.add("Photo");
 					break;
 				case 'M':
-					result.add("Electronic");
+					// Look in 008 to determine what type of Continuing Resource
+					if (fixedField008 != null && fixedField008.getData().length() >= 27) {
+						formatCode = fixedField008.getData().toUpperCase().charAt(26);
+						switch (formatCode) {
+							case 'A':
+								result.add("Numeric Data");
+								break;
+							case 'B':
+								result.add("Computer Program");
+								break;
+							case 'G':
+								result.add("Video Game");
+								break;
+							default:
+								result.add("Electronic");
+								break;
+						}
+					}
 					break;
 				case 'O':
 				case 'P':
 					result.add("Kit");
 					break;
 				case 'R':
-					result.add("PhysicalObject");
+					if (fixedField008 != null && fixedField008.getData().length() >= 34) {
+						formatCode = fixedField008.getData().toUpperCase().charAt(33);
+						switch (formatCode) {
+							case 'A':
+								result.add("Art Original");
+								break;
+							case 'B':
+								result.add("Kit");
+								break;
+							case 'C':
+								result.add("Journal");
+								break;
+							case 'D':
+								result.add("Diorama");
+								break;
+							case 'F':
+								result.add("Filmstrip");
+								break;
+							case 'G':
+								result.add("Game");
+								break;
+							case 'I':
+								result.add("Picture");
+								break;
+							case 'K':
+								result.add("Graphic");
+								break;
+							case 'L':
+								result.add("Technical Drawing");
+								break;
+							case 'N':
+								result.add("Chart");
+								break;
+							case 'O':
+								result.add("Flash card");
+								break;
+							case 'P':
+								result.add("Microscope Slide");
+								break;
+							case 'Q':
+								result.add("Model");
+								break;
+							case 'R':
+								result.add("Realia");
+								break;
+							case 'S':
+								result.add("Slide");
+								break;
+							case 'T':
+								result.add("Transparency");
+								break;
+							case 'W':
+								result.add("Toy");
+								break;
+							default:
+								result.add("PhysicalObject");
+								break;
+						}
+					}
 					break;
 				case 'T':
 					result.add("Manuscript");
@@ -978,6 +1050,7 @@ public class MarcRecordFormatClassifier {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
 		//Do nothing by default, this is overridden in IlsRecordProcessor
 	}
