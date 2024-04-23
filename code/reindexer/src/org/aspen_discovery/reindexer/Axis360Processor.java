@@ -130,22 +130,22 @@ class Axis360Processor {
 				String isbn = getFieldValue(rawResponse, "isbn");
 				groupedWork.addIsbn(isbn, primaryFormat);
 
-				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.seteContentSource("Boundless");
-				itemInfo.setIsEContent(true);
-				itemInfo.setShelfLocation("Online Boundless Collection");
-				itemInfo.setDetailedLocation("Online Boundless Collection");
-				itemInfo.setCallNumber("Online Boundless");
-				itemInfo.setSortableCallNumber("Online Boundless");
-				itemInfo.setFormat(primaryFormat);
-				itemInfo.setFormatCategory(formatCategory);
-
-				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-				itemInfo.setDateAdded(dateAdded);
-
 				getAvailabilityStmt.setLong(1, aspenId);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
 				while (availabilityRS.next()) {
+					ItemInfo itemInfo = new ItemInfo();
+					itemInfo.seteContentSource("Boundless");
+					itemInfo.setIsEContent(true);
+					itemInfo.setShelfLocation("Online Boundless Collection");
+					itemInfo.setDetailedLocation("Online Boundless Collection");
+					itemInfo.setCallNumber("Online Boundless");
+					itemInfo.setSortableCallNumber("Online Boundless");
+					itemInfo.setFormat(primaryFormat);
+					itemInfo.setFormatCategory(formatCategory);
+
+					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+					itemInfo.setDateAdded(dateAdded);
+					
 					boolean available = availabilityRS.getBoolean("available");
 					int ownedQty = availabilityRS.getInt("ownedQty");
 					itemInfo.setNumCopies(ownedQty);
@@ -193,10 +193,9 @@ class Axis360Processor {
 							scopingInfo.setLocallyOwned(true);
 						}
 					}
+					axis360Record.addItem(itemInfo);
 				}
 				availabilityRS.close();
-				axis360Record.addItem(itemInfo);
-
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
