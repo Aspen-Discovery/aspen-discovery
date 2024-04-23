@@ -16,10 +16,12 @@ class MyAccount_Masquerade extends MyAccount {
 			exit();
 		} else {
 			// Display error and embedded Masquerade As Form
+			global $library;
 			global $interface;
 			$interface->assign('error', $result['error']);
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			$interface->assign('supportsLoginWithUsername', $catalog->supportsLoginWithUsername());
+			$interface->assign('allowMasqueradeWithUsername', $library->allowMasqueradeWithUsername);
 			$this->display('masqueradeAs.tpl', 'Masquerade');
 		}
 	}
