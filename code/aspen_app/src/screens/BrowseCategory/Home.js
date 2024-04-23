@@ -20,11 +20,11 @@ import { getLists } from '../../util/api/list';
 import { getLocations } from '../../util/api/location';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
-import { formatDiscoveryVersion, getPickupLocations, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
 import { CatalogOffline } from '../Auth/CatalogOffline';
-import { ForceLogout } from '../Auth/ForceLogout';
+import { InvalidCredentials } from '../Auth/InvalidCredentials';
 import DisplayBrowseCategory from './Category';
 
 let maxCategories = 5;
@@ -567,7 +567,7 @@ export const DiscoverHomeScreen = () => {
      }
 
      if (invalidSession === true || invalidSession === 'true') {
-          return <ForceLogout />;
+          return <InvalidCredentials />;
      }
 
      const clearSearch = () => {
