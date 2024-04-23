@@ -590,7 +590,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("evideo", "movie");
 		formatsToFormatCategory.put("eaudio", "book");
 		formatsToFormatCategory.put("eaudiobook", "book");
-		formatsToFormatCategory.put("ecomic", "book");
+		formatsToFormatCategory.put("ecomic", "comic");
 		formatsToFormatCategory.put("audiobook", "book");
 		formatsToFormatCategory.put("atlas", "other");
 		formatsToFormatCategory.put("map", "other");
@@ -686,6 +686,9 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("magazine", "book");
 		formatsToFormatCategory.put("xps", "ebook");
 		formatsToFormatCategory.put("bingepass", "other");
+		formatsToFormatCategory.put("graphicnovel", "comic");
+		formatsToFormatCategory.put("manga", "comic");
+		formatsToFormatCategory.put("comic", "comic");
 	}
 
 	static HashMap<String, String> categoryMap = new HashMap<>();
@@ -700,6 +703,7 @@ public class RecordGroupingProcessor {
 		categoryMap.put("music", "music");
 		categoryMap.put("movie", "movie");
 		categoryMap.put("movies", "movie");
+		categoryMap.put("comic", "comic");
 	}
 
 	private void loadTranslationMaps(String serverName) {
