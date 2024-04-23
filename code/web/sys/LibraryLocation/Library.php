@@ -325,6 +325,7 @@ class Library extends DataObject {
 		$masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
+	public $allowMasqueradeWithUsername;
 	public $enableReadingHistory;
 	public $optInToReadingHistoryUpdatesILS;
 	public $optOutOfReadingHistoryUpdatesILS;
@@ -2506,6 +2507,14 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => false,
 							],
+							'allowMasqueradeWithUsername' => [
+								'property' => 'allowMasqueradeWithUsername',
+								'type' => 'checkbox',
+								'label' => 'Allow Masquerading Using Username',
+								'description' => 'This option allows staff users to masquerade using a card number or username if possible in the ILS',
+								'hideInLists' => true,
+								'default' => true,
+							]
 						],
 					],
 				],

@@ -1,22 +1,51 @@
-marc_record_grouper_001.mrc,koha,koha,Book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
-marc_record_grouper_002.mrc,koha,koha,Movie,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
-marc_record_grouper_003.mrc,koha,koha,Music,"Can't Take Me Home - Koha Record with Music format based on item iType",""
-marc_record_grouper_004.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
-marc_record_grouper_005.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
-marc_record_grouper_006.mrc,symphony,symphony,book,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
-marc_record_grouper_007.mrc,nashville,nashville,book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
-marc_record_grouper_008.mrc,koha,koha,movie,"Minions : the rise of Gru" (https://discover.ajaxlibrary.ca/Record/235602)",108101
-marc_record_grouper_009.mrc,koha,koha,movie,"Minions : the rise of Gru" (https://discover.ajaxlibrary.ca/Record/235661)",108101
-marc_record_grouper_010.mrc,koha,koha,book,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35543)",102741
-marc_record_grouper_011.mrc,koha,koha,book,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35542)",102741
-marc_record_grouper_012.mrc,koha,koha,book,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35544)",102741
-marc_record_grouper_013.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/123675)",105979
-marc_record_grouper_014.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/124296)",105979
-marc_record_grouper_015.mrc,symphony,symphony,book,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1781480)",109430
-marc_record_grouper_016.mrc,symphony,symphony,book,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
-marc_record_grouper_017.mrc,symphony,symphony,book,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
-marc_record_grouper_018.mrc,symphony,symphony,book,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
-marc_record_grouper_019.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
-marc_record_grouper_020.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
-marc_record_grouper_021.mrc,sierra,sierra,book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
-marc_record_grouper_022.mrc,sierra,sierra,book,"Monsters Inc (https://catalog.wvls.org/Record/.b17251679)",114227
+00001.mrc,koha,koha,Book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
+00002.mrc,koha,koha,VideoCassette,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
+00003.mrc,koha,koha,MusicCD,"Can't Take Me Home - Koha Record with Music format based on item iType",""
+00004.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
+00005.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
+00006.mrc,symphony,symphony,PlayStation4,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
+00007.mrc,nashville,nashville,Book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
+00008.mrc,koha,koha,DVD,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235602)",108101
+00009.mrc,koha,koha,Blu-ray,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235661)",108101
+00010.mrc,koha,koha,NintendoSwitch,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35543)",102741
+00011.mrc,koha,koha,PlayStation4,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35542)",102741
+00012.mrc,koha,koha,XboxOne,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35544)",102741
+00013.mrc,koha,koha,DVD,"Thor love and thunder(https://catalog.sbplibrary.org/Record/123675)",105979
+00014.mrc,koha,koha,Blu-ray,"Thor love and thunder(https://catalog.sbplibrary.org/Record/124296)",105979
+00015.mrc,symphony,symphony,XboxOne,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1781480)",109430
+00016.mrc,symphony,symphony,PlayStation4,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
+00017.mrc,symphony,symphony,NintendoSwitch,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
+00018.mrc,symphony,symphony,PlayStation4,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
+00019.mrc,sierra,sierra,Book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
+00020.mrc,sierra,sierra,Book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
+00021.mrc,sierra,sierra,Book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
+00022.mrc,sierra,sierra,Book,"Monsters Inc (https://catalog.wvls.org/Record/.b17251679)",114227
+00023.mrc,sierra,sierra,XboxOne,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187778),117680
+00024.mrc,sierra,sierra,PlayStation4,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187808),117680
+00025.mrc,symphony,symphony,DVD,Sahara (https://wyld.wyldcatalog.org/Record/a1239236),122273
+00026.mrc,symphony,symphony,DVD,Sahara (https://wyld.wyldcatalog.org/Record/a1311479),122273
+00027.mrc,symphony,symphony,Blu-ray,Sahara (https://wyld.wyldcatalog.org/Record/a2446599),122273
+00028.mrc,sierra,sierra,Book,The green mile (https://wvls.aspendiscovery.org/Record/.b11090662),124455
+00029.mrc,sierra,sierra,SoundDisc,The green mile (https://wvls.aspendiscovery.org/Record/.b13808795),124455
+00030.mrc,symphony,symphony,PlayStation4,Xenon racer (https://wyld.wyldcatalog.org/Record/a2313738),127211
+00031.mrc,sierra,sierra,Book,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b21149823),128433
+00032.mrc,sierra,sierra,SoundDisc,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20898332),128433
+00033.mrc,sierra,sierra,DVD,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20007279),128433
+00034.mrc,koha,koha,SoundDisc,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/82237)",125939
+00035.mrc,koha,koha,Book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/227198)",125939
+00036.mrc,koha,koha,GraphicNovel,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/121357)",125939
+00037.mrc,sierra,sierra,Braille,Black Beauty (https://catalog.wvls.org/Record/.b13224219),
+00038.mrc,sierra,sierra,LargePrint,The Hobbit (https://catalog.wvls.org/Record/.b12522855),
+00039.mrc,symphony,symphony,Atlas,Atlas of the World (https://catalog.swanlibraries.net/Record/a1279131),
+00040.mrc,symphony,symphony,PlayawayLaunchpad,Tiempo de cuentos (https://catalog.swanlibraries.net/Record/a3012885),
+00041.mrc,symphony,symphony,4K/Blu-ray,The Super Mario Bros. movie (https://catalog.swanlibraries.net/Record/a3163425),
+00042.mrc,symphony,symphony,Blu-ray/DVD,Mulan (https://catalog.swanlibraries.net/Record/a2911382),
+00043.mrc,symphony,symphony,SoundDisc,Loving Edie (https://catalog.swanlibraries.net/Record/a3102954),
+00044.mrc,symphony,symphony,Software,The complete idiot's guide to learning guitar : everything you need to know to start playing now! (https://catalog.swanlibraries.net/Record/a2368913),
+00045.mrc,symphony,symphony,SoundCassette,Miss Julia hits the road (https://wyld.aspendiscovery.org/Record/a1055847),
+00046.mrc,symphony,symphony,PlayawayBookpack,The lightning thief (https://catalog.swanlibraries.net/Record/a1599240),
+00047.mrc,symphony,symphony,Wonderbook,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a3125294),
+00048.mrc,symphony,symphony,PlayawayLaunchpad,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a2576288),
+00049.mrc,symphony,symphony,Playaway,Harry Potter and the order of the phoenix (https://wyld.aspendiscovery.org/Record/a2369482),
+00050.mrc,symphony,symphony,PlayawayView,Meet the phonics. Digraphs (https://wyld.aspendiscovery.org/Record/a2030482),
+00051.mrc,symphony,symphony,PhysicalObject,LSS Library of Things: WiFi Hotspots. (https://catalog.swanlibraries.net/Record/a1623138),

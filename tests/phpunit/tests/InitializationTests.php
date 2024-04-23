@@ -20,7 +20,7 @@ class InitializationTests extends TestCase {
 	public function test_solrRunning() {
 		require_once __DIR__ . '/../../../code/web/sys/SolrUtils.php';
 		SolrUtils::startSolr();
-		sleep(30);
+		sleep(45);
 
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 		$pingResult = $solrSearcher->ping(true);

@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.grouping.RecordGroupingProcessor;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.helpers.DefaultHandler;
 
