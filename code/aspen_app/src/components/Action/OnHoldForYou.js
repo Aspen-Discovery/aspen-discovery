@@ -17,7 +17,7 @@ export const OnHoldForYou = (props) => {
 
      return (
           <Button size="md" bgColor={theme['colors']['primary']['500']} variant="solid" onPress={handleNavigation}>
-               <ButtonText textAlign="center" p="$0">
+               <ButtonText textAlign="center" p="$0" color={theme['colors']['primary']['500-text']}>
                     {props.title}
                </ButtonText>
           </Button>
