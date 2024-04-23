@@ -1,9 +1,9 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
+import org.aspen_discovery.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;

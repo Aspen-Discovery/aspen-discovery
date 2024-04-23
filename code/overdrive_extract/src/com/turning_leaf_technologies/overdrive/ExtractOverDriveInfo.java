@@ -16,11 +16,11 @@ import java.util.zip.CRC32;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import com.turning_leaf_technologies.grouping.OverDriveRecordGrouper;
-import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import org.aspen_discovery.grouping.OverDriveRecordGrouper;
+import org.aspen_discovery.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

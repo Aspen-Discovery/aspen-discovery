@@ -44,5 +44,5 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
  rj-lib/netty-transport-native-unix-common-4.1.68.Final.jar ../../sites/
  default/solr-8.11.2/dist/solrj-lib/snappy-java-1.1.7.6.jar ../../sites/
  default/solr-8.11.2/dist/solrj-lib/zookeeper-jute-3.6.2.jar
-Main-Class: com.turning_leaf_technologies.reindexer.GroupedReindexMain
+Main-Class: org.aspen_discovery.reindexer.GroupedReindexMain
 

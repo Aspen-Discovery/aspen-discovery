@@ -2,15 +2,15 @@ package org.aspendiscovery.palace_project;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
-import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import org.aspen_discovery.grouping.RecordGroupingProcessor;
+import org.aspen_discovery.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.reindexer.PalaceProjectTitleAvailability;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.PalaceProjectTitleAvailability;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
