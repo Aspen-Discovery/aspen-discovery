@@ -17,6 +17,13 @@ class PalaceProjectCollection extends DataObject {
 		];
 	}
 
+	public function getNumericColumnNames(): array {
+		return [
+			'id',
+			'settingId',
+		];
+	}
+
 	public static function getObjectStructure($context = ''): array {
 		$palaceProjectSettings = [];
 		$palaceProjectSetting = new PalaceProjectSetting();
