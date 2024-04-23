@@ -1,37 +1,36 @@
-001.mrc,koha,koha,book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
-002.mrc,koha,koha,movie,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
-003.mrc,koha,koha,music,"Can't Take Me Home - Koha Record with Music format based on item iType",""
-004.mrc,sierra,sierra,other,"NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
-005.mrc,sierra,sierra,other,"NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
-006.mrc,symphony,symphony,other,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
-007.mrc,nashville,nashville,book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
-008.mrc,koha,koha,movie,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235602)",108101
-009.mrc,koha,koha,movie,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235661)",108101
-010.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35543)",102741
-011.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35542)",102741
-012.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35544)",102741
-013.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/123675)",105979
-014.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/124296)",105979
-015.mrc,symphony,symphony,other,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1781480)",109430
-016.mrc,symphony,symphony,other,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
-017.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
-018.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
-019.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
-020.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
-021.mrc,sierra,sierra,book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
-022.mrc,sierra,sierra,book,Monsters Inc (https://catalog.wvls.org/Record/.b17251679),114227
-023.mrc,sierra,sierra,other		,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187778),117680
-024.mrc,sierra,sierra,other	,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187808),117680
-025.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a1239236),122273
-026.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a1311479),122273
-027.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a2446599),122273
-028.mrc,sierra,sierra,book,The green mile (https://wvls.aspendiscovery.org/Record/.b11090662),124455
-029.mrc,sierra,sierra,book,The green mile (https://wvls.aspendiscovery.org/Record/.b13808795),124455
-030.mrc,symphony,symphony,other,Xenon racer (https://wyld.wyldcatalog.org/Record/a2313738),127211
-031.mrc,sierra,sierra,book,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b21149823),128433
-032.mrc,sierra,sierra,book,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20898332),128433
-033.mrc,sierra,sierra,movie,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20007279),128433
-034.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/82237)",125939
-035.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/227198)",125939
-036.mrc,koha,koha,comic,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/121357)",125939
-,,,,
+00001.mrc,koha,koha,book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
+00002.mrc,koha,koha,movie,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
+00003.mrc,koha,koha,music,"Can't Take Me Home - Koha Record with Music format based on item iType",""
+00004.mrc,sierra,sierra,other,"NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
+00005.mrc,sierra,sierra,other,"NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
+00006.mrc,symphony,symphony,other,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
+00007.mrc,nashville,nashville,book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
+00008.mrc,koha,koha,movie,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235602)",108101
+00009.mrc,koha,koha,movie,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235661)",108101
+00010.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35543)",102741
+00011.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35542)",102741
+00012.mrc,koha,koha,other,"Rabbids : party of legends (https://avalon.aspendiscovery.org/Record/35544)",102741
+00013.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/123675)",105979
+00014.mrc,koha,koha,movie,"Thor love and thunder(https://catalog.sbplibrary.org/Record/124296)",105979
+00015.mrc,symphony,symphony,other,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1781480)",109430
+00016.mrc,symphony,symphony,other,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
+00017.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
+00018.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
+00019.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
+00020.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
+00021.mrc,sierra,sierra,book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
+00022.mrc,sierra,sierra,book,Monsters Inc (https://catalog.wvls.org/Record/.b17251679),114227
+00023.mrc,sierra,sierra,other,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187778),117680
+00024.mrc,sierra,sierra,other,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187808),117680
+00025.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a1239236),122273
+00026.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a1311479),122273
+00027.mrc,symphony,symphony,movie,Sahara (https://wyld.wyldcatalog.org/Record/a2446599),122273
+00028.mrc,sierra,sierra,book,The green mile (https://wvls.aspendiscovery.org/Record/.b11090662),124455
+00029.mrc,sierra,sierra,book,The green mile (https://wvls.aspendiscovery.org/Record/.b13808795),124455
+00030.mrc,symphony,symphony,other,Xenon racer (https://wyld.wyldcatalog.org/Record/a2313738),127211
+00031.mrc,sierra,sierra,book,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b21149823),128433
+00032.mrc,sierra,sierra,book,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20898332),128433
+00033.mrc,sierra,sierra,movie,Saving Fiona the story of the world's most famous baby hippo (https://catalog.deerfieldlibrary.org/Record/.b20007279),128433
+00034.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/82237)",125939
+00035.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/227198)",125939
+00036.mrc,koha,koha,comic,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/121357)",125939
