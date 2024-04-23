@@ -12,7 +12,7 @@ import { useColorModeValue, useToken } from 'native-base';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { loadError, popToast } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { loadingSpinner, LoadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext, ThemeContext } from '../../context/initialContext';
@@ -176,11 +176,11 @@ export const SearchResults = () => {
                     {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
                          <Heading pt="$5">{getTermFromDictionary(language, 'no_results')}</Heading>
-                         <Text bold w="75%" textAlign="center">
+                         <Text bold w="75%" textAlign="center" color={textColor}>
                               {route.params?.term}
                          </Text>
-                         <Button mt="$3" onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              <ButtonText>{getTermFromDictionary(language, 'new_search_button')}</ButtonText>
+                         <Button variant="solid" bgColor={theme['colors']['primary']['500']} mt="$3" onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                              <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'new_search_button')}</ButtonText>
                          </Button>
                     </Center>
                </>
@@ -191,7 +191,7 @@ export const SearchResults = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching ? (
-                    loadingSpinner()
+                    LoadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
                ) : (

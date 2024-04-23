@@ -10,7 +10,7 @@ import React from 'react';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { loadingSpinner, LoadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { startSearch } from '../../helpers/RootNavigator';
@@ -78,7 +78,7 @@ export const GroupedWorkScreen = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {status === 'loading' || isFetching ? (
-                    loadingSpinner('Fetching data...')
+                    LoadingSpinner('Fetching data...')
                ) : status === 'error' ? (
                     loadError(error, '')
                ) : (
@@ -108,7 +108,7 @@ const DisplayGroupedWork = (payload) => {
                queries: formats.map((format) => {
                     return {
                          queryKey: ['recordId', groupedWork.id, format, language, library.baseUrl],
-                         queryFn: () => getFirstRecord(id, format, language, library.baseUrl),
+                         queryFn: () => getFirstRecord(id, format, language, library.baseUrl, groupedWork.formats[format]),
                     };
                }),
           });
@@ -118,7 +118,7 @@ const DisplayGroupedWork = (payload) => {
           queries: formats.map((format) => {
                return {
                     queryKey: ['variation', groupedWork.id, format, language, library.baseUrl],
-                    queryFn: () => getVariations(id, format, language, library.baseUrl),
+                    queryFn: () => getVariations(id, format, language, library.baseUrl, groupedWork.formats[format]),
                };
           }),
      });

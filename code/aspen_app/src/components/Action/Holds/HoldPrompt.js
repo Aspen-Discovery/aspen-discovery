@@ -222,9 +222,9 @@ export const HoldPrompt = (props) => {
                                              <SelectTrigger variant="outline" size="md">
                                                   {accounts.map((item, index) => {
                                                        if (item.id === activeAccount) {
-                                                            return <SelectInput value={item.displayName} />;
+                                                            return <SelectInput value={item.displayName} color={textColor} />;
                                                        } else if (user.id === activeAccount) {
-                                                            return <SelectInput value={user.displayName} />;
+                                                            return <SelectInput value={user.displayName} color={textColor} />;
                                                        }
                                                   })}
                                                   <SelectIcon mr="$3" as={ChevronDownIcon} color={textColor} />
@@ -236,9 +236,9 @@ export const HoldPrompt = (props) => {
                                                             <SelectDragIndicator />
                                                        </SelectDragIndicatorWrapper>
                                                        <SelectScrollView>
-                                                            <SelectItem label={user.displayName} value={user.id} />
+                                                            <SelectItem label={user.displayName} value={user.id} color={textColor} />
                                                             {accounts.map((item, index) => {
-                                                                 return <SelectItem label={item.displayName} value={item.id} key={index} />;
+                                                                 return <SelectItem label={item.displayName} value={item.id} key={index} color={textColor} />;
                                                             })}
                                                        </SelectScrollView>
                                                   </SelectContent>
