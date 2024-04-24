@@ -260,6 +260,7 @@
   "error_no_valid_url": "A valid access URL has not been provided for the record",
   "error_device_block_browser": "There was a problem opening item. Try again",
   "error_invalid_session": "There was a problem retrieving your previous session. Please log in again.",
+  "error_invalid_credentials": "Your previously used credentials for logging in are no longer valid. Please log in again.",
   "update_available": "Update Available",
   "update_message": "An update is available",
   "update_now": "Update Now",
