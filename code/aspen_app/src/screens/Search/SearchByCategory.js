@@ -3,6 +3,7 @@ import { useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import React from 'react';
+import { Image } from 'expo-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
@@ -12,6 +13,8 @@ import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeCont
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
 import { fetchSearchResultsForBrowseCategory } from '../../util/api/search';
 import { DisplayResult } from './DisplayResult';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const SearchResultsForBrowseCategory = () => {
      const [page, setPage] = React.useState(1);
