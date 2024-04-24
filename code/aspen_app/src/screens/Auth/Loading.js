@@ -173,7 +173,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
-          enabled: hasError === false && !!libraryLinksQuery,
+          enabled: hasError === false && !!libraryLinksQuery && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(60);
                updateBrowseCategories(data);
@@ -181,7 +181,7 @@ export const LoadingScreen = () => {
           },
      });
      const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
-          enabled: hasError === false && !!browseCategoryQuery,
+          enabled: hasError === false && !!browseCategoryQuery && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(70);
                updateBrowseCategoryList(data);
@@ -189,7 +189,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
-          enabled: hasError === false && !!browseCategoryListQuery,
+          enabled: hasError === false && !!browseCategoryListQuery && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(80);
                updateLocation(data);
@@ -197,7 +197,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
-          enabled: hasError === false && !!userQuery && !!libraryBranchQuery,
+          enabled: hasError === false && !!userQuery && !!libraryBranchQuery && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(85);
                if (data.success) {

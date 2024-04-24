@@ -4,6 +4,7 @@ import { Button, ButtonGroup, ButtonIcon, ButtonText, Box, Center, HStack, Text,
 import { useRoute } from '@react-navigation/native';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import { useToken } from 'native-base';
 import React from 'react';
@@ -22,6 +23,8 @@ import { decodeHTML, urldecode } from '../../util/apiAuth';
 import { getPickupLocations } from '../../util/loadLibrary';
 import AddToList from '../Search/AddToList';
 import Variations from './Variations';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -128,7 +131,7 @@ const DisplayGroupedWork = (payload) => {
      return (
           <Box p="$5" w="100%">
                <Center mt="$5" width="100%">
-                    <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: urldecode(groupedWork.cover), expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
+                    <Image alt={groupedWork.title} source={groupedWork.cover} style={{ width: 180, height: 250, borderRadius: 4 }} placeholder={blurhash} transition={1000} contentFit="cover" />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>

@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as Calendar from 'expo-calendar';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -23,6 +24,8 @@ import { getEventDetails, saveEvent } from '../../util/api/event';
 import { decodeHTML, stripHTML } from '../../util/apiAuth';
 import { PATRON } from '../../util/loadPatron';
 import AddToList from '../Search/AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const EventScreen = () => {
      const route = useRoute();
@@ -143,19 +146,17 @@ const DisplayEvent = (payload) => {
                <Box safeArea={5} w="100%">
                     <Center mt={event.cover ? 5 : 0} width="100%">
                          {event.cover ? (
-                              <CachedImage
-                                   cacheKey={key}
-                                   resizeMethod="scale"
-                                   resizeMode="contain"
+                              <Image
                                    alt={event.title}
-                                   source={{ uri: event.cover, expiresIn: 86400 }}
+                                   source={event.cover}
                                    style={{
                                         width: '100%',
                                         height: 150,
                                         borderRadius: 4,
-                                        resizeMode: 'contain',
-                                        overlayColor: backgroundColor,
                                    }}
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          ) : null}
                          {getTitle(event.title, hasValidImage)}

@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import { Badge, Box, Button, FlatList, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
 import React from 'react';
@@ -21,6 +22,8 @@ import { createAuthTokens, getHeaders } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import AddToList from './AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const SearchResultsForList = () => {
      const id = useRoute().params?.id;
@@ -101,35 +104,17 @@ const DisplayResult = (data) => {
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
                     <VStack maxW="30%">
-                         <CachedImage
-                              cacheKey={key}
+                         <Image
                               alt={item.title_display}
-                              source={{
-                                   uri: `${imageUrl}`,
-                                   expiresIn: 86400,
-                              }}
+                              source={imageUrl}
                               style={{
                                    width: 100,
                                    height: 150,
                                    borderRadius: 4,
                               }}
-                              resizeMode="cover"
-                              placeholderContent={
-                                   <Box
-                                        bg="warmGray.50"
-                                        _dark={{
-                                             bgColor: 'coolGray.800',
-                                        }}
-                                        width={{
-                                             base: 100,
-                                             lg: 200,
-                                        }}
-                                        height={{
-                                             base: 150,
-                                             lg: 250,
-                                        }}
-                                   />
-                              }
+                              placeholder={blurhash}
+                              transition={1000}
+                              contentFit="cover"
                          />
                          {item.language ? (
                               <Badge

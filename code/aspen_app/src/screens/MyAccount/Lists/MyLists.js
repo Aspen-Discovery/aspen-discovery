@@ -1,6 +1,7 @@
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import moment from 'moment';
 import { Badge, Box, Center, FlatList, HStack, Pressable, Text, VStack } from 'native-base';
@@ -15,6 +16,8 @@ import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { getListDetails, getLists, getListTitles } from '../../../util/api/list';
 import CreateList from './CreateList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyLists = () => {
      const navigation = useNavigation();
@@ -121,35 +124,17 @@ export const MyLists = () => {
                          py="2">
                          <HStack space={3} justifyContent="flex-start">
                               <VStack space={1}>
-                                   <CachedImage
-                                        cacheKey={item.id}
+                                   <Image
                                         alt={item.title}
-                                        source={{
-                                             uri: `${imageUrl}`,
-                                             expiresIn: 86400,
-                                        }}
+                                        source={imageUrl}
                                         style={{
                                              width: 100,
                                              height: 150,
                                              borderRadius: 4,
                                         }}
-                                        resizeMode="cover"
-                                        placeholderContent={
-                                             <Box
-                                                  bg="warmGray.50"
-                                                  _dark={{
-                                                       bgColor: 'coolGray.800',
-                                                  }}
-                                                  width={{
-                                                       base: 100,
-                                                       lg: 200,
-                                                  }}
-                                                  height={{
-                                                       base: 150,
-                                                       lg: 250,
-                                                  }}
-                                             />
-                                        }
+                                        placeholder={blurhash}
+                                        transition={1000}
+                                        contentFit="cover"
                                    />
                                    <Badge mt={1}>{privacy}</Badge>
                               </VStack>

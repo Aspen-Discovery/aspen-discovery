@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
@@ -16,6 +17,8 @@ import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLocations } from '../../util/api/location';
 import { PATRON } from '../../util/loadPatron';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const AllLocations = () => {
      const [isLoading, setLoading] = React.useState(false);
@@ -235,7 +238,7 @@ const DisplayLocation = (data) => {
                     <HStack justifyContent="space-between" alignItems="center">
                          {location.locationImage ? (
                               <Box width="30%" mr={2}>
-                                   <CachedImage cacheKey={key} alt={location.displayName} source={{ uri: location.locationImage, expiresIn: 1 }} resizeMode="cover" style={{ width: '100%', height: 90, borderRadius: 4 }} />
+                                   <Image alt={location.displayName} source={location.locationImage} style={{ width: '100%', height: 90, borderRadius: 4 }} placeholder={blurhash} transition={1000} contentFit="cover" />
                               </Box>
                          ) : null}
                          <VStack width={location.locationImage ? '60%' : '85%'}>

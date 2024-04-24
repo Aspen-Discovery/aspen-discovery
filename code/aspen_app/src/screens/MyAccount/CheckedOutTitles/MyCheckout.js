@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import { Actionsheet, Box, HStack, Icon, Pressable, Text, VStack } from 'native-base';
 import React, { useState } from 'react';
@@ -12,6 +13,8 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../../trans
 import { renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import { stripHTML } from '../../../util/apiAuth';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyCheckout = (props) => {
      const checkout = props.data;
@@ -124,35 +127,17 @@ export const MyCheckout = (props) => {
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
-                    <CachedImage
-                         cacheKey={key}
+                    <Image
                          alt={checkout.title}
-                         source={{
-                              uri: `${url}`,
-                              expiresIn: 86400,
-                         }}
+                         source={url}
                          style={{
                               width: 100,
                               height: 150,
                               borderRadius: 4,
                          }}
-                         resizeMode="cover"
-                         placeholderContent={
-                              <Box
-                                   bg="warmGray.50"
-                                   _dark={{
-                                        bgColor: 'coolGray.800',
-                                   }}
-                                   width={{
-                                        base: 100,
-                                        lg: 200,
-                                   }}
-                                   height={{
-                                        base: 150,
-                                        lg: 250,
-                                   }}
-                              />
-                         }
+                         placeholder={blurhash}
+                         transition={1000}
+                         contentFit="cover"
                     />
                     <VStack>
                          {getTitle(checkout.title)}

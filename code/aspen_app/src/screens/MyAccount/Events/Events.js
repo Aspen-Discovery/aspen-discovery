@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
@@ -17,6 +18,8 @@ import { getCleanTitle } from '../../../helpers/item';
 import { navigate } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { fetchSavedEvents, removeSavedEvent } from '../../../util/api/event';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyEvents = () => {
      const navigation = useNavigation();
@@ -342,35 +345,17 @@ const Item = (data) => {
                                         </Badge>
                                    </Container>
                               ) : null}
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={event.title}
-                                   source={{
-                                        uri: `${coverUrl}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={coverUrl}
                                    style={{
                                         width: 100,
                                         height: 150,
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
 
                               <Button size="sm" variant="ghost" colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs" mr="-1" />} style={{ flex: 1, flexWrap: 'wrap' }} onPress={() => removeEvent()}>

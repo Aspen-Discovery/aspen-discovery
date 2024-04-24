@@ -3,11 +3,14 @@ import { LanguageContext, LibrarySystemContext, UserContext } from '../../contex
 import { TrashIcon } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import { getCleanTitle } from '../../helpers/item';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { removeTitlesFromList } from '../../util/api/list';
 import AddToList from './AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const DisplayResult = (props) => {
      const item = props.data;
@@ -49,32 +52,17 @@ export const DisplayResult = (props) => {
                <HStack space="md">
                     <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title_display}
-                                   source={{
-                                        uri: `${imageUrl}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={imageUrl}
                                    style={{
                                         width: '100%',
                                         height: '100%',
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          </Box>
                          {item.language ? (
