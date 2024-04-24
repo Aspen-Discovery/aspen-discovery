@@ -1,8 +1,8 @@
 00001.mrc,koha,koha,Book,"Pride and Prejudice - Koha Record with Book format based on item iType",""
 00002.mrc,koha,koha,VideoCassette,"Pride and Prejudice - Koha Record with Movie format based on item iType",""
 00003.mrc,koha,koha,MusicCD,"Can't Take Me Home - Koha Record with Music format based on item iType",""
-00004.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
-00005.mrc,sierra,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
+00004.mrc,minlib,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b4131220x)",121617
+00005.mrc,minlib ,sierra,"Console Game","NBA 2K (was https://catalog.minlib.net/Record/.b41312211)",121617
 00006.mrc,symphony,symphony,PlayStation4,"Madden NFL 23 (https://wyld.wyldcatalog.org/Record/a2486507)",112129
 00007.mrc,nashville,nashville,Book,"The hidden treasure of Black ASL : its history and structure (https://catalog.library.nashville.org/Record/CARL0000383620)",104895
 00008.mrc,koha,koha,DVD,"Minions : the rise of Gru (https://discover.ajaxlibrary.ca/Record/235602)",108101
@@ -14,8 +14,8 @@
 00014.mrc,koha,koha,Blu-ray,"Thor love and thunder(https://catalog.sbplibrary.org/Record/124296)",105979
 00015.mrc,symphony,symphony,XboxOne,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1781480)",109430
 00016.mrc,symphony,symphony,PlayStation4,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
-00017.mrc,symphony,symphony,NintendoSwitch,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
-00018.mrc,symphony,symphony,PlayStation4,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
+00017.mrc,swan,symphony,NintendoSwitch,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
+00018.mrc,swan,symphony,PlayStation4,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
 00019.mrc,sierra,sierra,Book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
 00020.mrc,sierra,sierra,Book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
 00021.mrc,sierra,sierra,Book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
@@ -36,16 +36,29 @@
 00036.mrc,koha,koha,GraphicNovel,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/121357)",125939
 00037.mrc,sierra,sierra,Braille,Black Beauty (https://catalog.wvls.org/Record/.b13224219),
 00038.mrc,sierra,sierra,LargePrint,The Hobbit (https://catalog.wvls.org/Record/.b12522855),
-00039.mrc,symphony,symphony,Atlas,Atlas of the World (https://catalog.swanlibraries.net/Record/a1279131),
-00040.mrc,symphony,symphony,PlayawayLaunchpad,Tiempo de cuentos (https://catalog.swanlibraries.net/Record/a3012885),
-00041.mrc,symphony,symphony,4K/Blu-ray,The Super Mario Bros. movie (https://catalog.swanlibraries.net/Record/a3163425),
-00042.mrc,symphony,symphony,Blu-ray/DVD,Mulan (https://catalog.swanlibraries.net/Record/a2911382),
-00043.mrc,symphony,symphony,SoundDisc,Loving Edie (https://catalog.swanlibraries.net/Record/a3102954),
-00044.mrc,symphony,symphony,Software,The complete idiot's guide to learning guitar : everything you need to know to start playing now! (https://catalog.swanlibraries.net/Record/a2368913),
+00039.mrc,swan,symphony,Atlas,Atlas of the World (https://catalog.swanlibraries.net/Record/a1279131),
+00040.mrc,swan,symphony,PlayawayLaunchpad,Tiempo de cuentos (https://catalog.swanlibraries.net/Record/a3012885),
+00041.mrc,swan,symphony,4K/Blu-ray,The Super Mario Bros. movie (https://catalog.swanlibraries.net/Record/a3163425),
+00042.mrc,swan,symphony,Blu-ray/DVD,Mulan (https://catalog.swanlibraries.net/Record/a2911382),
+00043.mrc,swan,symphony,SoundDisc,Loving Edie (https://catalog.swanlibraries.net/Record/a3102954),
+00044.mrc,swan,symphony,Software,The complete idiot's guide to learning guitar : everything you need to know to start playing now! (https://catalog.swanlibraries.net/Record/a2368913),
 00045.mrc,symphony,symphony,SoundCassette,Miss Julia hits the road (https://wyld.aspendiscovery.org/Record/a1055847),
-00046.mrc,symphony,symphony,PlayawayBookpack,The lightning thief (https://catalog.swanlibraries.net/Record/a1599240),
-00047.mrc,symphony,symphony,Wonderbook,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a3125294),
-00048.mrc,symphony,symphony,PlayawayLaunchpad,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a2576288),
+00046.mrc,swan,symphony,PlayawayBookpack,The lightning thief (https://catalog.swanlibraries.net/Record/a1599240),
+00047.mrc,swan,symphony,Wonderbook,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a3125294),
+00048.mrc,swan,symphony,PlayawayLaunchpad,Diary of a Wimpy Kid (https://catalog.swanlibraries.net/Record/a2576288),
 00049.mrc,symphony,symphony,Playaway,Harry Potter and the order of the phoenix (https://wyld.aspendiscovery.org/Record/a2369482),
-00050.mrc,symphony,symphony,PlayawayView,Meet the phonics. Digraphs (https://wyld.aspendiscovery.org/Record/a2030482),
-00051.mrc,symphony,symphony,PhysicalObject,LSS Library of Things: WiFi Hotspots. (https://catalog.swanlibraries.net/Record/a1623138),
+00050.mrc,swan,symphony,PlayawayView,Meet the phonics. Digraphs (https://wyld.aspendiscovery.org/Record/a2030482),
+00051.mrc,swan,symphony,Physical Object,LSS Library of Things: WiFi Hotspots. (https://catalog.swanlibraries.net/Record/a1623138),
+00052.mrc,swan,symphony,Kit,Book club kit. Transcendent kingdom (https://catalog.swanlibraries.net/Record/a2987199),
+00053.mrc,swan,symphony,MP3Disc,Pride and prejudice (https://catalog.swanlibraries.net/Record/a800185),
+00054.mrc,swan,symphony,CD+Book,Moby-Dick (https://catalog.swanlibraries.net/Record/a1835677),
+00055.mrc,swan,symphony,BoardBook,Peter Pan (https://catalog.swanlibraries.net/Record/a3150627),
+00056.mrc,swan,symphony,Book+CD,King Lear (https://catalog.swanlibraries.net/Record/a1910838),
+00057.mrc,swan,symphony,Book+CD-ROM,Make your own living trust (https://catalog.swanlibraries.net/Record/a1846141),
+00058.mrc,swan,symphony,CD+DVD,Nevermind (https://catalog.swanlibraries.net/Record/a2797681),
+00059.mrc,swan,symphony,LargePrint,Pride and Prejudice (https://catalog.swanlibraries.net/Record/a1850417),
+00060.mrc,swan,symphony,LargePrint,Pride and Prejudice (https://catalog.swanlibraries.net/Record/a22453),
+00061.mrc,swan,symphony,LargePrint,Pride and Prejudice (https://catalog.swanlibraries.net/Record/a2994631),
+00062.mrc,polaris,polaris,LargePrint,Persuasion (https://share.aspendiscovery.org/Record/778116),
+00063.mrc,swan,symphony,BoardBook,Kittens Spring (https://catalog.swanlibraries.net/Record/a1087544),
+00064.mrc,swan,symphony,Book,Kittens Spring (https://catalog.swanlibraries.net/Record/a918520) Should loads fallback field,

@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
+import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,7 +29,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	private boolean isValid = true;
 
-	protected final MarcRecordFormatClassifier formatClassifier;
+	protected MarcRecordFormatClassifier formatClassifier;
 
 	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(dbConn, serverName, logEntry, logger);
@@ -44,9 +45,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		formatClassifier = new MarcRecordFormatClassifier(logger);
 	}
 
-	public abstract String processMarcRecord(org.marc4j.marc.Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer);
+	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer);
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(org.marc4j.marc.Record marcRecord, BaseIndexingSettings indexingProfile) {
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
 		if (marcRecord == null) {
 			isValid = false;
@@ -86,7 +87,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 
 
-	String setGroupingCategoryForWork(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
+	String setGroupingCategoryForWork(Record marcRecord, GroupedWork workForTitle) {
 		//Format
 		String groupingFormat;
 		switch (baseSettings.getFormatSource()) {
@@ -115,7 +116,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return groupingFormat;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
 		String author = null;
 		DataField field100 = marcRecord.getDataField(100);
 		DataField field110 = marcRecord.getDataField(110);
@@ -153,7 +154,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	private DataField setWorkTitleBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
+	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
 		//Check for a uniform title field
 		//The uniform title is useful for movies (often has the release year)
 		DataField field130 = marcRecord.getDataField(130);
@@ -217,7 +218,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
 	}
 
-	GroupedWork setupBasicWorkForIlsRecord(org.marc4j.marc.Record marcRecord) {
+	GroupedWork setupBasicWorkForIlsRecord(Record marcRecord) {
 		GroupedWork workForTitle = new GroupedWork(this);
 
 		//Title
@@ -234,7 +235,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	String languageFields = "008[35-37]";
-	private void setLanguageBasedOnMarcRecord(org.marc4j.marc.Record marcRecord, GroupedWork workForTitle) {
+	private void setLanguageBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
 		String activeLanguage = null;
 		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
 		for (String language : languages){
@@ -358,5 +359,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	public boolean isValid() {
 		return isValid;
+	}
+
+	public MarcRecordFormatClassifier getFormatClassifier() {
+		return formatClassifier;
 	}
 }

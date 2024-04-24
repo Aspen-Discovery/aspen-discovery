@@ -156,7 +156,7 @@ public class SierraExportAPIMain {
 					getBibsWithHoldings(sierraConn);
 				}
 
-				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
+				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logEntry);
 
 				String apiVersion = sierraInstanceInformation.apiVersion;
 				if (apiVersion == null || apiVersion.isEmpty()){

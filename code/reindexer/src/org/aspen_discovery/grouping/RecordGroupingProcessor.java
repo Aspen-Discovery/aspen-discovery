@@ -262,10 +262,6 @@ public class RecordGroupingProcessor {
 	}
 
 
-	List<DataField> getDataFields(org.marc4j.marc.Record marcRecord, String tag) {
-		return marcRecord.getDataFields(tag);
-	}
-
 	List<DataField> getDataFields(org.marc4j.marc.Record marcRecord, int tag) {
 		return marcRecord.getDataFields(tag);
 	}

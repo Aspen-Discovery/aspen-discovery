@@ -1,25 +1,25 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class SierraExportFieldMapping {
-	private String fixedFieldDestinationField;
-	private int fixedFieldDestinationFieldInt;
-	private char bcode3DestinationSubfield;
-	private char materialTypeSubfield;
-	private char bibLevelLocationsSubfield;
-	private String callNumberExportFieldTag;
-	private char callNumberPrestampExportSubfield;
-	private char callNumberPrestamp2ExportSubfield;
-	private char callNumberExportSubfield;
-	private char callNumberCutterExportSubfield;
+	private String fixedFieldDestinationField = "998";
+	private int fixedFieldDestinationFieldInt = 998;
+	private char bcode3DestinationSubfield = 'e';
+	private char materialTypeSubfield = 'm';
+	private char bibLevelLocationsSubfield = ' ';
+	private String callNumberExportFieldTag = "c";
+	private char callNumberPrestampExportSubfield = 'k';
+	private char callNumberPrestamp2ExportSubfield = 'f';
+	private char callNumberExportSubfield = 'a';
+	private char callNumberCutterExportSubfield = 'b';
 	private char callNumberPoststampExportSubfield;
-	private String volumeExportFieldTag;
+	private String volumeExportFieldTag = "v";
 	private String eContentExportFieldTag;
 	private String itemPublicNoteExportSubfield;
 
@@ -108,7 +108,7 @@ public class SierraExportFieldMapping {
 		this.eContentExportFieldTag = eContentExportFieldTag;
 	}
 
-	public static SierraExportFieldMapping loadSierraFieldMappings(Connection dbConn, long profileId, Logger logger) {
+	public static SierraExportFieldMapping loadSierraFieldMappings(Connection dbConn, long profileId, BaseIndexingLogEntry logEntry) {
 		//Get the Indexing Profile from the database
 		SierraExportFieldMapping sierraFieldMapping = new SierraExportFieldMapping();
 		try {
@@ -134,7 +134,7 @@ public class SierraExportFieldMapping {
 			getSierraFieldMappingsStmt.close();
 
 		} catch (Exception e) {
-			logger.error("Error reading sierra field mappings", e);
+			logEntry.incErrors("Error reading sierra field mappings", e);
 		}
 		return sierraFieldMapping;
 	}

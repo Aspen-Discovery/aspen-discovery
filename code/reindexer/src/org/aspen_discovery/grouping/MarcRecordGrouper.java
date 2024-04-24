@@ -1,6 +1,9 @@
 package org.aspen_discovery.grouping;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import org.aspen_discovery.format_classification.IIIRecordFormatClassifier;
+import org.aspen_discovery.format_classification.IlsRecordFormatClassifier;
+import org.aspen_discovery.format_classification.NashvilleRecordFormatClassifier;
 import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -41,15 +44,18 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
 
+		if (profile.getIndexingClass().equals("III")) {
+			formatClassifier = new IIIRecordFormatClassifier(logger);
+		} else if (profile.getIndexingClass().equals("NashvilleCarlX")) {
+			formatClassifier = new NashvilleRecordFormatClassifier(logger);
+		} else {
+			formatClassifier = new IlsRecordFormatClassifier(logger);
+		}
+
 		super.setupDatabaseStatements(dbConnection);
 
 		super.loadAuthorities(dbConnection);
-
-		// This only happens during unit tests when we are adding translation maps manually
-		if (profile.getId() != null) {
-			loadTranslationMaps(dbConnection);
-		}
-
+		
 		try {
 			getExistingParentRecordsStmt = dbConnection.prepareStatement("SELECT * FROM record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addParentRecordStmt = dbConnection.prepareStatement("INSERT INTO record_parents (childRecordId, parentRecordId, childTitle) VALUES (?, ?, ?)");
@@ -61,48 +67,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	}
 
-	private void loadTranslationMaps(Connection dbConnection) {
-		try {
-			PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps where indexingProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values where translationMapId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			loadMapsStmt.setLong(1, profile.getId());
-			ResultSet translationMapsRS = loadMapsStmt.executeQuery();
-			while (translationMapsRS.next()){
-				HashMap<String, String> translationMap = new HashMap<>();
-				String mapName = translationMapsRS.getString("name");
-				long translationMapId = translationMapsRS.getLong("id");
 
-				loadMapValuesStmt.setLong(1, translationMapId);
-				ResultSet mapValuesRS = loadMapValuesStmt.executeQuery();
-				while (mapValuesRS.next()){
-					String value = mapValuesRS.getString("value");
-					String translation = mapValuesRS.getString("translation");
-
-					translationMap.put(value, translation);
-				}
-				mapValuesRS.close();
-				translationMaps.put(mapName, translationMap);
-			}
-			translationMapsRS.close();
-
-			PreparedStatement getFormatMapStmt = dbConnection.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
-			getFormatMapStmt.setLong(1, profile.getId());
-			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
-			HashMap <String, String> formatMap = new HashMap<>();
-			translationMaps.put("format", formatMap);
-			HashMap <String, String> formatCategoryMap = new HashMap<>();
-			translationMaps.put("formatCategory", formatCategoryMap);
-			while (formatMapRS.next()){
-				String format = formatMapRS.getString("value");
-				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
-				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
-			}
-			formatMapRS.close();
-		}catch (Exception e){
-			logEntry.incErrors("Error loading translation maps", e);
-		}
-
-	}
 
 	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 
@@ -385,10 +350,5 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return parentRecords;
 	}
 
-	public void addTranslationMapValue(String mapName, String value, String translation) {
-		if (!this.translationMaps.containsKey(mapName)) {
-			this.translationMaps.put(mapName, new HashMap<>());
-		}
-		this.translationMaps.get(mapName).put(value, translation);
-	}
+
 }
