@@ -437,6 +437,22 @@ class EventAPI extends AbstractAPI {
 					$userEventsEntry->location = $recordDriver->getBranch();
 					$externalUrl = $recordDriver->getExternalUrl();
 				}
+			} elseif(str_starts_with($id, 'assabet')) {
+				require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+				$recordDriver = new AssabetEventRecordDriver($id);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userEventsEntry->title = substr($title, 0, 50);
+					$eventDate = $recordDriver->getStartDate();
+					$userEventsEntry->eventDate = $eventDate->getTimestamp();
+					if ($recordDriver->isRegistrationRequired()){
+						$regRequired = 1;
+						$regModal = $recordDriver->getRegistrationModalBodyForAPI();
+					}
+					$userEventsEntry->regRequired = $regRequired;
+					$userEventsEntry->location = $recordDriver->getBranch();
+					$externalUrl = $recordDriver->getExternalUrl();
+				}
 			} else {
 				return [
 					'success' => false,
