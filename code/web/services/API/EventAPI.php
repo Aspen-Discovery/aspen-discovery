@@ -632,6 +632,9 @@ class EventAPI extends AbstractAPI {
 				} else if(str_starts_with($eventId, 'libcal')) {
 					$sourceFull = 'springshare_libcal';
 					$source = 'libcal';
+				} else if(str_starts_with($eventId, 'assabet')) {
+					$sourceFull = 'assabet';
+					$source = 'assabet';
 				} else {
 					// something went wrong
 				}
@@ -644,6 +647,8 @@ class EventAPI extends AbstractAPI {
 						$details = $this->getCommunicoEventDetails();
 					} else if(str_starts_with($eventId, 'libcal')) {
 						$details = $this->getSpringshareEventDetails();
+					} else if(str_starts_with($eventId, 'assabet')) {
+						$details = $this->getAssabetEventDetails();
 					} else {
 						// something went wrong
 					}

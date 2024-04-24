@@ -80,6 +80,9 @@ Disallow: /
 User-Agent: MJ12bot
 Disallow: /
 
+User-Agent: GPTBot
+Disallow: /
+
 User-agent: 360Spider
 Disallow: /
 
