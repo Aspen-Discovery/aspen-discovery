@@ -60,10 +60,11 @@ public class MarcRecordFormatClassifier {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		getFormatFromFormField(record, printFormats);
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile) settings;
 			if (printFormats.isEmpty() && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
-				getFormatFromFallbackField(record, printFormats);
+				getFormatFromFallbackField(record, printFormats, settings);
 			}
 		}
 		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
@@ -106,6 +107,17 @@ public class MarcRecordFormatClassifier {
 				printFormats.add("Blu-ray");
 			}else if (curField.equalsIgnoreCase("DVD video")){
 				printFormats.add("DVD");
+			}
+		}
+	}
+
+	public void getFormatFromFormField(org.marc4j.marc.Record record, HashSet<String> printFormats) {
+		Set<String> fields = MarcUtil.getFieldList(record, "380a");
+		for (String curField : fields){
+			if (curField.equalsIgnoreCase("Graphic Novel")){
+				printFormats.add("GraphicNovel");
+			}else if (curField.equalsIgnoreCase("Comic")){
+				printFormats.add("Comic");
 			}
 		}
 	}
@@ -587,6 +599,30 @@ public class MarcRecordFormatClassifier {
 		if (leader.length() >= 6) {
 			leaderBit = leader.charAt(6);
 			switch (Character.toUpperCase(leaderBit)) {
+				case 'A':
+					//Books, look for graphic novels in positions (24-27)
+					if (fixedField008 != null && fixedField008.getData().length() >= 25) {
+						formatCode = fixedField008.getData().toUpperCase().charAt(24);
+						if (formatCode == '6') {
+							result.add("GraphicNovel");
+						}else if (fixedField008.getData().length() >= 26) {
+							formatCode = fixedField008.getData().toUpperCase().charAt(25);
+							if (formatCode == '6') {
+								result.add("GraphicNovel");
+							}else if (fixedField008.getData().length() >= 27) {
+								formatCode = fixedField008.getData().toUpperCase().charAt(26);
+								if (formatCode == '6') {
+									result.add("GraphicNovel");
+								}else if (fixedField008.getData().length() >= 28) {
+									formatCode = fixedField008.getData().toUpperCase().charAt(27);
+									if (formatCode == '6') {
+										result.add("GraphicNovel");
+									}
+								}
+							}
+						}
+					}
+					break;
 				case 'C':
 				case 'D':
 					result.add("MusicalScore");
@@ -978,16 +1014,16 @@ public class MarcRecordFormatClassifier {
 			printFormats.add("Kit");
 			return;
 		}
-		if (printFormats.contains("Video") && printFormats.contains("DVD")){
+		if (printFormats.contains("DVD")){
 			printFormats.remove("Video");
 		}
-		if (printFormats.contains("VideoDisc") && printFormats.contains("DVD")){
+		if (printFormats.contains("DVD")){
 			printFormats.remove("VideoDisc");
 		}
-		if (printFormats.contains("Video") && printFormats.contains("VideoDisc")){
+		if (printFormats.contains("VideoDisc")){
 			printFormats.remove("Video");
 		}
-		if (printFormats.contains("Video") && printFormats.contains("VideoCassette")){
+		if (printFormats.contains("VideoCassette")){
 			printFormats.remove("Video");
 		}
 		if (printFormats.contains("DVD")){
@@ -1039,7 +1075,7 @@ public class MarcRecordFormatClassifier {
 			printFormats.add("SoundDisc");
 		}
 
-		if (printFormats.contains("Book") && printFormats.contains("Serial")){
+		if (printFormats.contains("Serial")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("BookClubKit") && printFormats.contains("LargePrint")){
@@ -1050,53 +1086,51 @@ public class MarcRecordFormatClassifier {
 			printFormats.clear();
 			printFormats.add("BookClubKit");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
+		if (printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Atlas")){
+		if (printFormats.contains("Atlas")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Manuscript")){
+		if (printFormats.contains("Manuscript")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("GraphicNovel")){
+		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("MusicalScore")){
+		if (printFormats.contains("MusicalScore")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("BookClubKit")){
+		if (printFormats.contains("BookClubKit")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Kit")){
+		if (printFormats.contains("Kit")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Pop-UpBook")){
+		if (printFormats.contains("Pop-UpBook")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("BoardBook")){
+		if (printFormats.contains("BoardBook")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Journal")){
+		if (printFormats.contains("Journal")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Serial")){
+		if (printFormats.contains("Serial")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Braille")){
+		if (printFormats.contains("Braille")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
+		if (printFormats.contains("CD")){
 			printFormats.remove("AudioCD");
 		}
-		if (printFormats.contains("SoundDisc") && printFormats.contains("Software")){
+		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("Software");
-		}
-		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
-			printFormats.remove("CD");
-		}
-		if (printFormats.contains("CompactDisc") && printFormats.contains("SoundDisc")){
 			printFormats.remove("CompactDisc");
+		}
+		if (printFormats.contains("SoundDisc")){
+			printFormats.remove("CD");
 		}
 		if (printFormats.contains("CompactDisc")){
 			printFormats.remove("SoundRecording");
@@ -1104,11 +1138,14 @@ public class MarcRecordFormatClassifier {
 		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Serial");
 		}
-		if (printFormats.contains("Atlas") && printFormats.contains("Map")){
+		if (printFormats.contains("Map")){
 			printFormats.remove("Atlas");
 		}
 		if (printFormats.contains("LargePrint")){
 			printFormats.remove("Manuscript");
+		}
+		if (printFormats.contains("XboxOne")){
+			printFormats.remove("XBoxSeriesX");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
 				|| printFormats.contains("XboxOne") || printFormats.contains("XboxSeriesX") || printFormats.contains("PlayStation")
@@ -1131,7 +1168,7 @@ public class MarcRecordFormatClassifier {
 	}
 
 	@SuppressWarnings("unused")
-	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
+	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats, BaseIndexingSettings settings) {
 		//Do nothing by default, this is overridden in IlsRecordProcessor
 	}
 }

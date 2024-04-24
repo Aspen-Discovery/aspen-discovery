@@ -2,6 +2,7 @@ package org.aspen_discovery;
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
 import org.aspen_discovery.grouping.MarcRecordGrouper;
@@ -102,7 +103,35 @@ public abstract class AbstractIndexingTest  {
 					profile.setBarcodeSubfield(indexingProfileData[10].charAt(0));
 					profile.setITypeSubfield(indexingProfileData[11].charAt(0));
 					profile.setFormatSubfield(indexingProfileData[12].charAt(0));
+					profile.setFallbackFormatField(indexingProfileData[13]);
+					profile.setCheckSierraMatTypeForFormat(indexingProfileData[14].equals("1"));
+
+					if (profile.getIndexingClass().equals("III")) {
+						SierraExportFieldMapping fieldMapping = new SierraExportFieldMapping();
+						profile.setSierraExportFieldMappings(fieldMapping);
+					}
 					indexingProfiles.put(profile.getName(), profile);
+				}
+			} catch (Exception e) {
+				Assertions.assertEquals("", e.toString());
+			}
+		}
+
+		File formatMapsFile = new File("../../tests/junit/test_definitions/format_maps.csv");
+		if (formatMapsFile.exists()) {
+			try {
+				CSVReader reader = new CSVReader(new FileReader(formatMapsFile));
+				reader.readNext();
+				String[] formatData;
+				while ((formatData = reader.readNext()) != null){
+					//Make sure the line is actually filled out
+					if (formatData.length >= 2) {
+						IndexingProfile profile = indexingProfiles.get(formatData[0]);
+						Assertions.assertNotNull(profile, "No record grouper found for " + formatData[0]);
+
+						profile.addTranslationMapValue("formatCategory", formatData[1], formatData[2]);
+						profile.addTranslationMapValue("format", formatData[1], formatData[3]);
+					}
 				}
 			} catch (Exception e) {
 				Assertions.assertEquals("", e.toString());
@@ -123,22 +152,6 @@ public abstract class AbstractIndexingTest  {
 					MarcRecordGrouper recordGrouper = new MarcRecordGrouper(serverName, dbConn, indexingProfiles.get(recordGroupersData[1]), logEntry, logger);
 
 					groupingProcessors.put(recordGroupersData[0], recordGrouper);
-				}
-			} catch (Exception e) {
-				Assertions.assertEquals("", e.toString());
-			}
-		}
-
-		File formatMapsFile = new File("../../tests/junit/test_definitions/format_maps.csv");
-		if (formatMapsFile.exists()) {
-			try {
-				CSVReader reader = new CSVReader(new FileReader(formatMapsFile));
-				reader.readNext();
-				String[] formatData;
-				while ((formatData = reader.readNext()) != null){
-					MarcRecordGrouper recordGrouper = groupingProcessors.get(formatData[0]);
-
-					recordGrouper.addTranslationMapValue("formatCategory", formatData[1], formatData[2]);
 				}
 			} catch (Exception e) {
 				Assertions.assertEquals("", e.toString());
