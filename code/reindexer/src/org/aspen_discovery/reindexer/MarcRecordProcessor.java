@@ -1588,10 +1588,4 @@ abstract class MarcRecordProcessor {
 		return result;
 	}
 
-
-
-	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
-		//Do nothing by default, this is overridden in IlsRecordProcessor
-	}
-
 }

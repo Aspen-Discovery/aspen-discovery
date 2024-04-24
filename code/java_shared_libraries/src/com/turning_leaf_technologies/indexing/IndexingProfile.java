@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -91,19 +92,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	//Custom Facets
 	private String customFacet1SourceField;
-	private String customFacet1ValuesToInclude;
 	private Pattern customFacet1ValuesToIncludePattern;
-	private String customFacet1ValuesToExclude;
 	private Pattern customFacet1ValuesToExcludePattern;
 	private String customFacet2SourceField;
-	private String customFacet2ValuesToInclude;
 	private Pattern customFacet2ValuesToIncludePattern;
-	private String customFacet2ValuesToExclude;
 	private Pattern customFacet2ValuesToExcludePattern;
 	private String customFacet3SourceField;
-	private String customFacet3ValuesToInclude;
 	private Pattern customFacet3ValuesToIncludePattern;
-	private String customFacet3ValuesToExclude;
 	private Pattern customFacet3ValuesToExcludePattern;
 
 	//Evergreen settings
@@ -112,6 +107,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private final int numExtractionThreads;
 	private String indexingClass;
 
+	private SierraExportFieldMapping sierraExportFieldMappings = null;
+
+	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
+
 	public IndexingProfile(){
 		//This is only intended to be used for unit testing
 		numRetriesForBibLookups = 0;
@@ -119,7 +118,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		numExtractionThreads = 1;
 	}
 
-	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
+	public IndexingProfile(ResultSet indexingProfileRS, Connection dbConn, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
 		this.setName(indexingProfileRS.getString("name"));
 		this.setFilenamesToInclude(indexingProfileRS.getString("filenamesToInclude"));
@@ -259,16 +258,16 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		//Custom Facet 1
 		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
-		this.customFacet1ValuesToInclude = indexingProfileRS.getString("customFacet1ValuesToInclude");
-		if (this.customFacet1ValuesToInclude != null && !this.customFacet1ValuesToInclude.isEmpty() && !this.customFacet1ValuesToInclude.equals(".*")) {
+		String customFacet1ValuesToInclude = indexingProfileRS.getString("customFacet1ValuesToInclude");
+		if (customFacet1ValuesToInclude != null && !customFacet1ValuesToInclude.isEmpty() && !customFacet1ValuesToInclude.equals(".*")) {
 			try {
 				customFacet1ValuesToIncludePattern = Pattern.compile(customFacet1ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
 				logEntry.incErrors("Unable to compile pattern for customFacet1ValuesToIncludePattern", e);
 			}
 		}
-		this.customFacet1ValuesToExclude = indexingProfileRS.getString("customFacet1ValuesToExclude");
-		if (this.customFacet1ValuesToExclude != null && !this.customFacet1ValuesToExclude.isEmpty()) {
+		String customFacet1ValuesToExclude = indexingProfileRS.getString("customFacet1ValuesToExclude");
+		if (customFacet1ValuesToExclude != null && !customFacet1ValuesToExclude.isEmpty()) {
 			try {
 				customFacet1ValuesToExcludePattern = Pattern.compile(customFacet1ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -278,16 +277,16 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		//Custom Facet 2
 		this.customFacet2SourceField = indexingProfileRS.getString("customFacet2SourceField");
-		this.customFacet2ValuesToInclude = indexingProfileRS.getString("customFacet2ValuesToInclude");
-		if (this.customFacet2ValuesToInclude != null && !this.customFacet2ValuesToInclude.isEmpty() && !this.customFacet2ValuesToInclude.equals(".*")) {
+		String customFacet2ValuesToInclude = indexingProfileRS.getString("customFacet2ValuesToInclude");
+		if (customFacet2ValuesToInclude != null && !customFacet2ValuesToInclude.isEmpty() && !customFacet2ValuesToInclude.equals(".*")) {
 			try {
 				customFacet2ValuesToIncludePattern = Pattern.compile(customFacet2ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
 				logEntry.incErrors("Unable to compile pattern for customFacet2ValuesToIncludePattern", e);
 			}
 		}
-		this.customFacet2ValuesToExclude = indexingProfileRS.getString("customFacet2ValuesToExclude");
-		if (this.customFacet2ValuesToExclude != null && !this.customFacet2ValuesToExclude.isEmpty()) {
+		String customFacet2ValuesToExclude = indexingProfileRS.getString("customFacet2ValuesToExclude");
+		if (customFacet2ValuesToExclude != null && !customFacet2ValuesToExclude.isEmpty()) {
 			try {
 				customFacet2ValuesToExcludePattern = Pattern.compile(customFacet2ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -297,16 +296,16 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		//Custom Facet 3
 		this.customFacet3SourceField = indexingProfileRS.getString("customFacet3SourceField");
-		this.customFacet3ValuesToInclude = indexingProfileRS.getString("customFacet3ValuesToInclude");
-		if (this.customFacet3ValuesToInclude != null && !this.customFacet3ValuesToInclude.isEmpty() && !this.customFacet3ValuesToInclude.equals(".*")) {
+		String customFacet3ValuesToInclude = indexingProfileRS.getString("customFacet3ValuesToInclude");
+		if (customFacet3ValuesToInclude != null && !customFacet3ValuesToInclude.isEmpty() && !customFacet3ValuesToInclude.equals(".*")) {
 			try {
 				customFacet3ValuesToIncludePattern = Pattern.compile(customFacet3ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
 				logEntry.incErrors("Unable to compile pattern for customFacet3ValuesToIncludePattern", e);
 			}
 		}
-		this.customFacet3ValuesToExclude = indexingProfileRS.getString("customFacet3ValuesToExclude");
-		if (this.customFacet3ValuesToExclude != null && !this.customFacet3ValuesToExclude.isEmpty()) {
+		String customFacet3ValuesToExclude = indexingProfileRS.getString("customFacet3ValuesToExclude");
+		if (customFacet3ValuesToExclude != null && !customFacet3ValuesToExclude.isEmpty()) {
 			try {
 				customFacet3ValuesToExcludePattern = Pattern.compile(customFacet3ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -317,6 +316,65 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.numRetriesForBibLookups = indexingProfileRS.getInt("numRetriesForBibLookups");
 		this.numMillisecondsToPauseAfterBibLookups = indexingProfileRS.getInt("numMillisecondsToPauseAfterBibLookups");
 		this.numExtractionThreads = indexingProfileRS.getInt("numExtractionThreads");
+
+		//TODO, this could be optimized to only load for Sierra instances
+		try {
+			sierraExportFieldMappings = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logEntry);
+		}catch (Exception e){
+			logEntry.incErrors("Unable to load Sierra Export Mappings", e);
+		}
+
+		loadTranslationMaps(dbConn, logEntry);
+	}
+
+	private void loadTranslationMaps(Connection dbConn, BaseIndexingLogEntry logEntry) {
+		try {
+			PreparedStatement loadMapsStmt = dbConn.prepareStatement("SELECT * FROM translation_maps where indexingProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement loadMapValuesStmt = dbConn.prepareStatement("SELECT * FROM translation_map_values where translationMapId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadMapsStmt.setLong(1, id);
+			ResultSet translationMapsRS = loadMapsStmt.executeQuery();
+			while (translationMapsRS.next()){
+				HashMap<String, String> translationMap = new HashMap<>();
+				String mapName = translationMapsRS.getString("name");
+				long translationMapId = translationMapsRS.getLong("id");
+
+				loadMapValuesStmt.setLong(1, translationMapId);
+				ResultSet mapValuesRS = loadMapValuesStmt.executeQuery();
+				while (mapValuesRS.next()){
+					String value = mapValuesRS.getString("value");
+					String translation = mapValuesRS.getString("translation");
+
+					translationMap.put(value, translation);
+				}
+				mapValuesRS.close();
+				translationMaps.put(mapName, translationMap);
+			}
+			translationMapsRS.close();
+
+			PreparedStatement getFormatMapStmt = dbConn.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
+			getFormatMapStmt.setLong(1, id);
+			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
+			HashMap <String, String> formatMap = new HashMap<>();
+			translationMaps.put("format", formatMap);
+			HashMap <String, String> formatCategoryMap = new HashMap<>();
+			translationMaps.put("formatCategory", formatCategoryMap);
+			while (formatMapRS.next()){
+				String format = formatMapRS.getString("value");
+				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
+				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
+			}
+			formatMapRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error loading translation maps", e);
+		}
+
+	}
+
+	public void addTranslationMapValue(String mapName, String value, String translation) {
+		if (!this.translationMaps.containsKey(mapName)) {
+			this.translationMaps.put(mapName, new HashMap<>());
+		}
+		this.translationMaps.get(mapName).put(value.toLowerCase(), translation);
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -346,7 +404,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			PreparedStatement getIndexingProfileStmt = dbConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
 			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
-				indexingProfile = new IndexingProfile(indexingProfileRS, logEntry);
+				indexingProfile = new IndexingProfile(indexingProfileRS, dbConn, logEntry);
 
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
@@ -997,5 +1055,44 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setTreatUnknownAudienceAs(String treatUnknownAudienceAs) {
 		this.treatUnknownAudienceAs = treatUnknownAudienceAs;
+	}
+
+	public SierraExportFieldMapping getSierraExportFieldMappings() {
+		return sierraExportFieldMappings;
+	}
+
+	public boolean hasTranslation(String mapName, String value) {
+		HashMap<String, String> translationMap = translationMaps.get(mapName);
+		if (translationMap != null){
+			return translationMap.containsKey(value);
+		}else{
+			return false;
+		}
+	}
+
+	public String translateValue(String mapName, String value) {
+		value = value.toLowerCase();
+		HashMap<String, String> translationMap = translationMaps.get(mapName);
+		String translatedValue;
+		if (translationMap == null) {
+			translatedValue = value;
+		} else {
+			if (translationMap.containsKey(value)) {
+				translatedValue = translationMap.get(value);
+			} else {
+				translatedValue = translationMap.getOrDefault("*", value);
+			}
+		}
+		if (translatedValue != null) {
+			translatedValue = translatedValue.trim();
+			if (translatedValue.isEmpty()) {
+				translatedValue = null;
+			}
+		}
+		return translatedValue;
+	}
+
+	public void setSierraExportFieldMappings(SierraExportFieldMapping fieldMapping) {
+		sierraExportFieldMappings = fieldMapping;
 	}
 }

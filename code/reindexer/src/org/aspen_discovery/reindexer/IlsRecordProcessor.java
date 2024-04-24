@@ -50,7 +50,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		super(indexer, curType, dbConn, logger);
 		this.fullReindex = fullReindex;
 		try {
-			settings = new IndexingProfile(indexingProfileRS, indexer.getLogEntry());
+			settings = new IndexingProfile(indexingProfileRS, dbConn, indexer.getLogEntry());
 			super.settings = this.settings;
 			profileType = indexingProfileRS.getString("name");
 
@@ -1699,7 +1699,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return new ResultWithNotes(false, suppressionNotes);
 	}
 	/**
-	 * Determine Record Format(s)
+	 * Determine Record Format(s). This can handle loading data from bibs and/or items.
+	 *
+	 * recordInfo - Information about the record within Aspen.
+	 * record - The MARC record to load data from
+	 * hasChildRecords - whether the title has child records based on record linking.
 	 */
 	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		//Check to see if we have child records, if so format will be Serials
@@ -1775,6 +1779,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	/**
+	 * Loads information from the MARC record to populate format, format category, and format boost for the record.
+	 *
+	 * @param recordInfo Information about the record within Aspen
+	 * @param record The MARC record to load data from
+	 */
 	void loadPrintFormatFromBib(RecordInfo recordInfo, org.marc4j.marc.Record record) {
 		LinkedHashSet<String> printFormats = formatClassifier.getFormatsFromBib(record, settings);
 
@@ -1982,13 +1992,4 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return settings.isHideNotCodedLiteraryForm();
 	}
 
-	@Override
-	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats) {
-		Set<String> fields = MarcUtil.getFieldList(record, settings.getFallbackFormatField());
-		for (String curField : fields) {
-			if (hasTranslation("format", curField.toLowerCase())){
-				printFormats.add(curField);
-			}
-		}
-	}
 }

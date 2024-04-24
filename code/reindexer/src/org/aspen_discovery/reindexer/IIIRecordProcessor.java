@@ -16,7 +16,7 @@ import java.util.*;
 class IIIRecordProcessor extends IlsRecordProcessor{
 	private final HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
 	private String exportPath;
-	private SierraExportFieldMapping exportFieldMapping = null;
+
 	// A list of status codes that are eligible to show items as checked out.
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<>();
 
@@ -29,11 +29,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 		validCheckedOutStatusCodes.add("-");
 		loadOrderInformationFromExport();
-		try {
-			exportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logger);
-		}catch (Exception e){
-			logger.error("Unable to load Sierra Export Mappings", e);
-		}
+
 	}
 
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {
@@ -275,6 +271,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	protected boolean isBibSuppressed(org.marc4j.marc.Record record, String identifier) {
+		SierraExportFieldMapping exportFieldMapping = settings.getSierraExportFieldMappings();
 		if (exportFieldMapping != null){
 			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 			if (sierraFixedField != null){
@@ -310,6 +307,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	 */
 	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		boolean formatLoaded = false;
+		SierraExportFieldMapping exportFieldMapping = settings.getSierraExportFieldMappings();
 		if (exportFieldMapping != null) {
 			if (settings.isCheckSierraMatTypeForFormat()) {
 				DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
