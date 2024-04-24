@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DrawerActions } from '@react-navigation/native';
 import { HStack, Pressable, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
+import { Platform } from 'react-native';
 import { LanguageContext, LibraryBranchContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 

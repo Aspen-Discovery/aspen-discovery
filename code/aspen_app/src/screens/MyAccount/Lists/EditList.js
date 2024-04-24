@@ -2,11 +2,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { AlertDialog, Button, Center, FormControl, Heading, Icon, Input, Modal, Radio, Stack, TextArea } from 'native-base';
+import { AlertDialog, Button, Center, FormControl, Heading, Icon, Input, Modal, Radio, Stack, TextArea, ChevronLeftIcon, Pressable } from 'native-base';
 import React, { useState } from 'react';
 import { popAlert } from '../../../components/loadError';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { navigateStack } from '../../../helpers/RootNavigator';
+import { navigate, navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { deleteList, editList, getListDetails } from '../../../util/api/list';
 
@@ -17,7 +17,6 @@ const EditList = (props) => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const { lists, updateLists } = React.useContext(UserContext);
      const [showModal, setShowModal] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
      const [title, setTitle] = React.useState(data.title);
@@ -31,6 +30,23 @@ const EditList = (props) => {
                setLoading(false);
           },
      });
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => (
+                    <Pressable
+                         onPress={() => {
+                              navigateStack('AccountScreenTab', 'MyLists', {
+                                   hasPendingChanges: true,
+                              });
+                         }}
+                         mr={3}
+                         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <ChevronLeftIcon size={5} color="primary.baseContrast" />
+                    </Pressable>
+               ),
+          });
+     }, [navigation]);
 
      return (
           <>

@@ -1,5 +1,6 @@
 import { CommonActions } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Pressable, Stack, Text, VStack } from 'native-base';
 import React, { Component } from 'react';
 
@@ -15,6 +16,8 @@ import { getLists } from '../../util/api/list';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getFormats, savedSearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export default class SearchBySavedSearch extends Component {
      constructor() {
@@ -160,35 +163,17 @@ export default class SearchBySavedSearch extends Component {
                                         </Badge>
                                    </Container>
                               ) : null}
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title}
-                                   source={{
-                                        uri: `${imageUrl}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={imageUrl}
                                    style={{
                                         width: 100,
                                         height: 150,
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                               <Badge
                                    mt={1}
