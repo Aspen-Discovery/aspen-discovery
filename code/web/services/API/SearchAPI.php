@@ -2125,7 +2125,7 @@ class SearchAPI extends AbstractAPI {
 									}
 								} while ($listEntry->fetch() && $count < 12);
 
-								if (!empty($categoryResponse['lists']) || !empty($categoryResponse['records'])) {
+								if (!empty($categoryResponse['lists']) || !empty($categoryResponse['records']) || !empty($categoryResponse['events'])) {
 									$formattedCategories[] = $categoryResponse;
 									$numCategoriesProcessed++;
 									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
