@@ -690,7 +690,7 @@ public class RecordGroupingProcessor {
 	static HashMap<String, String> categoryMap = new HashMap<>();
 
 	static {
-		categoryMap.put("other", "other");
+		categoryMap.put("other", "book");
 		categoryMap.put("book", "book");
 		categoryMap.put("books", "book");
 		categoryMap.put("ebook", "book");

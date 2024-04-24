@@ -55,7 +55,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		super.setupDatabaseStatements(dbConnection);
 
 		super.loadAuthorities(dbConnection);
-		
+
 		try {
 			getExistingParentRecordsStmt = dbConnection.prepareStatement("SELECT * FROM record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addParentRecordStmt = dbConnection.prepareStatement("INSERT INTO record_parents (childRecordId, parentRecordId, childTitle) VALUES (?, ?, ?)");
@@ -196,7 +196,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
 					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(format.toLowerCase()), "other");
 				}else{
-					groupingFormat = "other";
+					groupingFormat = "book";
 				}
 				workForTitle.setGroupingCategory(groupingFormat);
 			}else {

@@ -96,7 +96,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
 					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(format.toLowerCase()), "other");
 				}else{
-					groupingFormat = "other";
+					groupingFormat = "book";
 				}
 
 				break;
