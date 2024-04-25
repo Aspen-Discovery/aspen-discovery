@@ -348,6 +348,7 @@ export function formatBrowseCategories(payload) {
                               title: item.title,
                               source: item.source,
                               records: item.records,
+                              isHidden: item.isHidden ?? false,
                          })
                     );
                } else {
@@ -359,6 +360,7 @@ export function formatBrowseCategories(payload) {
                                         title: item.title,
                                         source: item.source,
                                         records: item.records,
+                                        isHidden: item.isHidden ?? false,
                                    })
                               );
                          } else {
@@ -369,6 +371,7 @@ export function formatBrowseCategories(payload) {
                                              categoryId: category.key,
                                              source: 'List',
                                              title_display: item.title,
+                                             isHidden: category.isHidden ?? false,
                                         })
                                    );
                               }
@@ -380,6 +383,7 @@ export function formatBrowseCategories(payload) {
                                              categoryId: category.key,
                                              source: 'Event',
                                              title_display: item.title ?? item.title_display,
+                                             isHidden: category.isHidden ?? false,
                                         })
                                    );
                               }
@@ -402,6 +406,7 @@ export function formatBrowseCategories(payload) {
                                         numNewTitles,
                                         records: lists,
                                         id: categoryId,
+                                        isHidden: category.isHidden ?? false,
                                    });
                               }
 
@@ -421,6 +426,7 @@ export function formatBrowseCategories(payload) {
                                         source: category.source,
                                         numNewTitles: numNewTitles,
                                         records: events,
+                                        isHidden: category.isHidden ?? false,
                                         id: categoryId,
                                    });
                               }
@@ -460,6 +466,7 @@ export function formatBrowseCategories(payload) {
                                              source: category.source,
                                              numNewTitles,
                                              records: category.records,
+                                             isHidden: category.isHidden ?? false,
                                              id: categoryId,
                                         });
                                    }
