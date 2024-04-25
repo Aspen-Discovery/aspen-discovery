@@ -152,7 +152,9 @@ export const HoldPrompt = (props) => {
                               <Heading size="md" color={textColor}>
                                    {isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}
                               </Heading>
-                              <ModalCloseButton as={CloseIcon} color={textColor} />
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
                          </ModalHeader>
                          <ModalBody mt="$3">
                               {promptForHoldNotifications ? (
