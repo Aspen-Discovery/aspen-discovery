@@ -21,7 +21,7 @@ export const SearchResultsForBrowseCategory = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
-     const { systemMessages } = React.useContext(SystemMessagesContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const category = useRoute().params.id ?? '';
      const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
