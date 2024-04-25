@@ -19,11 +19,18 @@ export async function fetchSearchResultsForBrowseCategory(category, page, limit 
      });
 
      let data = [];
+     let items = [];
 
      const response = await api.post('/SearchAPI?method=getAppBrowseCategoryResults', postBody);
 
      if (response.ok) {
           data = response.data.result;
+
+          if (category === 'system_recommended_for_you') {
+               items = data.records;
+          } else {
+               items = data.items;
+          }
      }
 
      let morePages = true;
@@ -34,7 +41,7 @@ export async function fetchSearchResultsForBrowseCategory(category, page, limit 
      }
 
      return {
-          results: data.items ?? [],
+          results: items,
           totalRecords: data.totalResults ?? 0,
           curPage: data.page_current ?? 0,
           totalPages: data.page_total ?? 0,
