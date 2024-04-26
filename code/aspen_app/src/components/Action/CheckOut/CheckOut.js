@@ -1,10 +1,10 @@
-import { Button } from 'native-base';
+import { Button, ButtonSpinner, ButtonGroup, ButtonIcon, ButtonText } from '@gluestack-ui/themed';
 import React from 'react';
 import _ from 'lodash';
 import { useQueryClient } from '@tanstack/react-query';
 
 // custom components and helper files
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { completeAction } from '../../../util/recordActions';
 import { refreshProfile } from '../../../util/api/user';
 import { HoldPrompt } from '../Holds/HoldPrompt';
@@ -17,6 +17,7 @@ export const CheckOut = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
+     const { theme } = React.useContext(ThemeContext);
 
      const volumeInfo = {
           numItemsWithVolumes: 0,
@@ -53,14 +54,8 @@ export const CheckOut = (props) => {
                <>
                     <Button
                          size="md"
-                         colorScheme="primary"
+                         bgColor={theme['colors']['primary']['500']}
                          variant="solid"
-                         _text={{
-                              padding: 0,
-                              textAlign: 'center',
-                         }}
-                         isLoading={loading}
-                         isLoadingText={getTermFromDictionary(language, 'checking_out', true)}
                          style={{
                               flex: 1,
                               flexWrap: 'wrap',
@@ -77,7 +72,7 @@ export const CheckOut = (props) => {
                                    setResponseIsOpen(true);
                               });
                          }}>
-                         {title}
+                         {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} pr={2} /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
                     </Button>
                </>
           );
