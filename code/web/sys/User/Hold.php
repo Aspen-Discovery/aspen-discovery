@@ -96,6 +96,9 @@ class Hold extends CircEntry {
 		$hold['expire'] = $hold['expirationDate'];
 		$hold['frozen'] = (boolean)$hold['frozen'];
 		$hold['cancelable'] = (boolean)$hold['cancelable'];
+		if($hold['type'] == 'overdrive' || $hold['type'] == 'cloud_library' || $hold['type'] == 'palace_project' || $hold['type'] == 'axis360') {
+			$hold['cancelable'] = true;
+		}
 		if ($hold['automaticCancellationDate'] == 0 || empty($hold['automaticCancellationDate'])) {
 			$hold['automaticCancellation'] = null;
 			$hold['automaticCancellationDate'] = null;
