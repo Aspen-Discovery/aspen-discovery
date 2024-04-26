@@ -10,7 +10,7 @@ import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
 import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { getPatronHolds } from '../../../util/api/user';
+import { getPatronCheckedOutItems, getPatronHolds } from '../../../util/api/user';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import { ManageAllHolds, ManageSelectedHolds, MyHold } from './MyHold';
 
@@ -50,14 +50,12 @@ export const MyHolds = () => {
           });
      }, [navigation]);
 
-     const { status, data, error, isFetching } = useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
-          initialData: holds,
+     useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+          placeholderData: holds,
           onSuccess: (data) => {
-               if (data !== holds) {
-                    updateHolds(data);
-               }
-               setLoading(false);
+               updateHolds(data);
           },
+          onSettle: (data) => setLoading(false),
      });
 
      const toggleReadySort = async (value) => {
@@ -92,8 +90,10 @@ export const MyHolds = () => {
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
-               queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, value] });
+               await queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, value] });
+               await queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
           }
+          setLoading(false);
      };
 
      useFocusEffect(
@@ -188,7 +188,7 @@ export const MyHolds = () => {
           }, [language])
      );
 
-     if (isFetchingHolds || isFetching || isLoading) {
+     if (isFetchingHolds || isLoading) {
           return loadingSpinner();
      }
 
@@ -418,7 +418,7 @@ export const MyHolds = () => {
                                         }}
                                         onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numHolds ?? 0) + ')'} value="all" key={0} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numHoldsIls ?? 0) + ')'} value="ils" key={1} />
+                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numHoldsRequestedIls ?? 0) + ')'} value="ils" key={1} />
                                         {user.isValidForOverdrive ? <Select.Item label={filterByLibby + ' (' + (user.numHoldsOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
                                         {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numHolds_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} /> : null}
                                         {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numHolds_axis360 ?? 0) + ')'} value="axis360" key={4} /> : null}
