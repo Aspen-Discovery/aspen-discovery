@@ -8,12 +8,10 @@ import { NativeBaseProvider, StatusBar } from 'native-base';
 import React from 'react';
 import Toast from 'react-native-toast-message';
 
-// Access any @sentry/react-native exports via:
-// Sentry.Native.*
 import { LogBox } from 'react-native';
 
 import { enableScreens } from 'react-native-screens';
-import * as Sentry from 'sentry-expo';
+import * as Sentry from '@sentry/react-native';
 import App from './src/components/navigation';
 import { ThemeContext } from './src/context/initialContext';
 
@@ -109,14 +107,14 @@ export default function AppContainer() {
      return (
           <QueryClientProvider client={queryClient}>
                <SSRProvider>
-                    <Sentry.Native.TouchEventBoundary>
+                    <Sentry.TouchEventBoundary>
                          <GluestackUIProvider config={config}>
                               <NativeBaseProvider theme={aspenTheme}>
                                    <StatusBar barStyle={statusBarColor} />
                                    <App />
                               </NativeBaseProvider>
                          </GluestackUIProvider>
-                    </Sentry.Native.TouchEventBoundary>
+                    </Sentry.TouchEventBoundary>
                </SSRProvider>
                <Toast />
           </QueryClientProvider>

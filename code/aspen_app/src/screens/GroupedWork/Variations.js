@@ -243,7 +243,7 @@ export const Variations = (props) => {
                                                                  }
                                                             });
                                                        }}>
-                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'place_hold')}</ButtonTextv>
+                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>

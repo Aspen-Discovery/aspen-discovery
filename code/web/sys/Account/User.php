@@ -1751,6 +1751,15 @@ class User extends DataObject {
 						return true;
 					}
 				}
+			} elseif ($vendor == 'assabet') {
+				require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+				$settings = new AssabetSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
 			}
 		}
 

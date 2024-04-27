@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
 import moment from 'moment';
@@ -15,6 +16,8 @@ import ContactButtons from './ContactButtons';
 import DisplayMap from './DisplayMap';
 // custom components and helper files
 import Hours from './Hours';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyLibrary = () => {
      const { user } = React.useContext(UserContext);
@@ -96,11 +99,9 @@ export const MyLibrary = () => {
                {location.locationImage ? (
                     <>
                          <LinearGradient height={200} width="100%" locations={[0.45, 1]} colors={['transparent', bgColor]} zIndex={0} position="absolute" left={0} top={0} />
-                         <CachedImage
-                              cacheKey={key}
+                         <Image
                               alt={location.displayName}
-                              source={{ uri: location.locationImage, expiresIn: 86400 }}
-                              resizeMode="cover"
+                              source={location.locationImage}
                               style={{
                                    width: '100%',
                                    height: 200,
@@ -110,20 +111,9 @@ export const MyLibrary = () => {
                                    left: 0,
                                    top: 0,
                               }}
-                              placeholderContent={
-                                   <Box
-                                        bg={bgColor}
-                                        _dark={{
-                                             bgColor: 'coolGray.800',
-                                        }}
-                                        width={{
-                                             base: '100%',
-                                        }}
-                                        height={{
-                                             base: 200,
-                                        }}
-                                   />
-                              }
+                              placeholder={blurhash}
+                              transition={1000}
+                              contentFit="cover"
                          />
                     </>
                ) : null}
