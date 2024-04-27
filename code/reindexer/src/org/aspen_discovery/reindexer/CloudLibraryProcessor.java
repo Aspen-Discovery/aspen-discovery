@@ -97,7 +97,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 							}
 						}
 						if (!primaryFormat.equals("GraphicNovel")) {
-							List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 655);
+							List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 650);
 							Iterator<DataField> fieldIterator = genreFormTerm.iterator();
 							DataField field;
 							while (fieldIterator.hasNext()) {
