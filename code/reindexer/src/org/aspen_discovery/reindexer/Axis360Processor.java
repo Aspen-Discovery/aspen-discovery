@@ -51,6 +51,7 @@ class Axis360Processor {
 				axis360Record.setRecordIdentifier("axis360", identifier);
 
 				long aspenId = productRS.getLong("id");
+				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 				String title = productRS.getString("title");
 				String formatType = productRS.getString("formatType");
 				String formatCategory;
@@ -58,6 +59,14 @@ class Axis360Processor {
 				if ("eBook".equals(formatType)) {
 					formatCategory = "eBook";
 					primaryFormat = "eBook";
+					//Check subjects to see if this should be a comic book
+					String[] subjects = getFieldValue(rawResponse, "subject").split("#\\s");
+					for (String curSubject : subjects) {
+						if (curSubject.contains("Comics & Graphic Novels") || curSubject.contains("Comic and Graphic Books")) {
+							primaryFormat = "eComic";
+							break;
+						}
+					}
 				} else if ("eAudiobook".equals(formatType)) {
 					formatCategory = "Audio Books";
 					axis360Record.addFormatCategory("eBook");
@@ -69,8 +78,6 @@ class Axis360Processor {
 				}
 				axis360Record.addFormat(primaryFormat);
 				axis360Record.addFormatCategory(formatCategory);
-
-				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
 				String subTitle = "";
 				if (rawResponse.has("subTitle")) {

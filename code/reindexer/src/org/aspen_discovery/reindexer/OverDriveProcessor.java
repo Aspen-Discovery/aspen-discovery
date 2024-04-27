@@ -328,14 +328,18 @@ class OverDriveProcessor {
 							hasKindle = true;
 						}
 						if (rawMetadataDecoded != null) {
-							if (rawMetadataDecoded.has("subjects")) {
-								JSONArray subjects = rawMetadataDecoded.getJSONArray("subjects");
-								for (int i = 0; i < subjects.length(); i++) {
-									String curSubject = subjects.getJSONObject(i).getString("value");
-									if (curSubject.equals("Comic and Graphic Books") && validFormats.contains("eBook")) {
-										validFormats.remove("eBook");
-										validFormats.add("eComic");
-										primaryFormat = "eComic";
+							if (validFormats.contains("OverDrive Read") || validFormats.contains("Kindle Book")) {
+								//Check to see if this is a comic book instead of a regular eBook
+								if (rawMetadataDecoded.has("subjects")) {
+									JSONArray subjects = rawMetadataDecoded.getJSONArray("subjects");
+									for (int i = 0; i < subjects.length(); i++) {
+										String curSubject = subjects.getJSONObject(i).getString("value");
+										if (curSubject.equals("Comic and Graphic Books")) {
+											validFormats.clear();
+											validFormats.add("eComic");
+											primaryFormat = "eComic";
+											break;
+										}
 									}
 								}
 							}

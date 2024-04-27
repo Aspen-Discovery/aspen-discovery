@@ -7,6 +7,9 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+import java.util.*;
 
 class CloudLibraryProcessor extends MarcRecordProcessor {
 
@@ -48,6 +49,17 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				RecordInfo cloudLibraryRecord = groupedWork.addRelatedRecord("cloud_library", identifier);
 				cloudLibraryRecord.setRecordIdentifier("cloud_library", identifier);
 
+				String rawMarc = productRS.getString("rawResponse");
+				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+				String targetAudience = "Adult";
+				org.marc4j.marc.Record marcRecord = null;
+				if (reader.hasNext()) {
+					marcRecord = reader.next();
+				} else {
+					logEntry.incErrors("Error getting MARC record for cloudLibrary record from database");
+					return;
+				}
+
 				String format = productRS.getString("format");
 				String formatCategory;
 				String primaryFormat;
@@ -61,6 +73,47 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					case "PDF":
 						formatCategory = "eBook";
 						primaryFormat = "eBook";
+						ControlField fixedField008 = (ControlField) marcRecord.getVariableField(8);
+						if (fixedField008 != null && fixedField008.getData().length() >= 25) {
+							char formatCode;
+							formatCode = fixedField008.getData().toUpperCase().charAt(24);
+							if (formatCode == '6') {
+								primaryFormat = "GraphicNovel";
+							}else if (fixedField008.getData().length() >= 26) {
+								formatCode = fixedField008.getData().toUpperCase().charAt(25);
+								if (formatCode == '6') {
+									primaryFormat = "GraphicNovel";
+								}else if (fixedField008.getData().length() >= 27) {
+									formatCode = fixedField008.getData().toUpperCase().charAt(26);
+									if (formatCode == '6') {
+										primaryFormat = "GraphicNovel";
+									}else if (fixedField008.getData().length() >= 28) {
+										formatCode = fixedField008.getData().toUpperCase().charAt(27);
+										if (formatCode == '6') {
+											primaryFormat = "GraphicNovel";
+										}
+									}
+								}
+							}
+						}
+						if (!primaryFormat.equals("GraphicNovel")) {
+							List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 655);
+							Iterator<DataField> fieldIterator = genreFormTerm.iterator();
+							DataField field;
+							while (fieldIterator.hasNext()) {
+								field = fieldIterator.next();
+								List<Subfield> subfields = field.getSubfields();
+								for (Subfield subfield : subfields) {
+									if (subfield.getCode() == 'a') {
+										String subfieldData = subfield.getData().toLowerCase();
+										if (subfieldData.contains("graphic novel")) {
+											primaryFormat = "GraphicNovel";
+											break;
+										}
+									}
+								}
+							}
+						}
 						break;
 					default:
 						logEntry.addNote("Unhandled cloud_library format " + format);
@@ -71,35 +124,27 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				cloudLibraryRecord.addFormat(primaryFormat);
 				cloudLibraryRecord.addFormatCategory(formatCategory);
 
-				String rawMarc = productRS.getString("rawResponse");
-				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-				String targetAudience = "Adult";
-				if (reader.hasNext()) {
-					org.marc4j.marc.Record marcRecord = reader.next();
-					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
+				updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
 
-					//Special processing for ILS Records
-					String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
-					groupedWork.addDescription(fullDescription, format, formatCategory);
-					HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
-					allRelatedRecords.add(cloudLibraryRecord);
-					loadEditions(groupedWork, marcRecord, allRelatedRecords);
-					loadPhysicalDescription(groupedWork, marcRecord, allRelatedRecords);
-					loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
-					loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
+				//Special processing for ILS Records
+				String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
+				groupedWork.addDescription(fullDescription, format, formatCategory);
+				HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
+				allRelatedRecords.add(cloudLibraryRecord);
+				loadEditions(groupedWork, marcRecord, allRelatedRecords);
+				loadPhysicalDescription(groupedWork, marcRecord, allRelatedRecords);
+				loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
+				loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 
-					//get target audience from Marc
-					targetAudience = productRS.getString("targetAudience");
-					groupedWork.addTargetAudience(targetAudience);
-				} else {
-					logEntry.incErrors("Error getting MARC record for cloudLibrary record from database");
-				}
+				//get target audience from Marc
+				targetAudience = productRS.getString("targetAudience");
+				groupedWork.addTargetAudience(targetAudience);
 
 				boolean isAdult = targetAudience.equals("Adult");
 				boolean isTeen = targetAudience.equals("Young Adult");
 				boolean isKids = targetAudience.equals("Juvenile");
 
-				//Update to create one item per settings so we can have uniform availability at the item level
+				//Update to create one item per settings, so we can have uniform availability at the item level
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
 				while (availabilityRS.next()) {
