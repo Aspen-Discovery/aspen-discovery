@@ -78,25 +78,25 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 							char formatCode;
 							formatCode = fixedField008.getData().toUpperCase().charAt(24);
 							if (formatCode == '6') {
-								primaryFormat = "GraphicNovel";
+								primaryFormat = "eComic";
 							}else if (fixedField008.getData().length() >= 26) {
 								formatCode = fixedField008.getData().toUpperCase().charAt(25);
 								if (formatCode == '6') {
-									primaryFormat = "GraphicNovel";
+									primaryFormat = "eComic";
 								}else if (fixedField008.getData().length() >= 27) {
 									formatCode = fixedField008.getData().toUpperCase().charAt(26);
 									if (formatCode == '6') {
-										primaryFormat = "GraphicNovel";
+										primaryFormat = "eComic";
 									}else if (fixedField008.getData().length() >= 28) {
 										formatCode = fixedField008.getData().toUpperCase().charAt(27);
 										if (formatCode == '6') {
-											primaryFormat = "GraphicNovel";
+											primaryFormat = "eComic";
 										}
 									}
 								}
 							}
 						}
-						if (!primaryFormat.equals("GraphicNovel")) {
+						if (!primaryFormat.equals("eComic")) {
 							List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 650);
 							Iterator<DataField> fieldIterator = genreFormTerm.iterator();
 							DataField field;
@@ -107,13 +107,17 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 									if (subfield.getCode() == 'a') {
 										String subfieldData = subfield.getData().toLowerCase();
 										if (subfieldData.contains("graphic novel")) {
-											primaryFormat = "GraphicNovel";
+											primaryFormat = "eComic";
 											break;
 										}
 									}
 								}
 							}
 						}
+						break;
+					case "eComic":
+						formatCategory = "eBook";
+						primaryFormat = format;
 						break;
 					default:
 						logEntry.addNote("Unhandled cloud_library format " + format);
@@ -138,11 +142,14 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 				//get target audience from Marc
 				targetAudience = productRS.getString("targetAudience");
+				if (targetAudience.equals("ADULT")) {
+					targetAudience.equals("Adult");
+				}
 				groupedWork.addTargetAudience(targetAudience);
 
-				boolean isAdult = targetAudience.equals("Adult");
-				boolean isTeen = targetAudience.equals("Young Adult");
-				boolean isKids = targetAudience.equals("Juvenile");
+				boolean isAdult = targetAudience.equalsIgnoreCase("Adult");
+				boolean isTeen = targetAudience.equalsIgnoreCase("Young Adult");
+				boolean isKids = targetAudience.equalsIgnoreCase("Juvenile");
 
 				//Update to create one item per settings, so we can have uniform availability at the item level
 				getAvailabilityStmt.setString(1, identifier);
@@ -221,14 +228,14 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 									okToAdd = true;
 								}
 							}
-						}
-						if (okToAdd) {
-							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
+							if (okToAdd) {
+								ScopingInfo scopingInfo = itemInfo.addScope(scope);
+								groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 
-							scopingInfo.setLibraryOwned(true);
-							scopingInfo.setLocallyOwned(true);
+								scopingInfo.setLibraryOwned(true);
+								scopingInfo.setLocallyOwned(true);
 
+							}
 						}
 					}
 					cloudLibraryRecord.addItem(itemInfo);
