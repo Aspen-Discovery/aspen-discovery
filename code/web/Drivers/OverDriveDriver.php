@@ -127,11 +127,15 @@ class OverDriveDriver extends AbstractEContentDriver {
 
 	public function getProductUrl($crossRefId) {
 		$settings = $this->getSettings();
-		$baseUrl = $settings->url;
-		if (substr($baseUrl, -1) != '/') {
-			$baseUrl .= '/';
+		if ($settings != null) {
+			$baseUrl = $settings->url;
+			if (substr($baseUrl, -1) != '/') {
+				$baseUrl .= '/';
+			}
+			$baseUrl .= 'media/' . $crossRefId;
+		}else{
+			$baseUrl = '';
 		}
-		$baseUrl .= 'media/' . $crossRefId;
 		return $baseUrl;
 	}
 
