@@ -255,6 +255,8 @@ public class MarcRecordFormatClassifier {
 							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
 							result.add("Pop-UpBook");
+						}else if (subfieldData.startsWith("manga graphic novel")) {
+							result.add("Manga");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -491,6 +493,9 @@ public class MarcRecordFormatClassifier {
 								break;
 							case 'N':
 								resultsFrom007.add("Chart");
+								break;
+							case 'Z':
+								//Don't add anything, this is identified as Other
 								break;
 							default:
 								resultsFrom007.add("Photo");
