@@ -9,14 +9,9 @@ RUN apt-get update \
     sed \
     && rm -rf /var/lib/apt/lists/*
 
-#Set environment variables for Solr
-ENV SOLR_INSTALL_DIR=/opt/solr
-ENV SOLR_LOGS_DIR=/var/solr/logs
-ENV SOLR_DATA_DIR=/var/solr/data
-ENV SOLR_USER=solr
 #Set where Solr will look for configsets
+ENV SOLR_INSTALL_DIR=/opt/solr
 ENV SOLR_HOME=$SOLR_INSTALL_DIR/server/solr
-RUN usermod -d $SOLR_HOME ${SOLR_USER}
 
 #Copy configset for each core
 COPY data_dir_setup/solr7/ ${SOLR_HOME}/configsets
