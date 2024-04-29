@@ -1,13 +1,13 @@
 {strip}
     {foreach from=$relatedRecords item=relatedRecord key=index}
-		<div class="row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:8px">
+		<div class="row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:1px">
 			{if !empty($showEditionCovers) && $showEditionCovers == 1}
 				<div class="col-tn-2 col-md-2 col-lg-2">
 					<img src="{$relatedRecord->getBookcoverUrl('small')}" class="img-thumbnail {$coverStyle}">
 				</div>
 			{/if}
 
-			<div class="col-tn-12 {if !empty($showEditionCovers) && $showEditionCovers == 1}col-md-2 col-lg-4{else}col-md-4 col-lg-6{/if}">
+			<div class="col-tn-12 {if !empty($showEditionCovers) && $showEditionCovers == 1}col-md-2 col-lg-4{else}col-md-4 col-lg-4{/if}">
                 {if !empty($showRelatedRecordLabels)}
                     {if !empty($relatedRecord->publicationDate) || !empty($relatedRecord->publisher)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Published" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publicationDate} {$relatedRecord->publisher}</a></div></div>
@@ -42,14 +42,14 @@
                     {/if}
                 {/if}
 			</div>
-			<div class="{if !empty($showEditionCovers) && $showEditionCovers == 1}col-tn-8 col-md-4 col-lg-4{else}col-tn-8 col-md-4 col-lg-4{/if}">
+			<div class="{if !empty($showEditionCovers) && $showEditionCovers == 1}col-tn-6 col-md-4 col-lg-3{else}col-tn-3 col-md-4 col-lg-4{/if}">
                 {include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord->getStatusInformation() viewingIndividualRecord=1}
                 {if !$relatedRecord->isEContent()}
                     {include file='GroupedWork/copySummary.tpl' summary=$relatedRecord->getItemSummary() totalCopies=$relatedRecord->getCopies() itemSummaryId=$relatedRecord->id recordViewUrl=$relatedRecord->getUrl()}
                 {/if}
 			</div>
-			<div class="{if !empty($showEditionCovers) && $showEditionCovers == 1}col-tn-3 col-md-3 col-lg-1{else}col-tn-4 col-md-4 col-lg-2{/if}">
-				<div class="btn-group btn-group-vertical btn-group-sm text-right">
+			<div class="{if !empty($showEditionCovers) && $showEditionCovers == 1}col-tn-6 col-md-4 col-lg-3{else}col-tn-3 col-md-4 col-lg-4{/if}">
+				<div class="btn-group btn-group-vertical btn-group-md btn-block">
 					<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">{translate text="More Info" isPublicFacing=true}</a>
                     {foreach from=$relatedRecord->getActions($variationId) item=curAction}
 						<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if !empty($curAction.onclick)}onclick="{$curAction.onclick}"{/if} class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" {if !empty($curAction.target)}target="{$curAction.target}"{/if} {if !empty($curAction.id)}id="relatedRecord{$curAction.id}"{/if} {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
