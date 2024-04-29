@@ -133,11 +133,11 @@ export const Editions = () => {
                                         <AlertDialogFooter>
                                              <ButtonGroup space="sm">
                                                   {response?.action ? (
-                                                       <Button onPress={() => handleNavigation(response.action)}>
-                                                            <ButtonText>{response.action}</ButtonText>
+                                                       <Button onPress={() => handleNavigation(response.action)} variant="solid" bgColor={theme['colors']['primary']['500']}>
+                                                            <ButtonText color={theme['colors']['primary']['500-text']}>{response.action}</ButtonText>
                                                        </Button>
                                                   ) : null}
-                                                  <Button variant="outline" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
+                                                  <Button variant="outline" borderColor={theme['colors']['primary']['500']} ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
                                                        <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'button_ok')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
@@ -161,6 +161,8 @@ export const Editions = () => {
                                                   <Button
                                                        isLoading={confirmingHold}
                                                        isLoadingText="Placing hold..."
+                                                       variant="solid"
+                                                       bgColor={theme['colors']['primary']['500']}
                                                        onPress={async () => {
                                                             setConfirmingHold(true);
                                                             await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async (result) => {
@@ -177,7 +179,7 @@ export const Editions = () => {
                                                                  }
                                                             });
                                                        }}>
-                                                       <ButtonText>{getTermFromDictionary(language, 'confirm_place_hold')}</ButtonText>
+                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'confirm_place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>
@@ -223,6 +225,8 @@ export const Editions = () => {
                                                   <Button
                                                        isLoading={placingItemHold}
                                                        isLoadingText="Placing hold..."
+                                                       variant="solid"
+                                                       bgColor={theme['colors']['primary']['500']}
                                                        onPress={async () => {
                                                             setPlacingItemHold(true);
                                                             await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
@@ -236,7 +240,7 @@ export const Editions = () => {
                                                                  }
                                                             });
                                                        }}>
-                                                       <ButtonText>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
+                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>

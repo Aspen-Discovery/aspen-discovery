@@ -284,18 +284,21 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	function getAvailability() {
 		global $library;
 		if ($this->availability == null) {
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
-			$availability = new OverDriveAPIProductAvailability();
-			$availability->productId = $this->overDriveProduct->id;
-			$availability->settingId = $library->getOverdriveScope()->settingId;
-			//Only include shared collection if include digital collection is on
-			$libraryScopingId = $this->getLibraryScopingId();
-			//OverDrive availability now returns correct counts for the library including shared items for each library.
-			// Just get the correct availability for with either the library (if available) or the shared collection
-			$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
-			$availability->orderBy("libraryId DESC");
-			if ($availability->find(true)) {
-				$this->availability = clone $availability;
+			if ($library->getOverdriveScope() != null) {
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+				$availability = new OverDriveAPIProductAvailability();
+				$availability->productId = $this->overDriveProduct->id;
+
+				$availability->settingId = $library->getOverdriveScope()->settingId;
+				//Only include shared collection if include digital collection is on
+				$libraryScopingId = $this->getLibraryScopingId();
+				//OverDrive availability now returns correct counts for the library including shared items for each library.
+				// Just get the correct availability for with either the library (if available) or the shared collection
+				$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
+				$availability->orderBy("libraryId DESC");
+				if ($availability->find(true)) {
+					$this->availability = clone $availability;
+				}
 			}
 		}
 		return $this->availability;
@@ -617,10 +620,15 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$holdings = $this->getHoldings();
 		$availability = $this->getAvailability();
 		$interface->assign('availability', $availability);
-		$numberOfHolds = $availability->numberOfHolds;
-		$interface->assign('numberOfHolds', $numberOfHolds);
-		$showAvailability = true;
-		$showAvailabilityOther = true;
+		if ($availability != null) {
+			$numberOfHolds = $availability->numberOfHolds;
+			$interface->assign('numberOfHolds', $numberOfHolds);
+			$showAvailability = true;
+			$showAvailabilityOther = true;
+		}else{
+			$showAvailability = false;
+			$showAvailabilityOther = false;
+		}
 		$interface->assign('showAvailability', $showAvailability);
 		$interface->assign('showAvailabilityOther', $showAvailabilityOther);
 		$showOverDriveConsole = false;
@@ -816,16 +824,19 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			if (!$overDriveDriver->isCirculationEnabled()) {
 				$overDriveMetadata = $this->getOverDriveMetaData();
 				$crossRefId = $overDriveMetadata->getDecodedRawData()->crossRefId;
-				$this->_actions[] = [
-					'title' => translate([
-						'text' => 'Access Online',
-						'isPublicFacing' => true,
-					]),
-					'url' => $overDriveDriver->getProductUrl($crossRefId),
-					'target' => 'blank',
-					'requireLogin' => false,
-					'type' => 'overdrive_access_online',
-				];
+				$productUrl = $overDriveDriver->getProductUrl($crossRefId);
+				if (!empty($productUrl)) {
+					$this->_actions[] = [
+						'title' => translate([
+							'text' => 'Access Online',
+							'isPublicFacing' => true,
+						]),
+						'url' => $overDriveDriver->getProductUrl($crossRefId),
+						'target' => 'blank',
+						'requireLogin' => false,
+						'type' => 'overdrive_access_online',
+					];
+				}
 			} else {
 				//Check to see if the title is on hold or checked out to the patron.
 				$loadDefaultActions = true;

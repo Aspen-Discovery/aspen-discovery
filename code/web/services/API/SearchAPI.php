@@ -101,7 +101,7 @@ class SearchAPI extends AbstractAPI {
 		//Check if solr is running by pinging it
 		/** @var SearchObject_AbstractGroupedWorkSearcher $solrSearcher */
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
-		if (!$solrSearcher->ping()) {
+		if (!$solrSearcher->ping(false)) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
 		} else {
 			$this->addCheck($checks, 'Solr');
@@ -1770,8 +1770,8 @@ class SearchAPI extends AbstractAPI {
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == 'GroupedWork' || $categoryInformation->source == 'List')) {
-					if ($categoryInformation->textId == ('system_saved_searches')) {
+				if ($categoryInformation->isValidForDisplayInApp($appUser, false) && ($categoryInformation->source == 'GroupedWork' || $categoryInformation->source == 'List')) {
+					if ($categoryInformation->textId == ('system_saved_searches') && $appUser && !($appUser instanceof AspenError)) {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
 						foreach ($allSearches as $savedSearch) {
@@ -1790,7 +1790,7 @@ class SearchAPI extends AbstractAPI {
 								$formattedCategories[] = $categoryResponse;
 							}
 						}
-					} elseif ($categoryInformation->textId == ('system_user_lists')) {
+					} elseif ($categoryInformation->textId == ('system_user_lists') && $appUser && !($appUser instanceof AspenError)) {
 						$userLists = $listApi->getUserLists();
 						$allUserLists = $userLists['lists'] ?? [];
 						if (count($allUserLists) > 0) {
@@ -1843,10 +1843,7 @@ class SearchAPI extends AbstractAPI {
 						if ($count != 0) {
 							$formattedCategories[] = $categoryResponse;
 						}
-					} elseif ($categoryInformation->textId == ('system_recommended_for_you')) {
-						if (empty($appUser) && UserAccount::isLoggedIn()) {
-							$appUser = UserAccount::getActiveUserObj();
-						}
+					} elseif ($categoryInformation->textId == ('system_recommended_for_you') && $appUser && !($appUser instanceof AspenError)) {
 						$categoryResponse = [
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
@@ -1971,8 +1968,8 @@ class SearchAPI extends AbstractAPI {
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List" || $categoryInformation->source == 'Events')) {
-					if ($categoryInformation->textId == ("system_saved_searches")) {
+				if ($categoryInformation->isValidForDisplayInApp($appUser, false) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List" || $categoryInformation->source == 'Events')) {
+					if ($categoryInformation->textId == ("system_saved_searches") && $appUser && !($appUser instanceof AspenError)) {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
 						foreach ($allSearches as $savedSearch) {
@@ -2009,7 +2006,7 @@ class SearchAPI extends AbstractAPI {
 								}
 							}
 						}
-					} elseif ($categoryInformation->textId == ("system_user_lists")) {
+					} elseif ($categoryInformation->textId == ("system_user_lists") && $appUser && !($appUser instanceof AspenError)) {
 						$userLists = $listApi->getUserLists();
 						$allUserLists = $userLists['lists'] ?? [];
 						if (!empty($allUserLists)) {
@@ -2128,7 +2125,7 @@ class SearchAPI extends AbstractAPI {
 									}
 								} while ($listEntry->fetch() && $count < 12);
 
-								if (!empty($categoryResponse['lists']) || !empty($categoryResponse['records'])) {
+								if (!empty($categoryResponse['lists']) || !empty($categoryResponse['records']) || !empty($categoryResponse['events'])) {
 									$formattedCategories[] = $categoryResponse;
 									$numCategoriesProcessed++;
 									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
@@ -2139,11 +2136,7 @@ class SearchAPI extends AbstractAPI {
 
 						}
 
-					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
-						if (empty($appUser) && UserAccount::isLoggedIn()) {
-							$appUser = UserAccount::getActiveUserObj();
-						}
-
+					} elseif ($categoryInformation->textId == ("system_recommended_for_you") && $appUser && !($appUser instanceof AspenError)) {
 						if (!$categoryInformation->isDismissed($appUser)) {
 							require_once(ROOT_DIR . '/sys/Suggestions.php');
 							$suggestions = Suggestions::getSuggestions($appUser->id);
@@ -2203,7 +2196,7 @@ class SearchAPI extends AbstractAPI {
 									$temp = new BrowseCategory();
 									$temp->id = $subCategory->subCategoryId;
 									if ($temp->find(true)) {
-										if ($temp->isValidForDisplay($appUser)) {
+										if ($temp->isValidForDisplayInApp($appUser)) {
 											if ($temp->source != '') {
 												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
 												if(!empty($records)) {
@@ -2264,7 +2257,7 @@ class SearchAPI extends AbstractAPI {
 									$temp = new BrowseCategory();
 									$temp->id = $subCategory->subCategoryId;
 									if ($temp->find(true)) {
-										if ($temp->isValidForDisplay($appUser)) {
+										if ($temp->isValidForDisplayInApp($appUser)) {
 											if ($temp->source != '') {
 												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12, true);
 												if(!empty($records)) {
@@ -2608,9 +2601,9 @@ class SearchAPI extends AbstractAPI {
 					}
 
 					if($internalRequest) {
-						$response['records'] = $items;
+						$response['records'] = !empty($items) ? $items : $records;
 					} else {
-						$response['items'] = $items;
+						$response['items'] = !empty($items) ? $items : $records;
 					}
 				}
 			} else {

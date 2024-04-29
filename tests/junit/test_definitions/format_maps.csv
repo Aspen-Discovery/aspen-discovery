@@ -2,6 +2,8 @@ name,value,format_category,format
 koha,BOOK,Books,Book
 koha,DVD,Movies,DVD
 koha,CD,Music,CD
-koha,VGAME,"Other",""
-sierra,n,Other,Console Game
+koha,VGAME,Other,
+koha,GRAPHICNOV,Books,Graphic Novel
 nashville,bk,Books,Book
+minlib,n,Other,Console Game
+swan,TOOLS AND THINGS,Other,Physical Object

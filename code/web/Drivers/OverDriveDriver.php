@@ -127,11 +127,15 @@ class OverDriveDriver extends AbstractEContentDriver {
 
 	public function getProductUrl($crossRefId) {
 		$settings = $this->getSettings();
-		$baseUrl = $settings->url;
-		if (substr($baseUrl, -1) != '/') {
-			$baseUrl .= '/';
+		if ($settings != null) {
+			$baseUrl = $settings->url;
+			if (substr($baseUrl, -1) != '/') {
+				$baseUrl .= '/';
+			}
+			$baseUrl .= 'media/' . $crossRefId;
+		}else{
+			$baseUrl = '';
 		}
-		$baseUrl .= 'media/' . $crossRefId;
 		return $baseUrl;
 	}
 
@@ -731,6 +735,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				}
 				$hold->holdQueueLength = $curTitle->numberOfHolds;
 				$hold->position = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
+				$hold->cancelable = true;
 				$hold->available = isset($curTitle->actions->checkout);
 				if ($hold->available) {
 					$hold->expirationDate = strtotime($curTitle->holdExpires);

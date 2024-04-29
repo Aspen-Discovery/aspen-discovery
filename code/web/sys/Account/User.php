@@ -1751,6 +1751,15 @@ class User extends DataObject {
 						return true;
 					}
 				}
+			} elseif ($vendor == 'assabet') {
+				require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+				$settings = new AssabetSetting();
+				$settings->id = $eventsSetting->settingId;
+				if ($settings->find(true)){
+					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+						return true;
+					}
+				}
 			}
 		}
 
@@ -3504,6 +3513,7 @@ class User extends DataObject {
 
 		$hasCurbside = false;
 		$customSelfRegForms = false;
+		$circulationReports = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
@@ -3513,6 +3523,9 @@ class User extends DataObject {
 			if ($accountProfile->ils == 'symphony') {
 				$customSelfRegForms = true;
 			}
+            if ($accountProfile->driver == 'Nashville') {
+                $circulationReports = true;
+            }
 		}
 		if ($hasCurbside) {
 			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
@@ -3535,23 +3548,29 @@ class User extends DataObject {
 			'Administer Library VDX Forms',
 		]);
 
-		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
-		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), [
-			'View Location Holds Reports',
-			'View All Holds Reports',
-		]);
-		$sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), [
-			'View Location Student Reports',
-			'View All Student Reports',
-		]);
-		$sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
-			'View Location Student Reports',
-			'View All Student Reports',
-		]);
-		$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
-			'View Location Collection Reports',
-			'View All Collection Reports',
-		]);
+        if ($circulationReports) {
+            $sections['circulation_reports'] = new AdminSection('Circulation Reports');
+            $sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), [
+                'View Location Holds Reports',
+                'View All Holds Reports',
+            ]);
+            $sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), [
+                'View Location Student Reports',
+                'View All Student Reports',
+            ]);
+            $sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
+                'View Location Student Reports',
+                'View All Student Reports',
+            ]);
+            $sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
+                'View Location Collection Reports',
+                'View All Collection Reports',
+            ]);
+            $sections['circulation_reports']->addAction(new AdminAction('Weeding Report', 'View a collection weeding report for all items for a branch.', '/Report/WeedingReport'), [
+                'View Location Collection Reports',
+                'View All Collection Reports',
+            ]);
+        }
 
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['boundless'] = new AdminSection('Boundless');

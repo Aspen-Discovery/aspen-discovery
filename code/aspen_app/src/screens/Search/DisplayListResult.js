@@ -1,21 +1,28 @@
+import React from 'react';
 import { Badge, BadgeText, Box, HStack, Pressable, Text, VStack, Button, ButtonText, ButtonIcon, Center } from '@gluestack-ui/themed';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { TrashIcon } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import { getCleanTitle } from '../../helpers/item';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { removeTitlesFromList } from '../../util/api/list';
 import AddToList from './AddToList';
 
-export const DisplayResult = (props) => {
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
+
+export const DisplayListResult = (props) => {
      const item = props.data;
      const isUserList = props.isUserList;
      const listId = props.listId;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const queryClient = useQueryClient();
+
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
+
+     const backgroundColor = colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
 
      let recordType = 'grouped_work';
      if (item.recordtype) {
@@ -49,32 +56,17 @@ export const DisplayResult = (props) => {
                <HStack space="md">
                     <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title_display}
-                                   source={{
-                                        uri: `${imageUrl}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={imageUrl}
                                    style={{
                                         width: '100%',
                                         height: '100%',
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          </Box>
                          {item.language ? (

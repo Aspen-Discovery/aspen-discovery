@@ -133,6 +133,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 						$hold->userId = $patron->id;
 						$hold->sourceId = $publication->metadata->identifier;
 						$hold->recordId = $publication->metadata->identifier;
+						$hold->cancelable = true;
 
 						$palaceProjectTitle = new PalaceProjectTitle();
 						$palaceProjectTitle->palaceProjectId = $publication->metadata->identifier;

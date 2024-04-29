@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Button, ButtonGroup, ButtonIcon, ButtonText } from '@gluestack-ui/themed';
+import { Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner } from '@gluestack-ui/themed';
 import React from 'react';
 
 // custom components and helper files
@@ -116,8 +116,6 @@ export const PlaceHold = (props) => {
                          size="md"
                          bgColor={theme['colors']['primary']['500']}
                          variant="solid"
-                         isLoading={loading}
-                         isLoadingText="Placing hold..."
                          style={{
                               flex: 1,
                               flexWrap: 'wrap',
@@ -160,9 +158,13 @@ export const PlaceHold = (props) => {
                                    }
                               });
                          }}>
-                         <ButtonText color={theme['colors']['primary']['500-text']} textAlign="center" p="$0">
-                              {title}
-                         </ButtonText>
+                         {loading ? (
+                              <ButtonSpinner />
+                         ) : (
+                              <ButtonText color={theme['colors']['primary']['500-text']} textAlign="center">
+                                   {title}
+                              </ButtonText>
+                         )}
                     </Button>
                </>
           );

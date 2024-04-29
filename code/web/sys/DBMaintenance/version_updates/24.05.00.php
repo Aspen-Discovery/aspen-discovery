@@ -74,6 +74,13 @@ function getUpdates24_05_00(): array {
 			],
 		],
 		// assabet_events
+		'allow_masquerade_with_username' => [
+			'title' => 'Allow/Disallow Masquerade Using Username',
+			'description' => 'Adds a masquerade setting that will allow libraries to disallow using a Username for masquerading even if the ILS has the ability to allow it.',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowMasqueradeWithUsername TINYINT NOT NULL DEFAULT 1',
+			]
+		]
 		//other
 
 

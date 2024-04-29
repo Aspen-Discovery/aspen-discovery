@@ -82,6 +82,10 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$groupedWorkDriver->assignGroupedWorkStaffView();
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
 		$interface->assign('hooplaExtract', $this->hooplaRawMetadata);

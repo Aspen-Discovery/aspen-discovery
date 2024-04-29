@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import { Actionsheet, Box, Button, Center, Checkbox, HStack, Icon, Pressable, Text, useDisclose, VStack } from 'native-base';
 import React from 'react';
@@ -12,6 +13,8 @@ import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { SelectPickupLocation } from './SelectPickupLocation';
 import { SelectThawDate } from './SelectThawDate.js';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -103,35 +106,17 @@ export const MyHold = (props) => {
                }
                return (
                     <VStack>
-                         <CachedImage
-                              cacheKey={key}
+                         <Image
                               alt={hold.title}
-                              source={{
-                                   uri: `${url}`,
-                                   expiresIn: 86400,
-                              }}
+                              source={url}
                               style={{
                                    width: 100,
                                    height: 150,
                                    borderRadius: 4,
                               }}
-                              resizeMode="cover"
-                              placeholderContent={
-                                   <Box
-                                        bg="warmGray.50"
-                                        _dark={{
-                                             bgColor: 'coolGray.800',
-                                        }}
-                                        width={{
-                                             base: 100,
-                                             lg: 200,
-                                        }}
-                                        height={{
-                                             base: 150,
-                                             lg: 250,
-                                        }}
-                                   />
-                              }
+                              placeholder={blurhash}
+                              transition={1000}
+                              contentFit="cover"
                          />
                          {(hold.allowFreezeHolds || canCancel) && allowLinkedAccountAction && section === 'Pending' ? (
                               <Center>

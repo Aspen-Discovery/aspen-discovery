@@ -178,7 +178,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		return $this->_browseCategories;
 	}
 
-	public function getBrowseCategoriesForLiDA($max = null, User $user, $checkDismiss = true): array {
+	public function getBrowseCategoriesForLiDA($max = null, $user, $checkDismiss = true): array {
 		if (!isset($this->_browseCategories) && $this->id) {
 			if ($max) {
 				$count = 0;

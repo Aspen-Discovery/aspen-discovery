@@ -1,9 +1,9 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
+import org.aspen_discovery.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -23,6 +25,7 @@ import org.marc4j.MarcWriter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
+import org.marc4j.marc.Subfield;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -282,6 +285,51 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 		if (format == null) {
 			logger.error("Format was not found");
+		}else if (format.equals("EPUB") || format.equals("PDF")) {
+			ControlField fixedField008 = (ControlField) marcRecord.getVariableField(8);
+			if (fixedField008 != null && fixedField008.getData().length() >= 25) {
+				char formatCode;
+				formatCode = fixedField008.getData().toUpperCase().charAt(24);
+				if (formatCode == '6') {
+					format = "eComic";
+				}else if (fixedField008.getData().length() >= 26) {
+					formatCode = fixedField008.getData().toUpperCase().charAt(25);
+					if (formatCode == '6') {
+						format = "eComic";
+					}else if (fixedField008.getData().length() >= 27) {
+						formatCode = fixedField008.getData().toUpperCase().charAt(26);
+						if (formatCode == '6') {
+							format = "eComic";
+						}else if (fixedField008.getData().length() >= 28) {
+							formatCode = fixedField008.getData().toUpperCase().charAt(27);
+							if (formatCode == '6') {
+								format = "eComic";
+							}
+						}
+					}
+				}
+			}
+			if (!format.equals("eComic")) {
+				List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 650);
+				Iterator<DataField> fieldIterator = genreFormTerm.iterator();
+				DataField field;
+				while (fieldIterator.hasNext()) {
+					field = fieldIterator.next();
+					List<Subfield> subfields = field.getSubfields();
+					for (Subfield subfield : subfields) {
+						if (subfield.getCode() == 'a') {
+							String subfieldData = subfield.getData().toLowerCase();
+							if (subfieldData.contains("graphic novel")) {
+								format = "eComic";
+								if (existingTitle == null || existingTitle.getFormat() == null || !existingTitle.getFormat().equals(format)) {
+									metadataChanged = true;
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
 		}
 		if (metadataChanged || doFullReload) {
 			logEntry.incMetadataChanges();

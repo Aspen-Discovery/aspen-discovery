@@ -164,6 +164,8 @@ export const Variations = (props) => {
                                                   <Button
                                                        isLoading={confirmingHold}
                                                        isLoadingText="Placing hold..."
+                                                       variant="solid"
+                                                       bgColor={theme['colors']['primary']['500']}
                                                        onPress={async () => {
                                                             setConfirmingHold(true);
                                                             await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async (result) => {
@@ -180,7 +182,7 @@ export const Variations = (props) => {
                                                                  }
                                                             });
                                                        }}>
-                                                       <ButtonText>{getTermFromDictionary(language, 'confirm_place_hold')}</ButtonText>
+                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'confirm_place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>
@@ -226,6 +228,8 @@ export const Variations = (props) => {
                                                   <Button
                                                        isLoading={placingItemHold}
                                                        isLoadingText="Placing hold..."
+                                                       variant="solid"
+                                                       bgColor={theme['colors']['primary']['500']}
                                                        onPress={async () => {
                                                             setPlacingItemHold(true);
                                                             await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
@@ -239,7 +243,7 @@ export const Variations = (props) => {
                                                                  }
                                                             });
                                                        }}>
-                                                       <ButtonText>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
+                                                       <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'place_hold')}</ButtonText>
                                                   </Button>
                                              </ButtonGroup>
                                         </AlertDialogFooter>

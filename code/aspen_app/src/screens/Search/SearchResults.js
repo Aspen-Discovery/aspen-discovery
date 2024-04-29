@@ -2,7 +2,7 @@ import { Button, ButtonGroup, ButtonIcon, ButtonText, Heading, Box, Center, Flat
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { create } from 'apisauce';
-import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import { SlidersHorizontalIcon } from 'lucide-react-native';
@@ -12,7 +12,7 @@ import { useColorModeValue, useToken } from 'native-base';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { loadError, popToast } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { loadingSpinner, LoadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext, ThemeContext } from '../../context/initialContext';
@@ -24,6 +24,8 @@ import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
 import AddToList from './AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const SearchResults = () => {
      const navigation = useNavigation();
@@ -176,11 +178,11 @@ export const SearchResults = () => {
                     {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
                          <Heading pt="$5">{getTermFromDictionary(language, 'no_results')}</Heading>
-                         <Text bold w="75%" textAlign="center">
+                         <Text bold w="75%" textAlign="center" color={textColor}>
                               {route.params?.term}
                          </Text>
-                         <Button mt="$3" onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              <ButtonText>{getTermFromDictionary(language, 'new_search_button')}</ButtonText>
+                         <Button variant="solid" bgColor={theme['colors']['primary']['500']} mt="$3" onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                              <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'new_search_button')}</ButtonText>
                          </Button>
                     </Center>
                </>
@@ -191,7 +193,7 @@ export const SearchResults = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching ? (
-                    loadingSpinner()
+                    LoadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
                ) : (
@@ -336,35 +338,17 @@ const DisplayResult = (data) => {
                     <HStack space="md">
                          <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                               <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                                   <CachedImage
-                                        cacheKey={key}
+                                   <Image
                                         alt={item.title}
-                                        source={{
-                                             uri: `${url}`,
-                                             expiresIn: 86400,
-                                        }}
+                                        source={url}
                                         style={{
                                              width: '100%',
                                              height: '100%',
                                              borderRadius: 4,
                                         }}
-                                        resizeMode="cover"
-                                        placeholderContent={
-                                             <Box
-                                                  bg="warmGray.50"
-                                                  _dark={{
-                                                       bgColor: 'coolGray.800',
-                                                  }}
-                                                  width={{
-                                                       base: 100,
-                                                       lg: 200,
-                                                  }}
-                                                  height={{
-                                                       base: 150,
-                                                       lg: 250,
-                                                  }}
-                                             />
-                                        }
+                                        placeholder={blurhash}
+                                        transition={1000}
+                                        contentFit="cover"
                                    />
                               </Box>
                               {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}
@@ -408,32 +392,17 @@ const DisplayResult = (data) => {
                <HStack space="md">
                     <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title}
-                                   source={{
-                                        uri: `${url}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={url}
                                    style={{
                                         width: '100%',
                                         height: '100%',
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          </Box>
                          {item.language ? (

@@ -1,5 +1,6 @@
 import { Badge, BadgeText, Box, Center, HStack, Pressable, Text, VStack } from '@gluestack-ui/themed';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import _ from 'lodash';
 import React from 'react';
 
@@ -10,28 +11,60 @@ import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import AddToList from './AddToList';
 
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
+
 export const DisplayGroupedWorkResult = (props) => {
      const item = props.data;
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
 
-     const formats = item?.itemList ?? [];
+     let formats = item?.itemList ?? [];
      const id = item.key ?? item.id;
+
+     let title;
+     if (item.title) {
+          title = item.title;
+     } else if (item.title_display) {
+          title = item.title_display;
+     }
+
+     let author;
+     if (item.author) {
+          author = item.author;
+     } else if (item.author_display) {
+          author = item.author_display;
+     }
+
+     if (_.isEmpty(formats)) {
+          if (item.format) {
+               formats = item.format;
+          }
+     }
 
      const handlePressItem = () => {
           navigate('GroupedWorkScreen', {
                id: id,
-               title: getCleanTitle(item.title),
+               title: getCleanTitle(title),
                url: library.baseUrl,
           });
      };
 
      function getFormat(n) {
+          if (_.isArray(n) || _.isObject(n)) {
+               return (
+                    <Badge key={n.key} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+                         <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
+                              {n.name}
+                         </BadgeText>
+                    </Badge>
+               );
+          }
+
           return (
-               <Badge key={n.key} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+               <Badge key={n} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
                     <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
-                         {n.name}
+                         {n}
                     </BadgeText>
                </Badge>
           );
@@ -46,32 +79,17 @@ export const DisplayGroupedWorkResult = (props) => {
                <HStack space="md">
                     <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title}
-                                   source={{
-                                        uri: `${url}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={url}
                                    style={{
                                         width: '100%',
                                         height: '100%',
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          </Box>
                          {item.language ? (
@@ -94,14 +112,14 @@ export const DisplayGroupedWorkResult = (props) => {
                          <AddToList itemId={id} btnStyle="sm" />
                     </VStack>
                     <VStack w="65%" pt="$1">
-                         {item.title ? (
+                         {title ? (
                               <Text color={textColor} bold sx={{ '@base': { fontSize: 14, lineHeight: 17, paddingBottom: 4 }, '@lg': { fontSize: 22, lineHeight: 25, paddingBottom: 4 } }}>
-                                   {item.title}
+                                   {title}
                               </Text>
                          ) : null}
-                         {item.author ? (
+                         {author ? (
                               <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
-                                   {getTermFromDictionary(language, 'by')} {item.author}
+                                   {getTermFromDictionary(language, 'by')} {author}
                               </Text>
                          ) : null}
                          <HStack mt="$4" direction="row" space="xs" flexWrap="wrap">

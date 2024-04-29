@@ -383,6 +383,10 @@ class CloudLibrary_AJAX extends JSON_Action {
 		$recordDriver = new CloudLibraryRecordDriver($id);
 		if ($recordDriver->isValid()) {
 			global $interface;
+			$readerName = new OverDriveDriver();
+			$readerName = $readerName->getReaderName();
+			$interface->assign('readerName', $readerName);
+
 			$interface->assign('recordDriver', $recordDriver);
 			$result = [
 				'success' => true,

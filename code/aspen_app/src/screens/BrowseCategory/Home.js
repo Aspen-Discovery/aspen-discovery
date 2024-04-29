@@ -2,10 +2,10 @@ import { ScanBarcode, SearchIcon, XIcon, Settings, RotateCwIcon, ClockIcon } fro
 import { Center, Box, Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner, HStack, Icon, Badge, BadgeText, FormControl, Input, InputField, InputSlot, InputIcon, Pressable, ScrollView, Text } from '@gluestack-ui/themed';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
-import CachedImage from 'expo-cached-image';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import React from 'react';
+import { Image } from 'expo-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
@@ -20,12 +20,14 @@ import { getLists } from '../../util/api/list';
 import { getLocations } from '../../util/api/location';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
-import { formatDiscoveryVersion, getPickupLocations, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
 import { CatalogOffline } from '../Auth/CatalogOffline';
-import { ForceLogout } from '../Auth/ForceLogout';
+import { InvalidCredentials } from '../Auth/InvalidCredentials';
 import DisplayBrowseCategory from './Category';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 let maxCategories = 5;
 
@@ -375,7 +377,7 @@ export const DiscoverHomeScreen = () => {
 
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
-               if (item.source === 'library_calendar' || item.source === 'springshare_libcal' || item.source === 'communico') {
+               if (item.source === 'library_calendar' || item.source === 'springshare_libcal' || item.source === 'communico' || item.source === 'assabet') {
                     type = 'Event';
                } else {
                     type = item.source;
@@ -387,6 +389,7 @@ export const DiscoverHomeScreen = () => {
           }
 
           if (type === 'Event') {
+               console.log(id);
                if (_.includes(id, 'lc_')) {
                     type = 'library_calendar_event';
                }
@@ -395,6 +398,9 @@ export const DiscoverHomeScreen = () => {
                }
                if (_.includes(id, 'communico_')) {
                     type = 'communico_event';
+               }
+               if (_.includes(id, 'assabet_')) {
+                    type = 'assabet_event';
                }
           }
 
@@ -429,19 +435,17 @@ export const DiscoverHomeScreen = () => {
                               </Badge>
                          </Box>
                     ) : null}
-                    <CachedImage
-                         cacheKey={key}
+                    <Image
                          alt={item.title_display}
-                         source={{
-                              uri: `${imageUrl}`,
-                              expiresIn: 3600,
-                         }}
+                         source={imageUrl}
                          style={{
                               width: '100%',
                               height: '100%',
                               borderRadius: 4,
                          }}
-                         resizeMode="cover"
+                         placeholder={blurhash}
+                         transition={1000}
+                         contentFit="cover"
                     />
                </Pressable>
           );
@@ -477,6 +481,8 @@ export const DiscoverHomeScreen = () => {
                          eventSource = 'library_calendar';
                     } else if (type === 'springshare_libcal_event') {
                          eventSource = 'springshare';
+                    } else if (type === 'assabet_event') {
+                         eventSource = 'assabet';
                     }
 
                     navigateStack('BrowseTab', 'EventScreen', {
@@ -567,7 +573,7 @@ export const DiscoverHomeScreen = () => {
      }
 
      if (invalidSession === true || invalidSession === 'true') {
-          return <ForceLogout />;
+          return <InvalidCredentials />;
      }
 
      const clearSearch = () => {

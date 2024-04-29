@@ -11,13 +11,13 @@ import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import org.aspen_discovery.grouping.MarcRecordGrouper;
+import org.aspen_discovery.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.commons.lang3.StringUtils;

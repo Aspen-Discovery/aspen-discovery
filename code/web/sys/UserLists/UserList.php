@@ -804,6 +804,7 @@ class UserList extends DataObject {
 						$browseRecords[$key]['canAddToList'] = false;
 						$browseRecords[$key]['userIsRegistered'] = false;
 						$browseRecords[$key]['inUserEvents'] = false;
+						$browseRecords[$key]['type'] = 'event';
 						if ($user && !($user instanceof AspenError)) {
 							$browseRecords[$key]['canAddToList'] = $user->isAllowedToAddEventsToList($record->getSource());
 							$browseRecords[$key]['userIsRegistered'] = $user->isRegistered($record->getId());
@@ -818,6 +819,7 @@ class UserList extends DataObject {
 							$browseRecords[$key]['author_display'] = $groupedWorkDriver->getPrimaryAuthor();
 							$browseRecords[$key]['format'] = $groupedWorkDriver->getFormatsArray();
 							$browseRecords[$key]['language'] = $groupedWorkDriver->getLanguage();
+							$browseRecords[$key]['type'] = 'grouped_work';
 							// $browseRecords[$key]['placesOfPublication'] = $groupedWorkDriver->getPlacesOfPublication();
 						} else {
 							$browseRecords[$key] = $record;

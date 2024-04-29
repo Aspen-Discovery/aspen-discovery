@@ -1,5 +1,5 @@
 import { Badge, BadgeText, Box, HStack, Pressable, Text, VStack } from '@gluestack-ui/themed';
-import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
@@ -12,6 +12,8 @@ import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import AddToList from './AddToList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const DisplayEventResult = (props) => {
      const item = props.data;
@@ -59,6 +61,10 @@ export const DisplayEventResult = (props) => {
           }
           if (item.source === 'libcal' || item.source === 'springshare_libcal') {
                eventSource = 'springshare';
+          }
+
+          if (item.source === 'assabet') {
+               eventSource = 'assabet';
           }
 
           if (item.bypass) {
@@ -121,35 +127,17 @@ export const DisplayEventResult = (props) => {
                <HStack space="md">
                     <VStack sx={{ '@base': { width: 100 }, '@lg': { width: 180 } }}>
                          <Box sx={{ '@base': { height: 150 }, '@lg': { height: 250 } }}>
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title}
-                                   source={{
-                                        uri: `${url}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={url}
                                    style={{
                                         width: '100%',
                                         height: '100%',
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                          </Box>
                          {item.canAddToList ? <AddToList source="Events" itemId={item.key} btnStyle="sm" /> : null}

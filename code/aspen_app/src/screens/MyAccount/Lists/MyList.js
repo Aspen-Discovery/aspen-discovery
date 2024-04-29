@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
@@ -20,6 +21,8 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../../trans
 import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import EditList from './EditList';
+
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const MyList = () => {
      const providedList = useRoute().params.details;
@@ -203,35 +206,17 @@ export const MyList = () => {
                     <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenEvent(item)}>
                          <HStack space={3}>
                               <VStack maxW="35%">
-                                   <CachedImage
-                                        cacheKey={key}
+                                   <Image
                                         alt={item.title}
-                                        source={{
-                                             uri: `${imageUrl}`,
-                                             expiresIn: 86400,
-                                        }}
+                                        source={imageUrl}
                                         style={{
                                              width: 100,
                                              height: 150,
                                              borderRadius: 4,
                                         }}
-                                        resizeMode="cover"
-                                        placeholderContent={
-                                             <Box
-                                                  bg="warmGray.50"
-                                                  _dark={{
-                                                       bgColor: 'coolGray.800',
-                                                  }}
-                                                  width={{
-                                                       base: 100,
-                                                       lg: 200,
-                                                  }}
-                                                  height={{
-                                                       base: 150,
-                                                       lg: 250,
-                                                  }}
-                                             />
-                                        }
+                                        placeholder={blurhash}
+                                        transition={1000}
+                                        contentFit="cover"
                                    />
                                    <Button
                                         onPress={() => {
@@ -282,35 +267,17 @@ export const MyList = () => {
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
                     <HStack space={3}>
                          <VStack maxW="35%">
-                              <CachedImage
-                                   cacheKey={key}
+                              <Image
                                    alt={item.title}
-                                   source={{
-                                        uri: `${imageUrl}`,
-                                        expiresIn: 86400,
-                                   }}
+                                   source={imageUrl}
                                    style={{
                                         width: 100,
                                         height: 150,
                                         borderRadius: 4,
                                    }}
-                                   resizeMode="cover"
-                                   placeholderContent={
-                                        <Box
-                                             bg="warmGray.50"
-                                             _dark={{
-                                                  bgColor: 'coolGray.800',
-                                             }}
-                                             width={{
-                                                  base: 100,
-                                                  lg: 200,
-                                             }}
-                                             height={{
-                                                  base: 150,
-                                                  lg: 250,
-                                             }}
-                                        />
-                                   }
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
                               />
                               <Button
                                    onPress={() => {

@@ -29,8 +29,8 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            aspendiscoveryofficial/aspen:latest
-            aspendiscoveryofficial/aspen:${{ steps.extract_branch.outputs.branch }}
+            aspendiscovery/aspen:latest
+            aspendiscovery/aspen:${{ steps.extract_branch.outputs.branch }}
 
   push_aspen_to_quay:
     name: Push Aspen image to Quay.io
@@ -40,7 +40,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to Quay.io
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           registry: quay.io
@@ -88,8 +88,8 @@ jobs:
           file: docker/solr/Dockerfile
           push: true
           tags: |
-            aspendiscoveryofficial/solr:latest
-            aspendiscoveryofficial/solr:${{ steps.extract_branch.outputs.branch }}
+            aspendiscovery/solr:latest
+            aspendiscovery/solr:${{ steps.extract_branch.outputs.branch }}
 
   push_solr_to_quay:
     name: Push Solr image to Quay.io
@@ -99,7 +99,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to Quay.io
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           registry: quay.io
@@ -147,8 +147,8 @@ jobs:
           file: docker/tunnel/Dockerfile
           push: true
           tags: |
-            aspendiscoveryofficial/tunnel:latest
-            aspendiscoveryofficial/tunnel:${{ steps.extract_branch.outputs.branch }}
+            aspendiscovery/tunnel:latest
+            aspendiscovery/tunnel:${{ steps.extract_branch.outputs.branch }}
 
   push_tunnel_to_quay:
     name: Push Tunnel image to Quay.io
@@ -158,7 +158,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Log in to Quay.io
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           registry: quay.io

@@ -449,7 +449,13 @@ class UInterface extends Smarty {
 				$this->assign('footerLogoLink', $footerLogoLink);
 			}
 
-			$footerLogoAlt = $theme->footerLogoAlt;
+			$footerLogoAlt = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->footerLogoAlt)) {
+					$footerLogoAlt = $theme->footerLogoAlt;
+					break;
+				}
+			}
 			if ($footerLogoAlt) {
 				$this->assign('footerLogoAlt', $footerLogoAlt);
 			}

@@ -780,6 +780,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$hold->holdQueueLength = (string)$rawHold->totalHoldSize;
 		$hold->position = (string)$rawHold->holdPosition;
 		$hold->available = $available;
+		$hold->cancelable = true;
 		if (!$available) {
 			$hold->canFreeze = true;
 			$hold->frozen = (string)$rawHold->isSuspendHold == 'R';

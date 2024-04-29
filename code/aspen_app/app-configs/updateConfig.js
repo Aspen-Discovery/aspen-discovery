@@ -85,7 +85,7 @@ const app_config = {
      privacy: 'public',
      platforms: ['ios', 'android'],
      version: version['version'],
-     sdkVersion: '49.0.0',
+     sdkVersion: '50.0.0',
      orientation: 'default',
      icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
      updates: {
@@ -122,6 +122,26 @@ const app_config = {
           jsEngine: 'jsc',
           config: {
                googleMapsApiKey: owner['googleApiKeyApple'],
+          },
+          privacyManifests: {
+               NSPrivacyAccessedAPITypes: [
+                    {
+                         NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
+                         NSPrivacyAccessedAPITypeReasons: ['E174.1'],
+                    },
+                    {
+                         NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+                         NSPrivacyAccessedAPITypeReasons: ['8FFB.1'],
+                    },
+                    {
+                         NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
+                         NSPrivacyAccessedAPITypeReasons: ['DDA9.1'],
+                    },
+                    {
+                         NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
+                         NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+                    },
+               ],
           },
      },
      android: {
@@ -160,20 +180,7 @@ const app_config = {
           androidStoreUrl: 'market://details?id=' + app['reverseDns'],
           patch: version['patch'],
      },
-     hooks: {
-          postPublish: [
-               {
-                    file: 'sentry-expo/upload-sourcemaps',
-                    config: {
-                         organization: owner['expoProjectOwner'],
-                         project: app['sentryProject'],
-                         authToken: app['sentryAuth'],
-                    },
-               },
-          ],
-     },
      plugins: [
-          'sentry-expo',
           'expo-localization',
           [
                'expo-barcode-scanner',
@@ -189,6 +196,14 @@ const app_config = {
           ],
           ['expo-calendar', { calendarPermission: 'This app can add library events to your calendar' }],
           ['expo-camera', { cameraPermission: 'This app uses your camera to scan barcodes when searching for items in the library catalog or when scanning your library card.' }],
+          [
+               '@sentry/react-native/expo',
+               {
+                    authToken: app['sentryAuth'],
+                    organization: owner['expoProjectOwner'],
+                    project: app['sentryProject'],
+               },
+          ],
      ],
 };
 

@@ -3,8 +3,6 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
-// Access any @sentry/react-native exports via:
-// Sentry.Native.*
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
@@ -14,8 +12,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { enableScreens } from 'react-native-screens';
 
-//import * as Sentry from '@sentry/react-native';
-import * as Sentry from 'sentry-expo';
+import * as Sentry from '@sentry/react-native';
 import { BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, SearchProvider, SystemMessagesProvider, ThemeProvider, UserContext, UserProvider } from '../context/initialContext';
 import { navigationRef } from '../helpers/RootNavigator';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
@@ -35,7 +32,7 @@ console.log(prefix);
 enableScreens();
 
 const Stack = createNativeStackNavigator();
-const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
+const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
 export const AuthContext = React.createContext();
 
@@ -57,7 +54,6 @@ distribution = distribution.toString();
 
 Sentry.init({
      dsn: Constants.expoConfig.extra.sentryDSN,
-     enableInExpoDevelopment: false,
      enableAutoSessionTracking: true,
      sessionTrackingIntervalMillis: 10000,
      debug: false,
@@ -67,13 +63,13 @@ Sentry.init({
      release: releaseCode,
      dist: distribution,
      integrations: [
-          new Sentry.Native.ReactNativeTracing({
+          new Sentry.ReactNativeTracing({
                routingInstrumentation,
           }),
      ],
 });
 
-Sentry.Native.setTag('patch', GLOBALS.appPatch);
+Sentry.setTag('patch', GLOBALS.appPatch);
 
 export function App() {
      const queryClient = useQueryClient();
@@ -391,4 +387,4 @@ export function App() {
      );
 }
 
-export default Sentry.Native.wrap(App);
+export default Sentry.wrap(App);

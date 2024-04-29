@@ -1908,9 +1908,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm() {
+		global $library;
 		global $interface;
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('supportsLoginWithUsername', $catalog->supportsLoginWithUsername());
+		$interface->assign('allowMasqueradeWithUsername', $library->allowMasqueradeWithUsername);
 		return [
 			'title' => translate([
 				'text' => 'Masquerade As',
@@ -3568,20 +3570,24 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	public function getVendor($sourceId) {
+		if (preg_match('`^communico`', $sourceId)){
+			return "communico";
+		} elseif (preg_match('`^libcal`', $sourceId)){
+			return "springshare";
+		} elseif (preg_match('`^lc_`', $sourceId)){
+			return "library_market";
+		} elseif (preg_match('`^assabet`', $sourceId)){
+			return "assabet";
+		}
+	}
+
 	/** @noinspection PhpUnused */
 	public function getSavedEvents()
 	{
 		global $interface;
 		global $timer;
 		global $library;
-
-		$eventSource = "";
-		require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-		$libraryEventSettings = new LibraryEventsSetting();
-		$libraryEventSettings->libraryId = $library->libraryId;
-		if($libraryEventSettings->find(true)) {
-			$eventSource = $libraryEventSettings->settingSource;
-		}
 
 		//Load user ratings
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -3640,7 +3646,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
-					'vendor' => $eventSource
+					'vendor' => self::getVendor($entry->sourceId)
 				];
 			} else {
 				$events[$entry->sourceId] = [
@@ -3653,8 +3659,8 @@ class MyAccount_AJAX extends JSON_Action {
 				'regRequired' => $entry->regRequired,
 				'isRegistered' => $registration,
 				'eventDate' => $entry->eventDate,
-				'pastEvent' => true, 
-					'vendor' => $eventSource
+				'pastEvent' => true,
+				'vendor' => self::getVendor($entry->sourceId)
 			];
 		}
 	}
@@ -6535,6 +6541,13 @@ class MyAccount_AJAX extends JSON_Action {
 					$libraryMarketSettings->id = $libraryEventSettings->settingId;
 					if($libraryMarketSettings->find(true)) {
 						$body = $libraryMarketSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'assabet') {
+					require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+					$assabetSettings = new AssabetSetting();
+					$assabetSettings->id = $libraryEventSettings->settingId;
+					if($assabetSettings->find(true)) {
+						$body = $assabetSettings->registrationModalBody;
 					}
 				}
 			}

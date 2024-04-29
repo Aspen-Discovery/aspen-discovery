@@ -507,6 +507,32 @@ class BrowseCategory extends BaseBrowsable {
 		return true;
 	}
 
+	public function isValidForDisplayInApp($user, $checkDismiss = false): bool {
+		$curTime = time();
+		if ($this->startDate != 0 && $this->startDate > $curTime) {
+			return false;
+		}
+		if ($this->endDate != 0 && $this->endDate < $curTime) {
+			return false;
+		}
+
+		if($checkDismiss && ($user && !($user instanceof AspenError))) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissal = new BrowseCategoryDismissal();
+			$browseCategoryDismissal->browseCategoryId = $this->textId;
+			$browseCategoryDismissal->userId = $user->id;
+			if ($browseCategoryDismissal->find(true)) {
+				return false;
+			}
+		}
+
+		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you' && (!$user || ($user instanceof AspenError))) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function isDismissed($user) {
 		if (!empty($user)) {
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';

@@ -2,13 +2,13 @@ package com.turning_leaf_technologies.hoopla;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
-import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import org.aspen_discovery.grouping.RecordGroupingProcessor;
+import org.aspen_discovery.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
@@ -419,7 +419,7 @@ public class HooplaExportMain {
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
 						if (responseTitles != null && !responseTitles.isEmpty()) {
-							updateTitlesInDB(responseTitles, doFullReload);
+							updateTitlesInDB(responseTitles, false, doFullReload);
 							logEntry.saveResults();
 						}
 
@@ -441,7 +441,7 @@ public class HooplaExportMain {
 								if (responseJSON.has("titles")) {
 									responseTitles = responseJSON.getJSONArray("titles");
 									if (responseTitles != null && !responseTitles.isEmpty()) {
-										updateTitlesInDB(responseTitles, doFullReload);
+										updateTitlesInDB(responseTitles, false, doFullReload);
 									}
 								}
 								if (responseJSON.has("nextStartToken")) {
@@ -540,7 +540,7 @@ public class HooplaExportMain {
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
 						if (responseTitles != null && !responseTitles.isEmpty()) {
-							updateTitlesInDB(responseTitles, false);
+							updateTitlesInDB(responseTitles, true, false);
 							logEntry.saveResults();
 						}
 					}
@@ -554,7 +554,7 @@ public class HooplaExportMain {
 		}
 	}
 
-	private static void updateTitlesInDB(JSONArray responseTitles, boolean doFullReload) {
+	private static void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload) {
 		logEntry.incNumProducts(responseTitles.length());
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
@@ -634,7 +634,7 @@ public class HooplaExportMain {
 						}catch (SQLException e){
 							logEntry.incErrors("Error adding hoopla title to database record " + hooplaId + " " + curTitle.getString("title"), e);
 						}
-					}else if (recordUpdated || doFullReload){
+					}else if (recordUpdated || doFullReload || forceRegrouping){
 						updateHooplaTitleInDB.setBoolean(1, true);
 						updateHooplaTitleInDB.setString(2, curTitle.getString("title"));
 						updateHooplaTitleInDB.setString(3, curTitle.getString("kind"));

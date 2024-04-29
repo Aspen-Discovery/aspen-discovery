@@ -248,7 +248,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 		return true;
 	}
 
-	public function isValidForDisplayInApp(User $user, $checkDismiss = false): bool {
+	public function isValidForDisplayInApp($user, $checkDismiss = false): bool {
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategory = new BrowseCategory();
 		$browseCategory->id = $this->browseCategoryId;
@@ -262,48 +262,20 @@ class BrowseCategoryGroupEntry extends DataObject {
 				return false;
 			}
 
-			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you') {
-				if ($user && !($user instanceof AspenError)) {
-					if ($browseCategory->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
-						if ($checkDismiss) {
-							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-							$browseCategoryDismissal = new BrowseCategoryDismissal();
-							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
-							$browseCategoryDismissal->userId = $user->id;
-							if ($browseCategoryDismissal->find(true)) {
-								return false;
-							}
-						}
-						return true;
-					}
-					if ($browseCategory->textId == 'system_user_lists' && $user->hasLists()) {
-						if ($checkDismiss) {
-							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-							$browseCategoryDismissal = new BrowseCategoryDismissal();
-							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
-							$browseCategoryDismissal->userId = $user->id;
-							if ($browseCategoryDismissal->find(true)) {
-								return false;
-							}
-						}
-						return true;
-					}
-					if ($browseCategory->textId == 'system_recommended_for_you' && $user->hasRatings()) {
-						if ($checkDismiss) {
-							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-							$browseCategoryDismissal = new BrowseCategoryDismissal();
-							$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
-							$browseCategoryDismissal->userId = $user->id;
-							if ($browseCategoryDismissal->find(true)) {
-								return false;
-							}
-						}
-						return true;
-					}
-
+			if($checkDismiss && ($user && !($user instanceof AspenError))) {
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+				$browseCategoryDismissal->userId = $user->id;
+				if ($browseCategoryDismissal->find(true)) {
+					return false;
 				}
+			}
+
+			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you' && (!$user || ($user instanceof AspenError))) {
 				return false;
 			}
+
 			return true;
 		}
 		return false;
