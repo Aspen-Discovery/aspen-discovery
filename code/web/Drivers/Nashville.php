@@ -395,8 +395,6 @@ class Nashville extends CarlX {
 		}
 	}
 
-
-
 	public function getCollectionReportData($location, $date): array {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
@@ -446,6 +444,7 @@ class Nashville extends CarlX {
 				left join location_v2 l on irb.location = l.locnumber
 				left join media_v2 m on irb.media = m.mednumber
 				left join systemitemcodes_v2 c on irb.status = c.code
+				where c.type not in ('A','D') -- exclude Acquisitions Dummy and Circulation Dummy status types
 			)
 			select
 				*
@@ -781,6 +780,736 @@ EOT;
         // consider using oci_set_prefetch to improve performance
         // oci_set_prefetch($stid, 1000);
         oci_execute($stid);
+        while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+            $data[] = $row;
+        }
+        oci_free_statement($stid);
+        return $data;
+    }
+
+    public function getWeedingReportData($location, $date): array {
+        $this->initDatabaseConnection();
+        /** @noinspection SqlResolve */
+        $sql = <<<EOT
+            -- Weeding Report 2024 04 21 by James Staub. This query is NOT efficient and often takes more than 1 minute to run.
+            with 
+            i as (
+                select
+                    m.medname
+                    , l.locname
+                    , substr(l.loccode,2) as collection
+                    , i.cn as item_callnumber
+                    , i.item
+                    , s.description as status
+                    , i.cumulativehistory
+                    , i.bid
+                from item_v2 i
+                left join media_v2 m on i.media = m.mednumber
+                left join location_v2 l on i.location = l.locnumber
+                left join systemitemcodes_v2 s on i.status = s.code
+                right join branch_v2 b on i.branch = b.branchnumber
+                where b.branchcode = '$location'
+                and s.type not in ('A', 'D')
+            ),
+            r as (
+                select
+                    r.refid
+                    , max(r.returndate) as returndate
+                from itemnotewhohadit_v2 r
+                group by r.refid
+            ), 
+            ir as (
+                select
+                    i.*
+                    , r.returndate
+                from i
+                left join r on i.item = r.refid
+            ),
+            ib as (
+                select
+                    ir.*
+                    , b.title
+                    , b.author
+                    , b.publishingdate
+                    , b.callnumber as bib_callnumber
+                from ir
+                left join bbibmap_v2 b on ir.bid = b.bid
+            ),
+            bd as ( -- dewey number, up to hundredths place, from item record first, bibliographic record if item call number is not Dewey, or else false if no Dewey number found in Item call number or bibliographic record
+                select
+                    ib.*
+                    , case
+                        when regexp_like(item_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$')
+                            then to_number(regexp_replace(item_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when regexp_like(bib_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$')
+                            then to_number(regexp_replace(bib_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when collection != 'NF'
+                            then to_number(standard_hash(collection, 'MD5'), 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                        else -1
+                    end as dewey_number
+                from ib
+            ),
+            d (dewey_number, dewey_label, keep, discard) as ( -- dewey numbers from 2023 karen lowe workshop spreadsheet
+                select '000','General Works','-7','-15' from dual union all
+                select '001','General Works','-7','-15' from dual union all
+                select '001.9','Phenomena','-18','-26' from dual union all
+                select '004','Computers/technology','-5','-10' from dual union all
+                select '005','Computers/Ethics','-5','-10' from dual union all
+                select '006','Computers/Ethics','-5','-10' from dual union all
+                select '010','Bibliographies','-18','-26' from dual union all
+                select '020','Library/Information Science','-7','-14' from dual union all
+                select '030','General Encyclopedic Works','-6','-11' from dual union all
+                select '050','General Serial Publications','-8','-16' from dual union all
+                select '060','Organizations/Museums','-15','-21' from dual union all
+                select '070','News/Journalism','-7','-16' from dual union all
+                select '080','General Collections','-15','-21' from dual union all
+                select '090','Manuscripts/Rare Books','-18','-26' from dual union all
+                select '100','Philosophy-Gen. Topics','-15','-25' from dual union all
+                select '110','Metaphysics','-15','-25' from dual union all
+                select '120','Knowledge/Cause-Man','-15','-25' from dual union all
+                select '130','Paranormal Phenomena','-15','-25' from dual union all
+                select '133.1','Ghosts/stories','-19','-29' from dual union all
+                select '133.4','Magic/Witchcraft','-17','-25' from dual union all
+                select '135','Dreams/Mysteries','-17','-25' from dual union all
+                select '140','Philosophical Viewpoints','-17','-25' from dual union all
+                select '150','Psychology','-16','-25' from dual union all
+                select '152','Emotions/Feelings','-14','-20' from dual union all
+                select '155','Developmental Psychology','-14','-20' from dual union all
+                select '156','Behavior','-14','-20' from dual union all
+                select '158','Coping w/… (Issues)','-8','-14' from dual union all
+                select '160','Logic','-15','-25' from dual union all
+                select '170','Ethics/Character Education','-8','-14' from dual union all
+                select '180','Ancient/Oriental Philosophy','-18','-25' from dual union all
+                select '190','Modern Western Philosophy','-15','-25' from dual union all
+                select '200','Religion – Gen. Topics','-14','-20' from dual union all
+                select '210','Natural Theology','-14','-20' from dual union all
+                select '220','Bible','-18','-26' from dual union all
+                select '230','Christian Theology','-18','-26' from dual union all
+                select '240','Christian Moral and Devotional','-18','-26' from dual union all
+                select '250','Local Christian Church','-18','-26' from dual union all
+                select '260','Christian Social Theology','-18','-26' from dual union all
+                select '270','Church History','-18','-26' from dual union all
+                select '280','Denominations/Sects','-18','-26' from dual union all
+                select '290','Comparative Religion','-14','-20' from dual union all
+                select '291','Mythology','-18','-26' from dual union all
+                select '292','Mythology','-18','-26' from dual union all
+                select '293','Mythology','-18','-26' from dual union all
+                select '294','Other Religions','-14','-20' from dual union all
+                select '295','Other Religions','-14','-20' from dual union all
+                select '296','Other Religions','-14','-20' from dual union all
+                select '297','Other Religions','-14','-20' from dual union all
+                select '298','Other Religions','-14','-20' from dual union all
+                select '299','Other Religions','-14','-20' from dual union all
+                select '300','Sociology-Gen. Topics','-10','-16' from dual union all
+                select '301.2','Culture/Processes','-10','-16' from dual union all
+                select '301.24','Social Change','-10','-16' from dual union all
+                select '301.3','Censorship/Prejudice/Propaganda','-10','-16' from dual union all
+                select '301.3','Ecology','-10','-16' from dual union all
+                select '301.4','Sexes/Marriage/Family','-10','-16' from dual union all
+                select '302','Communication','-10','-16' from dual union all
+                select '303','Social Interaction','-10','-16' from dual union all
+                select '303.2','Communication','-10','-16' from dual union all
+                select '303.4','Change/Group Interaction','-10','-16' from dual union all
+                select '303.6','Conflict/Terrorism','-10','-16' from dual union all
+                select '304','Social Behavior','-10','-16' from dual union all
+                select '304.2','Ecology','-10','-16' from dual union all
+                select '304.5','Genetics','-10','-16' from dual union all
+                select '304.6','Population','-10','-16' from dual union all
+                select '304.8','Immigration','-10','-16' from dual union all
+                select '305','Social Groups','-10','-16' from dual union all
+                select '306','Culture','-10','-16' from dual union all
+                select '307','Communities/Cities/Towns','-10','-16' from dual union all
+                select '309','Social Situations/Conditions','-10','-16' from dual union all
+                select '310','Statistics','-15','-21' from dual union all
+                select '320','Politics/Political Science','-10','-16' from dual union all
+                select '320.1','State','-10','-16' from dual union all
+                select '320.3','Comparative Government','-10','-16' from dual union all
+                select '320.4','Civics','-10','-16' from dual union all
+                select '321','Governments and States','-10','-16' from dual union all
+                select '322','Relation of State/Groups','-10','-16' from dual union all
+                select '323','Civil and Political Rights','-10','-16' from dual union all
+                select '323.1','Racial/Ethnic Groups','-10','-16' from dual union all
+                select '323.4','Civil Rights/Liberty','-10','-16' from dual union all
+                select '323.5','Political Rights','-10','-16' from dual union all
+                select '323.6','Citizenship','-10','-16' from dual union all
+                select '324','Voting/Electoral Process','-10','-16' from dual union all
+                select '325','Migration/Colonization','-10','-16' from dual union all
+                select '326','Slavery/Emancipation','-10','-16' from dual union all
+                select '327','International relations/Spies','-10','-16' from dual union all
+                select '328','Legislation              ','-10','-16' from dual union all
+                select '330','Economics-General Topics','-5','-11' from dual union all
+                select '331','Labor Economics/Careers','-5','-11' from dual union all
+                select '332','Finance/Money','-5','-11' from dual union all
+                select '333','Land Economics/Conservation','-8','-14' from dual union all
+                select '334','Cooperatives','-8','-14' from dual union all
+                select '335','Socialism/Related Systems','-8','-14' from dual union all
+                select '336','Public Finance/Taxes','-5','-11' from dual union all
+                select '337','International economics','-5','-11' from dual union all
+                select '338','Production','-5','-11' from dual union all
+                select '338.1','Costs/Prices/Income','-5','-11' from dual union all
+                select '339','Macroeconomics','-5','-11' from dual union all
+                select '340','Law-General Topics','-10','-16' from dual union all
+                select '341','International Law/United Nations','-5','-11' from dual union all
+                select '341.26','States','-10','-16' from dual union all
+                select '341.73','Defense/Mutual Security','-5','-11' from dual union all
+                select '342','Constitutional Law','-18','-24' from dual union all
+                select '342.4','Government Structure','-10','-16' from dual union all
+                select '342.5','Legislative Branch','-10','-16' from dual union all
+                select '342.6','Executive Branch','-10','-16' from dual union all
+                select '342.7','Election Law','-10','-16' from dual union all
+                select '342.9','Local Government','-10','-16' from dual union all
+                select '343','Military/tax/trade/industrial law','-5','-11' from dual union all
+                select '344','Social/labor/welfare Law','-10','-16' from dual union all
+                select '345','Criminal Law','-10','-16' from dual union all
+                select '346','Private Law','-10','-16' from dual union all
+                select '347','Civil Procedure/Courts','-13','-19' from dual union all
+                select '348','Laws/Regulations/Cases','-13','-19' from dual union all
+                select '350','Government','-10','-16' from dual union all
+                select '351','Government','-10','-16' from dual union all
+                select '352','Central Governments/Local Units     ','-10','-16' from dual union all
+                select '353','Federal and State Government','-10','-16' from dual union all
+                select '354','Specific Central Governments','-10','-16' from dual union all
+                select '355','Military Science','-5','-11' from dual union all
+                select '356','Military Science','-5','-11' from dual union all
+                select '357','Military Science','-5','-11' from dual union all
+                select '358','Military Science','-5','-11' from dual union all
+                select '359','Military Science','-5','-11' from dual union all
+                select '360','Social Services/Issues/Disasters','-10','-16' from dual union all
+                select '361','Gen. Social problems/services','-10','-16' from dual union all
+                select '362','Social Welfare Problems','-10','-16' from dual union all
+                select '362.1','Physical Illness','-10','-16' from dual union all
+                select '362.2','Mental Illness/Drugs','-6','-12' from dual union all
+                select '362.4','Physical Disabilities','-10','-16' from dual union all
+                select '362.5','Poverty','-10','-16' from dual union all
+                select '362.6','Aged People','-10','-16' from dual union all
+                select '362.7','Young People','-10','-16' from dual union all
+                select '362.8','Families/Unwed Mothers','-10','-16' from dual union all
+                select '362.9','Minority/Labor/Victims','-10','-16' from dual union all
+                select '363','Other Social Services/Issues','-10','-16' from dual union all
+                select '363.2','Police','-10','-16' from dual union all
+                select '363.3','Public Safety','-10','-16' from dual union all
+                select '363.34','Terrorism','-10','-16' from dual union all
+                select '363.4','Public Morals','-10','-16' from dual union all
+                select '363.5','Public Works','-10','-16' from dual union all
+                select '363.6','Public Utilities','-10','-16' from dual union all
+                select '363.7','Ecology','-10','-16' from dual union all
+                select '364','Crime/Alleviation','-15','-21' from dual union all
+                select '365','Penal Institutions/Prisons','-15','-21' from dual union all
+                select '366','Associations','-15','-21' from dual union all
+                select '367','General Clubs','-15','-21' from dual union all
+                select '368','Insurance','-15','-21' from dual union all
+                select '369','Misc. Associations/Boy/Girl Scouts','-15','-21' from dual union all
+                select '370','Education-General Topics','-15','-21' from dual union all
+                select '371','School Mgt./Special Ed.','-15','-21' from dual union all
+                select '372','Elementary Education','-15','-21' from dual union all
+                select '373','Secondary Education','-15','-21' from dual union all
+                select '374','Adult Education','-15','-21' from dual union all
+                select '375','Curricula','-15','-21' from dual union all
+                select '376','Education of Women','-15','-21' from dual union all
+                select '377','Schools and Religion','-15','-21' from dual union all
+                select '378','Higher Education','-15','-21' from dual union all
+                select '379','Education and the State','-15','-21' from dual union all
+                select '380','Commerce','-8','-14' from dual union all
+                select '381','Commerce','-8','-14' from dual union all
+                select '383','Communication','-5','-11' from dual union all
+                select '384','Communication','-5','-11' from dual union all
+                select '385','Transportation','-8','-14' from dual union all
+                select '386','Transportation','-8','-14' from dual union all
+                select '387','Transportation','-8','-14' from dual union all
+                select '388','Transportation','-8','-14' from dual union all
+                select '389','Metrology','-18','-24' from dual union all
+                select '390','Customs/Etiquette/Folklore','-18','-26' from dual union all
+                select '391','Costume/Personal Appearance','-25','-31' from dual union all
+                select '392','Customs of Life/Domestic Life','-10','-16' from dual union all
+                select '393','Death Customs','-10','-16' from dual union all
+                select '394','Holidays/General Customs','-25','-31' from dual union all
+                select '395','Manners/Etiquette','-10','-16' from dual union all
+                select '398','Folklore/Fairy Tales','-25','-31' from dual union all
+                select '399','Customs of War/Diplomacy','-10','-16' from dual union all
+                select '400','Language-General Topics','-18','-26' from dual union all
+                select '410','Linguistics','-18','-26' from dual union all
+                select '420','English/Grammar','-18','-26' from dual union all
+                select '423','English Dictionaries','-18','-26' from dual union all
+                select '430','German','-18','-26' from dual union all
+                select '440','French','-18','-26' from dual union all
+                select '450','Italian','-18','-26' from dual union all
+                select '460','Spanish','-18','-26' from dual union all
+                select '470','Latin','-18','-26' from dual union all
+                select '480','Greek','-18','-26' from dual union all
+                select '490','Other Languages','-18','-26' from dual union all
+                select '500','Science-General Topics','-10','-16' from dual union all
+                select '501','Science-General Topics','-10','-16' from dual union all
+                select '502','Equipment/Instruments','-15','-21' from dual union all
+                select '503','Dictionaries/Encyclopedias','-10','-16' from dual union all
+                select '507','Projects/Experiments','-15','-21' from dual union all
+                select '508','Nature/Seasons','-20','-26' from dual union all
+                select '509','Science History','-18','-24' from dual union all
+                select '510','Mathematics','-15','-21' from dual union all
+                select '512','Algebra/Number Theory','-15','-21' from dual union all
+                select '513','Arithmetic','-15','-21' from dual union all
+                select '514','Topology','-15','-21' from dual union all
+                select '515','Analysis','-15','-21' from dual union all
+                select '516','Geometry','-15','-21' from dual union all
+                select '519','Probability','-15','-21' from dual union all
+                select '520','Space Science/Astronomy','-5','-11' from dual union all
+                select '521','Astronomy-Theories','-5','-11' from dual union all
+                select '522','Astronomy-Instruments','-5','-11' from dual union all
+                select '523','Celestial Bodies/Phenomena','-5','-11' from dual union all
+                select '523.1','Universe','-5','-11' from dual union all
+                select '523.2','Solar System','-5','-11' from dual union all
+                select '523.3','Moon','-5','-11' from dual union all
+                select '523.4','Planets','-5','-11' from dual union all
+                select '523.5','Meteors','-5','-11' from dual union all
+                select '523.6','Comets','-5','-11' from dual union all
+                select '523.7','Sun','-5','-11' from dual union all
+                select '523.8','Stars','-5','-11' from dual union all
+                select '523.9','Satellites','-5','-11' from dual union all
+                select '525','Earth/Seasons/Tides/Day/Night','-10','-16' from dual union all
+                select '526','Mathematical Geography','-10','-16' from dual union all
+                select '529','Time','-10','-16' from dual union all
+                select '530','Physical Science/Physics','-15','-21' from dual union all
+                select '531','Matter/Energy (Mechanics); Force/Motion; Simple Machines','-15','-21' from dual union all
+                select '532','Water/Fluids','-15','-21' from dual union all
+                select '533','Air/Gases','-15','-21' from dual union all
+                select '534','Sound','-15','-21' from dual union all
+                select '535','Light/Color','-15','-21' from dual union all
+                select '536','Heat','-15','-21' from dual union all
+                select '537','Electricity/Electronics','-15','-21' from dual union all
+                select '538','Magnetism','-15','-21' from dual union all
+                select '539','Atoms/Modern Physics','-5','-11' from dual union all
+                select '540','Chemistry','-15','-21' from dual union all
+                select '541','Physical/theoretical chemistry','-10','-16' from dual union all
+                select '542','Laboratories/Equipment','-15','-21' from dual union all
+                select '546','Elements (Inorganic Chemistry)','-15','-21' from dual union all
+                select '547','Organic Chemistry','-15','-21' from dual union all
+                select '548','Crystals','-18','-24' from dual union all
+                select '549','Rocks/Minerals (Mineralogy)','-18','-24' from dual union all
+                select '550','Earth Science-Gen. Topics','-15','-21' from dual union all
+                select '551','Geology','-15','-21' from dual union all
+                select '551.2','Earthquakes/Volcanoes','-15','-21' from dual union all
+                select '551.3','Glaciers/Icebergs','-15','-21' from dual union all
+                select '551.4','Landforms/Oceanography','-15','-21' from dual union all
+                select '551.5','Weather/Climate','-5','-11' from dual union all
+                select '551.6','Weather/Climate','-5','-11' from dual union all
+                select '552','Rocks/Minerals (Petrology)','-18','-26' from dual union all
+                select '553','Economic Geology','-10','-16' from dual union all
+                select '560','Paleontology-General Topics','-15','-21' from dual union all
+                select '562','Fossils','-15','-21' from dual union all
+                select '563','Fossils','-15','-21' from dual union all
+                select '564','Fossils','-15','-21' from dual union all
+                select '565','Fossils','-15','-21' from dual union all
+                select '566','Dinosaurs','-15','-21' from dual union all
+                select '567','Dinosaurs','-15','-21' from dual union all
+                select '568','Dinosaurs','-15','-21' from dual union all
+                select '569','Fossil Mammals','-15','-21' from dual union all
+                select '570','Life Science-General Topics','-10','-16' from dual union all
+                select '571','Life Science-General Topics','-10','-16' from dual union all
+                select '572','Photosynthesis','-10','-16' from dual union all
+                select '573','Physical Anthropology','-10','-16' from dual union all
+                select '574','Biology/Environment','-15','-21' from dual union all
+                select '574.8','Tissues/Cells/Molecules','-15','-21' from dual union all
+                select '575','Microbiology','-16','-22' from dual union all
+                select '576','Genetics','-10','-16' from dual union all
+                select '577','Habitats/Ecosystems/Biomes/Food Chains/Life Cycles','-15','-21' from dual union all
+                select '578','Microscopy','-15','-21' from dual union all
+                select '579','Collection/Preservation/Specimen','-15','-21' from dual union all
+                select '580','Botany/Plants-General Topics','-18','-26' from dual union all
+                select '581','Plant Growth/Development','-18','-26' from dual union all
+                select '582','Seed-bearing Plants','-18','-26' from dual union all
+                select '583','Trees/Other Plants','-18','-26' from dual union all
+                select '584','Trees/Other Plants','-18','-26' from dual union all
+                select '585','Trees/Other Plants','-18','-26' from dual union all
+                select '586','Trees/Other Plants','-18','-26' from dual union all
+                select '587','Trees/Other Plants','-18','-26' from dual union all
+                select '588','Trees/Other Plants','-18','-26' from dual union all
+                select '589','Trees/Other Plants','-18','-26' from dual union all
+                select '590','Zoology/Animals-General Topics','-18','-26' from dual union all
+                select '591','Animal Behavior','-18','-26' from dual union all
+                select '592','Invertebrates','-18','-26' from dual union all
+                select '593','Protozoa ','-18','-26' from dual union all
+                select '594','Mollusks','-18','-26' from dual union all
+                select '595','Other Invertebrates','-18','-26' from dual union all
+                select '595.7','Insects','-18','-26' from dual union all
+                select '596','Vertebrates','-18','-26' from dual union all
+                select '597','Fish/Amphibians/Reptiles','-18','-26' from dual union all
+                select '598','Birds','-18','-26' from dual union all
+                select '599','Mammals','-18','-26' from dual union all
+                select '600','Technology-General Topics','-5','-11' from dual union all
+                select '601','Technology-General Topics','-5','-11' from dual union all
+                select '602','Technology-General Topics','-5','-11' from dual union all
+                select '603','Technology-General Topics','-5','-11' from dual union all
+                select '604','Technology-General Topics','-5','-11' from dual union all
+                select '605','Technology-General Topics','-5','-11' from dual union all
+                select '606','Technology-General Topics','-5','-11' from dual union all
+                select '607','Technology-General Topics','-5','-11' from dual union all
+                select '608','Inventions','-10','-16' from dual union all
+                select '609','History of Tech./Inventors','-15','-21' from dual union all
+                select '610','Medicine-General Topics','-5','-11' from dual union all
+                select '611','Human Body/Systems','-5','-11' from dual union all
+                select '612','Human Body/Systems','-5','-11' from dual union all
+                select '612','Five Senses','-10','-16' from dual union all
+                select '613','Health/Hygiene/Fitness','-10','-16' from dual union all
+                select '614','Prevention of Disease','-5','-11' from dual union all
+                select '615','Drugs','-5','-11' from dual union all
+                select '616','Diseases','-5','-11' from dual union all
+                select '617','Surgery/Dentistry','-5','-11' from dual union all
+                select '618','Gynecology/Med. Specialties','-5','-11' from dual union all
+                select '619','Experimental Medicine','-5','-11' from dual union all
+                select '620','Engineering-General Topics','-5','-11' from dual union all
+                select '621','Energy/Energy Sources','-5','-11' from dual union all
+                select '621.8','Simple Machines','-15','-21' from dual union all
+                select '622','Mining Engineering','-10','-16' from dual union all
+                select '623','Military Engineering','-10','-16' from dual union all
+                select '624','Civil Engineering','-10','-16' from dual union all
+                select '625','Railroads/Roads/Transportation','-10','-16' from dual union all
+                select '627','Hydraulic Engineering','-10','-16' from dual union all
+                select '628','Sanitary/Municipal Engineering','-10','-16' from dual union all
+                select '629','Transportation','-10','-16' from dual union all
+                select '629.1','Air','-10','-16' from dual union all
+                select '629.2','Land (Cars, Trucks, Cycles)','-10','-16' from dual union all
+                select '629.4','Space Technology/Exploration','-10','-16' from dual union all
+                select '629.8','Robotics','-10','-16' from dual union all
+                select '630','Agriculture-General Topics','-15','-21' from dual union all
+                select '631','Techniques/Equipment','-10','-16' from dual union all
+                select '632','Plant Injuries/Diseases/Pests','-10','-16' from dual union all
+                select '633','Field Crops','-15','-21' from dual union all
+                select '634','Orchards/Forestry','-15','-21' from dual union all
+                select '635','Garden Crops','-15','-21' from dual union all
+                select '636','Pets','-15','-21' from dual union all
+                select '637','Dairy','-15','-21' from dual union all
+                select '638','Insect Culture','-15','-21' from dual union all
+                select '639','Hunting/Fishing/Conservation','-15','-21' from dual union all
+                select '640','Home Economics-Gen. Topics','-15','-21' from dual union all
+                select '641','Food/Drink','-15','-21' from dual union all
+                select '641.5','Cookbooks','-22','-30' from dual union all
+                select '642','Food/Meal Service','-15','-21' from dual union all
+                select '643','Housing/Equipment','-15','-21' from dual union all
+                select '644','Household Utilities','-15','-21' from dual union all
+                select '645','Household Furnishings','-15','-21' from dual union all
+                select '646','Sewing','-15','-21' from dual union all
+                select '646.7','Grooming','-10','-16' from dual union all
+                select '647','Public Households','-15','-21' from dual union all
+                select '648','Housekeeping','-15','-21' from dual union all
+                select '649','Child Rearing','-15','-21' from dual union all
+                select '650','Office/Mgt. Services','-5','-11' from dual union all
+                select '651','Office Services','-5','-11' from dual union all
+                select '652','Office Services','-5','-11' from dual union all
+                select '653','Office Services','-5','-11' from dual union all
+                select '654','Office Services','-5','-11' from dual union all
+                select '655','Office Services','-5','-11' from dual union all
+                select '656','Office Services','-5','-11' from dual union all
+                select '657','Office Services','-5','-11' from dual union all
+                select '658','Office Services','-5','-11' from dual union all
+                select '659','Advertising/Public Relations','-5','-11' from dual union all
+                select '660','Chemical Technology','-5','-11' from dual union all
+                select '670','Manufacturing-Gen. topics','-5','-11' from dual union all
+                select '680','Manufacturing for Specific Uses','-5','-11' from dual union all
+                select '690','Buildings','-5','-11' from dual union all
+                select '700','Fine Arts-General Topics','-18','-26' from dual union all
+                select '701','Fine Arts-General Topics','-18','-26' from dual union all
+                select '702','Fine Arts-General Topics','-18','-26' from dual union all
+                select '703','Fine Arts-General Topics','-18','-26' from dual union all
+                select '704','Fine Arts-General Topics','-18','-26' from dual union all
+                select '705','Fine Arts-General Topics','-18','-26' from dual union all
+                select '706','Fine Arts-General Topics','-18','-26' from dual union all
+                select '707','Fine Arts-General Topics','-18','-26' from dual union all
+                select '708','Fine Arts-General Topics','-18','-26' from dual union all
+                select '709','Art History','-18','-30' from dual union all
+                select '710','Civic and Landscape Art','-18','-26' from dual union all
+                select '720','Architecture','-18','-26' from dual union all
+                select '730','Sculpture/Plastic Arts','-18','-26' from dual union all
+                select '740','Drawing','-18','-26' from dual union all
+                select '741.59','Graphic Novels','-18','-26' from dual union all
+                select '745','Crafts/Decorative Arts','-18','-26' from dual union all
+                select '746','Textile Arts','-18','-26' from dual union all
+                select '747','Interior Decorating','-18','-26' from dual union all
+                select '748','Glass','-18','-26' from dual union all
+                select '749','Furniture/Accessories','-18','-26' from dual union all
+                select '750','Painting-General Topics','-18','-26' from dual union all
+                select '751','Painting-General Topics','-18','-26' from dual union all
+                select '752','Painting-General Topics','-18','-26' from dual union all
+                select '753','Painting-General Topics','-18','-26' from dual union all
+                select '754','Painting-General Topics','-18','-26' from dual union all
+                select '755','Painting-General Topics','-18','-26' from dual union all
+                select '756','Painting-General Topics','-18','-26' from dual union all
+                select '757','Painting-General Topics','-18','-26' from dual union all
+                select '758','Painting-General Topics','-18','-26' from dual union all
+                select '759','History of Painting','-20','-30' from dual union all
+                select '760','Graphic Arts/Printing','-15','-21' from dual union all
+                select '770','Photography','-10','-16' from dual union all
+                select '780','Music','-18','-26' from dual union all
+                select '790','Recreational Arts','-18','-26' from dual union all
+                select '791','Public Performances','-18','-26' from dual union all
+                select '792','Theater','-18','-26' from dual union all
+                select '793','Indoor Games','-18','-26' from dual union all
+                select '794','Games of Skill','-18','-26' from dual union all
+                select '795','Games of Chance','-18','-26' from dual union all
+                select '796','Sports-General Topics','-10','-16' from dual union all
+                select '796.1','Kiting','-10','-16' from dual union all
+                select '796.2','Skating','-10','-16' from dual union all
+                select '796.32','Basketball/Volleyball','-10','-16' from dual union all
+                select '796.33','Football/Soccer','-10','-16' from dual union all
+                select '796.34','Tennis/Golf','-10','-16' from dual union all
+                select '796.35','Baseball/Softball','-10','-16' from dual union all
+                select '796.4','Track/Field/Gymnastics','-10','-16' from dual union all
+                select '796.5','Hiking/Camping','-10','-16' from dual union all
+                select '796.6','Biking','-10','-16' from dual union all
+                select '796.7','Racing','-10','-16' from dual union all
+                select '796.8','Martial Arts','-10','-16' from dual union all
+                select '796.9','Ice/Snow Sports','-10','-16' from dual union all
+                select '797','Water/Air Sports','-10','-16' from dual union all
+                select '798','Equestrian/Animal racing','-10','-16' from dual union all
+                select '799','Fishing/Hunting','-10','-16' from dual union all
+                select '800','Literature-General Topics','-25','-31' from dual union all
+                select '801','Philosophy and Theory','-25','-31' from dual union all
+                select '802','Miscellany','-25','-31' from dual union all
+                select '803','Dictionaries and Encyclopedias','-25','-31' from dual union all
+                select '806','Serial Publications','-25','-31' from dual union all
+                select '807','Organizations','-25','-31' from dual union all
+                select '808','Rhetoric/Collections','-25','-31' from dual union all
+                select '809','Literature History/Criticism','-25','-31' from dual union all
+                select '810','American Literature','-25','-31' from dual union all
+                select '811','American Poetry','-25','-31' from dual union all
+                select '812','American Drama','-25','-31' from dual union all
+                select '813','American Fiction','-25','-31' from dual union all
+                select '814','American Essays','-25','-31' from dual union all
+                select '815','American Speeches','-25','-31' from dual union all
+                select '816','American Letters','-25','-31' from dual union all
+                select '817','American Satire/Humor','-25','-31' from dual union all
+                select '818','American Miscellany','-25','-31' from dual union all
+                select '820','English Literature','-25','-31' from dual union all
+                select '821','English Poetry','-25','-31' from dual union all
+                select '822','English Drama','-25','-31' from dual union all
+                select '823','English Fiction','-25','-31' from dual union all
+                select '824','English Essays','-25','-31' from dual union all
+                select '825','English Speeches','-25','-31' from dual union all
+                select '826','English Letters','-25','-31' from dual union all
+                select '827','English Satire/Humor','-25','-31' from dual union all
+                select '828','English Miscellany','-25','-31' from dual union all
+                select '829','Old English/Anglo-Saxon','-25','-31' from dual union all
+                select '830','German Literature','-25','-31' from dual union all
+                select '840','French Literature','-25','-31' from dual union all
+                select '850','Italian Literature','-25','-31' from dual union all
+                select '860','Spanish Literature','-25','-31' from dual union all
+                select '870','Latin Literature','-25','-31' from dual union all
+                select '880','Greek Literature','-25','-31' from dual union all
+                select '890','Other Languages Literature','-25','-31' from dual union all
+                select '900','Gen. Geography/History*','-20','-27' from dual union all
+                select '901','Gen. Geography/History*','-20','-27' from dual union all
+                select '902','Gen. Geography/History*','-20','-27' from dual union all
+                select '903','Gen. Geography/History*','-20','-27' from dual union all
+                select '904','Events','-20','-27' from dual union all
+                select '909','General World History','-20','-27' from dual union all
+                select '910','Geography-General Topics','-5','-11' from dual union all
+                select '910.4','Shipwrecks/Pirates','-20','-29' from dual union all
+                select '910.9','Explorers','-20','-29' from dual union all
+                select '911','Historical Maps/Atlases','-20','-29' from dual union all
+                select '912','Maps/Atlases','-5','-11' from dual union all
+                select '913','Ancient World Geography','-20','-29' from dual union all
+                select '914','Europe-Geography','-10','-16' from dual union all
+                select '915','Asia-Geography','-10','-16' from dual union all
+                select '916','Africa-Geography','-10','-16' from dual union all
+                select '917','North America-Geography','-10','-16' from dual union all
+                select '917.1','Canada-Geography','-10','-16' from dual union all
+                select '917.2','Mexico-Geography','-10','-16' from dual union all
+                select '917.3','United States-Geography','-10','-16' from dual union all
+                select '918','South America-Geography','-10','-16' from dual union all
+                select '919','Other Areas-Geography','-10','-16' from dual union all
+                select '920','Collective Biography','-13','-20' from dual union all
+                select '921','Individual Biography','-13','-20' from dual union all
+                select '929','Genealogy/Names/Insignia','-10','-22' from dual union all
+                select '930','Ancient World-History*','-20','-29' from dual union all
+                select '931','Ancient China','-20','-29' from dual union all
+                select '932','Ancient Egypt','-20','-29' from dual union all
+                select '933','Ancient Palestine','-20','-29' from dual union all
+                select '934','Ancient India','-20','-29' from dual union all
+                select '935','Ancient Mesopotamia/Iranian Plateau','-20','-29' from dual union all
+                select '936','Ancient Europe','-20','-29' from dual union all
+                select '937','Ancient Rome','-20','-29' from dual union all
+                select '938','Ancient Greece','-20','-29' from dual union all
+                select '939','Other Ancient Lands','-20','-29' from dual union all
+                select '940','Europe-History*','-20','-29' from dual union all
+                select '940.1','Middle Ages','-20','-29' from dual union all
+                select '940.2','Renaissance/Reformation','-20','-29' from dual union all
+                select '940.3','World War I','-20','-29' from dual union all
+                select '904.4','World War I','-20','-29' from dual union all
+                select '940.53','World War II','-20','-29' from dual union all
+                select '940.54','World War II','-20','-29' from dual union all
+                select '940.55','Modern Europe','-20','-29' from dual union all
+                select '941','Great Britain/Scotland/Ireland','-10','-16' from dual union all
+                select '942','England/Wales','-10','-16' from dual union all
+                select '943','Germany/Central Europe','-10','-16' from dual union all
+                select '944','France/Monaco','-10','-16' from dual union all
+                select '944','Italy','-10','-16' from dual union all
+                select '946','Spain/Portugal','-10','-16' from dual union all
+                select '947','Eastern Europe/Sov. Union','-10','-16' from dual union all
+                select '948','North Europe/Scandinavia','-10','-16' from dual union all
+                select '949','Other Parts of Europe','-10','-16' from dual union all
+                select '950','Asia/Far East-History*','-20','-29' from dual union all
+                select '951','China','-10','-16' from dual union all
+                select '552','Japan','-10','-16' from dual union all
+                select '953','Arabian Peninsula','-10','-16' from dual union all
+                select '954','South Asia/India','-10','-16' from dual union all
+                select '955','Iran','-10','-16' from dual union all
+                select '956','Middle East (Near East)','-10','-16' from dual union all
+                select '957','Siberia (Asiatic Russia)','-10','-16' from dual union all
+                select '958','Central Asia','-10','-16' from dual union all
+                select '959','Southeast Asia','-10','-16' from dual union all
+                select '960','Africa-History*','-20','-29' from dual union all
+                select '961','Tunisia/Libya','-10','-16' from dual union all
+                select '962','Egypt/Nile/Sudan','-10','-16' from dual union all
+                select '963','Ethiopia','-10','-16' from dual union all
+                select '964','Morocco/Canary Islands','-10','-16' from dual union all
+                select '965','Algeria','-10','-16' from dual union all
+                select '966','West Africa','-10','-16' from dual union all
+                select '967','Central Africa','-10','-16' from dual union all
+                select '968','South Africa','-10','-16' from dual union all
+                select '969','South Indian Ocean','-10','-16' from dual union all
+                select '970','North America-History*','-20','-29' from dual union all
+                select '970.1','Native Americans','-15','-21' from dual union all
+                select '971','Canada','-10','-16' from dual union all
+                select '972','Mexico/Middle America','-10','-16' from dual union all
+                select '973','United States','-10','-16' from dual union all
+                select '973.1','Discovery','-20','-29' from dual union all
+                select '973.2','Colonial Period','-20','-29' from dual union all
+                select '973.3','Revolutionary War','-20','-29' from dual union all
+                select '973.4','Constitutional Period','-20','-29' from dual union all
+                select '973.5','Westward Expansion','-20','-29' from dual union all
+                select '973.6','Westward Expansion','-20','-29' from dual union all
+                select '973.7','Civil War','-20','-29' from dual union all
+                select '973.8','Reconstruction','-20','-29' from dual union all
+                select '973.9','20th Century/Contemporary US','-20','-29' from dual union all
+                select '974','U.S., Northeastern states*','-10','-16' from dual union all
+                select '975','U.S., Southeastern states*','-10','-16' from dual union all
+                select '976','U.S., South central states*','-10','-16' from dual union all
+                select '977','U.S., North central states*','-10','-16' from dual union all
+                select '978','U.S., Western states*','-10','-16' from dual union all
+                select '979','U.S., Great basin/Pacific slope States*','-10','-16' from dual union all
+                select '980','South America-History*','-20','-29' from dual union all
+                select '981','Brazil','-10','-16' from dual union all
+                select '982','Argentina','-10','-16' from dual union all
+                select '983','Chile','-10','-16' from dual union all
+                select '984','Bolivia','-10','-16' from dual union all
+                select '985','Peru','-10','-16' from dual union all
+                select '986','Colombia/Ecuador','-10','-16' from dual union all
+                select '987','Venezuela','-10','-16' from dual union all
+                select '988','Guiana','-10','-16' from dual union all
+                select '989','Paraguay/Uruguay','-10','-16' from dual union all
+                select '990','Other Areas-History*','-20','-29' from dual union all
+                select '993','New Zealand','-10','-16' from dual union all
+                select '994','Australia','-10','-16' from dual union all
+                select '995','Melanesia/New Guinea','-10','-16' from dual union all
+                select '996','Polynesia','-10','-16' from dual union all
+                select '996.9','Hawaii','-10','-16' from dual union all
+                select '997','Atlantic Ocean Islands','-10','-16' from dual union all
+                select '998','Arctic Islands/Antarctica','-10','-16' from dual union all
+                select '999','Extraterrestrial worlds','-10','-16' from dual union all
+                select to_char(to_number(standard_hash('ADAPT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'adaptive books', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('AUBK','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'audiobook', '-15', '-16' from dual union all
+                select to_char(to_number(standard_hash('BIGBK','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'big book', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('BIOG','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'biography', '-13', '-20' from dual union all
+                select to_char(to_number(standard_hash('BOARD','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'board book', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('CDRM','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'cd-rom', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('EASY','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'easy', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('ERR','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'error', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('EVERY','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'everyone', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('FIC','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'fiction', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('GRAPH','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'comic/graphic', '-23', '-32' from dual union all
+                select to_char(to_number(standard_hash('GRUB','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'grubby', '1000', '13' from dual union all
+                select to_char(to_number(standard_hash('MOVIE','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'movie', '-16', '-17' from dual union all
+                select to_char(to_number(standard_hash('OSTSI','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'lost school item', '1000', '13' from dual union all
+                select to_char(to_number(standard_hash('OTHER','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'other', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('PER','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'periodical', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('PROF','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'professional', '-18', '-24' from dual union all
+                select to_char(to_number(standard_hash('REF','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reference', '-13', '-19' from dual union all
+                select to_char(to_number(standard_hash('RESRV','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reserves', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('TECH','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'technology/computers', '1000', '-1000' from dual union all
+                select to_char(to_number(standard_hash('TEXT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'textured bags', '1000', '-1000' from dual
+            ), 
+            drange as ( -- "deranged" because James thinks he's funny
+                select
+                    d.*
+                    , to_number(dewey_number) as drange_start
+                    , case
+                        when dewey_number = '000'
+                            then 100
+                        when dewey_number < 1000
+                            then (dewey_number/1000 + power(10,-length(to_char(dewey_number/1000))+1))*1000 
+                        when dewey_number > 1000
+                            then to_number(dewey_number)+1
+                        else -9 -- this value was picked out of a hat to be out of other ranges. THere should be ZERO calculations that end with this value
+                        end as drange_stop
+                from d
+            ),
+            id as (
+                select 
+                    bd.*
+                    , case
+                        when drange.drange_start >= 0 and drange.drange_stop <= 1000
+                            then drange.dewey_number 
+                        when drange.drange_start > 1000
+                            then regexp_replace(bd.locname, '(adult |everyone |kids |teen )','')
+                        else 'OOPS SOMETHING WENT WRONG'
+                        end
+                        as calculated_dewey
+                    , length(drange.dewey_number) as length
+                    , drange.keep as keepyear
+                    , drange.discard as discardyear
+                from bd
+                left join drange 
+                    on 
+                        to_number(bd.dewey_number) >= drange.drange_start 
+                    and
+                        to_number(bd.dewey_number) < drange.drange_stop
+                where bd.dewey_number >= 0
+                order by bd.dewey_number asc, bd.item asc, drange.dewey_number desc , length desc -- should sort the "correct" (i.e., most granular) calculated_dewey available to the top of the list
+            ),
+            dranked as ( -- "dranked" because James STILL thinks he's funny, should probably be "drowed" since it's not as deep as deep_rank, which could be a D&D joke, or maybe "drowNed" with n=1
+                select
+                    id.*
+                    , row_number() over (
+                            partition by item
+                            order by calculated_dewey desc , length desc -- should sort the "correct" (i.e., most granular) calculated_dewey available to the top of the list
+                        ) rn
+                from id
+            ),
+            x as (
+                select 
+                    dranked.*
+                from dranked
+                where rn = 1 
+                order by locname, item_callnumber, author, title, item
+            )
+            select
+                x.collection
+                , x.item_callnumber
+                , x.item
+                , x.status
+                , x.bid
+                , x.title
+                , x.author
+                , x.publishingdate
+                , x.cumulativehistory
+                , x.returndate
+                , case
+                    when validate_conversion(publishingdate as number) != 1 then 'FIX PUB DATE'
+                    when publishingdate is null then 'FIX PUB DATE'
+                    when to_number(publishingdate) > (to_number(to_char(sysdate, 'YYYY')) + to_number(x.keepyear)) then 'KEEP'
+                    when to_number(publishingdate) < (to_number(to_char(sysdate, 'YYYY')) + to_number(x.discardyear)) then 'DISCARD'
+                    else 'EVALUATE'
+                end as action
+                , case
+                    when x.cumulativehistory >= 30
+                        then 'EVALUATE FOR WEAR AND TEAR'
+                    else ''
+                end as grubby
+            from x
+EOT;
+        $stid = oci_parse($this->dbConnection, $sql);
+        // consider using oci_set_prefetch to improve performance
+        // oci_set_prefetch($stid, 1000);
+        oci_execute($stid);
+        $data = [];
         while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
             $data[] = $row;
         }
