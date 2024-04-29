@@ -559,7 +559,11 @@ public class RecordGroupingProcessor {
 		if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
 			String formatCategory = formatsToFormatCategory.get(format.toLowerCase());
 			String groupingCategory = categoryMap.get(formatCategory);
-			groupedWork.setGroupingCategory(groupingCategory);
+			if (format.equals("eComic")) {
+				groupedWork.setGroupingCategory("comic");
+			}else{
+				groupedWork.setGroupingCategory(groupingCategory);
+			}
 		} else {
 			if (!formatsWarned.contains(format)) {
 				logger.warn("Could not find format category for format " + format + " setting to book");
@@ -973,6 +977,17 @@ public class RecordGroupingProcessor {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("axis360", axis360Id);
 
 		String subtitle = getAxis360FieldValue(itemDetails, "subtitle");
+
+		if (formatType.equals("eBook")) {
+			//Check to see if it should be a comic book
+			String[] subjects = getAxis360FieldValue(itemDetails, "subject").split("#\\s");
+			for (String curSubject : subjects) {
+				if (curSubject.contains("Comics & Graphic Novels") || curSubject.contains("Comic and Graphic Books")) {
+					formatType = "eComic";
+					break;
+				}
+			}
+		}
 		return processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, language, true);
 	}
 

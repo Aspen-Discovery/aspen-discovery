@@ -66,7 +66,7 @@ public class CloudLibraryExporter {
 		deleteCloudLibraryItemStmt = aspenConn.prepareStatement("UPDATE cloud_library_title SET deleted = 1 where id = ?");
 		deleteCloudLibraryAvailabilityStmt = aspenConn.prepareStatement("DELETE FROM cloud_library_availability where id = ?");
 		cloudLibraryTitleHasAvailabilityStmt = aspenConn.prepareStatement("SELECT count(*) as numAvailability FROM cloud_library_availability where id = ?");
-		getAllExistingCloudLibraryItemsStmt = aspenConn.prepareStatement("SELECT cloud_library_title.id, cloud_library_title.cloudLibraryId, cloud_library_title.rawChecksum, deleted, cloud_library_availability.id as availabilityId from cloud_library_title left join cloud_library_availability on cloud_library_availability.cloudLibraryId = cloud_library_title.cloudLibraryId where settingId = ?");
+		getAllExistingCloudLibraryItemsStmt = aspenConn.prepareStatement("SELECT cloud_library_title.id, cloud_library_title.cloudLibraryId, cloud_library_title.format, cloud_library_title.rawChecksum, deleted, cloud_library_availability.id as availabilityId from cloud_library_title left join cloud_library_availability on cloud_library_availability.cloudLibraryId = cloud_library_title.cloudLibraryId where settingId = ?");
 
 		createDbLogEntry(startTime, aspenConn);
 	}
@@ -320,6 +320,7 @@ public class CloudLibraryExporter {
 				CloudLibraryTitle newTitle = new CloudLibraryTitle(
 						allRecordsRS.getLong("id"),
 						cloudLibraryId,
+						allRecordsRS.getString("format"),
 						allRecordsRS.getLong("rawChecksum"),
 						allRecordsRS.getBoolean("deleted"),
 						allRecordsRS.getLong("availabilityId")
@@ -408,7 +409,7 @@ public class CloudLibraryExporter {
 
 		WebServiceResponse response = callCloudLibrary(apiPath);
 		if (response == null) {
-			//Something really bad happened, we're done.
+			//Something bad happened, we're done.
 			return null;
 		} else if (!response.isSuccess()) {
 			if (response.getResponseCode() != 500) {
@@ -439,7 +440,7 @@ public class CloudLibraryExporter {
 
 		WebServiceResponse response = callCloudLibrary(apiPath);
 		if (response == null) {
-			//Something really bad happened, we're done.
+			//Something bad happened, we're done.
 			return null;
 		} else if (!response.isSuccess()) {
 			if (response.getResponseCode() != 500) {

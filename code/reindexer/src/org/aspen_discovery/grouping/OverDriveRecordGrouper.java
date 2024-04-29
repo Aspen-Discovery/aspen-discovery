@@ -67,6 +67,17 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 									}
 								}
 							}
+							//Check to see if this should be a comic rather than an eBook
+							if (productMetadata.has("subjects") && mediaType.equals("eBook")) {
+								JSONArray subjectsFromMetadata = productMetadata.getJSONArray("subjects");
+								for (int i = 0; i < subjectsFromMetadata.length(); i++) {
+									JSONObject curSubjectObj = subjectsFromMetadata.getJSONObject(i);
+									if (curSubjectObj.getString("value").equalsIgnoreCase("Comic and Graphic Books")) {
+										mediaType = "eComic";
+										break;
+									}
+								}
+							}
 						} catch (JSONException e) {
 							logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + overdriveId, e);
 						}
