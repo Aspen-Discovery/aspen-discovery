@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/AbstractGroupedWorkSearcher.php';
 require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
 
 class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWorkSearcher {
 	// Field List

@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
+require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
 
 class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher {
 	public function __construct() {

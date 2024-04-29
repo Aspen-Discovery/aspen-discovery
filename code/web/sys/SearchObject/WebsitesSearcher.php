@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
+require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
 
 class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 	public function __construct() {
