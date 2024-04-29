@@ -53,7 +53,7 @@ export const MyCheckouts = () => {
      }, [navigation]);
 
      useQuery(['checkouts', user.id, library.baseUrl, language, source], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
-          initialData: checkouts,
+          placeholderData: checkouts,
           onSuccess: (data) => {
                updateCheckouts(data);
           },
@@ -61,10 +61,11 @@ export const MyCheckouts = () => {
      });
 
      const toggleSource = async (value) => {
+          console.log('toggleSource: ' + value);
           setSource(value);
           setLoading(true);
-          console.log('toggleSource: ' + value);
           if (!_.isNull(value)) {
+               console.log('source: ' + source);
                if (value === 'ils') {
                     navigation.setOptions({ title: checkoutsBy.ils });
                } else if (value === 'overdrive') {
@@ -80,8 +81,10 @@ export const MyCheckouts = () => {
                } else {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
-               queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, value] });
+               await queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, source] });
+               await queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, value] });
           }
+          setLoading(false);
      };
 
      useFocusEffect(
@@ -155,7 +158,7 @@ export const MyCheckouts = () => {
           }, [language])
      );
 
-     if (isFetchingCheckouts) {
+     if (isFetchingCheckouts || isLoading) {
           return loadingSpinner();
      }
 

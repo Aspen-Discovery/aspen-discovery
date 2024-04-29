@@ -412,6 +412,7 @@ const NotificationToggle = (data) => {
      const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken } = React.useContext(UserContext);
      const { textColor } = React.useContext(ThemeContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const preference = data.data;
      const { notifySavedSearch, setNotifySavedSearch, notifyCustom, setNotifyCustom, notifyAccount, setNotifyAccount, revokeNotificationPermissions, addNotificationPermissions } = data;
 

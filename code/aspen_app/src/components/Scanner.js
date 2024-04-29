@@ -80,7 +80,10 @@ function cleanBarcode(barcode, type) {
      barcode = barcode.toUpperCase();
 
      if ((type === 512 || type === '512' || type === 'org.gs1.UPC-A' || type === 'org.gs1.EAN-13') && Platform.OS === 'ios') {
-          barcode = barcode.substring(1);
+          let firstValue = barcode.charAt(0);
+          if (firstValue === '0') {
+               barcode = barcode.substring(1);
+          }
      }
 
      return barcode;

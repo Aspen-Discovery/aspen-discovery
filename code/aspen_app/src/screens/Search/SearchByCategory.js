@@ -3,6 +3,7 @@ import { useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 import React from 'react';
+import { Image } from 'expo-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
@@ -13,12 +14,14 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../translat
 import { fetchSearchResultsForBrowseCategory } from '../../util/api/search';
 import { DisplayResult } from './DisplayResult';
 
+const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
+
 export const SearchResultsForBrowseCategory = () => {
      const [page, setPage] = React.useState(1);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
-     const { systemMessages } = React.useContext(SystemMessagesContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const category = useRoute().params.id ?? '';
      const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');

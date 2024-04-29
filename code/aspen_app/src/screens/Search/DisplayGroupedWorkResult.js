@@ -19,22 +19,52 @@ export const DisplayGroupedWorkResult = (props) => {
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
 
-     const formats = item?.itemList ?? [];
+     let formats = item?.itemList ?? [];
      const id = item.key ?? item.id;
+
+     let title;
+     if (item.title) {
+          title = item.title;
+     } else if (item.title_display) {
+          title = item.title_display;
+     }
+
+     let author;
+     if (item.author) {
+          author = item.author;
+     } else if (item.author_display) {
+          author = item.author_display;
+     }
+
+     if (_.isEmpty(formats)) {
+          if (item.format) {
+               formats = item.format;
+          }
+     }
 
      const handlePressItem = () => {
           navigate('GroupedWorkScreen', {
                id: id,
-               title: getCleanTitle(item.title),
+               title: getCleanTitle(title),
                url: library.baseUrl,
           });
      };
 
      function getFormat(n) {
+          if (_.isArray(n) || _.isObject(n)) {
+               return (
+                    <Badge key={n.key} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+                         <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
+                              {n.name}
+                         </BadgeText>
+                    </Badge>
+               );
+          }
+
           return (
-               <Badge key={n.key} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
+               <Badge key={n} borderRadius="$sm" borderColor={theme['colors']['secondary']['400']} variant="outline" bg="transparent">
                     <BadgeText textTransform="none" color={theme['colors']['secondary']['400']} sx={{ '@base': { fontSize: 10, lineHeight: 14 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
-                         {n.name}
+                         {n}
                     </BadgeText>
                </Badge>
           );
@@ -82,14 +112,14 @@ export const DisplayGroupedWorkResult = (props) => {
                          <AddToList itemId={id} btnStyle="sm" />
                     </VStack>
                     <VStack w="65%" pt="$1">
-                         {item.title ? (
+                         {title ? (
                               <Text color={textColor} bold sx={{ '@base': { fontSize: 14, lineHeight: 17, paddingBottom: 4 }, '@lg': { fontSize: 22, lineHeight: 25, paddingBottom: 4 } }}>
-                                   {item.title}
+                                   {title}
                               </Text>
                          ) : null}
-                         {item.author ? (
+                         {author ? (
                               <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 15 }, '@lg': { fontSize: 18, lineHeight: 21 } }}>
-                                   {getTermFromDictionary(language, 'by')} {item.author}
+                                   {getTermFromDictionary(language, 'by')} {author}
                               </Text>
                          ) : null}
                          <HStack mt="$4" direction="row" space="xs" flexWrap="wrap">

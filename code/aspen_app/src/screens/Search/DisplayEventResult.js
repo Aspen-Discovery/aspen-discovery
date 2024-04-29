@@ -1,5 +1,5 @@
 import { Badge, BadgeText, Box, HStack, Pressable, Text, VStack } from '@gluestack-ui/themed';
-import CachedImage from 'expo-cached-image';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import moment from 'moment';
@@ -61,6 +61,10 @@ export const DisplayEventResult = (props) => {
           }
           if (item.source === 'libcal' || item.source === 'springshare_libcal') {
                eventSource = 'springshare';
+          }
+
+          if (item.source === 'assabet') {
+               eventSource = 'assabet';
           }
 
           if (item.bypass) {

@@ -852,6 +852,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		if (isset($holdFromCloudLibrary->Position)) {
 			$hold->position = (int)$holdFromCloudLibrary->Position;
 		}
+		$hold->cancelable = true;
 
 		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
 		if ($recordDriver->isValid()) {

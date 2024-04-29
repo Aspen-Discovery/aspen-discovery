@@ -1,8 +1,8 @@
+import React from 'react';
 import { Badge, BadgeText, Box, HStack, Pressable, Text, VStack, Button, ButtonText, ButtonIcon, Center } from '@gluestack-ui/themed';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { TrashIcon } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import CachedImage from 'expo-cached-image';
 import { Image } from 'expo-image';
 import { getCleanTitle } from '../../helpers/item';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -12,13 +12,17 @@ import AddToList from './AddToList';
 
 const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
-export const DisplayResult = (props) => {
+export const DisplayListResult = (props) => {
      const item = props.data;
      const isUserList = props.isUserList;
      const listId = props.listId;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const queryClient = useQueryClient();
+
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
+
+     const backgroundColor = colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
 
      let recordType = 'grouped_work';
      if (item.recordtype) {
