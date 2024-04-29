@@ -129,7 +129,7 @@ public abstract class AbstractIndexingTest  {
 						IndexingProfile profile = indexingProfiles.get(formatData[0]);
 						Assertions.assertNotNull(profile, "No record grouper found for " + formatData[0]);
 
-						profile.addTranslationMapValue("formatCategory", formatData[1], formatData[2]);
+						profile.addTranslationMapValue("format_category", formatData[1], formatData[2]);
 						profile.addTranslationMapValue("format", formatData[1], formatData[3]);
 					}
 				}

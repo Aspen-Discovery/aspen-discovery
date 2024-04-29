@@ -76,8 +76,8 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				if (translationMaps.get("formatCategory").containsKey(originalFormat)){
-					String format = translateValue("formatCategory", originalFormat);
+				if (translationMaps.get("format_category").containsKey(originalFormat)){
+					String format = translateValue("format_category", originalFormat);
 					String formatCategory = categoryMap.get(format.toLowerCase());
 					if (formatCategory != null){
 						return formatCategory;

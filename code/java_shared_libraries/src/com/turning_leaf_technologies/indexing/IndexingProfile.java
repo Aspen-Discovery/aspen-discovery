@@ -357,7 +357,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			HashMap <String, String> formatMap = new HashMap<>();
 			translationMaps.put("format", formatMap);
 			HashMap <String, String> formatCategoryMap = new HashMap<>();
-			translationMaps.put("formatCategory", formatCategoryMap);
+			translationMaps.put("format_category", formatCategoryMap);
 			while (formatMapRS.next()){
 				String format = formatMapRS.getString("value");
 				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
