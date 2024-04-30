@@ -132,7 +132,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 				//Special processing for ILS Records
 				String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
-				groupedWork.addDescription(fullDescription, format, formatCategory);
+				groupedWork.addDescription(fullDescription, formatCategory);
 				HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 				allRelatedRecords.add(cloudLibraryRecord);
 				loadEditions(groupedWork, marcRecord, allRelatedRecords);

@@ -288,7 +288,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (primaryFormatCategoryForRecord == null){
 					primaryFormatCategoryForRecord = "Unknown";
 				}
-				groupedWork.addDescription(fullDescription, primaryFormatForRecord, primaryFormatCategoryForRecord);
+				groupedWork.addDescription(fullDescription, primaryFormatCategoryForRecord);
 			}
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);

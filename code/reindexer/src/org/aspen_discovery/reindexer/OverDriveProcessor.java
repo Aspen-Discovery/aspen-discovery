@@ -296,7 +296,7 @@ class OverDriveProcessor {
 						}
 						groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
 						groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
-						groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));
+						groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"), formatCategory);
 						if (rawMetadataDecoded != null) {
 							//Loop through all creators and add them as alternate author names
 							JSONArray creators = rawMetadataDecoded.getJSONArray("creators");
@@ -719,9 +719,9 @@ class OverDriveProcessor {
 			//Hopefully Libby will give us better stats in the near future that we can use.
 			groupedWork.addPopularity(metadataRS.getFloat("popularity") / 500f);
 			String shortDescription = metadataRS.getString("shortDescription");
-			groupedWork.addDescription(shortDescription, format, formatCategory);
+			groupedWork.addDescription(shortDescription, formatCategory);
 			String fullDescription = metadataRS.getString("fullDescription");
-			groupedWork.addDescription(fullDescription, format, formatCategory);
+			groupedWork.addDescription(fullDescription, formatCategory);
 
 			try {
 				byte[] rawDataBytes = metadataRS.getBytes("rawData");

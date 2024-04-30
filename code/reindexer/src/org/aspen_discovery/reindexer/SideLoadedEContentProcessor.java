@@ -45,7 +45,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory, false);
 
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
-			groupedWork.addDescription(fullDescription, primaryFormat, primaryFormatCategory);
+			groupedWork.addDescription(fullDescription, primaryFormatCategory);
 
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
