@@ -1,4 +1,5 @@
 import { Badge, BadgeText, Box, Center, HStack, Pressable, Text, VStack } from '@gluestack-ui/themed';
+import { useRoute } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 import { Image } from 'expo-image';
 import _ from 'lodash';
@@ -9,12 +10,14 @@ import { LanguageContext, LibrarySystemContext, ThemeContext } from '../../conte
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getFormats } from '../../util/search';
 import AddToList from './AddToList';
 
 const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const DisplayGroupedWorkResult = (props) => {
      const item = props.data;
+     let params = useRoute();
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);
@@ -40,6 +43,10 @@ export const DisplayGroupedWorkResult = (props) => {
           if (item.format) {
                formats = item.format;
           }
+     }
+
+     if (params.name === 'SearchBySavedSearch') {
+          formats = getFormats(formats);
      }
 
      const handlePressItem = () => {

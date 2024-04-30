@@ -1,15 +1,15 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertDialog, Button } from 'native-base';
+import { Text, CheckIcon, Heading, HStack, VStack, Badge, BadgeText, FlatList, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView, ButtonSpinner } from '@gluestack-ui/themed';
 import React from 'react';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../context/initialContext';
 import { navigateStack } from '../helpers/RootNavigator';
 import { getTermFromDictionary } from '../translations/TranslationService';
 import { refreshProfile, updateNotificationOnboardingStatus } from '../util/api/user';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
-     const { setAlreadyCheckedNotifications, setShowNotificationsOnboarding } = props;
+     const { setPromptOpen } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard, updateNotificationSettings } = React.useContext(UserContext);
@@ -18,6 +18,7 @@ export const NotificationsOnboard = (props) => {
      const [onboardingButton, setOnboardingButton] = React.useState('');
      const [isLoading, setIsLoading] = React.useState(false);
      const [isCanceling, setIsCanceling] = React.useState(false);
+     const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const onClose = async () => {
           await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
           await refreshProfile(library.baseUrl).then((profile) => {
@@ -28,6 +29,7 @@ export const NotificationsOnboard = (props) => {
           updateNotificationOnboard(0);
           setIsLoading(false);
           setIsCanceling(false);
+          setPromptOpen('');
           //setAlreadyCheckedNotifications(true);
           //setShowNotificationsOnboarding(false);
      };
@@ -65,36 +67,41 @@ export const NotificationsOnboard = (props) => {
 
      return (
           <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={() => onClose()}>
-               <AlertDialog.Content>
-                    <AlertDialog.Header>{getTermFromDictionary(language, 'onboard_notifications_title')}</AlertDialog.Header>
-                    <AlertDialog.Body>{onboardingBody}</AlertDialog.Body>
-                    <AlertDialog.Footer>
-                         <Button.Group space={2}>
+               <AlertDialogBackdrop />
+               <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                    <AlertDialogHeader>
+                         <Heading color={textColor}>{getTermFromDictionary(language, 'onboard_notifications_title')}</Heading>
+                    </AlertDialogHeader>
+                    <AlertDialogBody>
+                         <Text color={textColor}>{onboardingBody}</Text>
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                         <ButtonGroup space="md">
                               <Button
                                    isLoading={isCanceling}
                                    isLoadingText={getTermFromDictionary(language, 'canceling', true)}
-                                   variant="unstyled"
-                                   colorScheme="coolGray"
+                                   variant="link"
+                                   bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}
                                    onPress={() => {
                                         setIsCanceling(true);
                                         onClose();
                                    }}
                                    ref={cancelRef}>
-                                   {getTermFromDictionary(language, 'onboard_notifications_button_cancel')}
+                                   {isCanceling ? <ButtonSpinner color={textColor} /> : <ButtonText color={textColor}>{getTermFromDictionary(language, 'onboard_notifications_button_cancel')}</ButtonText>}
                               </Button>
                               <Button
                                    isLoading={isLoading}
                                    isLoadingText={getTermFromDictionary(language, 'updating', true)}
-                                   colorScheme="danger"
+                                   bgColor={theme['colors']['danger']['700']}
                                    onPress={() => {
                                         setIsLoading(true);
                                         onClose().then(() => navigateStack('MoreTab', 'PermissionNotificationDescription', { prevRoute: 'notifications_onboard' }));
                                    }}>
-                                   {onboardingButton}
+                                   {isLoading ? <ButtonSpinner color={theme['colors']['white']} /> : <ButtonText color={theme['colors']['white']}>{onboardingButton}</ButtonText>}
                               </Button>
-                         </Button.Group>
-                    </AlertDialog.Footer>
-               </AlertDialog.Content>
+                         </ButtonGroup>
+                    </AlertDialogFooter>
+               </AlertDialogContent>
           </AlertDialog>
      );
 };

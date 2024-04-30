@@ -16,6 +16,7 @@ export const Settings_BrowseCategories = () => {
           initialData: list,
           onSuccess: (data) => {
                updateBrowseCategoryList(data);
+               setLoading(false);
           },
           onSettle: (data) => {
                setLoading(false);
@@ -27,23 +28,25 @@ export const Settings_BrowseCategories = () => {
           return loadingSpinner();
      }
 
-     return <FlatList keyExtractor={(item) => item.key} data={list} renderItem={({ item }) => <DisplayCategory data={item} />} />;
+     return <FlatList keyExtractor={(item) => item.key} data={list} renderItem={({ item }) => <DisplayCategory data={item} setLoading={setLoading} />} />;
 };
 
 const DisplayCategory = (data) => {
      const queryClient = useQueryClient();
      const category = data.data;
+     const setLoading = data.setLoading;
      const [toggled, setToggle] = React.useState(!category.isHidden);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { maxNum } = React.useContext(BrowseCategoryContext);
 
      const updateToggle = async (category) => {
+          setLoading(true);
           const key = category['key'] ?? category['sourceId'];
-
           await updateBrowseCategoryStatus(key, library.baseUrl).then(async (response) => {
-               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
-               queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+               await queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
           });
 
           console.log(key + ', ' + category['isHidden']);

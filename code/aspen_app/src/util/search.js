@@ -376,16 +376,21 @@ export async function savedSearchResults(searchId, limit = 25, page, url, langua
 }
 
 export function getFormats(data) {
-     let formats = [];
+     if (_.isArray(data) || _.isObject(data)) {
+          let formats = [];
+          data.map((item) => {
+               let thisFormat = item;
+               if (item.includes('#')) {
+                    thisFormat = item.split('#');
+                    thisFormat = thisFormat[thisFormat.length - 1];
+               }
+               formats.push(thisFormat);
+          });
 
-     data.map((item) => {
-          let thisFormat = item.split('#');
-          thisFormat = thisFormat[thisFormat.length - 1];
-          formats.push(thisFormat);
-     });
-
-     formats = _.uniq(formats);
-     return formats;
+          formats = _.uniq(formats);
+          return formats;
+     }
+     return data;
 }
 
 /**

@@ -249,6 +249,8 @@ export const LibrarySystemProvider = ({ children }) => {
      };
 
      const updateCatalogStatus = (data) => {
+          console.log(data);
+
           if (data.status) {
                setCatalogStatus(data.status);
                console.log('updated catalog status');
@@ -364,26 +366,31 @@ export const UserProvider = ({ children }) => {
      const [notificationOnboard, setNotificationOnboard] = useState(0);
      const [expoToken, setExpoToken] = useState(false);
      const [aspenToken, setAspenToken] = useState(false);
+     const [seenNotificationOnboardPrompt, setSeenNotificationOnboardPrompt] = useState(true);
 
      const updateUser = (data) => {
-          if (_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
-               PATRON.listLastUsed = data.lastListUsed;
-          }
+          if (user !== data) {
+               if (_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
+                    PATRON.listLastUsed = data.lastListUsed;
+               }
 
-          if (_.isObject(data) && !_.isUndefined(data.numHolds)) {
-               PATRON.num.holds = data.numHolds;
-          }
+               if (_.isObject(data) && !_.isUndefined(data.numHolds)) {
+                    PATRON.num.holds = data.numHolds;
+               }
 
-          if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
-               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en', data.onboardAppNotifications);
-          }
+               if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
+                    updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en', data.onboardAppNotifications);
+               }
 
-          if (_.isObject(data) && !_.isUndefined(data.onboardAppNotifications)) {
-               updateNotificationOnboard(data.onboardAppNotifications);
-          }
+               if (_.isObject(data) && !_.isUndefined(data.onboardAppNotifications)) {
+                    updateNotificationOnboard(data.onboardAppNotifications);
+               }
 
-          setUser(data);
-          console.log('updated UserContext');
+               setUser(data);
+               console.log('updated UserContext');
+          } else {
+               console.log("User data hasn't changed");
+          }
      };
 
      const resetUser = () => {
@@ -487,13 +494,11 @@ export const UserProvider = ({ children }) => {
                     setExpoToken(false);
                     setAspenToken(false);
 
-                    // let's not intentionally bombard the user with prompts at every boot without knowing their preferences
-                    setNotificationOnboard(0);
-
                     const deviceSettings = _.filter(data, { device: 'Unknown' });
                     if (deviceSettings && _.isObject(deviceSettings)) {
                          if (_.isObject(deviceSettings[0])) {
                               const settings = deviceSettings[0];
+                              console.log(settings);
                               if (!_.isUndefined(settings.onboardStatus)) {
                                    setNotificationOnboard(settings.onboardStatus);
                               }
@@ -547,6 +552,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated notification settings in UserContext');
      };
 
+     const updateSeenNotificationOnboardPrompt = (data) => {
+          setSeenNotificationOnboardPrompt(data);
+          console.log('updated seenNotificationOnboardPrompt UserContext');
+     };
+
      const updateExpoToken = (data) => {
           setExpoToken(data);
           console.log('updated expo token UserContext');
@@ -592,6 +602,8 @@ export const UserProvider = ({ children }) => {
                     updateAspenToken,
                     notificationOnboard,
                     updateNotificationOnboard,
+                    seenNotificationOnboardPrompt,
+                    updateSeenNotificationOnboardPrompt,
                }}>
                {children}
           </UserContext.Provider>

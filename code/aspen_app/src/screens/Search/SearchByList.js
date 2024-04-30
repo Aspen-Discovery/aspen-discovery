@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native';
 import { loadError } from '../../components/loadError';
 
 // custom components and helper files
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { LoadingSpinner, loadingSpinner } from '../../components/loadingSpinner';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getCleanTitle } from '../../helpers/item';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -52,7 +52,7 @@ export const SearchResultsForList = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {status === 'loading' || isFetching ? (
-                    loadingSpinner()
+                    LoadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
                ) : (

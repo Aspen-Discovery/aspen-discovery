@@ -2,9 +2,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useFocusEffect, useLinkTo } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import { Badge, Box, Button, Container, Divider, HStack, Icon, Image, Pressable, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
@@ -12,14 +14,21 @@ import { AuthContext } from '../../components/navigation';
 
 // custom components and helper files
 import { showILSMessage } from '../../components/Notifications';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
+import { CatalogOffline } from '../../screens/Auth/CatalogOffline';
+import { InvalidCredentials } from '../../screens/Auth/InvalidCredentials';
 import { UseColorMode } from '../../themes/theme';
 import { getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher } from '../../translations/TranslationService';
-import { reloadProfile } from '../../util/api/user';
+import { fetchSavedEvents } from '../../util/api/event';
+import { getCatalogStatus } from '../../util/api/library';
+import { getLists } from '../../util/api/list';
+import { getLocations } from '../../util/api/location';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { passUserToDiscovery } from '../../util/apiAuth';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { getILSMessages } from '../../util/loadPatron';
+import { GLOBALS } from '../../util/globals';
+import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
+import { getBrowseCategoryListForUser, getILSMessages, PATRON } from '../../util/loadPatron';
 
 Notifications.setNotificationHandler({
      handleNotification: async () => ({
@@ -32,13 +41,26 @@ Notifications.setNotificationHandler({
 const prefix = Linking.createURL('/');
 
 export const DrawerContent = () => {
+     const [userLatitude, setUserLatitude] = React.useState(0);
+     const [userLongitude, setUserLongitude] = React.useState(0);
      const linkTo = useLinkTo();
-     const { user, updateUser } = React.useContext(UserContext);
-     const { library } = React.useContext(LibrarySystemContext);
+     const queryClient = useQueryClient();
+     const { user, accounts, viewers, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
+     const { library, catalogStatus, updateCatalogStatus } = React.useContext(LibrarySystemContext);
      const [notifications, setNotifications] = React.useState([]);
      const [messages, setILSMessages] = React.useState([]);
+     const { category, list, maxNum, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
+     const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
+     const [invalidSession, setInvalidSession] = React.useState(false);
      const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion) ?? '23.03.00';
+     const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const [numFailedSessions, setNumFailedSessions] = React.useState(0);
+     const [unlimited, setUnlimitedCategories] = React.useState(false);
+     const [savedSearchesStorage, updateSavedSearchesStorage] = React.useState([]);
+     const [maxCategories, setMaxCategories] = React.useState(5);
 
      React.useEffect(() => {
           const subscription = Notifications.addNotificationReceivedListener((notification) => {
@@ -54,9 +76,226 @@ export const DrawerContent = () => {
           return () => subscription.remove();
      }, []);
 
+     useQuery(['catalog_status', library.baseUrl], () => getCatalogStatus(library.baseUrl), {
+          enabled: !!library.baseUrl,
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               updateCatalogStatus(data);
+          },
+     });
+
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          initialData: user,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (user) {
+                    if (data !== user) {
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                    }
+               } else {
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
+               }
+          },
+     });
+
+     useQuery(['browse_categories', library.baseUrl, language, maxNum], () => reloadBrowseCategories(maxNum, library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               updateBrowseCategories(data);
+          },
+          placeholderData: category,
+     });
+
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, false, language), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateHolds(data),
+          placeholderData: [],
+     });
+
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, false, language), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateCheckouts(data),
+          placeholderData: [],
+     });
+
+     useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateLists(data),
+          placeholderData: [],
+     });
+
+     useQuery(['linked_accounts', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: accounts,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (accounts !== data.accounts) {
+                    updateLinkedAccounts(data.accounts);
+               }
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['library_cards', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: cards,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (cards !== data.cards) {
+                    updateLibraryCards(data.cards);
+               }
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+          initialData: viewers,
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               updateLinkedViewerAccounts(data);
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['ils_messages', user.id, library.baseUrl, language], () => getILSMessages(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+     });
+
+     useQuery(['pickup_locations', library.baseUrl, language], () => getPickupLocations(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updatePickupLocations(data);
+          },
+     });
+
+     useQuery(['locations', library.baseUrl, language, userLatitude, userLongitude], () => getLocations(library.baseUrl, language, userLatitude, userLongitude), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateLocations(data);
+          },
+     });
+
+     useQuery(['saved_searches', user?.id ?? 'unknown', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedSearchesStorage(data);
+          },
+     });
+
+     useQuery(['reading_history', user.id, library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateReadingHistory(data);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user?.id ?? 'unknown', library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['saved_events', user.id, library.baseUrl, 1, 'past'], () => fetchSavedEvents(1, 25, 'past', library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateSavedEvents(data.events);
+          },
+     });
+
+     useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateBrowseCategoryList(data);
+          },
+     });
+
+     useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
+          initialData: GLOBALS.appSessionId,
+          refetchInterval: 86400000,
+          refetchIntervalInBackground: true,
+          retry: 5,
+          onSuccess: (data) => {
+               if (typeof data.result?.session !== 'undefined') {
+                    GLOBALS.appSessionId = data.result.session;
+               }
+          },
+     });
+
+     useQuery(['valid_user', library.baseUrl, user.id], () => revalidateUser(library.baseUrl), {
+          initialData: true,
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          retry: 5,
+          onSuccess: (data) => {
+               if (data === false || data === 'false') {
+                    let tmp = numFailedSessions;
+                    tmp = tmp + 1;
+                    setNumFailedSessions(tmp);
+                    console.log('Added +1 to numFailedSessions');
+                    if (tmp >= 2) {
+                         console.log('More than two failed sessions, logging user out');
+                         setInvalidSession(true);
+                    }
+                    setInvalidSession(false);
+               } else {
+                    console.log('Resetting numFailedSessions to 0');
+                    setNumFailedSessions(0);
+                    setInvalidSession(false);
+               }
+          },
+     });
+
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
+                    let latitude = await SecureStore.getItemAsync('latitude');
+                    let longitude = await SecureStore.getItemAsync('longitude');
+                    setUserLatitude(latitude);
+                    setUserLongitude(longitude);
+
                     await reloadProfile(library.baseUrl).then((result) => {
                          if (user !== result) {
                               updateUser(result);
@@ -140,6 +379,14 @@ export const DrawerContent = () => {
 
           return null;
      };
+
+     if (catalogStatus > 0) {
+          return <CatalogOffline />;
+     }
+
+     if (invalidSession === true || invalidSession === 'true') {
+          return <InvalidCredentials />;
+     }
 
      return (
           <DrawerContentScrollView>
