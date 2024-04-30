@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native';
 import BarcodeMask from 'react-native-barcode-mask';
 import { navigate } from '../helpers/RootNavigator';
 import { loadError } from './loadError';
-import { loadingSpinner } from './loadingSpinner';
+import { LoadingSpinner, loadingSpinner } from './loadingSpinner';
 
 export default function LibraryCardScanner() {
      const navigation = useNavigation();
@@ -35,7 +35,7 @@ export default function LibraryCardScanner() {
      };
 
      if (hasPermission === null) {
-          return loadingSpinner('Requesting for camera permissions');
+          return LoadingSpinner('Requesting for camera permissions');
      }
 
      if (hasPermission === false) {
