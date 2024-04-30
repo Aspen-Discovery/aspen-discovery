@@ -272,8 +272,10 @@ class BrowseCategoryGroupEntry extends DataObject {
 				}
 			}
 
-			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you' && (!$user || ($user instanceof AspenError))) {
-				return false;
+			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you') {
+				if(!$user || ($user instanceof AspenError)) {
+					return false;
+				}
 			}
 
 			return true;
