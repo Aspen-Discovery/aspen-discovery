@@ -219,10 +219,10 @@ class MyAccount_AJAX extends JSON_Action {
 							'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?',
 							'isPublicFacing' => true,
 						]),
-						'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
+						'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
 								'text' => "Request PIN Change",
 								'isPublicFacing' => true,
-							]) . "</span>",
+							]) . "</button>",
 					];
 				} else {
 					$result = [
@@ -324,10 +324,10 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'Re-enabling account linking will allow others to link to your account. Do you want to continue?',
 					'isPublicFacing' => true,
 				]),
-				'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate([
+				'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate([
 						'text' => "Accept",
 						'isPublicFacing' => true,
-					]) . "</span>",
+					]) . "</button>",
 			];
 		} else {
 			return [
@@ -339,10 +339,10 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'Disabling account linking will sever any current links and prevent any new ones. Do you want to continue?',
 					'isPublicFacing' => true,
 				]),
-				'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate([
+				'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate([
 						'text' => "Accept",
 						'isPublicFacing' => true,
-					]) . "</span>",
+					]) . "</button>",
 			];
 		}
 	}
@@ -390,10 +390,10 @@ class MyAccount_AJAX extends JSON_Action {
 								'text' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?',
 								'isPublicFacing' => true,
 							]),
-							'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
+							'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
 									'text' => "Request PIN Change",
 									'isPublicFacing' => true,
-								]) . "</span>",
+								]) . "</button>",
 						];
 					} else {
 						$result = [
@@ -451,10 +451,10 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' id = 'AddAccountSubmit' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate([
+			'modalButtons' => "<button type='button' class='tool btn btn-primary' id = 'AddAccountSubmit' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate([
 					'text' => "Add Account",
 					'isPublicFacing' => true,
-				]) . "</span>",
+				]) . "</button>",
 		];
 	}
 
@@ -491,10 +491,10 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>" . translate([
+			'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>" . translate([
 					'text' => "Add To List",
 					'isPublicFacing' => true,
-				]) . "</span>",
+				]) . "</button>",
 		];
 	}
 
@@ -599,7 +599,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => "Are you sure you want to cancel this hold?",
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</span>",
+			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -690,7 +690,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to cancel selected holds?',
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldSelected(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldSelected(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -848,7 +848,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to cancel all holds?',
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldAll()'>$cancelButtonLabel</span>",
+			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldAll()'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -1019,7 +1019,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to freeze selected holds?',
 				'isPublicFacing' => true,
 			]);
-			$button = "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</span>";
+			$button = "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</button>";
 		}
 
 		return [
@@ -1181,7 +1181,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to freeze all holds?',
 				'isPublicFacing' => true,
 			]);
-			$button = "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldAll(\"$patronId\")'>$freezeButtonLabel</span>";
+			$button = "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldAll(\"$patronId\")'>$freezeButtonLabel</button>";
 		}
 		return [
 			'title' => translate([
@@ -1298,7 +1298,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to thaw selected holds?',
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$thawButtonLabel</span>",
+			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$thawButtonLabel</button>",
 		];
 	}
 
@@ -1438,7 +1438,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to thaw all holds?',
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldAll(\"$patronId\")'>$thawButtonLabel</span>",
+			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldAll(\"$patronId\")'>$thawButtonLabel</button>",
 		];
 	}
 
@@ -1689,10 +1689,10 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>" . translate([
+			'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>" . translate([
 					'text' => 'Create List',
 					'isPublicFacing' => true,
-				]) . "</span>",
+				]) . "</button>",
 		];
 	}
 
@@ -1996,10 +1996,10 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">' . translate([
+				'modalButtons' => '<button type="button" class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">' . translate([
 						'text' => 'Change Location',
 						'isPublicFacing' => true,
-					]) . '</span>',
+					]) . '</button>',
 			];
 		} else {
 			$results = [
@@ -2235,10 +2235,15 @@ class MyAccount_AJAX extends JSON_Action {
 			$listId = $_REQUEST['listId'];
 
 			$interface->assign('listId', $listId);
+
 			return [
 				'title' => 'Email a list',
 				'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>',
+				'modalButtons' => '<button type="button" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();">' . translate([
+						'text' => 'Send Email',
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]) . '</button>',
 			];
 		} else {
 			return [
@@ -6376,7 +6381,10 @@ class MyAccount_AJAX extends JSON_Action {
 				return [
 					'title' => 'Hidden browse categories',
 					'modalBody' => $interface->fetch('MyAccount/hiddenBrowseCategories.tpl'),
-					'modalButtons' => '<span class="tool btn btn-primary" onclick="return AspenDiscovery.Account.showBrowseCategory()">Show these Browse Categories</span>',
+					'modalButtons' => '<button type="button" class="tool btn btn-primary" onclick="return AspenDiscovery.Account.showBrowseCategory()">' . translate ([
+							'text' => 'Show These Browse Categories',
+							'isPublicFacing' => true,
+						]) . '</button>',
 				];
 			} else {
 				$interface->assign('message', 'You have no hidden browse categories.');
@@ -7721,10 +7729,10 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Are you sure you want to cancel this curbside pickup?',
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<span class='btn btn-primary' onclick='AspenDiscovery.Account.cancelCurbsidePickup(\"$patronId\", \"$pickupId\")'>" . translate([
+			'buttons' => "<button type='button' class='btn btn-primary' onclick='AspenDiscovery.Account.cancelCurbsidePickup(\"$patronId\", \"$pickupId\")'>" . translate([
 					'text' => 'Yes, cancel pickup',
 					'isPublicFacing' => true,
-				]) . "</span>",
+				]) . "</button>",
 		];
 	}
 

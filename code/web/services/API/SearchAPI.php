@@ -1931,11 +1931,7 @@ class SearchAPI extends AbstractAPI {
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
 
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		$appUser = UserAccount::validateAccount($username, $password);
+		$appUser = $this->getUserForApiCall();
 
 		//Get a list of browse categories for that library / location
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
