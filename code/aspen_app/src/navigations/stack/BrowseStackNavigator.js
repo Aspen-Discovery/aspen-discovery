@@ -17,7 +17,7 @@ import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import { SearchResultsForBrowseCategory } from '../../screens/Search/SearchByCategory';
 import { SearchResultsForList } from '../../screens/Search/SearchByList';
-import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
+import { SearchResultsForSavedSearch } from '../../screens/Search/SearchBySavedSearch';
 import { SearchResults } from '../../screens/Search/SearchResults';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -135,7 +135,7 @@ const BrowseStackNavigator = () => {
 
                <Stack.Screen
                     name="SearchBySavedSearch"
-                    component={SearchBySavedSearch}
+                    component={SearchResultsForSavedSearch}
                     options={({ route }) => ({
                          title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.title,
                          libraryContext: React.useContext(LibrarySystemContext),
