@@ -6,7 +6,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import BarcodeMask from 'react-native-barcode-mask';
 import { loadError } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { LoadingSpinner, loadingSpinner } from '../../components/loadingSpinner';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -101,7 +101,7 @@ export default function SelfCheckScanner() {
      };
 
      if (hasPermission === null) {
-          return loadingSpinner('Requesting for camera permissions');
+          return LoadingSpinner('Requesting for camera permissions');
      }
 
      if (hasPermission === false) {
