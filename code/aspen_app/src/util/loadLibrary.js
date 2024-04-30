@@ -481,11 +481,10 @@ export function formatBrowseCategories(payload) {
 
 export async function reloadBrowseCategories(maxCat, url = null) {
      let maxCategories = maxCat ?? 5;
-     console.log('maxCategories: ' + maxCategories);
      const postBody = await postData();
      let discovery;
      let baseUrl = url ?? LIBRARY.url;
-     if (maxCategories !== '9999') {
+     if (maxCategories !== 9999) {
           discovery = create({
                baseURL: baseUrl + '/API',
                timeout: GLOBALS.timeoutAverage,
