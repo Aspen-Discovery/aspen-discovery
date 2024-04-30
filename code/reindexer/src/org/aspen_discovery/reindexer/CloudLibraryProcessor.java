@@ -143,7 +143,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				//get target audience from Marc
 				targetAudience = productRS.getString("targetAudience");
 				if (targetAudience.equals("ADULT")) {
-					targetAudience.equals("Adult");
+					targetAudience = "Adult";
 				}
 				groupedWork.addTargetAudience(targetAudience);
 

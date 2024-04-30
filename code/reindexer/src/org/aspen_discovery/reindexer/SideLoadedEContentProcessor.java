@@ -155,49 +155,49 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			//Convert formats from print to eContent version
 			for (String format : printFormats) {
 				if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript") || format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
-						econtentItem.setFormat("eBook");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(10);
-					} else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
-						econtentItem.setFormat("eMagazine");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(3);
-					} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM") || format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio")) {
-						econtentItem.setFormat("eAudiobook");
-						econtentItem.setFormatCategory("Audio Books");
-						econtentRecord.setFormatBoost(8);
-					} else if (format.equalsIgnoreCase("MusicRecording")) {
-						econtentItem.setFormat("eMusic");
-						econtentItem.setFormatCategory("Music");
-						econtentRecord.setFormatBoost(5);
-					} else if (format.equalsIgnoreCase("MusicalScore")) {
-						econtentItem.setFormat("MusicalScore");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(5);
-					} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
-						econtentItem.setFormat("eVideo");
-						econtentItem.setFormatCategory("Movies");
-						econtentRecord.setFormatBoost(10);
-					} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
-						econtentItem.setFormat("Online Materials");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Photo")) {
-						econtentItem.setFormat("Photo");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Map")) {
-						econtentItem.setFormat("Map");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Newspaper")) {
-						econtentItem.setFormat("Newspaper");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("GraphicNovel")) {
-						econtentItem.setFormat("eComic");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(8);
+					econtentItem.setFormat("eBook");
+					econtentItem.setFormatCategory("eBook");
+					econtentRecord.setFormatBoost(10);
+				} else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
+					econtentItem.setFormat("eMagazine");
+					econtentItem.setFormatCategory("eBook");
+					econtentRecord.setFormatBoost(3);
+				} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM") || format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio") || format.equalsIgnoreCase("eAudiobook")) {
+					econtentItem.setFormat("eAudiobook");
+					econtentItem.setFormatCategory("Audio Books");
+					econtentRecord.setFormatBoost(8);
+				} else if (format.equalsIgnoreCase("MusicRecording")) {
+					econtentItem.setFormat("eMusic");
+					econtentItem.setFormatCategory("Music");
+					econtentRecord.setFormatBoost(5);
+				} else if (format.equalsIgnoreCase("MusicalScore")) {
+					econtentItem.setFormat("MusicalScore");
+					econtentItem.setFormatCategory("eBook");
+					econtentRecord.setFormatBoost(5);
+				} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
+					econtentItem.setFormat("eVideo");
+					econtentItem.setFormatCategory("Movies");
+					econtentRecord.setFormatBoost(10);
+				} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
+					econtentItem.setFormat("Online Materials");
+					econtentItem.setFormatCategory("Other");
+					econtentRecord.setFormatBoost(2);
+				} else if (format.equalsIgnoreCase("Photo")) {
+					econtentItem.setFormat("Photo");
+					econtentItem.setFormatCategory("Other");
+					econtentRecord.setFormatBoost(2);
+				} else if (format.equalsIgnoreCase("Map")) {
+					econtentItem.setFormat("Map");
+					econtentItem.setFormatCategory("Other");
+					econtentRecord.setFormatBoost(2);
+				} else if (format.equalsIgnoreCase("Newspaper")) {
+					econtentItem.setFormat("Newspaper");
+					econtentItem.setFormatCategory("eBook");
+					econtentRecord.setFormatBoost(2);
+				} else if (format.equalsIgnoreCase("GraphicNovel")) {
+					econtentItem.setFormat("eComic");
+					econtentItem.setFormatCategory("eBook");
+					econtentRecord.setFormatBoost(8);
 				} else {
 					logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
 				}

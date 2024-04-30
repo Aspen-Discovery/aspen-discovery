@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
+require_once ROOT_DIR . '/sys/Events/EventsFacet.php';
 
 class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 	public function __construct() {

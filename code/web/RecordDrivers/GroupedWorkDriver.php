@@ -3267,16 +3267,18 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $this->getPermanentId();
 		$groupedWorkDetails = [];
-		if ($groupedWork->find(true)) {
-			$groupedWorkDetails['Full title'] = $groupedWork->full_title;
-			$groupedWorkDetails['Author'] = $groupedWork->author;
-			$groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
-			$groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
-			if ($this->fields != null && array_key_exists('last_indexed', $this->fields)) {
-				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
+		if (!empty($groupedWork->permanent_id)) {
+			if ($groupedWork->find(true)) {
+				$groupedWorkDetails['Full title'] = $groupedWork->full_title;
+				$groupedWorkDetails['Author'] = $groupedWork->author;
+				$groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
+				$groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
+				if ($this->fields != null && array_key_exists('last_indexed', $this->fields)) {
+					$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
+				}
+			} else {
+				$groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be re-indexed';
 			}
-		} else {
-			$groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be re-indexed';
 		}
 		return $groupedWorkDetails;
 	}

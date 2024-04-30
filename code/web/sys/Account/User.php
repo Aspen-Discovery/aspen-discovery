@@ -3513,6 +3513,7 @@ class User extends DataObject {
 
 		$hasCurbside = false;
 		$customSelfRegForms = false;
+		$circulationReports = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
