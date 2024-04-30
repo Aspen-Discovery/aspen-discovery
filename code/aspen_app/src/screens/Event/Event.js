@@ -15,7 +15,7 @@ import { showLocation } from 'react-native-map-link';
 
 // custom components and helper files
 import { loadError, popAlert, popToast } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { LoadingSpinner, loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -69,7 +69,7 @@ export const EventScreen = () => {
      return (
           <ScrollView>
                {status === 'loading' || isFetching ? (
-                    <Box pt={50}>{loadingSpinner('Fetching data...')}</Box>
+                    <Box pt={50}>{LoadingSpinner('Fetching data...')}</Box>
                ) : status === 'error' ? (
                     <Box pt={50}>{loadError(error, '')}</Box>
                ) : (
