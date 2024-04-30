@@ -125,7 +125,7 @@ class Obituary extends DataObject {
 		return $ret;
 	}
 
-	function delete($useWhere = false) {
+	function delete($useWhere = false) : int {
 		$personId = $this->personId;
 		$ret = parent::delete($useWhere);
 		//Load the person this is for, and update solr

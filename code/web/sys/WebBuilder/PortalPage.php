@@ -231,7 +231,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 		return $this->_rows;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$this->clearLibraries();

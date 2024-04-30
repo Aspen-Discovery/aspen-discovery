@@ -334,7 +334,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 */
 	public function getResultRecordHTML() {
 		global $interface;
+		global $timer;
 		$html = [];
+		$timer->logTime("Starting to load record html");
 		if (isset($this->lastSearchResults)) {
 			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
 				$current = &$this->lastSearchResults[$x];

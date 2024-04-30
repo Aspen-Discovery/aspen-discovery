@@ -154,7 +154,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		if (!$useWhere) {
 			$obj = new Library();
 			$obj->ebscohostSearchSettingId = $this->id;

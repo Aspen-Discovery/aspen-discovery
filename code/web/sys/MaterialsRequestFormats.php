@@ -326,7 +326,7 @@ class MaterialsRequestFormats extends DataObject {
 	 * @access public
 	 * @return mixed Int (No. of rows affected) on success, false on failure, 0 on no data affected
 	 */
-	function delete($useWhere = false) {
+	function delete($useWhere = false) : int {
 
 		$materialRequest = new MaterialsRequest();
 		$materialRequest->format = $this->format;

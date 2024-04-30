@@ -1707,7 +1707,6 @@ class Location extends DataObject {
 			return $this->_ipLocation;
 		}
 		global $timer;
-		global $configArray;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = IPAddress::getActiveIp();
 
@@ -1715,7 +1714,6 @@ class Location extends DataObject {
 		//echo("Active IP is $activeIp");
 		require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 		$this->_ipLocation = null;
-		$_ipId = -1;
 		$subnet = IPAddress::getIPAddressForIP($activeIp);
 		if ($subnet != false) {
 			$matchedLocation = new Location();
@@ -1723,7 +1721,6 @@ class Location extends DataObject {
 			if ($matchedLocation->find(true)) {
 				//Only use the physical location regardless of where we are
 				$this->_ipLocation = clone($matchedLocation);
-				$_ipId = $subnet->id;
 			}
 		}
 
@@ -1852,7 +1849,7 @@ class Location extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$locationMap = new EventsBranchMapping();

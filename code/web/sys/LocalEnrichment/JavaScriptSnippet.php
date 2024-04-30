@@ -9,6 +9,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 	public $id;
 	public $name;
 	public $snippet;
+	public $containsAnalyticsCookies;
 
 	protected $_libraries;
 	protected $_locations;
@@ -38,6 +39,12 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 				'description' => 'The JavaScript Snippet to add to pages',
 				'hideInLists' => true,
 			],
+			'containsAnalyticsCookies' => [
+				'property' => 'containsAnalyticsCookies',
+				'type' => 'checkbox',
+				'label' => 'Contains Analytics Cookies',
+				'description' => 'This snippet contains analytics cookies',
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -56,6 +63,13 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 				'description' => 'Define locations that use this snippet',
 				'values' => $locationList,
 				'hideInLists' => true,
+			],
+
+			'containsAnalyticsCookies' => [
+				'property' => 'containsAnalyticsCookies',
+				'type' => 'checkbox',
+				'label' => 'Contains Analytics Cookies',
+				'description' => 'This snippet contains analytics cookies',
 			],
 		];
 	}
@@ -90,7 +104,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$javascriptSnippetLibrary = new JavaScriptSnippetLibrary();

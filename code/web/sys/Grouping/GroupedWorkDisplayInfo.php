@@ -38,7 +38,7 @@ class GroupedWorkDisplayInfo extends DataObject {
 		return parent::update();
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $this->permanent_id;

@@ -199,7 +199,7 @@ class SpringshareLibCalSetting extends DataObject {
 		}
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$this->clearLibraries();

@@ -68,7 +68,7 @@ class VdxHoldGroup extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$holdGroupLocation = new VdxHoldGroupLocation();

@@ -154,7 +154,7 @@ class UserList extends DataObject {
 		return $result;
 	}
 
-	function delete($useWhere = false) {
+	function delete($useWhere = false) : int {
 		if (!$useWhere && $this->id >= 1) {
 			$this->deleted = 1;
 			$this->dateUpdated = time();
