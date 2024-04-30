@@ -12,7 +12,7 @@ import { loadError } from '../../../components/loadError';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../../components/Notifications';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
@@ -35,6 +35,7 @@ export const MyReadingHistory = () => {
      const pageSize = 25;
      const systemMessagesForScreen = [];
      const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
+     const { textColor } = React.useContext(ThemeContext);
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -223,6 +224,10 @@ export const MyReadingHistory = () => {
                          <HStack space={2}>
                               <FormControl w={sortLength}>
                                    <Select
+                                        _dark={{
+                                             borderWidth: '1',
+                                             borderColor: 'gray.400',
+                                        }}
                                         isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"
                                         selectedValue={sort}

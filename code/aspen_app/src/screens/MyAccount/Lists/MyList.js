@@ -377,6 +377,10 @@ export const MyList = () => {
                          <HStack space={2}>
                               <FormControl w={sortLength}>
                                    <Select
+                                        _dark={{
+                                             borderWidth: '1',
+                                             borderColor: 'gray.400',
+                                        }}
                                         isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"
                                         selectedValue={sort}
