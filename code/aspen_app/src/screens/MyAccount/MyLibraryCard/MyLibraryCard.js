@@ -46,8 +46,16 @@ export const MyLibraryCard = () => {
 	 } */
 
      useQuery(['linked_accounts', user, cards, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: accounts,
           onSuccess: (data) => {
                updateLinkedAccounts(data.accounts);
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['library_cards', user, cards, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: cards,
+          onSuccess: (data) => {
                updateLibraryCards(data.cards);
           },
           placeholderData: [],
