@@ -526,8 +526,10 @@ class BrowseCategory extends BaseBrowsable {
 			}
 		}
 
-		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you' && (!$user || ($user instanceof AspenError))) {
-			return false;
+		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you') {
+			if(!$user || ($user instanceof AspenError)) {
+				return false;
+			}
 		}
 
 		return true;
