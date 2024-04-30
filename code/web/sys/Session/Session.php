@@ -11,7 +11,7 @@ class Session extends DataObject {
 	protected $created;
 	protected $remember_me;
 
-	function objectHistoryEnabled() {
+	function objectHistoryEnabled() : bool {
 		return false;
 	}
 

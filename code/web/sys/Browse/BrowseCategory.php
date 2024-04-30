@@ -173,7 +173,7 @@ class BrowseCategory extends BaseBrowsable {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->textId)) {
 			//Remove from any libraries that use it.

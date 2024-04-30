@@ -250,7 +250,7 @@ class SideLoadScope extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret !== FALSE) {
 			$this->clearLocations();

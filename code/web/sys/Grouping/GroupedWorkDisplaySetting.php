@@ -1005,4 +1005,21 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 		return $objectActions;
 	}
+
+	public function getLinkedObjectStructure() : array {
+		return [
+			[
+				'object' => 'Location',
+				'class' => ROOT_DIR . '/sys/LibraryLocation/Location.php',
+				'linkingProperty' => 'groupedWorkDisplaySettingId',
+				'objectName' => 'Location',
+			],
+			[
+				'object' => 'Library',
+				'class' => ROOT_DIR . '/sys/LibraryLocation/Library.php',
+				'linkingProperty' => 'groupedWorkDisplaySettingId',
+				'objectName' => 'Library',
+			],
+		];
+	}
 }

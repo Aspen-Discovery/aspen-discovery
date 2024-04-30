@@ -230,7 +230,7 @@ class LibraryLink extends DataObject {
 		}
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete();
 		if ($ret !== FALSE) {
 			$this->clearAccess();

@@ -6,7 +6,7 @@ class SummonRecordUsage extends DataObject {
 	public $__table = 'summon_usage';
 	public $id;
 	public $instance;
-	public $ebscoId;
+	public $summonId;
 	public $year;
 	public $month;
 	public $timesViewedInSearch;

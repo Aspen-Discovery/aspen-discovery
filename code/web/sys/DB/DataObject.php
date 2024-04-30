@@ -36,7 +36,7 @@ abstract class DataObject implements JsonSerializable {
 
 	public $_deleteOnSave;
 
-	function objectHistoryEnabled() {
+	function objectHistoryEnabled() : bool {
 		return true;
 	}
 
@@ -76,7 +76,7 @@ abstract class DataObject implements JsonSerializable {
 	}
 
 	public function unsetUniquenessFields() {
-		foreach ($this->getUniquenessFields() as $index => $field) {
+		foreach ($this->getUniquenessFields() as $field) {
 			unset($this->$field);
 		}
 		$primaryKey = $this->getPrimaryKey();
@@ -189,9 +189,9 @@ abstract class DataObject implements JsonSerializable {
 	 * @param string? $fieldName
 	 * @param string? $fieldValue
 	 * @param bool $lowerCaseKey - Forces the key to be lower cased
-	 * @return []
+	 * @return array
 	 */
-	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false): array {
+	public function fetchAll(?string $fieldName = null, ?string $fieldValue = null, bool $lowerCaseKey = false): array {
 		$this->__fetchingFromDB = true;
 		$results = [];
 		if ($fieldName != null && $fieldValue != null) {
@@ -513,11 +513,14 @@ abstract class DataObject implements JsonSerializable {
 		return $this->find(true);
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		global $aspen_db;
 		if (!isset($aspen_db)) {
 			return false;
 		}
+		//TODO: Check to see if we need to do any cascading deletes
+
+
 		$primaryKey = $this->__primaryKey;
 
 		if ($useWhere) {
@@ -1373,4 +1376,43 @@ abstract class DataObject implements JsonSerializable {
 		}
 		return false;
 	}
+
+	/**
+	 * Check to see if this object should not be deleted because it will cause inconsistencies in other objects.
+	 * I.e. a browse category group should not be deleted
+	 *
+	 * @param array $structure - The Object structure of this object
+	 * @return array
+	 */
+	public function getDeletionBlockInformation(array $structure) : array {
+		$objectLinkingInfo = [
+			'preventDeletion' => false,
+			'message' => ''
+		];
+
+		$linkedObjectStructure = $this->getLinkedObjectStructure();
+		foreach ($linkedObjectStructure as $objectInfo) {
+			require_once $objectInfo['class'];
+			/** @var DataObject $object */
+			$object = new $objectInfo['object'];
+			$linkingProperty = $objectInfo['linkingProperty'];
+			$object->$linkingProperty = $this->getPrimaryKeyValue();
+			$numLinkedObjects = $object->count();
+			if ($numLinkedObjects > 0) {
+				$objectLinkingInfo['preventDeletion'] = true;
+				if (!empty($objectLinkingInfo['message'])) {
+					$objectLinkingInfo['message'] .= '<br/>';
+				}
+				$objectLinkingInfo['message'] .= translate(['text' => 'This object is linked to %1% %2% that should be unlinked or deleted before deleting this.', 'isAdminFacing'=>true, 1=>$numLinkedObjects, 2=>$objectInfo['objectName']]);
+			}
+		}
+
+		return $objectLinkingInfo;
+	}
+
+	public function getLinkedObjectStructure() : array {
+		return [];
+	}
+
+
 }

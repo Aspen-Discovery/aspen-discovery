@@ -615,10 +615,19 @@ abstract class ObjectEditor extends Admin_Admin {
 						}
 					} elseif ($objectAction == 'delete') {
 						//Delete the record
-						$ret = $curObject->delete();
-						if ($ret == 0) {
+						$deletionBlockInfo = $curObject->getDeletionBlockInformation($structure);
+						if (!$deletionBlockInfo['preventDeletion']) {
+							$ret = $curObject->delete();
+							if ($ret == 0) {
+								$user = UserAccount::getActiveUserObj();
+								$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
+								$user->updateMessageIsError = true;
+								$user->update();
+								$errorOccurred = true;
+							}
+						}else{
 							$user = UserAccount::getActiveUserObj();
-							$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
+							$user->updateMessage = $deletionBlockInfo['message'];
 							$user->updateMessageIsError = true;
 							$user->update();
 							$errorOccurred = true;

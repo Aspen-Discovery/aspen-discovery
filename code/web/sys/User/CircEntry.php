@@ -15,7 +15,7 @@ abstract class CircEntry extends DataObject {
 	public $linkUrl;
 	public $format;
 
-	function objectHistoryEnabled() {
+	function objectHistoryEnabled() : bool {
 		return false;
 	}
 

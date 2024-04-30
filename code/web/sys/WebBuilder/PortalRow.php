@@ -172,7 +172,7 @@ class PortalRow extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		if ($useWhere == false) {
 			foreach ($this->getCells() as $cell) {
 				$cell->delete();

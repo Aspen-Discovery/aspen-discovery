@@ -120,7 +120,7 @@ class AuthorAuthority extends DataObject {
 		return $ret;
 	}
 
-	public function delete($useWhere = false) {
+	public function delete($useWhere = false) : int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !$useWhere) {
 			//Delete alternatives

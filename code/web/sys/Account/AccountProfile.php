@@ -470,7 +470,7 @@ class AccountProfile extends DataObject {
 		return $ret;
 	}
 
-	function delete($useWhere = false) {
+	function delete($useWhere = false) : int {
 		/** @var Memcache $memCache */ global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
