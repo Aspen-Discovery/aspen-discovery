@@ -87,8 +87,17 @@ function getUpdates24_05_00(): array {
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN allowMasqueradeWithUsername TINYINT NOT NULL DEFAULT 1',
 			]
-		]
+		], //allow_masquerade_with_username
 		//other
+		//jacob - PTFS Europe
+		'snippet_contains_analytics_cookies' => [
+			 'title' => 'JS Snippet Contains Analytics Cookies',
+			 'description' => 'Add a toggle for if a JS snippet contains analytics cookies or not.',
+			 'continueOnError' => true,
+			 'sql' => [
+				 'ALTER TABLE javascript_snippets ADD COLUMN containsAnalyticsCookies TINYINT(1)'
+			 ]
+		 ], //Snippet_Contains_Marketing_Cookies
 
 
 	];

@@ -38,6 +38,12 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 				'description' => 'The JavaScript Snippet to add to pages',
 				'hideInLists' => true,
 			],
+			'containsAnalyticsCookies' => [
+				'property' => 'containsAnalyticsCookies',
+				'type' => 'checkbox',
+				'label' => 'Contains Analytics Cookies',
+				'description' => 'This snippet contains analytics cookies',
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
