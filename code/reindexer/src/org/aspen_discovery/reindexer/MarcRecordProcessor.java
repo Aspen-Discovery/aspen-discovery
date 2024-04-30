@@ -355,7 +355,7 @@ abstract class MarcRecordProcessor {
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
 		loadTitles(groupedWork, record, format, formatCategory, hasParentRecord);
-		loadAuthors(groupedWork, record, identifier);
+		loadAuthors(groupedWork, record, identifier, formatCategory);
 		loadSubjects(groupedWork, record);
 
 		List<DataField> personalNameFields = MarcUtil.getDataFields(record, 600);
@@ -1431,7 +1431,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	@SuppressWarnings("unused")
-	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
+	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier, String formatCategory) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 		//MDN 2/6/2016 - Do not use 710 because it is not truly the author.  This has the potential
@@ -1471,7 +1471,7 @@ abstract class MarcRecordProcessor {
 		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
 			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
 		}
-		groupedWork.setAuthorDisplay(displayAuthor);
+		groupedWork.setAuthorDisplay(displayAuthor, formatCategory);
 	}
 
 	private void loadTitles(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String format, String formatCategory, boolean hasParentRecord) {

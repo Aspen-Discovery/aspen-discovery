@@ -22,6 +22,7 @@ public abstract class AbstractGroupedWorkSolr {
 	protected HashMap<String, Long> primaryAuthors = new HashMap<>();
 	protected HashSet<String> authorAdditional = new HashSet<>();
 	protected String authorDisplay;
+	protected String authorFormat;
 	protected HashSet<String> author2 = new HashSet<>();
 	protected HashSet<String> authAuthor2 = new HashSet<>();
 	protected HashSet<String> author2Role = new HashSet<>();
@@ -409,10 +410,10 @@ public abstract class AbstractGroupedWorkSolr {
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory) {
-		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, recordFormat, formatCategory, false);
+		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, formatCategory, false);
 	}
 
-	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory, boolean forceUpdate) {
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String formatCategory, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = AspenStringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -561,8 +562,30 @@ public abstract class AbstractGroupedWorkSolr {
 		return mostUsedAuthor;
 	}
 
-	void setAuthorDisplay(String newAuthor) {
-		this.authorDisplay = AspenStringUtils.trimTrailingPunctuation(newAuthor);
+	void setAuthorDisplay(String newAuthor, String formatCategory) {
+		boolean updateAuthor = false;
+		if (this.authorDisplay == null) {
+			updateAuthor = true;
+		} else {
+			if (formatCategory.equals("Books")) {
+				//We have a book, update if we didn't have a book before
+				if (!formatCategory.equals(authorFormat)) {
+					updateAuthor = true;
+				}
+			} else if (formatCategory.equals("eBook")) {
+				//Update if the format we had before is not a book
+				if (!authorFormat.equals("Books")) {
+					//And the new format was not an eBook or the new title is longer than what we had before
+					if (!formatCategory.equals(authorFormat)) {
+						updateAuthor = true;
+					}
+				}
+			}
+		}
+		if (updateAuthor) {
+			this.authorDisplay = AspenStringUtils.trimTrailingPunctuation(newAuthor);
+			authorFormat = formatCategory;
+		}
 	}
 
 	void setAuthAuthor(String author) {
@@ -1196,7 +1219,7 @@ public abstract class AbstractGroupedWorkSolr {
 		this.keywords.addAll(keywords);
 	}
 
-	void addDescription(String description, String recordFormat, String formatCategory) {
+	void addDescription(String description, String formatCategory) {
 		if (description == null || description.isEmpty()) {
 			return;
 		}

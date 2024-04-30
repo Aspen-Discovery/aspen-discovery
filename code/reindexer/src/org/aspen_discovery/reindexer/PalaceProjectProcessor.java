@@ -144,7 +144,7 @@ public class PalaceProjectProcessor {
 				}
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
-				groupedWork.setAuthorDisplay(primaryAuthor);
+				groupedWork.setAuthorDisplay(primaryAuthor, formatCategory);
 
 				//Note: Palace Project does not provide series information
 
@@ -182,7 +182,7 @@ public class PalaceProjectProcessor {
 				}
 
 				if (metadata.has("description")) {
-					groupedWork.addDescription(metadata.getString("description"), primaryFormat, formatCategory);
+					groupedWork.addDescription(metadata.getString("description"), formatCategory);
 				}
 
 				String fictionNonFiction = null;

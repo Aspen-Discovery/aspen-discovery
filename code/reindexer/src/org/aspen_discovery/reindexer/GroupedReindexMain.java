@@ -154,7 +154,7 @@ public class GroupedReindexMain {
 		if (dbConn != null) {
 			try {
 				dbConn.close();
-				logger.error("Closed database connection");
+				logger.info("Closed database connection");
 			} catch (SQLException e) {
 				logger.error("Error closing database", e);
 			}

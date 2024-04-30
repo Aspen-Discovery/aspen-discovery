@@ -140,7 +140,7 @@ class HooplaProcessor {
 				}
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
-				groupedWork.setAuthorDisplay(primaryAuthor);
+				groupedWork.setAuthorDisplay(primaryAuthor, formatCategory);
 
 				if (rawResponse.has("series")){
 					String series = rawResponse.getString("series");
@@ -365,7 +365,7 @@ class HooplaProcessor {
 				//Description
 				if (rawResponse.has("synopsis")) {
 					String description = rawResponse.getString("synopsis");
-					groupedWork.addDescription(description, primaryFormat, formatCategory);
+					groupedWork.addDescription(description, formatCategory);
 				}
 
 				String isbn = rawResponse.getString("isbn");

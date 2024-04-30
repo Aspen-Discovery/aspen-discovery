@@ -1321,12 +1321,13 @@ public class GroupedWorkIndexer {
 			if (displayInfoRS.next()) {
 				String title = displayInfoRS.getString("title");
 				if (!title.isEmpty()){
-					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", "", true);
+					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", true);
 					groupedWork.clearSubTitle();
 				}
 				String author = displayInfoRS.getString("author");
 				if (!author.isEmpty()){
-					groupedWork.setAuthorDisplay(author);
+					//Force a format category of Books since we want to preserve this
+					groupedWork.setAuthorDisplay(author, "Books");
 				}
 				String seriesName = displayInfoRS.getString("seriesName");
 				String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");

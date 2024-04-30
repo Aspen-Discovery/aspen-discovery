@@ -88,7 +88,7 @@ class Axis360Processor {
 				String primaryAuthor = productRS.getString("primaryAuthor");
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
-				groupedWork.setAuthorDisplay(primaryAuthor);
+				groupedWork.setAuthorDisplay(primaryAuthor, formatCategory);
 
 				String series = getFieldValue(rawResponse,"series");
 				if (!series.isEmpty()){
@@ -119,7 +119,7 @@ class Axis360Processor {
 					groupedWork.addAuthor2Role(narratorsWithRoleToAdd);
 				}
 
-				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType, formatCategory);
+				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatCategory);
 
 				String language = getFieldValue(rawResponse, "language");
 				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier));
