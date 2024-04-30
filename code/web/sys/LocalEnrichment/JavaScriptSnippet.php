@@ -9,6 +9,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 	public $id;
 	public $name;
 	public $snippet;
+	public $containsAnalyticsCookies;
 
 	protected $_libraries;
 	protected $_locations;
@@ -62,6 +63,13 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 				'description' => 'Define locations that use this snippet',
 				'values' => $locationList,
 				'hideInLists' => true,
+			],
+
+			'containsAnalyticsCookies' => [
+				'property' => 'containsAnalyticsCookies',
+				'type' => 'checkbox',
+				'label' => 'Contains Analytics Cookies',
+				'description' => 'This snippet contains analytics cookies',
 			],
 		];
 	}
