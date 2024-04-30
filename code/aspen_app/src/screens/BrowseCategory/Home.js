@@ -1,8 +1,7 @@
 import { ScanBarcode, SearchIcon, XIcon, Settings, RotateCwIcon, ClockIcon } from 'lucide-react-native';
-import { Center, Box, Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner, HStack, Icon, Badge, BadgeText, FormControl, Input, InputField, InputSlot, InputIcon, Pressable, ScrollView, Text } from '@gluestack-ui/themed';
+import { Center, Box, Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner, HStack, Badge, BadgeText, FormControl, Input, InputField, InputSlot, InputIcon, Pressable, ScrollView, Text } from '@gluestack-ui/themed';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
-import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import React from 'react';
 import { Image } from 'expo-image';
@@ -11,44 +10,28 @@ import { Image } from 'expo-image';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { fetchSavedEvents } from '../../util/api/event';
-import { getCatalogStatus } from '../../util/api/library';
-import { getLists } from '../../util/api/list';
-import { getLocations } from '../../util/api/location';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
-import { GLOBALS } from '../../util/globals';
-import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
-import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
-import { CatalogOffline } from '../Auth/CatalogOffline';
-import { InvalidCredentials } from '../Auth/InvalidCredentials';
 import DisplayBrowseCategory from './Category';
 
 const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
-let maxCategories = 5;
-
 export const DiscoverHomeScreen = () => {
+     const isFetchingBrowseCategories = useIsFetching({ queryKey: ['browse_categories'] });
      const isFocused = useIsFocused();
      const isQueryFetching = useIsFetching();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
-     const [invalidSession, setInvalidSession] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
-     const [userLatitude, setUserLatitude] = React.useState(0);
-     const [userLongitude, setUserLongitude] = React.useState(0);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
-     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
-     const { user, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
-     const { library, updateCatalogStatus, catalogStatus } = React.useContext(LibrarySystemContext);
+     const { notificationOnboard, updateNotificationOnboard } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
      const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
-     const { location, locations, updateLocations } = React.useContext(LibraryBranchContext);
-     const { category, list, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
-     const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
-     const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
+     const { category, updateMaxCategories, maxNum } = React.useContext(BrowseCategoryContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const [searchTerm, setSearchTerm] = React.useState('');
@@ -56,7 +39,7 @@ export const DiscoverHomeScreen = () => {
      const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
      const { theme, mode, textColor } = React.useContext(ThemeContext);
      const [unlimited, setUnlimitedCategories] = React.useState(false);
-     const [numFailedSessions, setNumFailedSessions] = React.useState(0);
+     const [promptOpen, setPromptOpen] = React.useState('');
 
      navigation.setOptions({
           headerLeft: () => {
@@ -64,215 +47,9 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['catalog_status', library.baseUrl], () => getCatalogStatus(library.baseUrl), {
-          enabled: !!library.baseUrl,
-          refetchInterval: 60 * 1000 * 5,
-          refetchIntervalInBackground: true,
-          onSuccess: (data) => {
-               updateCatalogStatus(data);
-          },
-     });
-
-     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
-          initialData: user,
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               if (user) {
-                    if (data !== user) {
-                         updateUser(data);
-                         updateLanguage(data.interfaceLanguage ?? 'en');
-                         PATRON.language = data.interfaceLanguage ?? 'en';
-                    }
-               } else {
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
-               }
-          },
-     });
-
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
-          initialData: category,
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          onSuccess: (data) => {
-               if (maxCategories === 9999) {
-                    setUnlimitedCategories(true);
-               }
-               updateBrowseCategories(data);
-               setLoading(false);
-          },
-          onSettle: (data) => {
-               setLoading(false);
-          },
-          placeholderData: [],
-     });
-
-     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, false, language), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => updateHolds(data),
-          placeholderData: [],
-     });
-
-     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, false, language), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => updateCheckouts(data),
-          placeholderData: [],
-     });
-
-     useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => updateLists(data),
-          placeholderData: [],
-     });
-
-     useQuery(['linked_accounts', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               updateLinkedAccounts(data.accounts);
-               updateLibraryCards(data.cards);
-          },
-          placeholderData: [],
-     });
-
-     useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               updateLinkedViewerAccounts(data);
-          },
-          placeholderData: [],
-     });
-
-     useQuery(['ils_messages', user.id, library.baseUrl, language], () => getILSMessages(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 5,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-     });
-
-     useQuery(['pickup_locations', library.baseUrl, language], () => getPickupLocations(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updatePickupLocations(data);
-          },
-     });
-
-     useQuery(['locations', library.baseUrl, language, userLatitude, userLongitude], () => getLocations(library.baseUrl, language, userLatitude, userLongitude), {
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateLocations(data);
-          },
-     });
-
-     useQuery(['saved_searches', user?.id ?? 'unknown', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
-          refetchInterval: 60 * 1000 * 5,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               console.log(data);
-          },
-     });
-
-     useQuery(['reading_history', user.id, library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateReadingHistory(data);
-          },
-     });
-
-     useQuery(['saved_events', user.id, library.baseUrl, 1, 'upcoming'], () => fetchSavedEvents(1, 25, 'upcoming', library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateSavedEvents(data.events);
-          },
-     });
-
-     useQuery(['saved_events', user?.id ?? 'unknown', library.baseUrl, 1, 'all'], () => fetchSavedEvents(1, 25, 'all', library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateSavedEvents(data.events);
-          },
-     });
-
-     useQuery(['saved_events', user.id, library.baseUrl, 1, 'past'], () => fetchSavedEvents(1, 25, 'past', library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateSavedEvents(data.events);
-          },
-     });
-
-     useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          placeholderData: [],
-          onSuccess: (data) => {
-               updateBrowseCategoryList(data);
-          },
-     });
-
-     useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
-          refetchInterval: 86400000,
-          refetchIntervalInBackground: true,
-          onSuccess: (data) => {
-               if (typeof data.result?.session !== 'undefined') {
-                    GLOBALS.appSessionId = data.result.session;
-               }
-          },
-     });
-
-     useQuery(['valid_user', library.baseUrl, user.id], () => revalidateUser(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 5,
-          refetchIntervalInBackground: true,
-          onSuccess: (data) => {
-               if (data === false || data === 'false') {
-                    let tmp = numFailedSessions;
-                    tmp = tmp + 1;
-                    setNumFailedSessions(tmp);
-                    console.log('Added +1 to numFailedSessions');
-                    if (tmp >= 2) {
-                         console.log('More than two failed sessions, logging user out');
-                         setInvalidSession(true);
-                    }
-                    setInvalidSession(false);
-               } else {
-                    console.log('Resetting numFailedSessions to 0');
-                    setNumFailedSessions(0);
-                    setInvalidSession(false);
-               }
-          },
-     });
-
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
-                    let latitude = await SecureStore.getItemAsync('latitude');
-                    let longitude = await SecureStore.getItemAsync('longitude');
-                    setUserLatitude(latitude);
-                    setUserLongitude(longitude);
-
                     if (version >= '24.02.00') {
                          updateCurrentIndex('Keyword');
                          updateCurrentSource('local');
@@ -293,15 +70,18 @@ export const DiscoverHomeScreen = () => {
                     console.log('notificationOnboard: ' + notificationOnboard);
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
+                              console.log('Notification onboarding preferences found. Set to 1 or 2. Show onboard prompt.');
                               setShowNotificationsOnboarding(true);
-                              //setAlreadyCheckedNotifications(false);
+                              setPromptOpen('yes');
                          } else {
+                              console.log('Notification onboarding preferences found. Set to 0. Do not show onboard prompt.');
                               setShowNotificationsOnboarding(false);
-                              //setAlreadyCheckedNotifications(true);
+                              setPromptOpen('');
                          }
                     } else {
+                         console.log('No notification onboarding preferences found. Show onboard prompt.');
+                         setPromptOpen('yes');
                          setShowNotificationsOnboarding(true);
-                         //setAlreadyCheckedNotifications(false);
                     }
                };
                checkSettings().then(() => {
@@ -331,14 +111,11 @@ export const DiscoverHomeScreen = () => {
      // load notification onboarding prompt
      if (isQueryFetching === 0 && preliminaryLoadingCheck) {
           if (notificationOnboard !== '0' && notificationOnboard !== 0) {
-               if (isFocused) {
-                    return <NotificationsOnboard />;
+               if (isFocused && promptOpen === 'yes') {
+                    console.log('promptOpen: ' + promptOpen);
+                    return <NotificationsOnboard setPromptOpen={setPromptOpen} />;
                }
           }
-     }
-
-     if (catalogStatus > 0) {
-          return <CatalogOffline />;
      }
 
      const renderHeader = (title, key, user, url) => {
@@ -389,7 +166,6 @@ export const DiscoverHomeScreen = () => {
           }
 
           if (type === 'Event') {
-               console.log(id);
                if (_.includes(id, 'lc_')) {
                     type = 'library_calendar_event';
                }
@@ -428,13 +204,6 @@ export const DiscoverHomeScreen = () => {
                               height: 250,
                          },
                     }}>
-                    {version >= '22.08.00' && isNew ? (
-                         <Box zIndex={1}>
-                              <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1}>
-                                   <BadgeText size="$9">{getTermFromDictionary(language, 'flag_new')}</BadgeText>
-                              </Badge>
-                         </Box>
-                    ) : null}
                     <Image
                          alt={item.title_display}
                          source={imageUrl}
@@ -447,64 +216,54 @@ export const DiscoverHomeScreen = () => {
                          transition={1000}
                          contentFit="cover"
                     />
+                    {isNew ? (
+                         <Box zIndex={1} alignItems="center">
+                              <Badge bgColor={theme['colors']['warning']['500']} mx={5} mt={-8}>
+                                   <BadgeText bold color={theme['colors']['white']} textTransform="none">
+                                        {getTermFromDictionary(language, 'flag_new')}
+                                   </BadgeText>
+                              </Badge>
+                         </Box>
+                    ) : null}
                </Pressable>
           );
      };
 
      const onPressItem = (key, type, title, version) => {
-          if (version >= '22.07.00') {
-               console.log('type: ' + type);
-               console.log('key: ' + key);
-               if (type === 'List' || type === 'list') {
-                    navigateStack('BrowseTab', 'SearchByList', {
-                         id: key,
-                         url: library.baseUrl,
-                         title: title,
-                         userContext: user,
-                         libraryContext: library,
-                         prevRoute: 'HomeScreen',
-                    });
-               } else if (type === 'SavedSearch') {
-                    navigateStack('BrowseTab', 'SearchBySavedSearch', {
-                         id: key,
-                         url: library.baseUrl,
-                         title: title,
-                         userContext: user,
-                         libraryContext: library,
-                         prevRoute: 'HomeScreen',
-                    });
-               } else if (type === 'Event' || _.includes(type, '_event')) {
-                    let eventSource = 'unknown';
-                    if (type === 'communico_event') {
-                         eventSource = 'communico';
-                    } else if (type === 'library_calendar_event') {
-                         eventSource = 'library_calendar';
-                    } else if (type === 'springshare_libcal_event') {
-                         eventSource = 'springshare';
-                    } else if (type === 'assabet_event') {
-                         eventSource = 'assabet';
-                    }
-
-                    navigateStack('BrowseTab', 'EventScreen', {
-                         id: key,
-                         title: title,
-                         source: eventSource,
-                         prevRoute: 'HomeScreen',
-                    });
-               } else {
-                    navigateStack('BrowseTab', 'GroupedWorkScreen', {
-                         id: key,
-                         title: title,
-                         prevRoute: 'HomeScreen',
-                    });
+          if (type === 'List' || type === 'list') {
+               navigateStack('BrowseTab', 'SearchByList', {
+                    id: key,
+                    title: title,
+                    prevRoute: 'HomeScreen',
+               });
+          } else if (type === 'SavedSearch') {
+               navigateStack('BrowseTab', 'SearchBySavedSearch', {
+                    id: key,
+                    title: title,
+                    prevRoute: 'HomeScreen',
+               });
+          } else if (type === 'Event' || _.includes(type, '_event')) {
+               let eventSource = 'unknown';
+               if (type === 'communico_event') {
+                    eventSource = 'communico';
+               } else if (type === 'library_calendar_event') {
+                    eventSource = 'library_calendar';
+               } else if (type === 'springshare_libcal_event') {
+                    eventSource = 'springshare';
+               } else if (type === 'assabet_event') {
+                    eventSource = 'assabet';
                }
+
+               navigateStack('BrowseTab', 'EventScreen', {
+                    id: key,
+                    title: title,
+                    source: eventSource,
+                    prevRoute: 'HomeScreen',
+               });
           } else {
                navigateStack('BrowseTab', 'GroupedWorkScreen', {
                     id: key,
-                    url: library.baseUrl,
                     title: title,
-                    userContext: user,
-                    libraryContext: library,
                     prevRoute: 'HomeScreen',
                });
           }
@@ -515,23 +274,24 @@ export const DiscoverHomeScreen = () => {
      const onHideCategory = async (url, category) => {
           setLoading(true);
           await updateBrowseCategoryStatus(category);
-          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+          await queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+          await queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+          setLoading(false);
      };
 
-     const onRefreshCategories = () => {
+     const onRefreshCategories = async () => {
           setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+          await queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+          await queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+          setLoading(false);
      };
 
      const onLoadAllCategories = () => {
-          setLoading(true);
-          maxCategories = 9999;
           updateMaxCategories(9999);
           setUnlimitedCategories(true);
-          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+          setLoading(true);
+          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+          setLoading(false);
      };
 
      const onPressSettings = () => {
@@ -549,17 +309,12 @@ export const DiscoverHomeScreen = () => {
           navigateStack('BrowseTab', screen, {
                title: label,
                id: key,
-               url: library.baseUrl,
-               libraryContext: library,
-               userContext: user,
-               language: language,
           });
      };
 
      const showSystemMessage = () => {
           if (_.isArray(systemMessages)) {
                return systemMessages.map((obj, index, collection) => {
-                    console.log(obj);
                     if (obj.showOn === '0') {
                          return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
                     }
@@ -568,12 +323,8 @@ export const DiscoverHomeScreen = () => {
           return null;
      };
 
-     if (loading === true || isFetching) {
+     if (loading === true || isFetchingBrowseCategories) {
           return loadingSpinner();
-     }
-
-     if (invalidSession === true || invalidSession === 'true') {
-          return <InvalidCredentials />;
      }
 
      const clearSearch = () => {
@@ -601,9 +352,9 @@ export const DiscoverHomeScreen = () => {
                          </Input>
                     </FormControl>
                     {category.map((item, index) => {
-                         return <DisplayBrowseCategory textColor={textColor} language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
+                         return <DisplayBrowseCategory textColor={textColor} language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
                     })}
-                    <ButtonOptions language={language} libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
+                    <ButtonOptions language={language} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} maxNum={maxNum} onLoadAllCategories={onLoadAllCategories} />
                </Box>
           </ScrollView>
      );
@@ -613,7 +364,7 @@ const ButtonOptions = (props) => {
      const { theme } = React.useContext(ThemeContext);
      const [loading, setLoading] = React.useState(false);
      const [refreshing, setRefreshing] = React.useState(false);
-     const { language, onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
+     const { language, onPressSettings, onRefreshCategories, discoveryVersion, maxNum, onLoadAllCategories } = props;
 
      const version = formatDiscoveryVersion(discoveryVersion);
 
@@ -629,31 +380,29 @@ const ButtonOptions = (props) => {
                                    flexDirection: 'row',
                               },
                          }}>
-                         {!loadAll ? (
-                              <Button
-                                   isDisabled={loading}
+                         <Button
+                              isDisabled={maxNum === 9999}
+                              sx={{
+                                   bg: theme['colors']['primary']['500'],
+                                   size: 'md',
+                              }}
+                              onPress={() => {
+                                   setLoading(true);
+                                   onLoadAllCategories();
+                                   setTimeout(function () {
+                                        setLoading(false);
+                                   }, 2500);
+                              }}>
+                              {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} mr="$1" /> : <ButtonIcon as={ClockIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
+                              <ButtonText
                                    sx={{
-                                        bg: theme['colors']['primary']['500'],
-                                        size: 'md',
+                                        color: theme['colors']['primary']['500-text'],
                                    }}
-                                   onPress={() => {
-                                        setLoading(true);
-                                        onLoadAllCategories(libraryUrl, patronId);
-                                        setTimeout(function () {
-                                             setLoading(false);
-                                        }, 5000);
-                                   }}>
-                                   {loading ? <ButtonSpinner /> : <ButtonIcon as={ClockIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
-                                   <ButtonText
-                                        sx={{
-                                             color: theme['colors']['primary']['500-text'],
-                                        }}
-                                        size="sm"
-                                        fontWeight="$medium">
-                                        {getTermFromDictionary(language, 'browse_categories_load_all')}
-                                   </ButtonText>
-                              </Button>
-                         ) : null}
+                                   size="sm"
+                                   fontWeight="$medium">
+                                   {getTermFromDictionary(language, 'browse_categories_load_all')}
+                              </ButtonText>
+                         </Button>
 
                          <Button
                               sx={{
@@ -685,7 +434,7 @@ const ButtonOptions = (props) => {
                                         setRefreshing(false);
                                    });
                               }}>
-                              {refreshing ? <ButtonSpinner /> : <ButtonIcon as={RotateCwIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
+                              {refreshing ? <ButtonSpinner color={theme['colors']['primary']['500-text']} /> : <ButtonIcon as={RotateCwIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />}
 
                               <ButtonText size="sm" fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
                                    {getTermFromDictionary(language, 'browse_categories_refresh')}
@@ -704,7 +453,7 @@ const ButtonOptions = (props) => {
                               bg: theme['colors']['primary']['500'],
                          }}
                          onPress={() => {
-                              onPressSettings(libraryUrl, patronId);
+                              onPressSettings();
                          }}>
                          <ButtonIcon as={Settings} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />
                          <ButtonText fontSize={10} fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
@@ -716,7 +465,7 @@ const ButtonOptions = (props) => {
                               bg: theme['colors']['primary']['500'],
                          }}
                          onPress={() => {
-                              onRefreshCategories(libraryUrl);
+                              onRefreshCategories();
                          }}>
                          <ButtonIcon as={RotateCwIcon} color={theme['colors']['primary']['500-text']} mr="$1" size="sm" />
                          <ButtonText fontSize={10} fontWeight="$medium" sx={{ color: theme['colors']['primary']['500-text'] }}>
