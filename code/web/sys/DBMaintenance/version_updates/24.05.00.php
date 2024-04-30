@@ -26,6 +26,13 @@ function getUpdates24_05_00(): array {
 				'ALTER TABLE sideloads DROP COLUMN createFolderFromLeadingCharacters',
 			]
 		], //remove_individual_marc_path
+		'force_regrouping_all_works_24_05' => [
+			'title' => 'Force Regrouping All Works 24.05',
+			'description' => 'Force Regrouping All Works',
+			'sql' => [
+				"UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 1",
+			],
+		], //force_regrouping_all_works_24_05
 
 		//kirstien - ByWater
 
