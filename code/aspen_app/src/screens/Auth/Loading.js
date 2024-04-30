@@ -82,7 +82,6 @@ export const LoadingScreen = () => {
                });
           });
 
-          // Return the function to unsubscribe from the event so it gets removed on unmount
           return unsubscribe;
      }, [navigation]);
 
@@ -172,7 +171,7 @@ export const LoadingScreen = () => {
           },
      });
 
-     const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
+     const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url, 'en', false], () => reloadBrowseCategories(5, LIBRARY.url), {
           enabled: hasError === false && !!libraryLinksQuery && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(60);
@@ -212,15 +211,22 @@ export const LoadingScreen = () => {
      const { status: linkedAccountQueryStatus, data: linkedAccountQuery } = useQuery(['linked_accounts', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
           enabled: hasError === false && !!selfCheckQuery,
           onSuccess: (data) => {
-               setProgress(90);
                updateLinkedAccounts(data.accounts);
+               setIsReloading(false);
+          },
+     });
+
+     const { status: libraryCardsQueryStatus, data: libraryCardsQuery } = useQuery(['library_cards', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
+          enabled: hasError === false && !!linkedAccountQuery,
+          onSuccess: (data) => {
+               setProgress(90);
                updateLibraryCards(data.cards);
                setIsReloading(false);
           },
      });
 
      const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
-          enabled: hasError === false && !!linkedAccountQuery,
+          enabled: hasError === false && !!libraryCardsQuery,
           onSuccess: (data) => {
                setProgress(100);
                updateSystemMessages(data);
@@ -237,7 +243,7 @@ export const LoadingScreen = () => {
           return <CatalogOffline />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
+     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || libraryCardsQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -252,7 +258,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || libraryCardsQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);
@@ -329,5 +335,3 @@ async function checkStoreVersion() {
           latest: GLOBALS.appVersion,
      };
 }
-
-export default LoadingScreen;
