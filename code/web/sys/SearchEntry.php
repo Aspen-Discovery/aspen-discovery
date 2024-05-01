@@ -26,7 +26,7 @@ class SearchEntry extends DataObject {
 	}
 
 	function objectHistoryEnabled() : bool {
-		return $this->saved;
+		return $this->saved == null ? false : $this->saved;
 	}
 
 	/**

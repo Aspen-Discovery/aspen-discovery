@@ -1108,11 +1108,15 @@ class Sierra extends Millennium {
 			if (isset($placeHoldResponse->code) && isset($placeHoldResponse->details->itemsAsVolumes)) {
 				$items = [];
 				foreach ($placeHoldResponse->details->itemsAsVolumes as $itemFromSierra) {
+					$status = $itemFromSierra->status->display;
+					if ($itemFromSierra->status->code == '-' && !empty( $itemFromSierra->status->duedate)) {
+						$status = 'CHECKED OUT';
+					}
 					$items[] = [
 						'itemNumber' => '.i' . $itemFromSierra->id . $this->getCheckDigit($itemFromSierra->id),
 						'location' => $itemFromSierra->location->name,
 						'callNumber' => $itemFromSierra->callNumber,
-						'status' => $itemFromSierra->status->display,
+						'status' => $status,
 					];
 				}
 				$hold_result['items'] = $items;
