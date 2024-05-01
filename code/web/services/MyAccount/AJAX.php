@@ -1140,7 +1140,7 @@ class MyAccount_AJAX extends JSON_Action {
 							]) . '</div>';
 						$tmpResult['message'] = $message;
 						$tmpResult['title'] = translate([
-							'text' => 'Success',
+							'text' => 'Your results',
 							'isPublicFacing' => true,
 						]);
 
@@ -1405,7 +1405,7 @@ class MyAccount_AJAX extends JSON_Action {
 							]) . '</div>';
 						$tmpResult['message'] = $message;
 						$tmpResult['title'] = translate([
-							'text' => 'Success',
+							'text' => 'Your results',
 							'isPublicFacing' => true,
 						]);
 					}
