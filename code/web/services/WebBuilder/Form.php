@@ -36,6 +36,8 @@ class WebBuilder_Form extends Action {
 				//Display a message that the user must be logged in
 				require_once ROOT_DIR . '/services/MyAccount/Login.php';
 				$myAccountAction = new MyAccount_Login();
+				$interface->assign('followupModule', 'WebBuilder');
+				$interface->assign('followupAction', 'Form');
 				$myAccountAction->launch();
 				exit();
 			}
