@@ -46,14 +46,23 @@ export const MyLinkedAccounts = () => {
      }, [navigation]);
 
      useQuery(['linked_accounts', user.id, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: accounts,
           onSuccess: (data) => {
                updateLinkedAccounts(data.accounts);
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['library_cards', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+          initialData: cards,
+          onSuccess: (data) => {
                updateLibraryCards(data.cards);
           },
           placeholderData: [],
      });
 
      useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+          initialData: viewers,
           onSuccess: (data) => {
                updateLinkedViewerAccounts(data);
           },
@@ -145,7 +154,8 @@ const Account = (data) => {
      const { language } = React.useContext(LanguageContext);
 
      const refreshLinkedAccounts = async () => {
-          queryClient.invalidateQueries({ queryKey: ['linked_accounts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['linked_accounts', user.id, accounts, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['library_cards', user.id, cards, library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['viewer_accounts', user.id, library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };

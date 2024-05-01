@@ -7,7 +7,7 @@ import { Image } from 'expo-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { LoadingSpinner, loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext } from '../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
@@ -113,7 +113,7 @@ export const SearchResultsForBrowseCategory = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching ? (
-                    loadingSpinner('Fetching results...')
+                    LoadingSpinner('Fetching results...')
                ) : status === 'error' ? (
                     loadError('Error', '')
                ) : (

@@ -9,7 +9,7 @@ import { Platform, SafeAreaView } from 'react-native';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../../components/Notifications';
-import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { confirmRenewAllCheckouts, confirmRenewCheckout, renewAllCheckouts } from '../../../util/accountActions';
 import { getPatronCheckedOutItems } from '../../../util/api/user';
@@ -35,6 +35,7 @@ export const MyCheckouts = () => {
      const renewConfirmationRef = React.useRef(null);
      const [renewConfirmationResponse, setRenewConfirmationResponse] = React.useState('');
      const [confirmingRenewal, setConfirmingRenewal] = React.useState(false);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
 
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
@@ -181,9 +182,29 @@ export const MyCheckouts = () => {
           setLoading(true);
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
+          setLoading(false);
      };
 
      const actionButtons = () => {
+          let holdSource = getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')';
+          if (source === 'all') {
+               holdSource = getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')';
+          } else if (source === 'ils') {
+               holdSource = getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')';
+          } else if (source === 'overdrive') {
+               holdSource = filterByLibby + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')';
+          } else if (source === 'hoopla') {
+               holdSource = getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')';
+          } else if (source === 'cloud_library') {
+               holdSource = getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')';
+          } else if (source === 'axis360') {
+               holdSource = getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')';
+          } else if (source === 'palace_project') {
+               holdSource = getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numCheckedOut_PalaceProject ?? 0) + ')';
+          }
+
+          let holdSourceLength = 8 * holdSource.length + 80;
+
           if (numCheckedOut > 0) {
                return (
                     <HStack space={2}>
@@ -220,6 +241,10 @@ export const MyCheckouts = () => {
                               {getTermFromDictionary(language, 'checkout_renew_all')}
                          </Button>
                          <Button
+                              _dark={{
+                                   borderWidth: '1',
+                                   borderColor: 'gray.400',
+                              }}
                               size="sm"
                               variant="outline"
                               onPress={() => {
@@ -228,10 +253,14 @@ export const MyCheckouts = () => {
                               }}>
                               {getTermFromDictionary(language, 'checkouts_reload')}
                          </Button>
-                         <FormControl w={175}>
+                         <FormControl w={holdSourceLength}>
                               <Select
                                    isReadOnly={Platform.OS === 'android'}
                                    name="holdSource"
+                                   _dark={{
+                                        borderWidth: '1',
+                                        borderColor: 'gray.400',
+                                   }}
                                    selectedValue={source}
                                    accessibilityLabel={getTermFromDictionary(language, 'filter_by_source_label')}
                                    _selectedItem={{

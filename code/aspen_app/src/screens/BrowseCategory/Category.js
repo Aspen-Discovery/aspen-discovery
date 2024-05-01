@@ -7,7 +7,7 @@ import { LibrarySystemContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const DisplayBrowseCategory = (props) => {
-     const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden, textColor } = props;
+     const { language, id, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden, textColor } = props;
 
      const hide = getTermFromDictionary(language, 'hide');
      let key = categoryKey;
@@ -16,6 +16,10 @@ const DisplayBrowseCategory = (props) => {
      }
 
      //console.log(categoryLabel + ': ' + isHidden);
+     if (isHidden) {
+          return null;
+     }
+
      //console.log(records);
 
      if (typeof records !== 'undefined' || typeof records !== 'subCategories') {
@@ -33,7 +37,7 @@ const DisplayBrowseCategory = (props) => {
                                         pb="$5"
                                         sx={{
                                              '@base': {
-                                                  height: 225,
+                                                  height: categorySource === 'SavedSearch' ? 240 : 225,
                                              },
                                              '@lg': {
                                                   height: 325,

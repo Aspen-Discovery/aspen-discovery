@@ -177,7 +177,9 @@ export const SearchResults = () => {
                <>
                     {_.size(systemMessagesForScreen) > 0 ? <Box p="$2">{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
-                         <Heading pt="$5">{getTermFromDictionary(language, 'no_results')}</Heading>
+                         <Heading pt="$5" color={textColor}>
+                              {getTermFromDictionary(language, 'no_results')}
+                         </Heading>
                          <Text bold w="75%" textAlign="center" color={textColor}>
                               {route.params?.term}
                          </Text>
@@ -539,7 +541,7 @@ const CreateFilterButtonDefaults = () => {
                                    size="sm"
                                    variant="outline"
                                    sx={{
-                                        borderColor: textColor,
+                                        borderColor: colorMode === 'light' ? theme['colors']['muted']['300'] : theme['colors']['gray']['400'],
                                    }}
                                    onPress={() => {
                                         navigation.push('modal', {
@@ -622,7 +624,7 @@ const CreateFilterButton = () => {
                                    size="sm"
                                    key={index}
                                    sx={{
-                                        borderColor: textColor,
+                                        borderColor: colorMode === 'light' ? theme['colors']['muted']['300'] : theme['colors']['gray']['400'],
                                    }}
                                    onPress={() => {
                                         navigation.push('modal', {

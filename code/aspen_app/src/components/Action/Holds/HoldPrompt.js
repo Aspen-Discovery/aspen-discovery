@@ -316,7 +316,7 @@ export const HoldPrompt = (props) => {
                                                   }
                                              });
                                         }}>
-                                        {loading ? <ButtonSpinner /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
+                                        {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
                                    </Button>
                               </ButtonGroup>
                          </ModalFooter>

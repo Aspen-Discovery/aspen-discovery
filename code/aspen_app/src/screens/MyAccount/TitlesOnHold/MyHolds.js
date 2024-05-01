@@ -1,14 +1,15 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Box, Button, Center, Checkbox, CheckIcon, FormControl, Heading, HStack, ScrollView, Select, Text } from 'native-base';
+import { Box, Button, Center, Checkbox, CheckIcon, FormControl, Heading, HStack, Icon, ScrollView, Select, Text } from 'native-base';
 import React from 'react';
 import { Platform, SafeAreaView, SectionList } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
-import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getPatronCheckedOutItems, getPatronHolds } from '../../../util/api/user';
 import { getPickupLocations } from '../../../util/loadLibrary';
@@ -28,6 +29,7 @@ export const MyHolds = () => {
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -51,7 +53,6 @@ export const MyHolds = () => {
      }, [navigation]);
 
      useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
-          placeholderData: holds,
           onSuccess: (data) => {
                updateHolds(data);
           },
@@ -205,6 +206,7 @@ export const MyHolds = () => {
           clearGroupValue();
           queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          setLoading(false);
      };
 
      const handleDateChange = (date) => {
@@ -272,6 +274,10 @@ export const MyHolds = () => {
                                         <FormControl w={pendingSortLength}>
                                              <Select
                                                   isReadOnly={Platform.OS === 'android'}
+                                                  _dark={{
+                                                       borderWidth: '1',
+                                                       borderColor: 'gray.400',
+                                                  }}
                                                   name="sortBy"
                                                   selectedValue={pendingSortMethod}
                                                   accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
@@ -306,6 +312,10 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={pendingSortLength}>
                                         <Select
+                                             _dark={{
+                                                  borderWidth: '1',
+                                                  borderColor: 'gray.400',
+                                             }}
                                              isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={pendingSortMethod}
@@ -360,6 +370,10 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={readySortLength}>
                                         <Select
+                                             _dark={{
+                                                  borderWidth: '1',
+                                                  borderColor: 'gray.400',
+                                             }}
                                              isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={readySortMethod}
@@ -400,6 +414,10 @@ export const MyHolds = () => {
                          <HStack space={2}>
                               <Button
                                    size="sm"
+                                   _dark={{
+                                        borderWidth: '1',
+                                        borderColor: 'gray.400',
+                                   }}
                                    variant="outline"
                                    onPress={() => {
                                         refreshHolds();
@@ -409,6 +427,10 @@ export const MyHolds = () => {
                               <FormControl w={250}>
                                    <Select
                                         isReadOnly={Platform.OS === 'android'}
+                                        _dark={{
+                                             borderWidth: '1',
+                                             borderColor: 'gray.400',
+                                        }}
                                         name="holdSource"
                                         selectedValue={holdSource}
                                         accessibilityLabel="Filter By Source"
@@ -432,6 +454,7 @@ export const MyHolds = () => {
      };
 
      const displaySectionHeader = (title) => {
+          console.log(title);
           if (title === 'Pending') {
                return (
                     <Box bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
@@ -501,15 +524,17 @@ export const MyHolds = () => {
                          onChange={(newValues) => {
                               saveGroupValue(newValues);
                          }}>
-                         <SectionList
-                              sections={holds}
-                              renderItem={({ item, section: { title } }) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready" />}
-                              stickySectionHeadersEnabled={true}
-                              renderSectionHeader={({ section: { title } }) => displaySectionHeader(title)}
-                              renderSectionFooter={({ section: { title } }) => displaySectionFooter(title)}
-                              contentContainerStyle={{ paddingBottom: 30 }}
-                              keyExtractor={(item, index) => index.toString()}
-                         />
+                         {_.isObject(holds) ? (
+                              <SectionList
+                                   sections={holds}
+                                   renderItem={({ item, section: { title } }) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready" />}
+                                   stickySectionHeadersEnabled={true}
+                                   renderSectionHeader={({ section: { title } }) => displaySectionHeader(title)}
+                                   renderSectionFooter={({ section: { title } }) => displaySectionFooter(title)}
+                                   contentContainerStyle={{ paddingBottom: 30 }}
+                                   keyExtractor={(item, index) => index.toString()}
+                              />
+                         ) : null}
                     </Checkbox.Group>
                </Box>
           </SafeAreaView>

@@ -130,7 +130,7 @@ export async function fetchSearchResultsForSavedSearch(id, page, limit = 25, url
 
      let data = [];
 
-     const response = await api.post('/SearchAPI?method=etSavedSearchResults', postBody);
+     const response = await api.post('/SearchAPI?method=getSavedSearchResults', postBody);
 
      if (response.ok) {
           data = response.data.result;

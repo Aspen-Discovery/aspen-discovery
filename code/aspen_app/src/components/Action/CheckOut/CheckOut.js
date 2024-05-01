@@ -1,4 +1,4 @@
-import { Button, ButtonSpinner, ButtonGroup, ButtonIcon, ButtonText } from '@gluestack-ui/themed';
+import { Box, Button, ButtonSpinner, ButtonGroup, ButtonIcon, ButtonText, Text } from '@gluestack-ui/themed';
 import React from 'react';
 import _ from 'lodash';
 import { useQueryClient } from '@tanstack/react-query';
@@ -56,10 +56,6 @@ export const CheckOut = (props) => {
                          size="md"
                          bgColor={theme['colors']['primary']['500']}
                          variant="solid"
-                         style={{
-                              flex: 1,
-                              flexWrap: 'wrap',
-                         }}
                          onPress={async () => {
                               setLoading(true);
                               await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (eContentResponse) => {
