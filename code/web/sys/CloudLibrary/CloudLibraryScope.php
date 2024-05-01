@@ -71,7 +71,7 @@ class CloudLibraryScope extends DataObject {
 				'property' => 'includeAdult',
 				'type' => 'checkbox',
 				'label' => 'Include Adult Titles',
-				'description' => 'Whether or not adult titles from the Palace Project collection should be included in searches',
+				'description' => 'Whether or not adult titles from the Cloud Library collection should be included in searches',
 				'default' => true,
 				'forcesReindex' => true,
 			],

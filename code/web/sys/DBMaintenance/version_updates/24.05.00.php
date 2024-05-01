@@ -88,6 +88,14 @@ function getUpdates24_05_00(): array {
 				'ALTER TABLE library ADD COLUMN allowMasqueradeWithUsername TINYINT NOT NULL DEFAULT 1',
 			]
 		], //allow_masquerade_with_username
+		'username_field' => [
+			'title' => 'Username Field (Sierra)',
+			'description' => 'Adds an option to define what field is used for patron username in Sierra.',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN usernameField varchar(1) NOT NULL DEFAULT 'w';",
+			],
+		], //username_field
+
 		//other
 		//jacob - PTFS Europe
 		'snippet_contains_analytics_cookies' => [

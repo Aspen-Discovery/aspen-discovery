@@ -1146,6 +1146,7 @@ class Sierra extends Millennium {
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO) {
+		global $library;
 		$username = trim($username);
 		$password = trim($password);
 		if ($this->accountProfile == null) {
@@ -1209,7 +1210,7 @@ class Sierra extends Millennium {
 			foreach ($patronInfo->varFields as $varField) {
 				if ($varField->fieldTag == 'b') {
 					$barcodeField = $varField;
-				}else if ($varField->fieldTag == 'w') {
+				}else if ($varField->fieldTag == $library->usernameField) {
 					$usernameField = $varField;
 				}
 			}
@@ -1289,8 +1290,9 @@ class Sierra extends Millennium {
 	}
 
 	public function getPatronInfoByUsername($username) {
+		global $library;
 		$params = [
-			'varFieldTag' => 'w',
+			'varFieldTag' => $library->usernameField,
 			'varFieldContent' => $username,
 			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate',
 		];
@@ -1312,6 +1314,7 @@ class Sierra extends Millennium {
 	}
 
 	public function findNewUser($patronBarcode, $patronUsername) {
+		global $library;
 		if (!empty($patronBarcode)) {
 			$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
 		}else{
@@ -1336,7 +1339,7 @@ class Sierra extends Millennium {
 			foreach ($patronInfo->varFields as $varField) {
 				if ($varField->fieldTag == 'b') {
 					$barcodeField = $varField;
-				}else if ($varField->fieldTag == 'w') {
+				}else if ($varField->fieldTag == $library->usernameField) {
 					$usernameField = $varField;
 				}
 			}
@@ -1960,6 +1963,7 @@ class Sierra extends Millennium {
 	}
 
 	public function updateEditableUsername(User $patron, string $username): array {
+		global $library;
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error updating username',
@@ -1968,7 +1972,7 @@ class Sierra extends Millennium {
 		$params = [];
 		$params['varFields'] = [];
 		$usernameField = new stdClass();
-		$usernameField->fieldTag = 'w';
+		$usernameField->fieldTag = $library->usernameField;
 		$usernameField->content = $username;
 		$params['varFields'][] = $usernameField;
 
