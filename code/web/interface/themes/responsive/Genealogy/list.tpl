@@ -30,7 +30,12 @@
 				</div>
 			{/if}
 
-            {include file="Search/spellingSuggestions.tpl"}
+			{* User's viewing mode toggle switch *}
+			{if !empty($showSearchToolsAtTop)}
+				{include file="Search/search-toolbar-no-display-mode.tpl"}
+			{/if}
+
+			{include file="Search/spellingSuggestions.tpl"}
 		</div>
 	</div>
 	{* End Listing Options *}
@@ -43,7 +48,7 @@
 
 	{if !empty($pageLinks.all)}<div class="pagination">{$pageLinks.all}</div>{/if}
 
-	{if !empty($showSearchTools)}
+	{if ($showSearchTools || ($loggedIn && count($userPermissions) > 0)) && !$showSearchToolsAtTop}
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>

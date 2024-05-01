@@ -2937,7 +2937,7 @@ class Polaris extends AbstractIlsDriver {
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($newUsername);
 		$updateUsernameResponse = $this->getWebServiceResponse($polarisUrl, 'PUT', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
-		ExternalRequestLogEntry::logRequest('polaris.getCirculateBlocks', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $updateUsernameResponse, []);
+		ExternalRequestLogEntry::logRequest('polaris.updateUsername', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $updateUsernameResponse, []);
 		if ($updateUsernameResponse && $this->lastResponseCode == 200) {
 			$updateUsernameResponse = json_decode($updateUsernameResponse);
 			if ($updateUsernameResponse->PAPIErrorCode == 0) {

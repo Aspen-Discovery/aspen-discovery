@@ -32,23 +32,25 @@ class SelfReg extends Action {
 
 					//get the correct _REQUEST names as they differ across ILSes
 					foreach ($_REQUEST as $selfRegValue => $val){
-						if (preg_match('/(.*?)address|street(.*)/', $selfRegValue) && !(preg_match('/(.*?)address2(.*)/', $selfRegValue))){
-							$streetAddress = $val;
-						}
-						elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
-							$city = $val;
-						}
-						elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
-							//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
-							if (strlen($val) == 2){
-								$state = $val;
+						if (!(preg_match('/(.*?)address2(.*)|(.*?)borrower_B(.*)|(.*?)borrower_alt(.*)/', $selfRegValue))){
+							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)){
+								$streetAddress = $val;
 							}
-						}
-						elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
-							$zip = $val;
-						}
-						elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)){
-							$dob = $val;
+							elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
+								$city = $val;
+							}
+							elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
+								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+								if (strlen($val) == 2){
+									$state = $val;
+								}
+							}
+							elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
+								$zip = $val;
+							}
+							elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)){
+								$dob = $val;
+							}
 						}
 					}
 					//if there's no USPS info, don't bother trying to validate
