@@ -45,7 +45,10 @@ class MyAccount_Login extends Action {
 			$interface->assign('followupModule', $followupModule);
 			$interface->assign('followupAction', $followupAction);
 
-			$pageId = isset($_REQUEST['id']) ? strip_tags($_REQUEST['id']) : '';
+			$pageId = isset($_REQUEST['pageId']) ? strip_tags($_REQUEST['pageId']) : '';
+			if (empty($pageId)) {
+				$pageId = isset($_REQUEST['id']) ? strip_tags($_REQUEST['id']) : '';
+			}
 			$interface->assign('pageId', $pageId);
 
 			$recordId = isset($_REQUEST['id']) ? strip_tags($_REQUEST['id']) : '';

@@ -565,55 +565,24 @@ if ($isLoggedIn) {
 							$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
 						}
 					} else {
+						$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
+					}
+				} else if($_REQUEST['followupAction'] == "QuickPoll"){
+					require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+					$quickPoll = new QuickPoll();
+					$quickPoll->id = $_REQUEST['pageId'];
+
+					if($quickPoll->find(true)){
+						if($quickPoll->urlAlias){
+							$followupUrl = $quickPoll->urlAlias;
+						} else {
 							$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
 					}
-				}
-				else {
+				} else {
 					$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-				}
-			} elseif (!empty($_REQUEST['recordId'])){
-				if ($_REQUEST['followupAction'] == "BasicPage") {
-					require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-					$basicPage = new BasicPage();
-					$basicPage->id = $_REQUEST['recordId'];
-					if ($basicPage->find(true)) {
-						if ($basicPage->urlAlias) {
-							$followupUrl = $basicPage->urlAlias;
-						} else {
-							$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
-						}
-					} else {
-						$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
-					}
-				} elseif ($_REQUEST['followupAction'] == "PortalPage") {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-					$portalPage = new PortalPage();
-					$portalPage->id = $_REQUEST['recordId'];
-					if ($portalPage->find(true)) {
-						if ($portalPage->urlAlias) {
-							$followupUrl = $portalPage->urlAlias;
-						} else {
-							$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
-						}
-					} else {
-						$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
-					}
-				} else if($_REQUEST['followupAction'] == "Form"){
-					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
-					$customForm = new CustomForm();
-					$customForm->id = $_REQUEST['recordId'];
-					if($customForm->find(true)){
-						if($customForm->urlAlias){
-							$followupUrl = $customForm->urlAlias;
-						} else {
-							$followupUrl .="?id=" . strip_tags($_REQUEST['recordId']);
-						}
-					} else {
-							$followupUrl .="?id=" . strip_tags($_REQUEST['recordId']);
-					}
-				}
-				else {
-					$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
 				}
 			}
 			header("Location: " . $followupUrl);
