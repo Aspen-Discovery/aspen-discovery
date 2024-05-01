@@ -160,13 +160,15 @@ abstract class RecordInterface {
 			'openByDefault' => true,
 		];
 		$timer->logTime('Loaded Description');
-		$moreDetailsOptions['series'] = [
-			'label' => 'Also in this Series',
-			'body' => $interface->fetch('GroupedWork/series.tpl'),
-			'hideByDefault' => false,
-			'openByDefault' => true,
-		];
-		$timer->logTime('Loaded Series Data');
+		if (SystemVariables::getSystemVariables()->enableNovelistSeriesIntegration) {
+			$moreDetailsOptions['series'] = [
+				'label' => 'Also in this Series',
+				'body' => $interface->fetch('GroupedWork/series.tpl'),
+				'hideByDefault' => false,
+				'openByDefault' => true,
+			];
+			$timer->logTime('Loaded Series Data');
+		}
 
 		$moreDetailsOptions['moreLikeThis'] = [
 			'label' => 'More Like This',

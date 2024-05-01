@@ -33,6 +33,13 @@ function getUpdates24_05_00(): array {
 				"UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 1",
 			],
 		], //force_regrouping_all_works_24_05
+		'toggle_novelist_series' => [
+			'title' => 'Toggle Novelist Series',
+			'description' => 'Allow novelist series data to be toggled on or off',
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN enableNovelistSeriesIntegration TINYINT DEFAULT 1",
+			],
+		],
 
 		//kirstien - ByWater
 
