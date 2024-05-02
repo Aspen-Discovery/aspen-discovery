@@ -31,9 +31,6 @@ table#weedingReportTable tbody tr {
 	border: black 1px solid;
 	page-break-inside: avoid;
 }
-table#weedingReportTable tbody tr:nth-child(even) {
-	background: #EEEEEE;
-}
 .weedingReport-discard {
 	background-color: #FFCCCC !important;
 }
@@ -46,16 +43,23 @@ table#weedingReportTable tbody tr:nth-child(even) {
 .weedingReport-grubby {
 	background-color: #FFCC99 !important;
 }
+/*table#weedingReportTable tbody tr:nth-child(even) {*/
+/*	background: #EEEEEE !important;*/
+/*}*/
+
 @media print {
 	@page {
 		size: letter landscape;
-		margin: 0in !important;  /* this affects the margin in the printer settings */
+		margin: .25in !important;  /* this affects the margin in the printer settings */
 	}
 	html {
 		margin: 0px; /* this affects the margin on the html before sending to printer */
 	}
 	body {
 		margin: 0in !important; /* margin you want for the content */
+	}
+	.container {
+		width: 100% !important;
 	}
 	div.breadcrumbs {
 		display: none !important;
