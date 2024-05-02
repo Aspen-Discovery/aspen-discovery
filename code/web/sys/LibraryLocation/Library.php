@@ -142,6 +142,7 @@ class Library extends DataObject {
 	public $invoiceCloudSettingId;
 	public $deluxeCertifiedPaymentsSettingId;
 	public $paypalPayflowSettingId;
+	public $usernameField;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -1721,6 +1722,16 @@ class Library extends DataObject {
 								'description' => 'Whether or not the user can update their username.',
 								'hideInLists' => true,
 								'default' => 0,
+								'readonly' => false,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'usernameField' => [
+								'property' => 'usernameField',
+								'type' => 'text',
+								'label' => 'Username Field',
+								'description' => 'The field that corresponds to the patron username in the ILS. (Sierra Only)',
+								'hideInLists' => true,
+								'default' => 'w',
 								'readonly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],

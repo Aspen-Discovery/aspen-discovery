@@ -159,6 +159,7 @@ public class GroupedWorkIndexer {
 	private String treatUnknownLanguageAs = "English";
 	private int indexVersion;
 	private int searchVersion;
+	private boolean enableNovelistSeriesIntegration;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -205,13 +206,14 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
+				this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
 				if (fullReindex) {
 					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
 				}
@@ -1294,23 +1296,25 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadNovelistInfo(AbstractGroupedWorkSolr groupedWork){
-		try{
-			getNovelistStmt.setString(1, groupedWork.getId());
-			ResultSet novelistRS = getNovelistStmt.executeQuery();
-			if (novelistRS.next()){
-				String series = novelistRS.getString("seriesTitle");
-				if (!novelistRS.wasNull()){
-					//Don't clear since there are valid cases when they are different
-					String volume = novelistRS.getString("volume");
-					if (novelistRS.wasNull()){
-						volume = "";
+		if (enableNovelistSeriesIntegration) {
+			try {
+				getNovelistStmt.setString(1, groupedWork.getId());
+				ResultSet novelistRS = getNovelistStmt.executeQuery();
+				if (novelistRS.next()) {
+					String series = novelistRS.getString("seriesTitle");
+					if (!novelistRS.wasNull()) {
+						//Don't clear since there are valid cases when they are different
+						String volume = novelistRS.getString("volume");
+						if (novelistRS.wasNull()) {
+							volume = "";
+						}
+						groupedWork.addSeriesWithVolume(series, volume);
 					}
-					groupedWork.addSeriesWithVolume(series, volume);
 				}
+				novelistRS.close();
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to load novelist data", e);
 			}
-			novelistRS.close();
-		}catch (Exception e){
-			logEntry.incErrors("Unable to load novelist data", e);
 		}
 	}
 

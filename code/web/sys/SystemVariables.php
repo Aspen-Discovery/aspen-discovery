@@ -19,6 +19,7 @@ class SystemVariables extends DataObject {
 	public $storeRecordDetailsInDatabase;
 	public $indexVersion;
 	public $searchVersion;
+	public $enableNovelistSeriesIntegration;
 	public $greenhouseUrl;
 	public $communityContentUrl;
 	public $libraryToUseForPayments;
@@ -200,6 +201,15 @@ class SystemVariables extends DataObject {
 				],
 			],
 
+			'enableNovelistSeriesIntegration' => [
+				'property' => 'enableNovelistSeriesIntegration',
+				'type' => 'checkbox',
+				'label' => 'Enable Novelist Series Integration',
+				'description' => 'Whether Novelist series data is used within Aspen',
+				'default' => true,
+				'forcesReindex' => true,
+			],
+
 			'allowableHtmlTags' => [
 				'property' => 'allowableHtmlTags',
 				'type' => 'text',
@@ -213,7 +223,7 @@ class SystemVariables extends DataObject {
 				'property' => 'allowHtmlInMarkdownFields',
 				'type' => 'checkbox',
 				'label' => 'Allow HTML in Markdown fields',
-				'description' => 'Whether or administrators can add HTML to a Markdown field, if disabled, all tags will be stripped',
+				'description' => 'Whether administrators can add HTML to a Markdown field, if disabled, all tags will be stripped',
 				'default' => true,
 			],
 			'useHtmlEditorRatherThanMarkdown' => [
