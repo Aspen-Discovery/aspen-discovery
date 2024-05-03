@@ -1568,6 +1568,10 @@ class CatalogConnection {
 		return $this->driver->getStudentReportData($location, $showOverdueOnly, $date);
 	}
 
+    public function getWeedingReportData($location) {
+        return $this->driver->getWeedingReportData($location);
+    }
+
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
 	 *

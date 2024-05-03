@@ -327,7 +327,11 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		//Nothing by default
 	}
 
-	public function getHoldsReportData($location) {
+    public function getCollectionReportData($location, $date) {
+        return null;
+    }
+
+    public function getHoldsReportData($location) {
 		return null;
 	}
 
@@ -335,9 +339,9 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return null;
 	}
 
-	public function getCollectionReportData($location, $date) {
-		return null;
-	}
+    public function getWeedingReportData($location) {
+        return null;
+    }
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
