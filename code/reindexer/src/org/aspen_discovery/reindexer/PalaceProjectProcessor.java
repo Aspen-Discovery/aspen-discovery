@@ -25,7 +25,7 @@ public class PalaceProjectProcessor {
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getProductIdForPalaceProjectIdStmt;
 	private PreparedStatement getAvailabilityForPalaceProjectTitleStmt;
-	private HashMap<Long, PalaceProjectCollection> allCollections = new HashMap<>();
+	private final HashMap<Long, PalaceProjectCollection> allCollections = new HashMap<>();
 
 	PalaceProjectProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
@@ -186,7 +186,7 @@ public class PalaceProjectProcessor {
 				}
 
 				String fictionNonFiction = null;
-				HashSet<String> generes = new HashSet<>();
+				HashSet<String> genres = new HashSet<>();
 				String audience = null;
 				if (metadata.has("subject")) {
 					JSONArray subjects = metadata.getJSONArray("subject");
@@ -201,7 +201,7 @@ public class PalaceProjectProcessor {
 								}
 								break;
 							case "http://librarysimplified.org/terms/genres/Simplified/":
-								generes.add(subjectObject.getString("name"));
+								genres.add(subjectObject.getString("name"));
 								break;
 							case "http://schema.org/audience":
 								audience = subjectObject.getString("name");
@@ -223,11 +223,11 @@ public class PalaceProjectProcessor {
 					groupedWork.addLiteraryForm(fictionNonFiction);
 					groupedWork.addLiteraryFormFull(fictionNonFiction);
 				}
-				if (!generes.isEmpty()) {
-					groupedWork.addGenre(generes);
-					groupedWork.addGenreFacet(generes);
-					groupedWork.addTopicFacet(generes);
-					groupedWork.addTopic(generes);
+				if (!genres.isEmpty()) {
+					groupedWork.addGenre(genres);
+					groupedWork.addGenreFacet(genres);
+					groupedWork.addTopicFacet(genres);
+					groupedWork.addTopic(genres);
 				}
 				if (audience == null) {
 					audience = "Unknown";
@@ -310,7 +310,7 @@ public class PalaceProjectProcessor {
 					boolean isAdult = !isKids && !isTeen;
 
 					for (Scope scope : indexer.getScopes()) {
-						boolean okToAdd = false;
+						boolean okToAdd;
 						PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
 						if (palaceProjectScope != null) {
 							okToAdd = true;
