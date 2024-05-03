@@ -1006,6 +1006,9 @@ public class PolarisExportMain {
 							long itemId = curItem.getLong("ItemRecordID");
 							//Figure out the bib record based on the item id.
 							String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+							if (bibForItem == null) {
+								bibForItem = getBibIdForItemId(itemId);
+							}
 							if (bibForItem != null) {
 								if (!bibsToUpdate.contains(bibForItem)) {
 									logEntry.incProducts();
@@ -1060,12 +1063,8 @@ public class PolarisExportMain {
 								if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
 									//Figure out the bib record based on the item id.
 									//Getting from Aspen is faster if we can get it.
-									String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
-									if (bibForItem == null) {
-										//Use the APIs to get the bib id
-										bibForItem = getBibIdForItemId(itemId);
-									}
-									if (bibForItem != null) {
+									HashSet<String> bibsForItem = getBibIdsForItemIdFromAspen(itemId, sourceId);
+									for (String bibForItem : bibsForItem) {
 										//check we've already updated this bib, if so it's ok to skip
 										if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
 											logEntry.incProducts();
@@ -1125,7 +1124,13 @@ public class PolarisExportMain {
 			getRecordIdForItemIdStmt.setString(1, itemIdString);
 			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
 			while (getRecordIdForItemIdRS.next()){
-				getBibIdForItemIdStmt.setLong(1, getRecordIdForItemIdRS.getLong("groupedWorkRecordId"));
+				long recordId = getRecordIdForItemIdRS.getLong("groupedWorkRecordId");
+				//If records are merged, we can have more than one record for the item in that case, don't return anything
+				if (getRecordIdForItemIdRS.next()) {
+					return null;
+				}
+
+				getBibIdForItemIdStmt.setLong(1, recordId);
 				getBibIdForItemIdStmt.setLong(2, sourceId);
 				ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
 				if (getBibIdForItemIdRS.next()){
@@ -1136,6 +1141,32 @@ public class PolarisExportMain {
 			logEntry.incErrors("Error getting bib for item id from Aspen", e);
 		}
 		return null;
+	}
+
+	private static HashSet<String> getBibIdsForItemIdFromAspen(long itemId, long sourceId) {
+		HashSet<String> bibIds = new HashSet<>();
+		if (sourceId == -1){
+			//No records have been saved yet
+			return bibIds;
+		}
+		try {
+			String itemIdString = Long.toString(itemId);
+			getRecordIdForItemIdStmt.setString(1, itemIdString);
+			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
+			//If records are merged, we can have more than one record for the item in that case, don't return anything
+			while (getRecordIdForItemIdRS.next()){
+				long recordId = getRecordIdForItemIdRS.getLong("groupedWorkRecordId");
+				getBibIdForItemIdStmt.setLong(1, recordId);
+				getBibIdForItemIdStmt.setLong(2, sourceId);
+				ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
+				if (getBibIdForItemIdRS.next()){
+					bibIds.add(getBibIdForItemIdRS.getString("recordIdentifier"));
+				}
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error getting bib for item id from Aspen", e);
+		}
+		return bibIds;
 	}
 
 	private static int updateBibFromPolaris(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
@@ -1530,8 +1561,8 @@ public class PolarisExportMain {
 					bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 				} else {
 					//This does not look like an error, just return a null bib.
-					logEntry.addNote("Failed to get bib id for item id " + itemId + ", could not find the item.");
-					logEntry.addNote(getItemResponse.getMessage());
+					logger.info("Failed to get bib id for item id " + itemId + ", could not find the item.");
+					logger.info(getItemResponse.getMessage());
 				}
 			} else {
 				if (numTries == 3) {
