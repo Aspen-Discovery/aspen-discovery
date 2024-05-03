@@ -1123,6 +1123,8 @@ class ItemAPI extends AbstractAPI {
 				$actionButtons[$key]['title'] = $action['title'];
 				$actionButtons[$key]['url'] = $action['url'] ?? null;
 				$actionButtons[$key]['requireLogin'] = $action['requireLogin'] ?? false;
+				$actionButtons[$key]['sampleNumber'] = $action['sampleNumber'] ?? null;
+				$actionButtons[$key]['formatId'] = $action['formatId'] ?? null;
 			}
 
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
