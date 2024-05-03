@@ -789,7 +789,7 @@ EOT;
 
     public function getWeedingReportData($location): array {
 //        set_time_limit(0);
-        ini_set('memory_limit', '6G');
+        ini_set('memory_limit', '4G');
         $this->initDatabaseConnection();
         /** @noinspection SqlResolve */
         $sql = <<<EOT
