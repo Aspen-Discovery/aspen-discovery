@@ -23,13 +23,21 @@ class Report_WeedingReport extends Admin_Admin {
         }
         asort($locationLookupList);
         $interface->assign('locationLookupList', $locationLookupList);
-        $selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : '';
+        if (isset($_REQUEST['location'])) {
+            $selectedLocation = $_REQUEST['location'];
+        } elseif (count($locationLookupList) === 1) {
+            $selectedLocation = array_key_first($locationLookupList);
+        } else {
+            $selectedLocation = null;
+        }
         $interface->assign('selectedLocation', $selectedLocation);
 // OTHER FORM VARIABLES
-        $now = time();
-        $data = CatalogFactory::getCatalogConnectionInstance()->getWeedingReportData($selectedLocation, $now);
+        if (!is_null($selectedLocation)) {
+            $data = CatalogFactory::getCatalogConnectionInstance()->getWeedingReportData($selectedLocation);
+        } else {
+            $data = null;
+        }
         $interface->assign('reportData', $data);
-        $interface->assign('reportDateTime', date("Y-m-d\TH:i:sO", $now));
 
         if (isset($_REQUEST['download'])) {
             header('Content-Type: text/csv');

@@ -787,18 +787,20 @@ EOT;
         return $data;
     }
 
-    public function getWeedingReportData($location, $date): array {
+    public function getWeedingReportData($location): array {
+//        set_time_limit(0);
+        ini_set('memory_limit', '4G');
         $this->initDatabaseConnection();
         /** @noinspection SqlResolve */
         $sql = <<<EOT
-            -- Weeding Report 2024 04 21 by James Staub. This query is NOT efficient and often takes more than 1 minute to run.
+            -- Weeding Report 2024 04 30 by James Staub. This query is NOT efficient and often takes more than 1 minute to run.
             with 
             i as (
                 select
                     m.medname
                     , l.locname
                     , substr(l.loccode,2) as collection
-                    , i.cn as item_callnumber
+                    , upper(i.cn) as item_callnumber
                     , i.item
                     , s.description as status
                     , i.cumulativehistory
@@ -810,11 +812,11 @@ EOT;
                 right join branch_v2 b on i.branch = b.branchnumber
                 where b.branchcode = '$location'
                 and s.type not in ('A', 'D')
-            ),
+            ), -- 20 seconds
             r as (
                 select
                     r.refid
-                    , max(r.returndate) as returndate
+                    , to_char(max(r.returndate),'MM/DD/YYYY') as returndate
                 from itemnotewhohadit_v2 r
                 group by r.refid
             ), 
@@ -839,17 +841,35 @@ EOT;
                 select
                     ib.*
                     , case
-                        when regexp_like(item_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$')
-                            then to_number(regexp_replace(item_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
-                        when regexp_like(bib_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$')
-                            then to_number(regexp_replace(bib_callnumber,'^.*?([0-9]{3}(\.[0-9]{1,2}| )).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
-                        when collection != 'NF'
-                            then to_number(standard_hash(collection, 'MD5'), 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                        when collection = 'ADAPT' then 1105
+                        when collection = 'BIGBK' then 1046
+                        when collection = 'BIOG' then 1005
+                        when collection = 'BOARD' then 1045
+                        when collection = 'EVERY' then 1093
+                        when collection = 'FIC' then 1013
+                        when collection = 'MOVIE' then 1020
+                        when collection = 'OTHER' then 1059
+                        when collection = 'PER' then 1027
+                        when collection = 'TECH' then 1076
+                        when collection = 'TEXT' then 1106
+                        when regexp_like(item_callnumber,'^[^0-9]*[0-9]{3} ')
+                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when regexp_like(item_callnumber,'^[^0-9]*[0-9]{3}\.[0-9]{0,2}.*$')
+                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when regexp_like(bib_callnumber,'^[^0-9]*[0-9]{3} ')
+                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when regexp_like(bib_callnumber,'^[^0-9]*[0-9]{3}\.[0-9]{0,2}.*$')
+                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                        when collection = 'AUBK' then 1001
+                        when collection = 'GRAPH' then 1014
+                        when collection = 'PROF' then 1028
+                        when collection = 'REF' then 1029
                         else -1
                     end as dewey_number
                 from ib
             ),
             d (dewey_number, dewey_label, keep, discard) as ( -- dewey numbers from 2023 karen lowe workshop spreadsheet
+                select '-1','Unrecognized collection','1000','-1000' from dual union all
                 select '000','General Works','-7','-15' from dual union all
                 select '001','General Works','-7','-15' from dual union all
                 select '001.9','Phenomena','-18','-26' from dual union all
@@ -1404,27 +1424,21 @@ EOT;
                 select '997','Atlantic Ocean Islands','-10','-16' from dual union all
                 select '998','Arctic Islands/Antarctica','-10','-16' from dual union all
                 select '999','Extraterrestrial worlds','-10','-16' from dual union all
-                select to_char(to_number(standard_hash('ADAPT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'adaptive books', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('AUBK','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'audiobook', '-15', '-16' from dual union all
-                select to_char(to_number(standard_hash('BIGBK','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'big book', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('BIOG','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'biography', '-13', '-20' from dual union all
-                select to_char(to_number(standard_hash('BOARD','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'board book', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('CDRM','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'cd-rom', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('EASY','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'easy', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('ERR','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'error', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('EVERY','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'everyone', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('FIC','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'fiction', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('GRAPH','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'comic/graphic', '-23', '-32' from dual union all
-                select to_char(to_number(standard_hash('GRUB','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'grubby', '1000', '13' from dual union all
-                select to_char(to_number(standard_hash('MOVIE','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'movie', '-16', '-17' from dual union all
-                select to_char(to_number(standard_hash('OSTSI','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'lost school item', '1000', '13' from dual union all
-                select to_char(to_number(standard_hash('OTHER','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'other', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('PER','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'periodical', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('PROF','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'professional', '-18', '-24' from dual union all
-                select to_char(to_number(standard_hash('REF','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reference', '-13', '-19' from dual union all
-                select to_char(to_number(standard_hash('RESRV','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'reserves', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('TECH','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'technology/computers', '1000', '-1000' from dual union all
-                select to_char(to_number(standard_hash('TEXT','MD5'),'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')), 'textured bags', '1000', '-1000' from dual
+                select '1001','audiobook','-15','-16' from dual union all -- loccode ~ .AUBK
+                select '1014','comic/graphic','-23','-32' from dual union all -- loccode ~ .GRAPH
+                select '1028','professional','-18','-24' from dual union all -- loccode ~ .PROF
+                select '1029','reference','-13','-19' from dual union all -- loccode ~ .REF
+                select '1105','adaptive books','1000','-1000' from dual union all -- loccode ~ .ADAPT
+                select '1046','big book','-23','-32' from dual union all -- loccode ~ .BIGBK
+                select '1005','biography','-13','-20' from dual union all -- loccode ~ .BIOG
+                select '1045','board book','-23','-32' from dual union all -- loccode ~ .BOARD
+                select '1093','everyone','-23','-32' from dual union all -- loccode ~ .EVERY
+                select '1013','fiction','-23','-32' from dual union all -- loccode ~ .FIC
+                select '1020','movie','-16','-17' from dual union all -- loccode ~ .MOVIE
+                select '1059','other','1000','-1000' from dual union all -- loccode ~ .OTHER
+                select '1027','periodical','1000','-1000' from dual union all -- loccode ~ .PER
+                select '1076','technology/computers','1000','-1000' from dual union all -- loccode ~ .TECH
+                select '1106','textured bags','1000','-1000' from dual -- loccode ~ .TEXT
             ), 
             drange as ( -- "deranged" because James thinks he's funny
                 select
@@ -1445,7 +1459,7 @@ EOT;
                 select 
                     bd.*
                     , case
-                        when drange.drange_start >= 0 and drange.drange_stop <= 1000
+                        when drange.drange_start >= -1 and drange.drange_stop <= 1000
                             then drange.dewey_number 
                         when drange.drange_start > 1000
                             then regexp_replace(bd.locname, '(adult |everyone |kids |teen )','')
@@ -1461,7 +1475,7 @@ EOT;
                         to_number(bd.dewey_number) >= drange.drange_start 
                     and
                         to_number(bd.dewey_number) < drange.drange_stop
-                where bd.dewey_number >= 0
+                where bd.dewey_number >= -1
                 order by bd.dewey_number asc, bd.item asc, drange.dewey_number desc , length desc -- should sort the "correct" (i.e., most granular) calculated_dewey available to the top of the list
             ),
             dranked as ( -- "dranked" because James STILL thinks he's funny, should probably be "drowed" since it's not as deep as deep_rank, which could be a D&D joke, or maybe "drowNed" with n=1
@@ -1482,6 +1496,7 @@ EOT;
             )
             select
                 x.collection
+                , x.calculated_dewey
                 , x.item_callnumber
                 , x.item
                 , x.status
