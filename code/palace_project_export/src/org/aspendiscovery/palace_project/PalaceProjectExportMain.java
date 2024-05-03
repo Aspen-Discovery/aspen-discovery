@@ -36,6 +36,7 @@ public class PalaceProjectExportMain {
 	private static String palaceProjectBaseUrl;
 
 	private static Connection aspenConn;
+	private static PreparedStatement getExistingPalaceProjectTitleStmt;
 	private static PreparedStatement addPalaceProjectTitleToDbStmt;
 	private static PreparedStatement updatePalaceProjectTitleInDbStmt;
 	private static PreparedStatement deletePalaceProjectTitleFromDbStmt;
@@ -49,9 +50,6 @@ public class PalaceProjectExportMain {
 	//Record grouper
 	private static GroupedWorkIndexer groupedWorkIndexer;
 	private static RecordGroupingProcessor recordGroupingProcessorSingleton = null;
-
-	//Existing records
-	private static HashMap<String, PalaceProjectTitle> existingRecords = new HashMap<>();
 
 	//For Checksums
 	private static final CRC32 checksumCalculator = new CRC32();
@@ -142,7 +140,6 @@ public class PalaceProjectExportMain {
 				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				groupedWorkIndexer.close();
 				groupedWorkIndexer = null;
-				existingRecords = null;
 			}
 
 			if (logEntry.hasErrors()) {
@@ -226,7 +223,6 @@ public class PalaceProjectExportMain {
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from palace_project_settings");
 			PreparedStatement getCollectionsForSettingStmt = aspenConn.prepareStatement("SELECT * from palace_project_collections where settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement insertCollectionStmt = aspenConn.prepareStatement("INSERT INTO palace_project_collections (settingId, palaceProjectName, displayName, hasCirculation, includeInAspen) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			PreparedStatement setLastIndexedStmt = aspenConn.prepareStatement("UPDATE palace_project_collections set lastIndexed = ? where id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			PreparedStatement getTitlesForCollectionStmt = aspenConn.prepareStatement("SELECT * FROM palace_project_title_availability where collectionId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
@@ -245,10 +241,6 @@ public class PalaceProjectExportMain {
 				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
-
-				//Get a list of all existing records in the database
-				//Load existing titles, so we can optimize updates
-				loadExistingTitles();
 
 				//Get a list of collections within Aspen
 				HashMap<String, PalaceProjectCollection> palaceProjectCollections = getExistingCollectionsInAspenForSetting(getCollectionsForSettingStmt, settingsId);
@@ -276,7 +268,7 @@ public class PalaceProjectExportMain {
 
 						if (collection.includeInAspen) {
 							if (collection.hasCirculation || collection.lastIndexed < yesterdayInSeconds) {
-								extractRecordsForPalaceProjectCollection(collectionName, validCollections, headers, response, collection, titlesForCollection, doFullReload, nowInSeconds);
+								extractRecordsForPalaceProjectCollection(collectionName, validCollections, headers, collection, titlesForCollection, doFullReload, nowInSeconds);
 							}else{
 								//Not time to index, leave things as is.
 							}
@@ -374,56 +366,85 @@ public class PalaceProjectExportMain {
 		}
 	}
 
-	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, WebServiceResponse response, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
+	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
 		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
 		//Index all records in the collection
 		String collectionUrl = validCollections.get(collectionName);
+		boolean hadErrorsIndexing = false;
 		while (collectionUrl != null) {
-			WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
-			if (!response.isSuccess()) {
-				logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
-			} else {
-				JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
-				if (collectionResponseJSON.has("publications")) {
-					JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
-					if (responseTitles != null && !responseTitles.isEmpty()) {
-						updateTitlesInDB(collectionName, collection.id, responseTitles, titlesForCollection, doFullReload);
-						logEntry.saveResults();
+			int numTries = 0;
+			boolean callSucceeded = false;
+			while (!callSucceeded && numTries < 3) {
+				if (numTries > 0) {
+					try {
+						//Sleep a little bit to allow the server to calm down.
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						//Not a big deal if this gets interrupted
 					}
 				}
-				collectionUrl = null;
-				//Get the next URL
-				if (collectionResponseJSON.has("links")) {
-					JSONArray links = collectionResponseJSON.getJSONArray("links");
-					for (int i = 0; i < links.length(); i++) {
-						JSONObject curLink = links.getJSONObject(i);
-						if (curLink.getString("rel").equals("next")) {
-							collectionUrl = curLink.getString("href");
-							break;
+
+				WebServiceResponse responseForCollection = NetworkUtils.getURL(collectionUrl, logger, headers);
+				if (!responseForCollection.isSuccess()) {
+					//This will just retry unless we are at max number of attempts.
+					//logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
+				} else {
+					try {
+						JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
+						callSucceeded = true;
+						if (collectionResponseJSON.has("publications")) {
+							JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
+							if (responseTitles != null && !responseTitles.isEmpty()) {
+								updateTitlesInDB(collectionName, collection.id, responseTitles, titlesForCollection, doFullReload);
+								logEntry.saveResults();
+							}
 						}
+						collectionUrl = null;
+						//Get the next URL
+						if (collectionResponseJSON.has("links")) {
+							JSONArray links = collectionResponseJSON.getJSONArray("links");
+							for (int i = 0; i < links.length(); i++) {
+								JSONObject curLink = links.getJSONObject(i);
+								if (curLink.getString("rel").equals("next")) {
+									collectionUrl = curLink.getString("href");
+									break;
+								}
+							}
+						}
+					} catch (JSONException e) {
+						//This will just retry unless we are at max number of attempts.
+						//logEntry.incErrors("Unable to load titles from " + collectionUrl + ", response could not be parsed as JSON", e);
 					}
 				}
+				numTries++;
+			}
+			if (numTries == 3 && !callSucceeded) {
+				hadErrorsIndexing = true;
+				logEntry.incErrors("Did not get a successful API response after 3 tries for " + collectionUrl);
+				break;
 			}
 		}
 
 		//Set last indexed for the collection
-		try {
-			updateCollectionLastIndexedStmt.setLong(1, indexStartTime);
-			updateCollectionLastIndexedStmt.setLong(2, collection.id);
-			updateCollectionLastIndexedStmt.executeUpdate();
-		}catch (Exception e) {
-			logEntry.incErrors("Error updating collection last indexed time", e);
-		}
-
-		//Remove availability for anything that we didn't see during this run
-		try {
-			getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
-			ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
-			while (titlesToRemoveFromCollectionRS.next()) {
-				removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"), collection.id);
+		if (!hadErrorsIndexing) {
+			try {
+				updateCollectionLastIndexedStmt.setLong(1, indexStartTime);
+				updateCollectionLastIndexedStmt.setLong(2, collection.id);
+				updateCollectionLastIndexedStmt.executeUpdate();
+			} catch (Exception e) {
+				logEntry.incErrors("Error updating collection last indexed time", e);
 			}
-		}catch (Exception e) {
-			logEntry.incErrors("Unable to remove titles from collection after indexing", e);
+
+			//Remove availability for anything that we didn't see during this run
+			try {
+				getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
+				ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
+				while (titlesToRemoveFromCollectionRS.next()) {
+					removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"), collection.id);
+				}
+			}catch (Exception e) {
+				logEntry.incErrors("Unable to remove titles from collection after indexing", e);
+			}
 		}
 	}
 
@@ -509,7 +530,17 @@ public class PalaceProjectExportMain {
 				String palaceProjectId = curTitleMetadata.getString("identifier");
 				String title = curTitleMetadata.getString("title");
 
-				PalaceProjectTitle existingTitle = existingRecords.get(palaceProjectId);
+				getExistingPalaceProjectTitleStmt.setString(1, palaceProjectId);
+				ResultSet getExistingPalaceProjectTitleRS = getExistingPalaceProjectTitleStmt.executeQuery();
+				PalaceProjectTitle existingTitle = null;
+				if (getExistingPalaceProjectTitleRS.next()) {
+					existingTitle = new PalaceProjectTitle(
+							getExistingPalaceProjectTitleRS.getLong("id"),
+							palaceProjectId,
+							getExistingPalaceProjectTitleRS.getLong("rawChecksum"),
+							getExistingPalaceProjectTitleRS.getLong("rawResponseLength")
+					);
+				}
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
 					//Record exists
@@ -660,6 +691,7 @@ public class PalaceProjectExportMain {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
 				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, COMPRESS(?), ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+				getExistingPalaceProjectTitleStmt = aspenConn.prepareStatement("SELECT id, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
 				addPalaceProjectAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title_availability (titleId, collectionId, lastSeen, deleted) VALUES (?, ?, ?, 0)");
@@ -682,6 +714,7 @@ public class PalaceProjectExportMain {
 	private static void disconnectDatabase(Connection aspenConn) {
 		try{
 			addPalaceProjectTitleToDbStmt.close();
+			getExistingPalaceProjectTitleStmt.close();
 			updatePalaceProjectTitleInDbStmt.close();
 			deletePalaceProjectTitleFromDbStmt.close();
 
@@ -705,32 +738,6 @@ public class PalaceProjectExportMain {
 		}
 
 		logEntry = new PalaceProjectExportLogEntry(aspenConn, logger);
-	}
-
-	private static void loadExistingTitles() {
-		try {
-			if (existingRecords == null) existingRecords = new HashMap<>();
-			PreparedStatement getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
-			ResultSet allRecordsRS = getAllExistingPalaceProjectTitlesStmt.executeQuery();
-			while (allRecordsRS.next()) {
-				String palaceProjectId = allRecordsRS.getString("palaceProjectId");
-				PalaceProjectTitle newTitle = new PalaceProjectTitle(
-						allRecordsRS.getLong("id"),
-						palaceProjectId,
-						allRecordsRS.getLong("rawChecksum"),
-						allRecordsRS.getLong("rawResponseLength")
-				);
-				existingRecords.put(palaceProjectId, newTitle);
-			}
-			allRecordsRS.close();
-			//noinspection UnusedAssignment
-			allRecordsRS = null;
-			getAllExistingPalaceProjectTitlesStmt.close();
-		} catch (SQLException e) {
-			logger.error("Error loading existing titles", e);
-			logEntry.addNote("Error loading existing titles" + e);
-			System.exit(-1);
-		}
 	}
 
 	private static void processRecordsToReload(PalaceProjectExportLogEntry logEntry) {
