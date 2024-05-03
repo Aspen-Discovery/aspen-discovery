@@ -5015,7 +5015,7 @@ CREATE TABLE `themes` (
   `additionalCssType` tinyint(1) DEFAULT '0',
   `buttonRadius` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `smallButtonRadius` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `browseCategoryPanelColor` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '#d7dce3',
+  `browseCategoryPanelColor` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '#ffffff',
   `browseCategoryPanelColorDefault` tinyint(1) DEFAULT '1',
   `selectedBrowseCategoryBackgroundColor` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '#0087AB',
   `selectedBrowseCategoryBackgroundColorDefault` tinyint(1) DEFAULT '1',
