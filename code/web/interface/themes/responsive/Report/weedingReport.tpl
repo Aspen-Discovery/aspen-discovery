@@ -3,18 +3,43 @@
 		<div class="doNotPrint">
 		{if !empty($loggedIn)}
 		<h1>{translate text="Weeding Report" isAdminFacing=true}</h1>
+			<div class="help-block alert alert-warning">
+				Two important warnings about your Weeding Report:
+				<ol>
+					<li>Please be patient... this report often takes more than one minute to complete</li>
+					<li>To print colored rows: In your browser's print dialog box, ensure that More settings > Print background graphics is checked.</li>
+				</ol>
+			</div>
 		{if isset($errors)}
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
 			{/foreach}
 		{/if}
-		<form class="form form-inline">
+		<form class="form form-inline" id="weedingReportForm">
 
 			{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}
-
-			<input type="submit" name="showData" value="{translate text="Show Data" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-primary"/>
-			&nbsp;
-			<input type="submit" name="download" value="{translate text="Download CSV" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-info"/>
+			{literal}
+				<script type="text/javascript">
+					let form = document.getElementById('weedingReportForm');
+					form.addEventListener('submit', function (event) {
+						let submitter = event.submitter;
+						let handler = submitter.name;
+						if (handler == 'showData') {
+							$('#showData').prop('disabled', true);
+							$('#showData').addClass('disabled');
+							$('#showData .fa-spinner').removeClass('hidden');
+								return true;
+						}
+						if (handler == 'download') {
+							$('#download').prop('disabled', true);
+							$('#download').addClass('disabled');
+							$('#download .fa-spinner').removeClass('hidden');
+						}
+					});
+				</script>
+			{/literal}
+			<button type="submit" name="showData" id="showData" value="Show Data" class="btn btn-sm btn-primary"><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{translate text="Show Data" inAttribute=true isAdminFacing=true}</button>
+			<button type="submit" name="download" id="download" value="Download CSV" class="btn btn-sm btn-info"><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{translate text="Download CSV" inAttribute=true isAdminFacing=true}</button>
 			&nbsp;
 		</form>
 		{if !empty($reportData)}
