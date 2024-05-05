@@ -4,11 +4,11 @@
 		{if !empty($loggedIn)}
 		<h1>{translate text="Weeding Report" isAdminFacing=true}</h1>
 			<div class="help-block alert alert-warning">
-				Two important warnings about your Weeding Report:
-				<ol>
-					<li>Please be patient... this report often takes more than one minute to complete</li>
+				<ul>
+					<li>Please be patient... this report often takes more than one minute to complete.</li>
 					<li>To print colored rows: In your browser's print dialog box, ensure that More settings > Print background graphics is checked.</li>
-				</ol>
+					<li>If this report is not working for you, please submit a ticket.</li>
+				</ul>
 			</div>
 		{if isset($errors)}
 			{foreach from=$errors item=error}
@@ -52,7 +52,7 @@
 	</div>
 {literal}
 <style>
-table#weedingReportTable tbody tr {
+#weedingReportTable tbody tr {
 	border: black 1px solid;
 	page-break-inside: avoid;
 }
@@ -68,9 +68,6 @@ table#weedingReportTable tbody tr {
 .weedingReport-grubby {
 	background-color: #FFCC99 !important;
 }
-/*table#weedingReportTable tbody tr:nth-child(even) {*/
-/*	background: #EEEEEE !important;*/
-/*}*/
 
 @media print {
 	@page {

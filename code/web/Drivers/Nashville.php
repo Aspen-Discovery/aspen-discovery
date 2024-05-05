@@ -793,7 +793,7 @@ EOT;
         $this->initDatabaseConnection();
         /** @noinspection SqlResolve */
         $sql = <<<EOT
-            -- Weeding Report 2024 04 30 by James Staub. This query is NOT efficient and often takes more than 1 minute to run.
+            -- Weeding Report 2024 05 05 by James Staub. This query is NOT efficient and often takes more than 1 minute to run.
             with 
             i as (
                 select
@@ -812,7 +812,7 @@ EOT;
                 right join branch_v2 b on i.branch = b.branchnumber
                 where b.branchcode = '$location'
                 and s.type not in ('A', 'D')
-            ), -- 20 seconds
+            ),
             r as (
                 select
                     r.refid
@@ -833,7 +833,7 @@ EOT;
                     , b.title
                     , b.author
                     , b.publishingdate
-                    , b.callnumber as bib_callnumber
+                    , trim(trailing chr(10) from b.callnumber) as bib_callnumber -- because a handful of bib callnumbers have newline characters hidden at the end
                 from ir
                 left join bbibmap_v2 b on ir.bid = b.bid
             ),
@@ -852,14 +852,17 @@ EOT;
                         when collection = 'PER' then 1027
                         when collection = 'TECH' then 1076
                         when collection = 'TEXT' then 1106
+                -- NB: the regular expressions below should be modified when moving between Oracle SQL and php
+                -- In Oracle SQL, backreference should be '\1', otherwise "invalid number" error
+                -- In php, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
                         when regexp_like(item_callnumber,'^[^0-9]*[0-9]{3} ')
-                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1'))
                         when regexp_like(item_callnumber,'^[^0-9]*[0-9]{3}\.[0-9]{0,2}.*$')
-                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                            then to_number(regexp_replace(item_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1'))
                         when regexp_like(bib_callnumber,'^[^0-9]*[0-9]{3} ')
-                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}) .*$','\\1'))
                         when regexp_like(bib_callnumber,'^[^0-9]*[0-9]{3}\.[0-9]{0,2}.*$')
-                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1')) -- in php statement, backreference should be '\\1', otherwise "Warning: oci_fetch_array(): ORA-24374: define not done before fetch or execute and fetch in C:\web\aspen-discovery\code\web\Drivers\Nashville.php on line ..."
+                            then to_number(regexp_replace(bib_callnumber,'^[^0-9]*([0-9]{3}\.[0-9]{0,2}).*$','\\1'))
                         when collection = 'AUBK' then 1001
                         when collection = 'GRAPH' then 1014
                         when collection = 'PROF' then 1028
