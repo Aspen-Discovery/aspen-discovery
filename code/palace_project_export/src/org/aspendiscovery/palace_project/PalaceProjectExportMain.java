@@ -447,7 +447,7 @@ public class PalaceProjectExportMain {
 		}
 
 		//Set last indexed for the collection
-		if (!hadErrorsIndexing) {
+		if (!hadErrorsIndexing && doFullReload) {
 			try {
 				updateCollectionLastIndexedStmt.setLong(1, indexStartTime);
 				updateCollectionLastIndexedStmt.setLong(2, collection.id);
