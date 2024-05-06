@@ -32,6 +32,11 @@
 	    {/if}
 		<form id="quickPoll{$id}" class="form-horizontal" role="form" action="/WebBuilder/SubmitQuickPoll"  onsubmit="setFormSubmitting();" method="post">
 			<input type="hidden" name="id" id="id" value="{$id}">
+			{if !empty($patronIdCheck)}
+				<input type="hidden" name="patronIdCheck" id="patronIdCheck" value={$patronIdCheck|escape}>
+			{else}
+				<input type="hidden" name="patronIdCheck" id="patronIdCheck" value=0>
+			{/if}
 			<div id="pollOptions">
 				{foreach from=$pollOptions item=$pollOption}
 					{include file="WebBuilder/quickPollOption.tpl"}
