@@ -687,6 +687,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("xps", "ebook");
 		formatsToFormatCategory.put("bingepass", "other");
 		formatsToFormatCategory.put("graphicnovel", "comic");
+		formatsToFormatCategory.put("graphic novel", "comic");
 		formatsToFormatCategory.put("manga", "comic");
 		formatsToFormatCategory.put("comic", "comic");
 	}

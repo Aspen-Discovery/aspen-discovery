@@ -366,7 +366,7 @@ public class PalaceProjectExportMain {
 		}
 	}
 
-	private static SimpleDateFormat dateModifiedFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+	private static final SimpleDateFormat dateModifiedFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
 		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
 		//Index all records in the collection

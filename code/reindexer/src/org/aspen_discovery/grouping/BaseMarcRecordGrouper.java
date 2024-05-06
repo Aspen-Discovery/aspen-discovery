@@ -93,8 +93,12 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		switch (baseSettings.getFormatSource()) {
 			case "bib":
 				String format = formatClassifier.getFirstFormatFromBib(marcRecord, baseSettings);
-				if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
-					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(format.toLowerCase()), "other");
+				String formatLower = format.toLowerCase();
+				if (formatLower.contains("graphic novel") || (formatLower.contains("comic") && !formatLower.contains("ecomic")) || formatLower.contains("manga")) {
+					formatLower = "graphic novel";
+				}
+				if (formatsToFormatCategory.containsKey(formatLower)) {
+					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(formatLower), "other");
 				}else{
 					groupingFormat = "book";
 				}

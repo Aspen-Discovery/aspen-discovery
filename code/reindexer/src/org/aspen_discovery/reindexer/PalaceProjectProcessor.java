@@ -281,68 +281,71 @@ public class PalaceProjectProcessor {
 				while (collectionsForTitleRS.next()) {
 					long collectionId = collectionsForTitleRS.getLong("collectionId");
 					PalaceProjectCollection collection = allCollections.get(collectionId);
-					String collectionName = collection.displayName;
-					ItemInfo itemInfo = new ItemInfo();
-					itemInfo.setItemIdentifier(identifier);
-					itemInfo.seteContentSource(collectionName);
-					itemInfo.setIsEContent(true);
-					itemInfo.seteContentUrl(contentUrl);
-					itemInfo.setShelfLocation("Online " + collectionName);
-					itemInfo.setDetailedLocation("Online " + collectionName);
-					itemInfo.setCallNumber("Online " + collectionName);
-					itemInfo.setSortableCallNumber("Online " + collectionName);
-					itemInfo.setFormat(primaryFormat);
-					itemInfo.setFormatCategory(formatCategory);
-					//Palace Project does not currently provide more info so can't give accurate number of copies, but we can tell if it's available or not
-					itemInfo.setNumCopies(1);
-					itemInfo.setAvailable(available);
-					itemInfo.setDetailedStatus("Available Online");
-					itemInfo.setGroupedStatus("Available Online");
-					itemInfo.setHoldable(false);
-					itemInfo.setInLibraryUseOnly(false);
+					//Collection will sometimes be null if the collection is deleted
+					if (collection != null) {
+						String collectionName = collection.displayName;
+						ItemInfo itemInfo = new ItemInfo();
+						itemInfo.setItemIdentifier(identifier);
+						itemInfo.seteContentSource(collectionName);
+						itemInfo.setIsEContent(true);
+						itemInfo.seteContentUrl(contentUrl);
+						itemInfo.setShelfLocation("Online " + collectionName);
+						itemInfo.setDetailedLocation("Online " + collectionName);
+						itemInfo.setCallNumber("Online " + collectionName);
+						itemInfo.setSortableCallNumber("Online " + collectionName);
+						itemInfo.setFormat(primaryFormat);
+						itemInfo.setFormatCategory(formatCategory);
+						//Palace Project does not currently provide more info so can't give accurate number of copies, but we can tell if it's available or not
+						itemInfo.setNumCopies(1);
+						itemInfo.setAvailable(available);
+						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setGroupedStatus("Available Online");
+						itemInfo.setHoldable(false);
+						itemInfo.setInLibraryUseOnly(false);
 
-					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-					itemInfo.setDateAdded(dateAdded);
+						Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+						itemInfo.setDateAdded(dateAdded);
 
-					boolean isTeen = audience.equals("Young Adult");
-					boolean isKids = audience.equals("Juvenile");
-					//Account for cases where audience is Unknown, General, etc
-					boolean isAdult = !isKids && !isTeen;
+						boolean isTeen = audience.equals("Young Adult");
+						boolean isKids = audience.equals("Juvenile");
+						//Account for cases where audience is Unknown, General, etc
+						boolean isAdult = !isKids && !isTeen;
 
-					for (Scope scope : indexer.getScopes()) {
-						boolean okToAdd;
-						PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
-						if (palaceProjectScope != null) {
-							okToAdd = true;
-						}else{
-							continue;
-						}
-						if (palaceProjectScope.getSettingId() != collection.settingId) {
-							okToAdd = false;
-						}
-						if (okToAdd) {
-							//Check based on the audience as well
-							okToAdd = false;
-							//noinspection RedundantIfStatement
-							if (isAdult && palaceProjectScope.isIncludeAdult()) {
+						for (Scope scope : indexer.getScopes()) {
+							boolean okToAdd;
+							PalaceProjectScope palaceProjectScope = scope.getPalaceProjectScope();
+							if (palaceProjectScope != null) {
 								okToAdd = true;
+							} else {
+								continue;
 							}
-							if (isTeen && palaceProjectScope.isIncludeTeen()) {
-								okToAdd = true;
-							}
-							if (isKids && palaceProjectScope.isIncludeKids()) {
-								okToAdd = true;
+							if (palaceProjectScope.getSettingId() != collection.settingId) {
+								okToAdd = false;
 							}
 							if (okToAdd) {
-								ScopingInfo scopingInfo = itemInfo.addScope(scope);
-								groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
-								scopingInfo.setLibraryOwned(true);
-								scopingInfo.setLocallyOwned(true);
+								//Check based on the audience as well
+								okToAdd = false;
+								//noinspection RedundantIfStatement
+								if (isAdult && palaceProjectScope.isIncludeAdult()) {
+									okToAdd = true;
+								}
+								if (isTeen && palaceProjectScope.isIncludeTeen()) {
+									okToAdd = true;
+								}
+								if (isKids && palaceProjectScope.isIncludeKids()) {
+									okToAdd = true;
+								}
+								if (okToAdd) {
+									ScopingInfo scopingInfo = itemInfo.addScope(scope);
+									groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
+									scopingInfo.setLibraryOwned(true);
+									scopingInfo.setLocallyOwned(true);
+								}
 							}
 						}
-					}
 
-					palaceProjectRecord.addItem(itemInfo);
+						palaceProjectRecord.addItem(itemInfo);
+					}
 				}
 			}
 			productRS.close();
