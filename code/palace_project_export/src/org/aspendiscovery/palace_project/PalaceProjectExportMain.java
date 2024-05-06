@@ -20,6 +20,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.zip.CRC32;
@@ -33,8 +35,6 @@ public class PalaceProjectExportMain {
 
 	private static Long startTimeForLogging;
 	private static PalaceProjectExportLogEntry logEntry;
-	private static String palaceProjectBaseUrl;
-
 	private static Connection aspenConn;
 	private static PreparedStatement getExistingPalaceProjectTitleStmt;
 	private static PreparedStatement addPalaceProjectTitleToDbStmt;
@@ -238,7 +238,7 @@ public class PalaceProjectExportMain {
 				logEntry.addNote("Starting update from Palace Project");
 				logEntry.saveResults();
 
-				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
+				String palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 
@@ -276,7 +276,7 @@ public class PalaceProjectExportMain {
 							//Remove all currently indexed products from solr
 							for (PalaceProjectTitleAvailability titleAvailability : titlesForCollection.values()) {
 								if (!titleAvailability.deleted) {
-									removePalaceProjectTitleFromCollection(titleAvailability.id, titleAvailability.titleId, titleAvailability.collectionId);
+									removePalaceProjectTitleFromCollection(titleAvailability.id, titleAvailability.titleId);
 
 								}
 							}
@@ -298,7 +298,7 @@ public class PalaceProjectExportMain {
 		return updatesRun;
 	}
 
-	private static void removePalaceProjectTitleFromCollection(long availabilityId, long titleId, long collectionId) throws SQLException {
+	private static void removePalaceProjectTitleFromCollection(long availabilityId, long titleId) throws SQLException {
 		//Mark the title availability deleted
 		deletePalaceProjectAvailabilityStmt.setLong(1, availabilityId);
 		deletePalaceProjectAvailabilityStmt.executeUpdate();
@@ -366,6 +366,7 @@ public class PalaceProjectExportMain {
 		}
 	}
 
+	private static SimpleDateFormat dateModifiedFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private static void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
 		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
 		//Index all records in the collection
@@ -390,24 +391,44 @@ public class PalaceProjectExportMain {
 					//logEntry.incErrors("Could not get titles from " + collectionUrl + " " + responseForCollection.getMessage());
 				} else {
 					try {
+						boolean stopProcessingDueToLastUpdateTime = false;
 						JSONObject collectionResponseJSON = new JSONObject(responseForCollection.getMessage());
 						callSucceeded = true;
 						if (collectionResponseJSON.has("publications")) {
 							JSONArray responseTitles = collectionResponseJSON.getJSONArray("publications");
 							if (responseTitles != null && !responseTitles.isEmpty()) {
 								updateTitlesInDB(collectionName, collection.id, responseTitles, titlesForCollection, doFullReload);
+								if (!doFullReload) {
+									try {
+										JSONObject lastTitle = responseTitles.getJSONObject(responseTitles.length() - 1);
+										String lastTitleModified = lastTitle.getJSONObject("metadata").getString("modified");
+										try {
+											Date lastTitleModifiedDate = dateModifiedFormatter.parse(lastTitleModified);
+											//Give a 5-minute buffer for processing
+											if (lastTitleModifiedDate.getTime() / 1000 < (collection.lastIndexed - 60 * 60 * 5)) {
+												stopProcessingDueToLastUpdateTime = true;
+											}
+										} catch (ParseException e) {
+											logEntry.incErrors("Could not parse date modified " + lastTitleModified, e);
+										}
+									}catch (Exception e) {
+										logEntry.incErrors("Error determining if indexing should halt", e);
+									}
+								}
 								logEntry.saveResults();
 							}
 						}
 						collectionUrl = null;
-						//Get the next URL
-						if (collectionResponseJSON.has("links")) {
-							JSONArray links = collectionResponseJSON.getJSONArray("links");
-							for (int i = 0; i < links.length(); i++) {
-								JSONObject curLink = links.getJSONObject(i);
-								if (curLink.getString("rel").equals("next")) {
-									collectionUrl = curLink.getString("href");
-									break;
+						if (!stopProcessingDueToLastUpdateTime) {
+							//Get the next URL
+							if (collectionResponseJSON.has("links")) {
+								JSONArray links = collectionResponseJSON.getJSONArray("links");
+								for (int i = 0; i < links.length(); i++) {
+									JSONObject curLink = links.getJSONObject(i);
+									if (curLink.getString("rel").equals("next")) {
+										collectionUrl = curLink.getString("href");
+										break;
+									}
 								}
 							}
 						}
@@ -440,7 +461,7 @@ public class PalaceProjectExportMain {
 				getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
 				ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
 				while (titlesToRemoveFromCollectionRS.next()) {
-					removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"), collection.id);
+					removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"));
 				}
 			}catch (Exception e) {
 				logEntry.incErrors("Unable to remove titles from collection after indexing", e);
@@ -646,38 +667,8 @@ public class PalaceProjectExportMain {
 	@SuppressWarnings("unused")
 	private static void exportSinglePalaceProjectTitle(String singleWorkId) {
 		try{
-			logEntry.addNote("Doing extract of single work " + singleWorkId);
+			logEntry.addNote("Extracting single works is not currently supported in Palace Project " + singleWorkId);
 			logEntry.saveResults();
-
-			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from palace_project_settings");
-			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
-			int numSettings = 0;
-			while (getSettingsRS.next()) {
-				numSettings++;
-				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
-				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
-
-//				String url = palaceProjectBaseUrl + "/" + palaceProjectLibraryId + "/crawlable";
-//				HashMap<String, String> headers = new HashMap<>();
-//				headers.put("Accept", "application/opds+json");
-//				headers.put("User-Agent", "Aspen Discovery");
-//				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
-//				if (!response.isSuccess()){
-//					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
-//				}else {
-//					JSONObject responseJSON = new JSONObject(response.getMessage());
-//					if (responseJSON.has("publications")) {
-//						JSONArray responseTitles = responseJSON.getJSONArray("publications");
-//						if (responseTitles != null && !responseTitles.isEmpty()) {
-//							//updateTitlesInDB(responseTitles, false);
-//							logEntry.saveResults();
-//						}
-//					}
-//				}
-			}
-			if (numSettings == 0){
-				logger.error("Unable to find settings for Palace Project, please add settings to the database");
-			}
 		}catch (Exception e){
 			logEntry.incErrors("Error exporting Palace Project data", e);
 		}
