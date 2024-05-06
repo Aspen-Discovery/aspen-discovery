@@ -447,7 +447,7 @@ public class PalaceProjectExportMain {
 		}
 
 		//Set last indexed for the collection
-		if (!hadErrorsIndexing && doFullReload) {
+		if (!hadErrorsIndexing) {
 			try {
 				updateCollectionLastIndexedStmt.setLong(1, indexStartTime);
 				updateCollectionLastIndexedStmt.setLong(2, collection.id);
@@ -456,15 +456,17 @@ public class PalaceProjectExportMain {
 				logEntry.incErrors("Error updating collection last indexed time", e);
 			}
 
-			//Remove availability for anything that we didn't see during this run
-			try {
-				getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
-				ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
-				while (titlesToRemoveFromCollectionRS.next()) {
-					removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"));
+			if (doFullReload) {
+				//Remove availability for anything that we didn't see during this run
+				try {
+					getTitlesToRemoveFromCollectionStmt.setLong(1, collection.id);
+					ResultSet titlesToRemoveFromCollectionRS = getTitlesToRemoveFromCollectionStmt.executeQuery();
+					while (titlesToRemoveFromCollectionRS.next()) {
+						removePalaceProjectTitleFromCollection(titlesToRemoveFromCollectionRS.getLong("id"), titlesToRemoveFromCollectionRS.getLong("titleId"));
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to remove titles from collection after indexing", e);
 				}
-			}catch (Exception e) {
-				logEntry.incErrors("Unable to remove titles from collection after indexing", e);
 			}
 		}
 	}
