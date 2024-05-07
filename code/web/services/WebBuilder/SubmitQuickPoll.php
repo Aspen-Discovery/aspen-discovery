@@ -45,6 +45,15 @@ class WebBuilder_SubmitQuickPoll extends Action {
 					]);
 					$processQuickPoll = false;
 				}
+			} else if ($this->quickPoll->requireLogin) { //this should only happen in rare cases involving multiple tabs being opened with different patrons on each tab
+				$user = UserAccount::getLoggedInUser();
+				if ($_REQUEST['patronIdCheck'] != 0 && $_REQUEST['patronIdCheck'] != $user->id){
+					$submissionErrors[] = translate([
+						'text' => 'Wrong account credentials, please try again.',
+						'isPublicFacing' => true,
+					]);
+					$processQuickPoll = false;
+				}
 			}
 
 			if ($processQuickPoll) {
