@@ -5,9 +5,10 @@
 		<h1>{translate text="Weeding Report" isAdminFacing=true}</h1>
 			<div class="help-block alert alert-warning">
 				<ul>
-					<li>Please be patient... this report often takes more than one minute to complete.</li>
-					<li>To print colored rows: In your browser's print dialog box, ensure that More settings > Print background graphics is checked.</li>
-					<li>If this report is not working for you, please submit a ticket.</li>
+					<li>Please be patient... this report often takes more than one minute to complete retrieving and formatting the data.</li>
+					<li>To print, press Ctrl+P. Please be patient... the report re-composes itself in print preview.</li>
+					<li>To print colored rows: In your browser's print dialog box, ensure that More Settings > Print Background Graphics is checked.</li>
+					<li>If this report is not working for you, please <a href="https://nashvillepl.libanswers.com/form?queue_id=3576">submit a help desk ticket</a>.</li>
 				</ul>
 			</div>
 		{if isset($errors)}
