@@ -1,5 +1,6 @@
 package org.aspen_discovery.grouping;
 
+import org.aspen_discovery.format_classification.FormatInfo;
 import org.aspen_discovery.format_classification.MarcRecordFormatClassifier;
 import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.indexing.*;
@@ -92,22 +93,15 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		String groupingFormat;
 		switch (baseSettings.getFormatSource()) {
 			case "bib":
-				String format = formatClassifier.getFirstFormatFromBib(marcRecord, baseSettings);
-				String formatLower = format.toLowerCase();
-				if (formatLower.contains("graphic novel") || (formatLower.contains("comic") && !formatLower.contains("ecomic")) || formatLower.contains("manga")) {
-					formatLower = "graphic novel";
-				}
-				if (formatsToFormatCategory.containsKey(formatLower)) {
-					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(formatLower), "other");
-				}else{
-					groupingFormat = "book";
-				}
+			case "item":
+				FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(marcRecord, baseSettings, logEntry, logger);
+				groupingFormat = formatInfo.getGroupingFormat(baseSettings);
 
 				break;
 			case "specified":
 				//Use specified format
 				String specifiedFormatCategory = baseSettings.getSpecifiedFormatCategory();
-				groupingFormat = categoryMap.get(specifiedFormatCategory.toLowerCase());
+				groupingFormat = FormatInfo.categoryMap.get(specifiedFormatCategory.toLowerCase());
 				if (groupingFormat == null) {
 					groupingFormat = specifiedFormatCategory;
 				}

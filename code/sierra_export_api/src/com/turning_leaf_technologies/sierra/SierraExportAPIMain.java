@@ -139,7 +139,7 @@ public class SierraExportAPIMain {
 				//Connect to the Sierra database
 				Connection sierraConn = null;
 				SierraInstanceInformation sierraInstanceInformation = initializeSierraConnection(dbConn);
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger, logEntry);
+				indexingProfile = IndexingProfile.loadIndexingProfile(serverName, dbConn, sierraInstanceInformation.indexingProfileName, logger, logEntry);
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (sierraInstanceInformation.sierraConnection == null) {

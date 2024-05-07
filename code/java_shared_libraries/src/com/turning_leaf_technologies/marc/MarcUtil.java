@@ -605,4 +605,71 @@ public class MarcUtil {
 			subfield.setData(newValue);
 		}
 	}
+
+	public static String getItemSubfieldData(char subfieldIndicator, DataField itemField, BaseIndexingLogEntry logEntry, Logger logger) {
+		if (subfieldIndicator == ' '){
+			return null;
+		}else {
+			List<Subfield> subfields = itemField.getSubfields(subfieldIndicator);
+			if (subfields.size() == 1) {
+				return subfields.get(0).getData().trim();
+			} else if (subfields.isEmpty()) {
+				return null;
+			} else {
+				StringBuilder subfieldData = new StringBuilder();
+				for (Subfield subfield:subfields) {
+					String trimmedValue = subfield.getData().trim();
+					boolean okToAdd = false;
+					if (trimmedValue.isEmpty()){
+						continue;
+					}
+					try {
+						if (subfieldData.length() == 0) {
+							okToAdd = true;
+						} else if (subfieldData.length() < trimmedValue.length()) {
+							okToAdd = true;
+						} else if (!subfieldData.substring(subfieldData.length() - trimmedValue.length()).equals(trimmedValue)) {
+							okToAdd = true;
+						}
+					}catch (Exception e){
+						logEntry.incErrors("Error determining if the new value is already part of the string", e);
+					}
+					if (okToAdd) {
+						if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' ') {
+							subfieldData.append(' ');
+						}
+						subfieldData.append(trimmedValue);
+					}else{
+						logger.debug("Not appending subfield because the value looks redundant");
+					}
+				}
+				return subfieldData.toString().trim();
+			}
+
+		}
+	}
+
+	public static String getItemSubfieldDataWithoutTrimming(char subfieldIndicator, DataField itemField) {
+		if (subfieldIndicator == ' '){
+			return null;
+		}else {
+//			return itemField.getSubfield(subfieldIndicator) != null ? itemField.getSubfield(subfieldIndicator).getData() : null;
+
+			List<Subfield> subfields = itemField.getSubfields(subfieldIndicator);
+			if (subfields.size() == 1) {
+				return subfields.get(0).getData();
+			} else if (subfields.isEmpty()) {
+				return null;
+			} else {
+				StringBuilder subfieldData = new StringBuilder();
+				for (Subfield subfield:subfields) {
+					if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' '){
+						subfieldData.append(' ');
+					}
+					subfieldData.append(subfield.getData());
+				}
+				return subfieldData.toString();
+			}
+		}
+	}
 }

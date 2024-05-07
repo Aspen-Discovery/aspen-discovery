@@ -174,7 +174,7 @@ public class PolarisExportMain {
 				}
 
 				if (loadAccountProfile(dbConn)){
-					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
+					indexingProfile = IndexingProfile.loadIndexingProfile(serverName, dbConn, profileToLoad, logger, logEntry);
 					logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 					WebServiceResponse authenticationResponse = authenticateStaffUser();

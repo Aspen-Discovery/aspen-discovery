@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -9,8 +10,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 class CarlXRecordProcessor extends IlsRecordProcessor {
-	CarlXRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
+	CarlXRecordProcessor(String serverName, GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override
@@ -30,7 +31,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String statusCode = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
+		String statusCode = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (statusCode.length() > 2){
 			statusCode = translateValue("status_codes", statusCode, recordIdentifier);
 		}
@@ -38,9 +39,9 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
+		String locationCode = MarcUtil.getItemSubfieldData(settings.getLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		String location = translateValue("location", locationCode, identifier, true);
-		String shelvingLocation = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
+		String shelvingLocation = MarcUtil.getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (shelvingLocation != null && !shelvingLocation.equals(locationCode)){
 			if (location == null){
 				location = translateValue("shelf_location", shelvingLocation, identifier, true);
