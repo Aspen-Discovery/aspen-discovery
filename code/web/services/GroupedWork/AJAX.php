@@ -1685,6 +1685,7 @@ class GroupedWork_AJAX extends JSON_Action {
 						$groupedWorkAlternateTitle->permanent_id = $workToGroupWith->permanent_id;
 						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
 						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
+						$groupedWorkAlternateTitle->alternateGroupingCategory = $originalGroupedWork->grouping_category;
 						if (!$groupedWorkAlternateTitle->find(true)) {
 							$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
 							$groupedWorkAlternateTitle->dateAdded = time();

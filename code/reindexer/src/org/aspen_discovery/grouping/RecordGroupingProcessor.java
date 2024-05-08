@@ -254,7 +254,7 @@ public class RecordGroupingProcessor {
 			nonGroupedRecordsRS.close();
 			recordsToNotGroupStmt.close();
 
-			getWorkByAlternateTitleAuthorStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work_alternate_titles where alternateTitle = ? and alternateAuthor = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getWorkByAlternateTitleAuthorStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work_alternate_titles where alternateTitle = ? and alternateAuthor = ? and alternateGroupingCategory = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 
 		} catch (Exception e) {
@@ -393,6 +393,7 @@ public class RecordGroupingProcessor {
 			//Check to see if we know the work based on the title and author through the merge process
 			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getAuthoritativeTitle());
 			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthoritativeAuthor());
+			getWorkByAlternateTitleAuthorStmt.setString(3, groupedWork.getGroupingCategory());
 			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
 			if (getWorkByAlternateTitleAuthorRS.next()){
 				return getWorkByAlternateTitleAuthorRS.getString("permanent_id");

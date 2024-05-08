@@ -1,7 +1,8 @@
 <?php
 
+/** @noinspection PhpUnused */
 function getUpdates24_05_00(): array {
-	$curTime = time();
+	/** @noinspection SqlWithoutWhere */
 	return [
 		/*'name' => [
 			 'title' => '',
@@ -39,7 +40,16 @@ function getUpdates24_05_00(): array {
 			'sql' => [
 				"ALTER TABLE system_variables ADD COLUMN enableNovelistSeriesIntegration TINYINT DEFAULT 1",
 			],
-		],
+		], //toggle_novelist_series
+		'alternate_grouping_category' => [
+			'title' => 'Alternate Grouping Category',
+			'description' => 'Add Alternate Grouping Category to Grouped Work Alternate Titles',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE grouped_work_alternate_titles ADD COLUMN alternateGroupingCategory VARCHAR(5)",
+				'updateAlternateGroupingCategories'
+			],
+		], //alternate_grouping_format
 
 		//kirstien - ByWater
 
@@ -116,4 +126,29 @@ function getUpdates24_05_00(): array {
 
 
 	];
+}
+
+/** @noinspection PhpUnused */
+function updateAlternateGroupingCategories(&$update) {
+	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+	$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
+	$groupedWorkAlternateTitle->find();
+	$numTitlesUpdated = 0;
+	$groupedWorkAlternateTitles = $groupedWorkAlternateTitle->fetchAll();
+	foreach ($groupedWorkAlternateTitles as $groupedWorkAlternateTitle) {
+		if (empty($groupedWorkAlternateTitle->alternateGroupingCategory)) {
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $groupedWorkAlternateTitle->permanent_id;
+			if ($groupedWork->find(true)) {
+				$groupedWorkAlternateTitle->alternateGroupingCategory = $groupedWork->grouping_category;
+				$groupedWorkAlternateTitle->update();
+				$numTitlesUpdated++;
+			}
+			$groupedWork->__destruct();
+		}
+	}
+
+	$update['status'] = "Finished updating Alternate Grouping Categories, updated $numTitlesUpdated";
+	$update['success'] = true;
 }
