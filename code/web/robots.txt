@@ -1,6 +1,7 @@
 User-agent: *
 Crawl-delay: 20
 Disallow: /*?*view=excel*
+Disallow: /*?*view=rss*
 Disallow: /API/
 Disallow: /Admin/
 Disallow: /Author/AJAX
