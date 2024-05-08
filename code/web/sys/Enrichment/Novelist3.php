@@ -42,7 +42,7 @@ class Novelist3 {
 	}
 
 	/**
-	 * Loads Novelist data from Novelist for a grouped record
+	 * Loads NoveList data from NoveList for a grouped record
 	 *
 	 * @param String $groupedRecordId The permanent id of the grouped record
 	 * @param String[] $isbns a list of ISBNs for the record
@@ -88,7 +88,7 @@ class Novelist3 {
 	}
 
 	/**
-	 * Loads Novelist data from Novelist for a grouped record
+	 * Loads NoveList data from NoveList for a grouped record
 	 *
 	 * @param String $groupedRecordId The permanent id of the grouped record
 	 * @param String[] $isbns a list of ISBNs for the record
@@ -125,7 +125,7 @@ class Novelist3 {
 
 			$response = $req->curlGetPage($requestUrl);
 			ExternalRequestLogEntry::logRequest('novelist.contentByQuery', 'GET', $requestUrl, [], '', $req->getResponseCode(), $response, ['password' => $novelistSettings->pwd]);
-			$timer->logTime("Made call to Novelist for enrichment information $isbn");
+			$timer->logTime("Made call to NoveList for enrichment information $isbn");
 
 
 			//Parse the JSON
@@ -187,7 +187,7 @@ class Novelist3 {
 		global $timer;
 		$novelistSettings = $this->getNovelistSettings();
 
-		//First make sure that Novelist is enabled
+		//First make sure that NoveList is enabled
 		if ($novelistSettings == null) {
 			return null;
 		}
@@ -227,7 +227,7 @@ class Novelist3 {
 			} else {
 				$novelistData->hasNovelistData = 0;
 
-				//Check up to 50 ISBNs for enrichment data, Novelist now accepts these all at once and we should generally just get back response
+				//Check up to 50 ISBNs for enrichment data, NoveList now accepts these all at once and we should generally just get back response
 				if (count($isbns) > 50) {
 					$isbns = array_slice($isbns, 0, 50);
 				}
@@ -247,7 +247,7 @@ class Novelist3 {
 
 					$response = $req->curlGetPage($requestUrl);
 					ExternalRequestLogEntry::logRequest('novelist.contentByQuery', 'GET', $requestUrl, [], '', $req->getResponseCode(), $response, ['password' => $novelistSettings->pwd]);
-					$timer->logTime("Made call to Novelist for enrichment information $isbnParam");
+					$timer->logTime("Made call to NoveList for enrichment information $isbnParam");
 
 
 					//Parse the JSON
@@ -306,7 +306,7 @@ class Novelist3 {
 	}
 
 	/**
-	 * Loads Novelist data from Novelist for a grouped record
+	 * Loads NoveList data from NoveList for a grouped record
 	 *
 	 * @param String $groupedRecordId The permanent id of the grouped record
 	 * @param String[] $isbns a list of ISBNs for the record
@@ -346,7 +346,7 @@ class Novelist3 {
 	}
 
 	/**
-	 * Loads Novelist data from Novelist for a grouped record
+	 * Loads NoveList data from NoveList for a grouped record
 	 *
 	 * @param String $groupedRecordId The permanent id of the grouped record
 	 * @param String[] $isbns a list of ISBNs for the record

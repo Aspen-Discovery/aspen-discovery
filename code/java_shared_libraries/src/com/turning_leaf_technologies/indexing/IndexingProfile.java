@@ -109,16 +109,16 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private SierraExportFieldMapping sierraExportFieldMappings = null;
 
-	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-
-	public IndexingProfile(){
+	public IndexingProfile(String serverName, BaseIndexingLogEntry logEntry){
 		//This is only intended to be used for unit testing
+		super(serverName, logEntry);
 		numRetriesForBibLookups = 0;
 		numMillisecondsToPauseAfterBibLookups = 1000;
 		numExtractionThreads = 1;
 	}
 
-	public IndexingProfile(ResultSet indexingProfileRS, Connection dbConn, BaseIndexingLogEntry logEntry)  throws SQLException {
+	public IndexingProfile(String serverName, ResultSet indexingProfileRS, Connection dbConn, BaseIndexingLogEntry logEntry)  throws SQLException {
+		super(serverName, logEntry);
 		this.setId(indexingProfileRS.getLong("id"));
 		this.setName(indexingProfileRS.getString("name"));
 		this.setFilenamesToInclude(indexingProfileRS.getString("filenamesToInclude"));
@@ -397,14 +397,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.format = format;
 	}
 
-	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger, BaseIndexingLogEntry logEntry) {
+	public static IndexingProfile loadIndexingProfile(String serverName, Connection dbConn, String profileToLoad, Logger logger, BaseIndexingLogEntry logEntry) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = null;
 		try {
 			PreparedStatement getIndexingProfileStmt = dbConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
 			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
-				indexingProfile = new IndexingProfile(indexingProfileRS, dbConn, logEntry);
+				indexingProfile = new IndexingProfile(serverName, indexingProfileRS, dbConn, logEntry);
 
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
@@ -774,7 +774,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return checkRecordForLargePrint;
 	}
 
-	private void setCollectionSubfield(char collectionSubfield) {
+	public void setCollectionSubfield(char collectionSubfield) {
 		this.collectionSubfield = collectionSubfield;
 	}
 
@@ -782,7 +782,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return collectionSubfield;
 	}
 
-	private void setSubLocationSubfield(char sublocationSubfield) {
+	public void setSubLocationSubfield(char sublocationSubfield) {
 		this.subLocationSubfield = sublocationSubfield;
 	}
 
@@ -1064,7 +1064,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	public boolean hasTranslation(String mapName, String value) {
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		if (translationMap != null){
-			return translationMap.containsKey(value);
+			return translationMap.containsKey(value.toLowerCase());
 		}else{
 			return false;
 		}

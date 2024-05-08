@@ -18,7 +18,7 @@ class Enrichment_NovelistSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Novelist Settings';
+		return 'NoveList Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -62,7 +62,7 @@ class Enrichment_NovelistSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
-		$breadcrumbs[] = new Breadcrumb('/Enrichment/NovelistSettings', 'Novelist Settings');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/NovelistSettings', 'NoveList Settings');
 		return $breadcrumbs;
 	}
 

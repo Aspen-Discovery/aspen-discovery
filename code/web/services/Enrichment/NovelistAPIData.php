@@ -7,7 +7,6 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 		global $interface;
 		global $logger;
 
-		//require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		require_once ROOT_DIR . '/sys/Enrichment/Novelist3.php';
 
 		$driver = new Novelist3();
@@ -29,20 +28,20 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 			if ($allInfo == "on"){
 				$contents .= "<h3>Data includes info for all records in series</h3>";
 			}
-			$logger->log("Fetching Novelist Data", Logger::LOG_ERROR);
+			$logger->log("Fetching NoveList Data", Logger::LOG_ERROR);
 			$metadata = $driver->getRawNovelistDataISBN($ISBN, $allInfo);
-			$logger->log("Fetched Novelist Data", Logger::LOG_ERROR);
+			$logger->log("Fetched NoveList Data", Logger::LOG_ERROR);
 			if (!empty($metadata)) {
-				$logger->log("Formatting Novelist Data", Logger::LOG_ERROR);
+				$logger->log("Formatting NoveList Data", Logger::LOG_ERROR);
 				$contents .= $this->easy_printr("metadata_{$ISBN}", $metadata);
-				$logger->log("Finished Formatting Novelist Data", Logger::LOG_ERROR);
+				$logger->log("Finished Formatting NoveList Data", Logger::LOG_ERROR);
 			} else {
 				$contents .= "No metadata available<br/>";
 			}
 		}
 
 		$interface->assign('novelistAPIData', $contents);
-		$this->display('novelistApiData.tpl', 'Novelist API Data');
+		$this->display('novelistApiData.tpl', 'NoveList API Data');
 	}
 
 	function easy_printr($section, &$var) {
@@ -59,7 +58,7 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
-		$breadcrumbs[] = new Breadcrumb('/Enrichment/NovelistAPIData', 'Novelist API Information');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/NovelistAPIData', 'NoveList API Information');
 		return $breadcrumbs;
 	}
 

@@ -40,7 +40,7 @@
 					{if !empty($footerLogoLink)}
 						<a href="{$footerLogoLink}">
 					{/if}
-					<img src="{$footerLogo}" aria-hidden="true" alt="{if !empty($footerLogoAlt)}{$footerLogoAlt}{else}{$librarySystemName}{/if}"/>
+					<img src="{$footerLogo}" alt="{if !empty($footerLogoAlt)}{$footerLogoAlt}{else}{$librarySystemName}{/if}"/>
 					{if !empty($footerLogoLink)}
 						</a>
 					{/if}

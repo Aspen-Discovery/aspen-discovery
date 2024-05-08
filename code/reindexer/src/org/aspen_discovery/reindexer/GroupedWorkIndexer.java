@@ -370,40 +370,40 @@ public class GroupedWorkIndexer {
 			while (indexingProfilesRS.next()){
 				String ilsIndexingClassString = indexingProfilesRS.getString("indexingClass");
 				String curType = indexingProfilesRS.getString("name");
-				IndexingProfile indexingProfile = new IndexingProfile(indexingProfilesRS, dbConn, logEntry);
+				IndexingProfile indexingProfile = new IndexingProfile(serverName, indexingProfilesRS, dbConn, logEntry);
 				switch (ilsIndexingClassString) {
 					case "ArlingtonKoha":
-						ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "CarlX":
-						ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new CarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "NashvilleCarlX":
-						ilsRecordProcessors.put(curType, new NashvilleCarlXRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new NashvilleCarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "III":
-						ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new IIIRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "SideLoadedEContent":
-						ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Koha":
-						ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new KohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Symphony":
-						ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Polaris":
-						ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new PolarisRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Evergreen":
-						ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Evolve":
-						ilsRecordProcessors.put(curType, new EvolveRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new EvolveRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					case "Folio":
-						ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						ilsRecordProcessors.put(curType, new FolioRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
 						break;
 					default:
 						logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
@@ -428,7 +428,7 @@ public class GroupedWorkIndexer {
 				String curType = getSideLoadSettingsRS.getString("name").toLowerCase();
 				String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 				if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(serverName, this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
 					sideLoadProcessors.put(curType, sideloadProcessor);
 					sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
 				} else {

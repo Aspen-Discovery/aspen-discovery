@@ -3466,8 +3466,8 @@ class User extends DataObject {
 		} else {
 			$sections['third_party_enrichment']->addAction($nytListsAction, 'View New York Times Lists');
 		}
-		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
-		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist API Information', 'View API information for Novelist.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('NoveList Settings', 'Define settings for integrating NoveList within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('NoveList API Information', 'View API information for NoveList.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu Settings', 'Define settings for integrating Quipu eCARD & eRENEW within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');

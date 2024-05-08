@@ -28,6 +28,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldIndexingData(dbConn, logger, processLog);
 		removeOldExternalRequests(dbConn, logger, processLog);
 		optimizeSearchTable(dbConn, logger, processLog);
+		optimizeSessionsTable(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 
@@ -45,6 +46,20 @@ public class DatabaseCleanup implements IProcessHandler {
 			optimizeStmt.execute();
 
 			processLog.addNote("Optimized search table.");
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to optimize search table. ", e);
+		}
+	}
+
+	private void optimizeSessionsTable(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Optimize search table
+		try {
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE session");
+
+			optimizeStmt.execute();
+
+			processLog.addNote("Optimized sessions table.");
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to optimize search table. ", e);

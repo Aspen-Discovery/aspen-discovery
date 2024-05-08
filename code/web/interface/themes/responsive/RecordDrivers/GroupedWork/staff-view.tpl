@@ -59,7 +59,7 @@
 									<tr style="vertical-align:top">
 										{foreach from=$detailColumms item=detailColumm}
 											<td>
-												{$detailColumm}
+												{$detailColumm|escape}
 											</td>
 										{/foreach}
 									</tr>
@@ -86,7 +86,7 @@
 								<tr style="vertical-align:top">
 									{foreach from=$detailColumms item=detailColumm}
 										<td>
-											{$detailColumm}
+											{$detailColumm|escape}
 										</td>
 									{/foreach}
 								</tr>
@@ -116,14 +116,14 @@
 								<tr style="vertical-align:top">
 									{foreach from=$detailColumms item=detailColumm}
 										<td>
-											{$detailColumm}
+											{$detailColumm|escape}
 										</td>
 									{/foreach}
 								</tr>
 							{/foreach}
 						</table>
 					{else}
-						{implode subject=$values glue='<br>' sort=true}
+						{implode subject=$values glue='<br>' sort=true escape=true}
 					{/if}
 
 				</td>

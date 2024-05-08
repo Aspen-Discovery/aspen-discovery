@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -9,8 +10,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
-	SymphonyRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
+	SymphonyRecordProcessor(String serverName, GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		this.suppressRecordsWithNoCollection = false;
 	}
 
@@ -19,8 +20,8 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String statusFieldData = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
-		String shelfLocationData = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
+		String statusFieldData = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
+		String shelfLocationData = MarcUtil.getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (shelfLocationData != null){
 			shelfLocationData = shelfLocationData.toLowerCase();
 		}else{
@@ -96,10 +97,10 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
+		String locationCode = MarcUtil.getItemSubfieldData(settings.getLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		String location = translateValue("location", locationCode, identifier, true);
 
-		String subLocationCode = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
+		String subLocationCode = MarcUtil.getItemSubfieldData(settings.getSubLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (subLocationCode != null && subLocationCode.length() > 0){
 			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
@@ -110,7 +111,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 
-		String status = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
+		String status = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
 			String shelvingLocation = itemInfo.getShelfLocationCode();
 			if (location == null) {
@@ -133,7 +134,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {
 		//For Symphony the status field holds the location code unless it is currently checked out, on display, etc.
 		//In that case the location code holds the permanent location
-		String subfieldData = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
+		String subfieldData = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		boolean loadFromPermanentLocation = false;
 		if (subfieldData == null){
 			loadFromPermanentLocation = true;
@@ -141,7 +142,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			loadFromPermanentLocation = true;
 		}
 		if (loadFromPermanentLocation){
-			subfieldData = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
+			subfieldData = MarcUtil.getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		}
 		itemInfo.setShelfLocationCode(subfieldData);
 	}

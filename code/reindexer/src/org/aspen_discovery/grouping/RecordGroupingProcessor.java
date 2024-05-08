@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
+import org.aspen_discovery.format_classification.FormatInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -390,8 +391,8 @@ public class RecordGroupingProcessor {
 	private String checkForAlternateTitleAuthor(GroupedWork groupedWork) {
 		try {
 			//Check to see if we know the work based on the title and author through the merge process
-			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
-			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
+			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getAuthoritativeTitle());
+			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthoritativeAuthor());
 			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
 			if (getWorkByAlternateTitleAuthorRS.next()){
 				return getWorkByAlternateTitleAuthorRS.getString("permanent_id");
@@ -556,9 +557,9 @@ public class RecordGroupingProcessor {
 			groupedWork.setAuthor(author);
 		}
 
-		if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
-			String formatCategory = formatsToFormatCategory.get(format.toLowerCase());
-			String groupingCategory = categoryMap.get(formatCategory);
+		if (FormatInfo.formatsToFormatCategory.containsKey(format.toLowerCase())) {
+			String formatCategory = FormatInfo.formatsToFormatCategory.get(format.toLowerCase());
+			String groupingCategory = FormatInfo.categoryMap.get(formatCategory);
 			if (format.equals("eComic")) {
 				groupedWork.setGroupingCategory("comic");
 			}else{
@@ -580,132 +581,6 @@ public class RecordGroupingProcessor {
 
 
 	private static final HashSet<String> formatsWarned = new HashSet<>();
-	static HashMap<String, String> formatsToFormatCategory = new HashMap<>();
-
-	static {
-		formatsToFormatCategory.put("emagazine", "book");
-		formatsToFormatCategory.put("emusic", "music");
-		formatsToFormatCategory.put("music", "music");
-		formatsToFormatCategory.put("video", "movie");
-		formatsToFormatCategory.put("evideo", "movie");
-		formatsToFormatCategory.put("eaudio", "book");
-		formatsToFormatCategory.put("eaudiobook", "book");
-		formatsToFormatCategory.put("ecomic", "comic");
-		formatsToFormatCategory.put("audiobook", "book");
-		formatsToFormatCategory.put("atlas", "other");
-		formatsToFormatCategory.put("map", "other");
-		formatsToFormatCategory.put("tapecartridge", "other");
-		formatsToFormatCategory.put("chipcartridge", "other");
-		formatsToFormatCategory.put("disccartridge", "other");
-		formatsToFormatCategory.put("tapecassette", "other");
-		formatsToFormatCategory.put("tapereel", "other");
-		formatsToFormatCategory.put("floppydisk", "other");
-		formatsToFormatCategory.put("cdrom", "other");
-		formatsToFormatCategory.put("software", "other");
-		formatsToFormatCategory.put("globe", "other");
-		formatsToFormatCategory.put("braille", "book");
-		formatsToFormatCategory.put("filmstrip", "movie");
-		formatsToFormatCategory.put("transparency", "other");
-		formatsToFormatCategory.put("slide", "other");
-		formatsToFormatCategory.put("microfilm", "other");
-		formatsToFormatCategory.put("collage", "other");
-		formatsToFormatCategory.put("drawing", "other");
-		formatsToFormatCategory.put("painting", "other");
-		formatsToFormatCategory.put("print", "other");
-		formatsToFormatCategory.put("photonegative", "other");
-		formatsToFormatCategory.put("flashcard", "other");
-		formatsToFormatCategory.put("chart", "other");
-		formatsToFormatCategory.put("photo", "other");
-		formatsToFormatCategory.put("motionpicture", "movie");
-		formatsToFormatCategory.put("kit", "other");
-		formatsToFormatCategory.put("musicalscore", "book");
-		formatsToFormatCategory.put("sensorimage", "other");
-		formatsToFormatCategory.put("sounddisc", "audio");
-		formatsToFormatCategory.put("soundcassette", "audio");
-		formatsToFormatCategory.put("soundrecording", "audio");
-		formatsToFormatCategory.put("videocartridge", "movie");
-		formatsToFormatCategory.put("videosisc", "movie");
-		formatsToFormatCategory.put("videocassette", "movie");
-		formatsToFormatCategory.put("videoreel", "movie");
-		formatsToFormatCategory.put("musicrecording", "music");
-		formatsToFormatCategory.put("electronic", "other");
-		formatsToFormatCategory.put("physicalobject", "other");
-		formatsToFormatCategory.put("manuscript", "book");
-		formatsToFormatCategory.put("ebook", "ebook");
-		formatsToFormatCategory.put("book", "book");
-		formatsToFormatCategory.put("newspaper", "book");
-		formatsToFormatCategory.put("journal", "book");
-		formatsToFormatCategory.put("serial", "book");
-		formatsToFormatCategory.put("unknown", "other");
-		formatsToFormatCategory.put("playaway", "audio");
-		formatsToFormatCategory.put("largeprint", "book");
-		formatsToFormatCategory.put("blu-ray", "movie");
-		formatsToFormatCategory.put("dvd", "movie");
-		formatsToFormatCategory.put("verticalfile", "other");
-		formatsToFormatCategory.put("compactdisc", "audio");
-		formatsToFormatCategory.put("taperecording", "audio");
-		formatsToFormatCategory.put("phonograph", "audio");
-		formatsToFormatCategory.put("pdf", "ebook");
-		formatsToFormatCategory.put("epub", "ebook");
-		formatsToFormatCategory.put("jpg", "other");
-		formatsToFormatCategory.put("gif", "other");
-		formatsToFormatCategory.put("mp3", "audio");
-		formatsToFormatCategory.put("plucker", "ebook");
-		formatsToFormatCategory.put("kindle", "ebook");
-		formatsToFormatCategory.put("externallink", "ebook");
-		formatsToFormatCategory.put("externalmp3", "audio");
-		formatsToFormatCategory.put("interactivebook", "ebook");
-		formatsToFormatCategory.put("overdrive", "ebook");
-		formatsToFormatCategory.put("external_web", "ebook");
-		formatsToFormatCategory.put("external_ebook", "ebook");
-		formatsToFormatCategory.put("external_eaudio", "audio");
-		formatsToFormatCategory.put("external_emusic", "music");
-		formatsToFormatCategory.put("external_evideo", "movie");
-		formatsToFormatCategory.put("text", "ebook");
-		formatsToFormatCategory.put("gifs", "other");
-		formatsToFormatCategory.put("itunes", "audio");
-		formatsToFormatCategory.put("adobe_epub_ebook", "ebook");
-		formatsToFormatCategory.put("kindle_book", "ebook");
-		formatsToFormatCategory.put("microsoft_ebook", "ebook");
-		formatsToFormatCategory.put("overdrive_wma_audiobook", "audio");
-		formatsToFormatCategory.put("overdrive_mp3_audiobook", "audio");
-		formatsToFormatCategory.put("overdrive_music", "music");
-		formatsToFormatCategory.put("overdrive_video", "movie");
-		formatsToFormatCategory.put("overdrive_read", "ebook");
-		formatsToFormatCategory.put("overdrive_listen", "audio");
-		formatsToFormatCategory.put("adobe_pdf_ebook", "ebook");
-		formatsToFormatCategory.put("palm", "ebook");
-		formatsToFormatCategory.put("mobipocket_ebook", "ebook");
-		formatsToFormatCategory.put("disney_online_book", "ebook");
-		formatsToFormatCategory.put("open_pdf_ebook", "ebook");
-		formatsToFormatCategory.put("open_epub_ebook", "ebook");
-		formatsToFormatCategory.put("nook_periodicals", "ebook");
-		formatsToFormatCategory.put("econtent", "ebook");
-		formatsToFormatCategory.put("seedpacket", "other");
-		formatsToFormatCategory.put("magazine-overdrive", "ebook");
-		formatsToFormatCategory.put("magazine", "book");
-		formatsToFormatCategory.put("xps", "ebook");
-		formatsToFormatCategory.put("bingepass", "other");
-		formatsToFormatCategory.put("graphicnovel", "comic");
-		formatsToFormatCategory.put("graphic novel", "comic");
-		formatsToFormatCategory.put("manga", "comic");
-		formatsToFormatCategory.put("comic", "comic");
-	}
-
-	static HashMap<String, String> categoryMap = new HashMap<>();
-
-	static {
-		categoryMap.put("other", "book");
-		categoryMap.put("book", "book");
-		categoryMap.put("books", "book");
-		categoryMap.put("ebook", "book");
-		categoryMap.put("audio", "book");
-		categoryMap.put("audio books", "book");
-		categoryMap.put("music", "music");
-		categoryMap.put("movie", "movie");
-		categoryMap.put("movies", "movie");
-		categoryMap.put("comic", "comic");
-	}
 
 	private void loadTranslationMaps(String serverName) {
 		//Load all translationMaps, first from default, then from the site specific configuration

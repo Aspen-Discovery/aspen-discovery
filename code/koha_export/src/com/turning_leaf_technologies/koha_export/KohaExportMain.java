@@ -149,7 +149,7 @@ public class KohaExportMain {
 					profileToLoad = kohaInstanceInformation.indexingProfileName;
 				}
 
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
+				indexingProfile = IndexingProfile.loadIndexingProfile(serverName, dbConn, profileToLoad, logger, logEntry);
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (!extractSingleWork) {

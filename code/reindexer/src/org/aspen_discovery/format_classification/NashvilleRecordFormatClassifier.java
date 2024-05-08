@@ -2,15 +2,12 @@ package org.aspen_discovery.format_classification;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -19,7 +16,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 		super(logger);
 	}
 
-	public LinkedHashSet<String> getFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
+	public LinkedHashSet<String> getUntranslatedFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
 		//Although Nashville is set to load format from the bib, it actually checks items first.
 		LinkedHashSet<String> formats = new LinkedHashSet<>();
 		if (settings instanceof IndexingProfile) {
@@ -73,7 +70,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 			}
 
 			if (allItemsAreOrderRecords) {
-				return super.getFormatsFromBib(record, settings);
+				return super.getUntranslatedFormatsFromBib(record, settings);
 			}
 
 			int maxPrintFormats = 0;
@@ -95,11 +92,12 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 				//TODO Fall back to default method?
 				selectedFormat = "On Order";
 			}
-			formats.add(indexingProfile.translateValue("format", selectedFormat));
+			//Do not translate formats since they will be translated later
+			formats.add(selectedFormat);
 		}
 
 		if (formats.isEmpty()) {
-			return super.getFormatsFromBib(record, settings);
+			return super.getUntranslatedFormatsFromBib(record, settings);
 		}else{
 			return formats;
 		}

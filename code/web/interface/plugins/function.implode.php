@@ -31,6 +31,10 @@ function smarty_function_implode($params, &$smarty) {
 	if (isset($params['translate'])) {
 		$translate = $params['translate'];
 	}
+	$escapeValues = false;
+	if (isset($params['escape'])) {
+		$escapeValues = $params['escape'];
+	}
 
 	$subject = $params['subject'];
 
@@ -60,6 +64,11 @@ function smarty_function_implode($params, &$smarty) {
 				]);
 			}
 		}
+		if ($escapeValues) {
+			foreach ($subject as $index => $value) {
+				$subject[$index] = htmlspecialchars($value);
+			}
+		}
 		if (isset($params['sort'])) {
 			sort($subject);
 		}
@@ -83,6 +92,9 @@ function smarty_function_implode($params, &$smarty) {
 			]);
 		} else {
 			$implodedValue = $subject;
+		}
+		if ($escapeValues) {
+			$implodedValue = htmlspecialchars($subject);
 		}
 	}
 
