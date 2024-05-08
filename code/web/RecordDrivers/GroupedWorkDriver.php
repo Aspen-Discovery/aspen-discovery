@@ -2533,7 +2533,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			return $enrichment;
 		}
 		$novelist = NovelistFactory::getNovelist();
-		$memoryWatcher->logMemory('Setup Novelist Connection');
+		$memoryWatcher->logMemory('Setup NoveList Connection');
 		$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		return $enrichment;
 	}

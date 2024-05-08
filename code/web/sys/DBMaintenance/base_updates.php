@@ -1176,8 +1176,8 @@ function getFinalBaseUpdates() {
 		],
 
 		'novelist_data' => [
-			'title' => 'Novelist Data',
-			'description' => 'Stores basic information from Novelist for efficiency purposes.  We can\'t cache everything due to contract.',
+			'title' => 'NoveList Data',
+			'description' => 'Stores basic information from NoveList for efficiency purposes.  We can\'t cache everything due to contract.',
 			'sql' => [
 				"CREATE TABLE novelist_data (
 							id INT(11) NOT NULL AUTO_INCREMENT,
@@ -1196,7 +1196,7 @@ function getFinalBaseUpdates() {
 		],
 
 		'novelist_data_json' => [
-			'title' => 'Novelist Data JSON',
+			'title' => 'NoveList Data JSON',
 			'description' => 'Updates to cache full json response for a short period for performance.',
 			'sql' => [
 				"ALTER TABLE novelist_data ADD COLUMN jsonResponse MEDIUMTEXT",
@@ -1205,7 +1205,7 @@ function getFinalBaseUpdates() {
 		],
 
 		'novelist_data_indexes' => [
-			'title' => 'Novelist Data Add Indexes',
+			'title' => 'NoveList Data Add Indexes',
 			'description' => 'Add indexes to novelist data for performance.',
 			'sql' => [
 				"ALTER TABLE novelist_data ADD INDEX primaryISBN(primaryISBN)",
@@ -1953,8 +1953,8 @@ function getFinalBaseUpdates() {
 		],
 
 		'novelist_settings' => [
-			'title' => 'Novelist settings',
-			'description' => 'Add the ability to store Novelist settings in the DB rather than config file',
+			'title' => 'NoveList settings',
+			'description' => 'Add the ability to store NoveList settings in the DB rather than config file',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS novelist_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

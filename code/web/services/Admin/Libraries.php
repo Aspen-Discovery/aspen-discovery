@@ -219,8 +219,8 @@ class Admin_Libraries extends ObjectEditor {
 			'novelist' => [
 				'property' => 'novelist',
 				'type' => 'checkbox',
-				'label' => 'Novelist Settings',
-				'description' => 'Whether or not to copy Novelist settings',
+				'label' => 'NoveList Settings',
+				'description' => 'Whether or not to copy NoveList settings',
 				'hideInLists' => false,
 				'default' => true,
 			],

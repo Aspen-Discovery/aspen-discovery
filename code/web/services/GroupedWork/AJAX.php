@@ -103,7 +103,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$enrichmentResult = [];
 		$enrichmentData = $recordDriver->loadEnrichment();
-		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
+		$memoryWatcher->logMemory('Loaded Enrichment information from NoveList');
 
 		//Process series data
 		$titles = [];
@@ -133,19 +133,19 @@ class GroupedWork_AJAX extends JSON_Action {
 				$interface->assign('similarTitles', $novelistData->getSimilarTitles());
 				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
 			}
-			$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar titles from NoveList');
 
 			if ($novelistData->getAuthorCount()) {
 				$interface->assign('similarAuthors', $novelistData->getAuthors());
 				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
 			}
-			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar authors from NoveList');
 
 			if ($novelistData->getSimilarSeriesCount()) {
 				$interface->assign('similarSeries', $novelistData->getSimilarSeries());
 				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
 			}
-			$memoryWatcher->logMemory('Loaded Similar series from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar series from NoveList');
 		}
 
 		//Load go deeper options
@@ -1653,7 +1653,28 @@ class GroupedWork_AJAX extends JSON_Action {
 				$workToGroupWith = new GroupedWork();
 				$workToGroupWith->permanent_id = $workToGroupWithId;
 				if (!empty($workToGroupWithId) && $workToGroupWith->find(true)) {
-					if ($originalGroupedWork->grouping_category != $workToGroupWith->grouping_category) {
+					$okToGroup = false;
+					if ($originalGroupedWork->grouping_category == $workToGroupWith->grouping_category) {
+						$okToGroup = true;
+					}elseif (($originalGroupedWork->grouping_category == 'comic') && ($workToGroupWith->grouping_category == 'book')) {
+						//Comics can go onto books
+						$okToGroup = true;
+					}elseif (($workToGroupWith->grouping_category == 'other')) {
+						$okToGroup = true;
+					}elseif (($originalGroupedWork->grouping_category == 'other')) {
+						//Other can go onto anything else
+						$tmpWork = $originalGroupedWork;
+						$originalGroupedWork = $workToGroupWith;
+						$workToGroupWith = $tmpWork;
+						$okToGroup = true;
+					}elseif (($originalGroupedWork->grouping_category == 'book') && ($workToGroupWith->grouping_category == 'comic')) {
+						//These are ok to group, but we want the comic to go on the book.
+						$tmpWork = $originalGroupedWork;
+						$originalGroupedWork = $workToGroupWith;
+						$workToGroupWith = $tmpWork;
+						$okToGroup = true;
+					}
+					if (!$okToGroup) {
 						$results['message'] = translate([
 							'text' => "These are different categories of works, cannot group.",
 							'isAdminFacing' => true,
@@ -1661,18 +1682,26 @@ class GroupedWork_AJAX extends JSON_Action {
 					} else {
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
-						$groupedWorkAlternateTitle->permanent_id = $workToGroupWithId;
+						$groupedWorkAlternateTitle->permanent_id = $workToGroupWith->permanent_id;
 						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
 						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
-						$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
-						$groupedWorkAlternateTitle->dateAdded = time();
-						$groupedWorkAlternateTitle->insert();
-						$originalGroupedWork->forceReindex(true);
-						$results['success'] = true;
-						$results['message'] = translate([
-							'text' => "Your works have been grouped successfully, the index will update shortly.",
-							'isAdminFacing' => true,
-						]);
+						if (!$groupedWorkAlternateTitle->find(true)) {
+							$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
+							$groupedWorkAlternateTitle->dateAdded = time();
+							$groupedWorkAlternateTitle->insert();
+							$originalGroupedWork->forceReindex(true);
+							$workToGroupWith->forceReindex(true);
+							$results['success'] = true;
+							$results['message'] = translate([
+								'text' => "Your works have been grouped successfully, the index will update shortly.",
+								'isAdminFacing' => true,
+							]);
+						}else{
+							$results['message'] = translate([
+								'text' => "This grouping already exists.",
+								'isAdminFacing' => true,
+							]);
+						}
 					}
 				} else {
 					$results['message'] = translate([
@@ -1739,7 +1768,15 @@ class GroupedWork_AJAX extends JSON_Action {
 						$primaryWork = new GroupedWork();
 						$primaryWork->permanent_id = $doc['id'];
 						if ($primaryWork->find(true)) {
+							$isValidForGrouping = false;
 							if ($primaryWork->grouping_category == $groupedWork->grouping_category) {
+								$isValidForGrouping = true;
+							}elseif (($groupedWork->grouping_category == 'comic' && $primaryWork->grouping_category == 'book') || ($groupedWork->grouping_category == 'book' && $primaryWork->grouping_category == 'comic')){
+								$isValidForGrouping = true;
+							}elseif ($groupedWork->grouping_category == 'other' || $primaryWork->grouping_category == 'other') {
+								$isValidForGrouping = true;
+							}
+							if ($isValidForGrouping) {
 								$availableRecords[$doc['id']] = "$recordIndex) {$primaryWork->full_title} {$primaryWork->author}";
 							}
 						}

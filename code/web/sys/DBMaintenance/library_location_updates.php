@@ -102,7 +102,7 @@ function getLibraryLocationUpdates() {
 
 		'library_11' => [
 			'title' => 'Library 11',
-			'description' => 'Add fields for disabling some Novelist functionality and disabling boosting by number of holdings',
+			'description' => 'Add fields for disabling some NoveList functionality and disabling boosting by number of holdings',
 			'sql' => [
 				"ALTER TABLE `library` ADD `showSimilarAuthors` TINYINT DEFAULT '1';",
 				"ALTER TABLE `library` ADD `showSimilarTitles` TINYINT DEFAULT '1';",

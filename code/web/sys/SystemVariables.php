@@ -204,8 +204,8 @@ class SystemVariables extends DataObject {
 			'enableNovelistSeriesIntegration' => [
 				'property' => 'enableNovelistSeriesIntegration',
 				'type' => 'checkbox',
-				'label' => 'Enable Novelist Series Integration',
-				'description' => 'Whether Novelist series data is used within Aspen',
+				'label' => 'Enable NoveList Series Integration',
+				'description' => 'Whether NoveList series data is used within Aspen',
 				'default' => true,
 				'forcesReindex' => true,
 			],

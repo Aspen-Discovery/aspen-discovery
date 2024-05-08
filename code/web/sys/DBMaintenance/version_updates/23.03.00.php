@@ -49,8 +49,8 @@ function getUpdates23_03_00(): array {
 			]
 		], //includePersonalAndCorporateNamesInTopics
 		'assign_novelist_settings_to_libraries' => [
-			'title' => 'Assign Novelist Settings to Libraries',
-			'description' => 'Assign Novelist Settings to Libraries',
+			'title' => 'Assign NoveList Settings to Libraries',
+			'description' => 'Assign NoveList Settings to Libraries',
 			'continueOnError' => true,
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN novelistSettingId INT(11) DEFAULT -1",

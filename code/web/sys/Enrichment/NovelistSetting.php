@@ -22,7 +22,7 @@ class NovelistSetting extends DataObject {
 				'property' => 'profile',
 				'type' => 'text',
 				'label' => 'Profile ID',
-				'description' => 'The Profile Name for Novelist',
+				'description' => 'The Profile Name for NoveList',
 			],
 			'pwd' => [
 				'property' => 'pwd',
