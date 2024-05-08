@@ -321,10 +321,25 @@ export const MyReadingHistory = () => {
                                         {getTermFromDictionary(language, 'previous')}
                                    </Button>
                                    <Button
-                                        onPress={() => {
+                                        onPress={async () => {
                                              if (!isPreviousData && data?.hasMore) {
                                                   console.log('Adding to page');
+                                                  let newPage = page + 1;
                                                   setPage(page + 1);
+                                                  setLoading(true);
+                                                  await fetchReadingHistory(page, pageSize, sort, library.baseUrl).then((result) => {
+                                                       updateReadingHistory(data);
+                                                       if (data.totalPages) {
+                                                            let tmp = getTermFromDictionary(language, 'page_of_page');
+                                                            tmp = tmp.replace('%1%', newPage);
+                                                            tmp = tmp.replace('%2%', data.totalPages);
+                                                            console.log(tmp);
+                                                            setPaginationLabel(tmp);
+                                                       }
+                                                       queryClient.setQueryData(['reading_history', user.id, library.baseUrl, page, sort], result);
+                                                       queryClient.setQueryData(['reading_history', user.id, library.baseUrl, newPage, sort], result);
+                                                  });
+                                                  setLoading(falses);
                                              }
                                         }}
                                         isDisabled={isPreviousData || !data?.hasMore}>
