@@ -391,8 +391,8 @@ public class RecordGroupingProcessor {
 	private String checkForAlternateTitleAuthor(GroupedWork groupedWork) {
 		try {
 			//Check to see if we know the work based on the title and author through the merge process
-			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
-			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
+			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getAuthoritativeTitle());
+			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthoritativeAuthor());
 			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
 			if (getWorkByAlternateTitleAuthorRS.next()){
 				return getWorkByAlternateTitleAuthorRS.getString("permanent_id");
