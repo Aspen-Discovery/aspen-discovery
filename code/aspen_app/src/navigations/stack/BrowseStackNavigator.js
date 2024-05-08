@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 import Scanner from '../../components/Scanner';
-import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext } from '../../context/initialContext';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { EventScreen } from '../../screens/Event/Event';
@@ -37,12 +37,6 @@ const BrowseStackNavigator = () => {
                     component={DiscoverHomeScreen}
                     options={{
                          title: getTermFromDictionary(language, 'nav_discover'),
-                    }}
-                    initialParams={{
-                         libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
-                         locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
-                         userContext: JSON.stringify(React.useContext(UserContext)),
-                         browseCategoriesContext: JSON.stringify(React.useContext(BrowseCategoryContext)),
                     }}
                />
                <Stack.Screen
@@ -138,9 +132,6 @@ const BrowseStackNavigator = () => {
                     component={SearchResultsForSavedSearch}
                     options={({ route }) => ({
                          title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
                     })}
                />
                <Stack.Screen

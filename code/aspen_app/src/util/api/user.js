@@ -943,6 +943,39 @@ export async function updateNotificationOnboardingStatus(status, token, url, lan
      }
 }
 
+export async function getAppPreferencesForUser(url, language) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=getAppPreferencesForUser', postBody);
+     if (response.ok) {
+          return response.data.result;
+     }
+
+     return {
+          success: false,
+          onboardAppNotifications: 0,
+          shouldAskBrightness: 0,
+          notification_preferences: [
+               {
+                    device: 'Unknown',
+                    token: false,
+                    notifySavedSearch: 0,
+                    notifyCustom: 0,
+                    notifyAccount: 0,
+                    onboardStatus: 0,
+               },
+          ],
+     };
+}
+
 /** *******************************************************************
  * Screen Brightness
  ******************************************************************* **/
