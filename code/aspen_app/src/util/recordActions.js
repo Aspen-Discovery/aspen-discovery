@@ -9,7 +9,7 @@ import { GLOBALS } from './globals';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = '', url, volumeId = '', holdType = '', holdNotificationPreferences, variationId = '', bibId = '') {
+export async function completeAction(id, actionType, patronId, formatId = '', sampleNumber = '', pickupBranch = '', url, volumeId = '', holdType = '', holdNotificationPreferences, variationId = '', bibId = '') {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -205,6 +205,8 @@ export async function overDriveSample(url, formatId, itemId, sampleNumber) {
      if (response.ok) {
           const result = response.data;
           const accessUrl = result.result.url;
+
+          console.log(response);
 
           await WebBrowser.openBrowserAsync(accessUrl)
                .then((res) => {

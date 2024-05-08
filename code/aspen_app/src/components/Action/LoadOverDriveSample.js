@@ -11,6 +11,8 @@ export const LoadOverDriveSample = (props) => {
      const [loading, setLoading] = React.useState(false);
      const { theme } = React.useContext(ThemeContext);
 
+     console.log(props);
+
      return (
           <Button
                size="xs"
@@ -19,7 +21,7 @@ export const LoadOverDriveSample = (props) => {
                borderColor={theme['colors']['primary']['500']}
                onPress={() => {
                     setLoading(true);
-                    completeAction(props.id, props.type, user.id, props.formatId, props.sampleNumber, null, library.baseUrl, null, null).then((r) => {
+                    completeAction(props.id, props.type, user.id, props.formatId, props.sampleNumber, '', library.baseUrl, '', '', '', '').then((r) => {
                          setLoading(false);
                     });
                }}>

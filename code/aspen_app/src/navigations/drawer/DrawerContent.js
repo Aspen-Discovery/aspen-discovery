@@ -89,7 +89,6 @@ export const DrawerContent = () => {
           initialData: user,
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                if (user) {
                     if (data !== user) {
@@ -111,13 +110,12 @@ export const DrawerContent = () => {
           onSuccess: (data) => {
                updateBrowseCategories(data);
           },
-          placeholderData: category,
+          initialData: category,
      });
 
      useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateHolds(data),
           placeholderData: [],
      });
@@ -125,7 +123,6 @@ export const DrawerContent = () => {
      useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, false, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateCheckouts(data),
           placeholderData: [],
      });
@@ -148,7 +145,6 @@ export const DrawerContent = () => {
                     updateLinkedAccounts(data.accounts);
                }
           },
-          placeholderData: [],
      });
 
      useQuery(['library_cards', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
@@ -160,18 +156,15 @@ export const DrawerContent = () => {
                     updateLibraryCards(data.cards);
                }
           },
-          placeholderData: [],
      });
 
      useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
           initialData: viewers,
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                updateLinkedViewerAccounts(data);
           },
-          placeholderData: [],
      });
 
      useQuery(['ils_messages', user.id, library.baseUrl, language], () => getILSMessages(library.baseUrl), {
@@ -246,7 +239,7 @@ export const DrawerContent = () => {
      useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          placeholderData: [],
+          placeholderData: list,
           onSuccess: (data) => {
                updateBrowseCategoryList(data);
           },

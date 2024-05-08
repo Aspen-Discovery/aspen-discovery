@@ -78,14 +78,22 @@ class ExpoNotification extends DataObject {
 			$notification->receiptId = $receiptId;
 			if ($notification->find(true)) {
 				if (array_key_exists($receiptId, $data)) {
-					$notification->completed = 1;
-				} else {
-					$error = $data['details'];
-					if ($data['message']) {
-						$error .= ": " . $data['message'];
+					$receiptResponse = $data[$receiptId];
+					if($receiptResponse['status'] == "ok") {
+						$notification->completed = 1;
+					} else {
+						$details = $receiptResponse['details'];
+						$notification->error = 1;
+						$notification->message = $details['error'] . ': ' . $receiptResponse['message'];
+						if($details['error'] == 'DeviceNotRegistered') {
+							// we need to delete the bad token to stop trying to send to it
+							UserNotificationToken::deleteToken($notification->pushToken);
+						}
 					}
+				} else {
+					$error = $json['errors'];
 					$notification->error = 1;
-					$notification->message = $error ?? 'There was an unknown error with sending the notification.';
+					$notification->message = $error['message'] ?? 'There was an unknown error with sending the notification.';
 				}
 				$notification->update();
 			}
@@ -158,6 +166,8 @@ class ExpoNotification extends DataObject {
 		global $logger;
 		$logger->log('Fetching test notification receipt from Expo servers', Logger::LOG_ERROR);
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
+
+
 
 		ExternalRequestLogEntry::logRequest('ExpoTestPushNotification.Receipt', 'POST', $url, $this->expoCurlWrapper->getHeaders(), json_encode($body), $this->expoCurlWrapper->getResponseCode(), $response, []);
 		return json_decode($response, true);

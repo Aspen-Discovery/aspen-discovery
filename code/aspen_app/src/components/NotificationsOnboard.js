@@ -5,15 +5,15 @@ import React from 'react';
 import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../context/initialContext';
 import { navigateStack } from '../helpers/RootNavigator';
 import { getTermFromDictionary } from '../translations/TranslationService';
-import { refreshProfile, updateNotificationOnboardingStatus } from '../util/api/user';
+import { getAppPreferencesForUser, refreshProfile, updateNotificationOnboardingStatus } from '../util/api/user';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
-     const { setPromptOpen } = props;
+     const { isFocused, promptOpen, setPromptOpen } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard, updateNotificationSettings } = React.useContext(UserContext);
-     const [isOpen, setIsOpen] = React.useState(true);
+     const { expoToken, notificationOnboard, updateNotificationOnboard, updateNotificationSettings, updateAppPreferences } = React.useContext(UserContext);
+     const [isOpen, setIsOpen] = React.useState(isFocused);
      const [onboardingBody, setOnboardingBody] = React.useState('');
      const [onboardingButton, setOnboardingButton] = React.useState('');
      const [isLoading, setIsLoading] = React.useState(false);
@@ -21,8 +21,8 @@ export const NotificationsOnboard = (props) => {
      const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const onClose = async () => {
           await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
-          await refreshProfile(library.baseUrl).then((profile) => {
-               updateNotificationSettings(profile.notification_preferences, language, false);
+          await getAppPreferencesForUser(library.baseUrl, language).then((data) => {
+               updateAppPreferences(data);
                setIsOpen(false);
           });
 
@@ -30,8 +30,8 @@ export const NotificationsOnboard = (props) => {
           setIsLoading(false);
           setIsCanceling(false);
           setPromptOpen('');
-          //setAlreadyCheckedNotifications(true);
-          //setShowNotificationsOnboarding(false);
+
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      const cancelRef = React.useRef(null);

@@ -13,7 +13,7 @@ import { NotificationsOnboard } from '../../components/NotificationsOnboard';
 import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, reloadBrowseCategories } from '../../util/loadLibrary';
 import { updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets, getSearchIndexes, getSearchSources } from '../../util/search';
 import DisplayBrowseCategory from './Category';
@@ -21,24 +21,26 @@ import DisplayBrowseCategory from './Category';
 const blurhash = 'MHPZ}tt7*0WC5S-;ayWBofj[K5RjM{ofM_';
 
 export const DiscoverHomeScreen = () => {
-     const isFetchingBrowseCategories = useIsFetching({ queryKey: ['browse_categories'] });
-     const isFocused = useIsFocused();
      const isQueryFetching = useIsFetching();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
+     const isFetchingBrowseCategories = useIsFetching({ queryKey: ['browse_categories'] });
+     const isFocused = useIsFocused();
      const [loading, setLoading] = React.useState(false);
-     const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
-     const { notificationOnboard, updateNotificationOnboard } = React.useContext(UserContext);
-     const { library } = React.useContext(LibrarySystemContext);
-     const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
-     const { category, updateMaxCategories, maxNum } = React.useContext(BrowseCategoryContext);
-     const { language } = React.useContext(LanguageContext);
-     const version = formatDiscoveryVersion(library.discoveryVersion);
-     const [searchTerm, setSearchTerm] = React.useState('');
+
+     const { theme, textColor } = React.useContext(ThemeContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const { updateIndexes, updateSources, updateCurrentIndex, updateCurrentSource } = React.useContext(SearchContext);
-     const { theme, mode, textColor } = React.useContext(ThemeContext);
-     const [unlimited, setUnlimitedCategories] = React.useState(false);
+     const { notificationOnboard } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { category, updateMaxCategories, maxNum, updateBrowseCategories } = React.useContext(BrowseCategoryContext);
+     const { language } = React.useContext(LanguageContext);
+
+     const [preliminaryLoadingCheck, setPreliminaryCheck] = React.useState(false);
+
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+     const [searchTerm, setSearchTerm] = React.useState('');
+
      const [promptOpen, setPromptOpen] = React.useState('');
 
      navigation.setOptions({
@@ -65,29 +67,27 @@ export const DiscoverHomeScreen = () => {
                          await getDefaultFacets(library.baseUrl, 5, language);
                     }
 
-                    setPreliminaryCheck(true);
-
                     console.log('notificationOnboard: ' + notificationOnboard);
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
                               console.log('Notification onboarding preferences found. Set to 1 or 2. Show onboard prompt.');
-                              setShowNotificationsOnboarding(true);
+                              setPreliminaryCheck(true);
                               setPromptOpen('yes');
                          } else {
                               console.log('Notification onboarding preferences found. Set to 0. Do not show onboard prompt.');
-                              setShowNotificationsOnboarding(false);
+                              setPreliminaryCheck(true);
                               setPromptOpen('');
                          }
                     } else {
                          console.log('No notification onboarding preferences found. Show onboard prompt.');
+                         setPreliminaryCheck(true);
                          setPromptOpen('yes');
-                         setShowNotificationsOnboarding(true);
                     }
                };
                checkSettings().then(() => {
                     return () => checkSettings();
                });
-          }, [language, notificationOnboard, mode])
+          }, [language])
      );
 
      const clearText = () => {
@@ -107,16 +107,6 @@ export const DiscoverHomeScreen = () => {
      const openScanner = async () => {
           navigateStack('BrowseTab', 'Scanner');
      };
-
-     // load notification onboarding prompt
-     if (isQueryFetching === 0 && preliminaryLoadingCheck) {
-          if (notificationOnboard !== '0' && notificationOnboard !== 0) {
-               if (isFocused && promptOpen === 'yes') {
-                    console.log('promptOpen: ' + promptOpen);
-                    return <NotificationsOnboard setPromptOpen={setPromptOpen} />;
-               }
-          }
-     }
 
      const renderHeader = (title, key, user, url) => {
           return (
@@ -286,11 +276,14 @@ export const DiscoverHomeScreen = () => {
           setLoading(false);
      };
 
-     const onLoadAllCategories = () => {
+     const onLoadAllCategories = async () => {
           updateMaxCategories(9999);
-          setUnlimitedCategories(true);
           setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+          await reloadBrowseCategories(9999, library.baseUrl).then((result) => {
+               updateBrowseCategories(result);
+               queryClient.setQueryData(['browse_categories', library.baseUrl, language, maxNum], result);
+               queryClient.setQueryData(['browse_categories', library.baseUrl, language, 9999], result);
+          });
           setLoading(false);
      };
 
@@ -325,6 +318,15 @@ export const DiscoverHomeScreen = () => {
 
      if (loading === true || isFetchingBrowseCategories) {
           return loadingSpinner();
+     }
+
+     // load notification onboarding prompt
+     if (isQueryFetching === 0 && preliminaryLoadingCheck) {
+          if (notificationOnboard !== '0' && notificationOnboard !== 0) {
+               if (isFocused && promptOpen === 'yes') {
+                    return <NotificationsOnboard isFocused={isFocused} promptOpen={promptOpen} setPromptOpen={setPromptOpen} />;
+               }
+          }
      }
 
      const clearSearch = () => {
