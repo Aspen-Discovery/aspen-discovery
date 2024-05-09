@@ -37,12 +37,20 @@
 	<h4>{translate text="Alternate Titles and Authors" isPublicFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>{translate text="Title" isPublicFacing=true}</th><th>{translate text="Author" isPublicFacing=true}</th>{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}<th>{translate text="Actions" isPublicFacing=true}</th>{/if}</tr>
+		<tr>
+			<th>{translate text="Title" isPublicFacing=true}</th>
+			<th>{translate text="Author" isPublicFacing=true}</th>
+			<th>{translate text="Category" isPublicFacing=true}</th>
+			{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
+				<th>{translate text="Actions" isPublicFacing=true}</th>
+			{/if}
+		</tr>
 		</thead>
 		{foreach from=$alternateTitles item="alternateTitle"}
 			<tr id="alternateTitle{$alternateTitle->id}">
 				<td>{$alternateTitle->alternateTitle}</td>
 				<td>{$alternateTitle->alternateAuthor}</td>
+				<td>{$alternateTitle->alternateGroupingCategory}</td>
 				{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<td><a onclick="AspenDiscovery.GroupedWork.deleteAlternateTitle('{$alternateTitle->id}')" class="btn btn-danger btn-sm">{translate text="Delete" isPublicFacing=true}</a></td>
 				{/if}
