@@ -1243,6 +1243,11 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("Book+CD");
 			printFormats.remove("Book+DVD");
 			printFormats.remove("SoundDisc");
+			if (printFormats.contains("PlayStation") || printFormats.contains("PlayStation2")
+					|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
+					|| printFormats.contains("PlayStation5")) {
+				printFormats.remove("PlayStation");
+			}
 		}
 	}
 
