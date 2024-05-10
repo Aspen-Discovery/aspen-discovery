@@ -145,7 +145,7 @@ public class FormatInfo {
 			groupingFormat = "book";
 		}
 		String formatLower = groupingFormat.toLowerCase();
-		if (formatLower.contains("graphic novel") || (formatLower.contains("comic") && !formatLower.contains("ecomic")) || formatLower.contains("manga")) {
+		if (formatLower.contains("graphicnovel") || formatLower.contains("graphic novel") || (formatLower.contains("comic") && !formatLower.contains("ecomic")) || formatLower.contains("manga")) {
 			formatLower = "graphic novel";
 			groupingFormatCategory = "comic";
 		}
