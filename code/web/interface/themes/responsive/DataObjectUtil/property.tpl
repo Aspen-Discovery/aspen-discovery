@@ -22,19 +22,19 @@
 			{if !empty($property.renderAsHeading)}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<p style="margin-bottom: .5em">
-						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</p>
 						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
-							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+							<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
 						<span class="label label-danger" style="margin-right: .5em;{if empty($property.description)}margin-left: .5em;{/if} vertical-align: top">{translate text="Required" isAdminFacing=true}</span>
 					</div>
 				{else}
-					<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+					<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip"{/if}>{translate text=$property.label isAdminFacing=true}</p>
 					{if !empty($property.description)}
-						<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+						<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 							<i class="fas fa-question-circle" style="vertical-align: top"></i>
 						</a>
 					{/if}
@@ -44,10 +44,10 @@
 					{/if}
 				{/if}
 			{else}
-				<label for='{$propName}Select'>
+				<label for='{$propName}Select' {if !empty($property.description)}aria-describedby="{$propName}Tooltip"{/if}>
 					{translate text=$property.label isAdminFacing=true}
 				</label>
-				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" id="{$propName}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
@@ -59,20 +59,20 @@
 				{if !empty($property.renderAsHeading)}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<div style="margin-bottom: .5em">
-							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip"{/if}>{translate text=$property.label isAdminFacing=true}</p>
 							{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 							{if !empty($property.description)}
-								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+								<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
 								</a>
 							{/if}
 							<span class="label label-danger" style="margin-right: .5em;{if empty($property.description)}margin-left: .5em;{/if} vertical-align: top">{translate text="Required" isAdminFacing=true}</span>
 						</div>
 					{else}
-						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</p>
 						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
-							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+							<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
@@ -82,10 +82,10 @@
 						{/if}
 					{/if}
 				{else}
-					<label for='{$propName}'>
+					<label for='{$propName}' {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>
 						{translate text=$property.label isAdminFacing=true}
 					</label>
-					{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+					{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 					{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
@@ -100,9 +100,9 @@
 			{if !empty($property.renderAsHeading)}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
-						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</p>
 						{if !empty($property.description)}
-							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+							<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
@@ -111,9 +111,9 @@
 					</div>
 				{else}
 					<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
-						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</p>
 						{if !empty($property.description)}
-							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" id="{$property.property}Tooltip" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
@@ -124,8 +124,8 @@
 					</div>
 				{/if}
 			{else}
-				<label for='{$propName}'>{translate text=$property.label isAdminFacing=true}</label>
-				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				<label for='{$propName}' {if !empty($property.description)}aria-describedby="{$propName}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</label>
+				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" id="{$propName}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
@@ -142,9 +142,9 @@
 					<div class="col-xs-12">
 						{if !empty($property.label)}
 						<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
-							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline">{translate text=$property.label isAdminFacing=true}</p>
+							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline" {if !empty($property.description)}aria-describedby="{$property.property}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</p>
 							{if !empty($property.description)}
-								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+								<a style="margin-right: .5em; margin-left: .25em; display: inline;" id="{$property.property}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
 								</a>
 							{/if}
@@ -162,10 +162,10 @@
 				</div>
 			{else}
 				<div class="panel-group propertySection" id="accordion_{$property.label|escapeCSS}">
-					<div class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
+					<div id="panelStatus_{$property.label|escapeCSS}" class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
-								<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
+								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}">
 									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
@@ -176,7 +176,7 @@
 							{/if}
 						</div>
 
-						<div id="accordion_body_{$property.label|escapeCSS}" class="accordion_body panel-collapse {if !empty($property.expandByDefault)}in{else}collapse{/if}">
+						<div id="accordion_body_{$property.label|escapeCSS}" {if empty($property.expandByDefault)}style="display:none"{/if} aria-labelledby="panelToggle_{$property.property}" role="region">
 							<div class="panel-body">
 								{if !empty($property.instructions)}
 									<div class="alert alert-info">
@@ -190,6 +190,27 @@
 						</div>
 					</div>
 				</div>
+				<script type="text/javascript">
+                    {* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
+                    {literal}
+					$("#panelToggle_{/literal}{$property.property}{literal}").click(function() {
+						var toggleButton = $(this);
+						$(this).toggleClass('expanded');
+						$(this).toggleClass('collapsed');
+						var panelStatus = $("#panelStatus_{/literal}{$property.label|escapeCSS}{literal}");
+						$('#accordion_body_{/literal}{$property.label|escapeCSS}{literal}').toggle()
+						if (toggleButton.attr("aria-expanded") === "true") {
+							$(this).attr("aria-expanded","false");
+							panelStatus.removeClass("active");
+						}
+						else if (toggleButton.attr("aria-expanded") === "false") {
+							$(this).attr("aria-expanded","true")
+							panelStatus.addClass("active");
+						}
+						return false;
+					})
+                    {/literal}
+				</script>
 			{/if}
         {elseif $property.type == 'foreignKey' && !empty($property.editLink)}
 			<div class="row">
@@ -481,11 +502,11 @@
 			</script>
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox" {if !empty($property.forcesReindex) || !empty($property.affectsLiDA) || !empty($property.note)}style="margin-bottom: 0"{/if}>
-				<label for='{$propName}'>
+				<label for='{$propName}' {if !empty($property.description)}aria-describedby="{$propName}Tooltip" {/if}>
 					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
 				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
-				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" id="{$propName}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 			</div>
 		{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 		{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
