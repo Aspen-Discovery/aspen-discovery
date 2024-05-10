@@ -80,7 +80,7 @@ export const NotificationPermissionDescription = () => {
           if (prevRoute === 'notifications_onboard') {
                navigation.setOptions({
                     headerLeft: () => (
-                         <Button onPress={() => navigate('MoreMenu')} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <Button bg="transparent" onPress={() => navigate('MoreMenu')} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                               <ButtonIcon size="lg" variant="outline" borderWidth={0} color={theme['colors']['primary']['baseContrast']} as={ChevronLeftIcon} />
                          </Button>
                     ),
