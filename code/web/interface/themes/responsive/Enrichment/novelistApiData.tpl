@@ -1,6 +1,6 @@
 {strip}
     <div id="main-content" class="col-md-12">
-        <h1>{translate text="Novelist API Data" isAdminFacing=true}</h1>
+        <h1>{translate text="NoveList API Data" isAdminFacing=true}</h1>
         <form class="navbar form-inline row">
             <div class="form-group col-xs-12">
                 <label for="ISBN" class="control-label">{translate text="ISBN" isAdminFacing=true}</label>

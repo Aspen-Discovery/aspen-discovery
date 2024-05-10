@@ -404,30 +404,51 @@ public class CloudLibraryExporter {
 	}
 
 	CloudLibraryAvailability loadAvailabilityForRecord(String cloudLibraryId) {
+		int numTries = 0;
+		boolean callSucceeded = false;
 		CloudLibraryAvailability availability = new CloudLibraryAvailability();
 		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/item/summary/" + cloudLibraryId;
-
-		WebServiceResponse response = callCloudLibrary(apiPath);
-		if (response == null) {
-			//Something bad happened, we're done.
-			return null;
-		} else if (!response.isSuccess()) {
-			if (response.getResponseCode() != 500) {
-				logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+		while (!callSucceeded && numTries < 3) {
+			if (numTries > 0) {
+				try {
+					//Sleep a little bit to allow the server to calm down.
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+					//Not a big deal if this gets interrupted
+				}
 			}
-			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
-			return null;
-		} else {
-			availability.setRawResponse(response.getMessage());
-			CloudLibraryAvailabilityHandler handler = new CloudLibraryAvailabilityHandler(availability);
 
-			try {
-				SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-				SAXParser saxParser = saxParserFactory.newSAXParser();
-				saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
-			} catch (SAXException | ParserConfigurationException | IOException e) {
-				logger.error("Error parsing response", e);
-				logEntry.addNote("Error parsing response: " + e);
+			WebServiceResponse response = callCloudLibrary(apiPath);
+			if (response == null) {
+				//Something bad happened, we're done.
+			} else if (!response.isSuccess()) {
+				if (numTries == 2) {
+					if (response.getResponseCode() != 500) {
+						logEntry.incErrors("Error getting availability " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+					}else {
+						logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
+					}
+				}else{
+					logger.info("Error getting availability from " + apiPath + ": " + response.getResponseCode());
+				}
+			} else {
+				callSucceeded = true;
+				availability.setRawResponse(response.getMessage());
+				CloudLibraryAvailabilityHandler handler = new CloudLibraryAvailabilityHandler(availability);
+
+				try {
+					SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+					SAXParser saxParser = saxParserFactory.newSAXParser();
+					saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
+				} catch (SAXException | ParserConfigurationException | IOException e) {
+					logger.error("Error parsing response", e);
+					logEntry.addNote("Error parsing response: " + e);
+				}
+			}
+			numTries++;
+			if (numTries == 3 && !callSucceeded) {
+				logEntry.incErrors("Did not get a successful API response after 3 tries for " + settings.getBaseUrl() + apiPath);
+				break;
 			}
 		}
 
@@ -435,30 +456,50 @@ public class CloudLibraryExporter {
 	}
 
 	CloudLibraryAvailabilityType loadAvailabilityTypeForRecord(String cloudLibraryId) {
+		int numTries = 0;
+		boolean callSucceeded = false;
 		CloudLibraryAvailabilityType availabilityType = new CloudLibraryAvailabilityType();
 		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/circulation/item/" + cloudLibraryId;
-
-		WebServiceResponse response = callCloudLibrary(apiPath);
-		if (response == null) {
-			//Something bad happened, we're done.
-			return null;
-		} else if (!response.isSuccess()) {
-			if (response.getResponseCode() != 500) {
-				logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+		while (!callSucceeded && numTries < 3) {
+			if (numTries > 0) {
+				try {
+					//Sleep a little bit to allow the server to calm down.
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+					//Not a big deal if this gets interrupted
+				}
 			}
-			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
-			return null;
-		} else {
-			availabilityType.setRawResponse(response.getMessage());
-			CloudLibraryAvailabilityTypeHandler handler = new CloudLibraryAvailabilityTypeHandler(availabilityType);
 
-			try {
-				SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-				SAXParser saxParser = saxParserFactory.newSAXParser();
-				saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
-			} catch (SAXException | ParserConfigurationException | IOException e) {
-				logger.error("Error parsing response", e);
-				logEntry.addNote("Error parsing response: " + e);
+			WebServiceResponse response = callCloudLibrary(apiPath);
+			if (response == null) {
+				//Something bad happened, we're done.
+			} else if (!response.isSuccess()) {
+				if (numTries == 2) {
+					if (response.getResponseCode() != 500) {
+						logEntry.incErrors("Error getting availability type " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+					} else {
+						logEntry.addNote("Error getting availability type from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
+					}
+				}else{
+					logger.info("Error getting availability type from " + apiPath + ": " + response.getResponseCode());
+				}
+			} else {
+				availabilityType.setRawResponse(response.getMessage());
+				CloudLibraryAvailabilityTypeHandler handler = new CloudLibraryAvailabilityTypeHandler(availabilityType);
+
+				try {
+					SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+					SAXParser saxParser = saxParserFactory.newSAXParser();
+					saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
+				} catch (SAXException | ParserConfigurationException | IOException e) {
+					logger.error("Error parsing response", e);
+					logEntry.addNote("Error parsing response: " + e);
+				}
+			}
+			numTries++;
+			if (numTries == 3 && !callSucceeded) {
+				logEntry.incErrors("Did not get a successful API response after 3 tries for " + settings.getBaseUrl() + apiPath);
+				break;
 			}
 		}
 

@@ -16,12 +16,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	protected boolean fullReindex;
 	private PreparedStatement getDateAddedStmt;
 
-	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
+	SideLoadedEContentProcessor(String serverName, GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
 		super(indexer, profileType, dbConn, logger);
 		this.fullReindex = fullReindex;
 
 		try{
-			settings = new SideLoadSettings(sideLoadSettingsRS);
+			settings = new SideLoadSettings(serverName, sideLoadSettingsRS, indexer.getLogEntry());
 			sideLoadId = sideLoadSettingsRS.getLong("id");
 
 			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -151,7 +151,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			econtentRecord.addFormatCategories(translatedFormatCategories);
 			econtentRecord.setFormatBoost(settings.getSpecifiedFormatBoost());
 		} else {
-			LinkedHashSet<String> printFormats = formatClassifier.getFormatsFromBib(record, settings);
+			LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(record, settings);
 			//Convert formats from print to eContent version
 			for (String format : printFormats) {
 				if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript") || format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {

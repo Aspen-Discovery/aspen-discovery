@@ -187,7 +187,7 @@ abstract class RecordInterface {
 		}
 		if ($hasNovelistAllInOne) {
 			$moreDetailsOptions['novelist'] = [
-				'label' => 'Novelist',
+				'label' => 'NoveList',
 				'body' => $interface->fetch('GroupedWork/novelist.tpl'),
 				'hideByDefault' => false,
 			];
@@ -319,7 +319,7 @@ abstract class RecordInterface {
 			'subjects' => 'Subjects',
 			'moreDetails' => 'More Details',
 			'syndeticsUnbound' => 'Syndetics Unbound',
-			'novelist' => 'Novelist (All in One)',
+			'novelist' => 'NoveList (All in One)',
 			'similarSeries' => 'Similar Series From NoveList',
 			'similarTitles' => 'Similar Titles From NoveList',
 			'similarAuthors' => 'Similar Authors From NoveList',

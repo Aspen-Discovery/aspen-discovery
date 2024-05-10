@@ -51,7 +51,10 @@ public class SierraExportAPIMain {
 
 	private static final TreeSet<String> allBibsToUpdate = new TreeSet<>();
 	private static final TreeSet<String> allDeletedIds = new TreeSet<>();
-	private static final HashSet<String> bibsWithHoldings = new HashSet<>();
+	/**
+	 * Bibs that have MARC holdings with short id mapped to full id
+	 */
+	private static final HashMap<String, String> bibsWithHoldings = new HashMap<>();
 
 	//Reporting information
 	private static IlsExtractLogEntry logEntry;
@@ -139,7 +142,7 @@ public class SierraExportAPIMain {
 				//Connect to the Sierra database
 				Connection sierraConn = null;
 				SierraInstanceInformation sierraInstanceInformation = initializeSierraConnection(dbConn);
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger, logEntry);
+				indexingProfile = IndexingProfile.loadIndexingProfile(serverName, dbConn, sierraInstanceInformation.indexingProfileName, logger, logEntry);
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (sierraInstanceInformation.sierraConnection == null) {
@@ -420,6 +423,7 @@ public class SierraExportAPIMain {
 			getNewItemsFromAPI(sierraInstanceInformation, lastExtractDateTimeFormatted);
 			getChangedItemsFromAPI(sierraInstanceInformation, lastExtractDateTimeFormatted);
 			getDeletedItemsFromAPI(sierraInstanceInformation, lastExtractDateFormatted);
+			getMarcHoldingsToReindex();
 		}
 	}
 
@@ -464,7 +468,7 @@ public class SierraExportAPIMain {
 			while (bibHoldingsRS.next()){
 				String bibId = bibHoldingsRS.getString("record_num");
 				//Don't need the .b and checksum for this
-				bibsWithHoldings.add(bibId);
+				bibsWithHoldings.put(bibId, ".b" + bibId + getCheckDigit(bibId));
 			}
 			bibHoldingsRS.close();
 		} catch (Exception e) {
@@ -804,6 +808,38 @@ public class SierraExportAPIMain {
 		logEntry.addNote("Finished processing newly created items " + numNewRecords);
 	}
 
+	private static void getMarcHoldingsToReindex() {
+		//Because MARC holdings do not have dates updated, we will just make sure that they get reindexed at least once a day, but try to do that after hours.
+		Calendar rightNow = Calendar.getInstance();
+		int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+		Calendar yesterday = Calendar.getInstance();
+		yesterday.add(Calendar.DAY_OF_MONTH, -1);
+		long yesterdayTime = yesterday.getTimeInMillis() / 1000;
+		if (hour == 21){
+			try {
+				PreparedStatement getLastModifiedForBibStmt = dbConn.prepareStatement("SELECT lastModified from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				for (String bibWithHoldingsShort : bibsWithHoldings.keySet()) {
+					String bibWithHoldings = bibsWithHoldings.get(bibWithHoldingsShort);
+					getLastModifiedForBibStmt.setString(1, indexingProfile.getName());
+					getLastModifiedForBibStmt.setString(2, bibWithHoldings);
+					ResultSet getLastModifiedForBibRS = getLastModifiedForBibStmt.executeQuery();
+					if (getLastModifiedForBibRS.next()) {
+						long lastModifiedDate = getLastModifiedForBibRS.getLong("lastModified");
+						if (lastModifiedDate < yesterdayTime) {
+							allBibsToUpdate.add(bibWithHoldingsShort);
+						}
+					}else{
+						//We haven't seen this before make sure it updates
+						allBibsToUpdate.add(bibWithHoldingsShort);
+					}
+					getLastModifiedForBibRS.close();
+				}
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 	private static void getChangedItemsFromAPI(SierraInstanceInformation sierraInstanceInformation, String lastExtractDateFormatted) {
 		//Get a list of deleted bibs
 		logEntry.addNote("Starting to process items updated since " + lastExtractDateFormatted);
@@ -918,7 +954,7 @@ public class SierraExportAPIMain {
 			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
 		final JSONObject[] holdingIds = {null};
-		boolean hasHoldings = bibsWithHoldings.contains(id);
+		boolean hasHoldings = bibsWithHoldings.containsKey(id);
 		Thread holdingsUpdateThread = null;
 		if (hasHoldings) {
 			//noinspection CodeBlock2Expr

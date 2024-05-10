@@ -461,7 +461,7 @@ function getUserUpdates() {
 					,('Local Enrichment', 'Administer All Placards', '', 40, 'Allows the user to view and change all placards within Aspen Discovery.')
 					,('Local Enrichment', 'Administer Library Placards', '', 50, 'Allows the user to view and change placards for their home library within Aspen Discovery.')
 					,('Local Enrichment', 'Moderate User Reviews', '', 60, 'Allows the delete any user review within Aspen Discovery.')
-					,('Third Party Enrichment', 'Administer Third Party Enrichment API Keys', '', 0, 'Allows the user to define connection to external enrichment systems like Content Cafe, Syndetics, Google, Novelist etc.')
+					,('Third Party Enrichment', 'Administer Third Party Enrichment API Keys', '', 0, 'Allows the user to define connection to external enrichment systems like Content Cafe, Syndetics, Google, NoveList etc.')
 					,('Third Party Enrichment', 'Administer Wikipedia Integration', '', 10, 'Allows the user to control how authors are matched to Wikipedia entries.')
 					,('Third Party Enrichment', 'View New York Times Lists', '', 20, 'Allows the user to view and update lists loaded from the New York Times.')
 					,('Open Archives', 'Administer Open Archives', 'Open Archives', 0, 'Allows the user to administer integration with Open Archives repositories for all libraries.')

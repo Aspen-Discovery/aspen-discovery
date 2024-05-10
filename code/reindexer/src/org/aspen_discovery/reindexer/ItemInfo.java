@@ -120,7 +120,7 @@ public class ItemInfo{
 		this.itemIdentifier = itemIdentifier;
 	}
 
-	String getITypeCode() {
+	public String getITypeCode() {
 		return ITypeCode;
 	}
 
@@ -205,7 +205,7 @@ public class ItemInfo{
 		this.isOrderItem = true;
 	}
 
-	boolean isEContent() {
+	public boolean isEContent() {
 		return isEContent;
 	}
 
@@ -325,15 +325,14 @@ public class ItemInfo{
 
 	ScopingInfo addScope(Scope scope) {
 		String scopeName = scope.getScopeName();
-		ScopingInfo scopeInfo = scopingInfo.computeIfAbsent(scopeName, k -> new ScopingInfo(scope, this));
-		return scopeInfo;
+		return scopingInfo.computeIfAbsent(scopeName, k -> new ScopingInfo(scope, this));
 	}
 
 	HashMap<String, ScopingInfo> getScopingInfo() {
 		return scopingInfo;
 	}
 
-	String getShelfLocationCode() {
+	public String getShelfLocationCode() {
 		return shelfLocationCode;
 	}
 
@@ -354,7 +353,7 @@ public class ItemInfo{
 		this.subLocation = subLocation;
 	}
 
-	String getSubLocationCode() {
+	public String getSubLocationCode() {
 		return subLocationCode;
 	}
 

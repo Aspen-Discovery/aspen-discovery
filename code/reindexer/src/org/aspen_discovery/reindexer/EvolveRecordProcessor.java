@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
@@ -8,8 +9,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 public class EvolveRecordProcessor extends IlsRecordProcessor {
-	EvolveRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
+	EvolveRecordProcessor(String serverName, GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override
@@ -83,8 +84,8 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String status = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
-		if (status == null || status.length() == 0){
+		String status = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
+		if (status == null || status.isEmpty()){
 			status = "On Shelf";
 		} else if (status.startsWith("Due on")) {
 			status = "Checked Out";

@@ -1668,7 +1668,7 @@ class Polaris extends AbstractIlsDriver {
 	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
-		if ($patron->cat_password != $oldPin) {
+		if ($patron->ils_password != $oldPin && $patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
 				'message' => "The old PIN provided is incorrect.",
@@ -1694,6 +1694,7 @@ class Polaris extends AbstractIlsDriver {
 				$result['success'] = true;
 				$result['message'] = 'Your password was updated successfully.';
 				$patron->cat_password = $newPin;
+				$patron->ils_password = $newPin;
 				$patron->update();
 			} else {
 				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";

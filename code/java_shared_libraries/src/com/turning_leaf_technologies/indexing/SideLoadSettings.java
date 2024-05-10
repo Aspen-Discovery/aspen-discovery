@@ -1,5 +1,7 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -9,7 +11,8 @@ import java.util.regex.Pattern;
 public class SideLoadSettings extends BaseIndexingSettings {
 	private HashSet<String> deletedIds = new HashSet<>();
 
-	public SideLoadSettings(ResultSet settings) throws SQLException {
+	public SideLoadSettings(String serverName, ResultSet settings, BaseIndexingLogEntry logEntry) throws SQLException {
+		super(serverName, logEntry);
 		this.id = settings.getLong("id");
 		this.name = settings.getString("name");
 		this.lastUpdateOfChangedRecords = settings.getLong("lastUpdateOfChangedRecords");

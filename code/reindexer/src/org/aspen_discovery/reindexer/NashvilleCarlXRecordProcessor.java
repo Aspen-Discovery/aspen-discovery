@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 
 public class NashvilleCarlXRecordProcessor extends CarlXRecordProcessor{
-	NashvilleCarlXRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
+	NashvilleCarlXRecordProcessor(String serverName, GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	private static int numSampleRecordsWithMultiplePrintFormats = 0;

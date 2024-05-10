@@ -111,7 +111,7 @@ public class SymphonyExportMain {
 
 			//TODO: Load the account profile with additional information about Symphony connection if needed.
 
-			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
+			indexingProfile = IndexingProfile.loadIndexingProfile(serverName, dbConn, profileToLoad, logger, logEntry);
 			logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 			//Check for new marc out

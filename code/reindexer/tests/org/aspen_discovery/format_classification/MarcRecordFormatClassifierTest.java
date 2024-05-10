@@ -12,6 +12,7 @@ import org.marc4j.marc.Record;
 import java.util.LinkedHashSet;
 
 class MarcRecordFormatClassifierTest extends AbstractIndexingTest{
+	@SuppressWarnings("unused")
 	@ParameterizedTest
 	@CsvFileSource(resources = "/format_tests.csv")
 	void testGroupingCategory(String marcFileName, String profileName, String grouperName, String expectedFormats, String description, String ticket) {
@@ -22,7 +23,7 @@ class MarcRecordFormatClassifierTest extends AbstractIndexingTest{
 		Assertions.assertNotNull(marcRecord, "Could not load sample marc record");
 
 		MarcRecordFormatClassifier marcRecordFormatClassifier = testGrouper.getFormatClassifier();
-		LinkedHashSet<String> formats = marcRecordFormatClassifier.getFormatsFromBib(marcRecord, profile);
+		LinkedHashSet<String> formats = marcRecordFormatClassifier.getTranslatedFormatsFromBib(marcRecord, profile);
 		String formatsAsString = Util.getCsvSeparatedString(formats);
 		Assertions.assertEquals(expectedFormats, formatsAsString);
 	}

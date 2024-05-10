@@ -6,6 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/default/solr-7.6.0/logs" />
       <excludeFolder url="file://$MODULE_DIR$/default/solr-7.6.0/server/logs" />
       <excludeFolder url="file://$MODULE_DIR$/default/solr-7.6.0/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/default/solr-8.11.2/server/logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
