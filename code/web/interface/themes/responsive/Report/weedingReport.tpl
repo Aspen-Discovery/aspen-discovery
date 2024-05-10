@@ -29,13 +29,14 @@
 							$('#showData').prop('disabled', true);
 							$('#showData').addClass('disabled');
 							$('#showData .fa-spinner').removeClass('hidden');
-								return true;
+							return true;
 						}
-						if (handler == 'download') {
-							$('#download').prop('disabled', true);
-							$('#download').addClass('disabled');
-							$('#download .fa-spinner').removeClass('hidden');
-						}
+						// if (handler == 'download') {
+						// 	$('#download').prop('disabled', true);
+						// 	$('#download').addClass('disabled');
+						// 	$('#download .fa-spinner').removeClass('hidden');
+						// 	return true;
+						// }
 					});
 				</script>
 			{/literal}
