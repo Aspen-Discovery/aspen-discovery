@@ -1036,6 +1036,8 @@ public class SierraExportAPIMain {
 										continue;
 									}
 								}
+							} else if (tag.equals(sierraExportFieldMapping.getFixedFieldDestinationField())) {
+								continue;
 							}
 							marcRecord.addVariableField(dataField);
 						}else{

@@ -1,13 +1,15 @@
 {strip}
 <button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover" isAdminFacing=true}</button>
 {if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
-	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Upload Cover from Computer" isAdminFacing=true}</button>
-	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
-	<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
-	{if $bookcoverInfo->disallowThirdPartyCover == 1}
-		<button onclick="return AspenDiscovery.GroupedWork.thirdPartyCoverToggle('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Allow Third Party Cover Image" isAdminFacing=true}</button>
-	{else}
-		<button onclick="return AspenDiscovery.GroupedWork.thirdPartyCoverToggle('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Hide Third Party Cover Image" isAdminFacing=true}</button>
+	{if !empty($bookcoverInfo)}
+		<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Upload Cover from Computer" isAdminFacing=true}</button>
+		<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
+		<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
+		{if $bookcoverInfo->disallowThirdPartyCover == 1}
+			<button onclick="return AspenDiscovery.GroupedWork.thirdPartyCoverToggle('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Allow Third Party Cover Image" isAdminFacing=true}</button>
+		{else}
+			<button onclick="return AspenDiscovery.GroupedWork.thirdPartyCoverToggle('{$recordDriver->getPermanentId()}', '{$bookcoverInfo->recordType}', '{$bookcoverInfo->recordId}')" class="btn btn-sm btn-default">{translate text="Hide Third Party Cover Image" isAdminFacing=true}</button>
+		{/if}
 	{/if}
 {/if}
 <button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Enrichment" isAdminFacing=true}</button>
