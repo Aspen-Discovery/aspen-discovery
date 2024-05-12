@@ -6,6 +6,10 @@ import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
+import org.aspen_discovery.format_classification.IIIRecordFormatClassifier;
+import org.aspen_discovery.format_classification.IlsRecordFormatClassifier;
+import org.aspen_discovery.format_classification.KohaRecordFormatClassifier;
+import org.aspen_discovery.format_classification.NashvilleRecordFormatClassifier;
 import org.marc4j.marc.*;
 
 import java.sql.Connection;
@@ -53,6 +57,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			settings = new IndexingProfile(serverName, indexingProfileRS, dbConn, indexer.getLogEntry());
 			super.settings = this.settings;
 			profileType = indexingProfileRS.getString("name");
+
+			//Setup format classifier
+			switch (settings.getIndexingClass()) {
+				case "III":
+					formatClassifier = new IIIRecordFormatClassifier(logger);
+					break;
+				case "Koha":
+					formatClassifier = new KohaRecordFormatClassifier(logger);
+					break;
+				case "NashvilleCarlX":
+					formatClassifier = new NashvilleRecordFormatClassifier(logger);
+					break;
+				default:
+					formatClassifier = new IlsRecordFormatClassifier(logger);
+					break;
+			}
 
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
@@ -1628,7 +1648,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					largePrintCheck(recordInfo, record);
 					return;
 				}
-			} if (recordInfo.hasItemFormats() && !recordInfo.allItemsHaveFormats()){
+			}
+			if (recordInfo.hasItemFormats() && !recordInfo.allItemsHaveFormats()){
 				//We're doing bib level formats, but we got some item level formats (probably eContent or something)
 				loadPrintFormatFromBib(recordInfo, record);
 				for (ItemInfo itemInfo : recordInfo.getRelatedItems()){

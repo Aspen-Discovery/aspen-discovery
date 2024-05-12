@@ -47,6 +47,9 @@ public class MarcRecordFormatClassifier {
 			if (settings instanceof IndexingProfile) {
 				IndexingProfile profile = (IndexingProfile) settings;
 				String formatLower = format.toLowerCase();
+				if (profile.hasTranslation("format", formatLower)) {
+					formatInfo.format = profile.translateValue("format", formatLower);
+				}
 				if (profile.hasTranslation("format_category", formatLower)) {
 					formatInfo.formatCategory = profile.translateValue("format_category", formatLower);
 				}else{
