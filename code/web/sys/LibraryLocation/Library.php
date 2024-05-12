@@ -474,6 +474,7 @@ class Library extends DataObject {
 
 	/** @var LibraryCombinedResultSection[] */
 	private $_combinedResultSections;
+	private $_accountProfile = null;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -5012,12 +5013,9 @@ class Library extends DataObject {
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		}
 
-		if($this->accountProfileId) {
-			$accountProfile = new AccountProfile();
-			$accountProfile->id = $this->accountProfileId;
-			if ($accountProfile->find(true)) {
-				$ils = $accountProfile->ils;
-			}
+		$accountProfile = $this->getAccountProfile();
+		if($accountProfile != false) {
+			$ils = $accountProfile->ils;
 		}
 
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
@@ -5180,5 +5178,22 @@ class Library extends DataObject {
 				$index--;
 			}
 		}
+	}
+
+	public function getAccountProfile() {
+		if ($this->_accountProfile == null) {
+			if (!empty($this->accountProfileId)) {
+				$accountProfile = new AccountProfile();
+				$accountProfile->id = $this->accountProfileId;
+				if ($accountProfile->find(true)) {
+					$this->_accountProfile = $accountProfile;
+				} else {
+					$this->_accountProfile = false;
+				}
+			} else {
+				$this->_accountProfile = false;
+			}
+		}
+		return $this->_accountProfile;
 	}
 }
