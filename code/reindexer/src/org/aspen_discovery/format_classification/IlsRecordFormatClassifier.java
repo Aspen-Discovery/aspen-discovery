@@ -41,13 +41,20 @@ public class IlsRecordFormatClassifier extends MarcRecordFormatClassifier {
 		}
 	}
 
+	/**
+	 * Retrieve a format from the specified fallback field.  This is untranslated because it gets translated later.
+	 *
+	 * @param record
+	 * @param printFormats
+	 * @param settings
+	 */
 	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats, BaseIndexingSettings settings) {
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile)settings;
 			Set<String> fields = MarcUtil.getFieldList(record, indexingProfile.getFallbackFormatField());
 			for (String curField : fields) {
 				if (indexingProfile.hasTranslation("format", curField.toLowerCase())) {
-					printFormats.add(indexingProfile.translateValue("format", curField));
+					printFormats.add( curField);
 				}
 			}
 		}
