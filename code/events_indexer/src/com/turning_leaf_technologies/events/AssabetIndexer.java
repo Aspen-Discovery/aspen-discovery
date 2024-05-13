@@ -197,7 +197,7 @@ class AssabetIndexer {
 
 							//get event type with location_virtual value
 							String eventType = getStringForKey(locationsForCurEvent, "location_virtual");
-							if (eventType != null && eventType.equals("1")){
+							if (eventType != null && eventType.equals("0")){
 								eventType = "In Person";
 							}else {
 								eventType = "Online";
