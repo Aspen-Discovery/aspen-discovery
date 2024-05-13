@@ -734,13 +734,13 @@ public class MarcRecordFormatClassifier {
 						formatCode = fixedField008.getData().toUpperCase().charAt(26);
 						switch (formatCode) {
 							case 'A':
-								result.add("Numeric Data");
+								result.add("NumericData");
 								break;
 							case 'B':
-								result.add("Computer Program");
+								result.add("ComputerProgram");
 								break;
 							case 'G':
-								result.add("Video Game");
+								result.add("VideoGame");
 								break;
 							default:
 								result.add("Electronic");
@@ -757,7 +757,7 @@ public class MarcRecordFormatClassifier {
 						formatCode = fixedField008.getData().toUpperCase().charAt(33);
 						switch (formatCode) {
 							case 'A':
-								result.add("Art Original");
+								result.add("ArtOriginal");
 								break;
 							case 'B':
 								result.add("Kit");
@@ -781,16 +781,16 @@ public class MarcRecordFormatClassifier {
 								result.add("Graphic");
 								break;
 							case 'L':
-								result.add("Technical Drawing");
+								result.add("TechnicalDrawing");
 								break;
 							case 'N':
 								result.add("Chart");
 								break;
 							case 'O':
-								result.add("Flash card");
+								result.add("Flashcard");
 								break;
 							case 'P':
-								result.add("Microscope Slide");
+								result.add("MicroscopeSlide");
 								break;
 							case 'Q':
 								result.add("Model");
