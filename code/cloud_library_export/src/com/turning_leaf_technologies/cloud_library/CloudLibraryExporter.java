@@ -408,7 +408,7 @@ public class CloudLibraryExporter {
 		boolean callSucceeded = false;
 		CloudLibraryAvailability availability = new CloudLibraryAvailability();
 		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/item/summary/" + cloudLibraryId;
-		while (!callSucceeded && numTries < 3) {
+		while (numTries < 3) {
 			if (numTries > 0) {
 				try {
 					//Sleep a little bit to allow the server to calm down.
@@ -446,7 +446,10 @@ public class CloudLibraryExporter {
 				}
 			}
 			numTries++;
-			if (numTries == 3 && !callSucceeded) {
+			if (callSucceeded) {
+				break;
+			}
+			if (numTries == 3) {
 				logEntry.incErrors("Did not get a successful API response after 3 tries for " + settings.getBaseUrl() + apiPath);
 				break;
 			}
@@ -460,11 +463,11 @@ public class CloudLibraryExporter {
 		boolean callSucceeded = false;
 		CloudLibraryAvailabilityType availabilityType = new CloudLibraryAvailabilityType();
 		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/circulation/item/" + cloudLibraryId;
-		while (!callSucceeded && numTries < 3) {
+		while (numTries < 3) {
 			if (numTries > 0) {
 				try {
 					//Sleep a little bit to allow the server to calm down.
-					Thread.sleep(60000);
+					Thread.sleep(15000);
 				} catch (InterruptedException e) {
 					//Not a big deal if this gets interrupted
 				}
@@ -484,6 +487,8 @@ public class CloudLibraryExporter {
 					logger.info("Error getting availability type from " + apiPath + ": " + response.getResponseCode());
 				}
 			} else {
+				callSucceeded = true;
+
 				availabilityType.setRawResponse(response.getMessage());
 				CloudLibraryAvailabilityTypeHandler handler = new CloudLibraryAvailabilityTypeHandler(availabilityType);
 
@@ -497,7 +502,10 @@ public class CloudLibraryExporter {
 				}
 			}
 			numTries++;
-			if (numTries == 3 && !callSucceeded) {
+			if (callSucceeded) {
+				break;
+			}
+			if (numTries == 3) {
 				logEntry.incErrors("Did not get a successful API response after 3 tries for " + settings.getBaseUrl() + apiPath);
 				break;
 			}

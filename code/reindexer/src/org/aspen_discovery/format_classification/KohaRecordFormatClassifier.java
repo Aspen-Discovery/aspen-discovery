@@ -92,12 +92,14 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 
 		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection && !foundFormatFromIType) {
 			String format = MarcUtil.getItemSubfieldData(profile.getFormatSubfield(), itemField, logEntry, logger);
-			String translatedFormat = profile.translateValue("format", format);
-			if (translatedFormat != null && !translatedFormat.isEmpty()) {
-				formatInfo.format = translatedFormat;
-				formatInfo.formatCategory = profile.translateValue("format_category", format);
-				if (profile.hasTranslation("format_boost", format)) {
-					formatBoost = profile.translateValue("format_boost", format);
+			if (format != null && profile.hasTranslation("format", format)) {
+				String translatedFormat = profile.translateValue("format", format);
+				if (translatedFormat != null && !translatedFormat.isEmpty()) {
+					formatInfo.format = translatedFormat;
+					formatInfo.formatCategory = profile.translateValue("format_category", format);
+					if (profile.hasTranslation("format_boost", format)) {
+						formatBoost = profile.translateValue("format_boost", format);
+					}
 				}
 			}
 		}
