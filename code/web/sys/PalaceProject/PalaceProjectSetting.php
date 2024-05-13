@@ -108,7 +108,7 @@ class PalaceProjectSetting extends DataObject {
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => true,
-				'canEdit' => true,
+				'canEdit' => false,
 				'canAddNew' => false,
 				'canDelete' => false,
 				'additionalOneToManyActions' => [],

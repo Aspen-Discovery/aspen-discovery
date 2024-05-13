@@ -83,8 +83,4 @@ class PalaceProjectCollection extends DataObject {
 		];
 		return $structure;
 	}
-
-	public function getEditLink($context): string {
-		return '/PalaceProject/Collections?objectAction=edit&id=' . $this->id;
-	}
 }
