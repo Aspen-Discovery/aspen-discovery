@@ -357,6 +357,7 @@ class Library extends DataObject {
 
 	//Summon Settings
 	public $summonSettingsId;
+	public $showAvailableCoversInSummon;
 
 	//SSO
 	public /** @noinspection PhpUnused */
@@ -3702,7 +3703,6 @@ class Library extends DataObject {
 				'label' => 'Summon',
 				'hideInLists' => true,
 				'renderAsHeading' => true,
-				// 'permissions' => ['A'],
 				'properties' => [
 					'summonSettingsId' => [
 						'property' => 'summonSettingsId',
@@ -3712,6 +3712,14 @@ class Library extends DataObject {
 						'description' => 'Whether or not Summon content should be included for this library.',
 						'hideInLists' => true,
 						'default' => -1,
+					],
+					'showAvailableCoversInSummon' => [
+						'property' => 'showAvailableCoversInSummon',
+						'type' => 'checkbox',
+						'label' => 'Show Available Covers in Summon',
+						'description' => 'Determine whether or not available book covers should be displayed in Summon',
+						'hideInLists' => true,
+						'default' => 0,
 					],
 				],
 			],
@@ -4950,6 +4958,7 @@ class Library extends DataObject {
 			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number',
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
+			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

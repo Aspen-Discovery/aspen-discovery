@@ -24,19 +24,25 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getBookcoverUrl($size='large', $absolutePath = false) {
+		// require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
+		global $library;
+
 		global $configArray;
 		if ($size == 'small' || $size == 'medium'){
 			$sizeInArray = 'thumbnail_m';
 		}else{
 			$sizeInArray = 'thumbnail_l';
 		}
-		if (!empty($this->record[$sizeInArray][0])) {
-			$imageDimensions = getimagesize($this->record[$sizeInArray][0]);
-			if ($sizeInArray == 'thumbnail_m' && $imageDimensions[0] > 10) {
-				return $this->record[$sizeInArray][0];
-			} elseif ($sizeInArray == 'thumbnail_l' && $imageDimensions[0] > 10) {
-				return $this->record[$sizeInArray][0];
-			} 
+
+		if ($library->showAvailableCoversInSummon) {
+			if(!empty($this->record[$sizeInArray][0])){
+				$imagePath = $this->record[$sizeInArray][0];
+
+				$imageDimensions = getImageSize($imagePath);
+				if($imageDimensions[0] > 10){
+					return $imagePath;
+				}
+			}
 		}
 		if ($absolutePath) {
 			$bookCoverUrl = $configArray['Site']['url'];
@@ -236,6 +242,9 @@ class SummonRecordDriver extends RecordInterface {
 	public function getTitle() {
 		if (isset($this->record['Title'])) {
 			$title=$this->record['Title'][0];
+			if (isset($this->record['Subtitle'])) {
+				$title .= ': ' . $this->record['Subtitle'][0];
+			}
 		} else {
 			$title='Unknown Title';
 		}
@@ -333,8 +342,8 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getAuthor() {
-		if(isset($this->record['Author'][0])) {
-			$author=$this->record['Author'][0];
+		if(isset($this->record['Author_xml'][0]['fullname'])) {
+			$author=$this->record['Author_xml'][0]['fullname'];
 		} else {
 			$author='Unknown Title';
 		}
