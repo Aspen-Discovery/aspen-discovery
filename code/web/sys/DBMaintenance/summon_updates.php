@@ -84,5 +84,12 @@ function getSummonUpdates() {
 				'ALTER TABLE library ADD COLUMN summonApiPassword VARCHAR(50)',
 			],
 		],
+		'add_book_cover_display_control_in_library_settings' => [
+			'title' => 'Display Available Book Covers in Summon',
+			'description' => 'Whether to display available book covers in Summon Searcher',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showAvailableCoversInSummon TINYINT(1) DEFAULT 0",
+			],
+		],
     ];
 }

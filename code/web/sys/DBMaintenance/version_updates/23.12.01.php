@@ -19,5 +19,5 @@ function getUpdates23_12_01(): array {
 				'UPDATE overdrive_settings SET runFullUpdate = 1',
 			]
 		], //force_overdrive_full_update
-    ];
+	];
 }
