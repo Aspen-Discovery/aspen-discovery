@@ -59,6 +59,18 @@ class PalaceProject_Collections extends ObjectEditor {
 		return true;
 	}
 
+	function canBatchEdit() {
+		return false;
+	}
+
+	function canEdit(DataObject $object) {
+		return false;
+	}
+
+	function canEditList() {
+		return false;
+	}
+
 	function canDelete() {
 		return true;
 	}

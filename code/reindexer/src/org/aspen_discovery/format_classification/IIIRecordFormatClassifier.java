@@ -27,7 +27,7 @@ public class IIIRecordFormatClassifier extends IlsRecordFormatClassifier {
 						if (matTypeSubfield != null) {
 							String formatValue = matTypeSubfield.getData().trim();
 							if (indexingProfile.hasTranslation("format", formatValue)) {
-								formats.add(indexingProfile.translateValue("format", formatValue));
+								formats.add(formatValue);
 
 							}
 						}
