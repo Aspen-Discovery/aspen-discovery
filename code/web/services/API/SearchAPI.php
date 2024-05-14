@@ -1469,7 +1469,7 @@ class SearchAPI extends AbstractAPI {
 
 	const ITEMS_PER_PAGE = 24;
 
-	private function getBrowseCategoryResults($browseCategory, &$response) {
+	public function getBrowseCategoryResults($browseCategory, &$response) {
 		if (isset($_REQUEST['pageToLoad']) && is_numeric($_REQUEST['pageToLoad'])) {
 			$pageToLoad = (int)$_REQUEST['pageToLoad'];
 		} else {
@@ -1493,6 +1493,7 @@ class SearchAPI extends AbstractAPI {
 					$records = [];
 				}
 				$response['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
+				$response['label'] = $sourceList->title;
 
 				// Search Browse Category //
 			} elseif ($browseCategory->source == 'CourseReserve') {
@@ -1505,7 +1506,7 @@ class SearchAPI extends AbstractAPI {
 					$records = [];
 				}
 				$response['searchUrl'] = '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
-
+				$response['label'] = $sourceList->title;
 				// Search Browse Category //
 			} else {
 				$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
@@ -1546,6 +1547,7 @@ class SearchAPI extends AbstractAPI {
 				}
 
 				$response['searchUrl'] = $searchObject->renderSearchUrl();
+				$response['label'] = $browseCategory->label;
 
 				// Shutdown the search object
 				$searchObject->close();

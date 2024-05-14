@@ -2,6 +2,26 @@
 	{if !empty($showBrowseContent)}
 	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
+    {if $accessibleBrowseCategories == '1'}
+		<div class="col-sm-12" id="browse-category-feed" role="feed">
+			<!-- Slider main container -->
+            {foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
+            <div class="browse-category-feed-item" id="browse-category-{$browseCategory.textId}" role="article">
+		            <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2>
+		            <div id="browse-category-tablist"  role="tablist" class="row" aria-labelledby="tablist-browse-category-{$browseCategory.textId}">
+                        {$browseCategory.subcategories nofilter}
+		            </div>
+				<div class="swiper" role="tabpanel">
+					<div class="swiper-wrapper swiper-browse-category-{$browseCategory.textId}">
+						{$browseCategory.records nofilter}
+					</div>
+					<div class="swiper-button-prev"></div>
+					<div class="swiper-button-next"></div>
+				</div>
+            </div>
+			{/foreach}
+		</div>
+	    {else}
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
 				<div class="jcarousel-wrapper">
@@ -31,8 +51,10 @@
 				{/if}
 			</div>
 		</div>
+	    {/if}
 	</div>
 	{/if}
+    {if $accessibleBrowseCategories == '0'}
 	<div id="home-page-browse-content" class="row">
 		<div class="col-sm-12">
 
@@ -108,6 +130,7 @@
 			{/if}
 		</div>
 	</div>
+	{/if}
 {/strip}
 <script type="text/javascript">
 	$(function(){ldelim}

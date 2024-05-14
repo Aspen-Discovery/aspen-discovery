@@ -520,35 +520,48 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	public function getBrowseResult() {
 		global $interface;
+		$item = [];
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
+		$item['summId'] = $id;
 
 		$url = $this->getMoreInfoLinkUrl();
 
 		$interface->assign('summUrl', $url);
+		$item['summUrl'] = $url;
+
 		$shortTitle = $this->getShortTitle();
 		if (empty($shortTitle)) {
 			$interface->assign('summTitle', $this->getTitle());
 			$interface->assign('summSubTitle', '');
+			$item['summTitle'] = $this->getTitle();
+			$item['summSubTitle'] = '';
 		} else {
 			$interface->assign('summTitle', $this->getShortTitle());
 			$interface->assign('summSubTitle', $this->getSubtitle());
+			$item['summTitle'] = $this->getShortTitle();
+			$item['summSubTitle'] = $this->getSubtitle();
 		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$item['summAuthor'] = $this->getPrimaryAuthor();
 
 		//Get Rating
 		$interface->assign('ratingData', $this->getRatingData());
+		$item['ratingData'] = $this->getRatingData();
 
 		//Get cover image size
 		global $interface;
 		$appliedTheme = $interface->getAppliedTheme();
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-
-		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-		} else {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		$item['bookCoverUrl'] = $this->getBookcoverUrl('large');
+		$accessibleBrowseCategories = 0;
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		if ($appliedTheme != null) {
+			if($appliedTheme->browseCategoryImageSize == 1) {
+				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+			}
+			$accessibleBrowseCategories = $appliedTheme->accessibleBrowseCategories;
 		}
 
 		// Rating & Browse Mode Settings
@@ -567,6 +580,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('browseMode', $browseMode); // sets the template switch that is created in GroupedWork object
 
 		$interface->assign('browseCategoryRatingsMode', $browseCategoryRatingsMode);
+
+		$item['browseMode'] = $browseMode;
+		$item['browseCategoryRatingsMode'] = $browseCategoryRatingsMode;
+		/*if($accessibleBrowseCategories == 1) {
+			return $item;
+		}*/
 
 		return 'RecordDrivers/GroupedWork/browse_result.tpl';
 	}

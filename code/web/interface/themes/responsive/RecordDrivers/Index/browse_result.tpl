@@ -1,4 +1,11 @@
 {strip}
+    {if $accessibleBrowseCategories == '1'}
+	<div class="swiper-slide browse-thumbnail {$coverStyle}">
+		<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', {if !empty($browseCategoryId)}'{$browseCategoryId}'{/if});" href="{$summUrl}">
+			<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle} {if $browseCategoryRatingsMode != 0}ratings-on{/if}">
+		</a>
+	</div>
+    {else}
 	{if $browseMode == '1'}
 		<div class="browse-list grid-item {$coverStyle} {if $browseStyle == 'grid'}browse-grid-style col-tn-6 col-xs-6 col-sm-6 col-md-4 col-lg-3{/if}">
 			<a href="{$summUrl}" {if !empty($openInNewWindow)}target="_blank" aria-label="{$summTitle} ({translate text='opens in new window' isPublicFacing=true})"{/if} {if !empty($onclick)}onclick="{$onclick}" {/if}>
@@ -21,5 +28,6 @@
 				</div>
 			{/if}
 		</div>
+	{/if}
 	{/if}
 {/strip}

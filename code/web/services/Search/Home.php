@@ -10,6 +10,11 @@ class Search_Home extends Action {
 		/** @var Location $locationSingleton */ global $locationSingleton;
 		global $timer;
 
+		$accessibleBrowseCategories = 0;
+		if($interface->getVariable('accessibleBrowseCategories')) {
+			$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
+		}
+
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
@@ -40,12 +45,20 @@ class Search_Home extends Action {
 		$browseCategories = [];
 		if ($activeLocation != null) {
 			if($activeLocation->getBrowseCategoryGroup()) {
-				$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
+				if($accessibleBrowseCategories == '1') {
+					$browseCategories = $this->getInitialBrowseCategoryFeed($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
+				} else {
+					$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
+				}
 				$interface->assign('browseCategoryRatingsMode', $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode);
 			}
 		} else {
 			if($library->getBrowseCategoryGroup()) {
-				$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
+				if($accessibleBrowseCategories == '1') {
+					$browseCategories = $this->getInitialBrowseCategoryFeed($library->getBrowseCategoryGroup()->getBrowseCategories());
+				} else {
+					$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
+				}
 				$interface->assign('browseCategoryRatingsMode', $library->getBrowseCategoryGroup()->browseCategoryRatingsMode);
 			}
 		}
@@ -185,6 +198,29 @@ class Search_Home extends Action {
 				$interface->assign('subCategories', $subCategories);
 			}
 		}
+	}
+
+	/**
+	 * @param BrowseCategoryGroup|null $localBrowseCategories
+	 * @return BrowseCategory[]
+	 */
+	private function getInitialBrowseCategoryFeed($localBrowseCategories = null) {
+		require_once ROOT_DIR . '/services/API/SearchAPI.php';
+
+		$browseCategories = [];
+		if ($localBrowseCategories) {
+			foreach ($localBrowseCategories as $index => $localBrowseCategory) {
+				$browseCategory = new BrowseCategory();
+				$browseCategory->id = $localBrowseCategory->browseCategoryId;
+				$browseCategory->find(true);
+
+				require_once ROOT_DIR . '/services/Browse/AJAX.php';
+				$browseAJAX = new Browse_AJAX();
+				$browseCategories[$browseCategory->id] = $browseAJAX->getBrowseCategoryInfo($browseCategory->textId);
+			}
+		}
+
+		return $browseCategories;
 	}
 
 	function getBreadcrumbs(): array {

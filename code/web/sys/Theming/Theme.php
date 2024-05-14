@@ -432,6 +432,7 @@ class Theme extends DataObject {
 	public $capitalizeBrowseCategories;
 	public $browseCategoryImageSize;
 	public $browseImageLayout;
+	public $accessibleBrowseCategories;
 
 	//Panel Colors
 	public static $defaultClosedPanelBackgroundColor = '#e7e7e7';
@@ -1528,6 +1529,13 @@ class Theme extends DataObject {
 						'required' => false,
 						'hidInLists' => true,
 						'default' => '0',
+					],
+					'accessibleBrowseCategories' => [
+						'property' => 'accessibleBrowseCategories',
+						'type' => 'checkbox',
+						'label' => 'Use Accessible Layout',
+						'note' => 'Does not apply the Browse Category Image Layout preference',
+						'required' => false,
 					],
 				],
 			],
@@ -2962,6 +2970,8 @@ class Theme extends DataObject {
 			if ($interface->getVariable('browseImageLayout') == null && $theme->browseImageLayout != -1) {
 				$interface->assign('browseImageLayout', $theme->browseImageLayout);
 			}
+
+			$interface->assign('accessibleBrowseCategories', $theme->accessibleBrowseCategories);
 
 			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
 				$headerBottomBorderWidth = $theme->headerBottomBorderWidth;

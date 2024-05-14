@@ -740,6 +740,7 @@ class Browse_AJAX extends Action {
 		]);
 
 		// Get Any Subcategories for the subcategory menu
+		$_REQUEST['textId'] = $this->textId;
 		$response['subcategories'] = $this->getSubCategories();
 
 		// If this category has subcategories, get the results of a sub-category instead.

@@ -113,11 +113,17 @@ class ListsRecordDriver extends IndexRecordDriver {
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-		} else {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		$accessibleBrowseCategories = 0;
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		if ($appliedTheme != null) {
+			if($appliedTheme->browseCategoryImageSize == 1) {
+				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+			}
+			$accessibleBrowseCategories = $appliedTheme->accessibleBrowseCategories;
 		}
+
+		$interface->assign('accessibleBrowseCategories', $accessibleBrowseCategories);
+
 
 		return 'RecordDrivers/List/cover_result.tpl';
 	}

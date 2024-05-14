@@ -21,6 +21,7 @@ lib/moment.min.js
 lib/rome.standalone.min.js
 #Chart.js must come after moment
 lib/Chart.min.js
+lib/swiper-bundle.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js
