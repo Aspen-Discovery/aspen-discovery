@@ -344,7 +344,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 					String value = mapValuesRS.getString("value");
 					String translation = mapValuesRS.getString("translation");
 
-					translationMap.put(value, translation);
+					translationMap.put(value.toLowerCase(), translation);
 				}
 				mapValuesRS.close();
 				if (translationMaps.containsKey(mapName)) {
@@ -370,12 +370,20 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}else{
 				translationMaps.put("format_category", formatCategoryMap);
 			}
+			HashMap <String, String> formatBoostMap = new HashMap<>();
+			if (translationMaps.containsKey("format_boost")) {
+				formatBoostMap = translationMaps.get("format_boost");
+			}else{
+				translationMaps.put("format_boost", formatBoostMap);
+			}
 
 			translationMaps.put("format_category", formatCategoryMap);
 			while (formatMapRS.next()){
 				String format = formatMapRS.getString("value");
-				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
-				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
+				String formatLower = format.toLowerCase();
+				formatMap.put(formatLower, formatMapRS.getString("format"));
+				formatCategoryMap.put(formatLower, formatMapRS.getString("formatCategory"));
+				formatBoostMap.put(formatLower, formatMapRS.getString("formatBoost"));
 			}
 			formatMapRS.close();
 		}catch (Exception e){
