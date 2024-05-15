@@ -347,7 +347,11 @@ public class IndexingProfile extends BaseIndexingSettings {
 					translationMap.put(value, translation);
 				}
 				mapValuesRS.close();
-				translationMaps.put(mapName, translationMap);
+				if (translationMaps.containsKey(mapName)) {
+					translationMaps.get(mapName).putAll(translationMap);
+				}else{
+					translationMaps.put(mapName, translationMap);
+				}
 			}
 			translationMapsRS.close();
 
@@ -355,8 +359,18 @@ public class IndexingProfile extends BaseIndexingSettings {
 			getFormatMapStmt.setLong(1, id);
 			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
 			HashMap <String, String> formatMap = new HashMap<>();
-			translationMaps.put("format", formatMap);
+			if (translationMaps.containsKey("format")) {
+				formatMap = translationMaps.get("format");
+			}else{
+				translationMaps.put("format", formatMap);
+			}
 			HashMap <String, String> formatCategoryMap = new HashMap<>();
+			if (translationMaps.containsKey("format_category")) {
+				formatCategoryMap = translationMaps.get("format_category");
+			}else{
+				translationMaps.put("format_category", formatCategoryMap);
+			}
+
 			translationMaps.put("format_category", formatCategoryMap);
 			while (formatMapRS.next()){
 				String format = formatMapRS.getString("value");
@@ -1059,15 +1073,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public SierraExportFieldMapping getSierraExportFieldMappings() {
 		return sierraExportFieldMappings;
-	}
-
-	public boolean hasTranslation(String mapName, String value) {
-		HashMap<String, String> translationMap = translationMaps.get(mapName);
-		if (translationMap != null){
-			return translationMap.containsKey(value.toLowerCase());
-		}else{
-			return false;
-		}
 	}
 
 	public String translateValue(String mapName, String value) {
