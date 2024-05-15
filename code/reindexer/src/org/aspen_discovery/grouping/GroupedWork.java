@@ -340,6 +340,7 @@ public class GroupedWork implements Cloneable {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
 			logEntry.incErrors("Invalid grouping category " + groupingCategory);
+			this.groupingCategory = "other";
 		}else {
 			this.groupingCategory = groupingCategory;
 		}
