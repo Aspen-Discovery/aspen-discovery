@@ -3237,7 +3237,7 @@ class Koha extends AbstractIlsDriver {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : void {
 		// Store result for API or app use
 		$result['api'] = [];
 
