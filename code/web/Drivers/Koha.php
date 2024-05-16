@@ -1,10 +1,11 @@
 <?php
-
+require_once ROOT_DIR . '/Drivers/KohaApiUserAgent.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Koha extends AbstractIlsDriver {
 	private $dbConnection = null;
+	private KohaApiUserAgent $kohaApiUserAgent;
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
@@ -910,59 +911,49 @@ class Koha extends AbstractIlsDriver {
 				$lookupUserResult->close();
 			} else if ($this->getKohaVersion() >= 22.1110) {
 				//Authenticate the user using KOHA API
-				$oauthToken = $this->getOAuthToken();
-				if (!$oauthToken) {
-					global $logger;
-					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
-					$result['messages'][] = translate([
-						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]);
-					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
-				} else {
-					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
-					$postParams = [
-						'identifier' => $barcode,
-						'password' => $password,
+				$postParams = [
+					'identifier' => $barcode,
+					'password' => $password,
 					];
-					$this->apiCurlWrapper->addCustomHeaders([
-						'Authorization: Bearer ' . $oauthToken,
-						'User-Agent: Aspen Discovery',
-						'Accept: */*',
-						'Cache-Control: no-cache',
-						'Content-Type: application/json;charset=UTF-8',
-						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-					], true);
-				}
-				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
-				$responseCode = $this->apiCurlWrapper->getResponseCode();
-				$jsonResponse = json_decode($responseBody);
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
-				if ($responseCode == 201) {
-					$cardNumber = $jsonResponse->cardnumber;
-					$patronId = $jsonResponse->patron_id;
-					$authenticationSuccess = true;
-				} else {
-					if (!empty($jsonResponse) && !empty($jsonResponse->error) && $jsonResponse->error == 'Password expired') {
-						$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+				$endpoint = "/api/v1/auth/password/validation";
+				$response = $this->kohaApiUserAgent->post($endpoint,$postParams,"koha.patronLogin",['password' => $password]);
 
-						$lookupUserResult = mysqli_query($this->dbConnection, $sql);
-						if ($lookupUserResult->num_rows > 0) {
-							$lookupUserRow = $lookupUserResult->fetch_assoc();
+				if ($response) {
 
-							$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
-							if ($expiredPasswordResult != null) {
-								$lookupUserResult->close();
-								return $expiredPasswordResult;
+					$responseCode = $response['code'];
+					$headers = $response['headers'];
+					$apiURL = $response['url'];
+					
+					if ($response['code'] == 201) {
+						$patronId = $response['content']['patron_id'];
+						$authenticationSuccess = true;
+					} else {
+						$error = $response['content']['error'];
+						$message = $response['content']['message'];
+						if (!empty($response['content']) && !empty($error) && $error == 'Password expired') {
+							$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+	
+							$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+							if ($lookupUserResult->num_rows > 0) {
+								$lookupUserRow = $lookupUserResult->fetch_assoc();
+	
+								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
+								if ($expiredPasswordResult != null) {
+									$lookupUserResult->close();
+									return $expiredPasswordResult;
+								}
 							}
+							$lookupUserResult->close();
 						}
-						$lookupUserResult->close();
+						$result['messages'][] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
 					}
-					$result['messages'][] = translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]);
+				} else {
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
 				}
+				
 			} else {
 				//Authenticate the user using KOHA ILSDI
 				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
@@ -984,16 +975,21 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
+
 					//Technically this is not right, we're using an XML response and thinking it's JSON, but for practical purposes its going to work since we have the same format in the XML and json bodies and everything is clases
 					$jsonResponse = $responseBody;
+					$message = $jsonResponse->message;
+					$error = $jsonResponse->code;
 					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
+
 				} else {
 					$responseCode = $this->curlWrapper->getResponseCode();
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
-					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, '', ['password' => $password]);
+					$headers = $this->curlWrapper->getHeaders();
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, '', ['password' => $password]);
 				}
 			}
 			if ($authenticationSuccess) {
@@ -1009,11 +1005,10 @@ class Koha extends AbstractIlsDriver {
 						return $result;
 					}
 				} else {
-
-					if (isset($jsonResponse->message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
+					if (isset($message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-					} else if (isset($jsonResponse->message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
+					} else if (isset($message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
 						global $logger;
 						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
@@ -1034,7 +1029,7 @@ class Koha extends AbstractIlsDriver {
 							}
 						} else {
 							//Check to see if the patron password has expired, this is not available on all systems.
-							if (isset($jsonResponse->code) && $jsonResponse->code == 'PasswordExpired') {
+							if (isset($error) && $error == 'PasswordExpired') {
 								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
 								if ($expiredPasswordResult != null) {
 									return $expiredPasswordResult;
@@ -1052,7 +1047,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			} else {
 				$postParams['password'] = '**password**';
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, "", ['password' => $password]);
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {
@@ -1060,7 +1055,10 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			return null;
 		}
-	}/**
+	}
+
+	
+/**
  * @param $borrowernumber
  * @return array
  */
@@ -1402,6 +1400,7 @@ class Koha extends AbstractIlsDriver {
 		$this->delApiCurlWrapper->setTimeout(30);
 		$this->renewalsCurlWrapper = new CurlWrapper();
 		$this->renewalsCurlWrapper->setTimeout(30);
+		$this->kohaApiUserAgent = new KohaApiUserAgent($accountProfile);
 	}
 
 	function __destruct() {
@@ -3350,7 +3349,10 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 
+<<<<<<< HEAD
 		return $result;
+=======
+>>>>>>> c86330bb2 (Merge to patronLogin)
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId): array {
@@ -3389,6 +3391,9 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
+
+
+
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -5060,16 +5065,7 @@ class Koha extends AbstractIlsDriver {
 				'success' => false,
 				'message' => 'Unknown error processing materials requests.',
 			];
-			$oauthToken = $this->getOAuthToken();
-			if ($oauthToken == false) {
-				return [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]),
-				];
-			} else {
+
 				/** @noinspection SpellCheckingInspection */
 				$postFields = [
 					'title' => $_REQUEST['title'],
@@ -5100,49 +5096,37 @@ class Koha extends AbstractIlsDriver {
 						];
 					}
 				}
-
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions";
-				$this->apiCurlWrapper->addCustomHeaders([
-					'Authorization: Bearer ' . $oauthToken,
-					'User-Agent: Aspen Discovery',
-					'Accept: */*',
-					'Cache-Control: no-cache',
-					'Content-Type: application/json;charset=UTF-8',
-					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-					'x-koha-library: ' .  $user->getHomeLocationCode(),
-				], true);
-				$postParams = json_encode($postFields);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
-				ExternalRequestLogEntry::logRequest('koha.processMaterialsRequestForm', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-				if ($this->apiCurlWrapper->getResponseCode() != 201) {
-					if (strlen($response) > 0) {
-						$jsonResponse = json_decode($response);
-						if ($jsonResponse) {
-							if (!empty($jsonResponse->error)) {
+				$response = $this->kohaApiUserAgent->post("/api/v1/suggestions",$postFields,"koha.processMaterialsRequestForm",[]);
+				$responseCode = $response['code'];
+				$responseBody = $response['content'];
+				if ($response) {
+					if ($responseCode != 201) {
+						if (!empty($responseBody)) {
+							if (!empty($responseBody['error'])) {
 								$result['message'] = translate([
-									'text' => $jsonResponse->error,
+									'text' => $responseBody['error'],
 									'isPublicFacing' => true,
 								]);
-							} else {
+							} elseif (!empty($responseBody['errors'])) {
 								$result['message'] = '';
-								foreach ($jsonResponse->errors as $error) {
+								foreach ($responseBody['errors'] as $error) {
 									$result['message'] .= translate([
 											'text' => $error->message,
 											'isPublicFacing' => true,
 										]) . '<br/>';
 								}
+							} else {
+								$result['message'] = $responseBody;
 							}
 						} else {
-							$result['message'] = $response;
+							$result['message'] = "Error $responseCode updating your account.";
 						}
 					} else {
-						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+						$result['success'] = true;
+						$result['message'] = 'Successfully submitted your request.';
 					}
-				} else {
-					$result['success'] = true;
-					$result['message'] = 'Successfully submitted your request.';
 				}
-			}
+				
 			return $result;
 		} else {
 			if (empty($user->cat_password)) {
@@ -5352,38 +5336,31 @@ class Koha extends AbstractIlsDriver {
 
 	function deleteMaterialsRequests(User $patron) {
 		if ($this->getKohaVersion() > 21.05) {
-			$oauthToken = $this->getOAuthToken();
-			if ($oauthToken == false) {
-				return [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]),
-				];
-			} else {
-				$suggestionId = $_REQUEST['delete_field'];
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/$suggestionId";
-				$this->delApiCurlWrapper->addCustomHeaders([
-					'Authorization: Bearer ' . $oauthToken,
-					'User-Agent: Aspen Discovery',
-					'Accept: */*',
-					'Cache-Control: no-cache',
-					'Content-Type: application/json;charset=UTF-8',
-					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				], true);
-				$response = $this->delApiCurlWrapper->curlSendPage($apiUrl, 'DELETE', '');
-
-				ExternalRequestLogEntry::logRequest('koha.deleteMaterialsRequests', 'DELETE', $apiUrl, $this->delApiCurlWrapper->getHeaders(), '', $this->delApiCurlWrapper->getResponseCode(), $response, []);
-
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-
-				return [
-					'success' => true,
-					'message' => 'deleted your requests',
-				];
-
+			$result = [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+					'isPublicFacing' => true,
+				])
+			];
+			
+			$suggestionId = $_REQUEST['delete_field'];
+			$response = $this->kohaApiUserAgent->delete("/api/v1/suggestions/$suggestionId",'koha.deleteMaterialsRequests');
+			if ($response) {
+				if ($response['code'] == 204) {
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$result = [
+						'success' => true,
+						'message' => 'Your requests have been deleted succesfully',
+					];
+				} else {
+					$result = [
+						'success' => false,
+						'message' => $response['error']
+					];
+				}
 			}
+			return $result;
 		} else {
 			$this->loginToKohaOpac($patron);
 
@@ -6976,33 +6953,17 @@ class Koha extends AbstractIlsDriver {
 	 */
 	protected function getUsersExtendedAttributesFromKoha($borrowerNumber): array {
 		$extendedAttributes = [];
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken != false) {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-			], true);
-
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', null);
-			ExternalRequestLogEntry::logRequest('koha.getUserExtendedAttributes', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-			if ($this->apiCurlWrapper->getResponseCode() == 200) {
-				$jsonResponse = json_decode($response, true);
-				foreach ($jsonResponse as $response) {
-					$attribute = [
-						'id' => $response['extended_attribute_id'],
-						'type' => $response['type'],
-						'value' => $response['value'],
-					];
-					$extendedAttributes[] = $attribute;
-				}
+		$response = $this->kohaApiUserAgent->get("/api/v1/patrons/$borrowerNumber/extended_attributes",'koha.getUserExtendedAttributes',[],[]);
+		$responseCode = $response['code'];
+		if ($responseCode == 200) {
+			$body = $response['body'];
+			foreach($body as $elem ) { 
+				$attribute = [
+					'id' => $elem['extended_attribute_id'],
+					'type' => $elem['type'],
+					'value' => $elem['value'],
+				];
+				$extendedAttributes[] = $attribute;
 			}
 		}
 		return $extendedAttributes;
@@ -7131,54 +7092,49 @@ class Koha extends AbstractIlsDriver {
 			'userid' => $username,
 		];
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
-			$postParams = json_encode($postVariables);
+		$response = $this->kohaApiUserAgent->put("/api/v1/patrons/$patron->unique_ils_id",$postVariables,"koha.updateEditableUsername",[],['x-koha-library: ' .  $patron->getHomeLocationCode()]);
+		$responseCode = $response['code'];
+		$responseContent = $response['content'];
 
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json;charset=UTF-8',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
-			ExternalRequestLogEntry::logRequest('koha.updateEditableUsername', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				if (strlen($response) > 0) {
-					$jsonResponse = json_decode($response);
-					if ($jsonResponse) {
-						$result['message'] = $jsonResponse->error;
+		if ($response) {
+			if ($responseCode != 200) {
+				if (!empty($responseContent['error'])) {
+					if (!empty($responseContent['error'])) {
+						$result['message'] = translate([
+							'text' => $responseContent['error'],
+							'isPublicFacing' => true,
+						]);
+					} elseif (!empty($responseContent['errors'])) {
+						$result['message'] = '';
+						foreach ($responseContent['errors'] as $error) {
+							$result['message'] .= translate([
+									'text' => $error['message'],
+									'isPublicFacing' => true,
+								]) . '<br/>';
+						}
 					} else {
-						$result['message'] = $response;
+						$result['message'] = $responseContent;
 					}
 				} else {
-					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+					$result['message'] = "Error $responseCode updating your account.";
 				}
-
 			} else {
-				$response = json_decode($response);
-				if ($response->userid == $username) {
+				if ($responseContent['userid'] == $username) {
 					$result = [
 						'success' => true,
 						'message' => 'Your account was updated successfully.',
+						'isPublicFacing' => true
 					];
 				} else {
 					$result = [
 						'success' => true,
 						'message' => 'Error updating this setting in the system.',
+						'isPublicFacing' => true
 					];
 				}
 			}
 		}
+		
 		return $result;
 	}
 
