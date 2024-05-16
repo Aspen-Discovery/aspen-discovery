@@ -7,6 +7,7 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 
@@ -17,8 +18,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private final HashMap<String, String> damagedStatuses = new HashMap<>();
 	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
-	KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		this (indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex, null);
+	KohaRecordProcessor(String serverName, GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		this (serverName, indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex, null);
 		suppressRecordsWithNoCollection = false;
 	}
 
@@ -33,7 +34,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				try {
 					String host = accountProfileRS.getString("databaseHost");
 					String port = accountProfileRS.getString("databasePort");
-					if (port == null || port.length() == 0) {
+					if (port == null || port.isEmpty()) {
 						port = "3306";
 					}
 					String databaseName = accountProfileRS.getString("databaseName");
@@ -47,8 +48,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 							"?user=" + user +
 							"&password=" + password +
 							"&useUnicode=yes&characterEncoding=UTF-8";
-					if (timezone != null && timezone.length() > 0){
-						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+					if (timezone != null && !timezone.isEmpty()){
+						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, StandardCharsets.UTF_8);
 
 					}
 					kohaConnection = DriverManager.getConnection(kohaConnectionJDBC);
@@ -67,8 +68,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return kohaConnection;
 	}
 
-	private KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
-		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
+	private KohaRecordProcessor(String serverName, GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
+		super(serverName, indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		boolean valid = false;
 		int tries = 0;
 		while (tries < 3 && !valid) {
@@ -151,7 +152,6 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private float getKohaVersion(Connection kohaConn){
 		if (kohaVersion == -1) {
 			try {
-				//noinspection SpellCheckingInspection
 				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
 				if (kohaVersionRS.next()){
@@ -169,110 +169,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && displayStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
-	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
-	@Override
-	protected void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo) {
-		if (itemInfo.isEContent()) {return;}
-
-		boolean foundFormatFromShelfLocation = false;
-		String formatBoost = null;
-		String shelfLocationCode = itemInfo.getShelfLocationCode();
-		if (shelfLocationCode != null) {
-			String shelfLocation = shelfLocationCode.toLowerCase().trim();
-			if (hasTranslation("format", shelfLocation)) {
-				String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
-				if (translatedLocation != null && !translatedLocation.isEmpty()) {
-					foundFormatFromShelfLocation = true;
-					itemInfo.setFormat(translatedLocation);
-					String translatedLocationCategory = translateValue("format_category", shelfLocation, recordInfo.getRecordIdentifier());
-					itemInfo.setFormatCategory(translatedLocationCategory);
-				}
-			}
-		}
-
-		boolean foundFormatFromSublocation = false;
-		String subLocationCode = itemInfo.getSubLocationCode();
-		if (!foundFormatFromShelfLocation && subLocationCode != null && !subLocationCode.isEmpty()) {
-			String subLocation = subLocationCode.toLowerCase().trim();
-			if (hasTranslation("format", subLocation)) {
-				String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
-				if (translatedLocation != null && !translatedLocation.isEmpty()) {
-					foundFormatFromSublocation = true;
-					itemInfo.setFormat(translatedLocation);
-					String translatedLocationCategory = translateValue("format_category", subLocation, recordInfo.getRecordIdentifier());
-					itemInfo.setFormatCategory(translatedLocationCategory);
-					if (hasTranslation("format_boost", subLocation)) {
-						formatBoost = translateValue("format_boost", subLocation, recordInfo.getRecordIdentifier());
-					}
-				}
-			}
-		}
-
-		boolean foundFormatFromCollection = false;
-		String collectionCode = itemInfo.getCollection();
-		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null) {
-			collectionCode = collectionCode.toLowerCase().trim();
-			if (hasTranslation("format", collectionCode)) {
-				String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
-				if (translatedLocation != null && !translatedLocation.isEmpty()) {
-					foundFormatFromCollection = true;
-					itemInfo.setFormat(translatedLocation);
-					String translatedLocationCategory = translateValue("format_category", collectionCode, recordInfo.getRecordIdentifier());
-					itemInfo.setFormatCategory(translatedLocationCategory);
-					if (hasTranslation("format_boost", collectionCode)) {
-						formatBoost = translateValue("format_boost", collectionCode, recordInfo.getRecordIdentifier());
-					}
-				}
-			}
-		}
-
-		boolean foundFormatFromIType = false;
-		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
-			String iTypeCode = itemInfo.getITypeCode();
-			if (iTypeCode != null) {
-				String iType = iTypeCode.toLowerCase().trim();
-				//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
-				String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-				if (translatedFormat != null && !translatedFormat.isEmpty()) {
-					foundFormatFromIType = true;
-					itemInfo.setFormat(translatedFormat);
-					String translatedLocationCategory = translateValue("format_category", iType, recordInfo.getRecordIdentifier());
-					itemInfo.setFormatCategory(translatedLocationCategory);
-					if (hasTranslation("format_boost", iType)) {
-						formatBoost = translateValue("format_boost", iType, recordInfo.getRecordIdentifier());
-					}
-				}
-			}
-		}
-
-		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection && !foundFormatFromIType) {
-			String format = getItemSubfieldData(settings.getFormatSubfield(), itemField);
-			String translatedFormat = translateValue("format", format, recordInfo.getRecordIdentifier());
-			if (translatedFormat != null && !translatedFormat.isEmpty()) {
-				itemInfo.setFormat(translatedFormat);
-				String translatedLocationCategory = translateValue("format_category", format, recordInfo.getRecordIdentifier());
-				itemInfo.setFormatCategory(translatedLocationCategory);
-				if (hasTranslation("format_boost", format)) {
-					formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
-				}
-			}
-		}
-
-		try {
-			if (formatBoost != null && !formatBoost.isEmpty()) {
-				recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
-			}
-		} catch (Exception e) {
-			if (!unhandledFormatBoosts.contains(itemInfo.getFormat())){
-				unhandledFormatBoosts.add(itemInfo.getFormat());
-				logger.warn("Could not get boost for format " + itemInfo.getFormat());
-			}
-		}
-	}
-
 	private final HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
+		String itemIdentifier = MarcUtil.getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (inTransitItems.contains(itemIdentifier)){
 			return "In Transit";
 		}
@@ -280,7 +179,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			return "On Hold Shelf";
 		}
 
-		String subLocationData = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
+		String subLocationData = MarcUtil.getItemSubfieldData(settings.getSubLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (subLocationData != null && subLocationData.equalsIgnoreCase("ON-ORDER")){
 			return "On Order";
 		}
@@ -388,7 +287,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		for (DataField itemField : itemRecords){
-			String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
+			String itemIdentifier = MarcUtil.getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField, indexer.getLogEntry(), logger);
 			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
 			suppressionNotes = isSuppressed.notes;
 			if (!isSuppressed.result){
@@ -414,7 +313,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		for (DataField itemField : itemRecords){
-			String itemIdentifier = getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField);
+			String itemIdentifier = MarcUtil.getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField, indexer.getLogEntry(), logger);
 			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
 			suppressionNotes = isSuppressed.notes;
 			if (!isSuppressed.result){
@@ -530,15 +429,6 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 			//If the source type is still null, try the location of the item
 			if (sourceType == null){
-//				DataField field037 = record.getDataField(37);
-//				if (field037 != null && field037.getSubfield('b') != null) {
-//					sourceType = field037.getSubfield('b').getData();
-//				}else{
-					//Try the location for the item
-					if (itemField.getSubfield(settings.getLocationSubfield()) != null){
-						sourceType = itemField.getSubfield(settings.getLocationSubfield()).getData();
-					}
-//				}
 				sourceType = "Online Content";
 			}
 		}
@@ -599,25 +489,25 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
-		String subLocationCode = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
-		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
+		String subLocationCode = MarcUtil.getItemSubfieldData(settings.getSubLocationSubfield(), itemField, indexer.getLogEntry(), logger);
+		String locationCode = MarcUtil.getItemSubfieldData(settings.getLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (settings.isIncludeLocationNameInDetailedLocation()) {
 			location = translateValue("location", locationCode, identifier);
 		}else{
 			location = "";
 		}
-		if (subLocationCode != null && subLocationCode.length() > 0){
+		if (subLocationCode != null && !subLocationCode.isEmpty()){
 			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
-			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
-				if (location.length() > 0) {
+			if (translatedSubLocation != null && !translatedSubLocation.isEmpty()) {
+				if (!location.isEmpty()) {
 					location += " - ";
 				}
 				location += translateValue("sub_location", subLocationCode, identifier, true);
 			}
 		}
-		String shelvingLocation = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
-		if (shelvingLocation != null && shelvingLocation.length() > 0){
-			if (location.length() > 0){
+		String shelvingLocation = MarcUtil.getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField, indexer.getLogEntry(), logger);
+		if (shelvingLocation != null && !shelvingLocation.isEmpty()){
+			if (!location.isEmpty()){
 				location += " - ";
 			}
 			location += translateValue("shelf_location", shelvingLocation, identifier, true);

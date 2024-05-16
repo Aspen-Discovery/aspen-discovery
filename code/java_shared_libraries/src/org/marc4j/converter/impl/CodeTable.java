@@ -23,6 +23,7 @@ package org.marc4j.converter.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Vector;
@@ -116,16 +117,14 @@ class CodeTable implements CodeTableInterface {
 
             charsets = saxUms.getCharSets();
             combining = saxUms.getCombiningChars();
-            boolean changeMade = true;
-            while (changeMade) {
-                changeMade = false;
-                for (Integer mode : combining.keySet()){
-                    if (combining.get(mode).isEmpty()){
-                        combining.remove(mode);
-                        changeMade = true;
-                        break;
-                    }
+            ArrayList<Integer> modesToRemove = new ArrayList<>();
+            for (Integer mode : combining.keySet()){
+                if (combining.get(mode).isEmpty()){
+                    modesToRemove.add(mode);
                 }
+            }
+            for (Integer mode : modesToRemove) {
+                combining.remove(mode);
             }
 
         } catch (final Exception e) {

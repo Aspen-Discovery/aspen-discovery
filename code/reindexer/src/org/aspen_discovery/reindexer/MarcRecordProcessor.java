@@ -2,7 +2,6 @@ package org.aspen_discovery.reindexer;
 
 import org.aspen_discovery.format_classification.MarcRecordFormatClassifier;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;

@@ -219,6 +219,29 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			if ($groupedWorkDriver->isValid()) {
+				$interface->assign('hasValidGroupedWork', true);
+				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+				$nonGroupedRecord = new NonGroupedRecord();
+				$nonGroupedRecord->source = $this->getRecordType();
+				$nonGroupedRecord->recordId = $this->id;
+				if ($nonGroupedRecord->find(true)) {
+					$interface->assign('isUngrouped', true);
+					$interface->assign('ungroupingId', $nonGroupedRecord->id);
+				} else {
+					$interface->assign('isUngrouped', false);
+				}
+			} else {
+				$interface->assign('hasValidGroupedWork', false);
+			}
+		} else {
+			$interface->assign('hasValidGroupedWork', false);
+		}
+
 		$overDriveAPIProduct = new OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)) {

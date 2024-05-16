@@ -2,8 +2,11 @@ package org.aspen_discovery.format_classification;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
+import org.aspen_discovery.reindexer.ItemInfo;
+import org.aspen_discovery.reindexer.RecordInfo;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
@@ -26,7 +29,90 @@ public class MarcRecordFormatClassifier {
 		this.logger = logger;
 	}
 
-	public LinkedHashSet<String> getFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
+	/**
+	 * Returns full format information for the record. These are fully translated for indexing.
+	 *
+	 * @param record The MARC record to load from
+	 * @param settings Settings for how to process the record
+	 * @param logEntry The log entry for writing errors etc.
+	 * @param logger  Raw log for writing debugging information etc.
+	 * @return Full information including, format, format category, and format boost for the record.
+	 */
+	public LinkedHashSet<FormatInfo> getFormatsForRecord(org.marc4j.marc.Record record, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger){
+		LinkedHashSet<String> formatsFromBib = this.getUntranslatedFormatsFromBib(record, settings);
+		LinkedHashSet<FormatInfo> formatInfoFromBib = new LinkedHashSet<>();
+		for (String format : formatsFromBib) {
+			FormatInfo formatInfo = new FormatInfo();
+			formatInfo.format = format;
+			if (settings instanceof IndexingProfile) {
+				IndexingProfile profile = (IndexingProfile) settings;
+				String formatLower = format.toLowerCase();
+				if (profile.hasTranslation("format", formatLower)) {
+					formatInfo.format = profile.translateValue("format", formatLower);
+				}
+				if (profile.hasTranslation("format_category", formatLower)) {
+					formatInfo.formatCategory = profile.translateValue("format_category", formatLower);
+				}else{
+					formatInfo.formatCategory = "other";
+				}
+				if (profile.hasTranslation("format_boost", formatLower)) {
+					String formatBoostString = profile.translateValue("format_boost", formatLower);
+					int formatBoost = 1;
+					if (!formatBoostString.isEmpty()) {
+						try {
+							formatBoost = Integer.parseInt(formatBoostString);
+						} catch (Exception e) {
+							//Ignore this
+						}
+					}
+					formatInfo.formatBoost = formatBoost;
+				}else{
+					formatInfo.formatBoost = 1;
+				}
+			}else{
+				//TODO: set format category and format boost
+			}
+
+			formatInfoFromBib.add(formatInfo);
+		}
+
+		return formatInfoFromBib;
+	}
+
+	public FormatInfo getFirstFormatForRecord(org.marc4j.marc.Record record, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
+		LinkedHashSet<FormatInfo> printFormats = getFormatsForRecord(record, settings, logEntry, logger);
+		if (!printFormats.isEmpty()) {
+			return printFormats.iterator().next();
+		}
+		// Nothing worked!
+		FormatInfo unknownFormat = new FormatInfo();
+		unknownFormat.format = "Unknown";
+		unknownFormat.formatCategory = "Other";
+		unknownFormat.formatBoost = 1;
+		return unknownFormat;
+	}
+
+	public LinkedHashSet<String> getTranslatedFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
+		LinkedHashSet<String> untranslatedFormats = this.getUntranslatedFormatsFromBib(record, settings);
+		LinkedHashSet<String> translatedFormats = new LinkedHashSet<>();
+		for (String format : untranslatedFormats) {
+			if (settings.hasTranslation("format", format)) {
+				translatedFormats.add(settings.translateValue("format", format));
+			}else{
+				translatedFormats.add(format);
+			}
+		}
+		return translatedFormats;
+	}
+
+	/**
+	 * Get formats from a bib, these are untranslated, so they can be translated later for category, boosting, etc.
+	 *
+	 * @param record The record to load formats from
+	 * @param settings The settings to use while loading formats
+	 * @return The list of formats for the records
+	 */
+	public LinkedHashSet<String> getUntranslatedFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 
 		String leader = record.getLeader().toString();
@@ -89,15 +175,6 @@ public class MarcRecordFormatClassifier {
 		}
 
 		return printFormats;
-	}
-
-	public String getFirstFormatFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings) {
-		LinkedHashSet<String> printFormats = getFormatsFromBib(record, settings);
-		if (!printFormats.isEmpty()) {
-			return printFormats.iterator().next();
-		}
-		// Nothing worked!
-		return "Unknown";
 	}
 
 	public void getFormatFromDigitalFileCharacteristics(org.marc4j.marc.Record record, HashSet<String> printFormats) {
@@ -657,13 +734,13 @@ public class MarcRecordFormatClassifier {
 						formatCode = fixedField008.getData().toUpperCase().charAt(26);
 						switch (formatCode) {
 							case 'A':
-								result.add("Numeric Data");
+								result.add("NumericData");
 								break;
 							case 'B':
-								result.add("Computer Program");
+								result.add("ComputerProgram");
 								break;
 							case 'G':
-								result.add("Video Game");
+								result.add("VideoGame");
 								break;
 							default:
 								result.add("Electronic");
@@ -680,7 +757,7 @@ public class MarcRecordFormatClassifier {
 						formatCode = fixedField008.getData().toUpperCase().charAt(33);
 						switch (formatCode) {
 							case 'A':
-								result.add("Art Original");
+								result.add("ArtOriginal");
 								break;
 							case 'B':
 								result.add("Kit");
@@ -704,16 +781,16 @@ public class MarcRecordFormatClassifier {
 								result.add("Graphic");
 								break;
 							case 'L':
-								result.add("Technical Drawing");
+								result.add("TechnicalDrawing");
 								break;
 							case 'N':
 								result.add("Chart");
 								break;
 							case 'O':
-								result.add("Flash card");
+								result.add("Flashcard");
 								break;
 							case 'P':
-								result.add("Microscope Slide");
+								result.add("MicroscopeSlide");
 								break;
 							case 'Q':
 								result.add("Model");
@@ -1169,11 +1246,19 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("Book+CD");
 			printFormats.remove("Book+DVD");
 			printFormats.remove("SoundDisc");
+			if (printFormats.contains("PlayStation") || printFormats.contains("PlayStation2")
+					|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
+					|| printFormats.contains("PlayStation5")) {
+				printFormats.remove("PlayStation");
+			}
 		}
 	}
 
 	@SuppressWarnings("unused")
 	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats, BaseIndexingSettings settings) {
 		//Do nothing by default, this is overridden in IlsRecordProcessor
+	}
+
+	public void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
 	}
 }

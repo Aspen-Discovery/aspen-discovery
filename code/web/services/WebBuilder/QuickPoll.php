@@ -25,6 +25,7 @@ class WebBuilder_QuickPoll extends Action {
 
 		if (!UserAccount::isLoggedIn()) {
 			if (!$this->quickPoll->requireLogin) {
+				$interface->assign('patronIdCheck', 0);
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
 				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
@@ -39,7 +40,11 @@ class WebBuilder_QuickPoll extends Action {
 				$myAccountAction->launch();
 				exit();
 			}
+		}  else {
+			$userId = UserAccount::getActiveUserId();
+			$interface->assign('patronIdCheck', $userId);
 		}
+
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
 		$parsedown->setBreaksEnabled(true);

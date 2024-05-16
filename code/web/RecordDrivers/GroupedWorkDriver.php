@@ -2239,20 +2239,20 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$alternateTitles = [];
 			if (!empty($permanentId)) {
 				$alternateTitle->permanent_id = $permanentId;
-				$alternateTitle->find();
-				$alternateTitles = [];
-				while ($alternateTitle->fetch()) {
-					$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+				if ($alternateTitle->find()) {
+					while ($alternateTitle->fetch()) {
+						$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+					}
 				}
 
 				//Also look for any grouped works that do not have the language attached
 				if (strlen($permanentId) == 40) {
 					$permanentId = substr($permanentId, 0, 36);
 					$alternateTitle->permanent_id = $permanentId;
-					$alternateTitle->find();
-					$alternateTitles = [];
-					while ($alternateTitle->fetch()) {
-						$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+					if ($alternateTitle->find()) {
+						while ($alternateTitle->fetch()) {
+							$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+						}
 					}
 				}
 			}
@@ -2552,7 +2552,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			return $enrichment;
 		}
 		$novelist = NovelistFactory::getNovelist();
-		$memoryWatcher->logMemory('Setup Novelist Connection');
+		$memoryWatcher->logMemory('Setup NoveList Connection');
 		$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		return $enrichment;
 	}

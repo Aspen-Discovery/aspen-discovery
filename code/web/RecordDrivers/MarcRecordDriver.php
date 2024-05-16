@@ -2836,11 +2836,43 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						foreach ($library->getLocations() as $libraryBranch) {
 							$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
 						}
+					}else{
+						//This is probably a sierra library where the location code is just a portion of the item location.  Trim off characters until we get a match.
+						$tmpCode = $item->locationCode;
+						while (strlen($tmpCode) >= 2) {
+							$tmpCode =  substr($tmpCode, 0, strlen($tmpCode) -1);
+							$location = new Location();
+							$location->code = $tmpCode;
+							if ($location->find(true)) {
+								$library = $location->getParentLibrary();
+								foreach ($library->getLocations() as $libraryBranch) {
+									$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
+								}
+							}
+						}
 					}
 				}
 			} else {
 				//Add the owning location
-				$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
+				if (!isset($locations[$item->locationCode])) {
+					$location = new Location();
+					$location->code = $item->locationCode;
+					if ($location->find(true)) {
+						$locations[strtolower($item->locationCode)] = strtolower($location->code);
+					}else{
+						//This is probably a sierra library where the location code is just a portion of the item location.  Trim off characters until we get a match.
+						$tmpCode = $item->locationCode;
+						while (strlen($tmpCode) >= 2) {
+							$tmpCode =  substr($tmpCode, 0, strlen($tmpCode) -1);
+							$location = new Location();
+							$location->code = $tmpCode;
+							if ($location->find(true)) {
+								$locations[strtolower($item->locationCode)] = strtolower($location->code);
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 

@@ -239,6 +239,7 @@ class LibraryLink extends DataObject {
 			$libraryLinkLocation->libraryLinkId = $this->id;
 			$libraryLinkLocation->delete(true);
 		}
+		return $ret;
 	}
 
 	public function getAccess() {

@@ -5,6 +5,7 @@ class GroupedWorkAlternateTitle extends DataObject {
 	public $__table = 'grouped_work_alternate_titles';
 	public $id;
 	public $permanent_id;
+	public $alternateGroupingCategory;
 	public $alternateTitle;
 	public $alternateAuthor;
 	public $addedBy;
@@ -25,17 +26,23 @@ class GroupedWorkAlternateTitle extends DataObject {
 				'description' => 'The grouped work id with the alternate title',
 				'readOnly' => true,
 			],
+			'alternateGroupingCategory' => [
+				'property' => 'alternateGroupingCategory',
+				'type' => 'text',
+				'label' => 'Alternate Grouping Category',
+				'description' => 'The grouping category of the original work'
+			],
 			'alternateTitle' => [
 				'property' => 'alternateTitle',
 				'type' => 'text',
 				'label' => 'Alternate Title',
-				'description' => 'An alternate title to use when indexing this work',
+				'description' => 'The alternate title from the original work',
 			],
 			'alternateAuthor' => [
 				'property' => 'alternateAuthor',
 				'type' => 'text',
 				'label' => 'Alternate Author',
-				'description' => 'An alternate author to use when indexing this work',
+				'description' => 'An alternate author from the original work',
 			],
 			'addedByName' => [
 				'property' => 'addedByName',

@@ -18,8 +18,8 @@ import java.util.HashMap;
 public class EvergreenRecordProcessor extends IlsRecordProcessor {
 	HashMap<String, String> barcodeCreatedByDates = new HashMap<>();
 
-	EvergreenRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
+	EvergreenRecordProcessor(String serverName, GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 		this.suppressRecordsWithNoCollection = false;
 		loadSupplementalFiles();
 	}

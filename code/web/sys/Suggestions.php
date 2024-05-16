@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 class Suggestions {
 	/*
 	 * Get suggestions for titles that a user might like based on their rating history
-	 * and related titles from Novelist.
+	 * and related titles from NoveList.
 	 */
 	static function getSuggestions($userId = -1, $page = 1, $limit = 25, $appUser = null) {
 		global $timer;

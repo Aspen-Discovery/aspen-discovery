@@ -401,6 +401,7 @@ class SearchSources {
 	}
 
 	public function getExternalLink($searchSource, $type, $lookFor) : string {
+		/** Library $library */
 		global $library;
 		global $configArray;
 		if ($searchSource == 'worldcat') {
@@ -448,10 +449,20 @@ class SearchSources {
 		} elseif ($searchSource == 'amazon') {
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		} elseif ($searchSource == 'course-reserves-course-name') {
-			$linkingUrl = $configArray['Catalog']['linking_url'];
+			$accountProfile = $library->getAccountProfile();
+			if ($accountProfile != false) {
+				$linkingUrl = $accountProfile->vendorOpacUrl;
+			}else{
+				$linkingUrl = $configArray['Catalog']['linking_url'];
+			}
 			return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
 		} elseif ($searchSource == 'course-reserves-instructor') {
-			$linkingUrl = $configArray['Catalog']['linking_url'];
+			$accountProfile = $library->getAccountProfile();
+			if ($accountProfile != false) {
+				$linkingUrl = $accountProfile->vendorOpacUrl;
+			}else{
+				$linkingUrl = $configArray['Catalog']['linking_url'];
+			}
 			return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 		}
 		return "";

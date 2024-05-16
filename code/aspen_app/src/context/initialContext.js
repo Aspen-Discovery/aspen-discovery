@@ -42,6 +42,8 @@ export const UserContext = React.createContext({
      updateNotificationOnboard: () => {},
      notificationOnboardStatus: false,
      updateNotificationOnboardStatus: () => {},
+     appPreferences: [],
+     updateAppPreferences: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -364,6 +366,7 @@ export const UserProvider = ({ children }) => {
      const [cards, setCards] = useState([]);
      const [notificationSettings, setNotificationSettings] = useState([]);
      const [notificationOnboard, setNotificationOnboard] = useState(0);
+     const [appPreferences, setAppPreferences] = useState([]);
      const [expoToken, setExpoToken] = useState(false);
      const [aspenToken, setAspenToken] = useState(false);
      const [seenNotificationOnboardPrompt, setSeenNotificationOnboardPrompt] = useState(true);
@@ -376,14 +379,6 @@ export const UserProvider = ({ children }) => {
 
                if (_.isObject(data) && !_.isUndefined(data.numHolds)) {
                     PATRON.num.holds = data.numHolds;
-               }
-
-               if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
-                    updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en', data.onboardAppNotifications);
-               }
-
-               if (_.isObject(data) && !_.isUndefined(data.onboardAppNotifications)) {
-                    updateNotificationOnboard(data.onboardAppNotifications);
                }
 
                setUser(data);
@@ -557,6 +552,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated seenNotificationOnboardPrompt UserContext');
      };
 
+     const updateAppPreferences = (data) => {
+          setAppPreferences(data);
+          updateNotificationSettings(data.notification_preferences, 'en', data.onboardAppNotifications);
+     };
+
      const updateExpoToken = (data) => {
           setExpoToken(data);
           console.log('updated expo token UserContext');
@@ -604,6 +604,8 @@ export const UserProvider = ({ children }) => {
                     updateNotificationOnboard,
                     seenNotificationOnboardPrompt,
                     updateSeenNotificationOnboardPrompt,
+                    updateAppPreferences,
+                    appPreferences,
                }}>
                {children}
           </UserContext.Provider>

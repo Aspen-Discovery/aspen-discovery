@@ -3042,6 +3042,11 @@ class SearchAPI extends AbstractAPI {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
 
+		if(isset($_REQUEST['sort'])) {
+			$sort = urldecode($_REQUEST['sort']);
+			$searchObject->setSort($sort);
+		}
+
 		if($searchEngine == 'GroupedWork') {
 			if (isset($_REQUEST['filter'])) {
 				if (is_array($_REQUEST['filter'])) {

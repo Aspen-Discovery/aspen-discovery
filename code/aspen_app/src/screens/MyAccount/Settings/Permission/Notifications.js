@@ -14,7 +14,7 @@ import { navigate } from '../../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../../translations/TranslationService';
 import { ChevronRight, ChevronUp, ChevronDown } from 'lucide-react-native';
 import Constants from 'expo-constants';
-import { refreshProfile, reloadProfile } from '../../../../util/api/user';
+import { getAppPreferencesForUser, refreshProfile, reloadProfile } from '../../../../util/api/user';
 
 export const NotificationPermissionStatus = () => {
      const { language } = React.useContext(LanguageContext);
@@ -80,7 +80,7 @@ export const NotificationPermissionDescription = () => {
           if (prevRoute === 'notifications_onboard') {
                navigation.setOptions({
                     headerLeft: () => (
-                         <Button onPress={() => navigate('MoreMenu')} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <Button bg="transparent" onPress={() => navigate('MoreMenu')} mr="$3" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                               <ButtonIcon size="lg" variant="outline" borderWidth={0} color={theme['colors']['primary']['baseContrast']} as={ChevronLeftIcon} />
                          </Button>
                     ),
@@ -409,7 +409,8 @@ const NotificationPermissionUpdate = (payload) => {
 };
 
 const NotificationToggle = (data) => {
-     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken } = React.useContext(UserContext);
+     const queryClient = useQueryClient();
+     const { updateAppPreferences, expoToken } = React.useContext(UserContext);
      const { textColor } = React.useContext(ThemeContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
@@ -451,10 +452,11 @@ const NotificationToggle = (data) => {
                if (pref === 'notifyAccount') {
                     setNotifyAccount(value);
                }
-               await reloadProfile(library.baseUrl).then((result) => {
-                    updateUser(result);
-                    updateNotificationSettings(data.notification_preferences, language);
+               await getAppPreferencesForUser(library.baseUrl, language).then((result) => {
+                    updateAppPreferences(data);
                });
+
+               queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           }
      };
 
@@ -477,7 +479,7 @@ const NotificationToggle = (data) => {
 const NotificationToggleAll = (data) => {
      const queryClient = useQueryClient();
      const { language } = React.useContext(LanguageContext);
-     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken } = React.useContext(UserContext);
+     const { updateAppPreferences, expoToken } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { textColor } = React.useContext(ThemeContext);
      const { notifySavedSearch, setNotifySavedSearch, notifyCustom, setNotifyCustom, notifyAccount, setNotifyAccount, setLoading, revokeNotificationPermissions, addNotificationPermissions } = data;
@@ -499,10 +501,10 @@ const NotificationToggleAll = (data) => {
                setNotifySavedSearch(allowAllNotifications);
                setNotifyCustom(allowAllNotifications);
                setNotifyAccount(allowAllNotifications);
-               await reloadProfile(library.baseUrl).then((data) => {
-                    updateUser(data);
-                    updateNotificationSettings(data.notification_preferences, language);
+               await getAppPreferencesForUser(library.baseUrl, language).then((result) => {
+                    updateAppPreferences(data);
                });
+
                queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
           }
           setLoading(false);

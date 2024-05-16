@@ -3466,8 +3466,8 @@ class User extends DataObject {
 		} else {
 			$sections['third_party_enrichment']->addAction($nytListsAction, 'View New York Times Lists');
 		}
-		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
-		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist API Information', 'View API information for Novelist.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('NoveList Settings', 'Define settings for integrating NoveList within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('NoveList API Information', 'View API information for NoveList.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu Settings', 'Define settings for integrating Quipu eCARD & eRENEW within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');
@@ -3683,13 +3683,13 @@ class User extends DataObject {
 			$sections['palace_project'] = new AdminSection('Palace Project');
 			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
 			$palaceProjectScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/PalaceProject/Scopes');
-			$palaceProjectCollectionsAction = new AdminAction('Collections', 'Defines the collections within a Palace Project Account.', '/PalaceProject/Collections');
+			//$palaceProjectCollectionsAction = new AdminAction('Collections', 'Defines the collections within a Palace Project Account.', '/PalaceProject/Collections');
 			if ($sections['palace_project']->addAction($palaceProjectSettingsAction, 'Administer Palace Project')) {
 				$palaceProjectSettingsAction->addSubAction($palaceProjectScopesAction, 'Administer Palace Project');
-				$palaceProjectSettingsAction->addSubAction($palaceProjectCollectionsAction, 'Administer Palace Project');
+				//$palaceProjectSettingsAction->addSubAction($palaceProjectCollectionsAction, 'Administer Palace Project');
 			} else {
 				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
-				$sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project');
+				//$sections['palace_project']->addAction($palaceProjectCollectionsAction, 'Administer Palace Project');
 			}
 			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [
 				'View System Reports',

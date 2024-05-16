@@ -104,7 +104,7 @@ public class SideLoadingMain {
 						break;
 					}
 
-					SideLoadSettings settings = new SideLoadSettings(getSideloadsRS);
+					SideLoadSettings settings = new SideLoadSettings(serverName, getSideloadsRS, logEntry);
 					processSideLoad(settings, getFilesForSideloadStmt, insertSideloadFileStmt, updateSideloadFileStmt);
 				}
 				getFilesForSideloadStmt.close();

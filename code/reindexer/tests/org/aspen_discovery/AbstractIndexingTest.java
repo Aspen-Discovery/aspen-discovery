@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspen_discovery.grouping.MarcRecordGrouper;
 import org.aspen_discovery.reindexer.NightlyIndexLogEntry;
@@ -88,23 +89,26 @@ public abstract class AbstractIndexingTest  {
 				reader.readNext();
 				String[] indexingProfileData;
 				while ((indexingProfileData = reader.readNext()) != null){
-					IndexingProfile profile = new IndexingProfile();
-					profile.setName(indexingProfileData[0]);
+					IndexingProfile profile = new IndexingProfile(serverName, null);
+					int curCol = 0;
+					profile.setName(indexingProfileData[curCol++]);
 					profile.setMarcEncoding("UTF8");
-					profile.setGroupingClass(indexingProfileData[1]);
-					profile.setIndexingClass(indexingProfileData[2]);
-					profile.setFormatSource(indexingProfileData[3]);
-					profile.setRecordNumberTag(indexingProfileData[4]);
-					profile.setRecordNumberSubfield(indexingProfileData[5].charAt(0));
-					profile.setItemTag(indexingProfileData[6]);
-					profile.setItemRecordNumberSubfield(indexingProfileData[7].charAt(0));
-					profile.setLocationSubfield(indexingProfileData[8].charAt(0));
-					profile.setShelvingLocationSubfield(indexingProfileData[9].charAt(0));
-					profile.setBarcodeSubfield(indexingProfileData[10].charAt(0));
-					profile.setITypeSubfield(indexingProfileData[11].charAt(0));
-					profile.setFormatSubfield(indexingProfileData[12].charAt(0));
-					profile.setFallbackFormatField(indexingProfileData[13]);
-					profile.setCheckSierraMatTypeForFormat(indexingProfileData[14].equals("1"));
+					profile.setGroupingClass(indexingProfileData[curCol++]);
+					profile.setIndexingClass(indexingProfileData[curCol++]);
+					profile.setFormatSource(indexingProfileData[curCol++]);
+					profile.setRecordNumberTag(indexingProfileData[curCol++]);
+					profile.setRecordNumberSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setItemTag(indexingProfileData[curCol++]);
+					profile.setItemRecordNumberSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setLocationSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setSubLocationSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setShelvingLocationSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setBarcodeSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setITypeSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setCollectionSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setFormatSubfield(AspenStringUtils.convertStringToChar(indexingProfileData[curCol++]));
+					profile.setFallbackFormatField(indexingProfileData[curCol++]);
+					profile.setCheckSierraMatTypeForFormat(indexingProfileData[curCol++].equals("1"));
 
 					if (profile.getIndexingClass().equals("III")) {
 						SierraExportFieldMapping fieldMapping = new SierraExportFieldMapping();
@@ -129,8 +133,8 @@ public abstract class AbstractIndexingTest  {
 						IndexingProfile profile = indexingProfiles.get(formatData[0]);
 						Assertions.assertNotNull(profile, "No record grouper found for " + formatData[0]);
 
-						profile.addTranslationMapValue("format_category", formatData[1], formatData[2]);
-						profile.addTranslationMapValue("format", formatData[1], formatData[3]);
+						profile.addTranslationMapValue("format_category", formatData[1].toLowerCase(), formatData[2]);
+						profile.addTranslationMapValue("format", formatData[1].toLowerCase(), formatData[3]);
 					}
 				}
 			} catch (Exception e) {

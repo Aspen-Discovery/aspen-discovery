@@ -81,18 +81,23 @@ class MyAccount_ContactInformation extends MyAccount {
 						$zip = '';
 
 						//get the correct _REQUEST names as they differ across ILSes
-						foreach ($_REQUEST as $selfRegValue => $val) {
-							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)) {
-								$streetAddress = $val;
-							} elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)) {
-								$city = $val;
-							} elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)) {
-								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
-								if (strlen($val) == 2) {
-									$state = $val;
+						foreach ($_REQUEST as $contactInfoValue => $val){
+							if (!(preg_match('/(.*?)address2(.*)|(.*?)borrower_B(.*)|(.*?)borrower_alt(.*)/', $contactInfoValue))){
+								if (preg_match('/(.*?)address|street(.*)/', $contactInfoValue)){
+									$streetAddress = $val;
 								}
-							} elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)) {
-								$zip = $val;
+								elseif (preg_match('/(.*?)city(.*)/', $contactInfoValue)){
+									$city = $val;
+								}
+								elseif (preg_match('/(.*?)state(.*)/', $contactInfoValue)){
+									//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+									if (strlen($val) == 2){
+										$state = $val;
+									}
+								}
+								elseif (preg_match('/(.*?)zip(.*)/', $contactInfoValue)){
+									$zip = $val;
+								}
 							}
 						}
 						require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';

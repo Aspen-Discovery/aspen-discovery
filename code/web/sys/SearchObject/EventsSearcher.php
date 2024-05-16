@@ -167,7 +167,13 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 				} else {
 					if ($facetInfo instanceof EventsFacet) {
 						$facetName = $facetInfo->facetName;
-						$facetSet['field'][$facetField] = $facetName;
+						$isMultiSelect = $facetInfo->multiSelect;
+						if ($isMultiSelect) {
+							$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
+							$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
+						}else{
+							$facetSet['field'][$facetField] = $facetName;
+						}
 					} else {
 						$facetSet['field'][$facetField] = $facetInfo;
 					}

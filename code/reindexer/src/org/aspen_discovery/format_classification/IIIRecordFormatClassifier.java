@@ -14,7 +14,7 @@ public class IIIRecordFormatClassifier extends IlsRecordFormatClassifier {
 		super(logger);
 	}
 
-	public LinkedHashSet<String> getFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
+	public LinkedHashSet<String> getUntranslatedFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
 		LinkedHashSet<String> formats = new LinkedHashSet<>();
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile)settings;
@@ -27,7 +27,7 @@ public class IIIRecordFormatClassifier extends IlsRecordFormatClassifier {
 						if (matTypeSubfield != null) {
 							String formatValue = matTypeSubfield.getData().trim();
 							if (indexingProfile.hasTranslation("format", formatValue)) {
-								formats.add(indexingProfile.translateValue("format", formatValue));
+								formats.add(formatValue);
 
 							}
 						}
@@ -36,7 +36,7 @@ public class IIIRecordFormatClassifier extends IlsRecordFormatClassifier {
 			}
 		}
 		if (formats.isEmpty()) {
-			return super.getFormatsFromBib(record, settings);
+			return super.getUntranslatedFormatsFromBib(record, settings);
 		}else{
 			return formats;
 		}

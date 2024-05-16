@@ -35,7 +35,7 @@ class Theme extends DataObject {
 	public $libraryWebsiteImage;
 	public $historyArchivesImage;
 
-	public static $defaultHeaderBackgroundColor = '#f1f1f1';
+	public static $defaultHeaderBackgroundColor = '#ffffff';
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$headerBackgroundColorDefault;
@@ -401,7 +401,7 @@ class Theme extends DataObject {
 		$modalDialogHeaderFooterBorderColorDefault;
 
 	//Browse Category Colors
-	public static $defaultBrowseCategoryPanelColor = '#d7dce3';
+	public static $defaultBrowseCategoryPanelColor = '#ffffff';
 	public $browseCategoryPanelColor;
 	public /** @noinspection PhpUnused */
 		$browseCategoryPanelColorDefault;
@@ -435,7 +435,7 @@ class Theme extends DataObject {
 	public $accessibleBrowseCategories;
 
 	//Panel Colors
-	public static $defaultClosedPanelBackgroundColor = '#e7e7e7';
+	public static $defaultClosedPanelBackgroundColor = '#ffffff';
 	public $closedPanelBackgroundColor;
 	public /** @noinspection PhpUnused */
 		$closedPanelBackgroundColorDefault;

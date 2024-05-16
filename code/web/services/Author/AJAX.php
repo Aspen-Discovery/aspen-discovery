@@ -25,7 +25,7 @@ class Author_AJAX {
 
 		$enrichmentResult = [];
 		$enrichmentData = $recordDriver->loadEnrichment();
-		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
+		$memoryWatcher->logMemory('Loaded Enrichment information from NoveList');
 
 		/** @var NovelistData $novelistData */
 		if (isset($enrichmentData['novelist'])) {
@@ -35,7 +35,7 @@ class Author_AJAX {
 				$interface->assign('similarAuthors', $novelistData->getAuthors());
 				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
 			}
-			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+			$memoryWatcher->logMemory('Loaded Similar authors from NoveList');
 		}
 
 		return json_encode($enrichmentResult);

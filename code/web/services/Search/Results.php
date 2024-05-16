@@ -556,13 +556,19 @@ class Search_Results extends ResultsAction {
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 		$interface->assign('sectionLabel', 'Library Catalog');
 
+		if (array_key_exists('searchIndex', $_REQUEST)) {
+			$searchIndex = $_REQUEST['searchIndex'];
+		}else{
+			$searchIndex = 'Keyword';
+		}
+
 		$ILLSystem = $library->ILLSystem;
 		if (isset($ILLSystem) && $ILLSystem == 0) {
 			$searchSource = new SearchSources();
-			$interLibraryLoanURL = $searchSource->getExternalLink('innReach',$_REQUEST['searchIndex'],$_REQUEST['lookfor']);
+			$interLibraryLoanURL = $searchSource->getExternalLink('innReach',$searchIndex,$_REQUEST['lookfor']);
 		} elseif ($ILLSystem == 1) {
 			$searchSource = new SearchSources();
-			$interLibraryLoanURL = $searchSource->getExternalLink('worldcat',$_REQUEST['searchIndex'],$_REQUEST['lookfor']);
+			$interLibraryLoanURL = $searchSource->getExternalLink('worldcat',$searchIndex,$_REQUEST['lookfor']);
 		} else {
 			$interLibraryLoanURL = $library->interLibraryLoanUrl;
 		}

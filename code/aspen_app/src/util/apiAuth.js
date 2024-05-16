@@ -307,3 +307,5 @@ export const ENDPOINT = {
           isPost: false,
      },
 };
+
+export const delay = (ms) => new Promise((res) => setTimeout(res, ms));

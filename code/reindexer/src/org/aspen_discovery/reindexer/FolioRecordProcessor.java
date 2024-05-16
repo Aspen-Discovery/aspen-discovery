@@ -6,8 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 public class FolioRecordProcessor extends IlsRecordProcessor {
-	FolioRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
+	FolioRecordProcessor(String serverName, GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(serverName, indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override

@@ -259,7 +259,7 @@ public class OaiIndexerMain {
 
 				logger.info("Loading sets from " + listSetsUrl);
 				HashMap<String, String> headers = new HashMap<>();
-				headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+				headers.put("Accept", "text/xml,text/html,application/xhtml+xml,application/xml");
 				headers.put("Accept-Encoding", "gzip");
 				headers.put("Accept-Language", "en-US");
 				headers.put("Pragma", "no-cache");
@@ -340,7 +340,7 @@ public class OaiIndexerMain {
 								try {
 									logger.info("Loading from " + oaiUrl);
 									HashMap<String, String> headers = new HashMap<>();
-									headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+									headers.put("Accept", "text/xml,text/html,application/xhtml+xml,application/xml");
 									headers.put("Accept-Encoding", "gzip");
 									headers.put("Accept-Language", "en-US");
 									headers.put("Pragma", "no-cache");

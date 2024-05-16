@@ -46,7 +46,7 @@ function getUpdates21_09_00(): array {
 		],
 		//fix_ils_record_indexes
 		'compress_novelist_fields' => [
-			'title' => 'Add Compression for Novelist fields',
+			'title' => 'Add Compression for NoveList fields',
 			'description' => 'Add Compression for fields that store metadata especially fields that are infrequently used',
 			'sql' => [
 				'ALTER TABLE novelist_data change column jsonResponse jsonResponse MEDIUMBLOB',

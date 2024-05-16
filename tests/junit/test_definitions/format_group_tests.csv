@@ -16,8 +16,8 @@
 00016.mrc,symphony,symphony,other,"FIFA 22 (https://ramapo.aspendiscovery.org/Record/a1780239)",109430
 00017.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145810)",75276
 00018.mrc,symphony,symphony,other,"DC Justice League cosmic chaos (https://ins.swanlibraries.net/Record/a3145216)",75276
-00019.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
-00020.mrc,sierra,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
+00019.mrc,wvls,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b17147566)",114227
+00020.mrc,wvls,sierra,book,"Lady and the Tramp (https://catalog.wvls.org/Record/.b14154547)",114227
 00021.mrc,sierra,sierra,book,"Dumbo (https://catalog.wvls.org/Record/.b1415450x)",114227
 00022.mrc,sierra,sierra,book,Monsters Inc (https://catalog.wvls.org/Record/.b17251679),114227
 00023.mrc,sierra,sierra,other,The lord of the rings : Gollum (https://catalog.wvls.org/Record/.b18187778),117680
@@ -34,3 +34,7 @@
 00034.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/82237)",125939
 00035.mrc,koha,koha,book,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/227198)",125939
 00036.mrc,koha,koha,comic,"I survived the Nazi invasion, 1944 (https://catalog.dmpl.org/Record/121357)",125939
+00091.mrc,koha,koha,comic,"Wings of fire. the dragonet prophecy : the graphic novel (https://beta.aspendiscovery.org/Record/5415)",
+00092.mrc,koha,koha,book,Wings of fire : The brightest night (https://beta.aspendiscovery.orgt/Record/11865),
+00093.mrc,swan,swan,other,VPD Library of things : A4 tracing light box (https://vpd.swantest.aspendiscovery.org/Record/a3161936),
+00094.mrc,swan,swan,comic,Mister Miracle (https://ops.swantest.aspendiscovery.org/Record/a2903516),

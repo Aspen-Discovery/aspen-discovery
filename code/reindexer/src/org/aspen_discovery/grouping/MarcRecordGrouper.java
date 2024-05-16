@@ -1,9 +1,7 @@
 package org.aspen_discovery.grouping;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import org.aspen_discovery.format_classification.IIIRecordFormatClassifier;
-import org.aspen_discovery.format_classification.IlsRecordFormatClassifier;
-import org.aspen_discovery.format_classification.NashvilleRecordFormatClassifier;
+import org.aspen_discovery.format_classification.*;
 import org.aspen_discovery.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -44,12 +42,19 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
 
-		if (profile.getIndexingClass().equals("III")) {
-			formatClassifier = new IIIRecordFormatClassifier(logger);
-		} else if (profile.getIndexingClass().equals("NashvilleCarlX")) {
-			formatClassifier = new NashvilleRecordFormatClassifier(logger);
-		} else {
-			formatClassifier = new IlsRecordFormatClassifier(logger);
+		switch (profile.getIndexingClass()) {
+			case "III":
+				formatClassifier = new IIIRecordFormatClassifier(logger);
+				break;
+			case "Koha":
+				formatClassifier = new KohaRecordFormatClassifier(logger);
+				break;
+			case "NashvilleCarlX":
+				formatClassifier = new NashvilleRecordFormatClassifier(logger);
+				break;
+			default:
+				formatClassifier = new IlsRecordFormatClassifier(logger);
+				break;
 		}
 
 		super.setupDatabaseStatements(dbConnection);
@@ -70,29 +75,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 
 	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
-
-	private String getFormatFromItems(org.marc4j.marc.Record record, char formatSubfield) {
-		List<DataField> itemFields = getDataFields(record, profile.getItemTagInt());
-		for (DataField itemField : itemFields) {
-			if (itemField.getSubfield(formatSubfield) != null) {
-				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				if (translationMaps.get("format_category").containsKey(originalFormat)){
-					String format = translateValue("format_category", originalFormat);
-					if (format != null) {
-						String formatCategory = categoryMap.get(format.toLowerCase());
-						if (formatCategory != null){
-							return formatCategory;
-						}else{
-							logger.warn("Did not find a grouping category for format " + format.toLowerCase());
-						}
-					} logger.warn("Format was null for " + originalFormat);
-				}else{
-					logger.warn("Did not find a format category for format " + originalFormat);
-				}
-			}
-		}
-		return null;
-	}
 
 	public String processMarcRecord(org.marc4j.marc.Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
@@ -191,19 +173,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		String groupingFormat;
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
-			groupingFormat = getFormatFromItems(marcRecord, profile.getFormatSubfield());
-			if (groupingFormat == null || groupingFormat.isEmpty()){
-				//Do a bib level determination
-				String format = getFirstFormatFromBib(marcRecord, profile);
-				if (formatsToFormatCategory.containsKey(format.toLowerCase())) {
-					groupingFormat = categoryMap.getOrDefault(formatsToFormatCategory.get(format.toLowerCase()), "other");
-				}else{
-					groupingFormat = "book";
-				}
-				workForTitle.setGroupingCategory(groupingFormat);
-			}else {
-				workForTitle.setGroupingCategory(groupingFormat);
-			}
+			FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(marcRecord, profile, logEntry, logger);
+			groupingFormat = formatInfo.getGroupingFormat(profile);
+			workForTitle.setGroupingCategory(groupingFormat);
 		}else{
 			groupingFormat = super.setGroupingCategoryForWork(marcRecord, workForTitle);
 		}
@@ -280,18 +252,21 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		}
 	}
 
-	protected String getFirstFormatFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings) {
+	protected FormatInfo getFirstFormatFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings) {
 		//Check to see if the title is eContent based on the 989 field
 		if (profile.useEContentSubfield()) {
 			List<DataField> itemFields = getDataFields(record, profile.getItemTagInt());
 			for (DataField itemField : itemFields) {
 				if (itemField.getSubfield(profile.getEContentDescriptor()) != null) {
 					//The record is some type of eContent.  For this purpose, we don't care what type.
-					return "eContent";
+					FormatInfo eContentFormatInfo = new FormatInfo();
+					eContentFormatInfo.format = "eContent";
+					eContentFormatInfo.formatCategory = "eBook";
+					return eContentFormatInfo;
 				}
 			}
 		}
-		return formatClassifier.getFirstFormatFromBib(record, settings);
+		return formatClassifier.getFirstFormatForRecord(record, settings, logEntry, logger);
 	}
 
 	public void regroupAllRecords(Connection dbConn, IndexingProfile indexingProfile, GroupedWorkIndexer indexer, IlsExtractLogEntry logEntry)  throws SQLException {
