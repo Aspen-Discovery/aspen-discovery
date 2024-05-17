@@ -2,7 +2,7 @@
 	<div id="main-content" class="col-md-12">
 		<h1>{translate text="ILS Export Log" isAdminFacing=true}</h1>
 		<p class="alert alert-info">
-			{translate text="The ILS Export log shows records extraction of MARC records from the ILS.  For most ILSs, this is done on a continuous basis as we detect changes within the ILS. A full extract can be done by selecting <b>Run Full Update</b> within the Indexing Profile." isAdminFacing=true}
+			{translate text="The ILS Export log shows MARC records extracted from the ILS.  For most ILSs, this is done on a continuous basis as we detect changes within the ILS. A full extract can be done by selecting <b>Run Full Update</b> within the Indexing Profile." isAdminFacing=true}
 		</p>
 
         {include file='Admin/exportLogFilters.tpl'}
