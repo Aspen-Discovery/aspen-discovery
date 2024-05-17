@@ -213,13 +213,14 @@ class Search_Home extends Action {
 				$browseCategory = new BrowseCategory();
 				$browseCategory->id = $localBrowseCategory->browseCategoryId;
 				$browseCategory->find(true);
+				if($browseCategory->isValidForDisplay()) {
+					$browseCategories[$browseCategory->id]['textId'] = $browseCategory->textId;
+					$browseCategories[$browseCategory->id]['label'] = $browseCategory->label;
 
-				$browseCategories[$browseCategory->id]['textId'] = $browseCategory->textId;
-				$browseCategories[$browseCategory->id]['label'] = $browseCategory->label;
-
-				require_once ROOT_DIR . '/services/Browse/AJAX.php';
-				$browseAJAX = new Browse_AJAX();
-				$browseCategories[$browseCategory->id] = $browseAJAX->getBrowseCategoryInfo($browseCategory->textId);
+					require_once ROOT_DIR . '/services/Browse/AJAX.php';
+					$browseAJAX = new Browse_AJAX();
+					$browseCategories[$browseCategory->id] = $browseAJAX->getBrowseCategoryInfo($browseCategory->textId);
+				}
 			}
 		}
 
