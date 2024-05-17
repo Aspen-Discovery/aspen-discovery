@@ -8716,6 +8716,10 @@ a.placard-link {
 .stripPopup .cookieContainer abbr {
   color: white;
 }
+.swiper {
+  width: 100%;
+  height: 300px;
+}
 .swiper-slide {
   text-align: center !important;
   display: flex !important;

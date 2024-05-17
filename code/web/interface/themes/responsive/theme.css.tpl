@@ -248,9 +248,9 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 .browse-category-feed-item .swiper{ldelim}
     width: 100%;
 {if !empty($browseCategoryImageSize)}
-    height: 380px;
+    height: 380px !important;
 {else}
-    height: 250px;
+    height: 250px !important;
 {/if}
 {rdelim}
 
