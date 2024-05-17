@@ -346,7 +346,15 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($facetConfig as $facetField => $facetInfo) {
-				$facetSet['field'][$facetField] = $facetInfo;
+/*				$facetSet['field'][$facetField] = $facetInfo;*/
+				$facetName = $facetInfo->facetName;
+				$isMultiSelect = $facetInfo->multiSelect;
+				if ($isMultiSelect) {
+					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
+					$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
+				}else{
+					$facetSet['field'][$facetField] = $facetName;
+				}
 			}
 			if ($this->facetOffset != null) {
 				$facetSet['offset'] = $this->facetOffset;
