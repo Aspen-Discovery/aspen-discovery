@@ -17,10 +17,7 @@
 		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
 			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
 	                       {literal} <script type="text/javascript">
-		                        $(document).ready(function() {
-			                        AspenDiscovery.Browse.initializeBrowseCategorySwiper({/literal}'{$browseCategory.textId}'{literal});
-		                        });
-
+					            setTimeout(() => AspenDiscovery.Browse.initializeBrowseCategorySwiper({/literal}'{$browseCategory.textId}'{literal}), 1000)
 	                        </script>{/literal}
 			            </div>
 			            <div class="swiper-navigation-container">
