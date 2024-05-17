@@ -11,6 +11,9 @@
 			    <div class="swiper {if $subCategory@iteration == 1}swiper-first{/if} swiper-sub-browse-category-{$subCategory.textId}" id="swiper-sub-{$subCategory.textId}">
 				    <div class="swiper-wrapper" id="swiper-sub-browse-category-{$subCategory.textId}">
 					    {if $subCategory@iteration == 1 && !empty($subCategory.initialResults)}
+						    <div class="swiper-slide" id="swiper-loading-{$subCategory.textId}">
+							    <i class="fas fa-lg fa-spinner fa-spin"></i>
+						    </div>
 						    <script type="text/javascript">
                                 {literal}
 							    $(document).ready(function() {
