@@ -210,6 +210,9 @@ public class BaseIndexingSettings {
 	}
 
 	public boolean hasTranslation(String mapName, String value) {
+		if (value == null) {
+			return false;
+		}
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		if (translationMap != null){
 			return translationMap.containsKey(value.toLowerCase());
