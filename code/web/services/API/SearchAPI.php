@@ -1314,14 +1314,16 @@ class SearchAPI extends AbstractAPI {
 		return $formattedCategories;
 	}
 
-	function getSubCategories($textId = null) {
+	function getSubCategories($textId = null, $loadFirstResults = false) {
 		$textId = $this->getTextId($textId);
+		$curCount = 1;
 		if (!empty($textId)) {
 			$activeBrowseCategory = $this->getBrowseCategory($textId);
 			if ($activeBrowseCategory != null) {
 				$subCategories = [];
 				/** @var SubBrowseCategories $subCategory */
 				foreach ($activeBrowseCategory->getSubCategories() as $subCategory) {
+					$firstSubCategoryResults = [];
 					// Get Needed Info about sub-category
 					if ($textId == "system_saved_searches") {
 						$label = explode('_', $subCategory->id);
@@ -1329,11 +1331,34 @@ class SearchAPI extends AbstractAPI {
 						$temp = new SearchEntry();
 						$temp->id = $id;
 						if ($temp->find(true)) {
+							if($curCount == 1 && $loadFirstResults) {
+								$pageToLoad = 1;
+								require_once ROOT_DIR . '/services/Search/History.php';
+								$savedSearch = History::getSavedSearchObject($temp->id);
+								SearchObjectFactory::initSearchObject();
+								$minSO = unserialize($savedSearch['search_object']);
+								$searchObject = SearchObjectFactory::deminify($minSO);
+								$searchObject->getFilterList();
+								$searchObject->displayQuery();
+								$searchObject->clearFacets();
+								$searchObject->disableSpelling();
+								$searchObject->disableLogging();
+								$searchObject->setLimit(self::ITEMS_PER_PAGE);
+								$searchObject->setPage($pageToLoad);
+								$searchObject->processSearch();
+								$searchObject->setPage($pageToLoad + 1);
+								$searchObject->close();
+
+								$records = $searchObject->getBrowseRecordHTML();
+								$firstSubCategoryResults = $records;
+							}
 							$subCategories[] = [
 								'label' => $subCategory->label,
 								'textId' => $temp->id,
 								'source' => "savedSearch",
+								'initialResults' => $firstSubCategoryResults,
 							];
+							$curCount++;
 						}
 					} elseif ($textId == "system_user_lists") {
 						$label = explode('_', $subCategory->id);
@@ -1343,11 +1368,17 @@ class SearchAPI extends AbstractAPI {
 						$numListItems = $temp->numValidListItems();
 						if ($temp->find(true)) {
 							if ($numListItems > 0) {
+								if($curCount == 1 && $loadFirstResults) {
+									$pageToLoad = 1;
+									$firstSubCategoryResults = $temp->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+								}
 								$subCategories[] = [
 									'label' => $temp->title,
 									'textId' => $temp->id,
 									'source' => "userList",
+									'initialResults' => $firstSubCategoryResults,
 								];
+								$curCount++;
 							}
 						}
 					} else {
@@ -1355,10 +1386,18 @@ class SearchAPI extends AbstractAPI {
 						$temp->id = $subCategory->subCategoryId;
 						if ($temp->find(true)) {
 							if ($temp->isValidForDisplay()) {
+								if($curCount == 1 && $loadFirstResults) {
+									require_once ROOT_DIR . '/services/Browse/AJAX.php';
+									$browseAJAX = new Browse_AJAX();
+									$browseAJAX->setTextId($temp->textId);
+									$firstSubCategoryResults = $browseAJAX->getBrowseCategoryResults();
+								}
 								$subCategories[] = [
 									'label' => $temp->label,
 									'textId' => $temp->textId,
+									'initialResults' => $firstSubCategoryResults,
 								];
+								$curCount++;
 							}
 						} else {
 							global $logger;
@@ -1369,17 +1408,20 @@ class SearchAPI extends AbstractAPI {
 				return [
 					'success' => true,
 					'subCategories' => $subCategories,
+					'parentTextId' => $textId,
 				];
 			} else {
 				return [
 					'success' => false,
 					'message' => 'Could not find a category with that text id.',
+					'parentTextId' => $textId,
 				];
 			}
 		} else {
 			return [
 				'success' => false,
 				'message' => 'Please provide the text id to load sub categories for.',
+				'parentTextId' => null,
 			];
 		}
 	}

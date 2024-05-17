@@ -6,21 +6,41 @@
 		<div class="col-sm-12" id="browse-category-feed" role="feed">
 			<!-- Slider main container -->
             {foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
+
             <div class="browse-category-feed-item" id="browse-category-{$browseCategory.textId}" role="article">
-		            <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2>
-		            <div id="browse-category-tablist"  role="tablist" class="row" aria-labelledby="tablist-browse-category-{$browseCategory.textId}">
+	            <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2>
+	            {if !empty($browseCategory.subcategories)}
+		            <div class="tabs">
                         {$browseCategory.subcategories nofilter}
 		            </div>
-				<div class="swiper" role="tabpanel">
-					<div class="swiper-wrapper swiper-browse-category-{$browseCategory.textId}">
-						{$browseCategory.records nofilter}
-					</div>
-					<div class="swiper-button-prev"></div>
-					<div class="swiper-button-next"></div>
-				</div>
+	            {else}
+		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
+			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
+	                       {literal} <script type="text/javascript">
+		                        $(document).ready(function() {
+			                        AspenDiscovery.Browse.initializeBrowseCategorySwiper({/literal}'{$browseCategory.textId}'{literal});
+		                        });
+
+	                        </script>{/literal}
+			            </div>
+			            <div class="swiper-navigation-container">
+				            <div class="swiper-button-prev"></div>
+			            </div>
+			            <div class="swiper-navigation-container">
+				            <div class="swiper-button-next"></div>
+			            </div>
+		            </div>
+	            {/if}
             </div>
 			{/foreach}
 		</div>
+
+    {literal} <script type="text/javascript">
+	    $(function() {
+		    $('.lazy').Lazy();
+	    });
+    </script>{/literal}
+
 	    {else}
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">

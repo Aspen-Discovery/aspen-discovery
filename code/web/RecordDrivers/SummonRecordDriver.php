@@ -141,11 +141,17 @@ class SummonRecordDriver extends RecordInterface {
 		$appliedTheme = $interface->getAppliedTheme();
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 
-		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		$accessibleBrowseCategories = 0;
+		if ($appliedTheme) {
+			if($appliedTheme->browseCategoryImageSize == 1) {
+				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+			}
+			$accessibleBrowseCategories = $appliedTheme->accessibleBrowseCategories;
 		} else {
 			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		}
+		$interface->assign('accessibleBrowseCategories', $accessibleBrowseCategories);
+
 		return 'RecordDrivers/Summon/browse_result.tpl';
 	}
 

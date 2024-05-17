@@ -214,6 +214,9 @@ class Search_Home extends Action {
 				$browseCategory->id = $localBrowseCategory->browseCategoryId;
 				$browseCategory->find(true);
 
+				$browseCategories[$browseCategory->id]['textId'] = $browseCategory->textId;
+				$browseCategories[$browseCategory->id]['label'] = $browseCategory->label;
+
 				require_once ROOT_DIR . '/services/Browse/AJAX.php';
 				$browseAJAX = new Browse_AJAX();
 				$browseCategories[$browseCategory->id] = $browseAJAX->getBrowseCategoryInfo($browseCategory->textId);

@@ -556,13 +556,18 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$item['bookCoverUrl'] = $this->getBookcoverUrl('large');
 		$accessibleBrowseCategories = 0;
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
 		if ($appliedTheme != null) {
 			if($appliedTheme->browseCategoryImageSize == 1) {
 				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+			} else {
+				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 			}
 			$accessibleBrowseCategories = $appliedTheme->accessibleBrowseCategories;
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		}
+
 
 		// Rating & Browse Mode Settings
 		global $library;

@@ -222,12 +222,8 @@ var AspenDiscovery = (function(){
 					});
 
 			// If Browse Category js is set, initialize those functions
-			/*if (typeof AspenDiscovery.Browse.initializeBrowseCategory == 'function') {
+			if (typeof AspenDiscovery.Browse.initializeBrowseCategory == 'function') {
 				AspenDiscovery.Browse.initializeBrowseCategory();
-			}*/
-
-			if (typeof AspenDiscovery.Browse.initializeSwiperBrowseCategory == 'function') {
-				AspenDiscovery.Browse.initializeSwiperBrowseCategory();
 			}
 		},
 

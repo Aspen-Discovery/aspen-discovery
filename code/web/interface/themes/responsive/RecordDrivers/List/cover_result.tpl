@@ -1,8 +1,9 @@
 {strip}
     {if $accessibleBrowseCategories == '1'}
 		<div class="swiper-slide browse-thumbnail {$coverStyle}">
-			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', {if !empty($browseCategoryId)}'{$browseCategoryId}'{/if});" href="{$summUrl}">
-				<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle} {if $browseCategoryRatingsMode != 0}ratings-on{/if}">
+			<a href="{$summUrl}">
+				<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle}" loading="lazy">
+				<div class="swiper-lazy-preloader"></div>
 			</a>
 		</div>
     {else}
