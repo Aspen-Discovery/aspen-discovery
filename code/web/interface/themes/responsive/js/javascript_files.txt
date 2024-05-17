@@ -23,7 +23,6 @@ lib/rome.standalone.min.js
 lib/Chart.min.js
 lib/swiper-bundle.min.js
 lib/tabs-manual.js
-lib/jquery.lazy.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js

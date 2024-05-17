@@ -35,12 +35,6 @@
 			{/foreach}
 		</div>
 
-    {literal} <script type="text/javascript">
-	    $(function() {
-		    $('.lazy').Lazy();
-	    });
-    </script>{/literal}
-
 	    {else}
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
