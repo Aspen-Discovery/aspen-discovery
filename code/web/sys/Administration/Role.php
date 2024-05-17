@@ -191,7 +191,7 @@ class Role extends DataObject {
 					'Administer Permissions',
 					'Administer Users',
 				];
-			case 'libraryAdmin':
+			case 'Library Admin':
 				return [
 					'Administer Home Library Locations',
 					'Administer Home Library',
@@ -208,7 +208,7 @@ class Role extends DataObject {
 					'View New York Times Lists',
 					'View Offline Holds Report',
 				];
-			case 'libraryManager':
+			case 'Library Manager':
 				return [
 					'Administer Home Library Locations',
 					'Administer Home Library',
@@ -217,25 +217,25 @@ class Role extends DataObject {
 					'Block Patron Account Linking',
 					'View New York Times Lists',
 				];
-			case 'locationManager':
+			case 'Location Manager':
 				return [
 					'Administer Home Location',
 					'Administer Library Browse Categories',
 					'Administer Library Collection Spotlights',
 					'Block Patron Account Linking',
 				];
-			case 'translator':
-				return [
-					'Administer Languages',
-					'Translate Aspen',
-				];
-			case 'library_material_requests':
-				return [
-					'Administer Materials Requests',
-					'Manage Library Materials Requests',
-					'View Materials Requests Reports',
-				];
-			case 'superCataloger':
+            case 'Translator':
+                return [
+                    'Administer Languages',
+                    'Translate Aspen',
+                ];
+            case 'Aspen Materials Requests':
+                return [
+                    'Administer Materials Requests',
+                    'Manage Library Materials Requests',
+                    'View Materials Requests Reports',
+                ];
+			case 'Super Cataloger':
 				return [
 					'Administer Indexing Profiles',
 					'Administer Loan Rules',
@@ -254,7 +254,11 @@ class Role extends DataObject {
 					'View ILS records in native Staff Client',
 					'View Indexing Logs',
 				];
-			case 'cataloging':
+            case 'Genealogy Contributor':
+                return [
+                    'Administer Genealogy',
+                ];
+			case 'Cataloging':
 				return [
 					'Administer Wikipedia Integration',
 					'Download MARC Records',
@@ -268,22 +272,14 @@ class Role extends DataObject {
 					'View ILS records in native Staff Client',
 					'View Indexing Logs',
 				];
-			case 'circulationReports':
-				return [
-					'View Offline Holds Report',
-				];
-			case 'contentEditor':
+			case 'Content Editor':
 				return [
 					'Administer Library Browse Categories',
 					'Administer Library Collection Spotlights',
 					'Administer Library Placards',
 					'View New York Times Lists',
 				];
-			case 'genealogyContributor':
-				return [
-					'Administer Genealogy',
-				];
-			case 'listPublisher':
+			case 'List Publisher':
 				return [
 					'Include Lists In Search Results',
 				];
