@@ -221,12 +221,6 @@ class AssabetIndexer {
 
 						solrDocument.addField("program_type", getStringsForKey(curEvent, "program_type"));
 
-						String cancelled = getStringForKey(curEvent, "canceled");
-						assert cancelled != null;
-						if (cancelled.equals("1")){
-							boost -= 10;
-						}
-
 						if (curEvent.get("image") instanceof JSONObject) {
 							JSONObject imageForCurEvent = curEvent.getJSONObject("image");
 							if (!imageForCurEvent.isEmpty()) {
@@ -397,7 +391,7 @@ class AssabetIndexer {
 							JSONArray eventArray = responseArray.getJSONArray(i);
 							for (int j = 0; j < eventArray.length(); j++) {
 								JSONObject event1 = eventArray.getJSONObject(j);
-								if ((!event1.getString("canceled").equals("1"))) {
+								if ((event1.getInt("canceled") != 1)) {
 									events.put(eventArray.get(j));
 								}
 							}
