@@ -17,6 +17,8 @@ require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/SystemVariables.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+require_once ROOT_DIR . '/sys/SystemLogging/UserAgent.php';
+require_once ROOT_DIR . '/sys/SystemLogging/UsageByUserAgent.php';
 require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
 require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
@@ -68,6 +70,54 @@ ob_start();
 
 initMemcache();
 initDatabase();
+
+global $userAgent;
+$userAgentString = 'Unknown';
+if (isset($_SERVER['HTTP_USER_AGENT'])) {
+	$userAgentString = $_SERVER['HTTP_USER_AGENT'];
+}
+try {
+	$userAgent = new UserAgent();
+	if (strlen($userAgentString) > 512) {
+		$userAgentString = substr($userAgentString, 0, 512);
+	}
+	$userAgent->userAgent = $userAgentString;
+	if ($userAgent->find(true)) {
+		$userAgentId = $userAgent->id;
+	}else{
+		if (!$userAgent->insert()) {
+			$logger->log("Could not insert user agent $userAgentString", Logger::LOG_ERROR);
+			$logger->log($userAgent->getLastError(), Logger::LOG_ERROR);
+		}
+		$userAgentId = $userAgent->id;
+	}
+	require_once ROOT_DIR . '/sys/SystemLogging/UsageByUserAgent.php';
+	$usageByUserAgent = new UsageByUserAgent();
+	$usageByUserAgent->userAgentId = $userAgentId;
+	$usageByUserAgent->year = date('Y');
+	$usageByUserAgent->month = date('n');
+	global $aspenUsage;
+	$usageByUserAgent->instance = $aspenUsage->getInstance();
+
+	if ($userAgent->blockAccess) {
+		$usageByUserAgent->numBlockedRequests++;
+		if ($usageByUserAgent->update() == 0){
+			$logger->log("Could not update user agent usage", Logger::LOG_ERROR);
+			$logger->log($usageByUserAgent->getLastError(), Logger::LOG_ERROR);
+		}
+		http_response_code(403);
+		echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
+		die();
+	}else{
+		$usageByUserAgent->numRequests++;
+		if ($usageByUserAgent->update() == 0){
+			$logger->log("Could not update user agent usage", Logger::LOG_ERROR);
+			$logger->log($usageByUserAgent->getLastError(), Logger::LOG_ERROR);
+		}
+	}
+}catch (Exception $e) {
+	//This happens before tables are created, ignore it
+}
 
 if ($aspenUsage->getInstance() != 'aspen_internal') {
 	$isValidServerName = true;

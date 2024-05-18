@@ -28,13 +28,13 @@ if (count($_SERVER['argv']) > 1) {
 					}elseif (strpos($line, 'RewriteRule  ^robots\.txt$ /robots.php [NC,L]') !== false) {
 						if (strcasecmp($operatingSystem, 'windows') == 0) {
 							$lines[] = "\t\t\t# Bot Blocking\r\n";
-							$lines[] = "\t\t\tInclude C:\\web\\aspen-discovery\\sites\\$serverName\\conf\\localBadBots.conf\r\n";
-							$lines[] = "\t\t\tInclude C:\web\aspen-discovery\sites\default\conf\defaultBadBots.conf\r\n";
+							$lines[] = "\t\t\tInclude \"C:\\web\\aspen-discovery\\sites\\$serverName\\conf\\badBotsLocal.conf\"\r\n";
+							$lines[] = "\t\t\tInclude \"C:\web\aspen-discovery\sites\default\conf\badBotsDefault.conf\"\r\n";
 							$lines[] = "\r\n";
 						} else {
 							$lines[] = "\t\t\t# Bot Blocking\n";
-							$lines[] = "\t\t\tInclude /usr/local/aspen-discovery/sites/$serverName/conf/localBadBots.conf\n";
-							$lines[] = "\t\t\tInclude /usr/local/aspen-discovery/sites/default/conf/defaultBadBots.conf\n";
+							$lines[] = "\t\t\tInclude /usr/local/aspen-discovery/sites/$serverName/conf/badBotsLocal.conf\n";
+							$lines[] = "\t\t\tInclude /usr/local/aspen-discovery/sites/default/conf/badBotsDefault.conf\n";
 							$lines[] = "\n";
 						}
 					}
@@ -51,9 +51,13 @@ if (count($_SERVER['argv']) > 1) {
 	}
 
 	if (strcasecmp($operatingSystem, 'windows') == 0) {
-		copy localBadBots file if it doesn't exist already
+		if (!file_exists("C:\\web\\aspen-discovery\\sites\\$serverName\\conf\\badBotsLocal.conf")){
+			copy("C:\\web\\aspen-discovery\\sites\\default\\conf\\badBotsLocal.conf", "C:\\web\\aspen-discovery\\sites\\$serverName\\conf\\badBotsLocal.conf");
+		}
 	} else {
-		copy localBadBots file if it doesn't exist already
+		if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/conf/badBotsLocal.conf")){
+			copy("/usr/local/aspen-discovery/sites/default/conf/badBotsLocal.conf", "/usr/local/aspen-discovery/sites/$serverName/conf/badBotsLocal.conf");
+		}
 	}
 
 } else {
