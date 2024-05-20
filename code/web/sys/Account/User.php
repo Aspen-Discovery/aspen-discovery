@@ -3299,6 +3299,7 @@ class User extends DataObject {
 			'View System Reports',
 		]);
 		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage By User Agent', 'Reports which User Agents have used Aspen Discovery.', '/Admin/UsageByUserAgent'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), [
 			'View System Reports',
 			'View Indexing Logs',
@@ -3347,6 +3348,7 @@ class User extends DataObject {
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
+		$sections['primary_configuration']->addAction(new AdminAction('User Agents', 'Configure User Agents and block access to Aspen Discovery by User Agent.', '/Admin/UserAgents'), 'Administer User Agents');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
 
 		if(array_key_exists('Single sign-on', $enabledModules)) {

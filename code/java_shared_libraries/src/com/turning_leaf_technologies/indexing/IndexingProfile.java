@@ -317,11 +317,12 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.numMillisecondsToPauseAfterBibLookups = indexingProfileRS.getInt("numMillisecondsToPauseAfterBibLookups");
 		this.numExtractionThreads = indexingProfileRS.getInt("numExtractionThreads");
 
-		//TODO, this could be optimized to only load for Sierra instances
-		try {
-			sierraExportFieldMappings = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logEntry);
-		}catch (Exception e){
-			logEntry.incErrors("Unable to load Sierra Export Mappings", e);
+		if (this.indexingClass.equals("III")) {
+			try {
+				sierraExportFieldMappings = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logEntry);
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to load Sierra Export Mappings", e);
+			}
 		}
 
 		loadTranslationMaps(dbConn, logEntry);
@@ -344,10 +345,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 					String value = mapValuesRS.getString("value");
 					String translation = mapValuesRS.getString("translation");
 
-					translationMap.put(value, translation);
+					translationMap.put(value.toLowerCase(), translation);
 				}
 				mapValuesRS.close();
-				translationMaps.put(mapName, translationMap);
+				if (translationMaps.containsKey(mapName)) {
+					translationMaps.get(mapName).putAll(translationMap);
+				}else{
+					translationMaps.put(mapName, translationMap);
+				}
 			}
 			translationMapsRS.close();
 
@@ -355,13 +360,31 @@ public class IndexingProfile extends BaseIndexingSettings {
 			getFormatMapStmt.setLong(1, id);
 			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
 			HashMap <String, String> formatMap = new HashMap<>();
-			translationMaps.put("format", formatMap);
+			if (translationMaps.containsKey("format")) {
+				formatMap = translationMaps.get("format");
+			}else{
+				translationMaps.put("format", formatMap);
+			}
 			HashMap <String, String> formatCategoryMap = new HashMap<>();
+			if (translationMaps.containsKey("format_category")) {
+				formatCategoryMap = translationMaps.get("format_category");
+			}else{
+				translationMaps.put("format_category", formatCategoryMap);
+			}
+			HashMap <String, String> formatBoostMap = new HashMap<>();
+			if (translationMaps.containsKey("format_boost")) {
+				formatBoostMap = translationMaps.get("format_boost");
+			}else{
+				translationMaps.put("format_boost", formatBoostMap);
+			}
+
 			translationMaps.put("format_category", formatCategoryMap);
 			while (formatMapRS.next()){
 				String format = formatMapRS.getString("value");
-				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
-				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
+				String formatLower = format.toLowerCase();
+				formatMap.put(formatLower, formatMapRS.getString("format"));
+				formatCategoryMap.put(formatLower, formatMapRS.getString("formatCategory"));
+				formatBoostMap.put(formatLower, formatMapRS.getString("formatBoost"));
 			}
 			formatMapRS.close();
 		}catch (Exception e){
@@ -1059,15 +1082,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public SierraExportFieldMapping getSierraExportFieldMappings() {
 		return sierraExportFieldMappings;
-	}
-
-	public boolean hasTranslation(String mapName, String value) {
-		HashMap<String, String> translationMap = translationMaps.get(mapName);
-		if (translationMap != null){
-			return translationMap.containsKey(value.toLowerCase());
-		}else{
-			return false;
-		}
 	}
 
 	public String translateValue(String mapName, String value) {

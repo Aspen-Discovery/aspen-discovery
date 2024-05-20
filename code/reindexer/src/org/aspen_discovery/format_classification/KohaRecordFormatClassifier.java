@@ -60,13 +60,29 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null) {
 			collectionCode = collectionCode.toLowerCase().trim();
 			if (profile.hasTranslation("format", collectionCode)) {
-				String translatedLocation = profile.translateValue("format", collectionCode);
-				if (translatedLocation != null && !translatedLocation.isEmpty()) {
+				String translatedFormat = profile.translateValue("format", collectionCode);
+				if (translatedFormat != null && !translatedFormat.isEmpty()) {
 					foundFormatFromCollection = true;
-					formatInfo.format = translatedLocation;
+					formatInfo.format = translatedFormat;
 					formatInfo.formatCategory = profile.translateValue("format_category", collectionCode);
 					if (profile.hasTranslation("format_boost", collectionCode)) {
 						formatBoost = profile.translateValue("format_boost", collectionCode);
+					}
+				}
+			}else{
+				//Check to see if the translated collection code is used
+				if (profile.hasTranslation("collection", collectionCode)) {
+					String translatedCollection = profile.translateValue("collection", collectionCode);
+					if (profile.hasTranslation("format", translatedCollection)) {
+						String translatedFormat = profile.translateValue("format", translatedCollection);
+						if (translatedFormat != null && !translatedFormat.isEmpty()) {
+							foundFormatFromCollection = true;
+							formatInfo.format = translatedFormat;
+							formatInfo.formatCategory = profile.translateValue("format_category", translatedCollection);
+							if (profile.hasTranslation("format_boost", translatedCollection)) {
+								formatBoost = profile.translateValue("format_boost", translatedCollection);
+							}
+						}
 					}
 				}
 			}

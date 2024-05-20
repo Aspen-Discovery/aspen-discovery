@@ -40,6 +40,10 @@ class Admin_EmailTemplates extends ObjectEditor {
 		return $list;
 	}
 
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/email';
+    }
+
 	function getDefaultSort(): string {
 		return 'name asc';
 	}

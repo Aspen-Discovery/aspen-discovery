@@ -73,7 +73,7 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return '';
+		return 'https://help.aspendiscovery.org/help/integration/sideload';
 	}
 
 	/** @noinspection PhpUnused */

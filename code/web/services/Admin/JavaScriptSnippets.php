@@ -75,7 +75,7 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return '';
+		return 'https://help.aspendiscovery.org/customizewithcode';
 	}
 
 	function getBreadcrumbs(): array {
