@@ -2,6 +2,7 @@
 @import "lib/rome.min.css";
 @import "simplemde.min.css";
 @import "lib/Chart.min.css";
+@import "lib/swiper-bundle.css";
 article,
 aside,
 details,
@@ -8714,6 +8715,34 @@ a.placard-link {
 }
 .stripPopup .cookieContainer abbr {
   color: white;
+}
+.swiper {
+  width: 100%;
+  height: 300px;
+}
+.swiper-slide {
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+.swiper-slide img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+[role="tablist"] {
+  min-width: 100%;
+}
+[role="tab"] span.focus {
+  display: inline-block;
+}
+[role="tabpanel"] {
+  width: 100%;
+}
+[role="tabpanel"].is-hidden {
+  display: none;
 }
 #home-page-search {
   background-color: #00a4e3;

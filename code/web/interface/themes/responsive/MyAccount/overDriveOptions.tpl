@@ -36,14 +36,13 @@
 					<h2>{translate text="Default Lending Periods" isPublicFacing=true}</h2>
 					{foreach from=$options.lendingPeriods item=lendingPeriod}
 						<div class="form-group propertyRow">
-							<label class="control-label">{translate text=$lendingPeriod.formatType isPublicFacing=true}&nbsp;</label>
-							<div class="btn-group btn-group-toggle" data-toggle="buttons">
+							<label class="control-label" id="{$lendingPeriod.formatType}Label">{translate text=$lendingPeriod.formatType isPublicFacing=true}&nbsp;
+								<select class="form-control" aria-labelledby="{$lendingPeriod.formatType}Label" name="{$lendingPeriod.formatType}">
 								{foreach from=$lendingPeriod.options key=value item=optionName}
-									<label class="btn btn-default {if $optionName == $lendingPeriod.lendingPeriod}active{/if}">&nbsp;
-										<input type="radio" value="{$optionName}" name="{$lendingPeriod.formatType}" {if $optionName == $lendingPeriod.lendingPeriod}checked{/if} >{translate text="%1% days" 1=$optionName isPublicFacing=true}
-									</label>
+									<option value="{$optionName}" {if $optionName == $lendingPeriod.lendingPeriod}selected{/if}>{translate text="%1% days" 1=$optionName isPublicFacing=true}</option>
 								{/foreach}
-							</div>
+								</select>
+							</label>
 						</div>
 					{/foreach}
 					{/if}

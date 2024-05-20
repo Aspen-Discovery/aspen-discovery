@@ -2,6 +2,40 @@
 	{if !empty($showBrowseContent)}
 	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
+    {if $accessibleBrowseCategories == '1'}
+		<div class="col-sm-12" id="browse-category-feed" role="feed">
+			<!-- Slider main container -->
+            {foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
+
+            <div class="browse-category-feed-item" id="browse-category-{$browseCategory.textId}" role="article">
+	            <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2>
+	            {if !empty($browseCategory.subcategories)}
+		            <div class="tabs">
+                        {$browseCategory.subcategories nofilter}
+		            </div>
+	            {else}
+		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
+			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
+				            <div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}">
+					            <i class="fas fa-lg fa-spinner fa-spin"></i>
+				            </div>
+	                       {literal} <script type="text/javascript">
+					            setTimeout(() => AspenDiscovery.Browse.initializeBrowseCategorySwiper({/literal}'{$browseCategory.textId}'{literal}), 1000)
+	                        </script>{/literal}
+			            </div>
+			            <div class="swiper-navigation-container">
+				            <div class="swiper-button-prev"></div>
+			            </div>
+			            <div class="swiper-navigation-container">
+				            <div class="swiper-button-next"></div>
+			            </div>
+		            </div>
+	            {/if}
+            </div>
+			{/foreach}
+		</div>
+
+	    {else}
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
 				<div class="jcarousel-wrapper">
@@ -31,8 +65,10 @@
 				{/if}
 			</div>
 		</div>
+	    {/if}
 	</div>
 	{/if}
+    {if $accessibleBrowseCategories == '0'}
 	<div id="home-page-browse-content" class="row">
 		<div class="col-sm-12">
 
@@ -108,6 +144,7 @@
 			{/if}
 		</div>
 	</div>
+	{/if}
 {/strip}
 <script type="text/javascript">
 	$(function(){ldelim}

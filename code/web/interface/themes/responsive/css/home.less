@@ -5,6 +5,42 @@
 // Styling for home page elements
 //
 
+.swiper {
+  width: 100%;
+  height: 300px;
+}
+
+.swiper-slide {
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-slide img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+[role="tablist"] {
+  min-width: 100%;
+}
+
+[role="tab"] span.focus {
+  display: inline-block;
+}
+
+[role="tabpanel"] {
+  width: 100%;
+}
+
+[role="tabpanel"].is-hidden {
+  display: none;
+}
+
+
 // Side-bar Search Box
 #home-page-search{
   background-color: @home-search-top-color;

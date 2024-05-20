@@ -3,6 +3,15 @@
 	{if !empty($summAuthor)}
 		{assign var="vSummAuthor" value="by $summAuthor"}
 	{/if}
+
+    {if $accessibleBrowseCategories == '1'}
+	<div class="swiper-slide browse-thumbnail {$coverStyle}">
+		<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', {if !empty($browseCategoryId)}'{$browseCategoryId}'{/if});" href="{$summUrl}">
+			<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle} {if $browseCategoryRatingsMode != 0}ratings-on{/if}" loading="lazy">
+			<div class="swiper-lazy-preloader"></div>
+		</a>
+	</div>
+    {else}
 	{if $browseMode == '1'}
 		<div class="browse-list grid-item {$coverStyle} {if $browseStyle == 'grid'}browse-grid-style col-tn-6 col-xs-6 col-sm-6 col-md-4 col-lg-3{/if}">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}');" href="{$summUrl}">
@@ -40,5 +49,6 @@
 				</div>
 			{/if}
 		</div>
+	{/if}
 	{/if}
 {/strip}

@@ -245,6 +245,15 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 {* Browse Categories *}
+.browse-category-feed-item .swiper{ldelim}
+    width: 100%;
+{if !empty($browseCategoryImageSize)}
+    height: 380px !important;
+{else}
+    height: 250px !important;
+{/if}
+{rdelim}
+
 #home-page-browse-header{ldelim}
     background-color: {$browseCategoryPanelColor};
 {rdelim}
@@ -440,13 +449,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
-.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
+.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited, .manual [role="tab"]{ldelim}
     background-color: {$primaryButtonBackgroundColor} !important;
     color: {$primaryButtonForegroundColor} !important;
     border-color: {$primaryButtonBorderColor};
 {rdelim}
 
-.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
+.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary, .manual [role="tab"]:focus, .manual [role="tab"]:hover, .manual [role="tab"][aria-selected="true"]{ldelim}
     background-color: {$primaryButtonHoverBackgroundColor} !important;
     color: {$primaryButtonHoverForegroundColor} !important;
     border-color: {$primaryButtonHoverBorderColor};

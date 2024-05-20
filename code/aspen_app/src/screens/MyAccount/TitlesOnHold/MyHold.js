@@ -5,12 +5,14 @@ import { Image } from 'expo-image';
 import _ from 'lodash';
 import { Actionsheet, Box, Button, Center, Checkbox, HStack, Icon, Pressable, Text, useDisclose, VStack } from 'native-base';
 import React from 'react';
+import { popAlert } from '../../../components/loadError';
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+import { checkoutItem } from '../../../util/recordActions';
 import { SelectPickupLocation } from './SelectPickupLocation';
 import { SelectThawDate } from './SelectThawDate.js';
 
@@ -27,6 +29,7 @@ export const MyHold = (props) => {
      const { holds, updateHolds } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const [cancelling, startCancelling] = React.useState(false);
+     const [checkingOut, startCheckingOut] = React.useState(false);
      const [thawing, startThawing] = React.useState(false);
      let label, method, icon, canCancel;
      const version = formatDiscoveryVersion(library.discoveryVersion);
@@ -155,6 +158,30 @@ export const MyHold = (props) => {
           }
      };
 
+     const createCheckoutHoldAction = () => {
+          if (hold.source === 'overdrive' && hold.available) {
+               return (
+                    <Actionsheet.Item
+                         isLoading={checkingOut}
+                         isLoadingText={getTermFromDictionary(language, 'checking_out', true)}
+                         onPress={async () => {
+                              startCheckingOut(true);
+                              await checkoutItem(library.baseUrl, hold.recordId, hold.source, hold.userId, '', '', '').then((result) => {
+                                   popAlert(result.title, result.message, result.success ? 'success' : 'error');
+                                   resetGroup();
+                                   onClose();
+                                   startCheckingOut(false);
+                              });
+                         }}
+                         startIcon={<Icon as={MaterialIcons} name="cart" color="trueGray.400" mr="1" size="6" />}>
+                         {getTermFromDictionary(language, 'checkout_title')}
+                    </Actionsheet.Item>
+               );
+          }
+
+          return null;
+     };
+
      const createCancelHoldAction = () => {
           if (canCancel && allowLinkedAccountAction) {
                let label = getTermFromDictionary(language, 'cancel_hold');
@@ -172,7 +199,7 @@ export const MyHold = (props) => {
                                    startCancelling(true);
                                    cancelHold(hold.cancelId, hold.recordId, hold.source, library.baseUrl, hold.userId).then((r) => {
                                         resetGroup();
-                                        onClose(onClose);
+                                        onClose();
                                         startCancelling(false);
                                    });
                               }}>
@@ -189,7 +216,7 @@ export const MyHold = (props) => {
                                    startCancelling(true);
                                    cancelVdxRequest(library.baseUrl, hold.sourceId, hold.cancelId).then((r) => {
                                         resetGroup();
-                                        onClose(onClose);
+                                        onClose();
                                         startCancelling(false);
                                    });
                               }}>
@@ -270,6 +297,7 @@ export const MyHold = (props) => {
                                    {getTitle(hold.title)}
                               </Text>
                          </Box>
+                         {createCheckoutHoldAction()}
                          {createOpenGroupedWorkAction()}
                          {createCancelHoldAction()}
                          {createFreezeHoldAction()}
