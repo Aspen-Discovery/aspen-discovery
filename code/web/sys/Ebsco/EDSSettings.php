@@ -9,6 +9,7 @@ class EDSSettings extends DataObject {
 	public $edsApiUsername;
 	public $edsApiPassword;
 	public $edsSearchProfile;
+	public $fullTextLimiter;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -53,6 +54,13 @@ class EDSSettings extends DataObject {
 				'label' => 'EDS API Password',
 				'description' => 'The password to use when connecting to the EBSCO API',
 				'hideInLists' => true,
+			],
+			'fullTextLimiter' => [
+				'property' => 'fullTextLimiter',
+				'type' => 'checkbox',
+				'label' => 'Full Text Limiter',
+				'description' => 'Enables/disables the full text limiter being automatically checked.',
+				'default' => true,
 			],
 		];
 	}

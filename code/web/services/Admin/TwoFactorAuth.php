@@ -82,6 +82,10 @@ class TwoFactorAuth extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/help/users/account';
+    }
+
 	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}

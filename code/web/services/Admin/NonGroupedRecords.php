@@ -47,7 +47,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return '';
+		return 'https://help.aspendiscovery.org/grouping';
 	}
 
 	function getBreadcrumbs(): array {

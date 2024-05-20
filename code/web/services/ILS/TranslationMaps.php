@@ -197,6 +197,10 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return $actions;
 	}
 
+    function getInstructions(): string {
+        return 'https://help.aspendiscovery.org/ilsintegration';
+    }
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');

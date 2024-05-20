@@ -787,6 +787,10 @@ BODY;
 	public function getLimitList() {
 		global $memCache;
 		$limitOptions = $memCache->get('ebsco_eds_limit_options_' . $this->getSettings()->edsApiProfile);
+		$fullText = true;
+		if (!$this->edsSettings->fullTextLimiter){
+			$fullText = false;
+		}
 		if ($limitOptions === false) {
 			$searchOptions = $this->getSearchOptions();
 			$limitOptions = [];
@@ -801,7 +805,7 @@ BODY;
 							'defaultOn' => false,
 						];
 						if ($limit == 'FT') {
-							$limitOptions[$limit]['defaultOn'] = true;
+							$limitOptions[$limit]['defaultOn'] = $fullText;
 						}
 					}
 				}
@@ -814,6 +818,9 @@ BODY;
 			if (array_key_exists($limit, $this->limiters)) {
 				$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
 			} else {
+				if ($limit == 'FT') {
+					$limitOption['defaultOn'] = $fullText;
+				}
 				$limitIsApplied = $limitOption['defaultOn'];
 			}
 			$limitList[$limit] = [

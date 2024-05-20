@@ -111,7 +111,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return '';
+		return 'https://help.aspendiscovery.org/ilsintegration';
 	}
 
 	function getAdditionalObjectActions($existingObject): array {

@@ -57,6 +57,10 @@ class Admin_PTypes extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/patrontypes';
+    }
+
 	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
