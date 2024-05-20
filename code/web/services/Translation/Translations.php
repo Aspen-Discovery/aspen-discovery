@@ -248,7 +248,7 @@ class Translation_Translations extends Admin_Admin {
 		exit();
 	}
 
-	function getBreadcrumbs(): array {
+    function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
