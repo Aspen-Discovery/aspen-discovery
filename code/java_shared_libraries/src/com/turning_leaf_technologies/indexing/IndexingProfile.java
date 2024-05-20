@@ -317,11 +317,12 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.numMillisecondsToPauseAfterBibLookups = indexingProfileRS.getInt("numMillisecondsToPauseAfterBibLookups");
 		this.numExtractionThreads = indexingProfileRS.getInt("numExtractionThreads");
 
-		//TODO, this could be optimized to only load for Sierra instances
-		try {
-			sierraExportFieldMappings = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logEntry);
-		}catch (Exception e){
-			logEntry.incErrors("Unable to load Sierra Export Mappings", e);
+		if (this.indexingClass.equals("III")) {
+			try {
+				sierraExportFieldMappings = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logEntry);
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to load Sierra Export Mappings", e);
+			}
 		}
 
 		loadTranslationMaps(dbConn, logEntry);
