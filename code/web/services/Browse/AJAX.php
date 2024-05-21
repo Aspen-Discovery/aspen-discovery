@@ -466,6 +466,7 @@ class Browse_AJAX extends Action {
 		$browseMode = $this->setBrowseMode();
 
 		global $interface;
+		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
 		$interface->assign('browseCategoryId', $this->textId);
 		$result['success'] = true;
 		$result['textId'] = $this->textId;
@@ -497,7 +498,12 @@ class Browse_AJAX extends Action {
 			$records[] = $interface->fetch('Browse/noResults.tpl');
 		}
 
-		$result['records'] = implode('', $records);
+		if($accessibleBrowseCategories == '1' || $accessibleBrowseCategories == 1) {
+			$result['records'] = $records;
+		} else {
+			$result['records'] = implode('', $records);
+		}
+
 		$result['numRecords'] = count($records);
 
 		return $result;

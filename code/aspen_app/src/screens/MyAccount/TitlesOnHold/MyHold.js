@@ -173,7 +173,7 @@ export const MyHold = (props) => {
                                    startCheckingOut(false);
                               });
                          }}
-                         startIcon={<Icon as={MaterialIcons} name="cart" color="trueGray.400" mr="1" size="6" />}>
+                         startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6" />}>
                          {getTermFromDictionary(language, 'checkout_title')}
                     </Actionsheet.Item>
                );
