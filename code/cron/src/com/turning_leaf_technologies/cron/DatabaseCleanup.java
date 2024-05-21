@@ -27,6 +27,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldCachedObjects(dbConn, logger, processLog);
 		removeOldIndexingData(dbConn, logger, processLog);
 		removeOldExternalRequests(dbConn, logger, processLog);
+		removeOldLastListUsed(dbConn, logger, processLog);
 		optimizeSearchTable(dbConn, logger, processLog);
 		optimizeSessionsTable(dbConn, logger, processLog);
 
@@ -420,7 +421,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove old searches
 		try {
 			int rowsRemoved = 0;
-			ResultSet numSearchesRS = dbConn.prepareStatement("SELECT count(id) from search where created < (CURDATE() - INTERVAL 2 DAY) and saved = 0").executeQuery();
+			ResultSet numSearchesRS = dbConn.prepareStatement("SELECT count(id) from search where saved = 0").executeQuery();
 			numSearchesRS.next();
 			long numSearches = numSearchesRS.getLong(1);
 			long batchSize = 100000;
@@ -428,7 +429,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Found " + numSearches + " expired searches that need to be removed.  Will process in " + numBatches + " batches");
 			processLog.saveResults();
 			for (int i = 0; i < numBatches; i++){
-				PreparedStatement searchesToRemove = dbConn.prepareStatement("SELECT id from search where created < (CURDATE() - INTERVAL 2 DAY) and saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement searchesToRemove = dbConn.prepareStatement("SELECT id from search where saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement removeSearchStmt = dbConn.prepareStatement("DELETE from search where id = ?");
 
 				ResultSet searchesToRemoveRs = searchesToRemove.executeQuery();
@@ -447,4 +448,56 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	private void removeOldLastListUsed(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Remove old last list used
+		try {
+			//Get list of libraries that want last used list cleared
+			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deleteOldLastListUsedEntries from library where deleteOldLastListUsedEntries > 0");
+			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId from location where libraryId = ?");
+			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("DELETE from user where lastListUsed = ?");
+			
+			ResultSet librariesListRS = librariesListStmt.executeQuery();
+
+			long numDeletions = 0;
+			while (librariesListRS.next()) {
+				long libraryId = librariesListRS.getLong("libraryId");
+				long daysToPreserve = librariesListRS.getLong("deleteLastUsedListEntries");
+
+				libraryLocationsStmt.setLong(1, libraryId);
+
+				ResultSet libraryLocationsRS = libraryLocationsStmt.executeQuery();
+				StringBuilder libraryLocations = new StringBuilder();
+
+				while (libraryLocationsRS.next()) {
+					if (libraryLocations.length() > 0) {
+						libraryLocations.append(", ");
+					}
+					libraryLocations.append(libraryLocationsRS.getString("locationId"));
+				}
+				if (libraryLocations.length() > 0) {
+					long now = new Date().getTime() /1000;
+
+					long earliestDateToPreserve = now - (14 * 24 * 60 * 60);
+
+					PreparedStatement lastListUsedEntriesToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed from user where user.homeLocationId IN (" + libraryLocations + ") and lastListused < ?");
+					lastListUsedEntriesToDeleteStmt.setLong(1, earliestDateToPreserve);
+
+					ResultSet lastListUsedEntriesToDeleteRS = lastListUsedEntriesToDeleteStmt.executeQuery();
+					while (lastListUsedEntriesToDeleteRS.next()) {
+						deleteLastListUsedStmt.setLong(1, lastListUsedEntriesToDeleteRS.getLong(1));
+						int numUpdates = deleteLastListUsedStmt.executeUpdate();
+						processLog.addUpdates(numUpdates);
+						numDeletions += numUpdates;
+					}
+					lastListUsedEntriesToDeleteRS.close();
+					lastListUsedEntriesToDeleteStmt.close();
+				}
+			}
+			librariesListRS.close();
+			librariesListStmt.close();
+			processLog.addNote("Removed " + numDeletions + " expired last list used entries");
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to remove expired last used list entries.", e);
+		}
+	}
 }

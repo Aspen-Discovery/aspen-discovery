@@ -113,6 +113,7 @@ class Library extends DataObject {
 	public $showUserContactInformation;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
+	public $deleteLastListUsedEntries;
 	/** @noinspection PhpUnused */
 	public $pTypes; //This is used as part of the indexing process
 	public $facetLabel;
@@ -2836,6 +2837,14 @@ class Library extends DataObject {
 						'description' => 'Which lists should be included in this scope',
 						'forcesListReindex' => true,
 						'default' => 4,
+					],
+					'deleteLastListUsedEntries' => [
+						'property' => 'deleteLastListUsedEntries',
+						'type' => 'checkbox',
+						'label' => 'Delete Last Used List After 14 Days',
+						'description' => 'Whether to delete the last used list information for users after 14 days',
+						'hideInLists' => true,
+						'default' => 0,
 					],
 					'allowAutomaticSearchReplacements' => [
 						'property' => 'allowAutomaticSearchReplacements',
