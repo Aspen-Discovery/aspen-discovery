@@ -163,17 +163,17 @@ public class BaseIndexingSettings {
 			for (File curFile : defaultTranslationMapFiles) {
 				String mapName = curFile.getName().replace(".properties", "");
 				mapName = mapName.replace("_map", "");
-				if (mapName.startsWith("format")) {
+				/*if (mapName.startsWith("format")) {*/
 					translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
-				}
+				/*}*/
 			}
 			if (serverTranslationMapFiles != null) {
 				for (File curFile : serverTranslationMapFiles) {
 					String mapName = curFile.getName().replace(".properties", "");
 					mapName = mapName.replace("_map", "");
-					if (mapName.startsWith("format")) {
+					/*if (mapName.startsWith("format")) {*/
 						translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
-					}
+					/*}*/
 				}
 			}
 		}
@@ -210,9 +210,6 @@ public class BaseIndexingSettings {
 	}
 
 	public boolean hasTranslation(String mapName, String value) {
-		if (value == null) {
-			return false;
-		}
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		if (translationMap != null){
 			return translationMap.containsKey(value.toLowerCase());
@@ -263,7 +260,7 @@ public class BaseIndexingSettings {
 		return translatedValue;
 	}
 
-	LinkedHashSet<String> translateCollection(String mapName, Set<String> values, String identifier, BaseIndexingLogEntry logEntry, Logger logger, boolean logUnableToTranslateWarnings) {
+	public LinkedHashSet<String> translateCollection(String mapName, Set<String> values, String identifier, BaseIndexingLogEntry logEntry, Logger logger, boolean logUnableToTranslateWarnings) {
 		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
 		for (String value : values){
 			String translatedValue = translateValue(mapName, value, identifier, logEntry, logger, logUnableToTranslateWarnings);
