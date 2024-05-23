@@ -1146,7 +1146,9 @@ public class PolarisExportMain {
 	private static HashSet<String> getBibIdsForItemIdFromAspen(long itemId, long sourceId) {
 		HashSet<String> bibIds = new HashSet<>();
 		if (sourceId == -1){
-			//No records have been saved yet
+			//No records have been saved yet, get them from Polaris
+			String bibForItem = getBibIdForItemId(itemId);
+			bibIds.add(bibForItem);
 			return bibIds;
 		}
 		try {
