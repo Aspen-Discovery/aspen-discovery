@@ -54,6 +54,13 @@ function getUpdates24_06_00(): array {
 				'ALTER TABLE themes ADD COLUMN accessibleBrowseCategories TINYINT NOT NULL DEFAULT 0',
 			],
 		], //accessibleBrowseCategories
+		'autoPickUserHomeLocation' => [
+			'title' => 'Add option to auto-select user home location for Branded LiDA',
+			'description' => 'Adds an option to auto-select the users home location when logging into a Branded Aspen LiDA',
+			'sql' => [
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN autoPickUserHomeLocation TINYINT NOT NULL DEFAULT 1',
+			],
+		], //accessibleBrowseCategories
 
 		//kodi - ByWater
 		'full_text_limiter' => [

@@ -286,6 +286,7 @@ class UserAPI extends AbstractAPI {
 						'session' => session_id(),
 						'validUntil' => strtotime('+2 weeks'),
 						'lang' => $validatedUser->interfaceLanguage ?? 'en',
+						'homeLocationId' => $validatedUser->homeLocationId ?? null,
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;

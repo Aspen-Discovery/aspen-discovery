@@ -250,6 +250,10 @@ class SystemAPI extends AbstractAPI {
 					$settings['privacyPolicy'] = $app->privacyPolicy;
 				}
 
+				if ($app->autoPickUserHomeLocation) {
+					$settings['autoPickUserHomeLocation'] = $app->autoPickUserHomeLocation;
+				}
+
 				return [
 					'success' => true,
 					'settings' => $settings,
