@@ -37,10 +37,13 @@ services:
       - backend
 
   db:
-    image: mariadb:10.3
+    image: ${MARIADB_IMAGE:-mariadb:10.5}
     restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+      - MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-password}
+      - MARIADB_DATABASE: ${DATABASE_NAME:-aspen}
+      - MARIADB_USER: ${DATABASE_USER:-aspenusr}
+      - MARIADB_PASSWORD: ${DATABASE_PASSWORD:-password}
     volumes:
       - ${ASPEN_DATA_DIR}/database:/var/lib/mysql
     networks:
