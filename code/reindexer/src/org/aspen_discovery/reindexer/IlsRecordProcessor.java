@@ -535,60 +535,53 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		List<DataField> orderFields = MarcUtil.getDataFields(record, settings.getOrderTag());
 		for (DataField curOrderField : orderFields){
 			//Check here to make sure the order item is valid before doing further processing.
-			String status = "";
-			if (curOrderField.getSubfield(settings.getOrderStatusSubfield()) != null) {
-				status = curOrderField.getSubfield(settings.getOrderStatusSubfield()).getData();
-			}
-
-			if (isOrderItemValid(status)){
-				int copies = 0;
-				//If the location is multi, we actually have several records that should be processed separately
-				List<Subfield> detailedLocationSubfield = curOrderField.getSubfields(settings.getOrderLocationSubfield());
-				if (detailedLocationSubfield.isEmpty()){
-					//Didn't get detailed locations
-					if (curOrderField.getSubfield(settings.getOrderCopiesSubfield()) != null){
-						copies = Integer.parseInt(curOrderField.getSubfield(settings.getOrderCopiesSubfield()).getData());
-					}
-					String locationCode = "multi";
-					if (curOrderField.getSubfield(settings.getSingleOrderLocationSubfield()) != null){
-						locationCode = curOrderField.getSubfield(settings.getSingleOrderLocationSubfield()).getData().trim();
-					}
-					createAndAddOrderItem(recordInfo, curOrderField, locationCode, copies);
-				} else {
-					for (Subfield curLocationSubfield : detailedLocationSubfield) {
-						String curLocation = curLocationSubfield.getData();
-						if (curLocation.startsWith("(")) {
-							//There are multiple copies for this location
-							String tmpLocation = curLocation;
-							try {
-								copies = Integer.parseInt(tmpLocation.substring(1, tmpLocation.indexOf(")")));
-								curLocation = tmpLocation.substring(tmpLocation.indexOf(")") + 1).trim();
-							} catch (StringIndexOutOfBoundsException e) {
-								indexer.getLogEntry().incErrors("Error parsing copies and location for order item " + tmpLocation);
-							}
-						} else {
-							//If we only get one location in the detailed copies, we need to read the "copies" subfield rather than
-							//hard coding to 1
-							copies = 1;
-							if (settings.getOrderCopiesSubfield() != ' ') {
-								if (detailedLocationSubfield.size() == 1 && curOrderField.getSubfield(settings.getOrderCopiesSubfield()) != null) {
-									String copiesData = curOrderField.getSubfield(settings.getOrderCopiesSubfield()).getData().trim();
-									try {
-										copies = Integer.parseInt(copiesData);
-									} catch (StringIndexOutOfBoundsException e) {
-										indexer.getLogEntry().incErrors("StringIndexOutOfBoundsException loading number of copies " + copiesData, e);
-									} catch (Exception e) {
-										indexer.getLogEntry().incErrors("Exception loading number of copies " + copiesData, e);
-									} catch (Error e) {
-										indexer.getLogEntry().incErrors("Error loading number of copies " + copiesData + " " + e);
-									}
+			int copies = 0;
+			//If the location is multi, we actually have several records that should be processed separately
+			List<Subfield> detailedLocationSubfield = curOrderField.getSubfields(settings.getOrderLocationSubfield());
+			if (detailedLocationSubfield.isEmpty()){
+				//Didn't get detailed locations
+				if (curOrderField.getSubfield(settings.getOrderCopiesSubfield()) != null){
+					copies = Integer.parseInt(curOrderField.getSubfield(settings.getOrderCopiesSubfield()).getData());
+				}
+				String locationCode = "multi";
+				if (curOrderField.getSubfield(settings.getSingleOrderLocationSubfield()) != null){
+					locationCode = curOrderField.getSubfield(settings.getSingleOrderLocationSubfield()).getData().trim();
+				}
+				createAndAddOrderItem(recordInfo, curOrderField, locationCode, copies);
+			} else {
+				for (Subfield curLocationSubfield : detailedLocationSubfield) {
+					String curLocation = curLocationSubfield.getData();
+					if (curLocation.startsWith("(")) {
+						//There are multiple copies for this location
+						String tmpLocation = curLocation;
+						try {
+							copies = Integer.parseInt(tmpLocation.substring(1, tmpLocation.indexOf(")")));
+							curLocation = tmpLocation.substring(tmpLocation.indexOf(")") + 1).trim();
+						} catch (StringIndexOutOfBoundsException e) {
+							indexer.getLogEntry().incErrors("Error parsing copies and location for order item " + tmpLocation);
+						}
+					} else {
+						//If we only get one location in the detailed copies, we need to read the "copies" subfield rather than
+						//hard coding to 1
+						copies = 1;
+						if (settings.getOrderCopiesSubfield() != ' ') {
+							if (detailedLocationSubfield.size() == 1 && curOrderField.getSubfield(settings.getOrderCopiesSubfield()) != null) {
+								String copiesData = curOrderField.getSubfield(settings.getOrderCopiesSubfield()).getData().trim();
+								try {
+									copies = Integer.parseInt(copiesData);
+								} catch (StringIndexOutOfBoundsException e) {
+									indexer.getLogEntry().incErrors("StringIndexOutOfBoundsException loading number of copies " + copiesData, e);
+								} catch (Exception e) {
+									indexer.getLogEntry().incErrors("Exception loading number of copies " + copiesData, e);
+								} catch (Error e) {
+									indexer.getLogEntry().incErrors("Error loading number of copies " + copiesData + " " + e);
 								}
 							}
 						}
-						if (createAndAddOrderItem(recordInfo, curOrderField, curLocation, copies)) {
-							//For On Order Items, increment popularity based on number of copies that are being purchased.
-							groupedWork.addPopularity(copies);
-						}
+					}
+					if (createAndAddOrderItem(recordInfo, curOrderField, curLocation, copies)) {
+						//For On Order Items, increment popularity based on number of copies that are being purchased.
+						groupedWork.addPopularity(copies);
 					}
 				}
 			}
@@ -679,12 +672,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-	}
-
-	@SuppressWarnings("unused")
-	protected boolean isOrderItemValid(String status) {
-		return true;
-		//return status.equals("o") || status.equals("1");
 	}
 
 	private void loadOrderIds(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
@@ -957,8 +944,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}else if (itemInfo.isOrderItem()){
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(true);
-				itemInfo.setDetailedStatus("On Order");
-				itemInfo.setGroupedStatus("On Order");
+				if (itemInfo.getDetailedStatus() == null || itemInfo.getDetailedStatus().isEmpty()) {
+					itemInfo.setDetailedStatus("On Order");
+				}
+				if (itemInfo.getGroupedStatus() == null || itemInfo.getGroupedStatus().isEmpty()) {
+					itemInfo.setGroupedStatus("On Order");
+				}
 				loadScopeInfoForOrderItem(groupedWork, itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), itemInfo, record);
 			}else if (itemInfo.isEContent()){
 				itemInfo.setAvailable(true);

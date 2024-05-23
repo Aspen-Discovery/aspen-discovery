@@ -140,11 +140,11 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			for (RecordInfo record : relatedRecords.values()) {
 				for (ItemInfo item : record.getRelatedItems()) {
 					numItems++;
-					if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
+					if (!(item.isOrderItem() || (item.getStatusCode() != null && (item.getStatusCode().equals("On Order") || item.getStatusCode().equals("Under Consideration"))))) {
 						allItemsOnOrder = false;
 					}
 				}
-				if (record.getFormatCategories().size() > 0) {
+				if (!record.getFormatCategories().isEmpty()) {
 					fullTitles.add(fullTitle + " " + record.getFormatCategories().toString());
 				}
 			}
@@ -348,8 +348,12 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 					}
 
 					Long daysSinceAdded;
-					if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
-						daysSinceAdded = -1L;
+					if (curItem.isOrderItem() || (curItem.getDetailedStatus() != null && (curItem.getDetailedStatus().equals("On Order") || curItem.getDetailedStatus().equals("Coming Soon") || curItem.getDetailedStatus().equals("Under Consideration")))){
+						if (curItem.getDetailedStatus() != null && curItem.getDetailedStatus().equals("Under Consideration")) {
+							daysSinceAdded = (long)Integer.MAX_VALUE;
+						}else {
+							daysSinceAdded = -1L;
+						}
 					} else {
 						//Date Added To Catalog needs to be the earliest date added for the catalog.
 						Date dateAdded = curItem.getDateAdded();

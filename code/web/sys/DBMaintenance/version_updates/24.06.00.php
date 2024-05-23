@@ -45,6 +45,14 @@ function getUpdates24_06_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer User Agents'))",
 			],
 		],
+		'indexing_profile_under_consideration_order_records' => [
+			'title' => 'Indexing Profiles - Add Order Record Status to treat as under consideration',
+			'description' => 'Add Order Record Status to treat as under consideration',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordStatusToTreatAsUnderConsideration VARCHAR(10) DEFAULT ''",
+			],
+
+		],
 
 		//kirstien - ByWater
 		'accessibleBrowseCategories' => [

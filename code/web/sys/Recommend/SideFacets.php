@@ -199,8 +199,24 @@ class SideFacets implements RecommendationInterface {
 		} else {
 			//Make sure to show all values
 			$timeSinceAddedFacet['valuesToShow'] = count($timeSinceAddedFacet['list']);
+			//We would like to show, On Order, time period values, and then under consideration
+			$onOrderOption = array_key_exists('On Order', $timeSinceAddedFacet['list']) ? $timeSinceAddedFacet['list']['On Order'] : null;
+			$underConsiderationOption = array_key_exists('Under Consideration', $timeSinceAddedFacet['list']) ? $timeSinceAddedFacet['list']['Under Consideration'] : null;
+			if ($onOrderOption != null) {
+				unset($timeSinceAddedFacet['list']['On Order']);
+			}
+			if ($underConsiderationOption != null) {
+				unset($timeSinceAddedFacet['list']['Under Consideration']);
+			}
+			$sortedOptions = array_reverse($timeSinceAddedFacet['list']);
+			if ($onOrderOption != null) {
+				$sortedOptions = ['On Order' => $onOrderOption] + $sortedOptions;
+			}
+			if ($underConsiderationOption != null) {
+				$sortedOptions = $sortedOptions + ['Under Consideration' => $underConsiderationOption];
+			}
 			//Reverse the display of the list so Day is first and year is last
-			$timeSinceAddedFacet['list'] = array_reverse($timeSinceAddedFacet['list']);
+			$timeSinceAddedFacet['list'] = $sortedOptions;
 		}
 		return $timeSinceAddedFacet;
 	}

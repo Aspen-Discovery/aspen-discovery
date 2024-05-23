@@ -194,13 +194,25 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
 		itemInfo.setIsOrderItem();
-		itemInfo.setCallNumber("ON ORDER");
-		itemInfo.setSortableCallNumber("ON ORDER");
-		itemInfo.setDetailedStatus("On Order");
-		if (hasTranslation("collection", orderItem.getLocationCode())) {
-			itemInfo.setCollection(translateValue("collection", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+		if (orderItem.getStatus().equals(settings.getOrderRecordStatusToTreatAsUnderConsideration())) {
+			itemInfo.setCallNumber("Under Consideration");
+			itemInfo.setSortableCallNumber("Under Consideration");
+			itemInfo.setDetailedStatus("Under Consideration");
+			itemInfo.setGroupedStatus("Under Consideration");
+			if (hasTranslation("collection", orderItem.getLocationCode())) {
+				itemInfo.setCollection(translateValue("collection", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+			} else {
+				itemInfo.setCollection("Under Consideration");
+			}
 		}else {
-			itemInfo.setCollection("On Order");
+			itemInfo.setCallNumber("ON ORDER");
+			itemInfo.setSortableCallNumber("ON ORDER");
+			itemInfo.setDetailedStatus("On Order");
+			if (hasTranslation("collection", orderItem.getLocationCode())) {
+				itemInfo.setCollection(translateValue("collection", orderItem.getLocationCode(), recordInfo.getRecordIdentifier(), false));
+			} else {
+				itemInfo.setCollection("On Order");
+			}
 		}
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
 		Date tomorrow = new Date();
@@ -232,11 +244,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setDetailedLocation("On Order");
 		}
 
-		String status = orderItem.getStatus();
-
-		if (isOrderItemValid(status)){
-			recordInfo.addItem(itemInfo);
-		}
+		recordInfo.addItem(itemInfo);
 	}
 
 	@Override

@@ -169,14 +169,22 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			//Check to see if all items are on order.  If so, add on order keywords
 			boolean allItemsOnOrder = true;
+			boolean allItemsUnderConsideration = true;
 			int numItems = 0;
 			HashSet<String> uniqueFormatCategories = new HashSet<>();
 			HashSet<String> uniqueFormats = new HashSet<>();
 			for (RecordInfo record : relatedRecords.values()) {
 				for (ItemInfo item : record.getRelatedItems()) {
 					numItems++;
-					if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
+					if (!item.isOrderItem()) {
 						allItemsOnOrder = false;
+						allItemsUnderConsideration = false;
+					}else if (item.getDetailedStatus() != null){
+						if (item.getDetailedStatus().equals("On Order")) {
+							allItemsUnderConsideration = false;
+						} else if (item.getDetailedStatus().equals("Under Consideration")) {
+							allItemsOnOrder = false;
+						}
 					}
 				}
 				if (!record.getFormatCategories().isEmpty()) {
@@ -208,6 +216,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				addKeywords("Coming Soon");
 				doc.addField("days_since_added", -1);
 				doc.addField("time_since_added", "On Order");
+			} else if (allItemsUnderConsideration) {
+				addKeywords("Under Consideration");
+				doc.addField("days_since_added", Integer.MAX_VALUE);
+				doc.addField("time_since_added", "Under Consideration");
 			} else {
 				//Check to see if all items are either on order or
 				if (dateAdded == null) {
@@ -603,8 +615,12 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	private Long daysAddedSincePubDate = null;
 	private Long loadScopedDaysAdded(ItemInfo curItem) {
 		Long daysSinceAdded;
-		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon") || curItem.getGroupedStatus().equals("On Order")))) {
-			daysSinceAdded = -1L;
+		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getDetailedStatus().equals("On Order") || curItem.getDetailedStatus().equals("Coming Soon") || curItem.getDetailedStatus().equals("Under Consideration")))) {
+			if (curItem.getDetailedStatus().equals("Under Consideration")) {
+				daysSinceAdded = (long)Integer.MAX_VALUE;
+			}else{
+				daysSinceAdded = -1L;
+			}
 		} else {
 			//Date Added To Catalog needs to be the earliest date added for the catalog.
 			Date dateAdded = curItem.getDateAdded();
