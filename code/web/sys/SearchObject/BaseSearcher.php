@@ -374,6 +374,7 @@ abstract class SearchObject_BaseSearcher {
 					$display = $translate ? translate([
 						'text' => $value,
 						'isPublicFacing' => true,
+						'escape' => true,
 					]) : $value;
 				}
 
@@ -1327,6 +1328,7 @@ abstract class SearchObject_BaseSearcher {
 					'display' => $limit,
 					'value' => $limit,
 					'isApplied' => ($limit == $this->limit),
+					'escape' => true,
 				];
 			}
 		}

@@ -1,5 +1,5 @@
 <?php
-function smarty_function_translate($params, Smarty_Internal_Template &$smarty) {
+function smarty_function_translate($params, Smarty_Internal_Template &$smarty) : string {
 	global $translator;
 
 	// If no translator exists yet, create one -- this may be necessary if we
@@ -15,20 +15,21 @@ function smarty_function_translate($params, Smarty_Internal_Template &$smarty) {
 		$translator = new Translator('lang', $code);
 	}
 	if (is_array($params)) {
-		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
-		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
-		$isPublicFacing = isset($params['isPublicFacing']) ? $params['isPublicFacing'] : false;
-		$isAdminFacing = isset($params['isAdminFacing']) ? $params['isAdminFacing'] : false;
-		$isMetadata = isset($params['isMetadata']) ? $params['isMetadata'] : false;
-		$isAdminEnteredData = isset($params['isAdminEnteredData']) ? $params['isAdminEnteredData'] : false;
-		$translateParameters = isset($params['translateParameters']) ? $params['translateParameters'] : false;
+		$defaultText = $params['defaultText'] ?? null;
+		$inAttribute = $params['inAttribute'] ?? false;
+		$isPublicFacing = $params['isPublicFacing'] ?? false;
+		$isAdminFacing = $params['isAdminFacing'] ?? false;
+		$isMetadata = $params['isMetadata'] ?? false;
+		$isAdminEnteredData = $params['isAdminEnteredData'] ?? false;
+		$translateParameters = $params['translateParameters'] ?? false;
+		$escape = $params['escape'] ?? false;
 		$replacementValues = [];
 		foreach ($params as $index => $param) {
 			if (is_numeric($index)) {
 				$replacementValues[$index] = $param;
 			}
 		}
-		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters);
+		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters, $escape);
 	} else {
 		return $translator->translate($params, null, [], false);
 	}
