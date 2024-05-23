@@ -776,15 +776,15 @@ class Sierra extends Millennium {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
 		$groupedWorkItem = new GroupedWorkItem();
 		$groupedWorkItem->itemId = $itemId;
+		$id = false;
 		if ($groupedWorkItem->find(true)) {
 			$groupedWorkRecord = new GroupedWorkRecord();
 			$groupedWorkRecord->id = $groupedWorkItem->groupedWorkRecordId;
 			if ($groupedWorkRecord->find(true)) {
 				$id = $groupedWorkRecord->recordIdentifier;
-			} else {
-				$id = false;
 			}
-		} else {
+		}
+		if ($id == false) {
 			//Lookup the bib id from the Sierra APIs
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
