@@ -20,7 +20,7 @@ echo "export ASPEN_INSTANCE" >> ~/.bashrc
 echo "export ASPEN_REPO=~/aspen-repos/${ASPEN_INSTANCE}" >> ~/.bashrc
 source ~/.bashrc
 
-mkdir -p ${ASPEN_REPO}/mariadb_data ${ASPEN_REPO}/solr_data
+mkdir -p ${ASPEN_REPO}/database ${ASPEN_REPO}/solr ${ASPEN_REPO}/conf ${ASPEN_REPO}/data ${ASPEN_REPO}/logs
 cd ${ASPEN_REPO}
 git clone https://github.com/mdnoble73/aspen-discovery.git
 cp aspen-discovery/docker/docker-compose.yml .
@@ -32,73 +32,58 @@ With any text editor, the user must set the values for each variable in the **en
 cp aspen-discovery/docker/.env .
 vim .env
 ```
-Example : 
-* Site :
-
+Example :
 ```
-SITE_sitename=test.localhost   
-SITE_operatingSystem=debian
-SITE_library=Test Library
-SITE_title=Test Library
-SITE_url=http://test.localhost
-SITE_siteOnWindows=n
-SITE_solrHost=solr
-SITE_solrPort=8080
-SITE_ils=Koha
-SITE_timezone=America/Argentina/Cordoba
-```
+#About Aspen itself
+SITE_NAME=test.localhost
+LIBRARY=TEST LIBRARY
+TITLE=TEST LIBRARY
+URL=http://test.localhost
+SOLR_HOST=solr
+SOLR_PORT=8985
+ASPEN_ADMIN_PASSWORD=secretPass123
+ENABLE_APACHE=yes
+ENABLE_CRON=yes
+CONFIG_DIRECTORY=/aspen
 
-* Aspen :
+#About Aspen database
+DATABASE_HOST=db
+DATABASE_PORT=3306
+DATABASE_NAME=aspen
+DATABASE_USER=aspenusr
+DATABASE_PASSWORD=aspenpwd
+DATABASE_ROOT_USER=root
+DATABASE_ROOT_PASSWORD=root
+TIMEZONE=America/Argentina/Cordoba
 
-```
-ASPEN_DBHost=db           
-ASPEN_DBPort=3306
-ASPEN_DBName=aspen
-ASPEN_DBUser=aspen
-ASPEN_DBPwd=password
-ASPEN_aspenAdminPwd=password
-```
+#About Koha integration ("yes" to enable)
+ENABLE_KOHA=yes
 
-* Ils :
+KOHA_OPAC_URL=
+KOHA_STAFF_URL=
+KOHA_DATABASE_HOST=
+KOHA_DATABASE_NAME=
+KOHA_DATABASE_USER=
+KOHA_DATABASE_PASSWORD=
+KOHA_DATABASE_PORT=
+KOHA_DATABASE_TIMEZONE=
+KOHA_CLIENT_ID=
+KOHA_CLIENT_SECRET=
 
-```
-ILS_ilsDriver=Koha              
-ILS_ilsUrl=test.koha.theke.io
-ILS_staffUrl=test-admin.koha.theke.io
-```
+#About other ils (it would be set just if ENABLE_KOHA is not)
+ILS_DRIVER=
 
-* Koha :
+#About compose images
+BACKEND_IMAGE_TAG=backendimage
+SOLR_IMAGE_TAG=solrimage
+TUNNEL_IMAGE_TAG=tunnelimage
 
-```
-KOHA_DBHost=tunnel              
-KOHA_DBName=koha_dbname
-KOHA_DBUser=koha_dbuser
-KOHA_DBPwd=password
-KOHA_DBPort=3306
-KOHA_timezone=America/Argentina/Cordoba
-KOHA_ClientId=
-KOHA_ClientSecret=
-```
+#About tunnel service
+TUNNEL_LOCAL_PORT=3306
+TUNNEL_REMOTE_HOST=127.0.0.1
+TUNNEL_REMOTE_PORT=3306
+TUNNEL_JUMP_SERVER=test.koha.theke.io
 
-* Compose :
-
-```
-COMPOSE_ImageVersion=24.01.00
-COMPOSE_DBRoot=root
-COMPOSE_RootPwd=root
-COMPOSE_Apache=on
-COMPOSE_Cron=on
-COMPOSE_Dirs=/etc/apache2/sites-enabled /etc/apache2/sites-available /etc/cron.d /etc/php/8.0/apache2 /usr/local/aspen-discovery/sites/dev.aspen.theke.io /usr/local/aspen-discovery/code/web/files /usr/local/aspen-discovery/code/web/images /data /home /var/log/aspen-discovery
-```
-Observation: COMPOSE_Dirs variable saves all DIRECTORIES ( it doesn't support path files) inside Aspen that users want to be persistant on host server, like images, footers, covers, php settings and all data that shouldn't lost if you want to reset your containers.
-
-* Tunnel :
-
-```
-TUNNEL_LocalPort=3306      
-TUNNEL_RemotePort=3306
-TUNNEL_RemoteHost=127.0.0.1
-TUNNEL_JumpServer=test.koha.theke.io
 ```
 
 ### 3.1)
@@ -106,15 +91,16 @@ TUNNEL_JumpServer=test.koha.theke.io
 * Backup :
 
 ```
-BACKUP_Folder=          
-BACKUP_AccountId=
-BACKUP_ApplicationKey=
-BACKUP_Bucket=
-BACKUP_UserDB=
-BACKUP_PassDB=
-BACKUP_DB=
-BACKUP_Sitename=
-BACKUP_HostDB=
+#About backup service (backblaze)
+BACKUP_FOLDER=
+BACKUP_ACCOUNT_ID=
+BACKUP_APPLICATION_KEY=
+BACKUP_BUCKET=
+BACKUP_DATABASE_USER=
+BACKUP_DATABASE_PASSWORD=
+BACKUP_DATABASE_NAME=
+BACKUP_SITENAME=
+BACKUP_DATABASE_HOST=
   ```
 Observation : These variables response to a backup service called "BackBlaze". The user needs to search for appropriate setted variables if another backup service is being used.
 
@@ -124,13 +110,14 @@ Observation : These variables response to a backup service called "BackBlaze". T
 We go to the directory where the docker-compose.yml is located and execute :
 
 ```
-docker-compose up -d
+docker-compose -p aspen up -d
 ```
-
+You need to wait until "Aspen is ready to use!" message is displayed
+(Check docker logs -f aspen_backend )
 ### 5) Check Aspen instance is up
 
 On the browser :
 
 ```
-SITE_sitename:80
+$URL:80
 ```
