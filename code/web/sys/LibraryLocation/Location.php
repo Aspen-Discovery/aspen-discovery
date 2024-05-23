@@ -2626,6 +2626,8 @@ class Location extends DataObject {
 			'locationId' => (int)$this->locationId,
 			'isMainBranch' => (bool)$this->isMainBranch,
 			'displayName' => $this->displayName,
+			'parentLibraryDisplayName' => $parentLibrary->displayName,
+			'libraryId' => $this->libraryId,
 			'address' => $this->address,
 			'latitude' => floatval($this->latitude),
 			'longitude' => floatval($this->longitude),
@@ -2640,6 +2642,7 @@ class Location extends DataObject {
 			'hours' => [],
 			'code' => $this->code,
 			'unit' => $this->unit,
+			'solrScope' => $parentLibrary->subdomain,
 		];
 		if ($this->theme == "-1") {
 			$apiInfo['theme'] = $parentLibrary->getPrimaryTheme();
@@ -2698,6 +2701,12 @@ class Location extends DataObject {
 		if(isset($this->locationImage)) {
 			$apiInfo['locationImage'] = $configArray['Site']['url'] . '/files/original/' . rawurlencode($this->locationImage);
 		}
+
+		$baseUrl = $parentLibrary->baseUrl;
+		if(empty($baseUrl)) {
+			$baseUrl = $configArray['Site']['url'];
+		}
+		$apiInfo['baseUrl'] = $baseUrl;
 
 		return $apiInfo;
 	}

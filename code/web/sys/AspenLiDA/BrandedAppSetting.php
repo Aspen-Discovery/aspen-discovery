@@ -15,6 +15,7 @@ class BrandedAppSetting extends DataObject {
 	public $showFavicons;
 	public $logoNotification;
 	public $appName;
+	public $autoPickUserHomeLocation;
 
 	static function getObjectStructure($context = ''): array {
 
@@ -129,6 +130,14 @@ class BrandedAppSetting extends DataObject {
 				'hideInLists' => true,
 				'required' => false,
 			],
+			'autoPickUserHomeLocation' => [
+				'property' => 'autoPickUserHomeLocation',
+				'type' => 'checkbox',
+				'label' => 'Use User Home Location When Logging In',
+				'description' => 'Whether or not to Aspen LiDA should log in the user based on their home location instead of prompting them to select one',
+				'hideInLists' => true,
+				'required' => false,
+			]
 
 		];
 	}
