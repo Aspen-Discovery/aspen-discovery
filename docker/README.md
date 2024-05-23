@@ -1,6 +1,3 @@
-(README UNDER CONSTRUCTION)
-### 0) Introduction
-
 ### 1) Install Docker & Docker-Compose
 
 Only these components are necessary before proceeding with the installation of Aspen:
@@ -40,7 +37,7 @@ vim .env
 Example :
 
 ```
-#About Aspen itself
+# Aspen settings
 SITE_NAME=test.localhost
 LIBRARY=TEST LIBRARY
 TITLE=TEST LIBRARY
@@ -52,7 +49,7 @@ ENABLE_APACHE=yes
 ENABLE_CRON=yes
 CONFIG_DIRECTORY=/aspen
 
-#About Aspen database
+# DB settings
 DATABASE_HOST=db
 DATABASE_PORT=3306
 DATABASE_NAME=aspen
@@ -62,8 +59,8 @@ DATABASE_ROOT_USER=root
 DATABASE_ROOT_PASSWORD=root
 TIMEZONE=America/Argentina/Cordoba
 
-#About Koha integration ("yes" to enable)
-ENABLE_KOHA=yes
+# Koha integration ("yes" to enable))
+ENABLE_KOHA=no
 
 KOHA_OPAC_URL=
 KOHA_STAFF_URL=
@@ -79,36 +76,18 @@ KOHA_CLIENT_SECRET=
 #About other ils (it would be set just if ENABLE_KOHA is not)
 ILS_DRIVER=
 
-#About compose images
+# Docker images to use
 BACKEND_IMAGE_TAG=backendimage
 SOLR_IMAGE_TAG=solrimage
 TUNNEL_IMAGE_TAG=tunnelimage
 
-#About tunnel service
+# Koha MySQL tunnel
 TUNNEL_LOCAL_PORT=3306
 TUNNEL_REMOTE_HOST=127.0.0.1
 TUNNEL_REMOTE_PORT=3306
 TUNNEL_JUMP_SERVER=test.koha.theke.io
 ```
 
-### 3.1)
-
-* Backup :
-
-```
-#About backup service (backblaze)
-BACKUP_FOLDER=
-BACKUP_ACCOUNT_ID=
-BACKUP_APPLICATION_KEY=
-BACKUP_BUCKET=
-BACKUP_DATABASE_USER=
-BACKUP_DATABASE_PASSWORD=
-BACKUP_DATABASE_NAME=
-BACKUP_SITENAME=
-BACKUP_DATABASE_HOST=
-```
-
-NOTE : These variables response to a backup service called "BackBlaze". The user needs to search for appropriate setted variables if another backup service is being used.
   
 ### 4) Create and start containers
 
