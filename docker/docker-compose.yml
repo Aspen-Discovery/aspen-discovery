@@ -12,9 +12,9 @@ services:
       - net-aspen
     tty: true
     volumes:
-      - ${ASPEN_REPO}/conf:${CONFIG_DIRECTORY:-/usr/local/aspen-discovery/sites/$SITE_NAME}
-      - ${ASPEN_REPO}/data:/data/aspen-discovery/${SITE_NAME}
-      - ${ASPEN_REPO}/logs:/var/log/aspen-discovery
+      - ${ASPEN_DATA_DIR}/conf:${CONFIG_DIRECTORY:-/usr/local/aspen-discovery/sites/$SITE_NAME}
+      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery
     depends_on:
       - db
 
@@ -24,7 +24,7 @@ services:
     environment:
       - MARIADB_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
     volumes:
-      - ${ASPEN_REPO}/database:/var/lib/mysql
+      - ${ASPEN_DATA_DIR}/database:/var/lib/mysql
     networks:
       - net-aspen
 
@@ -38,7 +38,7 @@ services:
     ports:
       - "${SOLR_PORT}:${SOLR_PORT}"
     volumes:
-      - ${ASPEN_REPO}/solr:/var/solr
+      - ${ASPEN_DATA_DIR}/solr:/var/solr
     networks:
       - net-aspen
     depends_on:

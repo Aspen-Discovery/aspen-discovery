@@ -5,15 +5,15 @@
     networks:
         - net-aspen
     volumes:
-        - ${ASPEN_REPO}/start.sh:/start.sh
-        - ${ASPEN_REPO}/sites-enabled:/etc/apache2/sites-enabled
-        - ${ASPEN_REPO}/sites-available:/etc/apache2/sites-available
-        - ${ASPEN_REPO}/cron.d_bk/backup:/etc/crontabs/root
-        - ${ASPEN_REPO}/log:/var/log/aspen-discovery/${SITE_NAME}
-        - ${ASPEN_REPO}/${SITE_NAME}:/usr/local/aspen-discovery/sites/${SITE_NAME}
-        - ${ASPEN_REPO}/data:/data/aspen-discovery
-        - ${ASPEN_REPO}/home:/home
-        - ${ASPEN_REPO}/files:/usr/local/aspen-discovery/code/web/files
+        - ${ASPEN_DATA_DIR}/start.sh:/start.sh
+        - ${ASPEN_DATA_DIR}/sites-enabled:/etc/apache2/sites-enabled
+        - ${ASPEN_DATA_DIR}/sites-available:/etc/apache2/sites-available
+        - ${ASPEN_DATA_DIR}/cron.d_bk/backup:/etc/crontabs/root
+        - ${ASPEN_DATA_DIR}/log:/var/log/aspen-discovery/${SITE_NAME}
+        - ${ASPEN_DATA_DIR}/${SITE_NAME}:/usr/local/aspen-discovery/sites/${SITE_NAME}
+        - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery
+        - ${ASPEN_DATA_DIR}/home:/home
+        - ${ASPEN_DATA_DIR}/files:/usr/local/aspen-discovery/code/web/files
     depends_on:
       - backend
     entrypoint: ["crond", "-d", "8", "-f"]
