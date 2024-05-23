@@ -77,6 +77,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private boolean processRecordLinking;
 	private int evergreenOrgUnitSchema;
 	private String orderRecordsStatusesToInclude;
+	private String orderRecordStatusToTreatAsUnderConsideration;
 	private boolean hideOrderRecordsForBibsWithPhysicalItems;
 	private int orderRecordsToSuppressByDate;
 	private boolean checkSierraMatTypeForFormat;
@@ -248,6 +249,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		orderStatusSubfield = getCharFromRecordSet(indexingProfileRS, "orderStatus");
 
 		this.orderRecordsStatusesToInclude = indexingProfileRS.getString("orderRecordsStatusesToInclude");
+		this.orderRecordStatusToTreatAsUnderConsideration = indexingProfileRS.getString("orderRecordStatusToTreatAsUnderConsideration");
 		this.hideOrderRecordsForBibsWithPhysicalItems = indexingProfileRS.getBoolean("hideOrderRecordsForBibsWithPhysicalItems");
 		this.orderRecordsToSuppressByDate = indexingProfileRS.getInt("orderRecordsToSuppressByDate");
 
@@ -1108,5 +1110,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setSierraExportFieldMappings(SierraExportFieldMapping fieldMapping) {
 		sierraExportFieldMappings = fieldMapping;
+	}
+
+	public String getOrderRecordStatusToTreatAsUnderConsideration() {
+		return orderRecordStatusToTreatAsUnderConsideration;
+	}
+
+	public void setOrderRecordStatusToTreatAsUnderConsideration(String orderRecordStatusToTreatAsUnderConsideration) {
+		this.orderRecordStatusToTreatAsUnderConsideration = orderRecordStatusToTreatAsUnderConsideration;
 	}
 }

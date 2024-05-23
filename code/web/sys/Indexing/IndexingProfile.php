@@ -174,6 +174,7 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */ $includePersonalAndCorporateNamesInTopics;
 
 	public $orderRecordsStatusesToInclude;
+	public $orderRecordStatusToTreatAsUnderConsideration;
 	public $hideOrderRecordsForBibsWithPhysicalItems;
 	public $orderRecordsToSuppressByDate;
 
@@ -1272,6 +1273,16 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 25,
 						'description' => 'A pipe delimited list of statuses that should be exported from Sierra for display in Aspen.',
 						'default' => 'o|1',
+						'required' => true,
+					],
+					'orderRecordStatusToTreatAsUnderConsideration' => [
+						'property' => 'orderRecordStatusToTreatAsUnderConsideration',
+						'hiddenByDefault' => true,
+						'type' => 'text',
+						'label' => 'Order Record Status to treat as Under Consideration',
+						'maxLength' => 10,
+						'description' => 'A order record status from Sierra to treat as Under Consideration within Aspen.',
+						'default' => '',
 						'required' => true,
 					],
 					'hideOrderRecordsForBibsWithPhysicalItems' => [

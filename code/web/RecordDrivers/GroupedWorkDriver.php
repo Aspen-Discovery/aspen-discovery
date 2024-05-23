@@ -2517,6 +2517,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	static $statusRankings = [
 		'Currently Unavailable' => 1,
+		'Under Consideration' => 1.5,
 		'On Order' => 2,
 		'Coming Soon' => 3,
 		'In Processing' => 3.5,

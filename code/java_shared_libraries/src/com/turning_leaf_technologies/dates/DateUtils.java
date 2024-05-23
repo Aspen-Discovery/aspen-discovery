@@ -26,6 +26,7 @@ public class DateUtils {
 	}
 
 	static LinkedHashSet<String> timeSinceAddedOnOrder = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedUnderConsideration = new LinkedHashSet<>();
 	static LinkedHashSet<String> timeSinceAddedDay = new LinkedHashSet<>();
 	static LinkedHashSet<String> timeSinceAddedWeek = new LinkedHashSet<>();
 	static LinkedHashSet<String> timeSinceAddedMonth = new LinkedHashSet<>();
@@ -36,6 +37,7 @@ public class DateUtils {
 	static LinkedHashSet<String> timeSinceAddedNone = new LinkedHashSet<>();
 	static {
 		timeSinceAddedOnOrder.add("On Order");
+		timeSinceAddedUnderConsideration.add("Under Consideration");
 		timeSinceAddedYear.add("Year");
 		timeSinceAddedSixMonths.add("Six Months");
 		timeSinceAddedSixMonths.addAll(timeSinceAddedYear);
@@ -52,7 +54,9 @@ public class DateUtils {
 	}
 	public static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays) {
 		// System.out.println("Time Difference Days: " + timeDifferenceDays);
-		if (timeDifferenceDays < 0) {
+		if (timeDifferenceDays == Integer.MAX_VALUE) {
+			return timeSinceAddedUnderConsideration;
+		}else if (timeDifferenceDays < 0) {
 			return timeSinceAddedOnOrder;
 		}else {
 			if (timeDifferenceDays <= 1) {
