@@ -46,16 +46,20 @@ ln -s "$dataDir/images" "$localDir/images"
 ln -s "$dataDir/files" "$localDir/files"
 ln -s "$dataDir/fonts" "$localDir/fonts"
 
-#Wait for mysql responses
-while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 3; done
+# Wait for mysql startup
+while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 1; done
 
-#Turn on apache
-if [ "$ENABLE_APACHE" == "yes" ]; then
+# FIXME ENABLE_APACHE and ENABLE_CRON should be mutually exclussive
+# and instead of using 'service' they should run in foreground as the last
+# command to run, instead of the sleep infinity trick
+
+# Turn on apache
+if [ "$ASPEN_BACKEND" == "yes" ]; then
 	service apache2 start
 fi
 
-#Turn on Cron
-if [ "$ENABLE_CRON" == "yes" ]; then
+# Turn on Cron
+if [ "$ASPEN_CRON" == "yes" ]; then
 	service cron start
 	php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php "$SITE_NAME" &
 fi
