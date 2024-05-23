@@ -1125,6 +1125,11 @@ class ItemAPI extends AbstractAPI {
 				$actionButtons[$key]['requireLogin'] = $action['requireLogin'] ?? false;
 				$actionButtons[$key]['sampleNumber'] = $action['sampleNumber'] ?? null;
 				$actionButtons[$key]['formatId'] = $action['formatId'] ?? null;
+
+				if(isset($action['redirectUrl'])) {
+					$actionButtons[$key]['redirectUrl'] = $action['redirectUrl'];
+				}
+
 			}
 
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
@@ -1270,6 +1275,10 @@ class ItemAPI extends AbstractAPI {
 							$buttons[$key]['requireLogin'] = $actionButton['requireLogin'] ?? false;
 							$buttons[$key]['sampleNumber'] = $actionButton['sampleNumber'] ?? null;
 							$buttons[$key]['formatId'] = $actionButton['formatId'] ?? null;
+
+							if(isset($actionButton['redirectUrl'])) {
+								$buttons[$key]['redirectUrl'] = $actionButton['redirectUrl'];
+							}
 						}
 
 						$records[$relatedRecord->id]['actions'] = $buttons;
