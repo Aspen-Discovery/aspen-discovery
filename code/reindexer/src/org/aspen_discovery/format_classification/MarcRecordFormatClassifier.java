@@ -332,7 +332,7 @@ public class MarcRecordFormatClassifier {
 							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
 							result.add("Pop-UpBook");
-						}else if (subfieldData.startsWith("manga graphic novel")) {
+						}else if (subfieldData.startsWith("manga graphic novel") || subfieldData.equals("manga")) {
 							result.add("Manga");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
