@@ -1146,7 +1146,6 @@ public class PolarisExportMain {
 	private static HashSet<String> getBibIdsForItemIdFromAspen(long itemId, long sourceId) {
 		HashSet<String> bibIds = new HashSet<>();
 		if (sourceId == -1){
-			//No records have been saved yet
 			return bibIds;
 		}
 		try {
@@ -1154,6 +1153,7 @@ public class PolarisExportMain {
 			getRecordIdForItemIdStmt.setString(1, itemIdString);
 			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
 			//If records are merged, we can have more than one record for the item in that case, don't return anything
+			boolean bibFound = false;
 			while (getRecordIdForItemIdRS.next()){
 				long recordId = getRecordIdForItemIdRS.getLong("groupedWorkRecordId");
 				getBibIdForItemIdStmt.setLong(1, recordId);
@@ -1161,7 +1161,13 @@ public class PolarisExportMain {
 				ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
 				if (getBibIdForItemIdRS.next()){
 					bibIds.add(getBibIdForItemIdRS.getString("recordIdentifier"));
+					bibFound = true;
 				}
+			}
+			if (!bibFound) {
+				//No records have been saved yet, get them from Polaris
+				String bibForItem = getBibIdForItemId(itemId);
+				bibIds.add(bibForItem);
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting bib for item id from Aspen", e);
