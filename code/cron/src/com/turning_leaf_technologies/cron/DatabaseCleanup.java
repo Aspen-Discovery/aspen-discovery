@@ -452,16 +452,15 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove old last list used
 		try {
 			//Get list of libraries that want last used list cleared
-			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId, deleteOldLastListUsedEntries from library where deleteOldLastListUsedEntries > 0");
-			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId from location where libraryId = ?");
-			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("DELETE from user where lastListUsed = ?");
+			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId FROM library WHERE deleteLastListUsedEntries = 1");
+			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId FROM location where libraryId = ?");
+			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("UPDATE user SET lastListUsed = NULL WHERE lastListUsed = ?");
 			
 			ResultSet librariesListRS = librariesListStmt.executeQuery();
 
 			long numDeletions = 0;
 			while (librariesListRS.next()) {
 				long libraryId = librariesListRS.getLong("libraryId");
-				long daysToPreserve = librariesListRS.getLong("deleteLastUsedListEntries");
 
 				libraryLocationsStmt.setLong(1, libraryId);
 
@@ -476,10 +475,10 @@ public class DatabaseCleanup implements IProcessHandler {
 				}
 				if (libraryLocations.length() > 0) {
 					long now = new Date().getTime() /1000;
+					long daysToPreserve = 14;
+					long earliestDateToPreserve = now - (daysToPreserve * 24 * 60 * 60);
 
-					long earliestDateToPreserve = now - (14 * 24 * 60 * 60);
-
-					PreparedStatement lastListUsedEntriesToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed from user where user.homeLocationId IN (" + libraryLocations + ") and lastListused < ?");
+					PreparedStatement lastListUsedEntriesToDeleteStmt = dbConn.prepareStatement("SELECT lastListUsed FROM user WHERE user.homeLocationId IN (" + libraryLocations + ") AND lastListused < ?");
 					lastListUsedEntriesToDeleteStmt.setLong(1, earliestDateToPreserve);
 
 					ResultSet lastListUsedEntriesToDeleteRS = lastListUsedEntriesToDeleteStmt.executeQuery();
@@ -495,6 +494,8 @@ public class DatabaseCleanup implements IProcessHandler {
 			}
 			librariesListRS.close();
 			librariesListStmt.close();
+			libraryLocationsStmt.close();
+			deleteLastListUsedStmt.close();
 			processLog.addNote("Removed " + numDeletions + " expired last list used entries");
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to remove expired last used list entries.", e);
