@@ -687,7 +687,7 @@ export async function saveLanguage(code, url, language = 'en') {
      });
      const response = await discovery.post('/UserAPI?method=saveLanguage', postBody);
      if (response.ok) {
-          i18n.locale = code;
+          //i18n.locale = code;
           PATRON.language = code;
           return true;
      } else {
