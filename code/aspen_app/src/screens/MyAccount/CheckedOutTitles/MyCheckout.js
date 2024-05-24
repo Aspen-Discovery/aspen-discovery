@@ -54,6 +54,11 @@ export const MyCheckout = (props) => {
           }
      }
 
+     let libbyReaderName = 'Libby';
+     if (library.libbyReaderName) {
+          libbyReaderName = library.libbyReaderName;
+     }
+
      let formatId;
      React.useEffect(() => {
           async function preloadTranslations() {
@@ -61,26 +66,27 @@ export const MyCheckout = (props) => {
                     if (checkout.checkoutSource === 'OverDrive') {
                          if (checkout.overdriveRead === 1) {
                               formatId = 'ebook-overdrive';
-                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then((term) => {
+                              await getTranslationsWithValues('checkout_read_online', libbyReaderName, language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
                               });
                          } else if (checkout.overdriveListen === 1) {
                               formatId = 'audiobook-overdrive';
-                              await getTranslationsWithValues('checkout_listen_online', 'OverDrive', language, library.baseUrl).then((term) => {
+                              await getTranslationsWithValues('checkout_listen_online', libbyReaderName, language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
                               });
                          } else if (checkout.overdriveVideo === 1) {
                               formatId = 'video-streaming';
-                              await getTranslationsWithValues('checkout_watch_online', 'OverDrive', language, library.baseUrl).then((term) => {
+                              await getTranslationsWithValues('checkout_watch_online', libbyReaderName, language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
                               });
                          } else if (checkout.overdriveMagazine === 1) {
                               formatId = 'magazine-overdrive';
-                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then((term) => {
+                              await getTranslationsWithValues('checkout_read_online', libbyReaderName, language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
                               });
                          } else {
-                              await getTranslationsWithValues('checkout_access_online', 'OverDrive', language, library.baseUrl).then((term) => {
+                              formatId = '';
+                              await getTranslationsWithValues('checkout_access_online', libbyReaderName, language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
                               });
                          }
