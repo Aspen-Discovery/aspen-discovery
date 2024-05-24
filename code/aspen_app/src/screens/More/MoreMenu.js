@@ -156,7 +156,7 @@ const PrivacyPolicy = () => {
      };
 
      const openURL = async () => {
-          const url = appendQuery(LIBRARY.appSettings.privacyPolicy ?? GLOBALS.privacyPolicy, 'minimalInterface=true');
+          const url = appendQuery(LIBRARY.appSettings?.privacyPolicy ?? GLOBALS.privacyPolicy, 'minimalInterface=true');
           console.log(url);
           await WebBrowser.openBrowserAsync(url, browserParams)
                .then((res) => {
