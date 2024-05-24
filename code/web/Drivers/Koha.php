@@ -6829,7 +6829,7 @@ class Koha extends AbstractIlsDriver {
 			], true);
 
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', null);
-			ExternalRequestLogEntry::logRequest('koha.getUserExtendedAttributes', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+			ExternalRequestLogEntry::logRequest('koha.getUserExtendedAttributes', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonResponse = json_decode($response, true);
