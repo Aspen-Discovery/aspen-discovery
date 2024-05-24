@@ -19,7 +19,7 @@ import { getLocationInfo } from '../../util/api/location';
 import { loginToLiDA, reloadProfile, validateUser } from '../../util/api/user';
 import { createAuthTokens, decodeHTML, getHeaders, stripHTML } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
-import { formatDiscoveryVersion, reloadBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { PATRON } from '../../util/loadPatron';
 import { ResetExpiredPin } from './ResetExpiredPin';
 
@@ -113,6 +113,7 @@ export const GetLoginForm = (props) => {
                     if (validatedUser) {
                          GLOBALS.appSessionId = validatedUser.session ?? '';
                          PATRON.language = validatedUser.lang ?? 'en';
+                         PATRON.homeLocationId = validatedUser.homeLocationId ?? null;
                          updateLanguage(validatedUser.lang ?? 'en');
                          if (validatedUser.success) {
                               await setAsyncStorage();
@@ -154,40 +155,6 @@ export const GetLoginForm = (props) => {
           }
      };
 
-     const setContext = async () => {
-          useQuery(['library_system', patronsLibrary['baseUrl']], () => getLibraryInfo(patronsLibrary['baseUrl']), {
-               onSuccess: (data) => {
-                    updateLibrary(data);
-               },
-          });
-          useQuery(['library_location', patronsLibrary['baseUrl'], 'en'], () => getLocationInfo(patronsLibrary['baseUrl']), {
-               enabled: !!patronsLibrary['baseUrl'],
-               onSuccess: (data) => {
-                    updateLocation(data);
-               },
-          });
-          useQuery(['user', patronsLibrary['baseUrl'], 'en'], () => reloadProfile(patronsLibrary['baseUrl']), {
-               enabled: !!patronsLibrary['baseUrl'],
-               onSuccess: (data) => {
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
-               },
-          });
-          useQuery(['browse_categories', patronsLibrary['baseUrl']], () => reloadBrowseCategories(5, patronsLibrary['baseUrl']), {
-               enabled: !!patronsLibrary['baseUrl'],
-               onSuccess: (data) => {
-                    updateBrowseCategories(data);
-               },
-          });
-          useQuery(['languages', patronsLibrary['baseUrl']], () => getLibraryLanguages(patronsLibrary['baseUrl']), {
-               enabled: !!patronsLibrary['baseUrl'],
-               onSuccess: (data) => {
-                    updateLanguages(data);
-               },
-          });
-     };
-
      const openScanner = async () => {
           navigate('LibraryCardScanner', { allowCode39 });
      };
@@ -195,18 +162,36 @@ export const GetLoginForm = (props) => {
      const setAsyncStorage = async () => {
           await SecureStore.setItemAsync('userKey', valueUser);
           await SecureStore.setItemAsync('secretKey', valueSecret);
-          await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
-          await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
-          await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
-          await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
-          await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
-          await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
-
-          await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
-          await AsyncStorage.setItem('@pathUrl', patronsLibrary['baseUrl']);
-          await SecureStore.setItemAsync('pathUrl', patronsLibrary['baseUrl']);
           await AsyncStorage.setItem('@lastStoredVersion', Constants.expoConfig.version);
-          await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
+
+          if (PATRON.homeLocationId) {
+               await getLocationInfo(GLOBALS.url).then(async (patronsLibrary) => {
+                    if (patronsLibrary.baseUrl) {
+                         LIBRARY.url = patronsLibrary.baseUrl;
+                         await SecureStore.setItemAsync('library', JSON.stringify(patronsLibrary.libraryId));
+                         await AsyncStorage.setItem('@libraryId', JSON.stringify(patronsLibrary.libraryId));
+                         await SecureStore.setItemAsync('libraryName', patronsLibrary.parentLibraryDisplayName);
+                         await SecureStore.setItemAsync('locationId', JSON.stringify(patronsLibrary.locationId));
+                         await AsyncStorage.setItem('@locationId', JSON.stringify(patronsLibrary.locationId));
+                         await SecureStore.setItemAsync('solrScope', patronsLibrary.solrScope);
+
+                         await AsyncStorage.setItem('@solrScope', patronsLibrary.solrScope);
+                         await AsyncStorage.setItem('@pathUrl', patronsLibrary.baseUrl);
+                    } else {
+                         // library isn't on correct version of 24.06 ?
+                    }
+               });
+          } else {
+               await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
+               await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
+               await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
+               await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
+               await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
+               await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
+
+               await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
+               await AsyncStorage.setItem('@pathUrl', patronsLibrary['baseUrl']);
+          }
      };
 
      if (expiredPin) {
