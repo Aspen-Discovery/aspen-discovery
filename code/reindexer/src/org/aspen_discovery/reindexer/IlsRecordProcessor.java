@@ -157,7 +157,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			getTranslationMapValuesStmt.setLong(1, translationMapId);
 			ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery();
 			while (translationMapValuesRS.next()){
-				map.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
+				map.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"), indexer.getLogEntry());
 			}
 			translationMaps.put(map.getMapName(), map);
 		}
@@ -183,9 +183,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatMapRS.getString("holdType").equals("none")){
 				nonHoldableFormats.add(formatMapRS.getString("format").toUpperCase());
 			}
-			formatMap.addValue(format, formatMapRS.getString("format"));
-			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
-			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
+			formatMap.addValue(format, formatMapRS.getString("format"), indexer.getLogEntry());
+			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"), indexer.getLogEntry());
+			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"), indexer.getLogEntry());
 		}
 		formatMapRS.close();
 
@@ -204,8 +204,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusMapRS.getBoolean("inLibraryUseOnly")){
 				inLibraryUseOnlyStatuses.add(status);
 			}
-			itemStatusMap.addValue(status, statusMapRS.getString("status"));
-			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
+			itemStatusMap.addValue(status, statusMapRS.getString("status"), indexer.getLogEntry());
+			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"), indexer.getLogEntry());
 		}
 		statusMapRS.close();
 	}
@@ -1779,7 +1779,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			} else {
 				if (addMissingValues){
 					TranslationMap translationMap = translationMaps.get(mapName);
-					translationMap.addValue(value, value);
+					translationMap.addValue(value, value, indexer.getLogEntry());
 					try {
 						addTranslationMapValueStmt.setLong(1, translationMap.getId());
 						addTranslationMapValueStmt.setString(2, lowerCaseValue);
