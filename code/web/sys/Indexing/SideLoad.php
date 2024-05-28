@@ -11,6 +11,7 @@ class SideLoad extends DataObject {
 	public $id;
 	public $name;
 	public $accessButtonLabel;
+	public $useLinkTextForButtonLabel;
 	public $showStatus;
 	public $marcPath;
 	public /** @noinspection PhpUnused */
@@ -52,6 +53,7 @@ class SideLoad extends DataObject {
 
 	public /** @noinspection PhpUnused */
 		$formatSource;
+	public $convertFormatToEContent;
 	public /** @noinspection PhpUnused */
 		$specifiedFormat;
 	public /** @noinspection PhpUnused */
@@ -107,6 +109,14 @@ class SideLoad extends DataObject {
 				'description' => 'A label for the button to use when accessing the record',
 				'required' => true,
 				'default' => 'Access Online',
+			],
+			'useLinkTextForButtonLabel' => [
+				'property' => 'useLinkTextForButtonLabel',
+				'type' => 'checkbox',
+				'label' => 'Use Link Text For Button Label',
+				'description' => 'Whether the link text in the 856 should be used for the button text',
+				'default' => false,
+				'forcesReindex' => true,
 			],
 			'showStatus' => [
 				'property' => 'showStatus',
@@ -330,6 +340,14 @@ class SideLoad extends DataObject {
 							'specified' => 'Specified Value',
 						],
 						'default' => 'bib',
+						'forcesReindex' => true,
+					],
+					'convertFormatToEContent' => [
+						'property' => 'convertFormatToEContent',
+						'type' => 'checkbox',
+						'label' => 'Convert Format to eContent',
+						'description' => 'Whether the format from the bib record or item record should be converted to eContent',
+						'default' => true,
 						'forcesReindex' => true,
 					],
 					'specifiedFormat' => [

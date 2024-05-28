@@ -39,9 +39,9 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 
 	public function getItemActions($itemInfo) {
 		if ($itemInfo instanceof Grouping_Item) {
-			return $this->createActionsFromUrls($itemInfo->getRelatedUrls());
+			return $this->createActionsFromUrls($itemInfo->getRelatedUrls(), $itemInfo);
 		} else {
-			return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+			return $this->createActionsFromUrls($itemInfo['relatedUrls'], $itemInfo);
 		}
 	}
 
@@ -49,7 +49,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		return [];
 	}
 
-	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
+	function createActionsFromUrls($relatedUrls, $itemInfo = null, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;
