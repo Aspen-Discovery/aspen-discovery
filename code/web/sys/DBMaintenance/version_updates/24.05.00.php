@@ -123,8 +123,6 @@ function getUpdates24_05_00(): array {
 				 'ALTER TABLE javascript_snippets ADD COLUMN containsAnalyticsCookies TINYINT(1)'
 			 ]
 		 ], //Snippet_Contains_Marketing_Cookies
-
-
 	];
 }
 

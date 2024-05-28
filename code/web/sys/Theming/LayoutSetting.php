@@ -16,6 +16,7 @@ class LayoutSetting extends DataObject {
 	public $showTopOfPageButton;
 	public $dismissPlacardButtonLocation;
 	public $dismissPlacardButtonIcon;
+	public $showExploreMoreOptions;
 	public $contrastRatio;
 
 	static function getObjectStructure($context = ''): array {
@@ -102,6 +103,13 @@ class LayoutSetting extends DataObject {
 				'label' => 'Show Dismiss Placard Button as <i class="fas fa-times" role="presentation"></i> (Close) Icon',
 				'description' => 'Whether or not to show icon instead of default dismiss placard text',
 				'default' => false,
+			],
+			'showExploreMoreOptions' => [
+				'property' => 'showExploreMoreOptions',
+				'type' => 'checkbox',
+				'label' => 'Show Explore More Options',
+				'description' => 'Whether or not to display the Explore More Options box.',
+				'default' => true,
 			],
 			'contrastRatio' => [
 				'property' => 'contrastRatio',
