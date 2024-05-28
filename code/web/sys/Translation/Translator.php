@@ -64,15 +64,16 @@ class Translator {
 	 * @param string $phrase - The phrase to translate
 	 * @param string $defaultText - The default text for a phrase that is just a key for a longer phrase
 	 * @param string[] $replacementValues - Values to replace within the string
-	 * @param bool $inAttribute - Whether or not we are in an attribute. If we are, we can't show the span
-	 * @param bool $isPublicFacing - Whether or not the public will see this
-	 * @param bool $isAdminFacing - Whether or not this is in the admin interface
-	 * @param bool $isMetadata - Whether or not this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
-	 * @param bool $isAdminEnteredData - Whether or not this is data an administrator entered (System message, etc)
-	 * @param bool $translateParameters - Whether or not parameters should be translated
+	 * @param bool $inAttribute - Whether we are in an attribute. If we are, we can't show the span
+	 * @param bool $isPublicFacing - Whether the public will see this
+	 * @param bool $isAdminFacing - Whether this is in the admin interface
+	 * @param bool $isMetadata - Whether this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
+	 * @param bool $isAdminEnteredData - Whether this is data an administrator entered (System message, etc)
+	 * @param bool $translateParameters - Whether parameters should be translated
+	 * @param bool $escape - Whether the translation should be escaped before rendering
 	 * @return  string                      - The translated phrase
 	 */
-	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters = false) {
+	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters = false, $escape = false) : string {
 		if ($phrase == '' || is_numeric($phrase)) {
 			return $phrase;
 		}
@@ -211,6 +212,9 @@ class Translator {
 							$translation->update();
 						}
 
+						if ($escape) {
+							$translation->translated = htmlentities( $translation->translation);
+						}
 						if ($translationMode) {
 							if ($translation->translated) {
 								$translationStatus = 'translated';
@@ -228,6 +232,9 @@ class Translator {
 					$returnString = $fullTranslation;
 				} else {
 					$returnString = $existingTranslation;
+					if ($escape) {
+						$returnString = htmlentities( $returnString);
+					}
 				}
 			} else {
 				//Translation not setup (happens from book covers)
@@ -239,7 +246,6 @@ class Translator {
 			}
 		} catch (PDOException $e) {
 			//tables likely don't exist, ignore
-			$returnString = $phrase;
 			if (!empty($defaultText)) {
 				$returnString = $defaultText;
 			} else {

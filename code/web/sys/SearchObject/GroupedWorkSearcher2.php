@@ -796,8 +796,9 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$currentSettings['display'] = $translate ? translate([
 					'text' => $facetValue,
 					'isPublicFacing' => true,
-					'isMetadata' => true
-				]) : $facetValue;
+					'isMetadata' => true,
+					'escape' => true,
+				]) : htmlentities($facetValue);
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
@@ -879,8 +880,16 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 			if (!$foundInstitution && $doInstitutionProcessing) {
 				$list[$field]['list']['1' . $currentLibrary->facetLabel] = [
-					'value' => $currentLibrary->facetLabel,
-					'display' => $currentLibrary->facetLabel,
+					'value' => $translate ? translate([
+						'text' => $currentLibrary->facetLabel,
+						'isPublicFacing' => true,
+						'escape' => true
+					]) : htmlentities($currentLibrary->facetLabel),
+					'display' => $translate ? translate([
+						'text' => $currentLibrary->facetLabel,
+						'isPublicFacing' => true,
+						'escape' => true
+					]) : htmlentities($currentLibrary->facetLabel),
 					'count' => 0,
 					'isApplied' => false,
 					'url' => null,
@@ -888,8 +897,16 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			}
 			if (!$foundBranch && $doBranchProcessing && !empty($activeLocationFacet)) {
 				$list[$field]['list']['1' . $activeLocationFacet] = [
-					'value' => $activeLocationFacet,
-					'display' => $activeLocationFacet,
+					'value' => $translate ? translate([
+						'text' => $activeLocationFacet,
+						'isPublicFacing' => true,
+						'escape' => true
+					]) : htmlentities($activeLocationFacet),
+					'display' => $translate ? translate([
+						'text' => $activeLocationFacet,
+						'isPublicFacing' => true,
+						'escape' => true
+					]) : htmlentities($activeLocationFacet),
 					'count' => 0,
 					'isApplied' => false,
 					'url' => null,
