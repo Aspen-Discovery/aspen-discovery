@@ -51,7 +51,27 @@ function getUpdates24_06_00(): array {
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordStatusToTreatAsUnderConsideration VARCHAR(10) DEFAULT ''",
 			],
-
+		],
+		'sideload_convert_to_econtent' => [
+			'title' => 'Sideloads convert to eContent',
+			'description' => 'Add an option to allow sideloads to not be treated as eContent',
+			'sql' => [
+				"ALTER TABLE sideloads ADD COLUMN convertFormatToEContent TINYINT DEFAULT 1",
+			],
+		],
+		'sideload_use_link_text_for_button_label' => [
+			'title' => 'Sideloads Use Link Text For Button Label',
+			'description' => 'Add an option to allow sideloads to use the URL link text for the button URL',
+			'sql' => [
+				"ALTER TABLE sideloads ADD COLUMN useLinkTextForButtonLabel TINYINT DEFAULT 0",
+			],
+		],
+		'increase_patron_type_length' => [
+			'title' => 'Increase Patron Type Length',
+			'description' => 'Increase the length of the patron type field in the user table to match the ptype table',
+			'sql' => [
+				"ALTER TABLE user CHANGE COLUMN patronType patronType VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''",
+			],
 		],
 
 		//kirstien - ByWater
