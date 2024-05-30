@@ -79,6 +79,15 @@ function getUpdates24_06_00(): array {
 			],
 		], //full_text_limiter
 
+		//alexander - PTFS Europe
+		'summon_ip_addresses' => [
+			'title' => 'Summon IP address configuration',
+			'description' => 'Allow configuration of which IP addresses should automatically authenticate with Summon',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ip_lookup ADD COLUMN authenticatedForSummon TINYINT DEFAULT 0',
+			]
+			],
 		//other
 
 

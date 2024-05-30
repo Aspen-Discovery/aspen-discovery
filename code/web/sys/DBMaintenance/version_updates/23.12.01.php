@@ -19,13 +19,5 @@ function getUpdates23_12_01(): array {
 				'UPDATE overdrive_settings SET runFullUpdate = 1',
 			]
 		], //force_overdrive_full_update
-		'summon_ip_addresses' => [
-			'title' => 'Summon IP address configuration',
-			'description' => 'Allow configuration of which IP addresses should automatically authenticate with Summon',
-			'continueOnError' => true,
-			'sql' => [
-				'ALTER TABLE ip_lookup ADD COLUMN authenticatedForSummon TINYINT DEFAULT 0',
-			]
-			], //summon authentication
     ];
 }
