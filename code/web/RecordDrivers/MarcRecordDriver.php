@@ -930,12 +930,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 			if ($field008 != null && $datalength >= 37) {
 				$languageCode = substr($field008->getData(), 35, 3);
-				if ($languageCode == 'eng') {
-					$languageCode = "English";
-				} elseif ($languageCode == 'spa') {
-					$languageCode = "Spanish";
+				/** @var TranslationMap $translationMap **/
+				$translatedValue = mapValue('language', $languageCode);
+				if (!empty($translatedValue)){
+					return $translatedValue;
+				}else{
+					return $languageCode;
 				}
-				return $languageCode;
+
 			} else {
 				return 'English';
 			}
