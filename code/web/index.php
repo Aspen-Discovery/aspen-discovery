@@ -522,6 +522,14 @@ if ($isLoggedIn) {
 			}
 			header("Location: " . $followupUrl);
 			exit();
+		} elseif ($_REQUEST['followupAction'] == 'AccessOnline' && $_REQUEST['followupModule'] == 'Summon') {
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (!empty($_REQUEST['recordId'])) {
+				$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
+			}
+			header("Location: " . $followupUrl);
+			exit();
 		} elseif ($_REQUEST['followupModule'] == 'WebBuilder') {
 			echo("Redirecting to followup location");
 			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
