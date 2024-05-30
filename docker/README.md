@@ -23,14 +23,15 @@ mkdir -p ${ASPEN_DATA_DIR}/database \
          ${ASPEN_DATA_DIR}/data \
          ${ASPEN_DATA_DIR}/logs
 curl -O ${ASPEN_DATA_DIR}/docker-compose.yml https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/24.06.00/docker/docker-compose.yml
-```
-
-### 3.0) Copy env file and set environment variables (mandatory)
-
-With any text editor, the user must set the values for each variable in the **env** file.
+curl -O ${ASPEN_DATA_DIR}/.env https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/24.06.00/docker/env/default.env
 
 ```
-cp aspen-discovery/docker/.env .
+
+### 3.0) Set custom environment variables (optional)
+
+The user can set the values for each variable in the **env** file.
+
+```
 vim .env
 ```
 
@@ -77,9 +78,9 @@ KOHA_CLIENT_SECRET=
 ILS_DRIVER=
 
 # Docker images to use
-BACKEND_IMAGE_TAG=backendimage
-SOLR_IMAGE_TAG=solrimage
-TUNNEL_IMAGE_TAG=tunnelimage
+BACKEND_IMAGE_TAG= #defaults to aspendiscoveryofficial/aspen
+SOLR_IMAGE_TAG= #defaults to aspendiscoveryofficial/solr
+TUNNEL_IMAGE_TAG= #defaults to aspendiscoveryofficial/tunnel
 
 # Koha MySQL tunnel
 TUNNEL_LOCAL_PORT=3306
