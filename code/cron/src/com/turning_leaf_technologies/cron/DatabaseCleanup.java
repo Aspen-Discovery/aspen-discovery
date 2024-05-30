@@ -454,7 +454,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			//Get list of libraries that want last used list cleared
 			PreparedStatement librariesListStmt = dbConn.prepareStatement("SELECT libraryId FROM library WHERE deleteLastListUsedEntries = 1");
 			PreparedStatement libraryLocationsStmt = dbConn.prepareStatement("SELECT locationId FROM location where libraryId = ?");
-			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("UPDATE user SET lastListUsed = NULL WHERE lastListUsed = ?");
+			PreparedStatement deleteLastListUsedStmt = dbConn.prepareStatement("UPDATE user SET lastListUsed = -1 WHERE lastListUsed = ?");
 			
 			ResultSet librariesListRS = librariesListStmt.executeQuery();
 
