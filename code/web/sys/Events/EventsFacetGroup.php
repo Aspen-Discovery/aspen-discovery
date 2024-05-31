@@ -195,7 +195,7 @@ class EventsFacetGroup extends DataObject {
 	function getAdditionalListJavascriptActions(): array {
 		$objectActions[] = [
 			'text' => 'Copy',
-			'onClick' => "return AspenDiscovery.Admin.showCopyFacetGroupForm('$this->id')",
+			'onClick' => "return AspenDiscovery.Admin.showCopyEventsFacetGroupForm('$this->id')",
 			'icon' => 'fas fa-copy',
 		];
 

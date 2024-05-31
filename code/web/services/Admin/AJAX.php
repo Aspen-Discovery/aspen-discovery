@@ -784,6 +784,109 @@ class Admin_AJAX extends JSON_Action {
 			];
 		}
 	}
+    /** @noinspection PhpUnused */
+    function getCopyEventsFacetGroupForm() : array {
+        if (!empty($_REQUEST['facetGroupId'])) {
+            global $interface;
+            require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
+            $facetGroup = new EventsFacetGroup();
+            $facetGroup->id = $_REQUEST['facetGroupId'];
+            if ($facetGroup->find(true)) {
+                $facetId = $facetGroup->id;
+                $facetLabel = $facetGroup->name;
+                $interface->assign('facetId', $facetId);
+                $interface->assign('facetLabel', $facetLabel);
+
+                $modalBody = $interface->fetch('Admin/copyEventsFacetGroupForm.tpl');
+
+                return [
+                    'success' => true,
+                    'title' => translate([
+                        'text' => "Copy $facetLabel Events Facet Group",
+                        'isAdminFacing' => true,
+                    ]),
+                    'modalBody' => $modalBody,
+                    'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyEventsFacetGroupForm();\" class=\"modal-buttons btn btn-primary\">" . translate([
+                            'text' => 'Copy',
+                            'isAdminFacing' => true,
+                        ]) . "</button>",
+                ];
+            }else{
+                return[
+                    'success' => false,
+                    'message' => translate([
+                        'text' => "Facet Group to copy could not be found.",
+                        'isAdminFacing' => true,
+                    ])
+                ];
+            }
+        }else{
+            return[
+                'success' => false,
+                'message' => translate([
+                    'text' => "Facet Group to copy was not provided.",
+                    'isAdminFacing' => true,
+                ])
+            ];
+        }
+    }
+
+    /** @noinspection PhpUnused */
+    function doCopyEventsFacetGroup() : array {
+
+        if (!empty($_REQUEST['name'])) {
+            $facetsProcessed = 0;
+            $id = $_REQUEST['id'];
+            $name = $_REQUEST['name'];
+
+            require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
+            $curObj = new EventsFacetGroup();
+            $curObj->id = $id;
+            if ($curObj->find(true)) {
+                $curObjFacets = $curObj->getFacets();
+                $newGroup = new EventsFacetGroup();
+                $newGroup->name = $name;
+                if (isset($curObj->eventFacetCountsToShow)) {
+                    $newGroup->eventFacetCountsToShow = $curObj->eventFacetCountsToShow;
+                }
+                if ($newGroup->insert()) {
+                    foreach ($curObjFacets as $curFacet) {
+                        $newFacet = $curFacet;
+                        $newFacet->id = null;
+                        $newFacet->facetGroupId = $newGroup->id;
+                        $newFacet->insert();
+                        $facetsProcessed++;
+                    }
+                } else {
+                    return [
+                        'success' => false,
+                        'title' => 'Error',
+                        'message' => "Unable to create new facet group",
+                    ];
+                }
+            }
+
+            if ($facetsProcessed > 0) {
+                return [
+                    'success' => true,
+                    'title' => 'Success',
+                    'message' => "Copied $facetsProcessed facets to $name",
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'title' => 'Error',
+                    'message' => "Unable to copy existing facets into $name",
+                ];
+            }
+        } else {
+            return [
+                'success' => false,
+                'title' => 'Error',
+                'message' => "A name was not provided for the new facet group",
+            ];
+        }
+    }
 
 	/** @noinspection PhpUnused */
 	function getCopyDisplaySettingsForm() : array {
