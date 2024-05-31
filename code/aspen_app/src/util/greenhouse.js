@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import { popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
+import { getAppSettings, LIBRARY } from './loadLibrary';
 import { PATRON } from './loadPatron';
 
 /**
@@ -82,6 +83,7 @@ export async function updateAspenLiDABuild(updateId, updateChannel, updateDate) 
 }
 
 export async function fetchNearbyLibrariesFromGreenhouse() {
+     let isBranded = false;
      let channel = GLOBALS.releaseChannel;
      if (channel === 'DEV' || 'alpha' || 'beta' || 'internal') {
           channel = 'any';
@@ -92,6 +94,7 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           longitude = 0;
      if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
           method = 'getLibrary';
+          isBranded = true;
           url = Constants.expoConfig.extra.apiUrl;
      }
      if (GLOBALS.slug === 'aspen-lida-bws') {
@@ -107,6 +110,7 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
      } else if (GLOBALS.slug === 'aspen-lida-bws') {
           channel = 'any';
      }
+
      if (_.isNull(PATRON.coords.lat) && _.isNull(PATRON.coords.long)) {
           try {
                latitude = await SecureStore.getItemAsync('latitude');
@@ -141,6 +145,21 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           let showSelectLibrary = true;
           if (data.count <= 1) {
                showSelectLibrary = false;
+          }
+
+          if (isBranded) {
+               await getAppSettings(GLOBALS.url, GLOBALS.timeoutAverage, GLOBALS.slug);
+               console.log(LIBRARY.appSettings);
+               let autoPickUserHomeLocation = false;
+
+               if (LIBRARY.appSettings.autoPickUserHomeLocation) {
+                    autoPickUserHomeLocation = LIBRARY.appSettings.autoPickUserHomeLocation;
+               }
+
+               console.log('autoPickUserHomeLocation: ' + autoPickUserHomeLocation);
+               if (autoPickUserHomeLocation) {
+                    showSelectLibrary = false;
+               }
           }
 
           return {

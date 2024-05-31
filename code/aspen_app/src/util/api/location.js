@@ -4,14 +4,15 @@ import { createAuthTokens, getHeaders } from '../apiAuth';
 import { GLOBALS } from '../globals';
 import { LIBRARY } from '../loadLibrary';
 
-export async function getLocationInfo(url = null) {
+export async function getLocationInfo(url = null, locationId = null) {
      const apiUrl = url ?? LIBRARY.url;
-     let scope, locationId;
-     try {
-          scope = await AsyncStorage.getItem('@solrScope');
-          locationId = await AsyncStorage.getItem('@locationId');
-     } catch (e) {
-          console.log(e);
+
+     if (!locationId) {
+          try {
+               locationId = await AsyncStorage.getItem('@locationId');
+          } catch (e) {
+               console.log(e);
+          }
      }
 
      const discovery = create({
@@ -21,7 +22,6 @@ export async function getLocationInfo(url = null) {
           auth: createAuthTokens(),
           params: {
                id: locationId,
-               library: scope,
                version: GLOBALS.appVersion,
           },
      });
