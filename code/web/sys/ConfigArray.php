@@ -150,7 +150,7 @@ function ini_merge($config_ini, $custom_ini) {
  */
 function readConfig() {
 	//Read default configuration file
-	$configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
+    $configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
 	$mainArray = parse_ini_file($configFile, true);
 
 	global $fullServerName, $serverName, $instanceName;
@@ -176,13 +176,26 @@ function readConfig() {
 	$serverName = 'default';
 	while (count($serverParts) > 0) {
 		$tmpServername = join('.', $serverParts);
-		$configFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.ini";
+
+        $configDir = getenv("CONFIG_DIRECTORY");
+
+        if (file_exists($configDir)) {
+            $configFile = $configDir . 'conf/config.ini';
+        } else {
+            $configFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.ini";
+        }
+
 		if (file_exists($configFile)) {
 			$serverArray = parse_ini_file($configFile, true);
 			$mainArray = ini_merge($mainArray, $serverArray);
 			$serverName = $tmpServername;
 
-			$passwordFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.pwd.ini";
+            if ($configFile == $configDir . 'conf/config.ini') {
+                $passwordFile = $configDir . 'conf/config.pwd.ini';
+            } else {
+                $passwordFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.pwd.ini";
+            }
+
 			if (file_exists($passwordFile)) {
 				$serverArray = parse_ini_file($passwordFile, true);
 				$mainArray = ini_merge($mainArray, $serverArray);

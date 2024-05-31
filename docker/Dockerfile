@@ -62,13 +62,13 @@ RUN apt -y update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Adding entrypoint file
-COPY docker/start.sh /start.sh
+COPY aspen-discovery/docker/start.sh /start.sh
 
 # Load apache modules
 RUN a2enmod rewrite
 
 # Add aspen-discovery
-COPY . /usr/local/aspen-discovery
+COPY aspen-discovery /usr/local/aspen-discovery
 
 # Delete sites
 RUN cd /usr/local/aspen-discovery/sites \
