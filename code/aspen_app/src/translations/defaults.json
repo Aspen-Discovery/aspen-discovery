@@ -549,5 +549,6 @@
   "update_screen_brightness_android": "Open your device settings, tap 'Permissions' and choose how you'd like to allow access to adjusting your screen brightness.",
   "last_checkout": "Last Checkout",
   "appears_on_these_lists": "Appears on these lists",
-  "appears_on_list": "Appears on list"
+  "appears_on_list": "Appears on list",
+  "android_end_of_life": "Your version of Android is no longer supported. Please upgrade to continue receiving updates to this app."
 }

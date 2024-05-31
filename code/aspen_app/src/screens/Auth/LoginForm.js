@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import _ from 'lodash';
 import { Button, Center, FormControl, Icon, Input, Pressable } from 'native-base';
 import React, { useRef } from 'react';
 
@@ -109,6 +110,7 @@ export const GetLoginForm = (props) => {
 
                if (version >= '23.02.00') {
                     setPinValidationRules(result.library.pinValidationRules);
+                    console.log(patronsLibrary['baseUrl']);
                     const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
                     if (validatedUser) {
                          GLOBALS.appSessionId = validatedUser.session ?? '';
@@ -164,9 +166,10 @@ export const GetLoginForm = (props) => {
           await SecureStore.setItemAsync('secretKey', valueSecret);
           await AsyncStorage.setItem('@lastStoredVersion', Constants.expoConfig.version);
 
-          if (PATRON.homeLocationId) {
+          if (PATRON.homeLocationId && !_.includes(GLOBALS.slug, 'aspen-lida')) {
+               console.log(PATRON.homeLocationId);
                await getLocationInfo(GLOBALS.url).then(async (patronsLibrary) => {
-                    if (patronsLibrary.baseUrl) {
+                    if (!_.isUndefined(patronsLibrary.baseUrl)) {
                          LIBRARY.url = patronsLibrary.baseUrl;
                          await SecureStore.setItemAsync('library', JSON.stringify(patronsLibrary.libraryId));
                          await AsyncStorage.setItem('@libraryId', JSON.stringify(patronsLibrary.libraryId));
