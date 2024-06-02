@@ -94,7 +94,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		switch (baseSettings.getFormatSource()) {
 			case "bib":
 			case "item":
-				FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(marcRecord, baseSettings, logEntry, logger);
+				FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(null, marcRecord, baseSettings, logEntry, logger);
 				groupingFormat = formatInfo.getGroupingFormat(baseSettings);
 
 				break;

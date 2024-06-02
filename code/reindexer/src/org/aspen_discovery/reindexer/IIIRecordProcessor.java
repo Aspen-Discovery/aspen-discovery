@@ -1,6 +1,8 @@
 package org.aspen_discovery.reindexer;
 
 import com.opencsv.CSVReader;
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
@@ -313,7 +315,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
+	public void loadPrintFormatInformation(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		boolean formatLoaded = false;
 		SierraExportFieldMapping exportFieldMapping = settings.getSierraExportFieldMappings();
 		if (exportFieldMapping != null) {
@@ -323,34 +325,20 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 					Subfield matTypeSubfield = sierraFixedField.getSubfield(exportFieldMapping.getMaterialTypeSubfield());
 					if (matTypeSubfield != null) {
 						String formatValue = matTypeSubfield.getData().trim();
-						if (hasTranslation("format", formatValue)) {
-							String translatedFormat = translateValue("format", formatValue, recordInfo.getRecordIdentifier());
-							if (translatedFormat != null && !translatedFormat.isEmpty()) {
-								formatLoaded = true;
-								recordInfo.addFormat(translateValue("format", formatValue, recordInfo.getRecordIdentifier()));
-								recordInfo.addFormatCategory(translateValue("format_category", formatValue, recordInfo.getRecordIdentifier()));
-								String formatBoost = null;
-								if (hasTranslation("format_boost", formatValue)) {
-									formatBoost = translateValue("format_boost", formatValue, recordInfo.getRecordIdentifier());
-								}
-								try {
-									if (formatBoost != null && !formatBoost.isEmpty()) {
-										recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
-									}
-								} catch (Exception e) {
-									if (!unhandledFormatBoosts.contains(formatValue)) {
-										unhandledFormatBoosts.add(formatValue);
-										logger.warn("Could not get boost for format " + formatValue);
-									}
-								}
-							}
+						FormatMapValue formatMapValue = settings.getFormatMapValue(formatValue, BaseIndexingSettings.FORMAT_TYPE_MAT_TYPE);
+						if (formatMapValue != null) {
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + formatMapValue.getFormat() + " based on Mat Type " + formatValue, 2);}
+							recordInfo.addFormat(formatMapValue.getFormat());
+							recordInfo.addFormatCategory(formatMapValue.getFormatCategory());
+							recordInfo.setFormatBoost(formatMapValue.getFormatBoost());
+							formatLoaded = true;
 						}
 					}
 				}
 			}
 		}
 		if (!formatLoaded) {
-			super.loadPrintFormatInformation(recordInfo, record, hasChildRecords);
+			super.loadPrintFormatInformation(groupedWork, recordInfo, record, hasChildRecords);
 		}
 	}
 }

@@ -702,7 +702,7 @@ public class KohaExportMain {
 			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
 			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 			PreparedStatement getExistingValuesForFormatMapStmt = dbConn.prepareStatement("SELECT * from format_map_values where indexingProfileId = ?");
-			PreparedStatement insertFormatStmt = dbConn.prepareStatement("INSERT INTO format_map_values (indexingProfileId, value, format, formatCategory, formatBoost) VALUES (?, ?, ?, 'Other', 1)");
+			PreparedStatement insertFormatStmt = dbConn.prepareStatement("INSERT INTO format_map_values (indexingProfileId, value, format, formatCategory, formatBoost, appliesToItemType) VALUES (?, ?, ?, 'Other', 1, 1)");
 
 			//Load branches into location
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT branchcode, branchname from branches");

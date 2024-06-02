@@ -47,10 +47,26 @@ AspenDiscovery.GroupedWork = (function(){
 		forceReindex: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
-					setTimeout("AspenDiscovery.closeLightbox();", 3000);
-				}
-			);
+				AspenDiscovery.showMessage(data.title, data.message, true, false);
+				setTimeout("AspenDiscovery.closeLightbox();", 3000);
+			});
+			return false;
+		},
+
+		viewDebugging: function (id) {
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=viewDebugging';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons, false, false);
+			});
+			return false;
+		},
+
+		resetDebugging: function (id) {
+			AspenDiscovery.closeLightbox();
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=resetDebugging';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage(data.title, data.message, true, false);
+			});
 			return false;
 		},
 

@@ -8,11 +8,12 @@ class GroupedWork_AJAX extends JSON_Action {
 	 * @return array
 	 */
 	/** @noinspection PhpUnused */
-	function clearUserRating() {
+	function clearUserRating() : array {
 		return $this->deleteUserReview();
 	}
 
-	function deleteUserReview() {
+	/** @noinspection PhpUnused */
+	function deleteUserReview() : array {
 		$id = $_REQUEST['id'];
 		$result = ['result' => false];
 		if (!UserAccount::isLoggedIn()) {
@@ -37,7 +38,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function forceReindex() {
+	function forceReindex() : array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -48,17 +49,81 @@ class GroupedWork_AJAX extends JSON_Action {
 
 			return [
 				'success' => true,
+				'title' => 'Success',
 				'message' => 'This title will be indexed again shortly.',
 			];
 		} else {
 			return [
 				'success' => false,
+				'title' => 'Error',
 				'message' => 'Unable to mark the title for indexing. Could not find the title.',
 			];
 		}
 	}
 
-	function getDescription() {
+	/** @noinspection PhpUnused */
+	function viewDebugging() : array {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			$debuggingInfo = $groupedWork->getDebuggingInfo();
+			global $interface;
+			$interface->assign('debuggingInfo', $debuggingInfo);
+			$modalBody = $interface->fetch('GroupedWork/debugging.tpl');
+
+			if ($debuggingInfo->processed) {
+				$buttons = "<button onclick=\"return AspenDiscovery.GroupedWork.resetDebugging('$groupedWork->permanent_id');\" class=\"modal-buttons btn btn-default\" style='float: left'>" . translate([
+						'text' => "Reset Info",
+						'isAdminFacing' => true,
+					]) . "</button></a>";
+			}else{
+				$buttons = '';
+			}
+			return [
+				'success' => true,
+				'title' => 'Diagnostic Information',
+				'message' => $modalBody,
+				'modalButtons' => $buttons,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Diagnostic Information',
+				'message' => 'Unable to mark the title for diagnostics. Could not find the title.',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function resetDebugging() : array {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			$groupedWork->resetDebugging();
+
+			return [
+				'success' => true,
+				'title' => 'Diagnostic Information',
+				'message' => 'Reset Diagnostic Information reset.',
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Diagnostic Information',
+				'message' => 'Unable to reset diagnostics. Could not find the title.',
+				'modalButtons' => '',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getDescription() : array {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$result = [
 			'success' => false,
@@ -83,7 +148,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getEnrichmentInfo() {
+	function getEnrichmentInfo() : array {
 		global $interface;
 		global $memoryWatcher;
 
@@ -182,7 +247,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getMoreLikeThis() {
+	function getMoreLikeThis() : array {
 		global $configArray;
 		global $memoryWatcher;
 
@@ -233,7 +298,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getWhileYouWait() {
+	function getWhileYouWait() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -265,7 +330,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getYouMightAlsoLike() {
+	function getYouMightAlsoLike() : array {
 		global $interface;
 		global $memoryWatcher;
 
@@ -313,7 +378,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		];
 	}
 
-	function getScrollerTitle($record, $index, $scrollerName) {
+	function getScrollerTitle($record, $index, $scrollerName) : array {
 		$cover = $record['mediumCover'];
 		$title = preg_replace("~\\s*([/:])\\s*$~", "", $record['title']);
 		$series = '';
@@ -350,8 +415,8 @@ class GroupedWork_AJAX extends JSON_Action {
 			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
 		} else {
 			$originalId = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults{$index}')\">" . "<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" . "</div>";
-			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
+			$formattedTitle = "<div id=\"scrollerTitle$scrollerName$index\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults$index')\">" . "<img src=\"$cover\" class=\"scrollerTitleCover\" alt=\"$title Cover\"/>" . "</div>";
+			$formattedTitle .= "<div id=\"noResults$index\" style=\"display:none\">
 					<div class=\"row\">
 						<div class=\"result-label col-md-3\">Author: </div>
 						<div class=\"col-md-9 result-value notranslate\">
@@ -361,7 +426,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					<div class=\"series row\">
 						<div class=\"result-label col-md-3\">Series: </div>
 						<div class=\"col-md-9 result-value\">
-							<a href=\"/GroupedWork/{$originalId}/Series\">{$series}</a>
+							<a href=\"/GroupedWork/$originalId/Series\">$series</a>
 						</div>
 					</div>
 					<div class=\"row related-manifestation\">
@@ -376,16 +441,16 @@ class GroupedWork_AJAX extends JSON_Action {
 		}
 
 		return [
-			'id' => isset($record['id']) ? $record['id'] : '',
+			'id' => $record['id'] ?? '',
 			'image' => $cover,
 			'title' => $title,
-			'author' => isset($record['author']) ? $record['author'] : '',
+			'author' => $record['author'] ?? '',
 			'formattedTitle' => $formattedTitle,
 		];
 	}
 
 	/** @noinspection PhpUnused */
-	function getGoDeeperData() {
+	function getGoDeeperData() : array {
 		require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
 		$dataType = strip_tags($_REQUEST['dataType']);
 
@@ -404,10 +469,10 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getWorkInfo() {
+	function getWorkInfo() : array {
 		global $interface;
 
-		//Indicate we are showing search results so we don't get hold buttons
+		//Indicate we are showing search results, so we don't get hold buttons
 		$interface->assign('displayingSearchResults', true);
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -470,7 +535,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function rateTitle() {
+	function rateTitle() : array {
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()) {
 			return [
@@ -553,7 +618,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getReviewInfo() {
+	function getReviewInfo() : array {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
@@ -588,7 +653,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getPromptForReviewForm() {
+	function getPromptForReviewForm() : array {
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
 			if (!$user->noPromptForUserReviews) {
@@ -602,7 +667,7 @@ class GroupedWork_AJAX extends JSON_Action {
 							'isPublicFacing' => true,
 						]),
 						'modalBody' => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
-						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"{$id}\");'>" . translate([
+						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"$id\");'>" . translate([
 								'text' => "Submit A Review",
 								'isPublicFacing' => true,
 							]) . "</button>",
@@ -614,7 +679,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					];
 				}
 			} else {
-				// Option already set to don't prompt, so let's don't prompt already.
+				// Option already set to don't prompt, so lets don't prompt already.
 				$results = [
 					'prompt' => false,
 				];
@@ -629,7 +694,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function setNoMoreReviews() {
+	function setNoMoreReviews() : array {
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
 			$user->noPromptForUserReviews = 1;
@@ -641,7 +706,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getReviewForm() {
+	function getReviewForm() : array {
 		global $interface;
 		$id = $_REQUEST['id'];
 		if (!empty($id)) {
@@ -663,7 +728,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("GroupedWork/review-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"{$id}\");'>" . translate([
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"$id\");'>" . translate([
 						'text' => "Submit Review",
 						'isPublicFacing' => true,
 					]) . "</button>",
@@ -681,7 +746,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function saveReview() {
+	function saveReview() : array {
 		$result = [];
 
 		if (UserAccount::isLoggedIn() == false) {
@@ -699,8 +764,8 @@ class GroupedWork_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 			$id = $_REQUEST['id'];
-			$rating = isset($_REQUEST['rating']) ? $_REQUEST['rating'] : '';
-			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (may be only ratings instead)
+			$rating = $_REQUEST['rating'] ?? '';
+			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (maybe only ratings instead)
 			$comment = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
 
 			$groupedWorkReview = new UserWorkReview();
@@ -748,7 +813,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getEmailForm() {
+	function getEmailForm() : array {
 		global $interface;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 
@@ -766,7 +831,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 			'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>" . translate([
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"$id\"); return false;'>" . translate([
 					'text' => 'Send Email',
 					'isPublicFacing' => true,
 				]) . "</button>",
@@ -774,7 +839,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function sendEmail() {
+	function sendEmail() : array {
 		global $interface;
 
 		$to = strip_tags($_REQUEST['to']);
@@ -816,6 +881,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		$interface->assign('from', $from);
 		$interface->assign('emailDetails', $recordDriver->getEmail());
 		$interface->assign('recordID', $recordDriver->getUniqueID());
+		/** @noinspection PhpStrFunctionsInspection */
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)) {
 			$interface->assign('message', $message);
 			$body = $interface->fetch('Emails/grouped-work-email.tpl');
@@ -829,15 +895,6 @@ class GroupedWork_AJAX extends JSON_Action {
 					'result' => true,
 					'message' => translate([
 						'text' => 'Your email was sent successfully.',
-						'isPublicFacing' => 'true',
-					]),
-				];
-			} elseif (($emailResult instanceof AspenError)) {
-				$result = [
-					'result' => false,
-					'message' => translate([
-						'text' => "Your email message could not be sent: %1%.",
-						1 => $emailResult->getMessage(),
 						'isPublicFacing' => 'true',
 					]),
 				];
@@ -863,7 +920,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function markNotInterested() {
+	function markNotInterested() : array {
 		$result = [
 			'result' => false,
 			'message' => "Unknown error.",
@@ -912,7 +969,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearNotInterested() {
+	function clearNotInterested() : array {
 		$idToClear = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterested = new NotInterested();
@@ -927,7 +984,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getInnReachInfo() {
+	function getInnReachInfo() : array {
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -967,7 +1024,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getSeriesSummary() {
+	function getSeriesSummary() : array {
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
@@ -998,23 +1055,23 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover() {
+	function reloadCover() : array {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookCoverInfo = new BookCoverInfo();
-		$bookCoverInfo->recordType = 'grouped_work';
-		$bookCoverInfo->recordId = $id;
+		$bookCoverInfo->__set('recordType', 'grouped_work');
+		$bookCoverInfo->__set('recordId',  $id);
 		if ($bookCoverInfo->find(true)) {
 			//Force the image source to be determined again unless the user uploaded a cover.
-			if ($bookCoverInfo->imageSource != "upload") {
-				$bookCoverInfo->imageSource = '';
+			if ($bookCoverInfo->getImageSource() != "upload") {
+				$bookCoverInfo->__set('imageSource',  '');
 			}
-			$bookCoverInfo->thumbnailLoaded = 0;
-			$bookCoverInfo->mediumLoaded = 0;
-			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->__set('thumbnailLoaded',  0);
+			$bookCoverInfo->__set('mediumLoaded',  0);
+			$bookCoverInfo->__set('largeLoaded',  0);
 			$bookCoverInfo->update();
 		}
 
@@ -1027,21 +1084,21 @@ class GroupedWork_AJAX extends JSON_Action {
 					$source,
 					$recordId,
 				] = explode(':', $record->id);
-				$bookCoverInfo->recordType = $source;
-				$bookCoverInfo->recordId = $recordId;
+				$bookCoverInfo->__set('recordType', $source);
+				$bookCoverInfo->__set('recordId', $recordId);
 			} else {
-				$bookCoverInfo->recordType = $record->source;
-				$bookCoverInfo->recordId = $record->id;
+				$bookCoverInfo->__set('recordType', $record->source);
+				$bookCoverInfo->__set('recordId', $record->id);
 			}
 
 			if ($bookCoverInfo->find(true)) {
 				//Force the image source to be determined again unless the user uploaded a cover.
-				if ($bookCoverInfo->imageSource != "upload") {
-					$bookCoverInfo->imageSource = '';
+				if ($bookCoverInfo->getImageSource() != "upload") {
+					$bookCoverInfo->__set('imageSource', '');
 				}
-				$bookCoverInfo->thumbnailLoaded = 0;
-				$bookCoverInfo->mediumLoaded = 0;
-				$bookCoverInfo->largeLoaded = 0;
+				$bookCoverInfo->__set('thumbnailLoaded', 0);
+				$bookCoverInfo->__set('mediumLoaded', 0);
+				$bookCoverInfo->__set('largeLoaded', 0);
 				$bookCoverInfo->update();
 			}
 		}
@@ -1056,7 +1113,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getUploadCoverForm() {
+	function getUploadCoverForm() : array {
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -1080,7 +1137,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function uploadCover() {
+	function uploadCover() : array {
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -1120,8 +1177,10 @@ class GroupedWork_AJAX extends JSON_Action {
 					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 					require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
+					/** @noinspection SpellCheckingInspection */
 					if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
 						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+						/** @noinspection PhpIfWithCommonPartsInspection */
 						if ($res) {
 							$id = $_REQUEST['id'];
 							$recordType = 'grouped_work';
@@ -1135,7 +1194,8 @@ class GroupedWork_AJAX extends JSON_Action {
 							'text' => 'Your cover has been uploaded successfully',
 							'isAdminFacing' => true,
 						]);
-					}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
+					} /** @noinspection SpellCheckingInspection */
+					elseif ($uploadOption == 'alldefault') {//update image for all records in grouped work with default covers
 						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1147,8 +1207,8 @@ class GroupedWork_AJAX extends JSON_Action {
 							foreach ($relatedRecords as $record) {
 								require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 								$hasDefaultCover = new BookCoverInfo();
-								$hasDefaultCover->id = $record->id;
-								$hasDefaultCover->imageSource = 'default';
+								$hasDefaultCover->__set('id',$record->id);
+								$hasDefaultCover->__set('imageSource', 'default');
 								if ($hasDefaultCover->find(true)){
 									$id = substr(strstr($record->id, ':'), 1);
 									$recordType = $record->source;
@@ -1169,7 +1229,7 @@ class GroupedWork_AJAX extends JSON_Action {
 						} else {
 							$result = $res;
 							$result['message'] = translate([
-								'text' => 'Your cover has been uploaded successfully',
+								'text' => 'Your cover could not be uploaded',
 								'isAdminFacing' => true,
 							]);
 						}
@@ -1219,13 +1279,13 @@ class GroupedWork_AJAX extends JSON_Action {
 		if ($result['success']) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
-			$bookCoverInfo->recordType = $_REQUEST['recordType'] ?? 'grouped_work';
-			$bookCoverInfo->recordId = $_REQUEST['recordId'] ?? $_REQUEST['id'];
+			$bookCoverInfo->__set('recordType', $_REQUEST['recordType'] ?? 'grouped_work');
+			$bookCoverInfo->__set('recordId', $_REQUEST['recordId'] ?? $_REQUEST['id']);
 			if($bookCoverInfo->find(true)) {
-				$bookCoverInfo->imageSource = "upload";
-				$bookCoverInfo->thumbnailLoaded = 0;
-				$bookCoverInfo->mediumLoaded = 0;
-				$bookCoverInfo->largeLoaded = 0;
+				$bookCoverInfo->__set('imageSource', "upload");
+				$bookCoverInfo->__set('thumbnailLoaded', 0);
+				$bookCoverInfo->__set('mediumLoaded', 0);
+				$bookCoverInfo->__set('largeLoaded', 0);
 				if($bookCoverInfo->update()) {
 					$result['message'] = translate([
 						'text' => 'Your cover has been uploaded successfully',
@@ -1238,7 +1298,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getUploadCoverFormByURL() {
+	function getUploadCoverFormByURL() : array {
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -1262,7 +1322,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function uploadCoverByURL() {
+	function uploadCoverByURL() : array {
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -1304,8 +1364,14 @@ class GroupedWork_AJAX extends JSON_Action {
 			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if ($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
+				$result['message'] = translate([
+					'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+					'isAdminFacing' => true,
+				]);
+
+				$upload = file_put_contents($destFullPath, $uploadedFile);
+				/** @noinspection SpellCheckingInspection */
 				if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
-					$upload = file_put_contents($destFullPath, $uploadedFile);
 					if ($upload) {
 						$id = $_REQUEST['id'];
 						$recordType = 'grouped_work';
@@ -1314,13 +1380,13 @@ class GroupedWork_AJAX extends JSON_Action {
 						if ($upload){
 							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 							$bookCoverInfo = new BookCoverInfo();
-							$bookCoverInfo->recordType = $recordType;
-							$bookCoverInfo->recordId = $id;
+							$bookCoverInfo->__set('recordType', $recordType);
+							$bookCoverInfo->__set('recordId',  $id);
 							if ($bookCoverInfo->find(true)) {
-								$bookCoverInfo->imageSource = 'upload';
-								$bookCoverInfo->thumbnailLoaded = 0;
-								$bookCoverInfo->mediumLoaded = 0;
-								$bookCoverInfo->largeLoaded = 0;
+								$bookCoverInfo->__set('imageSource',  'upload');
+								$bookCoverInfo->__set('thumbnailLoaded',  0);
+								$bookCoverInfo->__set('mediumLoaded',  0);
+								$bookCoverInfo->__set('largeLoaded',  0);
 								if ($bookCoverInfo->update()) {
 									$result['message'] = translate([
 										'text' => 'Your cover has been uploaded successfully',
@@ -1329,38 +1395,28 @@ class GroupedWork_AJAX extends JSON_Action {
 								}
 							}
 							$result['success'] = true;
-						} else {
-							$result['message'] = translate([
-								'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-								'isAdminFacing' => true,
-							]);
 						}
-					} else {
-						$result['message'] = translate([
-							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-							'isAdminFacing' => true,
-						]);
 					}
-				} elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
-					$upload = file_put_contents($destFullPath, $uploadedFile);
+				} /** @noinspection SpellCheckingInspection */
+				elseif ($uploadOption == 'alldefault') {//update image for all records in grouped work with default covers
 					if ($upload) {
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$id = $_REQUEST['id'];
 						$recordDriver = new GroupedWorkDriver($id);
 						$relatedRecords = $recordDriver->getRelatedRecords(true);
 
-                        //set result as success for initial upload
-                        $result['success'] = true;
-                        $result['message'] = translate([
-                            'text' => 'Your cover has been uploaded successfully',
-                            'isAdminFacing' => true,
-                        ]);
+						//set result as success for initial upload
+						$result['success'] = true;
+						$result['message'] = translate([
+							'text' => 'Your cover has been uploaded successfully',
+							'isAdminFacing' => true,
+						]);
 
 						foreach ($relatedRecords as $record) {
 							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 							$hasDefaultCover = new BookCoverInfo();
-							$hasDefaultCover->id = $record->id;
-							$hasDefaultCover->imageSource = 'default';
+							$hasDefaultCover->__set('id', $record->id);
+							$hasDefaultCover->__set('imageSource', 'default');
 							if ($hasDefaultCover->find(true)){
 								$id = substr(strstr($record->id, ':'), 1);
 								$recordType = $record->source;
@@ -1369,13 +1425,13 @@ class GroupedWork_AJAX extends JSON_Action {
 								if ($upload){
 									require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 									$bookCoverInfo = new BookCoverInfo();
-									$bookCoverInfo->recordType = $recordType;
-									$bookCoverInfo->recordId = $id;
+									$bookCoverInfo->__set('recordType', $recordType);
+									$bookCoverInfo->__set('recordId', $id);
 									if ($bookCoverInfo->find(true)) {
-										$bookCoverInfo->imageSource = 'upload';
-										$bookCoverInfo->thumbnailLoaded = 0;
-										$bookCoverInfo->mediumLoaded = 0;
-										$bookCoverInfo->largeLoaded = 0;
+										$bookCoverInfo->__set('imageSource', 'upload');
+										$bookCoverInfo->__set('thumbnailLoaded', 0);
+										$bookCoverInfo->__set('mediumLoaded', 0);
+										$bookCoverInfo->__set('largeLoaded', 0);
 										if ($bookCoverInfo->update()) {
 											$result['message'] = translate([
 												'text' => 'Your cover has been uploaded successfully',
@@ -1383,31 +1439,20 @@ class GroupedWork_AJAX extends JSON_Action {
 											]);
 										}
 									}
-								}else{
-									$result['message'] = translate([
-										'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-										'isAdminFacing' => true,
-									]);
 								}
 							}
 						}
-					} else {
-						$result['message'] = translate([
-							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-							'isAdminFacing' => true,
-						]);
 					}
 				}else{ //only updating grouped work or individual bib cover
-					$upload = file_put_contents($destFullPath, $uploadedFile);
 
 					if($recordType == 'grouped_work') {
 						if ($upload){
-                            //set result as success for initial upload
-                            $result['success'] = true;
-                            $result['message'] = translate([
-                                'text' => 'Your cover has been uploaded successfully',
-                                'isAdminFacing' => true,
-                            ]);
+							//set result as success for initial upload
+							$result['success'] = true;
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 							$recordDriver = new GroupedWorkDriver($id);
 							$relatedRecords = $recordDriver->getRelatedRecords(true);
@@ -1421,13 +1466,13 @@ class GroupedWork_AJAX extends JSON_Action {
 
 									require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 									$bookCoverInfo = new BookCoverInfo();
-									$bookCoverInfo->recordType = $recordType;
-									$bookCoverInfo->recordId = $id;
+									$bookCoverInfo->__set('recordType', $recordType);
+									$bookCoverInfo->__set('recordId', $id);
 									if ($bookCoverInfo->find(true)) {
-										$bookCoverInfo->imageSource = 'upload';
-										$bookCoverInfo->thumbnailLoaded = 0;
-										$bookCoverInfo->mediumLoaded = 0;
-										$bookCoverInfo->largeLoaded = 0;
+										$bookCoverInfo->__set('imageSource', 'upload');
+										$bookCoverInfo->__set('thumbnailLoaded', 0);
+										$bookCoverInfo->__set('mediumLoaded', 0);
+										$bookCoverInfo->__set('largeLoaded', 0);
 										if ($bookCoverInfo->update()) {
 											$result['message'] = translate([
 												'text' => 'Your cover has been uploaded successfully',
@@ -1469,13 +1514,13 @@ class GroupedWork_AJAX extends JSON_Action {
 		if ($result['success']) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
-			$bookCoverInfo->recordType = $_REQUEST['recordType'] ?? 'grouped_work';
-			$bookCoverInfo->recordId = $_REQUEST['recordId'] ?? $_REQUEST['id'];
+			$bookCoverInfo->__set('recordType', $_REQUEST['recordType'] ?? 'grouped_work');
+			$bookCoverInfo->__set('recordId', $_REQUEST['recordId'] ?? $_REQUEST['id']);
 			if ($bookCoverInfo->find(true)) {
-				$bookCoverInfo->imageSource = 'upload';
-				$bookCoverInfo->thumbnailLoaded = 0;
-				$bookCoverInfo->mediumLoaded = 0;
-				$bookCoverInfo->largeLoaded = 0;
+				$bookCoverInfo->__set('imageSource', 'upload');
+				$bookCoverInfo->__set('thumbnailLoaded', 0);
+				$bookCoverInfo->__set('mediumLoaded', 0);
+				$bookCoverInfo->__set('largeLoaded', 0);
 				if ($bookCoverInfo->update()) {
 					$result['message'] = translate([
 						'text' => 'Your cover has been uploaded successfully',
@@ -1488,7 +1533,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCopyDetails() {
+	function getCopyDetails() : array {
 		global $interface;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1510,8 +1555,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		if ($recordId != $id) {
 			$record = $recordDriver->getRelatedRecord($recordId);
+			$summary = null;
 			if ($record != null) {
-				$summary = null;
 				foreach ($relatedManifestation->getVariations() as $variation) {
 					foreach ($variation->getRecords() as $recordWithVariation) {
 						if ($recordWithVariation->id == $recordId) {
@@ -1524,7 +1569,6 @@ class GroupedWork_AJAX extends JSON_Action {
 					}
 				}
 			} else {
-				$summary = null;
 				foreach ($relatedManifestation->getVariations() as $variation) {
 					if ($recordId == $id . '_' . $variation->label) {
 						$summary = $variation->getItemSummary();
@@ -1549,7 +1593,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getGroupWithForm() {
+	function getGroupWithForm() : array {
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1595,7 +1639,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getGroupWithInfo() {
+	function getGroupWithInfo() : array {
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1613,11 +1658,11 @@ class GroupedWork_AJAX extends JSON_Action {
 				$results['message'] = "<div class='row'><div class='col-tn-3'>" . translate([
 						'text' => 'Title',
 						'isAdminFacing' => true,
-					]) . "</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>";
+					]) . "</div><div class='col-tn-9'><strong>$groupedWork->full_title</strong></div></div>";
 				$results['message'] .= "<div class='row'><div class='col-tn-3'>" . translate([
 						'text' => 'Author',
 						'isAdminFacing' => true,
-					]) . "</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
+					]) . "</div><div class='col-tn-9'><strong>$groupedWork->author</strong></div></div>";
 			} else {
 				$results['message'] = translate([
 					'text' => "Could not find a work with that id",
@@ -1634,7 +1679,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function processGroupWithForm() {
+	function processGroupWithForm() : array {
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1727,7 +1773,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getGroupWithSearchForm() {
+	function getGroupWithSearchForm() : array {
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1778,7 +1824,7 @@ class GroupedWork_AJAX extends JSON_Action {
 								$isValidForGrouping = true;
 							}
 							if ($isValidForGrouping) {
-								$availableRecords[$doc['id']] = "$recordIndex) {$primaryWork->full_title} {$primaryWork->author}";
+								$availableRecords[$doc['id']] = "$recordIndex) $primaryWork->full_title $primaryWork->author";
 							}
 						}
 					}
@@ -1812,28 +1858,20 @@ class GroupedWork_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	function getStaffView() {
-		$result = [
-			'success' => false,
-			'message' => translate([
-				'text' => 'Unknown error loading staff view',
-				'isPublicFacing' => true,
-			]),
-		];
+	function getStaffView() : array {
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
 		global $interface;
 		$interface->assign('recordDriver', $recordDriver);
-		$result = [
+		return [
 			'success' => true,
 			'staffView' => $interface->fetch($recordDriver->getStaffView()),
 		];
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function deleteAlternateTitle() {
+	function deleteAlternateTitle() : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -1870,7 +1908,8 @@ class GroupedWork_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	function deleteUngrouping() {
+	/** @noinspection PhpUnused */
+	function deleteUngrouping() : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -1914,7 +1953,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getDisplayInfoForm() {
+	function getDisplayInfoForm() : array {
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1962,7 +2001,7 @@ class GroupedWork_AJAX extends JSON_Action {
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"{$id}\")'>" . translate([
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"$id\")'>" . translate([
 							'text' => "Set Display Info",
 							'isAdminFacing' => true,
 						]) . "</button>",
@@ -1983,7 +2022,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function processDisplayInfoForm() {
+	function processDisplayInfoForm() : array {
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -2053,7 +2092,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function deleteDisplayInfo() {
+	function deleteDisplayInfo() : array {
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -2076,7 +2115,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$groupedWork = new GroupedWork();
 				$groupedWork->permanent_id = $id;
 				if ($groupedWork->find(true)) {
-					$groupedWork->forceReindex(false);
+					$groupedWork->forceReindex();
 				}
 				$result = [
 					'success' => true,
@@ -2101,7 +2140,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function showSelectDownloadForm() {
+	function showSelectDownloadForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -2154,7 +2193,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("GroupedWork/select-download-file-form.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>$buttonTitle</button>",
 			];
 		} else {
 			return [
@@ -2172,7 +2211,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function showSelectFileToViewForm() {
+	function showSelectFileToViewForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -2218,7 +2257,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("GroupedWork/select-view-file-form.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>{$buttonTitle}</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>$buttonTitle</button>",
 			];
 		} else {
 			return [
@@ -2236,7 +2275,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getPreviewRelatedCover() {
+	function getPreviewRelatedCover() : array {
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -2252,7 +2291,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 			'modalBody' => $interface->fetch("GroupedWork/previewRelatedCover.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.setRelatedCover(\"{$recordId}\",\"{$groupedWorkId}\",\"{$recordType}\")'>" . translate([
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.setRelatedCover(\"$recordId\",\"$groupedWorkId\",\"$recordType\")'>" . translate([
 					'text' => "Use Cover",
 					'isAdminFacing' => true,
 				]) . "</button>",
@@ -2260,7 +2299,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function setRelatedCover() {
+	function setRelatedCover() : array {
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
@@ -2313,7 +2352,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearRelatedCover() {
+	function clearRelatedCover() : array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -2342,34 +2381,34 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function thirdPartyCoverToggle() {
+	function thirdPartyCoverToggle() : array {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();
-		$bookcoverInfo->recordType = 'grouped_work';
-		$bookcoverInfo->recordId = $id;
+		$bookcoverInfo->__set('recordType', 'grouped_work');
+		$bookcoverInfo->__set('recordId', $id);
 
 		if ($bookcoverInfo->find(true)) {
-			if ($bookcoverInfo->disallowThirdPartyCover == 0){
-				$bookcoverInfo->disallowThirdPartyCover = 1;
+			if ($bookcoverInfo->getDisallowThirdPartyCover() == 0){
+				$bookcoverInfo->__set('disallowThirdPartyCover', 1);
 				$result['message'] = translate([
 					'text' => 'Covers for this work will no longer be pulled from a third party.',
 					'isAdminFacing' => true,
 				]);
 			}else{
-				$bookcoverInfo->disallowThirdPartyCover = 0;
+				$bookcoverInfo->__set('disallowThirdPartyCover',  0);
 				$result['message'] = translate([
 					'text' => 'Covers for this work will be pulled from a third party if one is available.',
 					'isAdminFacing' => true,
 				]);
 			}
-			$bookcoverInfo->thumbnailLoaded = 0;
-			$bookcoverInfo->mediumLoaded = 0;
-			$bookcoverInfo->largeLoaded = 0;
-			$bookcoverInfo->imageSource = '';
+			$bookcoverInfo->__set('thumbnailLoaded',  0);
+			$bookcoverInfo->__set('mediumLoaded',  0);
+			$bookcoverInfo->__set('largeLoaded',  0);
+			$bookcoverInfo->__set('imageSource',  '');
 			$bookcoverInfo->update();
 			$result['success'] = true;
 
@@ -2382,26 +2421,26 @@ class GroupedWork_AJAX extends JSON_Action {
 						$source,
 						$recordId,
 					] = explode(':', $record->id);
-					$bookCoverInfo->recordType = $source;
-					$bookCoverInfo->recordId = $recordId;
+					$bookCoverInfo->__set('recordType', $source);
+					$bookCoverInfo->__set('recordId', $recordId);
 				} else {
-					$bookCoverInfo->recordType = $record->source;
-					$bookCoverInfo->recordId = $record->id;
+					$bookCoverInfo->__set('recordType', $record->source);
+					$bookCoverInfo->__set('recordId', $record->id);
 				}
 
 				if ($bookCoverInfo->find(true)) {
 					//Force the image source to be determined again unless the user uploaded a cover.
-					if ($bookCoverInfo->disallowThirdPartyCover == 0){
-						$bookCoverInfo->disallowThirdPartyCover = 1;
+					if ($bookCoverInfo->getDisallowThirdPartyCover() == 0){
+						$bookCoverInfo->__set('disallowThirdPartyCover', 1);
 					}else{
-						$bookCoverInfo->disallowThirdPartyCover = 0;
+						$bookCoverInfo->__set('disallowThirdPartyCover', 0);
 					}
-					if ($bookCoverInfo->imageSource != "upload") {
-						$bookCoverInfo->imageSource = '';
+					if ($bookCoverInfo->getImageSource() != "upload") {
+						$bookCoverInfo->__set('imageSource', '');
 					}
-					$bookCoverInfo->thumbnailLoaded = 0;
-					$bookCoverInfo->mediumLoaded = 0;
-					$bookCoverInfo->largeLoaded = 0;
+					$bookCoverInfo->__set('thumbnailLoaded', 0);
+					$bookCoverInfo->__set('mediumLoaded', 0);
+					$bookCoverInfo->__set('largeLoaded', 0);
 					$bookCoverInfo->update();
 				}
 			}
@@ -2418,7 +2457,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearUploadedCover() {
+	function clearUploadedCover() : array {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();
 
@@ -2429,11 +2468,11 @@ class GroupedWork_AJAX extends JSON_Action {
 		if($recordType !== 'grouped_work') {
 			$id = $recordId;
 		}
-		$bookcoverInfo->recordId = $id;
+		$bookcoverInfo->__set('recordId', $id);
 		if ($bookcoverInfo->find(true)) {
 			global $configArray;
 			$bookCoverPath = $configArray['Site']['coverPath'];
-			$permanentId = $bookcoverInfo->recordId;
+			$permanentId = $bookcoverInfo->getRecordId();
 
 			$originalUploadedImage = $bookCoverPath . '/original/' . $permanentId . '.png';
 			if (file_exists($originalUploadedImage)) {
@@ -2455,7 +2494,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				unlink($largeUploadedImage);
 			}
 
-			$bookcoverInfo->imageSource = '';
+			$bookcoverInfo->__set('imageSource', '');
 			$bookcoverInfo->update();
 			return [
 				'success' => true,
@@ -2476,7 +2515,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getLargeCover() {
+	function getLargeCover() : array {
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -2493,7 +2532,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getRelatedManifestations() {
+	function getRelatedManifestations() : array {
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];

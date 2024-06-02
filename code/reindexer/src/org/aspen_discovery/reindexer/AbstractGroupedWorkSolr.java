@@ -5,6 +5,8 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.StringUtils;
+import org.marc4j.marc.DataField;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -107,6 +109,10 @@ public abstract class AbstractGroupedWorkSolr {
 
 	//Store a list of scopes for the work
 	protected HashMap<String, ArrayList<ScopingInfo>> relatedScopes = new HashMap<>();
+
+	protected boolean debugEnabled = false;
+	protected long debugId = -1L;
+	protected ArrayList<String> debugMessages = new ArrayList<>();
 
 	public AbstractGroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
@@ -1516,5 +1522,44 @@ public abstract class AbstractGroupedWorkSolr {
 			customFacetValues.put(customFacetNumber, new LinkedHashSet<>());
 		}
 		customFacetValues.get(customFacetNumber).addAll(fieldData);
+	}
+
+	public boolean isDebugEnabled() {
+		return debugEnabled;
+	}
+
+	public void setDebugEnabled(boolean debugEnabled) {
+		this.debugEnabled = debugEnabled;
+	}
+
+	public long getDebugId() {
+		return debugId;
+	}
+
+	public void setDebugId(long debugId) {
+		this.debugId = debugId;
+	}
+
+	public void addDebugMessage(String message) {
+		debugMessages.add(message);
+	}
+
+	public void addDebugMessage(String message, int indentLevel) {
+		StringBuilder messageBuilder = new StringBuilder(message);
+		for (int i = 0; i < indentLevel; i++) {
+			messageBuilder.insert(0, "&nbsp;&nbsp;");
+		}
+		debugMessages.add(messageBuilder.toString());
+	}
+
+	public String getDebuggingInfo() {
+		StringBuilder debugInfo = new StringBuilder();
+		for (String debugMessage : debugMessages) {
+			if (debugInfo.length() != 0) {
+				debugInfo.append("<br/>");
+			}
+			debugInfo.append(debugMessage);
+		}
+		return debugInfo.toString();
 	}
 }

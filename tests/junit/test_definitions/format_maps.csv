@@ -1,11 +1,11 @@
-name,value,format_category,format
-koha,BOOK,Books,Book
-koha,DVD,Movies,DVD
-koha,CD,Music,CD
-koha,VGAME,Other,
-koha,GRAPHICNOV,Books,Graphic Novel
-koha,CHGRAPHIC,Books,Graphic Novel
-koha,BLU,Movies,Blu-ray
-nashville,bk,Books,Book
-minlib,n,Other,Console Game
-swan,TOOLS AND THINGS,Other,Library of Things
+name,value,format_category,format,format_boost
+koha,BOOK,Books,Book,9
+koha,DVD,Movies,DVD,12
+koha,CD,Music,CD,6
+koha,VGAME,Other,Video Game,3
+koha,GRAPHICNOV,Books,Graphic Novel,9
+koha,CHGRAPHIC,Books,Graphic Novel,9
+koha,BLU,Movies,Blu-ray,12
+nashville,bk,Books,Book,9
+minlib,n,Other,Console Game,3
+swan,TOOLS AND THINGS,Other,Library of Things,1

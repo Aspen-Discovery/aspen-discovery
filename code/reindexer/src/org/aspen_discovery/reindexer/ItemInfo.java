@@ -102,7 +102,7 @@ public class ItemInfo{
 		this.eContentFilename = eContentFilename;
 	}
 
-	String getItemIdentifier() {
+	public String getItemIdentifier() {
 		if (itemIdentifier == null) {
 			itemIdentifier = recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
 		}

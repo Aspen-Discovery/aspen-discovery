@@ -1,6 +1,7 @@
 package org.aspen_discovery;
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -133,8 +134,20 @@ public abstract class AbstractIndexingTest  {
 						IndexingProfile profile = indexingProfiles.get(formatData[0]);
 						Assertions.assertNotNull(profile, "No record grouper found for " + formatData[0]);
 
-						profile.addTranslationMapValue("format_category", formatData[1].toLowerCase(), formatData[2]);
-						profile.addTranslationMapValue("format", formatData[1].toLowerCase(), formatData[3]);
+						FormatMapValue formatMapValue = new FormatMapValue();
+						formatMapValue.setValue(formatData[1].trim());
+						formatMapValue.setFormatCategory(formatData[2].trim());
+						formatMapValue.setFormat(formatData[3].trim());
+						formatMapValue.setFormatBoost(Integer.parseInt(formatData[4].trim()));
+						formatMapValue.setAppliesToMatType(true);
+						formatMapValue.setAppliesToBibLevel(true);
+						formatMapValue.setAppliesToItemShelvingLocation(true);
+						formatMapValue.setAppliesToItemCollection(true);
+						formatMapValue.setAppliesToItemSublocation(true);
+						formatMapValue.setAppliesToItemType(true);
+						formatMapValue.setAppliesToItemFormat(true);
+						formatMapValue.setAppliesToFallbackFormat(true);
+						profile.addFormatMapValue(formatMapValue);
 					}
 				}
 			} catch (Exception e) {

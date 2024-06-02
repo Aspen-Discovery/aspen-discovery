@@ -16,7 +16,7 @@ class Mailer {
 	 *
 	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null) {
+	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null) : bool {
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';

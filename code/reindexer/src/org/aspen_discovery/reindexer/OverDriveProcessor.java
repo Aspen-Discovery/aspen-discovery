@@ -105,6 +105,7 @@ class OverDriveProcessor {
 								primaryFormat = mediaType;
 								break;
 						}
+						if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + primaryFormat + " based on a mediaType of " + mediaType, 2);}
 
 						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat, formatCategory, logEntry);
 
@@ -338,6 +339,7 @@ class OverDriveProcessor {
 											validFormats.clear();
 											validFormats.add("eComic");
 											primaryFormat = "eComic";
+											if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Overrode format based on a subject of " + curSubject, 2);}
 											break;
 										}
 									}

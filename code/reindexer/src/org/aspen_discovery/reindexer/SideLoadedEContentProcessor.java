@@ -1,8 +1,6 @@
 package org.aspen_discovery.reindexer;
 
-import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.indexing.SideLoadScope;
-import com.turning_leaf_technologies.indexing.SideLoadSettings;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
@@ -116,6 +114,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		List<DataField> urlFields = MarcUtil.getDataFields(record, 856);
 		RecordInfo relatedRecord = null;
 		int urlIndex = 0;
+		SideLoadSettings sideLoadSettings = (SideLoadSettings) settings;
 		for (DataField urlField : urlFields){
 			//load url into the item
 			if (urlField.getSubfield('u') != null){
@@ -127,7 +126,9 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 							urlIndex++;
 
 							ItemInfo itemInfo = new ItemInfo();
-							itemInfo.setIsEContent(true);
+							if (sideLoadSettings.isConvertFormatToEContent()) {
+								itemInfo.setIsEContent(true);
+							}
 
 							loadDateAdded(identifier, itemInfo);
 							itemInfo.setLocationCode(settings.getName());
@@ -139,8 +140,13 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 							//No Collection for Side loaded eContent
 							//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 							itemInfo.setAvailable(true);
-							itemInfo.setDetailedStatus("Available Online");
-							itemInfo.setGroupedStatus("Available Online");
+							if (sideLoadSettings.isConvertFormatToEContent()) {
+								itemInfo.setDetailedStatus("Available Online");
+								itemInfo.setGroupedStatus("Available Online");
+							}else{
+								itemInfo.setDetailedStatus("On Shelf");
+								itemInfo.setGroupedStatus("On Shelf");
+							}
 							itemInfo.setHoldable(false);
 							itemInfo.setInLibraryUseOnly(false);
 
@@ -163,7 +169,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 							}
 							relatedRecord.addItem(itemInfo);
 
-							loadEContentFormatInformation(record, relatedRecord, itemInfo);
+							loadEContentFormatInformation(groupedWork, record, relatedRecord, itemInfo);
 						}
 					}
 				}
@@ -173,7 +179,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	private void loadEContentFormatInformation(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (settings.getFormatSource().equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
 			translatedFormats.add(settings.getSpecifiedFormat());
@@ -183,7 +189,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			econtentRecord.addFormatCategories(translatedFormatCategories);
 			econtentRecord.setFormatBoost(settings.getSpecifiedFormatBoost());
 		} else {
-			LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(record, settings);
+			LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(groupedWork, record, settings);
 			SideLoadSettings sideLoadSettings = (SideLoadSettings) settings;
 			if (sideLoadSettings.isConvertFormatToEContent()) {
 				//Convert formats from print to eContent version
@@ -238,15 +244,11 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				}
 			}else{
 				for (String format : printFormats) {
-					if (settings.hasTranslation("format", format)) {
-						econtentItem.setFormat(settings.translateValue("format", format));
-					}
-					if (settings.hasTranslation("format_category", format)) {
-						econtentItem.setFormatCategory(settings.translateValue("format_category", format));
-					}
-					if (settings.hasTranslation("format_boost", format)) {
-						String formatBoostString = settings.translateValue("format_boost", format);
-						econtentRecord.setFormatBoost(Integer.parseInt(formatBoostString));
+					FormatMapValue formatMapValue = settings.getFormatMapValue(format, BaseIndexingSettings.FORMAT_TYPE_BIB_LEVEL);
+					if (formatMapValue != null) {
+						econtentItem.setFormat(formatMapValue.getFormat());
+						econtentItem.setFormatCategory(formatMapValue.getFormatCategory());
+						econtentRecord.setFormatBoost(formatMapValue.getFormatBoost());
 					}
 					break;
 				}

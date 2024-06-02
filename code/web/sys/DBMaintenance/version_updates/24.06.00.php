@@ -73,6 +73,39 @@ function getUpdates24_06_00(): array {
 				"ALTER TABLE user CHANGE COLUMN patronType patronType VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''",
 			],
 		],
+		'add_additional_control_over_format_mapping' => [
+			'title' => 'Add additional control over format mapping',
+			'description' => 'Allow administrators to control what fields each row of the format map apply to',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD COLUMN appliesToBibLevel TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToItemShelvingLocation TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToItemSublocation TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToItemCollection TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToItemType TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToItemFormat TINYINT(1) DEFAULT 1",
+			],
+		],
+		'add_additional_control_over_format_mapping_part2' => [
+			'title' => 'Add additional control over format mapping part 2',
+			'description' => 'Allow administrators to control what fields each row of the format map apply to',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD COLUMN appliesToMatType TINYINT(1) DEFAULT 1",
+				"ALTER TABLE format_map_values ADD COLUMN appliesToFallbackFormat TINYINT(1) DEFAULT 1",
+			],
+		],
+		'grouped_work_debugging' => [
+			'title' => 'Grouped Work Debugging',
+			'description' => 'Allow additional debugging information to be output for grouped works during indexing',
+			'sql' => [
+				"CREATE TABLE grouped_work_debug_info (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					permanent_id CHAR(40) NOT NULL UNIQUE, 
+					debugInfo TEXT,
+					debugTime INT,
+					processed TINYINT
+				) ENGINE INNODB",
+			],
+		],
 
 		//kirstien - ByWater
 		'accessibleBrowseCategories' => [

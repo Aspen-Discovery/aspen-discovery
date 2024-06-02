@@ -1,5 +1,7 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
@@ -353,7 +355,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, mainRecordInfo, hasParentRecord, hasChildRecords);
-		if (parentEContentRecords.size() > 0) {
+		if (!parentEContentRecords.isEmpty()) {
 			unsuppressedEcontentRecords.addAll(parentEContentRecords);
 		}
 		return unsuppressedEcontentRecords;
@@ -363,12 +365,12 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	protected void loadIlsEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (econtentItem.getITypeCode() != null) {
 			String iType = econtentItem.getITypeCode().toLowerCase();
-			String translatedFormat = translateValue("format", iType, econtentRecord.getRecordIdentifier());
-			String translatedFormatCategory = translateValue("format_category", iType, econtentRecord.getRecordIdentifier());
-			String translatedFormatBoost = translateValue("format_boost", iType, econtentRecord.getRecordIdentifier());
-			econtentItem.setFormat(translatedFormat);
-			econtentItem.setFormatCategory(translatedFormatCategory);
-			econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
+			FormatMapValue formatMapValue = settings.getFormatMapValue(iType, BaseIndexingSettings.FORMAT_TYPE_ITEM_TYPE);
+			if (formatMapValue != null) {
+				econtentItem.setFormat(formatMapValue.getFormat());
+				econtentItem.setFormatCategory(formatMapValue.getFormatCategory());
+				econtentRecord.setFormatBoost(formatMapValue.getFormatBoost());
+			}
 		}
 	}
 

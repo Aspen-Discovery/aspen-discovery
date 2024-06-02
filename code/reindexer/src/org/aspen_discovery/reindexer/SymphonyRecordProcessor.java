@@ -41,7 +41,6 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				statusFieldData = statusFieldData.toLowerCase();
 				if (hasTranslation("item_status", statusFieldData)){
 					//The status is provided and is in the translation table so we use the status
-					statusFieldData = statusFieldData;
 				}else {
 					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
 						statusFieldData = "Checked Out";

@@ -45,6 +45,14 @@ class ILS_IndexingProfiles extends ObjectEditor {
 						$formatMapValue->format = $mappedValue;
 						$formatMapValue->formatCategory = $defaultFormatCategoryMapValues[$originalValue] ?? 'Other';
 						$formatMapValue->formatBoost = $defaultFormatBoostMapValues[$originalValue] ?? 1;
+						$formatMapValue->appliesToMatType = 0;
+						$formatMapValue->appliesToItemShelvingLocation = 0;
+						$formatMapValue->appliesToItemSublocation = 0;
+						$formatMapValue->appliesToItemCollection = 0;
+						$formatMapValue->appliesToItemType = 0;
+						$formatMapValue->appliesToItemFormat = 0;
+						$formatMapValue->appliesToBibLevel = 1;
+						$formatMapValue->appliesToFallbackFormat = 0;
 						$formatMapValue->insert();
 					}
 				}

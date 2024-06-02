@@ -8,6 +8,15 @@ class FormatMapValue extends DataObject {
 	public $format;
 	public $formatCategory;
 	public $formatBoost;
+	public $appliesToMatType;
+	public $appliesToBibLevel;
+	public $appliesToItemShelvingLocation;
+	public $appliesToItemSublocation;
+	public $appliesToItemCollection;
+	public $appliesToItemType;
+	public $appliesToItemFormat;
+	public $appliesToFallbackFormat;
+
 	public $suppress;
 	public /** @noinspection PhpUnused */
 		$inLibraryUseOnly;
@@ -53,6 +62,7 @@ class FormatMapValue extends DataObject {
 				'maxLength' => '255',
 				'required' => false,
 				'forcesReindex' => true,
+				'onchange' => 'return AspenDiscovery.Admin.calculateGroupingCategories(this);',
 			],
 			'formatCategory' => [
 				'property' => 'formatCategory',
@@ -62,6 +72,13 @@ class FormatMapValue extends DataObject {
 				'values' => $formatCategories,
 				'required' => true,
 				'forcesReindex' => true,
+				'onchange' => 'return AspenDiscovery.Admin.calculateGroupingCategories(this);',
+			],
+			'groupingCategory' => [
+				'property' => 'groupingCategory',
+				'type' => 'dynamic_label',
+				'label' => 'Grouping Category',
+				'description' => 'The Grouping Category for the format',
 			],
 			'formatBoost' => [
 				'property' => 'formatBoost',
@@ -77,6 +94,70 @@ class FormatMapValue extends DataObject {
 				'description' => 'The Format Boost to apply during indexing',
 				'default' => 1,
 				'required' => true,
+				'forcesReindex' => true,
+			],
+			'appliesToMatType' => [
+				'property' => 'appliesToMatType',
+				'type' => 'checkbox',
+				'label' => 'Applies to Mat Type?',
+				'description' => 'Use the format during Sierra Mat Type format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToItemShelvingLocation' => [
+				'property' => 'appliesToItemShelvingLocation',
+				'type' => 'checkbox',
+				'label' => 'Applies to Item Shelving Location?',
+				'description' => 'Use the format during item level shelving location format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToItemSublocation' => [
+				'property' => 'appliesToItemSublocation',
+				'type' => 'checkbox',
+				'label' => 'Applies to Item Sublocation?',
+				'description' => 'Use the format during item level sublocation format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToItemCollection' => [
+				'property' => 'appliesToItemCollection',
+				'type' => 'checkbox',
+				'label' => 'Applies to Item Collection?',
+				'description' => 'Use the format during item level collection format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToItemType' => [
+				'property' => 'appliesToItemType',
+				'type' => 'checkbox',
+				'label' => 'Applies to Item Type?',
+				'description' => 'Use the format during item level item type format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToItemFormat' => [
+				'property' => 'appliesToItemFormat',
+				'type' => 'checkbox',
+				'label' => 'Applies to Item Format?',
+				'description' => 'Use the format during item level format field determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToBibLevel' => [
+				'property' => 'appliesToBibLevel',
+				'type' => 'checkbox',
+				'label' => 'Applies to Bib Level?',
+				'description' => 'Use the format during bib level format determination',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'appliesToFallbackFormat' => [
+				'property' => 'appliesToFallbackFormat',
+				'type' => 'checkbox',
+				'label' => 'Applies to Fallback Format?',
+				'description' => 'Use the format during fallback format field determination',
+				'default' => 1,
 				'forcesReindex' => true,
 			],
 			'holdType' => [
@@ -103,15 +184,6 @@ class FormatMapValue extends DataObject {
 				'required' => true,
 				'forcesReindex' => true,
 			],
-//			'inLibraryUseOnly' => [
-//				'property' => 'inLibraryUseOnly',
-//				'type' => 'checkbox',
-//				'label' => 'In Library Use Only?',
-//				'description' => 'Make the item usable within the library only',
-//				'default' => 0,
-//				'required' => true,
-//				'forcesReindex' => true,
-//			],
 			'pickupAt' => [
 				'property' => 'pickupAt',
 				'type' => 'enum',
@@ -127,5 +199,24 @@ class FormatMapValue extends DataObject {
 				'forcesReindex' => false,
 			],
 		];
+	}
+
+	public function __get($name) {
+		if ($name == 'groupingCategory') {
+			$formatLower = strtolower($this->format);
+			if (preg_match('/graphicnovel|graphic novel|comic|ecomic|manga/',$formatLower)) {
+				return 'comic';
+			}
+			if ($this->formatCategory == "Movies") {
+				return 'movie';
+			} elseif ($this->formatCategory == "Music") {
+				return 'music';
+			} elseif ($this->formatCategory == "Other") {
+				return 'other';
+			} else {
+				return 'book';
+			}
+		}
+		return parent::__get($name); // TODO: Change the autogenerated stub
 	}
 }

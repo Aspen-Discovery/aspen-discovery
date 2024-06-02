@@ -20,7 +20,7 @@ public class NashvilleCarlXRecordProcessor extends CarlXRecordProcessor{
 
 	private static int numSampleRecordsWithMultiplePrintFormats = 0;
 	@Override
-	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record, boolean hasChildRecords) {
+	public void loadPrintFormatInformation(AbstractGroupedWorkSolr groupedWork, RecordInfo ilsRecord, Record record, boolean hasChildRecords) {
 		List<DataField> items = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		boolean allItemsAreOrderRecords = true;
 		HashMap<String, Integer> printFormats = new HashMap<>();
@@ -70,7 +70,7 @@ public class NashvilleCarlXRecordProcessor extends CarlXRecordProcessor{
 		}
 
 		if (allItemsAreOrderRecords){
-			super.loadPrintFormatInformation(ilsRecord, record, hasChildRecords);
+			super.loadPrintFormatInformation(groupedWork, ilsRecord, record, hasChildRecords);
 			return;
 		}
 

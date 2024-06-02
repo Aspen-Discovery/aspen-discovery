@@ -1,6 +1,7 @@
 package org.aspen_discovery.format_classification;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 
 import java.util.HashMap;
@@ -9,6 +10,7 @@ public class FormatInfo {
 	public String format;
 	public String formatCategory;
 	public int formatBoost;
+	public int formatSource;
 
 	public static HashMap<String, String> categoryMap = new HashMap<>();
 	static {
@@ -130,10 +132,18 @@ public class FormatInfo {
 		formatsToFormatCategory.put("magazine", "book");
 		formatsToFormatCategory.put("xps", "ebook");
 		formatsToFormatCategory.put("bingepass", "other");
+		//noinspection SpellCheckingInspection
 		formatsToFormatCategory.put("graphicnovel", "comic");
 		formatsToFormatCategory.put("graphic novel", "comic");
 		formatsToFormatCategory.put("manga", "comic");
 		formatsToFormatCategory.put("comic", "comic");
+	}
+
+	public FormatInfo() {
+
+	}
+	public FormatInfo(FormatMapValue formatMapValue, int formatTypeItemFormat) {
+		this.setFormatFromMap(formatMapValue, formatTypeItemFormat);
 	}
 
 	public String getGroupingFormat(BaseIndexingSettings settings) {
@@ -145,6 +155,7 @@ public class FormatInfo {
 			groupingFormat = "book";
 		}
 		String formatLower = groupingFormat.toLowerCase();
+		//noinspection SpellCheckingInspection
 		if (formatLower.contains("graphicnovel") || formatLower.contains("graphic novel") || (formatLower.contains("comic") && !formatLower.contains("ecomic")) || formatLower.contains("manga")) {
 			formatLower = "graphic novel";
 			groupingFormatCategory = "comic";
@@ -158,7 +169,7 @@ public class FormatInfo {
 				IndexingProfile profile = (IndexingProfile) settings;
 				if (profile.hasTranslation("format_category", format)){
 					String formatCategory = profile.translateValue("format_category", format);
-					groupingFormat = FormatInfo.categoryMap.getOrDefault(FormatInfo.formatsToFormatCategory.get(formatLower), "other");
+					groupingFormat = FormatInfo.categoryMap.getOrDefault(formatCategory, "other");
 				}else{
 					groupingFormat = "other";
 				}
@@ -171,5 +182,12 @@ public class FormatInfo {
 			}
 			return groupingFormat;
 		}
+	}
+
+	public void setFormatFromMap(FormatMapValue translatedLocation, int formatSource) {
+		this.format = translatedLocation.getFormat();
+		this.formatCategory = translatedLocation.getFormatCategory();
+		this.formatBoost = translatedLocation.getFormatBoost();
+		this.formatSource = formatSource;
 	}
 }

@@ -173,7 +173,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		String groupingFormat;
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
-			FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(marcRecord, profile, logEntry, logger);
+			FormatInfo formatInfo = formatClassifier.getFirstFormatForRecord(null, marcRecord, profile, logEntry, logger);
 			groupingFormat = formatInfo.getGroupingFormat(profile);
 			workForTitle.setGroupingCategory(groupingFormat);
 		}else{
@@ -266,7 +266,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				}
 			}
 		}
-		return formatClassifier.getFirstFormatForRecord(record, settings, logEntry, logger);
+		return formatClassifier.getFirstFormatForRecord(null, record, settings, logEntry, logger);
 	}
 
 	public void regroupAllRecords(Connection dbConn, IndexingProfile indexingProfile, GroupedWorkIndexer indexer, IlsExtractLogEntry logEntry)  throws SQLException {

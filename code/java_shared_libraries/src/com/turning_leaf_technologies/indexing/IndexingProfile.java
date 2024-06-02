@@ -360,33 +360,31 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 			PreparedStatement getFormatMapStmt = dbConn.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
 			getFormatMapStmt.setLong(1, id);
-			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
-			HashMap <String, String> formatMap = new HashMap<>();
-			if (translationMaps.containsKey("format")) {
-				formatMap = translationMaps.get("format");
-			}else{
-				translationMaps.put("format", formatMap);
-			}
-			HashMap <String, String> formatCategoryMap = new HashMap<>();
-			if (translationMaps.containsKey("format_category")) {
-				formatCategoryMap = translationMaps.get("format_category");
-			}else{
-				translationMaps.put("format_category", formatCategoryMap);
-			}
-			HashMap <String, String> formatBoostMap = new HashMap<>();
-			if (translationMaps.containsKey("format_boost")) {
-				formatBoostMap = translationMaps.get("format_boost");
-			}else{
-				translationMaps.put("format_boost", formatBoostMap);
-			}
 
-			translationMaps.put("format_category", formatCategoryMap);
+			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
+
 			while (formatMapRS.next()){
-				String format = formatMapRS.getString("value");
-				String formatLower = format.toLowerCase();
-				formatMap.put(formatLower, formatMapRS.getString("format"));
-				formatCategoryMap.put(formatLower, formatMapRS.getString("formatCategory"));
-				formatBoostMap.put(formatLower, formatMapRS.getString("formatBoost"));
+				String value = formatMapRS.getString("value");
+				FormatMapValue formatMapValue;
+				if (formatMapping.containsKey(value.toLowerCase())) {
+					formatMapValue = formatMapping.get(value.toLowerCase());
+				}else{
+					formatMapValue = new FormatMapValue();
+					formatMapping.put(value.toLowerCase(), formatMapValue);
+				}
+				formatMapValue.setValue(value);
+				formatMapValue.setFormat(formatMapRS.getString("format"));
+				formatMapValue.setFormatCategory(formatMapRS.getString("formatCategory"));
+				formatMapValue.setFormatBoost(formatMapRS.getInt("formatBoost"));
+				formatMapValue.setAppliesToMatType(formatMapRS.getBoolean("appliesToMatType"));
+				formatMapValue.setAppliesToBibLevel(formatMapRS.getBoolean("appliesToBibLevel"));
+				formatMapValue.setAppliesToItemShelvingLocation(formatMapRS.getBoolean("appliesToItemShelvingLocation"));
+				formatMapValue.setAppliesToItemSublocation(formatMapRS.getBoolean("appliesToItemSublocation"));
+				formatMapValue.setAppliesToItemCollection(formatMapRS.getBoolean("appliesToItemCollection"));
+				formatMapValue.setAppliesToItemType(formatMapRS.getBoolean("appliesToItemType"));
+				formatMapValue.setAppliesToItemFormat(formatMapRS.getBoolean("appliesToItemFormat"));
+				formatMapValue.setAppliesToFallbackFormat(formatMapRS.getBoolean("appliesToFallbackFormat"));
+				formatMapping.put(value.toLowerCase(), formatMapValue);
 			}
 			formatMapRS.close();
 		}catch (Exception e){
