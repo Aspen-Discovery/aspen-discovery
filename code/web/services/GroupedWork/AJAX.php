@@ -1729,7 +1729,23 @@ class GroupedWork_AJAX extends JSON_Action {
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
 						$groupedWorkAlternateTitle->permanent_id = $workToGroupWith->permanent_id;
-						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
+						//Check to see if the author has an authority
+						require_once ROOT_DIR . '/sys/Grouping/AuthorAuthority.php';
+						require_once ROOT_DIR . '/sys/Grouping/AuthorAuthorityAlternative.php';
+						$authorAuthorityAlternative = new AuthorAuthorityAlternative();
+						$authorAuthorityAlternative->normalized = $originalGroupedWork->author;
+						$useOriginalAuthor = true;
+						if ($authorAuthorityAlternative->find(true)) {
+							$authorAuthority = new AuthorAuthority();
+							$authorAuthority->id = $authorAuthorityAlternative->authorId;
+							if ($authorAuthority->find(true)) {
+								$useOriginalAuthor = false;
+								$groupedWorkAlternateTitle->alternateAuthor = $authorAuthority->normalized;
+							}
+						}
+						if ($useOriginalAuthor) {
+							$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
+						}
 						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
 						$groupedWorkAlternateTitle->alternateGroupingCategory = $originalGroupedWork->grouping_category;
 						if (!$groupedWorkAlternateTitle->find(true)) {
