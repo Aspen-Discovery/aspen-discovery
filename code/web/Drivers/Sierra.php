@@ -243,7 +243,7 @@ class Sierra extends Millennium {
 
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/holds";
 		if ($this->accountProfile->apiVersion > 4) {
-			$sierraUrl .= "?fields=default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
+			$sierraUrl .= "?fields=default,priorityQueueLength&limit=1000";
 		} else {
 			$sierraUrl .= "?fields=default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		}
