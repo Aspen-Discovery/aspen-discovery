@@ -297,16 +297,18 @@ class Grouping_StatusInformation {
 				$numberOfCopiesMessage .= '. ';
 			}
 			if ($this->getOnOrderCopies() > 0 && $this->getCopies() < 10000) {
-				if ($library->showOnOrderCounts) {
-					if ($this->getOnOrderCopies() == 1) {
-						$numberOfCopiesMessage .= '1 copy on order.';
+				if ($this->getGroupedStatus() != 'Under Consideration') {
+					if ($library->showOnOrderCounts) {
+						if ($this->getOnOrderCopies() == 1) {
+							$numberOfCopiesMessage .= '1 copy on order.';
+						} else {
+							$numberOfCopiesMessage .= '%3% copies on order.';
+						}
 					} else {
-						$numberOfCopiesMessage .= '%3% copies on order.';
-					}
-				} else {
-					//Only show that additional copies are on order if there are existing copies
-					if ($this->getCopies() > 0) {
-						$numberOfCopiesMessage .= 'Additional copies on order.';
+						//Only show that additional copies are on order if there are existing copies
+						if ($this->getCopies() > 0) {
+							$numberOfCopiesMessage .= 'Additional copies on order.';
+						}
 					}
 				}
 			}
