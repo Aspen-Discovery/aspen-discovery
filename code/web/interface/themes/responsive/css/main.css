@@ -9807,6 +9807,9 @@ a.browse-thumbnail.active {
   left: 0;
   right: 0;
 }
+.horizontalCarouselSpotlightWrapper .smallScroller .scrollerTitleCover {
+  width: auto;
+}
 .moreLikeThisWrapper li.carouselTitleWrapper,
 .seriesWrapper li.carouselTitleWrapper {
   width: 140px !important;
