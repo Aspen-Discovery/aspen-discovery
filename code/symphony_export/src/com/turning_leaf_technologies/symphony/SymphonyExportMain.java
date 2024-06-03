@@ -1054,6 +1054,14 @@ public class SymphonyExportMain {
 					logEntry.addNote("Updated " + numRecordsRead + " records");
 					logEntry.saveResults();
 				}
+
+				if (!logEntry.hasErrors()) {
+					// Delete the file if we did not have errors processing the file.
+					if (!curBibFile.delete()) {
+						logEntry.addNote("Could not delete " + curBibFile + " after processing");
+					}
+
+				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
