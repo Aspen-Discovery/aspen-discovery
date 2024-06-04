@@ -8,7 +8,7 @@
 					<th>{translate text="Sort" isAdminFacing=true}</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
-					{if (in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList')) && empty($subProperty.hideInLists) }
+					{if (in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList')) && empty($subProperty.hideInLists) }
 						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
@@ -20,7 +20,7 @@
 			<tbody>
 			{foreach from=$propValue item=subObject}
 				{assign var=subObjectId value=$subObject->getPrimaryKeyValue()}
-				<tr id="{$propName}{$subObject->id}">
+				<tr id="{$propName}{$subObject->id}" class="{$propName}Row" data-id="{$subObject->id}">
 					<input type="hidden" id="{$propName}Id_{$subObject->id}" name="{$propName}Id[{$subObject->id}]" value="{$subObject->id}"/>
 					{if !empty($property.sortable)}
 						<td>
@@ -29,30 +29,32 @@
 						</td>
 					{/if}
 					{foreach from=$property.structure item=subProperty}
-						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html'))  && empty($subProperty.hideInLists)}
+						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label'))  && empty($subProperty.hideInLists)}
 							<td>
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if}>
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}" {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if} data-id="{$subObject->id}">
 								{elseif $subProperty.type=='date'}
-									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
+									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if} data-id="{$subObject->id}">
+								{elseif $subProperty.type=='dynamic_label'}
+									<span id="{$propName}_{$subPropName}_{$subObject->id}" data-id="{$subObject->id}">{$subPropValue|escape}<span>
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
-									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if}>{$subPropValue|escape}</textarea>
+									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if} data-id="{$subObject->id}">{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
 									{if !empty($subProperty.readOnly) || !empty($property.readOnly)}
 										{if $subPropValue == 1}{translate text='Yes' isAdminFacing=true}{else}{translate text='No' isAdminFacing=true}{/if}
 									{/if}
-									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} style="display: none"{/if}/>
+									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} style="display: none"{/if} data-id="{$subObject->id}"/>
 								{else}
 									{if $subObject->canActiveUserChangeSelection()}
-										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
+										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if} data-id="{$subObject->id}">
 											{foreach from=$subProperty.values item=propertyName key=propertyValue}
 												<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName|escape}{/if}</option>
 											{/foreach}
 										</select>
 									{else}
-										<input type="hidden" name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' value="$subPropValue"/>
+										<input type="hidden" name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' value="{$subPropValue}"/>
 										{foreach from=$subProperty.allValues item=propertyName key=propertyValue}
 											{if $subPropValue == $propertyValue}
 												{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}
@@ -157,17 +159,19 @@
 			{/if}
 			{foreach from=$property.structure item=subProperty}
 				{if empty($subProperty.hideInLists)}
-					{if in_array($subProperty.type, array('text', 'regularExpression','multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+					{if in_array($subProperty.type, array('text', 'regularExpression','multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label')) }
 						newRow += "<td>";
 						{assign var=subPropName value=$subProperty.property}
 						{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='multilineRegularExpression' || $subProperty.type=='integer' || $subProperty.type=='textarea'|| $subProperty.type=='html'}
-							newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}'>";
+							newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}' data-id='" + numAdditional{$propName} + "'>";
 						{elseif $subProperty.type=='date'}
-							newRow += "<input type='date' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if !empty($subProperty.required)} required{/if}'>";
+							newRow += "<input type='date' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if !empty($subProperty.required)} required{/if}' data-id='" + numAdditional{$propName} + "'>";
+						{elseif $subProperty.type=='dynamic_label'}
+							newRow += "<span id='{$propName}_{$subPropName}_" + numAdditional{$propName} + "' data-id='" + numAdditional{$propName} + "'><span>"
 						{elseif $subProperty.type=='checkbox'}
-							newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if !empty($subProperty.default) && $subProperty.default == 1}checked='checked'{/if}>";
+							newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if !empty($subProperty.default) && $subProperty.default == 1}checked='checked'{/if} data-id='" + numAdditional{$propName} + "'>";
 						{else}
-							newRow += "<select name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' id='{$propName}{$subPropName}_" + numAdditional{$propName} + "' class='form-control{if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange=\"{$subProperty.onchange}\"{/if}>";
+							newRow += "<select name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' id='{$propName}{$subPropName}_" + numAdditional{$propName} + "' class='form-control{if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange=\"{$subProperty.onchange}\"{/if} data-id='" + numAdditional{$propName} + "'>";
 							{foreach from=$subProperty.values item=propertyName key=propertyValue}
 								newRow += "<option value='{$propertyValue}' {if !empty($subProperty.default) && $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName|escape:javascript}</option>";
 							{/foreach}

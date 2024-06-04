@@ -328,7 +328,7 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, url) {
           params: {
                userId,
                overDriveId,
-               formatId,
+               formatId: formatId ?? '',
                itemSource: 'overdrive',
           },
      });

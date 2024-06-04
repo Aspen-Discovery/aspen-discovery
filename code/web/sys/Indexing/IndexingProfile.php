@@ -222,6 +222,25 @@ class IndexingProfile extends DataObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
+
+		$showSierraFieldMappings = false;
+		$showTimeToReshelve = true;
+		$showLastUpdateOfAuthorities = false;
+		$showItemFieldFormatInfo = false;
+		$showMatTypeFormatInfo = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'sierra') {
+				$showSierraFieldMappings = true;
+				$showMatTypeFormatInfo = true;
+			}elseif ($accountProfile->ils == 'koha') {
+				$showTimeToReshelve = false;
+				$showLastUpdateOfAuthorities = true;
+				$showItemFieldFormatInfo = true;
+			}
+		}
+
 		$translationMapStructure = TranslationMap::getObjectStructure($context);
 		unset($translationMapStructure['indexingProfileId']);
 
@@ -233,6 +252,16 @@ class IndexingProfile extends DataObject {
 
 		$formatMapStructure = FormatMapValue::getObjectStructure($context);
 		unset($formatMapStructure['indexingProfileId']);
+
+		if (!$showItemFieldFormatInfo) {
+			unset($formatMapStructure['appliesToItemShelvingLocation']);
+			unset($formatMapStructure['appliesToItemSublocation']);
+			unset($formatMapStructure['appliesToItemCollection']);
+			unset($formatMapStructure['appliesToItemType']);
+		}
+		if (!$showMatTypeFormatInfo){
+			unset($formatMapStructure['appliesToMatType']);
+		}
 
 		$structure = [
 			'id' => [
@@ -941,51 +970,6 @@ class IndexingProfile extends DataObject {
 						'default' => '',
 						'forcesReindex' => true,
 					],
-//					'specifiedFormat' => [
-//						'property' => 'specifiedFormat',
-//						'type' => 'text',
-//						'label' => 'Specified Format',
-//						'maxLength' => 50,
-//						'description' => 'The format to set when using a defined format',
-//						'required' => false,
-//						'default' => '',
-//						'forcesReindex' => true,
-//					],
-//					'specifiedFormatCategory' => [
-//						'property' => 'specifiedFormatCategory',
-//						'type' => 'enum',
-//						'values' => [
-//							'',
-//							'Books' => 'Books',
-//							'eBook' => 'eBook',
-//							'Audio Books' => 'Audio Books',
-//							'Movies' => 'Movies',
-//							'Music' => 'Music',
-//							'Other' => 'Other',
-//						],
-//						'label' => 'Specified Format Category',
-//						'maxLength' => 50,
-//						'description' => 'The format category to set when using a defined format',
-//						'required' => false,
-//						'default' => '',
-//						'forcesReindex' => true,
-//					],
-//					'specifiedFormatBoost' => [
-//						'property' => 'specifiedFormatBoost',
-//						'type' => 'enum',
-//						'values' => [
-//							1 => 'None',
-//							'3' => 'Low',
-//							6 => 'Medium',
-//							9 => 'High',
-//							'12' => 'Very High',
-//						],
-//						'label' => 'Specified Format Boost',
-//						'description' => 'The format boost to set when using a defined format',
-//						'default' => '6',
-//						'required' => false,
-//						'forcesReindex' => true,
-//					],
 					'checkRecordForLargePrint' => [
 						'property' => 'checkRecordForLargePrint',
 						'type' => 'checkbox',
@@ -1457,19 +1441,6 @@ class IndexingProfile extends DataObject {
 
 		];
 
-		$showSierraFieldMappings = false;
-		$showTimeToReshelve = true;
-		$showLastUpdateOfAuthorities = false;
-		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
-			/** @var AccountProfile $accountProfile */
-			$accountProfile = $accountProfileInfo['accountProfile'];
-			if ($accountProfile->ils == 'sierra') {
-				$showSierraFieldMappings = true;
-			}elseif ($accountProfile->ils == 'koha') {
-				$showTimeToReshelve = false;
-				$showLastUpdateOfAuthorities = true;
-			}
-		}
 		if (!$showSierraFieldMappings) {
 			unset($structure['sierraFieldMappings']);
 		}
@@ -1479,6 +1450,7 @@ class IndexingProfile extends DataObject {
 		if (!$showLastUpdateOfAuthorities) {
 			unset($structure['lastUpdateOfAuthorities']);
 		}
+
 		return $structure;
 	}
 

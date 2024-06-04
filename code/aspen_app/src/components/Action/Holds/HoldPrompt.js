@@ -56,7 +56,11 @@ export const HoldPrompt = (props) => {
           enabled: holdTypeForFormat === 'item' || holdTypeForFormat === 'either',
      });
 
-     const isPlacingHold = action.includes('hold');
+     let isPlacingHold = false;
+     if (_.isObject(action)) {
+          isPlacingHold = action.includes('hold');
+     }
+
      let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
      let holdNotificationInfo = user.holdNotificationInfo ?? [];
 

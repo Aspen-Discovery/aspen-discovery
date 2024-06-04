@@ -103,6 +103,7 @@ public class PalaceProjectProcessor {
 						primaryFormat = type;
 						break;
 				}
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + primaryFormat + " based on a type of " + type, 2);}
 
 				palaceProjectRecord.addFormat(primaryFormat);
 				palaceProjectRecord.addFormatCategory(formatCategory);

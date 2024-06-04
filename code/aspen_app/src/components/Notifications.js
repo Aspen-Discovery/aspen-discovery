@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { Alert, CloseIcon, HStack, IconButton, Text, VStack } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { dismissSystemMessage } from '../util/api/library';
 
 // custom components and helper files
@@ -338,6 +339,32 @@ async function hideSystemMessage(allSystemMessages, currentMessageId, isDismissi
      return messages;
 }
 
+export const DisplayAndroidEndOfSupportMessage = (props) => {
+     const setIsOpen = props.setIsOpen;
+     const language = props.language;
+     return (
+          <Alert maxW="100%" status="error" colorScheme="error" mb={3} index={-1}>
+               <VStack space={2} flexShrink={1} w="100%">
+                    <HStack flexShrink={1} alignItems="flex-start" space={2} justifyContent="space-between">
+                         <HStack space={2} flexShrink={1} pr={3}>
+                              <Text fontSize="sm" mb={-1}>
+                                   {getTermFromDictionary(language, 'android_end_of_life')}
+                              </Text>
+                         </HStack>
+                         <IconButton
+                              mt={-2}
+                              variant="unstyled"
+                              _focus={{
+                                   borderWidth: 0,
+                              }}
+                              icon={<CloseIcon size="3" />}
+                              onPress={() => setIsOpen(false)}
+                         />
+                    </HStack>
+               </VStack>
+          </Alert>
+     );
+};
 /** status/colorScheme options: success, error, info, warning **/
 export const DisplaySystemMessage = (props) => {
      const queryClient = props.queryClient;

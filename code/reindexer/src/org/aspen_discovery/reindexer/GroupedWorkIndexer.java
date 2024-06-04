@@ -74,7 +74,6 @@ public class GroupedWorkIndexer {
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
 
-
 	private TreeSet<Scope> scopes ;
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
@@ -145,6 +144,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateRecordInDBStmt;
 	private PreparedStatement getHideSubjectsStmt;
 	private PreparedStatement getHideSeriesStmt;
+	private PreparedStatement getDebugInfoStmt;
+	private PreparedStatement updateDebuggingInfoStmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 
@@ -298,7 +299,8 @@ public class GroupedWorkIndexer {
 			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			getHideSubjectsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getHideSeriesStmt = dbConn.prepareStatement("SELECT seriesNormalized from hide_series", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
+			getDebugInfoStmt = dbConn.prepareStatement("SELECT id from grouped_work_debug_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			updateDebuggingInfoStmt = dbConn.prepareStatement("UPDATE grouped_work_debug_info set processed = 1, debugInfo = ?, debugTime = ? where id =?");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -977,6 +979,16 @@ public class GroupedWorkIndexer {
 		}else{
 			groupedWork = new GroupedWorkSolr(this, logger);
 		}
+
+		//Check to see if we should enable debugging while indexing
+		getDebugInfoStmt.setString(1, permanentId);
+		ResultSet getDebugInfoRS = getDebugInfoStmt.executeQuery();
+		if (getDebugInfoRS.next()) {
+			groupedWork.setDebugEnabled(true);
+			groupedWork.setDebugId(getDebugInfoRS.getLong("id"));
+		}
+		getDebugInfoRS.close();
+
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
@@ -994,6 +1006,7 @@ public class GroupedWorkIndexer {
 		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
 		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||") || permanentId.contains(" ")){
+			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Starting to regroup all records");}
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
 				String type = recordIdentifier.getType();
 				String identifier = recordIdentifier.getIdentifier();
@@ -1076,6 +1089,7 @@ public class GroupedWorkIndexer {
 		for (RecordIdentifier recordIdentifier : recordIdentifiers){
 			String type = recordIdentifier.getType();
 			String identifier = recordIdentifier.getIdentifier();
+			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Processing record " + type + ":" + identifier, 1);}
 
 			//Make a copy of the grouped work, so we can revert if we don't add any records
 			AbstractGroupedWorkSolr originalWork;
@@ -1087,7 +1101,6 @@ public class GroupedWorkIndexer {
 			}
 			//Figure out how many records we had originally
 			int numRecords = groupedWork.getNumRecords();
-			logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
 
 			//This does the bulk of the work building fields for the solr document
 			updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
@@ -1095,10 +1108,9 @@ public class GroupedWorkIndexer {
 			//If we didn't add any records to the work (because they are all suppressed) revert to the original
 			if (groupedWork.getNumRecords() == numRecords){
 				//No change in the number of records, revert to the previous
-				logger.debug("Record " + type + ":" + identifier + " did not contribute any records to work " + permanentId + ", reverting to previous state " + groupedWork.getNumRecords());
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record " + type + ":" + identifier + " did not contribute any records to work " + permanentId + ", reverting to previous state", 1);}
 				groupedWork = originalWork;
 			}else{
-				logger.debug("Record " + identifier + " added to work " + permanentId);
 				numPrimaryIdentifiers++;
 			}
 		}
@@ -1171,7 +1183,7 @@ public class GroupedWorkIndexer {
 			}
 		}else{
 			//Log that this record did not have primary identifiers after
-			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing", 1);}
 			if (!this.clearIndex){
 				this.deleteRecord(permanentId);
 			}
@@ -1190,6 +1202,13 @@ public class GroupedWorkIndexer {
 			if (!regroupedId.equals(permanentId)){
 				processGroupedWork(regroupedId, false);
 			}
+		}
+
+		if (groupedWork.isDebugEnabled()) {
+			updateDebuggingInfoStmt.setString(1, groupedWork.getDebuggingInfo());
+			updateDebuggingInfoStmt.setLong(2, new Date().getTime() / 1000);
+			updateDebuggingInfoStmt.setLong(3, groupedWork.getDebugId());
+			updateDebuggingInfoStmt.executeUpdate();
 		}
 	}
 

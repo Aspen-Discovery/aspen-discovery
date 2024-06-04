@@ -95,6 +95,8 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 									}
 								}
 							}
+							if (groupedWork.isDebugEnabled() && primaryFormat.equals("eComic")) {groupedWork.addDebugMessage("Overrode Format to " + primaryFormat + " based on 008", 2);}
+
 						}
 						if (!primaryFormat.equals("eComic")) {
 							List<DataField> genreFormTerm = MarcUtil.getDataFields(marcRecord, 650);
@@ -108,6 +110,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 										String subfieldData = subfield.getData().toLowerCase();
 										if (subfieldData.contains("graphic novel")) {
 											primaryFormat = "eComic";
+											if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Overrode Format to " + primaryFormat + " based on subject", 2);}
 											break;
 										}
 									}
@@ -125,6 +128,8 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 						primaryFormat = format;
 						break;
 				}
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + primaryFormat + " based on kind of " + format, 2);}
+
 				cloudLibraryRecord.addFormat(primaryFormat);
 				cloudLibraryRecord.addFormatCategory(formatCategory);
 

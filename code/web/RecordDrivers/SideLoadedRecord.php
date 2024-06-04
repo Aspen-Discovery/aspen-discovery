@@ -110,7 +110,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return '';
 	}
 
-	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
+	function createActionsFromUrls($relatedUrls, $itemInfo = null, $variationId = 'any') {
 		/** @var SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
 		$sideLoad = $sideLoadSettings[strtolower($this->profileType)];
 
@@ -119,11 +119,32 @@ class SideLoadedRecord extends BaseEContentDriver {
 		$i = 0;
 		foreach ($relatedUrls as $urlInfo) {
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
-			$title = translate([
-				'text' => $sideLoad->accessButtonLabel,
-				'isPublicFacing' => true,
-				'isAdminEnteredData' => true,
-			]);
+			$useDefaultLabel = false;
+			if ($sideLoad->useLinkTextForButtonLabel && $itemInfo != null) {
+				if ($itemInfo instanceof Grouping_Item) {
+					$title = $itemInfo->shelfLocation;
+				}else{
+					$title = $itemInfo['shelfLocation'];
+				}
+				if (empty($title)) {
+					$useDefaultLabel = true;
+				}else{
+					$title = translate([
+						'text' => $title,
+						'isPublicFacing' => true,
+						'isAdminEnteredData' => true,
+					]);
+				}
+			}else {
+				$useDefaultLabel = true;
+			}
+			if ($useDefaultLabel) {
+				$title = translate([
+					'text' => $sideLoad->accessButtonLabel,
+					'isPublicFacing' => true,
+					'isAdminEnteredData' => true,
+				]);
+			}
 			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
 			if (strlen($fileOrUrl) > 0) {

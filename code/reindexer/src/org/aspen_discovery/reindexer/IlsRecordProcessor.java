@@ -1,8 +1,6 @@
 package org.aspen_discovery.reindexer;
 
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.indexing.TranslationMap;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -157,7 +155,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			getTranslationMapValuesStmt.setLong(1, translationMapId);
 			ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery();
 			while (translationMapValuesRS.next()){
-				map.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
+				map.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"), indexer.getLogEntry());
 			}
 			translationMaps.put(map.getMapName(), map);
 		}
@@ -183,9 +181,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatMapRS.getString("holdType").equals("none")){
 				nonHoldableFormats.add(formatMapRS.getString("format").toUpperCase());
 			}
-			formatMap.addValue(format, formatMapRS.getString("format"));
-			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
-			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
+			formatMap.addValue(format, formatMapRS.getString("format"), indexer.getLogEntry());
+			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"), indexer.getLogEntry());
+			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"), indexer.getLogEntry());
 		}
 		formatMapRS.close();
 
@@ -204,8 +202,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusMapRS.getBoolean("inLibraryUseOnly")){
 				inLibraryUseOnlyStatuses.add(status);
 			}
-			itemStatusMap.addValue(status, statusMapRS.getString("status"));
-			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
+			itemStatusMap.addValue(status, statusMapRS.getString("status"), indexer.getLogEntry());
+			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"), indexer.getLogEntry());
 		}
 		statusMapRS.close();
 	}
@@ -274,7 +272,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			//Since print formats are loaded at the record level, do it after we have loaded items
-			loadPrintFormatInformation(recordInfo, record, hasChildRecords);
+			//TODO: Is this necessary? Or can we switch to using the Format Classifier?
+			loadPrintFormatInformation(groupedWork, recordInfo, record, hasChildRecords);
 
 			//Updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
@@ -899,7 +898,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		if (settings.getFormatSource().equals("item")){
-			formatClassifier.loadItemFormat(recordInfo, itemField, itemInfo, settings, indexer.getLogEntry(), logger);
+			formatClassifier.loadItemFormat(groupedWork, recordInfo, itemField, itemInfo, settings, indexer.getLogEntry(), logger);
 		}
 
 		groupedWork.addKeywords(itemLocation);
@@ -1611,12 +1610,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 * record - The MARC record to load data from
 	 * hasChildRecords - whether the title has child records based on record linking.
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
+	public void loadPrintFormatInformation(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasChildRecords) {
 		//Check to see if we have child records, if so format will be Serials
 		if (hasChildRecords) {
 			//A record with children will not generally have items, so we will load from the bib.
-			loadPrintFormatFromBib(recordInfo, record);
+			loadPrintFormatFromBib(groupedWork, recordInfo, record);
 			if (recordInfo.getFormats().isEmpty()) {
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Set Format to Serial because there were no formats for the bib and child records exist.", 2);}
 				recordInfo.addFormat("Serial");
 				recordInfo.addFormatCategory("Books");
 				recordInfo.setFormatBoost(8);
@@ -1627,26 +1627,32 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//Check to see if all items have formats.
 				//noinspection IfStatementWithIdenticalBranches
 				if (!recordInfo.allItemsHaveFormats()) {
-					loadPrintFormatFromBib(recordInfo, record);
+					loadPrintFormatFromBib(groupedWork, recordInfo, record);
+					String firstFormat = recordInfo.getFirstFormat();
+					String firstFormatCategory = recordInfo.getFirstFormatCategory();
+					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("All items did not have formats, setting format to " + firstFormat + " for all items that did not have a format based on bib.", 2);}
 					for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 						if (itemInfo.getFormat() == null || itemInfo.getFormat().isEmpty()) {
-							itemInfo.setFormat(recordInfo.getFirstFormat());
-							itemInfo.setFormatCategory(recordInfo.getFirstFormatCategory());
+							itemInfo.setFormat(firstFormat);
+							itemInfo.setFormatCategory(firstFormatCategory);
 						}
 					}
 					return;
 				} else {
-					largePrintCheck(recordInfo, record);
+					largePrintCheck(groupedWork, recordInfo, record);
 					return;
 				}
 			}
 			if (recordInfo.hasItemFormats() && !recordInfo.allItemsHaveFormats()){
 				//We're doing bib level formats, but we got some item level formats (probably eContent or something)
-				loadPrintFormatFromBib(recordInfo, record);
+				loadPrintFormatFromBib(groupedWork, recordInfo, record);
+				String firstFormat = recordInfo.getFirstFormat();
+				String firstFormatCategory = recordInfo.getFirstFormatCategory();
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("All items did not have formats, setting format to " + firstFormat + " for all items that did not have a format based on bib.", 2);}
 				for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 					if (itemInfo.getFormat() == null || itemInfo.getFormat().isEmpty()) {
-						itemInfo.setFormat(recordInfo.getFirstFormat());
-						itemInfo.setFormatCategory(recordInfo.getFirstFormatCategory());
+						itemInfo.setFormat(firstFormat);
+						itemInfo.setFormatCategory(firstFormatCategory);
 					}
 				}
 				return;
@@ -1654,11 +1660,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			//If not, we will assign format based on bib level data
 			//ILS records do not support specified format categories, etc
-			loadPrintFormatFromBib(recordInfo, record);
+			loadPrintFormatFromBib(groupedWork, recordInfo, record);
 		}
 	}
 
-	void largePrintCheck(RecordInfo recordInfo, org.marc4j.marc.Record record){
+	void largePrintCheck(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record){
 		HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
 		try {
 			if (settings.getCheckRecordForLargePrint()){
@@ -1669,15 +1675,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					doLargePrintCheck = true;
 				}
 				if (doLargePrintCheck) {
-					LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(record, settings);
+					LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(groupedWork, record, settings);
 					if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
-						String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-						for (ItemInfo item : recordInfo.getRelatedItems()) {
-							item.setFormat(null);
-							item.setFormatCategory(null);
+						FormatMapValue formatMapValue = settings.getFormatMapValue("LargePrint", BaseIndexingSettings.FORMAT_TYPE_BIB_LEVEL);
+						if (formatMapValue != null) {
+							for (ItemInfo item : recordInfo.getRelatedItems()) {
+								item.setFormat(null);
+								item.setFormatCategory(null);
+							}
+							recordInfo.addFormat(formatMapValue.getFormat());
+							recordInfo.addFormatCategory(formatMapValue.getFormatCategory());
+							recordInfo.setFormatBoost(formatMapValue.getFormatBoost());
 						}
-						recordInfo.addFormat(translatedFormat);
-						recordInfo.addFormatCategory(translateValue("format_category", "LargePrint", recordInfo.getRecordIdentifier()));
 					}
 				}
 			}
@@ -1692,8 +1701,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 * @param recordInfo Information about the record within Aspen
 	 * @param record The MARC record to load data from
 	 */
-	void loadPrintFormatFromBib(RecordInfo recordInfo, org.marc4j.marc.Record record) {
-		LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(record, settings);
+	void loadPrintFormatFromBib(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record) {
+		LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(groupedWork, record, settings);
 
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.isEmpty()){
@@ -1779,7 +1788,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			} else {
 				if (addMissingValues){
 					TranslationMap translationMap = translationMaps.get(mapName);
-					translationMap.addValue(value, value);
+					translationMap.addValue(value, value, indexer.getLogEntry());
 					try {
 						addTranslationMapValueStmt.setLong(1, translationMap.getId());
 						addTranslationMapValueStmt.setString(2, lowerCaseValue);

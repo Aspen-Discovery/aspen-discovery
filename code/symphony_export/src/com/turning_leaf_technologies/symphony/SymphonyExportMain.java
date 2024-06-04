@@ -215,6 +215,9 @@ public class SymphonyExportMain {
 				if (courseReservesFile.delete()){
 					logEntry.addNote("Deleted old course reserves file " + courseReservesFile.getAbsolutePath());
 					logEntry.saveResults();
+				}else{
+					logEntry.addNote("Could not delete old course reserves file " + courseReservesFile.getAbsolutePath());
+					logEntry.saveResults();
 				}
 			}
 		}
@@ -738,6 +741,9 @@ public class SymphonyExportMain {
 					if (exportedMarcFile.delete()){
 						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
 						logEntry.saveResults();
+					}else{
+						logEntry.addNote("Could not remove old file " + exportedMarcFile.getAbsolutePath());
+						logEntry.saveResults();
 					}
 				}else{
 					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
@@ -767,6 +773,9 @@ public class SymphonyExportMain {
 				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcDeltaFile.delete()){
 						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
+						logEntry.saveResults();
+					}else{
+						logEntry.addNote("Could not remove old delta file " + exportedMarcDeltaFile.getAbsolutePath());
 						logEntry.saveResults();
 					}
 				}else{
@@ -836,7 +845,10 @@ public class SymphonyExportMain {
 					String exportFile = gzippedFile.getAbsolutePath().replace(".gz", "");
 					UnzipUtility.gUnzip(gzippedFile, new File(exportFile));
 					//noinspection ResultOfMethodCallIgnored
-					gzippedFile.delete();
+					if (!gzippedFile.delete()){
+						logEntry.addNote("Could not delete gzipped file " + gzippedFile.getAbsolutePath());
+						logEntry.saveResults();
+					}
 				} catch (IOException e) {
 					logEntry.incErrors("Unable to unzip file " + gzippedFile.getPath(), e);
 				}
@@ -1041,6 +1053,14 @@ public class SymphonyExportMain {
 					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					logEntry.addNote("Updated " + numRecordsRead + " records");
 					logEntry.saveResults();
+				}
+
+				if (!logEntry.hasErrors()) {
+					// Delete the file if we did not have errors processing the file.
+					if (!curBibFile.delete()) {
+						logEntry.addNote("Could not delete " + curBibFile + " after processing");
+					}
+
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);

@@ -64,10 +64,10 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 
 			//language related fields
 			//Check to see if we have Unknown plus a valid value
-			if (languages.size() > 1 || groupedWorkIndexer.getTreatUnknownLanguageAs().length() != 0) {
+			if (languages.size() > 1 || !groupedWorkIndexer.getTreatUnknownLanguageAs().isEmpty()) {
 				languages.remove("Unknown");
 			}
-			if (languages.size() == 0) {
+			if (languages.isEmpty()) {
 				languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 			}
 			doc.addField("language", languages);
@@ -115,7 +115,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 				targetAudienceFull.remove("No Attempt To Code");
 				targetAudienceFull.remove("Other");
 			}
-			if (targetAudienceFull.size() == 0) {
+			if (targetAudienceFull.isEmpty()) {
 				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience_full", targetAudienceFull);
@@ -125,7 +125,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			if (targetAudience.size() > 1) {
 				targetAudience.remove("Other");
 			}
-			if (targetAudience.size() == 0) {
+			if (targetAudience.isEmpty()) {
 				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
 			doc.addField("target_audience", targetAudience);
@@ -185,15 +185,15 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			//Awards and ratings
 			doc.addField("mpaa_rating", mpaaRatings);
 			doc.addField("awards_facet", awards);
-			if (lexileScore.length() == 0) {
+			if (lexileScore.isEmpty()) {
 				doc.addField("lexile_score", -1);
 			} else {
 				doc.addField("lexile_score", lexileScore);
 			}
-			if (lexileCode.length() > 0) {
+			if (!lexileCode.isEmpty()) {
 				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
-			if (fountasPinnell.length() > 0) {
+			if (!fountasPinnell.isEmpty()) {
 				doc.addField("fountas_pinnell", fountasPinnell);
 			}
 			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
@@ -507,7 +507,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 				}
 				doc.addField("available_at_".concat(scopeName), availableAtForScope);
 				for (String format : availableAtByFormatForScope.keySet()){
-					if (availableAtByFormatForScope.get(format).size() != 0) {
+					if (!availableAtByFormatForScope.get(format).isEmpty()) {
 						doc.addField("available_at_by_format_".concat(scopeName).concat("_").concat(toLowerCaseNoSpecialChars(format)), availableAtByFormatForScope.get(format));
 					}
 				}

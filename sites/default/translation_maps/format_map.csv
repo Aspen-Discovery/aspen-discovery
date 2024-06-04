@@ -1,0 +1,158 @@
+Value,Format,Category,Boost
+3DS, Nintendo 3DS, Other,3
+4KBlu-ray, 4K Blu-ray, Movies,12
+4K/Blu-ray, 4K / Blu-ray Combo, Movies,12
+Adobe_EPUB_eBook, EPUB eBook, eBook,9
+Adobe_PDF_eBook, PDF eBook, eBook,3
+ArtOriginal, Original Art, Other,1
+Atlas, Atlas, Books,1
+Bingepass, Bingepass, Other,1
+Blu-ray, Blu-ray, Movies,12
+Blu-ray/DVD, Blu-ray / DVD Combo, Movies,12
+BoardBook, Board Book, Books,3
+Book, Book, Books,9
+Book+CD, Book + CD, Books,9
+Book+CD-ROM, Book + CD-ROM, Books,9
+Book+DVD, Book + DVD, Books,9
+BookClubKit, Book Club Kit, Books,1
+BookClubKitLarge, Book Club Kit - Large Print, Books,1
+Braille, Braille, Books,1
+CDROM, Software, Other,1
+CD+Book, CD + Book, Music,3
+CD+DVD, CD + DVD Combo, Music,3
+Chart, Chart, Other,1
+ChipCartridge, Software, Other,1
+Collage, Photo, Other,1
+CompactDisc, CD, Audio Books,3
+ComputerProgram, ComputerProgram, Other,1
+Diorama, Diorama, Other,1
+DVD, DVD, Movies,12
+DiscCartridge, Software, Other,1
+Disney_Online_Book, Online Book, eBook,3
+Drawing, Drawing, Other,1
+Electronic, Electronic, Other,1
+Filmstrip, Video, Movies,1
+FlashCard, Photo, Other,1
+FloppyDisk, Software, Other,1
+Game, Game, Other,1
+GameCube, GameCube, Other,3
+Globe, Globe, Other,1
+GoReader, GoReader, Audio Books,1
+Graphic, Graphic, Other,1
+GraphicNovel, Graphic Novel, Books,9
+Journal, Journal, Books,3
+Kindle_Book, Kindle eBook, eBook,9
+Kinect, Xbox 360 Kinect, Other,3
+Kit, Kit, Other,1
+LargePrint, Large Print, Books,3
+LibraryOfThings, Library Of Things, Other,3
+Manga, Manga, Books,6
+Manuscript, Manuscript, Books,1
+Map, Map, Other,1
+Microfilm, Microfilm, Other,1
+MicroscopeSlide, Microscope Slide, Other,1
+Microsoft_eBook, eBook, eBook,9
+Mobipocket_eBook, Mobipocket eBook, eBook,1
+Model, Model, Other,1
+MotionPicture, Video, Movies,1
+MP3Disc, Audiobook MP3-CD, Audio Books,3
+MusicCassette, Music Cassette, Music,1
+MusicCD, Music CD, Music,3
+MusicRecording, Music Recording, Music,3
+MusicalScore, Musical Score, Books,1
+NOOK_Periodical, Nook Periodicals, eBook,3
+Newspaper, Newspaper, Books,3
+NintendoDS, Nintendo DS, Other,3
+NintendoSwitch, Nintendo Switch, Other,3
+NumericData, Numeric Data, Other,1
+Open_EPUB_eBook, EPUB eBook, eBook,9
+Open_PDF_eBook, PDF eBook, eBook,3
+OverDrive_Listen, OverDrive Listen, Audio Books,9
+OverDrive_MP3_Audiobook, MP3 AudioBook, Audio Books,9
+OverDrive_Music, eMusic, Music,3
+OverDrive_Read, OverDrive Read, eBook,9
+OverDrive_Video, eVideo, Movies,3
+OverDrive_WMA_Audiobook, WMA AudioBook, Audio Books,6
+Painting, Painting, Other,1
+Palm, Palm eBook, eBook,1
+Phonograph, Phonograph, Music,1
+Photo, Photo, Other,1
+Photonegative, Photo, Other,1
+PhysicalObject, Physical Object, Other,1
+Picture, Picture, Other,1
+PlayStation, PlayStation, Other,3
+PlayStation2, PlayStation 2, Other,3
+PlayStation3, PlayStation 3, Other,3
+PlayStation4, PlayStation 4, Other,3
+PlayStation5, PlayStation 5, Other,3
+PlayStationVita, PlayStation Vita, Other,3
+Playaway, Playaway, Audio Books,3
+PlayawayBookpack, Playaway Bookpack, Books,3
+PlayawayLaunchpad, Playaway Launchpad, Other,3
+PlayawayView, Playaway View, Other,3
+Pop-UpBook, Pop-Up Book, Books,3
+Print, Print, Other,1
+Realia, Realia, Other,1
+SeedPacket, Seed Packet, Other,1
+SensorImage, Sensor Image, Other,1
+Serial, Serial, Books,3
+Slide, Slide, Other,1
+Software, Software, Other,1
+SoundCassette, Audiobook Cassette, Audio Books,1
+SoundDisc, Audiobook CD, Audio Books,3
+SoundRecording, Audio, Audio Books,1
+Streaming_Video, eVideo, Movies,3
+TapeCartridge, Software, Other,1
+TapeCassette, Software, Other,1
+TapeRecording, Tape Recording, Audio Books,1
+TapeReel, Software, Other,1
+TechnicalDrawing, Technical Drawing, Other,1
+Thesis, Thesis, Books,1
+Toy, Toy, Other,1
+Transparency, Slide, Other,1
+Unknown, Unknown, Other,1
+VerticalFile, Vertical File, Other,1
+Video, Video, Movies,1
+VideoCartridge, Video, Movies,1
+VideoCassette, VHS, Movies,3
+VideoDisc, DVD, Movies,12
+VideoGame, Video Game, Other,1
+VideoReel, Video, Movies,1
+VoxBooks, VOX Books, Audio Books,3
+Web_Content, Web Content, Other,9
+Wii, Nintendo Wii, Other,3
+WiiU, Nintendo Wii U, Other,3
+WindowsGame, Windows Game, Other,3
+Wonderbook, Playaway Wonderbook, Audio Books,3
+Xbox360, Xbox 360, Other,3
+XboxOne, Xbox One, Other,3
+XboxSeriesX, Xbox Series X, Other,3
+eAudiobook, eAudiobook, Audio Books,9
+eBook, eBook, eBook,1
+eComic, eComic, eBook,9
+eMagazine, eMagazine, eBook,3
+eMusic, eMusic, Music,3
+eVideo, eVideo, Movies,3
+epub, EPUB eBook, eBook,9
+externalLink, Web Content, Other,1
+externalMP3, MP3, Audio Books,3
+external_eaudio, eAudiobook, Audio Books,9
+external_ebook, eBook, eBook,9
+external_emusic, eMusic, Music,3
+external_evideo, eVideo, Movies,3
+external_web, Web Content, Other,1
+gif, Image, Other,1
+gifs, Image, Other,1
+interactiveBook, Online Book, eBook,3
+itunes, iTunes, Audio Books,1
+jpg, Image, Other,1
+kindle, Kindle eBook, eBook,9
+mobi, Kindle eBook, eBook,9
+mp3, MP3, Audio Books,3
+online_resource, Online Resource, eBook,9
+overdrive, OverDrive, eBook,9
+pdb, Plucker eBook, Plucker eBook,3
+pdf, PDF eBook, eBook,3
+plucker, Plucker eBook, eBook,1
+text, text, eBook,1
+txt, Plain Text, eBook,1

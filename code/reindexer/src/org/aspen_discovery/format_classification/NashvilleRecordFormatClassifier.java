@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
+import org.aspen_discovery.reindexer.AbstractGroupedWorkSolr;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
@@ -16,7 +17,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 		super(logger);
 	}
 
-	public LinkedHashSet<String> getUntranslatedFormatsFromBib(org.marc4j.marc.Record record, BaseIndexingSettings settings){
+	public LinkedHashSet<String> getUntranslatedFormatsFromBib(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, BaseIndexingSettings settings){
 		//Although Nashville is set to load format from the bib, it actually checks items first.
 		LinkedHashSet<String> formats = new LinkedHashSet<>();
 		if (settings instanceof IndexingProfile) {
@@ -29,6 +30,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 				boolean hasLocationBasedFormat = false;
 				if (shelfLocationField != null) {
 					String shelfLocation = shelfLocationField.getData().toLowerCase();
+					//noinspection SpellCheckingInspection
 					if (!shelfLocation.equals("xord")) {
 						allItemsAreOrderRecords = false;
 					}
@@ -70,7 +72,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 			}
 
 			if (allItemsAreOrderRecords) {
-				return super.getUntranslatedFormatsFromBib(record, settings);
+				return super.getUntranslatedFormatsFromBib(groupedWork, record, settings);
 			}
 
 			int maxPrintFormats = 0;
@@ -97,7 +99,7 @@ public class NashvilleRecordFormatClassifier extends IlsRecordFormatClassifier{
 		}
 
 		if (formats.isEmpty()) {
-			return super.getUntranslatedFormatsFromBib(record, settings);
+			return super.getUntranslatedFormatsFromBib(groupedWork, record, settings);
 		}else{
 			return formats;
 		}

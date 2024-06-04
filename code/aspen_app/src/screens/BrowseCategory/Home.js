@@ -5,10 +5,13 @@ import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import React from 'react';
 import { Image } from 'expo-image';
+import * as Device from 'expo-device';
+import { Platform } from 'react-native';
+import { compareVersions } from 'compare-versions';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { DisplaySystemMessage } from '../../components/Notifications';
+import { DisplayAndroidEndOfSupportMessage, DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
 import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -43,6 +46,9 @@ export const DiscoverHomeScreen = () => {
 
      const [promptOpen, setPromptOpen] = React.useState('');
 
+     const [showAndroidEndSupportMessage, setShowAndroidEndSupportMessage] = React.useState(false);
+     const [androidEndSupportMessageIsOpen, setAndroidEndSupportMessageIsOpen] = React.useState(false);
+
      navigation.setOptions({
           headerLeft: () => {
                return null;
@@ -52,6 +58,15 @@ export const DiscoverHomeScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
+                    if (Platform.OS === 'android') {
+                         if (Device.platformApiLevel <= 30) {
+                              // SDK 30 == Android 11
+                              console.log('Android SDK is 30 or older');
+                              setShowAndroidEndSupportMessage(true);
+                              setAndroidEndSupportMessageIsOpen(true);
+                         }
+                    }
+
                     if (version >= '24.02.00') {
                          updateCurrentIndex('Keyword');
                          updateCurrentSource('local');
@@ -316,6 +331,12 @@ export const DiscoverHomeScreen = () => {
           return null;
      };
 
+     const androidEndSupportMessage = () => {
+          if (showAndroidEndSupportMessage && androidEndSupportMessageIsOpen) {
+               return <DisplayAndroidEndOfSupportMessage language={language} setIsOpen={setAndroidEndSupportMessageIsOpen} isOpen={androidEndSupportMessageIsOpen} />;
+          }
+     };
+
      if (loading === true || isFetchingBrowseCategories) {
           return loadingSpinner();
      }
@@ -336,6 +357,7 @@ export const DiscoverHomeScreen = () => {
      return (
           <ScrollView>
                <Box p="$5">
+                    {androidEndSupportMessage()}
                     {showSystemMessage()}
                     <FormControl pb="$5">
                          <Input>

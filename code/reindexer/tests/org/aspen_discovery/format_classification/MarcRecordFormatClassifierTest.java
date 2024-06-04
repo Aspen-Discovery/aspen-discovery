@@ -23,7 +23,7 @@ class MarcRecordFormatClassifierTest extends AbstractIndexingTest{
 		Assertions.assertNotNull(marcRecord, "Could not load sample marc record");
 
 		MarcRecordFormatClassifier marcRecordFormatClassifier = testGrouper.getFormatClassifier();
-		LinkedHashSet<String> formats = marcRecordFormatClassifier.getTranslatedFormatsFromBib(marcRecord, profile);
+		LinkedHashSet<String> formats = marcRecordFormatClassifier.getTranslatedFormatsFromBib(null, marcRecord, profile);
 		String formatsAsString = Util.getCsvSeparatedString(formats);
 		Assertions.assertEquals(expectedFormats, formatsAsString);
 	}

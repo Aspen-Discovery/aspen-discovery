@@ -76,6 +76,8 @@ class Axis360Processor {
 					formatCategory = formatType;
 					primaryFormat = formatType;
 				}
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + primaryFormat + " based on a formatType of " + formatType, 2);}
+
 				axis360Record.addFormat(primaryFormat);
 				axis360Record.addFormatCategory(formatCategory);
 

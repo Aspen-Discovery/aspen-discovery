@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
@@ -7,20 +8,20 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 public class TranslationMap {
-	private Logger logger;
+	private final Logger logger;
 	private long id;
-	private String profileName;
-	private String mapName;
-	private boolean usesRegularExpressions;
+	private final String profileName;
+	private final String mapName;
+	private final boolean usesRegularExpressions;
 
-	private HashMap<String, String> translationValues = new HashMap<>();
-	private HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
+	private final HashMap<String, String> translationValues = new HashMap<>();
+	private final HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
 
 	public TranslationMap(String profileName, String mapName, boolean usesRegularExpressions, Logger logger){
 		this.profileName = profileName;
 		this.mapName = mapName;
 		this.usesRegularExpressions = usesRegularExpressions;
-		this. logger = logger;
+		this.logger = logger;
 	}
 
 	public TranslationMap(String profileName, Long id, String mapName, boolean usesRegularExpressions, Logger logger){
@@ -28,11 +29,11 @@ public class TranslationMap {
 		this.profileName = profileName;
 		this.mapName = mapName;
 		this.usesRegularExpressions = usesRegularExpressions;
-		this. logger = logger;
+		this.logger = logger;
 	}
 
-	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
-	private HashMap<String, String> cachedTranslations = new HashMap<>();
+	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
+	private final HashMap<String, String> cachedTranslations = new HashMap<>();
 
 	public String translateValue(String value, String identifier){
 		return this.translateValue(value, identifier, false);
@@ -84,7 +85,7 @@ public class TranslationMap {
 					translatedValue = value;
 				}else {
 					translatedValue = translatedValue.trim();
-					if (translatedValue.length() == 0) {
+					if (translatedValue.isEmpty()) {
 						translatedValue = null;
 					}
 				}
@@ -98,9 +99,13 @@ public class TranslationMap {
 		return mapName;
 	}
 
-	public void addValue(String value, String translation) {
+	public void addValue(String value, String translation, BaseIndexingLogEntry logEntry) {
 		if (usesRegularExpressions){
-			translationValuePatterns.put(Pattern.compile(value.trim(), Pattern.CASE_INSENSITIVE), translation);
+			try {
+				translationValuePatterns.put(Pattern.compile(value.trim(), Pattern.CASE_INSENSITIVE), translation);
+			}catch (Exception e) {
+				logEntry.addNote("Could not parse " + value + " as a regular expression in map " + mapName);
+			}
 		}else{
 			translationValues.put(value.trim().toLowerCase(), translation);
 		}

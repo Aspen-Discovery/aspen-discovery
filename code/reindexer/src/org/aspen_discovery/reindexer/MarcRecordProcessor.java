@@ -653,13 +653,24 @@ abstract class MarcRecordProcessor {
 			targetAudiences.add(unknownAudienceLabel);
 		}
 
-		LinkedHashSet<String> translatedAudiences = settings.translateCollection("target_audience", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+		LinkedHashSet<String> translatedAudiences;
+		if (settings == null) {
+			translatedAudiences = indexer.translateSystemCollection("target_audience", targetAudiences, identifier);
+		}else{
+			translatedAudiences = settings.translateCollection("target_audience", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+		}
 		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiences.contains("Unknown")){
 			translatedAudiences.remove("Unknown");
 			translatedAudiences.add(unknownAudienceLabel);
 		}
 		groupedWork.addTargetAudiences(translatedAudiences);
-		LinkedHashSet<String> translatedAudiencesFull = settings.translateCollection("target_audience_full", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+
+		LinkedHashSet<String> translatedAudiencesFull;
+		if (settings == null) {
+			translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
+		}else {
+			translatedAudiencesFull = settings.translateCollection("target_audience_full", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+		}
 		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiencesFull.contains("Unknown")){
 			translatedAudiencesFull.remove("Unknown");
 			translatedAudiencesFull.add(unknownAudienceLabel);

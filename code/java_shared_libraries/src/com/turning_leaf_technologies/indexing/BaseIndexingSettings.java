@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +37,7 @@ public class BaseIndexingSettings {
 	boolean includePersonalAndCorporateNamesInTopics;
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
+	HashMap<String, FormatMapValue> formatMapping = new HashMap<>();
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		String subfieldString = indexingProfilesRS.getString(fieldName);
@@ -163,20 +165,26 @@ public class BaseIndexingSettings {
 			for (File curFile : defaultTranslationMapFiles) {
 				String mapName = curFile.getName().replace(".properties", "");
 				mapName = mapName.replace("_map", "");
-				/*if (mapName.startsWith("format")) {*/
-					translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
-				/*}*/
+				translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
 			}
 			if (serverTranslationMapFiles != null) {
 				for (File curFile : serverTranslationMapFiles) {
 					String mapName = curFile.getName().replace(".properties", "");
 					mapName = mapName.replace("_map", "");
-					/*if (mapName.startsWith("format")) {*/
-						translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
-					/*}*/
+					translationMaps.put(mapName, loadSystemTranslationMap(curFile, logEntry));
 				}
 			}
 		}
+
+		File serverFormatFile = new File("../../sites/" + serverName + "/translation_maps/format_map.csv");
+		if (serverFormatFile.exists()) {
+			loadSystemFormatMap(serverFormatFile, logEntry);
+		}
+		File formatFile = new File("../../sites/default/translation_maps/format_map.csv");
+		if (formatFile.exists()) {
+			loadSystemFormatMap(formatFile, logEntry);
+		}
+
 	}
 
 	private HashMap<String, String> loadSystemTranslationMap(File translationMapFile, BaseIndexingLogEntry logEntry) {
@@ -196,6 +204,36 @@ public class BaseIndexingSettings {
 			translationMap.put(key.toLowerCase(), props.getProperty(key));
 		}
 		return translationMap;
+	}
+
+	private void loadSystemFormatMap(File translationMapFile, BaseIndexingLogEntry logEntry) {
+		try {
+			CSVReader translationMapReader = new CSVReader(new FileReader(translationMapFile));
+			//Skip the first line
+			translationMapReader.readNext();
+
+			String[] nextLine;
+			while ((nextLine = translationMapReader.readNext()) != null) {
+				String value = nextLine[0].trim();
+				FormatMapValue formatMapValue;
+				if (formatMapping.containsKey(value.toLowerCase())) {
+					formatMapValue = formatMapping.get(value.toLowerCase());
+				}else{
+					formatMapValue = new FormatMapValue();
+					formatMapping.put(value.toLowerCase(), formatMapValue);
+				}
+				formatMapValue.setValue(value);
+				formatMapValue.setFormat(nextLine[1].trim());
+				formatMapValue.setFormatCategory(nextLine[2].trim());
+				formatMapValue.setFormatBoost(Integer.parseInt(nextLine[3].trim()));
+				formatMapValue.setAppliesToBibLevel(true);
+			}
+			translationMapReader.close();
+		} catch (IOException e) {
+			if (logEntry != null) {
+				logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
+			}
+		}
 	}
 
 	boolean hasSystemTranslation(String mapName, String value) {
@@ -272,5 +310,95 @@ public class BaseIndexingSettings {
 			}
 		}
 		return  translatedCollection;
+	}
+
+	public static final int FORMAT_TYPE_MAT_TYPE = 1;
+	public static final int FORMAT_TYPE_BIB_LEVEL = 2;
+	public static final int FORMAT_TYPE_ITEM_SHELVING_LOCATION = 3;
+	public static final int FORMAT_TYPE_ITEM_SUBLOCATION = 4;
+	public static final int FORMAT_TYPE_ITEM_COLLECTION = 5;
+	public static final int FORMAT_TYPE_ITEM_TYPE = 6;
+	public static final int FORMAT_TYPE_ITEM_FORMAT = 7;
+	public static final int FORMAT_TYPE_FALLBACK_FORMAT = 8;
+
+	public boolean hasFormat(String originalValue, int formatType){
+		if (originalValue == null) {
+			return false;
+		}
+		FormatMapValue formatMapValue = formatMapping.get(originalValue.toLowerCase());
+		if (formatMapValue == null) {
+			return false;
+		}else{
+			if (formatType == FORMAT_TYPE_MAT_TYPE) {
+				return formatMapValue.isAppliesToMatType() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_BIB_LEVEL) {
+				return formatMapValue.isAppliesToBibLevel() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_ITEM_SHELVING_LOCATION) {
+				return formatMapValue.isAppliesToItemShelvingLocation() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_ITEM_SUBLOCATION) {
+				return formatMapValue.isAppliesToItemSublocation() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_ITEM_COLLECTION) {
+				return formatMapValue.isAppliesToItemCollection() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_ITEM_TYPE) {
+				return formatMapValue.isAppliesToItemType() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_ITEM_FORMAT) {
+				return formatMapValue.isAppliesToItemFormat() && !formatMapValue.getFormat().isEmpty();
+			}else if (formatType == FORMAT_TYPE_FALLBACK_FORMAT) {
+				return formatMapValue.isAppliesToFallbackFormat() && !formatMapValue.getFormat().isEmpty();
+			}else{
+				//Invalid format type
+				return false;
+			}
+		}
+	}
+
+	public FormatMapValue getFormatMapValue(String originalValue, int formatType){
+		if (originalValue == null) {
+			return null;
+		}
+		FormatMapValue formatMapValue = formatMapping.get(originalValue.toLowerCase());
+		if (formatMapValue == null) {
+			return null;
+		}else{
+			if (formatType == FORMAT_TYPE_MAT_TYPE) {
+				if (formatMapValue.isAppliesToMatType() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_BIB_LEVEL) {
+				if (formatMapValue.isAppliesToBibLevel() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_ITEM_SHELVING_LOCATION) {
+				if (formatMapValue.isAppliesToItemShelvingLocation() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_ITEM_SUBLOCATION) {
+				if (formatMapValue.isAppliesToItemSublocation() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_ITEM_COLLECTION) {
+				if (formatMapValue.isAppliesToItemCollection() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_ITEM_TYPE) {
+				if (formatMapValue.isAppliesToItemType() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_ITEM_FORMAT) {
+				if (formatMapValue.isAppliesToItemFormat() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}else if (formatType == FORMAT_TYPE_FALLBACK_FORMAT) {
+				if (formatMapValue.isAppliesToFallbackFormat() && !formatMapValue.getFormat().isEmpty()){
+					return formatMapValue;
+				}
+			}
+			//Invalid format type or format type did not apply or format translation was blank
+			return null;
+		}
+	}
+
+	public void addFormatMapValue(FormatMapValue formatMapValue) {
+		formatMapping.put(formatMapValue.getValue().toLowerCase(), formatMapValue);
 	}
 }

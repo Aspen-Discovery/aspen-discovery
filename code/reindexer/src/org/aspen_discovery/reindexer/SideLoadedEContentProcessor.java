@@ -1,10 +1,10 @@
 package org.aspen_discovery.reindexer;
 
-import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.indexing.SideLoadScope;
-import com.turning_leaf_technologies.indexing.SideLoadSettings;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -111,37 +111,75 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private RecordInfo getEContentIlsRecord(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, String identifier) {
-		ItemInfo itemInfo = new ItemInfo();
-		itemInfo.setIsEContent(true);
+		List<DataField> urlFields = MarcUtil.getDataFields(record, 856);
+		RecordInfo relatedRecord = null;
+		int urlIndex = 0;
+		SideLoadSettings sideLoadSettings = (SideLoadSettings) settings;
+		for (DataField urlField : urlFields){
+			//load url into the item
+			if (urlField.getSubfield('u') != null){
+				String linkText = urlField.getSubfield('u').getData().trim();
+				if (!linkText.isEmpty()) {
+					//Try to determine if this is a resource or not.
+					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0') {
+						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
+							urlIndex++;
 
-		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(settings.getName());
-		itemInfo.setCallNumber("Online " + settings.getName());
-		itemInfo.setItemIdentifier(identifier);
-		itemInfo.setShelfLocation(settings.getName());
-		itemInfo.setDetailedLocation(settings.getName());
+							ItemInfo itemInfo = new ItemInfo();
+							if (sideLoadSettings.isConvertFormatToEContent()) {
+								itemInfo.setIsEContent(true);
+							}
 
-		//No Collection for Side loaded eContent
-		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
-		itemInfo.setAvailable(true);
-		itemInfo.setDetailedStatus("Available Online");
-		itemInfo.setGroupedStatus("Available Online");
-		itemInfo.setHoldable(false);
-		itemInfo.setInLibraryUseOnly(false);
+							loadDateAdded(identifier, itemInfo);
+							itemInfo.setLocationCode(settings.getName());
+							itemInfo.setCallNumber("Online " + settings.getName());
+							itemInfo.setItemIdentifier(identifier + "_" + urlIndex);
+							itemInfo.setShelfLocation(settings.getName());
+							itemInfo.setDetailedLocation(settings.getName());
 
-		itemInfo.seteContentSource(settings.getName());
+							//No Collection for Side loaded eContent
+							//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+							itemInfo.setAvailable(true);
+							if (sideLoadSettings.isConvertFormatToEContent()) {
+								itemInfo.setDetailedStatus("Available Online");
+								itemInfo.setGroupedStatus("Available Online");
+							}else{
+								itemInfo.setDetailedStatus("On Shelf");
+								itemInfo.setGroupedStatus("On Shelf");
+							}
+							itemInfo.setHoldable(false);
+							itemInfo.setInLibraryUseOnly(false);
 
-		RecordInfo relatedRecord = groupedWork.addRelatedRecord(settings.getName(), identifier);
-		//RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
-		relatedRecord.addItem(itemInfo);
-		loadEContentUrl(record, itemInfo);
+							itemInfo.seteContentSource(settings.getName());
 
-		loadEContentFormatInformation(record, relatedRecord, itemInfo);
+							if (relatedRecord == null) {
+								relatedRecord = groupedWork.addRelatedRecord(settings.getName(), identifier);
+							}
+							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+							Subfield linkTextSubfield = urlField.getSubfield('y');
+							if (linkTextSubfield != null) {
+								itemInfo.setShelfLocation(linkTextSubfield.getData());
+								itemInfo.setDetailedLocation(linkTextSubfield.getData());
+							} else {
+								linkTextSubfield = urlField.getSubfield('z');
+								if (linkTextSubfield != null) {
+									itemInfo.setShelfLocation(linkTextSubfield.getData());
+									itemInfo.setDetailedLocation(linkTextSubfield.getData());
+								}
+							}
+							relatedRecord.addItem(itemInfo);
+
+							loadEContentFormatInformation(groupedWork, record, relatedRecord, itemInfo);
+						}
+					}
+				}
+			}
+		}
 
 		return relatedRecord;
 	}
 
-	private void loadEContentFormatInformation(org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	private void loadEContentFormatInformation(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (settings.getFormatSource().equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
 			translatedFormats.add(settings.getSpecifiedFormat());
@@ -151,55 +189,68 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			econtentRecord.addFormatCategories(translatedFormatCategories);
 			econtentRecord.setFormatBoost(settings.getSpecifiedFormatBoost());
 		} else {
-			LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(record, settings);
-			//Convert formats from print to eContent version
-			for (String format : printFormats) {
-				if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript") || format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
-					econtentItem.setFormat("eBook");
-					econtentItem.setFormatCategory("eBook");
-					econtentRecord.setFormatBoost(10);
-				} else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
-					econtentItem.setFormat("eMagazine");
-					econtentItem.setFormatCategory("eBook");
-					econtentRecord.setFormatBoost(3);
-				} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM") || format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio") || format.equalsIgnoreCase("eAudiobook")) {
-					econtentItem.setFormat("eAudiobook");
-					econtentItem.setFormatCategory("Audio Books");
-					econtentRecord.setFormatBoost(8);
-				} else if (format.equalsIgnoreCase("MusicRecording")) {
-					econtentItem.setFormat("eMusic");
-					econtentItem.setFormatCategory("Music");
-					econtentRecord.setFormatBoost(5);
-				} else if (format.equalsIgnoreCase("MusicalScore")) {
-					econtentItem.setFormat("MusicalScore");
-					econtentItem.setFormatCategory("eBook");
-					econtentRecord.setFormatBoost(5);
-				} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
-					econtentItem.setFormat("eVideo");
-					econtentItem.setFormatCategory("Movies");
-					econtentRecord.setFormatBoost(10);
-				} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
-					econtentItem.setFormat("Online Materials");
-					econtentItem.setFormatCategory("Other");
-					econtentRecord.setFormatBoost(2);
-				} else if (format.equalsIgnoreCase("Photo")) {
-					econtentItem.setFormat("Photo");
-					econtentItem.setFormatCategory("Other");
-					econtentRecord.setFormatBoost(2);
-				} else if (format.equalsIgnoreCase("Map")) {
-					econtentItem.setFormat("Map");
-					econtentItem.setFormatCategory("Other");
-					econtentRecord.setFormatBoost(2);
-				} else if (format.equalsIgnoreCase("Newspaper")) {
-					econtentItem.setFormat("Newspaper");
-					econtentItem.setFormatCategory("eBook");
-					econtentRecord.setFormatBoost(2);
-				} else if (format.equalsIgnoreCase("GraphicNovel")) {
-					econtentItem.setFormat("eComic");
-					econtentItem.setFormatCategory("eBook");
-					econtentRecord.setFormatBoost(8);
-				} else {
-					logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+			LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(groupedWork, record, settings);
+			SideLoadSettings sideLoadSettings = (SideLoadSettings) settings;
+			if (sideLoadSettings.isConvertFormatToEContent()) {
+				//Convert formats from print to eContent version
+				for (String format : printFormats) {
+					if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript") || format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
+						econtentItem.setFormat("eBook");
+						econtentItem.setFormatCategory("eBook");
+						econtentRecord.setFormatBoost(10);
+					} else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
+						econtentItem.setFormat("eMagazine");
+						econtentItem.setFormatCategory("eBook");
+						econtentRecord.setFormatBoost(3);
+					} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM") || format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio") || format.equalsIgnoreCase("eAudiobook")) {
+						econtentItem.setFormat("eAudiobook");
+						econtentItem.setFormatCategory("Audio Books");
+						econtentRecord.setFormatBoost(8);
+					} else if (format.equalsIgnoreCase("MusicRecording")) {
+						econtentItem.setFormat("eMusic");
+						econtentItem.setFormatCategory("Music");
+						econtentRecord.setFormatBoost(5);
+					} else if (format.equalsIgnoreCase("MusicalScore")) {
+						econtentItem.setFormat("MusicalScore");
+						econtentItem.setFormatCategory("eBook");
+						econtentRecord.setFormatBoost(5);
+					} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
+						econtentItem.setFormat("eVideo");
+						econtentItem.setFormatCategory("Movies");
+						econtentRecord.setFormatBoost(10);
+					} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
+						econtentItem.setFormat("Online Materials");
+						econtentItem.setFormatCategory("Other");
+						econtentRecord.setFormatBoost(2);
+					} else if (format.equalsIgnoreCase("Photo")) {
+						econtentItem.setFormat("Photo");
+						econtentItem.setFormatCategory("Other");
+						econtentRecord.setFormatBoost(2);
+					} else if (format.equalsIgnoreCase("Map")) {
+						econtentItem.setFormat("Map");
+						econtentItem.setFormatCategory("Other");
+						econtentRecord.setFormatBoost(2);
+					} else if (format.equalsIgnoreCase("Newspaper")) {
+						econtentItem.setFormat("Newspaper");
+						econtentItem.setFormatCategory("eBook");
+						econtentRecord.setFormatBoost(2);
+					} else if (format.equalsIgnoreCase("GraphicNovel")) {
+						econtentItem.setFormat("eComic");
+						econtentItem.setFormatCategory("eBook");
+						econtentRecord.setFormatBoost(8);
+					} else {
+						logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+					}
+				}
+			}else{
+				for (String format : printFormats) {
+					FormatMapValue formatMapValue = settings.getFormatMapValue(format, BaseIndexingSettings.FORMAT_TYPE_BIB_LEVEL);
+					if (formatMapValue != null) {
+						econtentItem.setFormat(formatMapValue.getFormat());
+						econtentItem.setFormatCategory(formatMapValue.getFormatCategory());
+						econtentRecord.setFormatBoost(formatMapValue.getFormatBoost());
+					}
+					break;
 				}
 			}
 		}

@@ -2283,8 +2283,8 @@ class Location extends DataObject {
 					$curl->close_curl();
 
 					if ($data->status == 'OK') {
-						$this->longitude = $data->results[0]->geometry->location->lng;
-						$this->latitude = $data->results[0]->geometry->location->lat;
+						$this->setProperty('longitude', $data->results[0]->geometry->location->lng, null);
+						$this->setProperty('latitude', $data->results[0]->geometry->location->lat, null);
 						$components = $data->results[0]->address_components;
 
 						$country = '';
@@ -2295,9 +2295,9 @@ class Location extends DataObject {
 						}
 
 						if ($country == 'CA') {
-							$this->unit = 'Km';
+							$this->setProperty('unit', 'Km', null);
 						} else {
-							$this->unit = 'Mi';
+							$this->setProperty('unit', 'Mi', null);
 						}
 						parent::update();
 					}

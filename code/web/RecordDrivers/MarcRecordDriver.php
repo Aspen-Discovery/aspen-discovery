@@ -930,12 +930,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 			if ($field008 != null && $datalength >= 37) {
 				$languageCode = substr($field008->getData(), 35, 3);
-				if ($languageCode == 'eng') {
-					$languageCode = "English";
-				} elseif ($languageCode == 'spa') {
-					$languageCode = "Spanish";
+				/** @var TranslationMap $translationMap **/
+				$translatedValue = mapValue('language', $languageCode);
+				if (!empty($translatedValue)){
+					return $translatedValue;
+				}else{
+					return $languageCode;
 				}
-				return $languageCode;
+
 			} else {
 				return 'English';
 			}
@@ -1062,7 +1064,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 
-				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls, $variationId));
+				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls, null, $variationId));
 
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -1292,7 +1294,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->_actions[$variationId];
 	}
 
-	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
+	function createActionsFromUrls($relatedUrls, $itemInfo = null, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;
@@ -2112,6 +2114,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			'525' => 'Supplement',
 			'526' => 'Study Program Information',
 			'530' => 'Additional Physical Form',
+			'532' => 'Accessibility Note',
 			'533' => 'Reproduction',
 			'534' => 'Original Version',
 			'535' => 'Location of Originals/Duplicates',

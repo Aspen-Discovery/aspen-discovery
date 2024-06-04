@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 public class SideLoadSettings extends BaseIndexingSettings {
 	private HashSet<String> deletedIds = new HashSet<>();
+	private boolean convertFormatToEContent;
 
 	public SideLoadSettings(String serverName, ResultSet settings, BaseIndexingLogEntry logEntry) throws SQLException {
 		super(serverName, logEntry);
@@ -32,14 +33,15 @@ public class SideLoadSettings extends BaseIndexingSettings {
 		this.specifiedFormatBoost = settings.getInt("specifiedFormatBoost");
 		this.treatUnknownLanguageAs = settings.getString("treatUnknownLanguageAs");
 		this.includePersonalAndCorporateNamesInTopics = settings.getBoolean("includePersonalAndCorporateNamesInTopics");
+		this.convertFormatToEContent = settings.getBoolean("convertFormatToEContent");
 
 		String deletedIdString = settings.getString("deletedRecordsIds");
-		if (deletedIdString != null && deletedIdString.trim().length() > 0) {
+		if (deletedIdString != null && !deletedIdString.trim().isEmpty()) {
 			Pattern deletedIdsPattern = Pattern.compile("([^,\r\n\\s]*)[,\r\n\\s]*", Pattern.DOTALL);
 			Matcher deletedIdMatcher = deletedIdsPattern.matcher(deletedIdString.trim());
 			while (deletedIdMatcher.find()) {
 				String deletedId = deletedIdMatcher.group(1);
-				if (deletedId.length() > 0) {
+				if (!deletedId.isEmpty()) {
 					deletedIds.add(deletedId);
 				}
 			}
@@ -48,5 +50,9 @@ public class SideLoadSettings extends BaseIndexingSettings {
 
 	public HashSet<String> getDeletedIds(){
 		return deletedIds;
+	}
+
+	public boolean isConvertFormatToEContent() {
+		return convertFormatToEContent;
 	}
 }

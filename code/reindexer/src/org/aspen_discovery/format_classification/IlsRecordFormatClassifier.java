@@ -1,10 +1,12 @@
 package org.aspen_discovery.format_classification;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
+import org.aspen_discovery.reindexer.AbstractGroupedWorkSolr;
 import org.aspen_discovery.reindexer.ItemInfo;
 import org.aspen_discovery.reindexer.RecordInfo;
 import org.marc4j.marc.DataField;
@@ -22,13 +24,14 @@ public class IlsRecordFormatClassifier extends MarcRecordFormatClassifier {
 	}
 
 	@Override
-	public LinkedHashSet<FormatInfo> getFormatsForRecord(org.marc4j.marc.Record record, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger){
+	public LinkedHashSet<FormatInfo> getFormatsForRecord(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger){
 		IndexingProfile indexingProfile = (IndexingProfile)settings;
 		LinkedHashSet<FormatInfo> formats = new LinkedHashSet<>();
 		if (settings.getFormatSource().equals("item")) {
 			List<DataField> itemFields = MarcUtil.getDataFields(record, indexingProfile.getItemTagInt());
 			for (DataField itemField : itemFields) {
-				FormatInfo itemFormatInfo = this.getFormatInfoForItem(itemField, settings, logEntry, logger);
+				String itemIdentifier = itemField.getSubfield(((IndexingProfile) settings).getItemRecordNumberSubfield()).getData();
+				FormatInfo itemFormatInfo = this.getFormatInfoForItem(groupedWork, itemIdentifier, itemField, settings, logEntry, logger);
 				if (itemFormatInfo != null) {
 					formats.add(itemFormatInfo);
 				}
@@ -37,36 +40,35 @@ public class IlsRecordFormatClassifier extends MarcRecordFormatClassifier {
 		if (!formats.isEmpty()) {
 			return formats;
 		}else {
-			return super.getFormatsForRecord(record, settings, logEntry, logger);
+			return super.getFormatsForRecord(groupedWork, record, settings, logEntry, logger);
 		}
 	}
 
 	/**
 	 * Retrieve a format from the specified fallback field.  This is untranslated because it gets translated later.
 	 *
-	 * @param record
-	 * @param printFormats
-	 * @param settings
+	 * @param record - The record being processed
+	 * @param printFormats - a list of formats that apply
+	 * @param settings - Settings used when determining the format
 	 */
-	protected void getFormatFromFallbackField(org.marc4j.marc.Record record, LinkedHashSet<String> printFormats, BaseIndexingSettings settings) {
+	protected void getFormatFromFallbackField(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, LinkedHashSet<String> printFormats, BaseIndexingSettings settings) {
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile)settings;
 			Set<String> fields = MarcUtil.getFieldList(record, indexingProfile.getFallbackFormatField());
 			for (String curField : fields) {
-				if (indexingProfile.hasTranslation("format", curField.toLowerCase())) {
+				if (indexingProfile.hasFormat(curField.toLowerCase(), BaseIndexingSettings.FORMAT_TYPE_FALLBACK_FORMAT)) {
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding format " + curField + " based on fallback format", 2);}
 					printFormats.add( curField);
 				}
 			}
 		}
 	}
 
-	protected final HashSet<String> unhandledFormatBoosts = new HashSet<>();
-
 	@Override
-	public void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
+	public void loadItemFormat(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
 		if (itemInfo.isEContent()) {return;}
 
-		FormatInfo formatInfo = getFormatInfoForItem(itemField, settings, logEntry, logger);
+		FormatInfo formatInfo = getFormatInfoForItem(groupedWork, itemInfo.getItemIdentifier(), itemField, settings, logEntry, logger);
 		if (formatInfo != null) {
 			itemInfo.setFormat(formatInfo.format);
 			itemInfo.setFormatCategory(formatInfo.formatCategory);
@@ -76,36 +78,14 @@ public class IlsRecordFormatClassifier extends MarcRecordFormatClassifier {
 		}
 	}
 
-	public FormatInfo getFormatInfoForItem(DataField itemField, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
+	public FormatInfo getFormatInfoForItem(AbstractGroupedWorkSolr groupedWork, String itemIdentifier, DataField itemField, BaseIndexingSettings settings, BaseIndexingLogEntry logEntry, Logger logger) {
 		IndexingProfile profile = (IndexingProfile)settings;
 		if (settings.getFormatSource().equals("item") && profile.getFormatSubfield() != ' '){
 			String format = MarcUtil.getItemSubfieldData(profile.getFormatSubfield(), itemField, logEntry, logger);
 			if (format != null) {
-				format = format.toLowerCase(Locale.ROOT);
-				if (profile.hasTranslation("format", format)) {
-					String translatedFormat = profile.translateValue("format", format);
-					if (translatedFormat != null && !translatedFormat.isEmpty()) {
-						FormatInfo formatInfo = new FormatInfo();
-						formatInfo.format = translatedFormat;
-						if (profile.hasTranslation("format_category", format)) {
-							formatInfo.formatCategory = profile.translateValue("format_category", format);
-						}
-						String formatBoost = null;
-						if (profile.hasTranslation("format_boost", format)) {
-							formatBoost = profile.translateValue("format_boost", format);
-						}
-						try {
-							if (formatBoost != null && !formatBoost.isEmpty()) {
-								formatInfo.formatBoost = Integer.parseInt(formatBoost);
-							}
-						} catch (Exception e) {
-							if (!unhandledFormatBoosts.contains(format)) {
-								unhandledFormatBoosts.add(format);
-								logger.warn("Could not get boost for format " + format);
-							}
-						}
-						return formatInfo;
-					}
+				FormatMapValue formatMapValue = profile.getFormatMapValue(format, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
+				if (formatMapValue != null) {
+					return new FormatInfo(formatMapValue, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
 				}
 			}
 		}

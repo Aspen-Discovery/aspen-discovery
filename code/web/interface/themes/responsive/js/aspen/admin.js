@@ -2153,6 +2153,29 @@ AspenDiscovery.Admin = (function () {
 				alert("Select at least one menu link to copy");
 			}
 			return false;
+		},
+
+		calculateGroupingCategories: function (sourceControl) {
+			var sourceControlObj = $(sourceControl);
+			var index = sourceControlObj.data("id");
+			if (index !== undefined) {
+				var format = $('input[name="formatMap_format[' + index + ']"]').val();
+				var formatCategory = $('select[name="formatMap_formatCategory[' + index + ']"] option:selected').val();
+				var groupingCategory = 'book';
+				if (format.match(/graphicnovel|graphic novel|comic|ecomic|manga/gi)) {
+					groupingCategory = 'comic';
+				}else{
+					if (formatCategory === "Movies") {
+						groupingCategory = 'movie';
+					} else if (formatCategory === "Music") {
+						groupingCategory = 'music';
+					} else if (formatCategory === "Other") {
+						groupingCategory = 'other';
+					}
+				}
+				$("#formatMap_groupingCategory_" + index).text(groupingCategory);
+			}
+			return true;
 		}
 
 	};

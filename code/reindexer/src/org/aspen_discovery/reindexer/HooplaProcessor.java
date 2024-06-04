@@ -100,6 +100,7 @@ class HooplaProcessor {
 						primaryFormat = kind;
 						break;
 				}
+				if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + primaryFormat + " based on kind of " + kind, 2);}
 
 				hooplaRecord.addFormat(primaryFormat);
 				hooplaRecord.addFormatCategory(formatCategory);

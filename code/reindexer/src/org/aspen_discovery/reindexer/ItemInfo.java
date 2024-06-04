@@ -38,7 +38,6 @@ public class ItemInfo{
 	private String dueDate;
 	private String collection;
 	private Date lastCheckinDate;
-	private String volumeField;
 	private String status;
 	private String groupedStatus;
 	private boolean available;
@@ -103,7 +102,7 @@ public class ItemInfo{
 		this.eContentFilename = eContentFilename;
 	}
 
-	String getItemIdentifier() {
+	public String getItemIdentifier() {
 		if (itemIdentifier == null) {
 			itemIdentifier = recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
 		}
@@ -495,7 +494,6 @@ public class ItemInfo{
 	}
 
 	public void setVolumeField(String volumeField) {
-		this.volumeField = volumeField;
 	}
 
 	private StringBuffer locationOwnedScopes = null;
