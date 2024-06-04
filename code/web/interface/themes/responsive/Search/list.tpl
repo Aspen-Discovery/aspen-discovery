@@ -61,7 +61,9 @@
 		<div class="clearer"></div>
 	</div>
 	{* End Listing Options *}
-
+	{if !empty($offline) && ($showComments || $showFavorites)}
+		<div class="alert alert-warning">{translate text="Actions that require a login are currently unavailable" isPublicFacing=true}</div>
+	{/if}
 	{if !empty($placard)}
 		{include file="Search/placard.tpl"}
 	{/if}
@@ -101,7 +103,7 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $displayMaterialsRequest}
+	{if $displayMaterialsRequest && empty($offline)}
 		{if $materialRequestType == 1}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>

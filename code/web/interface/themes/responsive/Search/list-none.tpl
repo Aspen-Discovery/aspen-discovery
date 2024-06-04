@@ -110,7 +110,7 @@
 			<div id='dplaSearchResultsPlaceholder'></div>
 		{/if}
 
-		{if $displayMaterialsRequest}
+		{if $displayMaterialsRequest && empty($offline)}
 			{if $materialRequestType == 1}
 				<div class="materialsRequestLink">
 					<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
