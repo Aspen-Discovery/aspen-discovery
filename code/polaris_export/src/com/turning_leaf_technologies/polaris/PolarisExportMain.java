@@ -954,7 +954,7 @@ public class PolarisExportMain {
 					}
 					logEntry.saveResults();
 				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for replaced bubs response", e);
+					logEntry.incErrors("Unable to parse document for replaced bibs response", e);
 				}
 			}
 
