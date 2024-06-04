@@ -9322,43 +9322,43 @@ AspenDiscovery.Admin = (function () {
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		showCopyEventsFacetGroupForm: function (id) {
-            var url = Globals.path + "/Admin/AJAX";
-            var params = {
-                method: 'getCopyEventsFacetGroupForm',
-                facetGroupId: id
-            };
-            $.getJSON(url, params,
-                function (data) {
-                    if (data.success) {
-                        AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-                    } else {
-                        AspenDiscovery.showMessage(data.title, data.message);
-                    }
-                }
-            ).fail(AspenDiscovery.ajaxFail);
-            return false;
-        },
-        processCopyEventsFacetGroupForm: function () {
-            var url = Globals.path + "/Admin/AJAX";
-            var newGroupName = $('#groupName').val();
-            var facetGroupId = $('#facetGroupId').val();
-            var params = {
-                method: 'doCopyEventsFacetGroup',
-                id: facetGroupId,
-                name: newGroupName
-            };
-            $.getJSON(url, params,
-                function (data) {
-                    if (data.success) {
-                        AspenDiscovery.showMessage(data.title, data.message, true, true);
-                    } else {
-                        AspenDiscovery.showMessage(data.title, data.message);
-                    }
-                }
-            ).fail(AspenDiscovery.ajaxFail);
-            return false;
-        },
+		/*showCopyEventsFacetGroupForm: function (id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params = {
+				method: 'getCopyEventsFacetGroupForm',
+				facetGroupId: id
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyEventsFacetGroupForm: function () {
+			var url = Globals.path + "/Admin/AJAX";
+			var newGroupName = $('#groupName').val();
+			var facetGroupId = $('#facetGroupId').val();
+			var params = {
+				method: 'doCopyEventsFacetGroup',
+				id: facetGroupId,
+				name: newGroupName
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},*/
 		showBatchDeleteForm: function (module, toolName, batchDeleteScope) {
 			var selectedObjects = $('.selectedObject:checked');
 			if (batchDeleteScope === 'all' || selectedObjects.length >= 1) {

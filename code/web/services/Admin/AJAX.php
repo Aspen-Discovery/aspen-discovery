@@ -785,7 +785,7 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
     /** @noinspection PhpUnused */
-    function getCopyEventsFacetGroupForm() : array {
+    /*function getCopyEventsFacetGroupForm() : array {
         if (!empty($_REQUEST['facetGroupId'])) {
             global $interface;
             require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
@@ -829,10 +829,10 @@ class Admin_AJAX extends JSON_Action {
                 ])
             ];
         }
-    }
+    }*/
 
     /** @noinspection PhpUnused */
-    function doCopyEventsFacetGroup() : array {
+    /*function doCopyEventsFacetGroup() : array {
 
         if (!empty($_REQUEST['name'])) {
             $facetsProcessed = 0;
@@ -886,7 +886,7 @@ class Admin_AJAX extends JSON_Action {
                 'message' => "A name was not provided for the new facet group",
             ];
         }
-    }
+    }*/
 
 	/** @noinspection PhpUnused */
 	function getCopyDisplaySettingsForm() : array {
