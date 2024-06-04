@@ -517,10 +517,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			
 				foreach($limitOption['counts'] as $value){
 					if ($value['value'] == 'true') {
+						$isApplied = isset($this->limiters[$limitId]) && $this->limiters[$limitId] == 'y' ? 1 : 0;
+
 						$availableLimits[$limitId] = [
 							'display' => $displayName,
 							'value' => $limitId,
-							'isApplied' => ($this->limiters[$limitId]) == 'y' ? 1 : 0,
+							'isApplied' => $isApplied,
 							'url' => $this->renderLinkWithLimiter($limitId),
 							'removalUrl' => $this->renderLinkWithoutLimiter($limitId),
 						];
