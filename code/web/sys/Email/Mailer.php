@@ -16,7 +16,8 @@ class Mailer {
 	 *
 	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null) : bool {
+	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null, $attachments = []) : bool {
+
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
@@ -24,7 +25,7 @@ class Mailer {
 		$amazonSesSettings = new AmazonSesSetting();
 
 		if ($amazonSesSettings->find(true)) {
-			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody);
+			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
 		} else {
 			$sendGridSettings = new SendGridSetting();
 			if ($sendGridSettings->find(true)) {
@@ -104,7 +105,7 @@ class Mailer {
 		}
 	}
 
-	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody): bool {
+	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody, ?array $attachments): bool {
 		require_once ROOT_DIR . '/sys/Email/AmazonSesMessage.php';
 		$message = new AmazonSesMessage();
 		$toAddresses = explode(';', $to);
@@ -114,6 +115,14 @@ class Mailer {
 		}
 		$message->setSubject($subject);
 		$message->setMessageFromString($body, $htmlBody);
+
+		if(!empty($attachments)) {
+			$i = 0;
+			foreach($attachments as $attachment) {
+				$message->addAttachmentFromFile($attachment['name'][$i], $attachment['tmp_name'][$i], $attachment['type'][$i]);
+				$i++;
+			}
+		}
 
 		$response = $amazonSesSettings->sendEmail($message, false, false);
 		if ($response == false) {
