@@ -74,6 +74,11 @@
 					{/if}
 				{/if}
 
+				{assign var="tabClasses" value="tab-pane" }
+				{if $active}
+					{assign var="tabClasses" value="$tabClasses active" }
+				{/if}
+
 				{if $collectionSpotlight->style == 'horizontal'}
 					{include file='CollectionSpotlight/titleScroller.tpl'}
 				{elseif $collectionSpotlight->style == 'horizontal-carousel'}
