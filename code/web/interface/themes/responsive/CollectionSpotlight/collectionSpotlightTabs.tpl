@@ -141,7 +141,7 @@
 				var selectedOption = availableLists.options[availableLists.selectedIndex];
 
 				var selectedList = selectedOption.value;
-				$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
+				$("#collectionSpotlight{$collectionSpotlight->id} .active").removeClass('active').hide();
 				$("#" + selectedList).addClass('active').show();
 				// update view more link with data.url for the selectedOption
 				showList(availableLists.selectedIndex);
