@@ -7,134 +7,60 @@
 				{$error}
 			</div>
 		{/if}
-		<form class="form-horizontal" id="submitTicketForm">
+		<form id="submitTicketForm" method="post" enctype="multipart/form-data">
 			<div class="form-group">
-				<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} <span class="required-input">*</span></label>
+				<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} <span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span></label>
 				<input type="text" class="form-control required" name="name" id="name" value="{$name}">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="email">{translate text="Email" isAdminFacing=true} <span class="required-input">*</span></label>
+				<label class="control-label" for="email">{translate text="Email" isAdminFacing=true} <span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span></label>
 				<input type="email" class="form-control required" name="email" id="email" value="{$email}">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="subject">{translate text="Subject" isAdminFacing=true} <span class="required-input">*</span></label>
+				<label class="control-label" for="subject">{translate text="Subject" isAdminFacing=true} <span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span></label>
+				<span class="help-block" style="margin-bottom:.5em; margin-top: 0">{translate text="Please use descriptive keywords, i.e. Creating lists in LiDA" isAdminFacing=true}</span>
 				<input type="text" class="form-control required" name="subject" id="subject">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="description">{translate text="Description" isAdminFacing=true} <span class="required-input">*</span></label>
-				<textarea class="form-control required" name="description" id="description"></textarea>
-			</div>
-			<div class="form-group">
-				<label class="control-label" for="criticality">{translate text="Criticality" isAdminFacing=true}</label>
-				<select class="form-control" name="criticality" id="criticality">
-					<option value="">{translate text="None Specified" isAdminFacing=true inAttribute=true}</option>
-					<option value="Notice Delivery">{translate text="Notice Delivery" isAdminFacing=true inAttribute=true}</option>
-					<option value="Time Sensitive">{translate text="Time Sensitive" isAdminFacing=true inAttribute=true}</option>
-					<option value="Urgent!">{translate text="Urgent!" isAdminFacing=true inAttribute=true}</option>
+				<label class="control-label" for="reason">{translate text="Reason" isAdminFacing=true}</label>
+				<select class="form-control" name="reason" id="reason">
+					<option value="Something is not appearing or working as expected">{translate text="Something is not appearing or working as expected" isAdminFacing=true inAttribute=true}</option>
+					<option value="Question about setting or workflow">{translate text="Question about setting or workflow" isAdminFacing=true inAttribute=true}</option>
+					<option value="Request for a new feature or integration">{translate text="Request for a new feature or integration" isAdminFacing=true inAttribute=true}</option>
+					<option value="Other">{translate text="Other" isAdminFacing=true inAttribute=true}</option>
 				</select>
 			</div>
 			<div class="form-group">
-				<div class="col-xs-12">
-					<label class="control-label" for="component">{translate text="Component(s)" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]" value="Account Integration" id="Account Integration"><label for="Account Integration">{translate text="Account Integration" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Administration" id="Administration"><label for="Administration">{translate text="Administration" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Aspen API" id="Aspen API"><label for="Aspen API">{translate text="Aspen API" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Carl.X" id="Carl.X"><label for="Carl.X">{translate text="Carl.X" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="CloudLibrary" id="CloudLibrary"><label for="CloudLibrary">{translate text="CloudLibrary" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="ContentCafe" id="ContentCafe"><label for="ContentCafe">{translate text="ContentCafe" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Digital Archives" id="Digital Archives"><label for="Digital Archives">{translate text="Digital Archives" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="eCommerce" id="eCommerce"><label for="eCommerce">{translate text="eCommerce" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Events" id="Events"><label for="Events">{translate text="Events" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="GoodReads" id="GoodReads"><label for="GoodReads">{translate text="GoodReads" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Grouped Works" id="Grouped Works"><label for="Grouped Works">{translate text="Grouped Works" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Hoopla" id="Hoopla"><label for="Hoopla">{translate text="Hoopla" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Horizon" id="Horizon"><label for="Horizon">{translate text="Horizon" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="ILL" id="ILL"><label for="ILL">{translate text="ILL" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Koha" id="Koha"><label for="Koha">{translate text="Koha" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Languages &amp; Translations" id="Languages &amp; Translations"><label for="Languages &amp; Translations">{translate text="Languages & Translations" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Materials Request" id="Materials Request"><label for="Materials Request">{translate text="Materials Request" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Migration" id="Migration"><label for="Migration">{translate text="Migration" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="New York Times" id="New York Times"><label for="New York Times">{translate text="New York Times" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Novelist" id="Novelist"><label for="Novelist">{translate text="NoveList" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="OverDrive" id="OverDrive"><label for="OverDrive">{translate text="OverDrive" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Reading History" id="Reading History"><label for="Reading History">{translate text="Reading History" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Recommendations" id="Recommendations"><label for="Recommendations">{translate text="Recommendations" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Searching" id="Searching"><label for="Searching">{translate text="Searching" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Server Setup" id="Server Setup"><label for="Server Setup">{translate text="Server Setup" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Sierra" id="Sierra"><label for="Sierra">{translate text="Sierra" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Symphony" id="Symphony"><label for="Symphony">{translate text="Symphony" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Syndetics" id="Syndetics"><label for="Syndetics">{translate text="Syndetics" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="User Lists" id="User Lists"><label for="User Lists">{translate text="User Lists" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Web Builder" id="Web Builder"><label for="Web Builder">{translate text="Web Builder" isAdminFacing=true}</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="Website Indexing" id="Website Indexing"><label for="Website Indexing">{translate text="Website Indexing" isAdminFacing=true}</label>
-				</div>
+				<label class="control-label" for="product">{translate text="Product" isAdminFacing=true}</label>
+				<select class="form-control" name="product" id="product">
+					<option value="Aspen Discovery Only">{translate text="Aspen Discovery Only" isAdminFacing=true inAttribute=true}</option>
+					<option value="Aspen LiDA Only">{translate text="Aspen LiDA Only" isAdminFacing=true inAttribute=true}</option>
+					<option value="Both Aspen Discovery and Aspen LiDA">{translate text="Both Aspen Discovery and Aspen LiDA" isAdminFacing=true inAttribute=true}</option>
+				</select>
 			</div>
 			<div class="form-group">
-				<div class="col-xs-12">
+				<label class="control-label" for="description">{translate text="Description" isAdminFacing=true} <span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span></label>
+				<span class="help-block" style="margin-bottom:.5em; margin-top: 0">{translate text="Include detailed steps to replicate the problem, account number for impacted user(s), device information, etc. Please do not include sensitive information like login credentials." isAdminFacing=true}</span>
+				<textarea class="form-control required" name="description" id="description"></textarea>
+			</div>
+			{if $supportingCompany == 'ByWater Solutions'}
+			<div class="form-group">
+				<label class="control-label" for="sharepass">{translate text="Sharepass Url" isAdminFacing=true}</label>
+				<span class="help-block" style="margin-bottom:.5em; margin-top: 0">{translate text="Use Sharepass to send sensitive information to us such as login credentials we can use to replicate the behavior reported." isAdminFacing=true} <a href="https://app.tango.us/app/workflow/Share-sensitive-information-with-ByWater-SharePass-ea39fbda64f24949a1a8a80a1be8223b" target="_blank"><u>{translate text="Learn how to use Sharepass." isAdminFacing=true}</u></a></span>
+				<input type="url" class="form-control" name="sharepass" id="sharepass">
+			</div>
+            {/if}
+			<div class="form-group">
+				<label class="control-label" for="examples">{translate text="Url(s) to Records or Search Results" isAdminFacing=true}</label>
+				<textarea class="form-control" name="examples" id="examples"></textarea>
+			</div>
+			<div class="form-group">
+				<label class="control-label" for="attachments">{translate text="Attachment(s)" isAdminFacing=true}</label>
+				<span class="help-block" style="margin-bottom:.5em; margin-top: 0">{translate text="Attach any screenshots or recordings that display the reported behavior or to help us replicate it. To select multiple files, hold down the CTRL or SHIFT key while selecting." isAdminFacing=true}</span>
+				<input type="file" name="attachments[]" id="attachments" multiple>
+			</div>
+			<div class="form-group">
 					<button type="submit" name="submitTicket" class="btn btn-primary">{translate text="Submit Ticket" isAdminFacing=true}</button>
-				</div>
 			</div>
 		</form>
 		<script type="application/javascript">
