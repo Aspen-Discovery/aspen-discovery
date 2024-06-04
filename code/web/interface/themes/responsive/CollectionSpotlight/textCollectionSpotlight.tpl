@@ -1,5 +1,5 @@
 {strip}
-	<div id="tab-{$wrapperId}"{if $display == 'false'} style="display:none"{/if} class="textListScroller">
+	<div id="tab-{$wrapperId}"{if $display == 'false'} style="display:none"{/if} class="textListScroller tab-pane{if !empty($active)} active{/if}">
 		<div id="{$wrapperId}" class="titleScrollerWrapper">
 			{if (!empty($showCollectionSpotlightTitle) && $showCollectionSpotlightTitle) || $showViewMoreLink}
 				<div id="tab-{$wrapperId}Header" class="titleScrollerHeader">
