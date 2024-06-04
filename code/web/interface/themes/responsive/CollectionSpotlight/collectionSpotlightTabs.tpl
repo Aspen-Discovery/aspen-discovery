@@ -28,7 +28,7 @@
 				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="{translate text="Select a list to display" isPublicFacing=true inAttribute=true}">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<option value="tab-{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
+					<option data-carouselid="{$list->id}" value="tab-{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
 					{/if}
 					{/foreach}
 				</select>
@@ -181,7 +181,8 @@
 
 				var selectedList = selectedOption.value;
 				$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
-				$("#" + selectedList).addClass('active').show().jcarousel('reload');
+				$("#" + selectedList).addClass('active').show();
+				$('#collectionSpotlightCarousel' + selectedOption.dataset.carouselid).jcarousel('reload');
 			{rdelim}
 
 			$(document).ready(function(){ldelim}
