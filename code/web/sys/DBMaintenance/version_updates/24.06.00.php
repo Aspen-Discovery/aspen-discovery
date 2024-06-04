@@ -81,14 +81,6 @@ function getUpdates24_06_00(): array {
 
 		//other
 
-		//alexander - PTFS Europe
-		'explore_more_section_control' => [
-			'title' => 'Explore More Section Control',
-			'description' => 'Allow control over whether the Explore More Section is displayed',
-			'sql' => [
-				"ALTER TABLE layout_settings ADD COLUMN showExploreMoreOptions TINYINT DEFAULT '1'",
-			]
-		],//control_whether_the_explore_more_box_is_displayed
 
 
 	];
