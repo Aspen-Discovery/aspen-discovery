@@ -31,11 +31,31 @@ public class DatabaseCleanup implements IProcessHandler {
 		optimizeSessionsTable(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
+		removeOldIndexingDiagnostics(dbConn, logger, processLog);
 
 		removeOldObjectHistory(dbConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveResults();
+	}
+
+	private void removeOldIndexingDiagnostics(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try {
+			PreparedStatement removeOldIndexingDiagnosticsStmt = dbConn.prepareStatement("DELETE from grouped_work_debug_info where processed = 1 and debugTime < ?");
+			long now = new Date().getTime() / 1000;
+			//Remove anything more than 24 hours old
+			long removalTime = now - 24 * 60 * 60;
+			removeOldIndexingDiagnosticsStmt.setLong(1, removalTime);
+
+			int rowsRemoved = removeOldIndexingDiagnosticsStmt.executeUpdate();
+
+			processLog.addNote("Removed " + rowsRemoved + " indexing diagnostics");
+			processLog.incUpdated();
+
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to delete indexing diagnostics. ", e);
+		}
 	}
 
 	private void optimizeSearchTable(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
