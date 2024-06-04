@@ -185,10 +185,7 @@
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
-				var tablists = document.querySelectorAll('[role=tablist]');
-                for (var i = 0; i < tablists.length; i++) {ldelim}
-                    new TabsSwitcher(tablists[i]);
-                {rdelim}
+				applyTabsSwitcher();
 				$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 					$('#collectionSpotlightCarousel' + $(e.target).data('carouselid')).jcarousel('reload');
 				{rdelim});
@@ -196,6 +193,14 @@
 			{rdelim});
 		</script>
 	{/if}
+	<script type="text/javascript">
+		function applyTabsSwitcher(){ldelim}
+			var tablists = document.querySelectorAll('[role=tablist]');
+			for (var i = 0; i < tablists.length; i++) {ldelim}
+				new TabsSwitcher(tablists[i]);
+			{rdelim}
+		{rdelim}
+	</script>
 	{strip}
 </div>
 {/strip}
