@@ -112,6 +112,7 @@
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
+				applyTabsSwitcher();
 				$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 					showList($(e.target).data('index'));
 				{rdelim});
