@@ -13,32 +13,36 @@ class SubmitTicket extends Admin_Admin {
 			$description = $_REQUEST['description'];
 			$email = $_REQUEST['email'];
 			$name = $_REQUEST['name'];
-			$criticality = $_REQUEST['criticality'];
-			if (isset($_REQUEST['component'])) {
-				$component = $_REQUEST['component'];
-				if (is_array($component)) {
-					$component = implode(', ', $component);
-				}
-			} else {
-				$component = '';
-			}
-
+			$reason = $_REQUEST['reason'];
+			$product = $_REQUEST['product'];
+			$sharepass = $_REQUEST['sharepass'] ?? null;
+			$examples = $_REQUEST['examples'];
+			$attachments = $_FILES['attachments'] ?? [];
 
 			global $serverName;
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mailer = new Mailer();
 			$description .= "\n";
 			$description .= 'Server: ' . $serverName . "\n";
-			$description .= 'From: ' . $name . "\n";
-			$description .= 'Criticality: ' . $criticality . "\n";
-			$description .= 'Component: ' . $component . "\n";
+			$description .= 'From: ' . $name . "\n\n";
+			$description .= 'Reason: ' . $reason . "\n";
+			$description .= 'Product: ' . $product . "\n";
+
+			if($examples) {
+				$description .= 'Examples: ' . $examples . "\n";
+			}
+
+			if($sharepass) {
+				$description .= 'Sharepass: ' . $sharepass . "\n";
+			}
+
 
 			$message = '';
 			try {
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				$systemVariables = new SystemVariables();
 				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email);
+					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email, $attachments);
 					if (!$result) {
 						$message = 'Could not submit ticket via Aspen mailer';
 					}

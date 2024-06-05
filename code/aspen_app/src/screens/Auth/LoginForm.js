@@ -168,7 +168,7 @@ export const GetLoginForm = (props) => {
 
           if (PATRON.homeLocationId && !_.includes(GLOBALS.slug, 'aspen-lida')) {
                console.log(PATRON.homeLocationId);
-               await getLocationInfo(GLOBALS.url).then(async (patronsLibrary) => {
+               await getLocationInfo(GLOBALS.url, PATRON.homeLocationId).then(async (patronsLibrary) => {
                     if (!_.isUndefined(patronsLibrary.baseUrl)) {
                          LIBRARY.url = patronsLibrary.baseUrl;
                          await SecureStore.setItemAsync('library', JSON.stringify(patronsLibrary.libraryId));
