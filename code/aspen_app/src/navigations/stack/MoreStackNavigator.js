@@ -17,6 +17,7 @@ import { ScreenBrightnessPermissionDescription } from '../../screens/MyAccount/S
 import { PermissionsDashboard } from '../../screens/MyAccount/Settings/Permissions';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { SupportScreen } from '../../screens/MyAccount/Settings/Support';
+import { BackIcon } from '../../themes/theme';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const MoreStackNavigator = () => {
@@ -28,6 +29,7 @@ const MoreStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
+                    headerBackImage: () => <BackIcon />,
                }}>
                <Stack.Screen name="MoreMenu" component={MoreMenu} options={{ title: getTermFromDictionary(language, 'nav_more') }} />
                <Stack.Screen
