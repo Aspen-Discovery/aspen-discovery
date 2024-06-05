@@ -28,7 +28,7 @@
 				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="{translate text="Select a list to display" isPublicFacing=true inAttribute=true}">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<option value="tab-{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
+					<option data-carouselid="{$list->id}" value="tab-{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
 					{/if}
 					{/foreach}
 				</select>
@@ -74,6 +74,11 @@
 					{/if}
 				{/if}
 
+				{assign var="tabClasses" value="tab-pane" }
+				{if $active}
+					{assign var="tabClasses" value="$tabClasses active" }
+				{/if}
+
 				{if $collectionSpotlight->style == 'horizontal'}
 					{include file='CollectionSpotlight/titleScroller.tpl'}
 				{elseif $collectionSpotlight->style == 'horizontal-carousel'}
@@ -107,6 +112,7 @@
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
+				applyTabsSwitcher();
 				$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 					showList($(e.target).data('index'));
 				{rdelim});
@@ -135,7 +141,7 @@
 				var selectedOption = availableLists.options[availableLists.selectedIndex];
 
 				var selectedList = selectedOption.value;
-				$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
+				$("#collectionSpotlight{$collectionSpotlight->id} .active").removeClass('active').hide();
 				$("#" + selectedList).addClass('active').show();
 				// update view more link with data.url for the selectedOption
 				showList(availableLists.selectedIndex);
@@ -175,15 +181,13 @@
 
 				var selectedList = selectedOption.value;
 				$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
-				$("#" + selectedList).addClass('active').show().jcarousel('reload');
+				$("#" + selectedList).addClass('active').show();
+				$('#collectionSpotlightCarousel' + selectedOption.dataset.carouselid).jcarousel('reload');
 			{rdelim}
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
-				var tablists = document.querySelectorAll('[role=tablist]');
-                for (var i = 0; i < tablists.length; i++) {ldelim}
-                    new TabsSwitcher(tablists[i]);
-                {rdelim}
+				applyTabsSwitcher();
 				$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 					$('#collectionSpotlightCarousel' + $(e.target).data('carouselid')).jcarousel('reload');
 				{rdelim});
@@ -191,6 +195,14 @@
 			{rdelim});
 		</script>
 	{/if}
+	<script type="text/javascript">
+		function applyTabsSwitcher(){ldelim}
+			var tablists = document.querySelectorAll('[role=tablist]');
+			for (var i = 0; i < tablists.length; i++) {ldelim}
+				new TabsSwitcher(tablists[i]);
+			{rdelim}
+		{rdelim}
+	</script>
 	{strip}
 </div>
 {/strip}
