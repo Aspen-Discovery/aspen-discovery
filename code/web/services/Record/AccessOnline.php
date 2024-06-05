@@ -9,7 +9,7 @@ class Record_AccessOnline extends Action {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
-		$variationId = strip_tags($_REQUEST['variationId']);
+		$variationId = isset($_REQUEST['variationId']) ? strip_tags($_REQUEST['variationId']) : '';
 		$interface->assign('id', $id);
 
 		if (strpos($id, ':')) {
@@ -38,7 +38,16 @@ class Record_AccessOnline extends Action {
 				$recordActions = $relatedRecord->getActions($variationId);
 
 				$actionIndex = $_REQUEST['index'];
-				$selectedAction = $recordActions[$actionIndex];
+				if (isset($_REQUEST['itemId'])) {
+					foreach ($recordActions as $recordAction) {
+						if ($recordAction['itemId'] == $_REQUEST['itemId'] && $recordAction['index'] == $actionIndex) {
+							$selectedAction = $recordAction;
+							break;
+						}
+					}
+				} else {
+					$selectedAction = $recordActions[$actionIndex];
+				}
 				$redirectUrl = $selectedAction['redirectUrl'];
 
 				//Track Usage
