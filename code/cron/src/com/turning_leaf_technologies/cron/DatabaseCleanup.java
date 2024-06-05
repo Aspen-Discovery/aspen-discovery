@@ -440,7 +440,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove old searches
 		try {
 			int rowsRemoved = 0;
-			ResultSet numSearchesRS = dbConn.prepareStatement("SELECT count(id) from search where created < (CURDATE() - INTERVAL 2 DAY) and saved = 0").executeQuery();
+			ResultSet numSearchesRS = dbConn.prepareStatement("SELECT count(id) from search where saved = 0").executeQuery();
 			numSearchesRS.next();
 			long numSearches = numSearchesRS.getLong(1);
 			long batchSize = 100000;
@@ -448,7 +448,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Found " + numSearches + " expired searches that need to be removed.  Will process in " + numBatches + " batches");
 			processLog.saveResults();
 			for (int i = 0; i < numBatches; i++){
-				PreparedStatement searchesToRemove = dbConn.prepareStatement("SELECT id from search where created < (CURDATE() - INTERVAL 2 DAY) and saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement searchesToRemove = dbConn.prepareStatement("SELECT id from search where saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement removeSearchStmt = dbConn.prepareStatement("DELETE from search where id = ?");
 
 				ResultSet searchesToRemoveRs = searchesToRemove.executeQuery();
