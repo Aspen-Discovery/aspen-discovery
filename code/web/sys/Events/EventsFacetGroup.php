@@ -193,12 +193,14 @@ class EventsFacetGroup extends DataObject {
     }
 
 	function getAdditionalListJavascriptActions(): array {
-		$objectActions[] = [
-			'text' => 'Copy',
-			'onClick' => "return AspenDiscovery.Admin.showCopyFacetGroupForm('$this->id')",
-			'icon' => 'fas fa-copy',
-		];
-
-		return $objectActions;
+        /* Don't show copy facet button for now until saveLibraries is fixed */
+//		$objectActions[] = [
+//			'text' => 'Copy',
+//			'onClick' => "return AspenDiscovery.Admin.showCopyEventsFacetGroupForm('$this->id')",
+//			'icon' => 'fas fa-copy',
+//		];
+//
+//		return $objectActions;
+        return [];
 	}
 }

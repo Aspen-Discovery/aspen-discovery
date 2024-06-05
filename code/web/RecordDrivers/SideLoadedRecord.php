@@ -110,8 +110,8 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return '';
 	}
 
-	function createActionsFromUrls($relatedUrls, $itemInfo = null, $variationId = 'any') {
-		/** @var SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
+	function createActionsFromUrls($relatedUrls, $itemInfo = null, $variationId = 'any') : array {
+		global $sideLoadSettings;
 		$sideLoad = $sideLoadSettings[strtolower($this->profileType)];
 
 		global $configArray;
@@ -146,6 +146,9 @@ class SideLoadedRecord extends BaseEContentDriver {
 				]);
 			}
 			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			if ($itemInfo != null) {
+				$action .= '&itemId=' . $itemInfo->itemId;
+			}
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
 			if (strlen($fileOrUrl) > 0) {
 				$actions[] = [
@@ -154,6 +157,8 @@ class SideLoadedRecord extends BaseEContentDriver {
 					'title' => $title,
 					'requireLogin' => false,
 					'target' => '_blank',
+					'itemId' => $itemInfo->itemId,
+					'index' => $i
 				];
 				$i++;
 			}

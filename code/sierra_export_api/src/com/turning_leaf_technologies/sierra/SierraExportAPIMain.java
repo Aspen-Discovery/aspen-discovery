@@ -189,12 +189,14 @@ public class SierraExportAPIMain {
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
 				}
 
+				loadRecordsToReload(indexingProfile, logEntry);
+
 				logEntry.setNumProducts(allBibsToUpdate.size());
 				logEntry.saveResults();
 
 				numChanges = updateBibs(sierraInstanceInformation);
 
-				processRecordsToReload(indexingProfile, logEntry);
+
 
 				if (sierraConn != null){
 					try{
@@ -355,7 +357,7 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+	private static void loadRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
@@ -364,20 +366,17 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null){
-					//Regroup the record
-					String groupedWorkId = groupSierraRecord(marcRecord);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+				if (recordIdentifier.startsWith(".b")){
+					recordIdentifier = recordIdentifier.substring(2, recordIdentifier.length() -1);
 				}
+				allBibsToUpdate.add(recordIdentifier);
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 				markRecordToReloadAsProcessedStmt.executeUpdate();
 				numRecordsToReloadProcessed++;
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Loaded " + numRecordsToReloadProcessed + " records marked for reprocessing");
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){

@@ -643,21 +643,14 @@ public class PolarisExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null){
-					logEntry.incRecordsRegrouped();
-					//Regroup the record
-					String groupedWorkId = groupPolarisRecord(marcRecord);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				}
+				updateBibFromPolaris(recordIdentifier, null, 0, true);
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 				markRecordToReloadAsProcessedStmt.executeUpdate();
 				numRecordsToReloadProcessed++;
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Processed " + numRecordsToReloadProcessed + " records marked for reprocessing");
 				logEntry.saveResults();
 			}
 			getRecordsToReloadRS.close();
@@ -954,7 +947,7 @@ public class PolarisExportMain {
 					}
 					logEntry.saveResults();
 				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for replaced bubs response", e);
+					logEntry.incErrors("Unable to parse document for replaced bibs response", e);
 				}
 			}
 
