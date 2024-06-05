@@ -180,10 +180,6 @@ public class EvergreenExportMain {
 					logEntry.incErrors("Could not load account profile.");
 				}
 
-				if (!extractSingleWork) {
-					processRecordsToReload(indexingProfile, logEntry);
-				}
-
 				if (recordGroupingProcessorSingleton != null) {
 					recordGroupingProcessorSingleton.close();
 					recordGroupingProcessorSingleton = null;
@@ -702,6 +698,8 @@ public class EvergreenExportMain {
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
+			MarcFactory marcFactory = MarcFactory.newInstance();
+
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
@@ -709,21 +707,21 @@ public class EvergreenExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null){
-					logEntry.incRecordsRegrouped();
-					//Regroup the record
-					String groupedWorkId = groupEvergreenRecord(marcRecord);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				}
+				updateBibFromEvergreen(recordIdentifier, marcFactory, true);
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 				markRecordToReloadAsProcessedStmt.executeUpdate();
 				numRecordsToReloadProcessed++;
+
+				logEntry.incProducts();
+				logEntry.incUpdated();
+				if (numRecordsToReloadProcessed > 0 && numRecordsToReloadProcessed % 250 == 0) {
+					getGroupedWorkIndexer().commitChanges();
+					logEntry.saveResults();
+				}
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Processed " + numRecordsToReloadProcessed + " records marked for reprocessing");
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -854,6 +852,8 @@ public class EvergreenExportMain {
 				}
 			}
 		}
+
+		processRecordsToReload(indexingProfile, logEntry);
 
 		return totalChanges;
 	}

@@ -85,6 +85,7 @@ public class CarlXExportMain {
 		if (extractSingleWork && singleWorkId == null) {
 			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 			singleWorkId = StringUtils.replace(singleWorkId,"CARL", "");
+			//Strip leading zeroes
 			singleWorkId = Integer.toString(Integer.parseInt(singleWorkId));
 		}
 
@@ -184,8 +185,6 @@ public class CarlXExportMain {
 					} else {
 						logEntry.incErrors("Did not export holds because connection to the CARL.X database was not established");
 					}
-
-					processRecordsToReload(indexingProfile, logEntry);
 				}
 
 				logEntry.setFinished();
@@ -278,7 +277,7 @@ public class CarlXExportMain {
 		}
 	}
 
-	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+	private static void loadRecordsToReload(HashSet<String> updatedBibs, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
@@ -287,21 +286,17 @@ public class CarlXExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null) {
-					logEntry.incRecordsRegrouped();
-					//Regroup the record
-					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
-					//Reindex the record
-					getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
-				}
+				recordIdentifier = StringUtils.replace(recordIdentifier,"CARL", "");
+				//Strip leading zeroes
+				recordIdentifier = Integer.toString(Integer.parseInt(recordIdentifier));
+				updatedBibs.add(recordIdentifier);
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 				markRecordToReloadAsProcessedStmt.executeUpdate();
 				numRecordsToReloadProcessed++;
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Loaded " + numRecordsToReloadProcessed + " records marked for reprocessing");
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -625,6 +620,11 @@ public class CarlXExportMain {
 						}
 					}
 				}
+			}
+
+			//Add any records that have been marked for reprocessing
+			if (singleWorkId == null) {
+				loadRecordsToReload(updatedBibs, indexingProfile, logEntry);
 			}
 
 			//Update total products to be processed
