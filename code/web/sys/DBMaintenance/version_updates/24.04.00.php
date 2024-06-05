@@ -13,7 +13,7 @@ function getUpdates24_04_00(): array {
 		 ], //name*/
 
 		//mark - ByWater
-		'replace_arial_fonts' => [
+		'replace_arial_fonts_2' => [
 			 'title' => 'Replace Arial Fonts',
 			 'description' => 'Replace Arial Fonts',
 			 'continueOnError' => false,
@@ -21,7 +21,7 @@ function getUpdates24_04_00(): array {
 				 "UPDATE themes set bodyFont = 'Arion' where bodyFont = 'Arial'",
 				 "UPDATE themes set headingFont = 'Arion' where headingFont = 'Arial'",
 			 ]
-	 	], //replace_arial_fonts
+	 	], //replace_arial_fonts_2
 		'palace_project_collection' => [
 			'title' => 'Palace Project Collections',
 			'description' => 'Add Information about Palace Project collections',
