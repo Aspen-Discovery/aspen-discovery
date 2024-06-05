@@ -277,7 +277,7 @@ class Koha extends AbstractIlsDriver {
 				$loginResult = $this->loginToKohaOpac($patron);
 				if ($loginResult['success']) {
 
-					$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+					$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl?DISABLE_SYSPREF_OPACUserCSS=1');
 					//Get the csr token
 					$csr_token = '';
 					if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
@@ -367,7 +367,7 @@ class Koha extends AbstractIlsDriver {
 						$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
 					}
 
-					$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
+					$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl?DISABLE_SYSPREF_OPACUserCSS=1', $postVariables);
 
 					$messageInformation = [];
 					if (preg_match('%<div class="alert alert-danger">(.*?)</div>%s', $postResults, $messageInformation)) {
@@ -4476,7 +4476,7 @@ class Koha extends AbstractIlsDriver {
 
 		if ($this->getKohaVersion() < 20.05) {
 			$catalogUrl = $this->accountProfile->vendorOpacUrl;
-			$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+			$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl?DISABLE_SYSPREF_OPACUserCSS=1');
 			$captcha = '';
 			$captchaDigest = '';
 			$captchaInfo = [];
@@ -4540,7 +4540,7 @@ class Koha extends AbstractIlsDriver {
 			$postFields['action'] = 'create';
 			$headers = ['Content-Type: application/x-www-form-urlencoded'];
 			$this->opacCurlWrapper->addCustomHeaders($headers, false);
-			$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
+			$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl?DISABLE_SYSPREF_OPACUserCSS=1', $postFields);
 
 			$matches = [];
 			if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
