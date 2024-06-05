@@ -1,5 +1,5 @@
 {strip}
-<div id="tab-{$wrapperId}"{if $display == 'false'} style="display:none"{/if} class="verticalTitleScroller{if $collectionSpotlight->coverSize == 'medium'} mediumScroller{/if}">
+<div id="tab-{$wrapperId}"{if $display == 'false'} style="display:none"{/if} class="verticalTitleScroller {$tabClasses}{if $collectionSpotlight->coverSize == 'medium'} mediumScroller{/if}">
 	<div id="{$wrapperId}" class="titleScrollerWrapper">
 		{if (!empty($showCollectionSpotlightTitle) && $showCollectionSpotlightTitle) || $showViewMoreLink}
 			<div id="tab-{$wrapperId}Header" class="titleScrollerHeader">
