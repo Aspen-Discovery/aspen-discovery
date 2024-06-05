@@ -159,8 +159,11 @@ public class EvolveExportMain {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
 					}else{
-						//TODO: API to update an individual record?
-						numChanges = updateBibFromEvolve(singleWorkId);
+						//Update an individual record?
+						String accessToken = getAccessToken();
+						if (accessToken != null) {
+							numChanges = updateBibFromEvolve(singleWorkId, accessToken);
+						}
 					}
 				}
 
@@ -267,7 +270,7 @@ public class EvolveExportMain {
 		System.exit(0);
 	}
 
-	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
+	private static String getAccessToken() {
 		String patronLoginUrl = baseUrl + "/Authenticate";
 		@SuppressWarnings("SpellCheckingInspection")
 		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername + "\",\"Pwd\":\"" + staffPassword + "\"}";
@@ -275,32 +278,37 @@ public class EvolveExportMain {
 		if (loginResponse.isSuccess()) {
 			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
 			JSONObject firstResponse = loginResponseData.getJSONObject(0);
-			String accessToken = firstResponse.getString("LoginToken");
+			return firstResponse.getString("LoginToken");
+		}else {
+			logEntry.incErrors("Could not login to evolve");
+			return null;
+		}
+	}
 
-			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ITEM=" + singleWorkId + "|Marc=Yes";
-			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
-			if (getBibsResponse.isSuccess()) {
-				MarcFactory marcFactory = MarcFactory.newInstance();
+	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId, String accessToken) {
+		String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ITEM=" + singleWorkId + "|Marc=Yes";
+		WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
+		if (getBibsResponse.isSuccess()) {
+			MarcFactory marcFactory = MarcFactory.newInstance();
 
-				String rawMessage = getBibsResponse.getMessage();
-				try {
-					JSONArray responseAsArray = new JSONArray(rawMessage);
-					logEntry.addNote(" Found " + responseAsArray.length() + " bibs to update");
-					for (int i = 0; i < responseAsArray.length(); i++) {
-						JSONObject curRow = responseAsArray.getJSONObject(i);
-						processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
-					}
-				} catch (JSONException e) {
-					logEntry.incErrors("Error parsing JSON from getting single bib data");
+			String rawMessage = getBibsResponse.getMessage();
+			try {
+				JSONArray responseAsArray = new JSONArray(rawMessage);
+				//logEntry.addNote(" Found " + responseAsArray.length() + " bibs to update");
+				for (int i = 0; i < responseAsArray.length(); i++) {
+					JSONObject curRow = responseAsArray.getJSONObject(i);
+					processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
 				}
-			} else {
-				logEntry.incErrors("Did not get a successful response loading bib " + singleWorkId + " from Evolve");
+			} catch (JSONException e) {
+				logEntry.incErrors("Error parsing JSON from getting single bib data");
 			}
+		} else {
+			logEntry.incErrors("Did not get a successful response loading bib " + singleWorkId + " from Evolve");
 		}
 		return 0;
 	}
 
-	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory) {
+	private static int updateLastChangedBibsFromEvolve() {
 		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyyHHmmss");
 		long lastExtractTime;
 		lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords() * 1000;
@@ -325,6 +333,8 @@ public class EvolveExportMain {
 		}
 
 		while (moreToLoad) {
+			HashSet<String> allBibsToLoad = new HashSet<>();
+
 			String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
 
 			//The integration token does not allow catalog search - so we need to log in with a patron.
@@ -370,18 +380,9 @@ public class EvolveExportMain {
 									continue;
 								}
 								String bibId = curItem.getString("ID");
+								allBibsToLoad.add(bibId);
 								//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
-								org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
-								if (marcRecord != null) {
-									updateBibWithEvolveHolding(marcFactory, curItem, marcRecord);
-									logEntry.incUpdated();
-									//Save the MARC record
-									getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibId, marcRecord);
-									//Regroup the record
-									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
-									//Reindex the record
-									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-								}
+								//Update we now can get MARC for an individual MARC, so we'll use that instead of trying to rebuild the MARC
 							} catch (JSONException e) {
 								logEntry.incErrors("Error processing item", e);
 							}
@@ -395,7 +396,8 @@ public class EvolveExportMain {
 					break;
 				}
 
-				String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
+				//String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
+				String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
 				if (formattedEndTime != null){
 					getBibUrl += "|ModifiedToDTM=" + formattedEndTime;
 					logEntry.addNote("Loading changed bibs from " + formattedExtractTime + " to " + formattedEndTime);
@@ -412,9 +414,10 @@ public class EvolveExportMain {
 						JSONArray responseAsArray = new JSONArray(rawMessage);
 						logEntry.addNote(" Found " + responseAsArray.length() + " changed bibs");
 						for (int i = 0; i < responseAsArray.length(); i++) {
-							numProcessed++;
 							JSONObject curRow = responseAsArray.getJSONObject(i);
-							processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
+							String bibId = curRow.getString("ID");
+							allBibsToLoad.add(bibId);
+							//processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
 						}
 					} catch (JSONException e) {
 						logEntry.incErrors("Error parsing JSON from getting changed bib data");
@@ -425,11 +428,16 @@ public class EvolveExportMain {
 					break;
 				}
 
-				//Also ask for holdings modified from a specific date
+				//Now that we have all the changes for the period, process them all
+				for (String bibId : allBibsToLoad) {
+					updateBibFromEvolve(bibId, accessToken);
+					numProcessed++;
+				}
 
 			} else {
 				logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
 			}
+
 			try {
 				if (!logEntry.hasErrors()) {
 					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
@@ -561,6 +569,8 @@ public class EvolveExportMain {
 					return;
 				}
 
+				logEntry.incProducts();
+
 				List<ControlField> controlFields = marcRecord.getControlFields();
 				ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
 				for (ControlField controlField : controlFieldsCopy) {
@@ -627,10 +637,6 @@ public class EvolveExportMain {
 		}
 	}
 
-	private synchronized static String groupEvolveRecord(org.marc4j.marc.Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
-	}
-
 	private synchronized static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
 			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
@@ -646,33 +652,37 @@ public class EvolveExportMain {
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
-		try {
-			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
-			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
-			int numRecordsToReloadProcessed = 0;
-			while (getRecordsToReloadRS.next()) {
-				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null){
+		String accessToken = getAccessToken();
+		if (accessToken != null) {
+			try {
+				PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+				ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+				int numRecordsToReloadProcessed = 0;
+				while (getRecordsToReloadRS.next()) {
+					long recordToReloadId = getRecordsToReloadRS.getLong("id");
+					String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+					updateBibFromEvolve(recordIdentifier, accessToken);
+					//				org.marc4j.marc.Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+					//				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
-					//Regroup the record
-					String groupedWorkId = groupEvolveRecord(marcRecord);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				}
+					//					//Regroup the record
+					//					String groupedWorkId = groupEvolveRecord(marcRecord);
+					//					//Reindex the record
+					//					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					//				}
 
-				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-				markRecordToReloadAsProcessedStmt.executeUpdate();
-				numRecordsToReloadProcessed++;
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
+				}
+				if (numRecordsToReloadProcessed > 0) {
+					logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				}
+				getRecordsToReloadRS.close();
+			} catch (Exception e) {
+				logEntry.incErrors("Error processing records to reload ", e);
 			}
-			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
-			}
-			getRecordsToReloadRS.close();
-		}catch (Exception e){
-			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -741,9 +751,8 @@ public class EvolveExportMain {
 			logEntry.addNote("Updating based on MARC extract");
 			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}else{
-			MarcFactory marcFactory = MarcFactory.newInstance();
 			//Update records based on the last change date
-			totalChanges = updateLastChangedBibsFromEvolve(marcFactory);
+			totalChanges = updateLastChangedBibsFromEvolve();
 		}
 
 		return totalChanges;
@@ -758,6 +767,7 @@ public class EvolveExportMain {
 		int numRecordsStillActive = 0;
 
 		//Get a list of all bibs still left in the system.
+		//noinspection SpellCheckingInspection
 		String allBibsUrl = baseUrl + "/Holding/Token=" + accessToken + "%7CALLHOLDINGS=Yes";
 		WebServiceResponse allBibsResponse = NetworkUtils.getURL(allBibsUrl, logger);
 		if (allBibsResponse.isSuccess()) {
