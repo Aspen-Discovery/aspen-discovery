@@ -1560,21 +1560,20 @@ public class KohaExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
-				if (marcRecord != null){
-					logEntry.incRecordsRegrouped();
-					//Regroup the record
-					String groupedWorkId = groupKohaRecord(marcRecord);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				}
+				logEntry.incProducts();
+				updateBibRecord(recordIdentifier);
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 				markRecordToReloadAsProcessedStmt.executeUpdate();
 				numRecordsToReloadProcessed++;
+
+				if (numRecordsToReloadProcessed > 0 && numRecordsToReloadProcessed % 250 == 0) {
+					getGroupedWorkIndexer().commitChanges();
+					logEntry.saveResults();
+				}
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Processed " + numRecordsToReloadProcessed + " records marked for reprocessing");
 				logEntry.saveResults();
 			}
 			getRecordsToReloadRS.close();

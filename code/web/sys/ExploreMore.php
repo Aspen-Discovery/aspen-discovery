@@ -733,7 +733,7 @@ class ExploreMore {
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1 && $activeSection != 'summon') {
 			//Load Summon Options
-			/** @var Search_Object_SummonSearcher $summonSearcher */
+			/** @var SearchObject_SummonSearcher $summonSearcher */
 			$summonSearcher = SearchObjectFactory::initSearchObject('Summon');
 			$summonSearcher->setSearchTerms([
 				'lookfor' => $searchTerm,
@@ -745,9 +745,9 @@ class ExploreMore {
 				$numMatches = $summonResults['recordCount'];
 				if ($numMatches > 1) {
 					if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
-						//TODO path to image files
+						$image = '/files/origional/' . $appliedTheme->articlesDBImage;
 					} else {
-						//TODO inset path to default image
+						$image = '/interface/themes/responsive/images/summon.png';
 					}
 					$exploreMoreOptions['searchLinks'][] = [
 						'label' => translate([
@@ -760,8 +760,8 @@ class ExploreMore {
 							1 => $searchTerm,
 							'isPublicFacing' => true,
 						]),
-						//'image' => $image,
-						//'link' => TODO,
+						'image' => $image,
+						'link' => '/Summon/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
 					];
 				}
