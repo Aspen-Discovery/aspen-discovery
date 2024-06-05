@@ -18,8 +18,8 @@ function getUpdates24_04_00(): array {
 			 'description' => 'Replace Arial Fonts',
 			 'continueOnError' => false,
 			 'sql' => [
-				 "UPDATE Themes set bodyFont = 'Arion' where bodyFont = 'Arial'",
-				 "UPDATE Themes set headingFont = 'Arion' where headingFont = 'Arial'",
+				 "UPDATE themes set bodyFont = 'Arion' where bodyFont = 'Arial'",
+				 "UPDATE themes set headingFont = 'Arion' where headingFont = 'Arial'",
 			 ]
 	 	], //replace_arial_fonts
 		'palace_project_collection' => [
