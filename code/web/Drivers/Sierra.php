@@ -1467,6 +1467,18 @@ class Sierra extends Millennium {
 					$params['phones'][] = $tmpPhone;
 				}
 			}
+			if ($library->allowPatronWorkPhoneNumberUpdates) {
+				if (!array_key_exists('phones', $params)) {
+					$params['phones'] = [];
+				}
+				if (isset($_REQUEST['workPhone'])) {
+					$patron->_workPhone = $_REQUEST['workPhone'];
+					$tmpPhone = new stdClass();
+					$tmpPhone->type = 't';
+					$tmpPhone->number = $_REQUEST['workPhone'];
+					$params['phones'][] = $tmpPhone;
+				}
+			}
 			if ($library->allowPatronAddressUpdates) {
 				$params['addresses'] = [];
 				$address = new stdClass();
@@ -1676,9 +1688,12 @@ class Sierra extends Millennium {
 			}
 		}
 		if (!empty($patronInfo->phones)) {
-			$primaryPhone = reset($patronInfo->phones);
-			if (!empty($primaryPhone)) {
-				$user->phone = $primaryPhone->number;
+			foreach ($patronInfo->phones as $phoneInfo) {
+				if ($phoneInfo->type == 'p') {
+					$user->phone = $phoneInfo->number;
+				}elseif ($phoneInfo->type == 't') {
+					$user->_workPhone = $phoneInfo->number;
+				}
 			}
 		}
 		if (!empty($patronInfo->emails)) {
