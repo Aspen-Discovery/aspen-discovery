@@ -237,6 +237,7 @@ class Library extends DataObject {
 	public $useAllCapsWhenUpdatingProfile;
 	public $requireNumericPhoneNumbersWhenUpdatingProfile;
 	public $bypassReviewQueueWhenUpdatingProfile;
+	public $allowPatronWorkPhoneNumberUpdates;
 	public $showWorkPhoneInProfile;
 	public $showNoticeTypeInProfile;
 	public $allowPickupLocationUpdates;
@@ -1838,9 +1839,21 @@ class Library extends DataObject {
 								'property' => 'showWorkPhoneInProfile',
 								'type' => 'checkbox',
 								'label' => 'Show Work Phone in Profile',
+								'note' => 'Applies to CARL.X, Sierra, and Symphony Only',
 								'description' => 'Whether or not patrons should be able to change a secondary or work phone number in their profile.',
 								'hideInLists' => true,
 								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'allowPatronWorkPhoneNumberUpdates' => [
+								'property' => 'allowPatronWorkPhoneNumberUpdates',
+								'type' => 'checkbox',
+								'label' => 'Allow Patrons to Update Their Work Phone Number',
+								'note' => 'Applies to CARL.X, Sierra, and Symphony Only',
+								'description' => 'Whether or not patrons should be able to update their own work phone number in their profile.',
+								'hideInLists' => true,
+								'default' => 1,
+								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
 							'showNoticeTypeInProfile' => [
@@ -3724,11 +3737,11 @@ class Library extends DataObject {
 					],
 				],
 			],
-	
-			
-				
 
-			
+
+
+
+
 			'casSection' => [
 				'property' => 'casSection',
 				'type' => 'section',
