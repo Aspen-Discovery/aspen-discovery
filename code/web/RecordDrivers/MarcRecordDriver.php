@@ -2854,7 +2854,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 			} else {
 				//Add the owning location
-				$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 				if (!isset($locations[$item->locationCode])) {
 					$location = new Location();
 					$location->code = $item->locationCode;
