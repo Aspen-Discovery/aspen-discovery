@@ -25,7 +25,9 @@ class AJAX_JSON extends Action {
 				'saveCookiePreference',
 				'deleteTranslationTerm',
 				'getDisplaySettingsForm',
-				'updateDisplaySettings'
+				'updateDisplaySettings',
+				'manageCookiePreferences',
+				'saveCookieManagementPreferences',
 			])) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
@@ -631,6 +633,60 @@ class AJAX_JSON extends Action {
 			]),
 		];
 	}
+
+	function manageCookiePreferences(){
+		global $interface;
+		return [
+			'success' => true,
+			'modalBody' => $interface->fetch('AJAX/cookieManagement.tpl'),
+		];
+	}
+
+	// function saveCookieManagementPreferences() {
+	// 	$response = [];
+
+	// 	if (UserAccount::isLoggedIn()) {
+	// 		$userObj = UserAccount::getActiveUserObj();
+	// 		$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'];
+	// 		$userObj->update();
+	// 		return [
+	// 			'success' => true,
+	// 			'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
+	// 		];
+	// 	} else {
+	// 		$userCookiePost = [
+	// 			'Essential' =>1,
+	// 			'UserAxis360' => $_REQUEST['cookieUserAxis360'],
+	// 		];
+	// 		setCookie('cookieConsent', json_encode($userCookiePost), 0, '/');
+	// 		return [
+	// 			'success' => true,
+	// 		];
+	// 	}
+	// }
+
+	function saveCookieManagementPreferences() {
+		if (UserAccount::isLoggedIn()) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'] == "1"  || $_REQUEST['cookieUserAxis360'] == 1 ? 1 : 0;
+			$userObj->update();
+			return[
+				'success' => true,
+				'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
+			];
+		} else {
+			$userCookiePost = [
+				'Essential' => 1,
+				'UserAxis360' => isset($_POST['cookieUserAxis360']) ? 1 : 0
+			];
+			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
+			return [
+				'success' => true,
+				'message' => '',
+			];
+		}
+	}
+	
 
 	function getBreadcrumbs(): array {
 		return [];
