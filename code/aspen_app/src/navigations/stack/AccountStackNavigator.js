@@ -21,6 +21,7 @@ import { MyLinkedAccounts } from '../../screens/MyAccount/LinkedAccounts/LinkedA
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
+import { BackIcon } from '../../themes/theme';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { EditionsModal } from './BrowseStackNavigator';
 
@@ -33,6 +34,7 @@ const AccountStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
+                    headerBackImage: () => <BackIcon />,
                }}>
                <Stack.Group>
                     <Stack.Screen name="MyPreferences" component={PreferencesScreen} options={{ title: getTermFromDictionary(language, 'preferences') }} />

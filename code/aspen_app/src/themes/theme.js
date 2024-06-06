@@ -5,13 +5,18 @@ import { create } from 'apisauce';
 import chroma from 'chroma-js';
 import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
-import { Box, extendTheme, HStack, Icon, IconButton, Text, useColorMode, useColorModeValue } from 'native-base';
+import { ChevronLeftIcon, Box, extendTheme, HStack, Icon, IconButton, Text, useColorMode, useColorModeValue } from 'native-base';
 import React, { useState } from 'react';
 import { ThemeContext } from '../context/initialContext';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
 import { getAppSettings, LIBRARY } from '../util/loadLibrary';
+
+export const BackIcon = (props) => {
+     const { theme } = React.useContext(ThemeContext);
+     return <ChevronLeftIcon size="md" ml={1} {...props} color={theme['colors']['primary']['baseContrast']} />;
+};
 
 export async function getThemeData() {
      let theme = [];
