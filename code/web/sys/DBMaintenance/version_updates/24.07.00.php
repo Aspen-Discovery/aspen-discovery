@@ -104,6 +104,16 @@ function getUpdates24_07_00(): array {
 		], //permissions_create_administer_smtp
 
 
+		//alexander - PTFS Europe
+		'update_cookie_management_preferences' => [
+			'title' => 'Update Cookie Management Preferences',
+			'description' => 'Update cookie management preferences for user tracking',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN userCookiePreferenceAxis360 TINYINT(1) DEFAULT 0",
+			],
+		], //update_user_tracking_cookies
+
 		//other
 
 
