@@ -118,7 +118,7 @@
 							{if !empty($showWorkPhoneInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number' isPublicFacing=true}</label></div>
-									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdateWorkPhoneNumber && !$isHorizon}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdateWorkPhoneNumber && !$isHorizon}<input name="workPhone" id="workPhone" value="{$profile->_workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->_workPhone|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
