@@ -36,9 +36,6 @@
 			<div class="btn-group btn-group-sm" role="group">
 				{include file="GroupedWork/share-tools.tpl"}
 			</div>
-			{if !empty($offline) && $showMoreInfo == false && ($showComments || $showFavorites)}
-				<div class="alert alert-warning btn-sm">{translate text="Actions that require a login are currently unavailable" isPublicFacing=true}</div>
-			{/if}
 		</div>
 	{/if}
 {/strip}

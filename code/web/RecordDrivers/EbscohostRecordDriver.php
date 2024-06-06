@@ -596,21 +596,16 @@ class EbscohostRecordDriver extends RecordInterface {
 	public function getRecordActions() {
 		if ($this->_actions === null) {
 			$this->_actions = [];
-            //Check if catalog is offline and login for eResources should be allowed for offline
-            global $offlineMode;
-            global $loginAllowedWhileOffline;
-            if (!$offlineMode || $loginAllowedWhileOffline) {
-                $this->_actions[] = [
-                    'title' => translate([
-                        'text' => 'Access Online',
-                        'isPublicFacing' => true,
-                    ]),
-                    'url' => '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID(),
-                    'requireLogin' => true,
-                    'type' => 'ebscohost_access_online',
-                ];
-            }
-		}
+            $this->_actions[] = [
+                'title' => translate([
+                    'text' => 'Access Online',
+                    'isPublicFacing' => true,
+                ]),
+                'url' => '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID(),
+                'requireLogin' => true,
+                'type' => 'ebscohost_access_online',
+            ];
+        }
 		return $this->_actions;
 	}
 }

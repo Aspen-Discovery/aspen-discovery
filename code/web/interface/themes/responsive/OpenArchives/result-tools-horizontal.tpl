@@ -8,7 +8,7 @@
 						<a href="{$openArchiveUrl}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text='More Info' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})">{translate text="More Info" isPublicFacing=true}</a>
 					</div>
 				{/if}
-				{if $showFavorites == 1}
+				{if $showFavorites == 1 && empty($offline)}
 					<div class="btn-group btn-group-sm">
 						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'OpenArchives', '{$id|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 					</div>

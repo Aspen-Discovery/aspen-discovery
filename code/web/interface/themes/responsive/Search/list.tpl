@@ -61,9 +61,6 @@
 		<div class="clearer"></div>
 	</div>
 	{* End Listing Options *}
-	{if !empty($offline) && ($showComments || $showFavorites)}
-		<div class="alert alert-warning">{translate text="Actions that require a login are currently unavailable" isPublicFacing=true}</div>
-	{/if}
 	{if !empty($placard)}
 		{include file="Search/placard.tpl"}
 	{/if}
@@ -133,12 +130,14 @@
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 			{if !empty($showSearchTools)}
 				<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
-				<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-				{if !empty($enableSavedSearches)}
-					{if !empty($savedSearch)}
-						<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
-					{else}
-						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
+				{if empty($offline)}
+					<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
+					{if !empty($enableSavedSearches)}
+						{if !empty($savedSearch)}
+							<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
+						{else}
+							<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
+						{/if}
 					{/if}
 				{/if}
 				{if !empty($excelLink)}<a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a>{/if}
