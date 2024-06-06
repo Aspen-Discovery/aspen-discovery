@@ -44,35 +44,35 @@ function getUpdates24_06_00(): array {
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration', 'Administer User Agents', '', 55, 'Allows the user to administer User Agents for Aspen Discovery.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer User Agents'))",
 			],
-		],
+		], //permissions_create_administer_user_agents
 		'indexing_profile_under_consideration_order_records' => [
 			'title' => 'Indexing Profiles - Add Order Record Status to treat as under consideration',
 			'description' => 'Add Order Record Status to treat as under consideration',
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordStatusToTreatAsUnderConsideration VARCHAR(10) DEFAULT ''",
 			],
-		],
+		], //indexing_profile_under_consideration_order_records
 		'sideload_convert_to_econtent' => [
 			'title' => 'Sideloads convert to eContent',
 			'description' => 'Add an option to allow sideloads to not be treated as eContent',
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN convertFormatToEContent TINYINT DEFAULT 1",
 			],
-		],
+		], //sideload_convert_to_econtent
 		'sideload_use_link_text_for_button_label' => [
 			'title' => 'Sideloads Use Link Text For Button Label',
 			'description' => 'Add an option to allow sideloads to use the URL link text for the button URL',
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN useLinkTextForButtonLabel TINYINT DEFAULT 0",
 			],
-		],
+		], //sideload_use_link_text_for_button_label
 		'increase_patron_type_length' => [
 			'title' => 'Increase Patron Type Length',
 			'description' => 'Increase the length of the patron type field in the user table to match the ptype table',
 			'sql' => [
 				"ALTER TABLE user CHANGE COLUMN patronType patronType VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''",
 			],
-		],
+		], //increase_patron_type_length
 		'add_additional_control_over_format_mapping' => [
 			'title' => 'Add additional control over format mapping',
 			'description' => 'Allow administrators to control what fields each row of the format map apply to',
@@ -84,7 +84,7 @@ function getUpdates24_06_00(): array {
 				"ALTER TABLE format_map_values ADD COLUMN appliesToItemType TINYINT(1) DEFAULT 1",
 				"ALTER TABLE format_map_values ADD COLUMN appliesToItemFormat TINYINT(1) DEFAULT 1",
 			],
-		],
+		], //add_additional_control_over_format_mapping
 		'add_additional_control_over_format_mapping_part2' => [
 			'title' => 'Add additional control over format mapping part 2',
 			'description' => 'Allow administrators to control what fields each row of the format map apply to',
@@ -92,7 +92,7 @@ function getUpdates24_06_00(): array {
 				"ALTER TABLE format_map_values ADD COLUMN appliesToMatType TINYINT(1) DEFAULT 1",
 				"ALTER TABLE format_map_values ADD COLUMN appliesToFallbackFormat TINYINT(1) DEFAULT 1",
 			],
-		],
+		], //add_additional_control_over_format_mapping_part2
 		'grouped_work_debugging' => [
 			'title' => 'Grouped Work Debugging',
 			'description' => 'Allow additional debugging information to be output for grouped works during indexing',
@@ -105,7 +105,19 @@ function getUpdates24_06_00(): array {
 					processed TINYINT
 				) ENGINE INNODB",
 			],
-		],
+		], //grouped_work_debugging
+		'remove_deprecated_self_reg_columns' => [
+			'title' => 'Remove Deprecated Self Reg Columns',
+			'description' => 'Remove Self Reg from library table since they have moved to the self reg forms',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE library DROP COLUMN promptForParentInSelfReg",
+				"ALTER TABLE library DROP COLUMN promptForSMSNoticesInSelfReg",
+				"ALTER TABLE library DROP COLUMN selfRegRequirePhone",
+				"ALTER TABLE library DROP COLUMN selfRegRequireEmail",
+				"ALTER TABLE library DROP COLUMN enableThirdPartyRegistration",
+			],
+		], //remove_deprecated_self_reg_columns
 
 		//kirstien - ByWater
 		'accessibleBrowseCategories' => [
