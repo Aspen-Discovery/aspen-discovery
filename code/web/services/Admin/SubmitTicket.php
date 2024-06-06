@@ -16,7 +16,9 @@ class SubmitTicket extends Admin_Admin {
 			$reason = $_REQUEST['reason'];
 			$product = $_REQUEST['product'];
 			$sharepass = $_REQUEST['sharepass'] ?? null;
-			$examples = $_REQUEST['examples'];
+			$example1 = $_REQUEST['example1'];
+			$example2 = $_REQUEST['example2'];
+			$example3 = $_REQUEST['example3'];
 			$attachments = $_FILES['attachments'] ?? [];
 
 			global $serverName;
@@ -28,12 +30,52 @@ class SubmitTicket extends Admin_Admin {
 			$description .= 'Reason: ' . $reason . "\n";
 			$description .= 'Product: ' . $product . "\n";
 
-			if($examples) {
-				$description .= 'Examples: ' . $examples . "\n";
+			if($example1) {
+				$description .= 'Example 1: ' . $example1 . "\n";
+			}
+
+			if($example2) {
+				$description .= 'Example 2: ' . $example2 . "\n";
+			}
+
+			if($example3) {
+				$description .= 'Example 3: ' . $example3 . "\n";
 			}
 
 			if($sharepass) {
 				$description .= 'Sharepass: ' . $sharepass . "\n";
+			}
+
+			$fileTooBig = false;
+			if($_FILES) {
+				$i = 0;
+				foreach ($_FILES as $file) {
+					$fileSize = $file['size'][$i];
+					$maxFileSize = 10 * 1048576; // 10MB for RT limitations
+					if($fileSize > $maxFileSize) {
+						$fileTooBig = true;
+					}
+					$i++;
+
+				}
+			}
+
+			// don't lose already entered in data if something goes wrong on the form
+			$interface->assign('name', $name);
+			$interface->assign('email', $email);
+			$interface->assign('subject', $subject);
+			$interface->assign('description', $_REQUEST['description']);
+			$interface->assign('reason', $reason);
+			$interface->assign('product', $product);
+			$interface->assign('sharepass', $sharepass);
+			$interface->assign('example1', $example1);
+			$interface->assign('example2', $example2);
+			$interface->assign('example3', $example3);
+
+			if($fileTooBig) {
+				$interface->assign('error', 'One or more of your files was larger than the 10MB file size limit.');
+				$this->display('submitTicket.tpl', 'Submit Ticket');
+				return;
 			}
 
 

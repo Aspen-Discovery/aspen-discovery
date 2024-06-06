@@ -13,6 +13,7 @@ import { SearchIndexScreen } from '../../screens/Search/Facets/SearchIndex';
 import { SearchSourceScreen } from '../../screens/Search/Facets/SearchSource';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import { SearchHome } from '../../screens/Search/Search';
+import { BackIcon } from '../../themes/theme';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { EditionsModal } from './BrowseStackNavigator';
 
@@ -28,6 +29,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     headerBackTitleVisible: false,
+                    headerBackImage: () => <BackIcon />,
                })}>
                <Stack.Group>
                     <Stack.Screen
