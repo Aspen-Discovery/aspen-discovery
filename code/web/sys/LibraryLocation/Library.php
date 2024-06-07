@@ -193,7 +193,6 @@ class Library extends DataObject {
 	public $minSelfRegAge;
 	public $selfRegRequirePhone;
 	public $selfRegRequireEmail;
-	public $enableThirdPartyRegistration;
 	public $thirdPartyRegistrationLocation;
 	public $thirdPartyPTypeAddressValidated;
 	public $thirdPartyPTypeAddressNotValidated;
@@ -2429,14 +2428,6 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'permissions' => ['Library Registration'],
 						'properties' => [
-							'enableThirdPartyRegistration' => [
-								'property' => 'enableThirdPartyRegistration',
-								'type' => 'checkbox',
-								'label' => 'Enable Third Party Registration',
-								'description' => 'Whether or not third party registration APIs are enabled for this library.',
-								'hideInLists' => true,
-								'default' => true,
-							],
 							'thirdPartyRegistrationLocation' => [
 								'property' => 'thirdPartyRegistrationLocation',
 								'type' => 'enum',
@@ -3859,7 +3850,7 @@ class Library extends DataObject {
 			'sideLoadScopes' => [
 				'property' => 'sideLoadScopes',
 				'type' => 'oneToMany',
-				'label' => 'Side Loaded eContent Scopes',
+				'label' => 'Side Loaded Content Scopes',
 				'renderAsHeading' => true,
 				'description' => 'Information about what Side Loads to include in this scope',
 				'keyThis' => 'libraryId',
