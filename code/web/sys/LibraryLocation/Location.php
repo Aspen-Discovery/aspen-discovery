@@ -1220,7 +1220,7 @@ class Location extends DataObject {
 			'sideLoadScopes' => [
 				'property' => 'sideLoadScopes',
 				'type' => 'oneToMany',
-				'label' => 'Side Loaded eContent Scopes',
+				'label' => 'Side Loaded Content Scopes',
 				'renderAsHeading' => true,
 				'description' => 'Information about what Side Loads to include in this scope',
 				'keyThis' => 'libraryId',
