@@ -785,7 +785,12 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
 						}
 						$dueDate = explode(" ", $checkoutResponse['variable']['AH'][0]);
-						$dueDate = date_create($dueDate[0]);
+						if($this->accountProfile->ils == 'sierra') {
+							$dueDate = str_replace('-', '/', $dueDate[0]);
+							$dueDate = date_create($dueDate);
+						} else {
+							$dueDate = date_create($dueDate[0]);
+						}
 						$dueDate = date_format($dueDate, 'm/d/Y');
 						$item['due'] = $dueDate;
 					} else {
