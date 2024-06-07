@@ -11,6 +11,7 @@
 			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
 			{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.viewDebugging('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Diagnostics" isAdminFacing=true}</button>
 			{/if}
 			{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
