@@ -1391,7 +1391,7 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("XBoxSeriesX");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
-				|| printFormats.contains("XboxOne") || printFormats.contains("XboxSeriesX") || printFormats.contains("PlayStation")
+				|| printFormats.contains("XboxOne") || printFormats.contains("XBoxSeriesX") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation2") || printFormats.contains("PlayStation3")
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5") || printFormats.contains("PlayStationVita")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
