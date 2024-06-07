@@ -8,7 +8,7 @@
 	<div class="swiper-slide browse-thumbnail {$coverStyle}">
 		<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', {if !empty($browseCategoryId)}'{$browseCategoryId}'{/if});" href="{$summUrl}">
 			<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle}" loading="lazy">
-			<div class="swiper-lazy-preloader" style="height: 200px"></div>
+			<div class="swiper-lazy-preloader"></div>
 		</a>
 	</div>
     {else}

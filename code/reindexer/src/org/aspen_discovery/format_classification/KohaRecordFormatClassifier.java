@@ -28,7 +28,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 			if (translatedLocation != null) {
 				foundFormatFromShelfLocation = true;
 				formatInfo.setFormatFromMap(translatedLocation, BaseIndexingSettings.FORMAT_TYPE_ITEM_SHELVING_LOCATION);
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on shelf location", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on shelf location of " + shelfLocation, 2);}
 			}
 		}
 
@@ -40,7 +40,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 			if (translatedLocation != null) {
 				foundFormatFromSublocation = true;
 				formatInfo.setFormatFromMap(translatedLocation, BaseIndexingSettings.FORMAT_TYPE_ITEM_SUBLOCATION);
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on sub location", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on sub location of " + subLocation, 2);}
 			}
 		}
 
@@ -52,7 +52,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 			if (translatedFormat != null) {
 				foundFormatFromCollection = true;
 				formatInfo.setFormatFromMap(translatedFormat, BaseIndexingSettings.FORMAT_TYPE_ITEM_COLLECTION);
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on collection code", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on collection code of " + collectionCode, 2);}
 			}else{
 				//Check to see if the translated collection code is used
 				if (profile.hasTranslation("collection", collectionCode)) {
@@ -61,7 +61,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 					if (translatedFormat != null) {
 						foundFormatFromCollection = true;
 						formatInfo.setFormatFromMap(translatedFormat, BaseIndexingSettings.FORMAT_TYPE_ITEM_COLLECTION);
-						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on translated collection", 2);}
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on translated collection of " + translatedCollection, 2);}
 					}
 				}
 			}
@@ -77,7 +77,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 				if (translatedFormat != null) {
 					foundFormatFromIType = true;
 					formatInfo.setFormatFromMap(translatedFormat, BaseIndexingSettings.FORMAT_TYPE_ITEM_TYPE);
-					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on item type", 2);}
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on item type of " + iType, 2);}
 				}
 			}
 		}
@@ -87,7 +87,7 @@ public class KohaRecordFormatClassifier extends IlsRecordFormatClassifier{
 			FormatMapValue translatedFormat = profile.getFormatMapValue(format, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
 			if (translatedFormat != null) {
 				formatInfo.setFormatFromMap(translatedFormat, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on item format field", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format for item " + itemIdentifier + " is " + formatInfo.format + " based on item format field of " + format, 2);}
 			}
 		}
 

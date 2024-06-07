@@ -36,7 +36,7 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Side Loaded eContent Scopes';
+		return 'Side Loaded Content Scopes';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {

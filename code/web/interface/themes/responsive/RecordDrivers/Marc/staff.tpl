@@ -40,6 +40,7 @@
 			{if !empty($permanentId)}
 				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
+					<button onclick="return AspenDiscovery.GroupedWork.viewDebugging('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Diagnostics" isAdminFacing=true}</button>
 				{/if}
 			{else}
 				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}

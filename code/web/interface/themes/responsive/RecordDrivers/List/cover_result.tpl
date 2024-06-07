@@ -3,7 +3,7 @@
 		<div class="swiper-slide browse-thumbnail {$coverStyle}">
 			<a href="{$summUrl}">
 				<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle}" loading="lazy">
-				<div class="swiper-lazy-preloader" style="height: 200px"></div>
+				<div class="swiper-lazy-preloader"></div>
 			</a>
 		</div>
     {else}
