@@ -4573,13 +4573,13 @@ class Koha extends AbstractIlsDriver {
 			if (!empty($_REQUEST['borrower_email']) && $selfRegistrationEmailMustBeUnique == '1') {
 				if (!filter_var($_REQUEST['borrower_email'], FILTER_VALIDATE_EMAIL)) {
 					$result['success'] = false;
-					$result['message'] = 'This provided email is not valid, please provide a properly formatted email address.';
+					$result['message'] = translate(['text'=>'This provided email is not valid, please provide a properly formatted email address.', 'isPublicFacing'=>true]);
 					return $result;
 				} else {
 					$existingAccounts = $this->lookupAccountByEmail($_REQUEST['borrower_email']);
 					if ($existingAccounts['success']) {
 						$result['success'] = false;
-						$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+						$result['message'] = translate(['text'=>'This email address already exists in our database. Please contact your library for account information or use a different email.', 'isPublicFacing'=>true]);
 						return $result;
 					}
 				}
@@ -4714,7 +4714,7 @@ class Koha extends AbstractIlsDriver {
 				$result['success'] = true;
 				$result['sendWelcomeMessage'] = false;
 				if ($verificationRequired != "0") {
-					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
+					$result['message'] = translate(['text'=>"Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.",'isPublicFacing'=>true]);;
 				} else {
 					if ($autoBarcode == "1") {
 						$result['barcode'] = $jsonResponse->cardnumber;
@@ -4731,7 +4731,7 @@ class Koha extends AbstractIlsDriver {
 							$result['sendWelcomeMessage'] = true;
 						}
 					} else {
-						$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+						$result['message'] = translate(['text'=>"Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.",'isPublicFacing'=>true]);
 					}
 				}
 
