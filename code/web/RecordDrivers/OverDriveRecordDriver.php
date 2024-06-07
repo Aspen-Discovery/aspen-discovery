@@ -844,10 +844,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$overDriveDriver = OverDriveDriver::getOverDriveDriver();
 			$readerName = $overDriveDriver->getReaderName();
-            //Check if catalog is offline and login for eResources should be allowed for offline
-            global $offlineMode;
-            global $loginAllowedWhileOffline;
-            //Show link to OverDrive record when the catalog is offline and can't do logins
+			//Check if catalog is offline and login for eResources should be allowed for offline
+			global $offlineMode;
+			global $loginAllowedWhileOffline;
+			//Show link to OverDrive record when the catalog is offline and can't do logins
 			if (!$overDriveDriver->isCirculationEnabled() || ($offlineMode && !$loginAllowedWhileOffline)) {
 				$overDriveMetadata = $this->getOverDriveMetaData();
 				$crossRefId = $overDriveMetadata->getDecodedRawData()->crossRefId;
@@ -873,7 +873,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 					$loadDefaultActions = count($this->_actions) == 0;
 				}
 
-                if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
+				if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
 					if ($isAvailable) {
 						$this->_actions[] = [
 							'title' => translate([

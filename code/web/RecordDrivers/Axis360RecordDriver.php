@@ -201,10 +201,10 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 				$loadDefaultActions = count($this->_actions) == 0;
 			}
 
-            //Check if catalog is offline and login for eResources should be allowed for offline
-            global $offlineMode;
-            global $loginAllowedWhileOffline;
-            if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
+			//Check if catalog is offline and login for eResources should be allowed for offline
+			global $offlineMode;
+			global $loginAllowedWhileOffline;
+			if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
 				if ($isAvailable) {
 					$this->_actions[] = [
 						'title' => translate([
