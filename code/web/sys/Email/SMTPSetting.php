@@ -1,5 +1,8 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
 
 class SMTPSetting extends DataObject {
 	public $__table = 'smtp_settings';
@@ -79,6 +82,46 @@ class SMTPSetting extends DataObject {
 				'default' => '',
 			],
 		];
+	}
+
+	function sendEmail($to, $replyTo, $subject, $body, $htmlBody, $attachments){
+
+		require_once ('PHPMailer-6.9.1/src/PHPMailer.php');
+		require_once ('PHPMailer-6.9.1/src/SMTP.php');
+		require_once ('PHPMailer-6.9.1/src/Exception.php');
+
+		$mail = new PHPMailer();
+
+		$mail->isSMTP();
+		// $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+		$mail->Host = $this->host;
+		$mail->SMTPAuth = true;
+		$mail->Username = $this->user_name;
+		$mail->Password = $this->password;
+
+		if($this->ssl_mode != 'disabled'){
+			$mail->SMTPSecure = $this->ssl_mode;
+		}
+
+		$mail->From = $this->from_address;
+		$mail->FromName = 'Aspen Discovery';
+		$mail->addAddress($to);
+
+		for($i = 0; $i < sizeof($attachments['name']); $i++){
+			$mail->addAttachment($attachments['tmp_name'][$i], $attachments['name'][0]);
+		}
+
+		$mail->Subject = $subject;
+		$mail->Body    = $htmlBody ?: $body;
+
+		if(!$mail->send()) {
+			echo 'Message could not be sent.';
+			echo 'Mailer Error: ' . $mail->ErrorInfo;
+			return false;
+		} else {
+			echo 'Message has been sent';
+			return true;
+		}
 	}
 
 	function getActiveAdminSection(): string {
