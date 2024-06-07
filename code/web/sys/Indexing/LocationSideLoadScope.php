@@ -13,7 +13,7 @@ class LocationSideLoadScope extends DataObject {
 		$sideLoadScope = new SideLoadScope();
 		$sideLoadScope->orderBy('name');
 		$sideLoadScope->find();
-		$sideLoadScopes[-1] = 'All Side Loaded eContent for parent library';
+		$sideLoadScopes[-1] = 'All Side Loaded Content for parent library';
 		while ($sideLoadScope->fetch()) {
 			$sideLoadScopes[$sideLoadScope->id] = $sideLoadScope->name;
 		}
