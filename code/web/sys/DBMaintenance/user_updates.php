@@ -406,6 +406,7 @@ function getUserUpdates() {
 					,('System Administration', 'Administer Permissions', '', 15, 'Allows configuration of the roles within Aspen Discovery and what each role can do. <i>Give to trusted users, this has security implications.</i>')
 					,('System Administration', 'Run Database Maintenance', '', 20, 'Controls if the user can run database maintenance or not.')
 					,('System Administration', 'Administer SendGrid', '', 30, 'Controls if the user can change SendGrid settings. <em>This has potential security and cost implications.</em>')
+					,('System Administration', 'Administer SMTP', '', 30, 'Controls if the user can change SMTP settings.')
 					,('System Administration', 'Administer System Variables','', 40, 'Controls if the user can change system variables.')
 					,('Reporting', 'View System Reports', '', 0, 'Controls if the user can view System Reports that show how Aspen Discovery performs and how background tasks are operating. Includes Indexing Logs and Dashboards.')
 					,('Reporting', 'View Indexing Logs', '', 10, 'Controls if the user can view Indexing Logs for the ILS and eContent.')
