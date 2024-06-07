@@ -32,7 +32,7 @@
 				{/foreach}
 			{/if}
 		</td>
-		{if !empty($hasNote)}
+		{if !empty($hasNote) && $showItemNotes}
 			<td>
 				{if !empty($holding.note)}{$holding.note}{/if}
 			</td>
