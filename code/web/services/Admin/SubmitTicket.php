@@ -84,7 +84,7 @@ class SubmitTicket extends Admin_Admin {
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				$systemVariables = new SystemVariables();
 				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email, $attachments);
+					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email, null, $attachments);
 					if (!$result) {
 						$message = 'Could not submit ticket via Aspen mailer';
 					}
