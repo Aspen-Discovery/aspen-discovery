@@ -7,7 +7,6 @@
 
 .swiper {
   width: 100%;
-  height: 300px;
 }
 
 .swiper-slide {
@@ -17,15 +16,64 @@
   align-items: center;
 }
 
+.swiper-slide a {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
 .swiper-slide img {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  margin: 0;
+}
+
+.swiper-slide.browse-thumbnail {
+  margin-bottom: 0;
+}
+
+.swiper-slide.browse-thumbnail img.floating {
+  margin: 0;
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 4px rgba(0, 0, 0, 0.048), 0px 0px 10px rgba(0, 0, 0, 0.06), 4px 4px 11px rgba(0, 0, 0, 0.072), 0px 4px 14px 0 rgba(0, 0, 0, 0.086);
+}
+
+.swiper-slide.browse-thumbnail.border {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.swiper-slide.browse-thumbnail img.border {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.swiper-button-next, .swiper-button-prev {
+  top: 0;
+  width: 40px;
+  height: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
+  background-color: #FFFFFF;
+  color: #000;
+  margin-top: 0;
+  border-radius: 4px;
+}
+
+.swiper-button-next {
+  right: 5px;
+}
+
+.swiper-button-prev {
+  left: 5px;
 }
 
 [role="tablist"] {
   min-width: 100%;
+  min-height: 50px;
 }
 
 [role="tab"] span.focus {
