@@ -3,7 +3,7 @@
 		<h1>{translate text='Materials Request' isPublicFacing=true}</h1>
 		{if $user->canSuggestMaterials()}
 			<div id="materialsRequest">
-				{if !empty($offline)}
+				{if !empty($offline) || $enableEContentWhileOffline}
 					<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 				{elseif !$displayMaterialsRequest}
 					<div class="alert alert-warning">{translate text="The materials request system is not currently available.  Please check back later." isPublicFacing=true}</div>

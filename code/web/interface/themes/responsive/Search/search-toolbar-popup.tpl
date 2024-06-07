@@ -38,7 +38,7 @@
 			<div class="form-group">
 			    <div class="col-xs-12">
 				    {if !empty($showSearchTools)}
-						{if empty($offline)}
+						{if empty($offline) || $enableEContentWhileOffline}
 							{if !empty($enableSavedSearches)}
 								{if !empty($savedSearch)}
 									<a href="/MyAccount/SaveSearch?delete={$searchId}" class="btn btn-default btn-block">{translate text='Remove Saved Search' isPublicFacing=true}</a>

@@ -17,7 +17,7 @@
 				{if $showMoreInfo !== false}
 					<a href="{if !empty($summUrl)}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="{translate text="More Info for %1% record %2%" 1=$summTitle|escapeCSS 2=$recordDriver->getPermanentId() isPublicFacing=true inAttribute=true}">{translate text="More Info" isPublicFacing=true}</a>
 				{/if}
-				{if empty($offline)}
+				{if empty($offline) || $enableEContentWhileOffline}
 					{if $showComments == 1}
 						{* Hide Review Button for xs views in Search Results & User Lists *}
 						<button id="userreviewlink{$recordDriver->getPermanentId()}" class="resultAction btn btn-sm btn-tools{if $module == 'Search' || ($action == 'MyList' && $module == 'MyAccount')} hidden-xs{/if}" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')" onkeypress="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">

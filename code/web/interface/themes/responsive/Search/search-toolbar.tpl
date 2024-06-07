@@ -33,7 +33,7 @@
 			                <button data-toggle="dropdown" class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownSearchToolsBtn"><i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true} <span class="caret"></span></button>
 			                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownSearchToolsBtn">
 			                    {if !empty($showSearchTools)}
-				                    {if !empty($enableSavedSearches) && empty($offline)}
+				                    {if !empty($enableSavedSearches) && (empty($offline) || $enableEContentWhileOffline)}
 					                    {if !empty($savedSearch)}
 					                        <li><a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text='Remove Saved Search' isPublicFacing=true}</a></li>
 					                    {else}
