@@ -8,7 +8,7 @@
 						<a href="{if !empty($summUrl)}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm btn-tools">{translate text="More Info" isPublicFacing=true}</a>
 					</div>
 				{/if}
-				{if $showFavorites == 1 && empty($offline)}
+				{if $showFavorites == 1 && (empty($offline) || $enableEContentWhileOffline)}
 					<div class="btn-group btn-group-sm">
 						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Genealogy', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 					</div>
