@@ -2,8 +2,8 @@
     {if $accessibleBrowseCategories == '1'}
 	<div class="swiper-slide browse-thumbnail {$coverStyle}">
 		<a href="{$summUrl}">
-			<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" class="{$coverStyle} {if $browseCategoryRatingsMode != 0}ratings-on{/if}" loading="lazy">
-			<div class="swiper-lazy-preloader"></div>
+			<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" class="{$coverStyle}" loading="lazy">
+			<div class="swiper-lazy-preloader" style="height: 200px"></div>
 		</a>
 	</div>
     {else}
