@@ -1,58 +1,65 @@
-version: '3.7'
 networks:
   net-aspen:
 services:
 
   backend:
-    image: aspen-discovery/aspen
+    image: ${ASPEN_IMAGE_TAG:-aspendiscoveryofficial/aspen}
     env_file:
       - .env
+    environment:
+      - ASPEN_BACKEND=yes
     ports:
       - "80:80"
     networks:
       - net-aspen
     tty: true
     volumes:
-      - ${ASPEN_REPO}:/mnt
+      - ${ASPEN_DATA_DIR}/conf:${CONFIG_DIRECTORY:-/usr/local/aspen-discovery/sites/$SITE_NAME}
+      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery
     depends_on:
       - db
 
+  cron:
+    image: ${ASPEN_IMAGE_TAG:-aspendiscoveryofficial/aspen}
+    env_file:
+      - .env
+    environment:
+      - ASPEN_CRON=yes
+    networks:
+      - net-aspen
+    tty: true
+    volumes:
+      - ${ASPEN_DATA_DIR}/conf:${CONFIG_DIRECTORY:-/usr/local/aspen-discovery/sites/$SITE_NAME}
+      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery
+    depends_on:
+      - backend
+
   db:
-    image: mariadb:10.3
+    image: ${MARIADB_IMAGE:-mariadb:10.5}
     restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=${COMPOSE_RootPwd}
-    deploy:
-      endpoint_mode: dnsrr
+      - MARIADB_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD:-password}
+      - MARIADB_USER={DATABASE_USER:-user123}
+      - MARIADB_PASSWORD=${DATABASE_PASSWORD:-passwd}
+      - MARIADB_DATABASE=${DATABASE_NAME:-aspen}
     volumes:
-      - ${ASPEN_REPO}/mariadb_data:/var/lib/mysql
+      - ${ASPEN_DATA_DIR}/database:/var/lib/mysql
     networks:
       - net-aspen
 
   solr:
-    image: aspen-discovery/solr
+    image: ${SOLR_IMAGE_TAG:-aspendiscoveryofficial/solr}
     env_file:
       - .env
     environment:
-      - SOLR_PORT=${SITE_solrPort}
-      - SOLR_HOST=${SITE_solrHost}
+      - SOLR_PORT=${SOLR_PORT}
+      - SOLR_HOST=${SOLR_HOST}
     ports:
-      - "${SITE_solrPort}:${SITE_solrPort}"
-    deploy:
-      endpoint_mode: dnsrr
+      - "${SOLR_PORT}:${SOLR_PORT}"
     volumes:
-      - ${ASPEN_REPO}/solr_data:/var/solr
-    networks:
-      - net-aspen
-    depends_on:
-      - backend
-
-  tunnel:
-    image: aspen-discovery/tunnel
-    env_file:
-      - .env
-    deploy:
-      endpoint_mode: dnsrr
+      - ${ASPEN_DATA_DIR}/solr:/var/solr
     networks:
       - net-aspen
     depends_on:
