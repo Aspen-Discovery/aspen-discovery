@@ -4256,7 +4256,6 @@ class Koha extends AbstractIlsDriver {
 			if (!empty($extendedAttributes)) {
 				$borrowerAttributes = [];
 				foreach ($extendedAttributes as $attribute) {
-					$authorizedValues = [];
 					foreach ($attribute['authorized_values'] as $key => $value) {
 						$authorizedValues[$key] = $value;
 					}
@@ -6105,12 +6104,31 @@ class Koha extends AbstractIlsDriver {
 		$interface->assign('noticeLanguages', $noticeLanguages);
 		$interface->assign('preferredNoticeLanguage', $preferredNoticeLanguage);
 
+		//Check to see if there is a shoutbomb extended attribute
+		$extendedAttributesInfo = $this->setExtendedAttributes();
+		foreach ($extendedAttributesInfo as $item) {
+			if ($item['code'] == 'SHOUTBOMB') {
+				$interface->assign('shoutbombAttribute', $item);
+
+				if ($this->getKohaVersion() > 21.05) {
+					$extendedAttributes = $this->getUsersExtendedAttributesFromKoha($patron->unique_ils_id);
+					foreach ($extendedAttributes as $attribute) {
+						$objectProperty = 'borrower_attribute_' . $attribute['type'];
+						$patron->$objectProperty = $attribute['value'];
+					}
+				}
+				break;
+			}
+		}
+
 		$library = $patron->getHomeLibrary();
 		if ($library != null && $library->allowProfileUpdates) {
 			$interface->assign('canSave', true);
 		} else {
 			$interface->assign('canSave', false);
 		}
+
+		$interface->assign('profile', $patron);
 
 		return 'kohaMessagingSettings.tpl';
 	}
@@ -6139,7 +6157,7 @@ class Koha extends AbstractIlsDriver {
 					if ($key == 'SMSnumber') {
 						/** @noinspection RegExpRedundantEscape */
 						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-Z]/', '', $value));
-					} elseif (str_starts_with($key, 'digest')) {
+					} elseif (strpos($key, 'digest') === 0) {
 						if(strlen($digestParams > 0)) {
 							$digestParams .= '&';
 						}
@@ -6162,6 +6180,16 @@ class Koha extends AbstractIlsDriver {
 
 			$result = $this->getKohaPage($updateMessageUrl);
 			if (strpos($result, 'Settings updated') !== false) {
+				//Check to see if we also need to update Shoutbomb settings
+				$extendedAttributesInfo = $this->setExtendedAttributes();
+				foreach ($extendedAttributesInfo as $item) {
+					if ($item['code'] == 'SHOUTBOMB') {
+						$oauthToken = $this->getOAuthToken();
+						$this->updateExtendedAttributesInKoha($patron->unique_ils_id, $extendedAttributesInfo, $oauthToken);
+						break;
+					}
+				}
+
 				$result = [
 					'success' => true,
 					'message' => 'Settings updated',
@@ -6723,6 +6751,9 @@ class Koha extends AbstractIlsDriver {
 			$authorizedValueCategories = [];
 			while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
 				$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
+			}
+			if (!empty($authorizedValueCategories) && !$curRow['mandatory']) {
+				$authorizedValueCategories = array_merge([''=> ''], $authorizedValueCategories);
 			}
 
 			$attribute = [
