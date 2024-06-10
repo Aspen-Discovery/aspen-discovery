@@ -1006,6 +1006,9 @@ class MyAccount_AJAX extends JSON_Action {
 		]);
 
 		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+		if ($promptForReactivationDate === "false") {
+			$promptForReactivationDate = false;
+		}
 
 		if($promptForReactivationDate) {
 			global $interface;
@@ -1168,6 +1171,9 @@ class MyAccount_AJAX extends JSON_Action {
 		]);
 
 		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+		if ($promptForReactivationDate === "false") {
+			$promptForReactivationDate = false;
+		}
 
 		if($promptForReactivationDate) {
 			global $interface;
