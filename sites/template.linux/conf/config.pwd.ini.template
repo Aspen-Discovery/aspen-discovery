@@ -5,14 +5,27 @@ minTimeToLog    = 0.05
 
 [Site]
 ;email =
+aspen_admin_password    = {aspenAdminPassword}
 
 [Database]
 ;Since we have multiple databases, need to specify each
-database_dsn          = "mysql:host={aspenDBHost};port={aspenDBPort};dbname={aspenDBName}"
-database_user         = {aspenDBUser}
-database_password     = {aspenDBPwd}
-database_aspen_jdbc   = "jdbc:mysql://{aspenDBHost}:{aspenDBPort}/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
-database_aspen_dbname = {aspenDBName}
+database_host           = {databaseHost}
+database_port           = {databasePort}
+database_aspen_dbname   = {databaseName}
+database_user           = {databaseUser}
+database_password       = {databasePassword}
+database_timezone       = {timezone}
+database_dsn            = "mysql:host={databaseHost};port={databasePort};dbname={databaseName}"
+database_aspen_jdbc     = "jdbc:mysql://{databaseHost}:{databasePort}/{databaseName}?user={databaseUser}&password={databasePassword}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
+
+[Ils]
+ils_database_host      = {ilsDatabaseHost}
+ils_database_port      = {ilsDatabasePort}
+ils_database_name      = {ilsDatabaseName}
+ils_database_user      = {ilsDatabaseUser}
+ils_database_timezone  = {ilsDatabaseTimeZone}
+ils_client_id          = {ilsClientId}
+ils_client_secret      = {ilsClientSecret}
 
 [WorldCat]
 ;id              =
