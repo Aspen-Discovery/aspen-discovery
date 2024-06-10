@@ -218,6 +218,12 @@
 								<input type="checkbox" class="form-control" name="userCookieAnalytics" id="userCookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch="">
 
 							</div>
+
+							<div class="form-group propertyRow">
+								<label for='userCookieUserAxis360' class="control-label">{translate text="Axia 360" isPublicFacing=true}</label>&nbsp;
+								<input type="checkbox" class="form-control" name="userCookieUserAxis360" id="userCookieUserAxis360" {if $profile->userCookiePreferenceAxis360==1}checked='checked'{/if} data-switch="">
+
+							</div>
 						</div>
 					{/if}
 

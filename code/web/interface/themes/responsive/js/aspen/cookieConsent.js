@@ -76,7 +76,7 @@ AspenDiscovery.CookieConsent = (function() {
             var formData = $('#cookieManagementPreferencesForm').serializeArray();
             var cookieUserAxis360 = $('#cookieUserAxis360').is(':checked') ? 1 : 0;
             formData.push({name: 'cookieUserAxis360', value: cookieUserAxis360});
-       var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
+             var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 
        $.getJSON(url, formData,
          function(data) {
