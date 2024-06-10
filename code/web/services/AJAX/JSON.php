@@ -642,29 +642,6 @@ class AJAX_JSON extends Action {
 		];
 	}
 
-	// function saveCookieManagementPreferences() {
-	// 	$response = [];
-
-	// 	if (UserAccount::isLoggedIn()) {
-	// 		$userObj = UserAccount::getActiveUserObj();
-	// 		$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'];
-	// 		$userObj->update();
-	// 		return [
-	// 			'success' => true,
-	// 			'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
-	// 		];
-	// 	} else {
-	// 		$userCookiePost = [
-	// 			'Essential' =>1,
-	// 			'UserAxis360' => $_REQUEST['cookieUserAxis360'],
-	// 		];
-	// 		setCookie('cookieConsent', json_encode($userCookiePost), 0, '/');
-	// 		return [
-	// 			'success' => true,
-	// 		];
-	// 	}
-	// }
-
 	function saveCookieManagementPreferences() {
 		if (UserAccount::isLoggedIn()) {
 			$userObj = UserAccount::getActiveUserObj();
