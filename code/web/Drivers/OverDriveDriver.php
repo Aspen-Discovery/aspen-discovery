@@ -1700,7 +1700,12 @@ class OverDriveDriver extends AbstractEContentDriver {
 						if ($formatClass == 'Periodicals') {
 							$formatClass = 'Magazines';
 						}
+
 						$options['lendingPeriods'][$formatClass]['options'] = $lendingPeriodField->options;
+
+						if($formatClass == 'Magazines') {
+							unset($options['lendingPeriods'][$formatClass]);
+						}
 					}
 				}
 			}
