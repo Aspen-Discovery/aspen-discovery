@@ -48,7 +48,7 @@ if (count($_SERVER['argv']) > 1){
 			'aspenAdminPwd' => $configArray['Aspen']['aspenAdminPwd'],
 			'ils' => $configArray['Site']['ils'],
 			'ilsUrl' => $configArray['ILS']['ilsUrl'],
-			'staffUrl' => $configArray['ILS']['staffUrl'],
+			'ilsStaffUrl' => $configArray['ILS']['ilsStaffUrl'],
 		];
 		if ($variables['ils'] == 'Koha') {
 			$variables['ilsDriver'] = 'Koha';
@@ -171,7 +171,7 @@ if (!$foundConfig) {
 	}
 
 	//This can be blank
-	$variables['staffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
+	$variables['ilsStaffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
 
 	$variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
 	if (empty($variables['aspenDBHost'])){
