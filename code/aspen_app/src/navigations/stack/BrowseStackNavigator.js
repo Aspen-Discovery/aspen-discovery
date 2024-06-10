@@ -1,9 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
-import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
+import { ChevronLeftIcon, CloseIcon, Pressable, Icon } from 'native-base';
 import React from 'react';
 import Scanner from '../../components/Scanner';
-import { LanguageContext } from '../../context/initialContext';
+import { LanguageContext, ThemeContext } from '../../context/initialContext';
+import { navigate } from '../../helpers/RootNavigator';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { EventScreen } from '../../screens/Event/Event';
@@ -19,6 +20,7 @@ import { SearchResultsForBrowseCategory } from '../../screens/Search/SearchByCat
 import { SearchResultsForList } from '../../screens/Search/SearchByList';
 import { SearchResultsForSavedSearch } from '../../screens/Search/SearchBySavedSearch';
 import { SearchResults } from '../../screens/Search/SearchResults';
+import { BackIcon } from '../../themes/theme';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const BrowseStackNavigator = () => {
@@ -31,6 +33,7 @@ const BrowseStackNavigator = () => {
                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     headerBackTitleVisible: false,
+                    headerBackImage: () => <BackIcon />,
                })}>
                <Stack.Screen
                     name="HomeScreen"

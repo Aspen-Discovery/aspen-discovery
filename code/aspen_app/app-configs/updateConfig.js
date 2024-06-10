@@ -204,6 +204,14 @@ const app_config = {
                     project: app['sentryProject'],
                },
           ],
+          [
+               'expo-build-properties',
+               {
+                    ios: {
+                         deploymentTarget: '16.0',
+                    },
+               },
+          ],
      ],
 };
 

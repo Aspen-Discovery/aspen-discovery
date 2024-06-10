@@ -54,7 +54,7 @@ class SideLoads_SideLoads extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Side Loaded eContent Collections';
+		return 'Side Loaded Collections';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {

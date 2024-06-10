@@ -85,6 +85,7 @@ public class IlsRecordFormatClassifier extends MarcRecordFormatClassifier {
 			if (format != null) {
 				FormatMapValue formatMapValue = profile.getFormatMapValue(format, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
 				if (formatMapValue != null) {
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Format is " + formatMapValue.getFormat() + " based on Item Format of " + format, 2);}
 					return new FormatInfo(formatMapValue, BaseIndexingSettings.FORMAT_TYPE_ITEM_FORMAT);
 				}
 			}

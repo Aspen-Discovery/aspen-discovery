@@ -16,7 +16,7 @@
 	            {else}
 		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
 			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
-				            <div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}">
+				            <div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}" style="height: 200px">
 					            <i class="fas fa-lg fa-spinner fa-spin"></i>
 				            </div>
 	                       {literal} <script type="text/javascript">

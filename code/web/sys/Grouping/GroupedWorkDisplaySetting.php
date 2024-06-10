@@ -79,6 +79,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	//Item details
 	public $showItemDueDates;
+	public $showItemNotes;
 
 	private $_moreDetailsOptions;
 
@@ -603,6 +604,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Show Item Due Dates',
 						'description' => 'Whether or not due dates for items are shown within the copy details.',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'showItemNotes' => [
+						'property' => 'showItemNotes',
+						'type' => 'checkbox',
+						'label' => 'Show Item Notes',
+						'description' => 'Whether or notes for items are shown within the copy details if available.',
 						'hideInLists' => true,
 						'default' => true,
 					],

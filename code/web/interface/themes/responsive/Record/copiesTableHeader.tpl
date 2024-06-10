@@ -23,7 +23,7 @@
 		<th>
 			<strong><u>{translate text="Call Number" isPublicFacing=true}</u></strong>
 		</th>
-		{if !empty($hasNote)}
+		{if !empty($hasNote) && $showItemNotes}
 			<th>
 				<strong><u>{translate text="Note" isPublicFacing=true}</u></strong>
 			</th>

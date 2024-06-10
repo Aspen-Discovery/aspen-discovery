@@ -119,8 +119,10 @@ class Mailer {
 		if(!empty($attachments)) {
 			$i = 0;
 			foreach($attachments as $attachment) {
-				$message->addAttachmentFromFile($attachment['name'][$i], $attachment['tmp_name'][$i], $attachment['type'][$i]);
-				$i++;
+				if($attachment['name'][$i]) {
+					$message->addAttachmentFromFile($attachment['name'][$i], $attachment['tmp_name'][$i], $attachment['type'][$i]);
+					$i++;
+				}
 			}
 		}
 
