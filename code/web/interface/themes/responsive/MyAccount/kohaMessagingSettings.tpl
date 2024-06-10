@@ -152,6 +152,16 @@
 				</span>
 			</div>
 		{/if}
+		{if !empty($shoutbombAttribute)}
+			<div class="form-group propertyRow" id="shoutbombRow">
+				<label for="borrower_attribute_SHOUTBOMB" class="control-label">{translate text=$shoutbombAttribute.desc isPublicFacing=true}</label>
+				<select id="borrower_attribute_SHOUTBOMB" name="borrower_attribute_SHOUTBOMB" class="form-control" {if empty($canSave)}readonly{/if}>
+					{foreach from=$shoutbombAttribute.authorized_values item=label key=value}
+						<option value="{$value}" {if $profile->borrower_attribute_SHOUTBOMB==$value}selected="selected"{/if}>{$label}</option>
+					{/foreach}
+				</select>
+			</div>
+		{/if}
 		{if $canTranslateNotices}
 			<div class="form-group propertyRow" id="langRow">
                 <label for="lang" class="control-label">{translate text="Preferred language for notices" isPublicFacing=true}</label>
@@ -165,7 +175,9 @@
 	        </div>
 		{/if}
 		{if !empty($canSave)}
-			<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
+			<div class="form-group propertyRow" id="submitRow">
+				<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
+			</div>
 		{/if}
 	</form>
 </div>
