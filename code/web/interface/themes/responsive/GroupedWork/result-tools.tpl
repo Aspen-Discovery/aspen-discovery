@@ -1,5 +1,5 @@
 {strip}
-	{if $showFavorites == 1}
+	{if $showFavorites == 1 && (empty($offline) || $enableEContentWhileOffline)}
 		<div class="text-center row">
 			<div class="col-xs-12">
 				<span onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm addtolistlink addToListBtn">{translate text="Add to List" isPublicFacing=true}</span>

@@ -521,7 +521,8 @@ class GroupedWork_AJAX extends JSON_Action {
 				'text' => "More Info",
 				'isPublicFacing' => true,
 			]) . "</button></a>";
-		if(!$showFavorites) {
+        global $offlineMode;
+		if(!$showFavorites || $offlineMode) {
 			$buttons = "<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate([
 					'text' => 'More Info',
 					'isPublicFacing' => true,
