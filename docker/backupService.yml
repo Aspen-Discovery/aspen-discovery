@@ -1,19 +1,19 @@
-  backup:
-    image: registry.gitlab.com/thekesolutions/tools/aspen-backup:23.6.15.0
-    env_file:
-        - .env
-    networks:
-        - net-aspen
-    volumes:
-        - ${ASPEN_Repo}/start.sh:/start.sh
-        - ${ASPEN_Repo}/sites-enabled:/etc/apache2/sites-enabled
-        - ${ASPEN_Repo}/sites-available:/etc/apache2/sites-available
-        - ${ASPEN_Repo}/cron.d_bk/backup:/etc/crontabs/root
-        - ${ASPEN_Repo}/log:/var/log/aspen-discovery/$SITE_sitename
-        - ${ASPEN_Repo}/test.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
-        - ${ASPEN_Repo}/data:/data/aspen-discovery
-        - ${ASPEN_Repo}/home:/home
-        - ${ASPEN_Repo}/files:/usr/local/aspen-discovery/code/web/files
-    depends_on:
-      - backend
-    entrypoint: ["crond", "-d", "8", "-f"]
+backup:
+  image: ${BACKUP_IMAGE}
+  env_file:
+      - .env
+  networks:
+      - net-aspen
+  volumes:
+      - ${ASPEN_DATA_DIR}/start.sh:/start.sh
+      - ${ASPEN_DATA_DIR}/sites-enabled:/etc/apache2/sites-enabled
+      - ${ASPEN_DATA_DIR}/sites-available:/etc/apache2/sites-available
+      - ${ASPEN_DATA_DIR}/cron.d_bk/backup:/etc/crontabs/root
+      - ${ASPEN_DATA_DIR}/log:/var/log/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/${SITE_NAME}:/usr/local/aspen-discovery/sites/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery
+      - ${ASPEN_DATA_DIR}/home:/home
+      - ${ASPEN_DATA_DIR}/files:/usr/local/aspen-discovery/code/web/files
+  depends_on:
+    - backend
+  entrypoint: ["crond", "-d", "8", "-f"]
