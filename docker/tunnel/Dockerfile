@@ -1,7 +1,7 @@
 FROM alpine:3.19
 
-ARG TUNNEL_User=tunnel
-ENV TUNNEL_User=${TUNNEL_User}
+ARG TUNNEL_USER=tunnel
+ENV TUNNEL_USER=${TUNNEL_USER}
 
 
 # Install dependencies
@@ -11,13 +11,13 @@ RUN apk add --no-cache \
   bash \
   sudo
 
-# Agregar el nuevo usuario y grupo
-RUN addgroup -g 1000 "${TUNNEL_User}" && \
-    adduser -D -u 1000 -G "${TUNNEL_User}" "${TUNNEL_User}"
+# Add both user and group
+RUN addgroup -g 1000 "${TUNNEL_USER}" && \
+    adduser -D -u 1000 -G "${TUNNEL_USER}" "${TUNNEL_USER}"
 
-# Agregar el usuario al grupo sudoers
-RUN echo "${TUNNEL_User} ALL=(ALL) ALL" > /etc/sudoers.d/${TUNNEL_User} && \
-    chmod 0440 /etc/sudoers.d/${TUNNEL_User}
+# Add tunnel user to sudoers
+RUN echo "${TUNNEL_USER} ALL=(ALL) ALL" > /etc/sudoers.d/${TUNNEL_USER} && \
+    chmod 0440 /etc/sudoers.d/${TUNNEL_USER}
 
 # Change to root user
 USER root
@@ -26,10 +26,10 @@ USER root
 RUN apk update
 
 # Create ssh directory
-RUN mkdir -p /home/${TUNNEL_User}/.ssh
+RUN mkdir -p /home/${TUNNEL_USER}/.ssh
 
-# Adding tunnel content
-COPY docker/tunnel/tunnel.sh docker/tunnel/config /home/${TUNNEL_User}/.ssh/
+# Copy tunnel content
+COPY docker/tunnel/tunnel.sh docker/tunnel/config /home/${TUNNEL_USER}/.ssh/
 
 # Add entrypoint
-ENTRYPOINT ["/bin/ash", "-c", "/home/${TUNNEL_User}/.ssh/tunnel.sh"]
+CMD ["/bin/ash", "-c", "./home/${TUNNEL_USER}/.ssh/tunnel.sh"]
