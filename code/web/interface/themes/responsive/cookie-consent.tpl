@@ -3,6 +3,7 @@
         cookieValues = {
             Essential: {$profile->userCookiePreferenceEssential},
             Analytics: {$profile->userCookiePreferenceAnalytics},
+            UserAxis360: {$profile->userCookiePreferenceAxis360},
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
@@ -16,7 +17,7 @@
             <div class="btnWrap">
                 <a onclick="AspenDiscovery.CookieConsent.cookieAgree('all');" href="#" id="consentAgree" class="button">{translate text="Accept all cookies" isPublicFacing=true}</a>
                 <a onclick="AspenDiscovery.CookieConsent.cookieAgree('essential');" href="#" id="consentDisagree" class="button">{translate text="Only accept essential cookies" isPublicFacing=true}</a>
-                <a onclick="AspenDiscovery.CookieConsent.cookieManage('manage');" href="#" id="consentManage" class="button">{translate text="Manage Cookies" isPublicFacing=true}</a>
+                <a onclick="AspenDiscovery.CookieConsent.cookieManage();" href="#" id="consentManage" class="button">{translate text="Manage Cookies" isPublicFacing=true}</a>
             </div>
         </div>
     </div>

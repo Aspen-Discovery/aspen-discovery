@@ -279,8 +279,10 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 			$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
 			if (!empty($cookie)) {
 				$analyticsPref = $cookie['Analytics'];
+				$userAxis360Pref = $cookie['UserAxis360'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+				$userObj->userCookiePreferenceAxis360 = $userAxis360Pref;
 				$userObj->update();
 			}
 		}
