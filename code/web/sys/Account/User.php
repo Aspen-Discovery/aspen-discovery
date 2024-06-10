@@ -49,6 +49,7 @@ class User extends DataObject {
 	public $isLoggedInViaSSO;
 	public $userCookiePreferenceEssential;
 	public $userCookiePreferenceAnalytics;
+	public $userCookiePreferenceAxis360;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -1160,6 +1161,7 @@ class User extends DataObject {
 			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
 			$this->__set('userCookiePreferenceEssential', 1);
 			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceAxis360', (isset($_POST['userCookieUserAxis360']) && $_POST['userCookieUserAxis360'] == 'on') ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
