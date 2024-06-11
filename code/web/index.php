@@ -280,9 +280,27 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 			if (!empty($cookie)) {
 				$analyticsPref = $cookie['Analytics'];
 				$userAxis360Pref = $cookie['UserAxis360'];
+				$userEbscoEdsPref = $cookie['UserEbscoEds'];
+				$userEbscoHostPref = $cookie['UserEbscoHost'];
+				$userSummonPref = $cookie['UserSummon'];
+				$userEventsPref = $cookie['UserEvents'];
+				$userHooplaPref = $cookie['UserHoopla'];
+				$userOpenArchivesPref = $cookie['UserOpenArchives'];
+				$userOverdrivePref = $cookie['UserOverdrive'];
+				$userPalaceProjectPref = $cookie['UserPalaceProject'];
+				$userSideLoadPref = $cookie['UserSideLoad'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
 				$userObj->userCookiePreferenceAxis360 = $userAxis360Pref;
+				$userObj->userCookiePreferenceEbscoEds = $userEbscoEdsPref;
+				$userObj->userCookiePreferenceEbscoHost = $userEbscoHostPref;
+				$userObj->userCookiePreferenceSummon = $userSummonPref;
+				$userObj->userCookiePreferenceEvents = $userEventsPref;
+				$userObj->userCookiePreferenceHoopla = $userHooplaPref;
+				$userObj->userCookiePreferenceOpenArchives = $userOpenArchivesPref;
+				$userObj->userCookiePreferenceOverdrive = $userOverdrivePref;
+				$userObj->userCookiePreferencePalaceProject = $userPalaceProjectPref;
+				$userObj->userCookiePreferenceSideLoad = $userSideLoadPref;
 				$userObj->update();
 			}
 		}
