@@ -7,6 +7,7 @@ class SystemVariables extends DataObject {
 	public $errorEmail;
 	public $ticketEmail;
 	public $searchErrorEmail;
+	public $preferredMailSender;
 	public $loadCoversFrom020z;
 	public $currencyCode;
 	public $runNightlyFullIndex;
@@ -86,6 +87,17 @@ class SystemVariables extends DataObject {
 						'label' => 'Search Error Email Address',
 						'description' => 'Email Address to send errors to',
 						'maxLength' => 128,
+					],
+					'preferredMailSender' => [
+						'property' => 'preferredMailSender',
+						'type' => 'sortableList',
+						'values' => [
+							'AmazonSES' => 'AmazonSES',
+							'SendGrid' => 'SendGrid',
+							'SMTP' => 'SMTP',
+						],
+						'label' => 'Preferred Mail Sender Order',
+						'description' => 'Sort order of preferred mail sender',
 					],
 				]
 			],

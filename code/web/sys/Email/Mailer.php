@@ -22,20 +22,17 @@ class Mailer {
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/Email/SMTPSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		//TODO: Do validation of the address
-		$amazonSesSettings = new AmazonSesSetting();
-		$smtpServerSettings = new SMTPSetting();
 
-		if($smtpServerSettings->find(true)) {
-			$result = $this->sendViaSMTP($smtpServerSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
-		}elseif ($amazonSesSettings->find(true)) {
-			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
-		} else {
-			$sendGridSettings = new SendGridSetting();
-			if ($sendGridSettings->find(true)) {
-				$result = $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
-			} else {
-				$result = false;
+		$systemVariables = new SystemVariables();
+		if ($systemVariables->find(true) && !empty($systemVariables->preferredMailSender)) {
+			$mailSenders = explode("|", $systemVariables->preferredMailSender);
+			foreach ($mailSenders as $mailSender){
+				$result = $this->sendViaAbstractSender($mailSender, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
+				if ($result) {
+					break;
+				}
 			}
 		}
 
@@ -144,5 +141,26 @@ class Mailer {
 
 	private function sendViaSMTP(SMTPSetting $smtpSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody, ?array $attachments): bool {
 		return $smtpSettings->sendEmail($to, $replyTo, $subject, $body, $htmlBody, $attachments);
+	}
+
+	private function sendViaAbstractSender($mailSender, $to, $replyTo, $subject, $body, $htmlBody, $attachments) {
+		$result = false;
+		if($mailSender == 'AmazonSES') {
+			$amazonSesSettings = new AmazonSesSetting();
+			if($amazonSesSettings->find(true)){
+				$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
+			}
+		} else if($mailSender == 'SendGrid') {
+			$sendGridSettings = new SendGridSetting();
+			if($sendGridSettings->find(true)){
+				$result = $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
+			}
+		} else if($mailSender == 'SMTP') {
+			$smtpSettings = new SMTPSetting();
+			if($smtpSettings->find(true)){
+				$result = $this->sendViaSMTP($smtpSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
+			}
+		}
+		return $result;
 	}
 }
