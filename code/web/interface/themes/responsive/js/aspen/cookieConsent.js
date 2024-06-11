@@ -6,12 +6,30 @@ AspenDiscovery.CookieConsent = (function() {
                     Essential:1,
                     Analytics:1,
                     UserAxis360:1,
+                    UserEbscoEds:1,
+                    UserEbscoHost:1,
+                    UserSummon:1,
+                    UserEvents:1,
+                    UserHoopla:1,
+                    UserOpenArchives:1,
+                    UserOverdrive:1,
+                    UserPalaceProject:1,
+                    UserSideLoad:1,
                 };
             } else if (props == 'essential') {
                 var cookieString = {
                     Essential:1,
                     Analytics:0,
                     UserAxis360:0,
+                    UserEbscoEds:0,
+                    UserEbscoHost:0,
+                    UserSummon:0,
+                    UserEvents:0,
+                    UserHoopla:0,
+                    UserOpenArchives:0,
+                    UserOverdrive:0,
+                    UserPalaceProject:0,
+                    UserSideLoad:0,
                 };
             }
             $('.stripPopup').hide();
@@ -51,12 +69,29 @@ AspenDiscovery.CookieConsent = (function() {
                 Essential:1,
                 Analytics:0,
                 UserAxis360:0,
+                UserEbscoEds:0,
+                UserEbscoHost:0,
+                UserSummon:0,
+                UserEvents:0,
+                UserHoopla:0,
+                UserOpenArchives:0,
+                UserOverdrive:0,
+                UserPalaceProject:0,
+                UserSideLoad:0,
             };
             var params =  {
                 cookieEssential: cookieString['Essential'],
                 cookieAnalytics: cookieString['Analytics'],
                 cookieUserAxis360: cookieString['UserAxis360'],
-
+                cookieUserEbscoEds: cookieString['UserEbscoEds'],
+                cookieUserEbscoHost: cookieString['UserEbscoHost'],
+                cookieUserSummon: cookieString['UserSummon'],
+                cookieUserEvents: cookieString['UserEvents'],
+                cookieUserHoopla: cookieString['UserHoopla'],
+                cookieUserOpenArchives: cookieString['UserOpenArchives'],
+                cookieUserOverdrive: cookieString['UserOverdrive'],
+                cookieUserPalaceProject: cookieString['UserPalaceProject'],
+                cookieUserSideLoad: cookieString['UserSideLoad'],
 			};
             $.getJSON(url, params,
                 function(data) {
@@ -75,7 +110,26 @@ AspenDiscovery.CookieConsent = (function() {
             console.log('LAST FUNCTION');
             var formData = $('#cookieManagementPreferencesForm').serializeArray();
             var cookieUserAxis360 = $('#cookieUserAxis360').is(':checked') ? 1 : 0;
+            var cookieUserEbscoEds = $('#cookieUserEbscoEds').is(':checked') ? 1 : 0;
+            var cookieUserEbscoHost = $('#cookieUserEbscoHost').is(':checked') ? 1 : 0;
+            var cookieUserSummon = $('#cookieUserSummon').is(':checked') ? 1 : 0;
+            var cookieUserEvents = $('#cookieUserEvents').is(':checked') ? 1 : 0;
+            var cookieUserHoopla = $('#cookieUserHoopla').is(':checked') ? 1 : 0;
+            var cookieUserOpenArchives = $('#cookieUserOpenArchives').is(':checked') ? 1 : 0;
+            var cookieUserOverdrive = $('#cookieUserOverdrive').is(':checked') ? 1 : 0;
+            var cookieUserPalaceProject = $('#cookieUserPalaceProject').is(':checked') ? 1 : 0;
+            var cookieUserSideLoad = $('#cookieUserSideLoad').is(':checked') ? 1 : 0;
+
             formData.push({name: 'cookieUserAxis360', value: cookieUserAxis360});
+            formData.push({name: 'cookieUserEbscoEds', value: cookieUserEbscoEds });
+            formData.push({name: 'cookieUserEbscoHost', value: cookieUserEbscoHost});
+            formData.push({name: 'cookieUserSummon', value: cookieUserSummon});
+            formData.push({name: 'cookieUserEvents', value: cookieUserEvents});
+            formData.push({name: 'cookieUserHoopla', value: cookieUserHoopla});
+            formData.push({name: 'cookieUserOpenArchives', value: cookieUserOpenArchives});
+            formData.push({name: 'cookieUserOverdrive', value: cookieUserOverdrive});
+            formData.push({name: 'cookieUserPalaceproject', value: cookieUserPalaceProject});
+            formData.push({name: 'cookieUserSideLoad', value: cookieUserSideLoad});
              var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 
        $.getJSON(url, formData,

@@ -50,7 +50,16 @@ class User extends DataObject {
 	public $userCookiePreferenceEssential;
 	public $userCookiePreferenceAnalytics;
 	public $userCookiePreferenceAxis360;
-
+	public $userCookiePreferenceEbscoEds;
+	public $userCookiePreferenceEbscoHost;
+	public $userCookiePreferenceSummon;
+	public $userCookiePreferenceEvents;
+	public $userCookiePreferenceHoopla;
+	public $userCookiePreferenceOpenArchives;
+	public $userCookiePreferenceOverdrive;
+	public $userCookiePreferencePalaceProject;
+	public $userCookiePreferenceSideLoad;
+	
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 
@@ -1162,6 +1171,15 @@ class User extends DataObject {
 			$this->__set('userCookiePreferenceEssential', 1);
 			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceAxis360', (isset($_POST['userCookieUserAxis360']) && $_POST['userCookieUserAxis360'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceEbscoEds', (isset($_POST['userCookieUserEbscoEds']) && $_POST['userCookieUserEbscoEds'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceEbscoHost', (isset($_POST['userCookieUserEbscoHost']) && $_POST['userCookieUserEbscoHost'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceSummon', (isset($_POST['userCookieSummon']) && $_POST['userCookieSummon'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceEvents', (isset($_POST['userCookieEvents']) && $_POST['userCookieEvents'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceHoopla', (isset($_POST['userCookieUserHoopla']) && $_POST['userCookieUsrHoopla'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceOpenArchives', (isset($_POST['userCookieUserOpenArchives']) && $_POST['userCookieUserOpenArchives'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceOverdrive', (isset($_POST['userCookieUserOverdrive']) && $_POST['userCookieUserOverdrive'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferencePalaceProject', (isset($_POST['userCookieUserPalaceProject']) && $_POST['userCookieUserPalaceProject'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceSideLoad', (isset($_POST['userCookieUserSideLoad']) && $_POST['userCookieUserSideLoad'] == 'on') ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);

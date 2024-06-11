@@ -220,10 +220,57 @@
 							</div>
 
 							<div class="form-group propertyRow">
-								<label for='userCookieUserAxis360' class="control-label">{translate text="Axia 360" isPublicFacing=true}</label>&nbsp;
+								<label for='userCookieUserAxis360' class="control-label">{translate text="Axis 360" isPublicFacing=true}</label>&nbsp;
 								<input type="checkbox" class="form-control" name="userCookieUserAxis360" id="userCookieUserAxis360" {if $profile->userCookiePreferenceAxis360==1}checked='checked'{/if} data-switch="">
 
 							</div>
+
+							<div class="form-group propertyRow">
+								<label for='userCookieUserEbscoEds' class="control-label">{translate text="Ebsco Eds" isPublicFacing=true}</label>&nbsp;
+								<input type="checkbox" class="form-control" name="userCookieUserEbscoEds" id="userCookieUserEbscoEds" {if $profile->userCookiePreferenceEbscoEds==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserEbscoHost' class="control-label">{translate text="Ebsco Host" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserEbscoHost" id="userCookieUserEbscoHost" {if $profile->userCookiePreferenceEbscoHost==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserSummon' class="control-label">{translate text="Summon" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserSummon" id="userCookieUserSummon" {if $profile->userCookiePreferenceSummon==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserEvents' class="control-label">{translate text="Events" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserEvents" id="userCookieUserEvents" {if $profile->userCookiePreferenceEvents==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserHoopla' class="control-label">{translate text="Hoopla" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserHoopla" id="userCookieUserHoopla" {if $profile->userCookiePreferenceHoopla==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserOpenArchives' class="control-label">{translate text="Open Archives" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserOpenArchives" id="userCookieUserOpenArchives" {if $profile->userCookiePreferenceOpenArchives==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserOverdrive' class="control-label">{translate text="Overdrive" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserOverdrive" id="userCookieUserOverdrive" {if $profile->userCookiePreferenceOverdrive==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserPalaceproject' class="control-label">{translate text="Palace Project" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserPalaceProject" id="userCookieUserPalaceProject" {if $profile->userCookiePreferencePalaceProject==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserSideLoad' class="control-label">{translate text="Side Load" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
+
+							</div>
+			
 						</div>
 					{/if}
 
