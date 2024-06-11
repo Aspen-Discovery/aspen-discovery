@@ -569,6 +569,8 @@
 					{/if}
 				{/foreach}
 			</div>
+			{elseif $property.type == 'sortableList'}
+				{include file="DataObjectUtil/sortableList.tpl"}
 		{/if}
 
 	</div>

@@ -575,6 +575,8 @@ class DataObjectUtil {
 			}
 
 			$object->$propertyName = $values;
+		} elseif ($property['type'] == 'sortableList') {
+			$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 		}
 	}
 }
