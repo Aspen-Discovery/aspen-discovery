@@ -486,7 +486,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				foreach ($facetField['counts'] as $value) {
 					$facetValue = $value['value'];
 					//Ensures selected facet stays checked when selected - interacts with .tpl
-					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($value, $this->filterList[$facetId]);
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
 					$facetSettings = [
 						'value' => $facetValue,
 						'display' =>$facetValue,
@@ -494,7 +494,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						'isApplied' => $value['isApplied'],
 					];
 					if ($isApplied) {
-						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $value);
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
 					} else {
 						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
 					}
