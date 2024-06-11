@@ -646,6 +646,15 @@ class AJAX_JSON extends Action {
 		if (UserAccount::isLoggedIn()) {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'] == "1"  || $_REQUEST['cookieUserAxis360'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceEbscoEds = $_REQUEST['cookieUserEbscoEds'] == "1" || $_REQUEST['cookieUserEbscoEds'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceEbscoHost = $_REQUEST['cookieUserEbscoHost'] == "1" || $_REQUEST['cookieUserEbscoHost'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceSummon = $_REQUEST['cookieUserSummon'] == "1" || $_REQUEST['cookieUserSummon'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceEvents = $_REQUEST['cookieUserEvents'] == "1" || $_REQUEST['cookieUserEvents'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceHoopla = $_REQUEST['cookieUserHoopla'] == "1" || $_REQUEST['cookieUserHoopla'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceOpenArchives = $_REQUEST['cookieUserOpenArchives'] == "1" || $_REQUEST['cookieUserOpenArchives'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceOverdrive = $_REQUEST['cookieUserOverdrive'] == "1" || $_REQUEST['cookieUserOverdrive'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferencePalaceProject = $_REQUEST['cookieUserPalaceProject'] == "1" || $_REQUEST['cookieUserPalaceProject'] == 1 ? 1 :0;
+			$userObj->userCookiePreferenceSideLoad = $_REQUEST['cookieUserSideLoad'] == "1" || $_REQUEST['cookieUserSideLoad'] == 1 ? 1 : 0;
 			$userObj->update();
 			return[
 				'success' => true,
@@ -654,7 +663,17 @@ class AJAX_JSON extends Action {
 		} else {
 			$userCookiePost = [
 				'Essential' => 1,
-				'UserAxis360' => isset($_POST['cookieUserAxis360']) ? 1 : 0
+				'Analytics' => $_REQUEST['cookieAnalytics'],
+				'UserAxis360' => isset($_POST['cookieUserAxis360']) ? 1 : 0,
+				'UserEbscoEds' => isset($_POST['cookieUserEbscoEds']) ? 1 : 0,
+				'UserEbscoHost' => isset($_POST['cookieUserEbscoHost']) ? 1 : 0,
+				'UserSummon' => isset($_POST['cookieUserSummon']) ? 1: 0,
+				'UserEvents' => isset($_POST['cookieUserEvents']) ? 1 : 0,
+				'UserHoopla' => isset($_POST['cookieUserHoopla']) ? 1 : 0,
+				'UserOpenArchives' => isset($_POST['cookieUserOpenArchives']) ? 1 : 0,
+				'UserOverdrive' => isset($_POST['cookieUserOverdrive']) ? 1 : 0,
+				'UserPalaceProject' => isset($_POST['cookieUserPalaceProject']) ? 1 : 0,
+				'UserSideLoad' => isset($_POST['cookieUserSideLoad']) ? 1 : 0,
 			];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
 			return [
