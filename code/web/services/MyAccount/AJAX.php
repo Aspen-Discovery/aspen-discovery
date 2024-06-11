@@ -5802,6 +5802,114 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
+	function createNCROrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('NCR');
+		} else {
+			$result = $this->createGenericOrder('NCR');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)) {
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */ /** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting.php';
+			$NCRPaymentsSetting = new NCRPaymentsSetting();
+			$NCRPaymentsSetting->id = $userLibrary->ncrSettingId;
+			if ($NCRPaymentsSetting->find(true)) {
+				//hard coded api route
+				$url = "https://magic.collectorsolutions.com/magic-api/api/transaction/redirect";
+
+				$transactionIDNumber = $NCRPaymentsSetting->lastTransactionNumber + 1;
+				$NCRPaymentsSetting->lastTransactionNumber = $transactionIDNumber;
+				$NCRPaymentsSetting->update();
+				$transactionIdentifier = "AspenPayment" .$userLibrary->libraryId . $userLibrary->ilsCode . $transactionIDNumber;
+				$newRedirectRequest = new CurlWrapper();
+				$newRedirectRequest->addCustomHeaders([
+					"Content-Type: application/json",
+					"Accept: application/json",
+					"Accept-Charset: utf-8",
+				], true);
+
+				$lineItem = new stdClass(); //line items need to be objects not arrays
+				$lineItem->identifiers[0] = "Illinet/OCLC Invoice";
+				$lineItem->amount = $payment->totalPaid;
+				$lineItem->paymentType = 4;
+
+				$postParams = [
+					'clientKey' => $NCRPaymentsSetting->clientKey,
+					'transactionIdentifier' => $transactionIdentifier,
+					'collectionMode' => 1,
+					'amount' => $payment->totalPaid,
+					'billing' => [
+						'email' => $patron->email
+					],
+					'lineItems' => [$lineItem],
+					'urlReturnPost' => $configArray['Site']['url'] . "/MyAccount/NCRComplete",
+					'allowedPaymentMethod' => 3,
+				];
+
+				$result = $newRedirectRequest->curlPostBodyData($url, $postParams, true);
+				$result = json_decode($result);
+
+				if ($result->status != "ok"){
+					return [
+						'success' => false,
+						'message' => $result->errors[0]->message,
+					];
+				}
+				$paymentRequestUrl = "https://magic.collectorsolutions.com/magic-ui/PaymentRedirect/" . $NCRPaymentsSetting->webKey . "/" . $transactionIdentifier;
+
+				$payment->orderId = $transactionIdentifier;
+				$payment->update();
+
+				return [
+					'success' => true,
+					'message' => 'Redirecting to payment processor',
+					'paymentRequestUrl' => $paymentRequestUrl,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'NCR was not properly configured for the library.',
+				];
+			}
+		}
+	}
+
 	function createPayPalPayflowOrder() {
 		global $configArray;
 		global $interface;

@@ -143,6 +143,34 @@ function getUpdates24_06_00(): array {
 				"ALTER TABLE ebsco_eds_settings ADD COLUMN fullTextLimiter TINYINT NOT NULL DEFAULT 1;",
 			],
 		], //full_text_limiter
+		'ncr_payments_settings' => [
+			'title' => 'NCR Payments',
+			'description' => 'Add settings for NCR Payments',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS ncr_payments_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					clientKey VARCHAR(500) NOT NULL,
+    				webKey VARCHAR(500) NOT NULL,
+    				lastTransactionNumber INT(10) DEFAULT 0
+				) ENGINE INNODB',
+			],
+		], // ncr_payments_settings\
+		'ncr_permissions' => [
+			'title' => 'NCR Permissions',
+			'description' => 'Adds permissions specific to NCR payments.',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer NCR', '', 10, 'Controls if the user can change NCR settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer NCR'))",
+			],
+		], //ncr_permissions
+		'ncr_library_setting' => [
+			'title' => 'NCR Library Setting',
+			'description' => 'Adds NCR setting Id to Library table',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN ncrSettingId INT(11) DEFAULT -1;",
+			],
+		], //ncr_library_setting
 
 		//other
 
