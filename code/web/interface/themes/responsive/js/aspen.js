@@ -10783,7 +10783,6 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			console.log("Toggling browse mode...");
 			if(!AspenDiscovery.Browse.accessibleMode) {
 				var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
 				var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');
