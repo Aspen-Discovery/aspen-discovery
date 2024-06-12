@@ -165,8 +165,9 @@ export const GetLoginForm = (props) => {
           await SecureStore.setItemAsync('userKey', valueUser);
           await SecureStore.setItemAsync('secretKey', valueSecret);
           await AsyncStorage.setItem('@lastStoredVersion', Constants.expoConfig.version);
+          const autoPickUserHomeLocation = LIBRARY.appSettings?.autoPickUserHomeLocation ?? 0;
 
-          if (PATRON.homeLocationId && !_.includes(GLOBALS.slug, 'aspen-lida')) {
+          if (PATRON.homeLocationId && !_.includes(GLOBALS.slug, 'aspen-lida') && autoPickUserHomeLocation === 1) {
                console.log(PATRON.homeLocationId);
                await getLocationInfo(GLOBALS.url, PATRON.homeLocationId).then(async (patronsLibrary) => {
                     if (!_.isUndefined(patronsLibrary.baseUrl)) {
