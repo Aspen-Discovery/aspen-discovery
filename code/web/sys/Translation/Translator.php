@@ -74,8 +74,11 @@ class Translator {
 	 * @return  string                      - The translated phrase
 	 */
 	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters = false, $escape = false) : string {
-		if ($phrase == '' || is_numeric($phrase)) {
+		if ($phrase === '' || is_numeric($phrase)) {
 			return $phrase;
+		}
+		if ($phrase == null) {
+			return '';
 		}
 
 		global $activeLanguage;
