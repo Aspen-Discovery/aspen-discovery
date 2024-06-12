@@ -20,11 +20,15 @@ class Mailer {
 
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
+		require_once ROOT_DIR . '/sys/Email/SMTPSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
+		$smtpServerSettings = new SMTPSetting();
 
-		if ($amazonSesSettings->find(true)) {
+		if($smtpServerSettings->find(true)) {
+			$result = $this->sendViaSMTP($smtpServerSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
+		}elseif ($amazonSesSettings->find(true)) {
 			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
 		} else {
 			$sendGridSettings = new SendGridSetting();
@@ -136,5 +140,9 @@ class Mailer {
 				return true;
 			}
 		}
+	}
+
+	private function sendViaSMTP(SMTPSetting $smtpSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody, ?array $attachments): bool {
+		return $smtpSettings->sendEmail($to, $replyTo, $subject, $body, $htmlBody, $attachments);
 	}
 }

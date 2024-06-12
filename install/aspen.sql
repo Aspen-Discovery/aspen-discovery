@@ -4681,6 +4681,18 @@ CREATE TABLE `slow_page` (
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS smtp_settings;
+CREATE TABLE `smtp_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `host` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'localhost',
+  `port` int(11) NOT NULL DEFAULT 25,
+  `ssl_mode` enum('disabled','ssl','tls') NOT NULL,
+  `from_address` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS springshare_libcal_events;
 CREATE TABLE `springshare_libcal_events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
