@@ -23,7 +23,7 @@ class Admin_CreateCollectionSpotlight extends Action {
 			$replaceExisting = isset($_REQUEST['replaceExisting']) ? $_REQUEST['replaceExisting'] : '';
 			$replaceIds = isset($_REQUEST['collectionSpotlightListId']) ? $_REQUEST['collectionSpotlightListId'] : '';
 			$replaceListIds = explode(".", $replaceIds);
-			$replaceListId = $replaceListIds[0];
+			$replaceListId = isset($replaceListIds[1]) ? $replaceListIds[1] : '';
 
 			if ($existingSpotlightId == -1) {
 				$collectionSpotlight = new CollectionSpotlight();
