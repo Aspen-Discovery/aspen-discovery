@@ -53,7 +53,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		}
 
 		$headers = $this->getPalaceProjectHeaders($patron);
-		$checkoutsUrl = $settings->apiUrl . "/" . $settings->libraryId . "/loans";
+		$checkoutsUrl = $settings->apiUrl . "/" . $settings->libraryId . "/loans?refresh=false";
 
 		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
