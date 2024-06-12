@@ -835,9 +835,9 @@ class Sierra extends Millennium {
 			];
 		} else {
 			$return = [
-				'success' => true,
+				'success' => false,
 				'message' => translate([
-					'text' => "Unable to freeze your hold.",
+					'text' => 'Unable to freeze your hold.',
 					'isPublicFacing' => true,
 				]),
 				'api' => [
