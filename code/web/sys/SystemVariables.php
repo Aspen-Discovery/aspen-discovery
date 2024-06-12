@@ -7,6 +7,7 @@ class SystemVariables extends DataObject {
 	public $errorEmail;
 	public $ticketEmail;
 	public $searchErrorEmail;
+	public $preferredMailSender;
 	public $loadCoversFrom020z;
 	public $currencyCode;
 	public $runNightlyFullIndex;
@@ -59,26 +60,46 @@ class SystemVariables extends DataObject {
 				'description' => 'URL of the community content server',
 				'maxLength' => 128,
 			],
-			'errorEmail' => [
-				'property' => 'errorEmail',
-				'type' => 'text',
-				'label' => 'Error Email Address',
-				'description' => 'Email Address to send errors to',
-				'maxLength' => 128,
-			],
-			'ticketEmail' => [
-				'property' => 'ticketEmail',
-				'type' => 'text',
-				'label' => 'Ticket Email Address',
-				'description' => 'Email Address to send tickets from administrators to',
-				'maxLength' => 128,
-			],
-			'searchErrorEmail' => [
-				'property' => 'searchErrorEmail',
-				'type' => 'text',
-				'label' => 'Search Error Email Address',
-				'description' => 'Email Address to send errors to',
-				'maxLength' => 128,
+			'emailSection' => [
+				'property' => 'emailSection',
+				'type' => 'section',
+				'label' => 'Email Settings',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'errorEmail' => [
+						'property' => 'errorEmail',
+						'type' => 'text',
+						'label' => 'Error Email Address',
+						'description' => 'Email Address to send errors to',
+						'maxLength' => 128,
+					],
+					'ticketEmail' => [
+						'property' => 'ticketEmail',
+						'type' => 'text',
+						'label' => 'Ticket Email Address',
+						'description' => 'Email Address to send tickets from administrators to',
+						'maxLength' => 128,
+					],
+					'searchErrorEmail' => [
+						'property' => 'searchErrorEmail',
+						'type' => 'text',
+						'label' => 'Search Error Email Address',
+						'description' => 'Email Address to send errors to',
+						'maxLength' => 128,
+					],
+					'preferredMailSender' => [
+						'property' => 'preferredMailSender',
+						'type' => 'sortableList',
+						'values' => [
+							'AmazonSES' => 'AmazonSES',
+							'SendGrid' => 'SendGrid',
+							'SMTP' => 'SMTP',
+						],
+						'label' => 'Preferred Mail Sender Order',
+						'description' => 'Sort order of preferred mail sender',
+					],
+				]
 			],
 			'googleBucket' => [
 				'property' => 'googleBucket',

@@ -50,6 +50,15 @@ function getUpdates24_07_00(): array {
 			],
 		], //permissions_create_administer_smtp
 
+		'systemVariables_preferredMailSender' => [
+			'title' => 'System Variables - Preferred Mail Sender',
+			'description' => 'Allow sortable configuration of which mail sender to use by order of priority.',
+			'sql' => [
+				"alter table system_variables ADD COLUMN preferredMailSender varchar(128) DEFAULT 'SMTP|AmazonSES|SendGrid'",
+			],
+		],
+		//systemVariables_preferredMailSender
+
 		//other
 
 

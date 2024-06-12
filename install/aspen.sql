@@ -4949,6 +4949,7 @@ CREATE TABLE `system_variables` (
   `errorEmail` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ticketEmail` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `searchErrorEmail` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `preferredMailSender` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'SMTP|AmazonSES|SendGrid',
   `loadCoversFrom020z` tinyint(1) DEFAULT '0',
   `runNightlyFullIndex` tinyint(1) DEFAULT '0',
   `currencyCode` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'USD',
