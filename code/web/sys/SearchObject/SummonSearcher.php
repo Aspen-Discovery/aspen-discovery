@@ -496,7 +496,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					if ($isApplied) {
 						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $value);
 					} else {
-						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue) . '&page=1';
 					}
 					$list[] = $facetSettings;
 				}
