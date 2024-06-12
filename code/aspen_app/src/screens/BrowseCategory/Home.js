@@ -341,6 +341,7 @@ export const DiscoverHomeScreen = () => {
           return loadingSpinner();
      }
 
+     /* 
      // load notification onboarding prompt
      if (isQueryFetching === 0 && preliminaryLoadingCheck) {
           if (notificationOnboard !== '0' && notificationOnboard !== 0) {
@@ -348,7 +349,7 @@ export const DiscoverHomeScreen = () => {
                     return <NotificationsOnboard isFocused={isFocused} promptOpen={promptOpen} setPromptOpen={setPromptOpen} />;
                }
           }
-     }
+     }*/
 
      const clearSearch = () => {
           setSearchTerm('');
