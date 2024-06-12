@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Drivers/Horizon.php';
 
-abstract class HorizonAPI extends Horizon {
+abstract class HorizonAPI extends AbstractIlsDriver {
 
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = [];
