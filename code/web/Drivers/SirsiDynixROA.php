@@ -3449,11 +3449,19 @@ class SirsiDynixROA extends HorizonAPI {
 		return true;
 	}
 
+	public function showOutDateInCheckouts(): bool {
+		return true;
+	}
+
 	public function reactivateDateNotRequired(): bool {
 		return true;
 	}
 
 	public function showTimesRenewed(): bool {
+		return true;
+	}
+
+	public function showWaitListInCheckouts(): bool {
 		return true;
 	}
 
