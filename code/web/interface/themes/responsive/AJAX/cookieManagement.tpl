@@ -19,12 +19,12 @@
         <form method="post" name="cookieManagementPreferencesForm" id="cookieManagementPreferencesForm" class="form">
         <div>
         <label>
-            <input type="checkbox" name="cookieEssential" checked disabled> Essential Cookies
+            <input type="checkbox" name="cookieEssential" id="cookieEssential" checked disabled> Essential Cookies
         </label>
     </div>
     <div>
         <label>
-            <input type="checkbox" name="cookieAnalytics"> Analytics Cookies
+            <input type="checkbox" name="cookieAnalytics" id="cookieAnalytics"> Analytics Cookies
         </label>
     </div>
     <div>
@@ -69,7 +69,7 @@
     </div>
     <div>
     <label>
-    <input type="checkbox" name="cookieUserPalaceProject" id="cookieUserPalaceproject"> Palace Project
+    <input type="checkbox" name="cookieUserPalaceProject" id="cookieUserPalaceProject"> Palace Project
     </label>
     </div>
     <div>
