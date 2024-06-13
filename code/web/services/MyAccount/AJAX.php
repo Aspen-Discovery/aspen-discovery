@@ -969,6 +969,13 @@ class MyAccount_AJAX extends JSON_Action {
 							'text' => 'Success',
 							'isPublicFacing' => true,
 						]);
+					}else{
+						$message = '<div class="alert alert-danger">' . $result['message'] . '</div>';
+						$result['message'] = $message;
+						$result['title'] = translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]);
 					}
 
 					if (!$result['success'] && is_array($result['message'])) {

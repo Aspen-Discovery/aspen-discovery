@@ -25,17 +25,17 @@ if (file_exists($sqlBackupDir)) {
 			if (strpos($exportFile, ".sql") > 0 && strpos($exportFile, 'mysql') === false) {
 				// Trimming the first two lines of the file
 				$filePath = $sqlBackupDir . $exportFile;
-				$fileContents[] = file($filePath)[0];
-				if ($fileContents !== false) {
-					if ($fileContents[0] == "/*!999999\- enable the sandbox mode */ \n"){
-						$fileContents = file($filePath);
-						$trimmedContents = array_slice($fileContents, 1);
-						file_put_contents($filePath, implode("", $trimmedContents));
-					} else{
-						echo("Importing $exportFile\n");
-						$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $sqlBackupDir$exportFile ";
-					}
+				$fhnd = fopen($filePath, 'r');
+				$line = fgets($fhnd);
+				fclose($fhnd);
+
+				echo("Importing $exportFile\n");
+				if (strpos($line, "/*!999999\- enable the sandbox mode") === 0){
+					$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort -D $dbName --force < $sqlBackupDir$exportFile";
+				}else{
+					$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $sqlBackupDir$exportFile ";
 				}
+
 				$results = [];
 				exec($importCommand, $results);
 				echo(implode("\n", $results));
