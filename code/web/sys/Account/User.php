@@ -2183,10 +2183,14 @@ class User extends DataObject {
 		$success = 0;
 		$failed = 0;
 		$total = count($allHolds['unavailable']);
+		$numHoldsAlreadyFrozen = 0;
 
 		if ($total >= 1) {
 			foreach ($allUnavailableHolds as $hold) {
 				$frozen = $hold->frozen;
+				if ($frozen) {
+					$numHoldsAlreadyFrozen++;
+				}
 				$canFreeze = $hold->canFreeze;
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
@@ -2197,6 +2201,8 @@ class User extends DataObject {
 						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} elseif ($holdType == 'axis360') {
 						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -2204,6 +2210,8 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} elseif ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
@@ -2211,6 +2219,8 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} else {
 						$failed++;
@@ -2236,7 +2246,7 @@ class User extends DataObject {
 
 			if ($failed >= 1) {
 				$message .= '<div class="alert alert-warning">' . translate([
-						'text' => '%1% holds failed to freeze',
+						'text' => '%1% hold(s) failed to freeze',
 						1 => $failed,
 						2 => $total,
 						'isPublicFacing' => true,
@@ -2257,11 +2267,22 @@ class User extends DataObject {
 						'inAttribute' => true,
 					]) . '</div>';
 			} else {
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
-						'text' => 'All holds already frozen',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]) . '</div>';
+				if ($numHoldsAlreadyFrozen == $total) {
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+							'text' => 'All holds already frozen',
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]) . '</div>';
+				}else{
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+							'text' => '%1% hold(s) could not be frozen',
+							1 => $failed,
+							2 => $total,
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]) . '</div>';
+				}
+
 			}
 
 		}
