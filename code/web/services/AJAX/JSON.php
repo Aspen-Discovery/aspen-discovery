@@ -645,6 +645,8 @@ class AJAX_JSON extends Action {
 	function saveCookieManagementPreferences() {
 		if (UserAccount::isLoggedIn()) {
 			$userObj = UserAccount::getActiveUserObj();
+			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'] == "1"  || $_REQUEST['cookieUserAxis360'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceEbscoEds = $_REQUEST['cookieUserEbscoEds'] == "1" || $_REQUEST['cookieUserEbscoEds'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceEbscoHost = $_REQUEST['cookieUserEbscoHost'] == "1" || $_REQUEST['cookieUserEbscoHost'] == 1 ? 1 : 0;
