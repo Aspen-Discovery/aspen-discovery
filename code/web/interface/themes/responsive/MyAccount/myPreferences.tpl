@@ -204,28 +204,28 @@
 						{/if}
 					</div>
 						{*TODO:: At the moment, if a user ignores the cookie consent banner, the essential cookies are set to zero, so this does not show in the my accout preferences - check with MN*}
-					{* {if !empty($loggedIn) && $profile->userCookiePreferenceEssential == 1 && !empty($cookieConsentEnabled)} *}
+					{if !empty($loggedIn) && $profile->userCookiePreferenceEssential == 1 && !empty($cookieConsentEnabled)}
 						<div class="form-group #propertyRow">
 						<strong class="control-label">{translate text="Cookies to allow" isPublicFacing=true}:</strong>&nbsp;
 						<div style='padding:0.5em 1em;'>
-							{* <div class="form-group propertyRow">
+							<div class="form-group propertyRow">
 								<label for='userCookieEssential' class="control-label">{translate text="Essential" isPublicFacing=true}</label>&nbsp;
 								<input disabled="disabled" type="checkbox" class="form-control" name="userCookieEssential" id="userCookieEssential" {if $profile->userCookiePreferenceEssential==1}checked='checked'{/if} data-switch="">
 
-							</div> *}
-							{* <div class="form-group propertyRow">
+							</div> 
+							<div class="form-group propertyRow">
 								<label for='userCookieAnalytics' class="control-label">{translate text="Analytics" isPublicFacing=true}</label>&nbsp;
 								<input type="checkbox" class="form-control" name="userCookieAnalytics" id="userCookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch="">
 
-							</div> *}
+							</div> 
 
-							{* <div class="form-group propertyRow">
+							<div class="form-group propertyRow">
 								<label for='userCookieUserAxis360' class="control-label">{translate text="Axis 360" isPublicFacing=true}</label>&nbsp;
 								<input type="checkbox" class="form-control" name="userCookieUserAxis360" id="userCookieUserAxis360" {if $profile->userCookiePreferenceAxis360==1}checked='checked'{/if} data-switch="">
 
-							</div> *}
+							</div> 
 
-							{* <div class="form-group propertyRow">
+							<div class="form-group propertyRow">
 								<label for='userCookieUserEbscoEds' class="control-label">{translate text="Ebsco Eds" isPublicFacing=true}</label>&nbsp;
 								<input type="checkbox" class="form-control" name="userCookieUserEbscoEds" id="userCookieUserEbscoEds" {if $profile->userCookiePreferenceEbscoEds==1}checked='checked'{/if} data-switch="">
 
@@ -270,9 +270,9 @@
 							<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
 
 							</div>
-			 *}
+			
 						</div>
-					{* {/if} *}
+					{/if}
 
 					{if empty($offline) && $edit == true}
 						<div class="form-group propertyRow">
