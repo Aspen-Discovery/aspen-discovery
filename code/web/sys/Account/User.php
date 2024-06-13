@@ -1114,28 +1114,6 @@ class User extends DataObject {
 		if (isset($_REQUEST['preferredTheme'])) {
 			$this->__set('preferredTheme', $_REQUEST['preferredTheme']);
 		}
-		if (isset($_REQUEST['userCookieEssential'])) {
-			$this->__Set('userCookieEssential', $_REQUEST['userCookieEssential']);
-		}
-		// if (isset($_REQUEST['userCookieAnalytics'])) {
-		// 	$this->__set('userCookieAnalytics', $_REQUEST['userCookieAnalytics']);
-		// }
-		if (isset($_REQUEST['userCookieUserAxis360'])) {
-			$this->__set('userCookiePreferenceAxis360', $_REQUEST['userCookieUserAxis360']);
-		}
-
-		// if (isset($_REQUEST['userCookieUserAxis360'])) {
-		// 	$this->__set('userCookieUserAxis360', $_REQUEST['userCookieUserAxis360']);
-		// }
-		if (isset($_REQUEST['userCookieUserEbscoEds'])) {
-			$this->__set('userCookieUserEbscoEds', $_REQUEST['userCookieUserEbscoEds']);
-		}
-		if (isset($_REQUEST['userCookieUserEbscoHost'])) {
-			$this->__set('userCookieUserEbscoHost', $_REQUEST['userCookieUserEbscoHost']);
-		}
-		if (isset($_REQUEST['userCookieUserSummon'])) {
-			$this->__set('userCookieUserSummon', $_REQUEST['userCookieUserSummon']);
-		}
 		//Make sure the selected location codes are in the database.
 		if (isset($_POST['pickupLocation'])) {
 			if ($_POST['pickupLocation'] == 0) {
