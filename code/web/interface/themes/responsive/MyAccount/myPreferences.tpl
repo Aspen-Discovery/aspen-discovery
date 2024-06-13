@@ -204,7 +204,7 @@
 						{/if}
 					</div>
 						{*TODO:: At the moment, if a user ignores the cookie consent banner, the essential cookies are set to zero, so this does not show in the my accout preferences - check with MN*}
-					{if !empty($loggedIn) && $profile->userCookiePreferenceEssential == 1 && !empty($cookieConsentEnabled)}
+					{if !empty($loggedIn) && !empty($cookieConsentEnabled)}
 						<div class="form-group #propertyRow">
 						<strong class="control-label">{translate text="Cookies to allow" isPublicFacing=true}:</strong>&nbsp;
 						<div style='padding:0.5em 1em;'>
