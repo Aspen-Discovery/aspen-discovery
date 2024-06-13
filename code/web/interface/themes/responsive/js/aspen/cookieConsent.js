@@ -109,6 +109,8 @@ AspenDiscovery.CookieConsent = (function() {
         cookieManagementPreferences: function() {
             console.log('LAST FUNCTION');
             var formData = $('#cookieManagementPreferencesForm').serializeArray();
+            var cookieEssential = $('#cookieEssential').is(':checked') ? 1 : 0;
+            var cookieAnalytics = $('#cookieAnalytics').is(':checked') ? 1 : 0;
             var cookieUserAxis360 = $('#cookieUserAxis360').is(':checked') ? 1 : 0;
             var cookieUserEbscoEds = $('#cookieUserEbscoEds').is(':checked') ? 1 : 0;
             var cookieUserEbscoHost = $('#cookieUserEbscoHost').is(':checked') ? 1 : 0;
@@ -120,6 +122,8 @@ AspenDiscovery.CookieConsent = (function() {
             var cookieUserPalaceProject = $('#cookieUserPalaceProject').is(':checked') ? 1 : 0;
             var cookieUserSideLoad = $('#cookieUserSideLoad').is(':checked') ? 1 : 0;
 
+            formData.push({name: 'cookieEssential', value: cookieEssential});
+            formData.push({name: 'cookieAnalytics', value: cookieAnalytics});
             formData.push({name: 'cookieUserAxis360', value: cookieUserAxis360});
             formData.push({name: 'cookieUserEbscoEds', value: cookieUserEbscoEds });
             formData.push({name: 'cookieUserEbscoHost', value: cookieUserEbscoHost});
@@ -128,7 +132,7 @@ AspenDiscovery.CookieConsent = (function() {
             formData.push({name: 'cookieUserHoopla', value: cookieUserHoopla});
             formData.push({name: 'cookieUserOpenArchives', value: cookieUserOpenArchives});
             formData.push({name: 'cookieUserOverdrive', value: cookieUserOverdrive});
-            formData.push({name: 'cookieUserPalaceproject', value: cookieUserPalaceProject});
+            formData.push({name: 'cookieUserPalaceProject', value: cookieUserPalaceProject});
             formData.push({name: 'cookieUserSideLoad', value: cookieUserSideLoad});
              var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 
