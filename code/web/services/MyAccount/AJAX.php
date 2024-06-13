@@ -5874,7 +5874,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$lineItem = new stdClass(); //line items need to be objects not arrays
 				$lineItem->identifiers[0] = "Illinet/OCLC Invoice";
 				$lineItem->amount = $payment->totalPaid;
-				$lineItem->paymentType = 4;
+				$lineItem->paymentType = $NCRPaymentsSetting->paymentTypeId;
 
 				$postParams = [
 					'clientKey' => $NCRPaymentsSetting->clientKey,

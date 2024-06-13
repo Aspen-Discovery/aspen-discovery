@@ -152,6 +152,7 @@ function getUpdates24_06_00(): array {
 					name VARCHAR(50) NOT NULL UNIQUE,
 					clientKey VARCHAR(500) NOT NULL,
     				webKey VARCHAR(500) NOT NULL,
+    				paymentTypeId INT(1) NOT NULL DEFAULT 0,
     				lastTransactionNumber INT(10) DEFAULT 0
 				) ENGINE INNODB',
 			],

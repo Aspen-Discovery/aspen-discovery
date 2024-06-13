@@ -6,6 +6,7 @@ class NCRPaymentsSetting extends DataObject {
 	public $name;
 	public $clientKey;
 	public $webKey;
+	public $paymentTypeId;
 	public $lastTransactionNumber;
 
 	private $_libraries;
@@ -43,6 +44,15 @@ class NCRPaymentsSetting extends DataObject {
 				'default' => '',
 				'maxLength' => 500,
 			],
+			'paymentTypeId' => [
+				'property' => 'paymentTypeId',
+				'type' => 'text',
+				'label' => 'Payment Type ID',
+				'description' => 'Same as API number',
+				'hideInLists' => false,
+				'default' => '0',
+				'maxLength' => 1,
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -50,7 +60,7 @@ class NCRPaymentsSetting extends DataObject {
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 
