@@ -81,8 +81,14 @@ foreach($languages as $languageId) {
 	$language = null;
 }
 
+echo ("Imported a total of " . $numUpdated. " translations\n");
+ob_flush();
+
 global $aspen_db;
 $aspen_db = null;
+
+echo ("Finished\n");
+ob_flush();
 
 die();
 
