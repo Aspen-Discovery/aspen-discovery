@@ -119,6 +119,7 @@ class Hold extends CircEntry {
 				$hold['location'] = $location->code;
 			}
 		}
+		$hold['status'] = translate(['text' => $hold['status'], 'isPublicFacing' => true]);
 		$recordDriver = $this->getRecordDriver();
 		if ($recordDriver && $recordDriver->isValid()) {
 			$hold['isbn'] = $recordDriver->getCleanISBN();
