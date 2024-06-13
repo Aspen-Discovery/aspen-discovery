@@ -85,9 +85,6 @@ class MyAccount_MyPreferences extends MyAccount {
 						$user->updateMessage .= implode('<br/>', $result2['messages']);
 						$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
 					}
-					if(isset($_POST['userCookieUserAxis360'])) {
-						$user->userCookiePreferenceAxis360 = isset($_POST['userCookiePreferenceAxis360']) ? 1 : 0;
-					}
 				}else{
 					$user->updateMessage = translate([
 						'text' => 'Wrong account credentials, please try again.',
