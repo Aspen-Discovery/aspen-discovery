@@ -441,6 +441,19 @@ class Koha extends AbstractIlsDriver {
 		$timer->logTime("Loaded borrower preference for autorenew_checkouts");
 
 		/** @noinspection SqlResolve */
+		$patronLibraryIdSql = "SELECT branchcode FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
+		$patronLibraryIdResults = mysqli_query($this->dbConnection, $patronLibraryIdSql);
+		$patronLibraryId = null;
+		if ($patronLibraryIdResults !== false) {
+			if ($patronLibraryIdRow = $patronLibraryIdResults->fetch_assoc()) {
+				$patronLibraryId = $patronLibraryIdRow['branchcode'];
+			}
+
+			$patronLibraryIdResults->close();
+		}
+		$timer->logTime("Loaded patron library ID");
+
+		/** @noinspection SqlResolve */
 		$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
 		$patronIsExpired = false;
@@ -585,7 +598,7 @@ class Koha extends AbstractIlsDriver {
 			$eligibleForRenewal = 0;
 			$willAutoRenew = 0;
 			$library = $patron->getHomeLibrary();
-			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id'], $patronLibraryId);
 			$timer->logTime("Load check allow renewals for checkout");
 			if ($allowRenewals['success']) {
 				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
@@ -7610,7 +7623,7 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	public function checkAllowRenewals($issueId) {
+	public function checkAllowRenewals($issueId, $patronLibraryId) {
 		$result = [
 			'success' => false,
 			'error' => null,
@@ -7631,9 +7644,10 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' . $patronLibraryId,
 			], true);
 
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal/";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal";
 
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
 			//ExternalRequestLogEntry::logRequest('koha.checkouts_allowRenewals', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
