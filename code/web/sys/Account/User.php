@@ -3518,6 +3518,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
 		$sections['ecommerce']->addAction(new AdminAction('Square Settings', 'Define Settings for Square.', '/Admin/SquareSettings'), 'Administer Square');
 		$sections['ecommerce']->addAction(new AdminAction('Stripe Settings', 'Define Settings for Stripe.', '/Admin/StripeSettings'), 'Administer Stripe');
+		$sections['ecommerce']->addAction(new AdminAction('NCR Payments Settings', 'Define Settings for NCR Payments.', '/Admin/NCRPaymentsSettings'), 'Administer NCR');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['email'] = new AdminSection('Email');
