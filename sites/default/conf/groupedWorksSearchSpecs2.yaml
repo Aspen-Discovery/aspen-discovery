@@ -358,6 +358,8 @@ KeywordProper:
       - [onephrase, 10]
     - topic_proper:
       - [onephrase, 500]
+    - subject_proper:
+      - [ onephrase, 100 ]
     - geographic_proper:
       - [onephrase, 300]
     - genre_proper:
