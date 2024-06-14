@@ -98,6 +98,8 @@
         div.holdsReportSlip div.patron div {
             font-weight: bold;
         }
+		div.PICKUP_BRANCH {
+		}
         div.GRD_LVL {
         }
         div.HOME_ROOM {
@@ -181,6 +183,7 @@
 							<div class="patron">
 								<div class="PATRON_NAME">{$dataRow.PATRON_NAME|upper}</div>
 								<div class="P_BARCODE_SCANNABLE"><svg class="barcode" jsbarcode-format="CODE39" jsbarcode-value="{$dataRow.P_BARCODE}" jsbarcode-fontsize="1" jsbarcode-height="20" jsbarcode-text=" " jsbarcode-width="1"></svg></div>
+								<div class="PICKUP_BRANCH">Pickup at {$dataRow.PICKUP_BRANCH}</div>
 								<div class="GRD_LVL">{$dataRow.GRD_LVL|replace:' student':''}</div>
 								<div class="HOME_ROOM">{$dataRow.HOME_ROOM|lower|capitalize:true}</div>
 							</div>

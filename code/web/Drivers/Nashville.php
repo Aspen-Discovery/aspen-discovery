@@ -470,6 +470,7 @@ EOT;
 				select
 					t.bid
 					, t.occur
+					, pb.branchname as PICKUP_BRANCH
 					, p.name as PATRON_NAME
 					, p.sponsor as HOME_ROOM
 					, bb.btyname as GRD_LVL
@@ -487,6 +488,7 @@ EOT;
 				left join branch_v2 ob on t.holdingbranch = ob.branchnumber -- Origin Branch
 				left join item_v2 i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v2 l on i.location = l.locnumber
+				left join branch_v2 pb on t.pickupbranch = pb.branchnumber -- Pickup Branch
 				where ob.branchcode = '$location'
 				-- and t.pickupbranch = ob.branchnumber -- commented out in 23.08.01 to include MNPS Exploratorium holds; originally meant to ensure a lock between school collection and pickup branch ; pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
@@ -508,6 +510,7 @@ EOT;
 			)
 			select
 				PATRON_NAME
+				, PICKUP_BRANCH
 				, HOME_ROOM
 				, GRD_LVL
 				, P_BARCODE
