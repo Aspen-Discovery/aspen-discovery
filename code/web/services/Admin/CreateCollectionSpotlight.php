@@ -115,6 +115,11 @@ class Admin_CreateCollectionSpotlight extends Action {
 					$spotlightList->sourceCourseReserveId = $sourceId;
 					$spotlightList->source = 'CourseReserve';
 				}
+                $listCount = $collectionSpotlight->getNumLists();
+                if ($listCount == 1) {
+                    $collectionSpotlight->name = $spotlightName;
+                    $collectionSpotlight->update();
+                }
 				$spotlightList->name = $spotlightName;
 				$spotlightList->update();
 			}
