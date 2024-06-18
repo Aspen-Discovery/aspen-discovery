@@ -37,9 +37,9 @@ class WebBuilder_Videos extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function updateFromUI($object, $structure) {
+	function updateFromUI($object, $structure, $fieldLocks) {
 		$object->type = 'web_builder_video';
-		return parent::updateFromUI($object, $structure);
+		return parent::updateFromUI($object, $structure, $fieldLocks);
 	}
 
 	function getObjectStructure($context = ''): array {
