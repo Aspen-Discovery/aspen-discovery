@@ -3544,7 +3544,7 @@ class User extends DataObject {
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
 			}
-			if ($accountProfile->ils == 'symphony') {
+			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx') {
 				$customSelfRegForms = true;
 			}
             if ($accountProfile->driver == 'Nashville') {
