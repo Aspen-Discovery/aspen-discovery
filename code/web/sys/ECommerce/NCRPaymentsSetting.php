@@ -75,7 +75,7 @@ class NCRPaymentsSetting extends DataObject {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->deluxeCertifiedPaymentsSettingId = $this->id;
+				$obj->ncrSettingId = $this->id;
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;

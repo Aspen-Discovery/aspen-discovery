@@ -363,7 +363,7 @@ public class MarcRecordFormatClassifier {
 						}else if (subfieldData.contains("pop-up")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Pop-UpBook based on 655 Genre", 2);}
 							result.add("Pop-UpBook");
-						}else if (subfieldData.startsWith("manga graphic novel") || subfieldData.equals("manga")) {
+						}else if (subfieldData.startsWith("manga graphic novel") || subfieldData.equals("manga") || subfieldData.equals("manga.")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Manga based on 655 Genre", 2);}
 							result.add("Manga");
 						}else if (subfieldData.contains("graphic novel")) {

@@ -15,6 +15,9 @@
 		            </div>
 	            {else}
 		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
+						<div class="swiper-navigation-container">
+							<div class="swiper-button-prev"></div>
+						</div>
 			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
 				            <div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}" style="height: 200px">
 					            <i class="fas fa-lg fa-spinner fa-spin"></i>
@@ -22,9 +25,6 @@
 	                       {literal} <script type="text/javascript">
 					            setTimeout(() => AspenDiscovery.Browse.initializeBrowseCategorySwiper({/literal}'{$browseCategory.textId}'{literal}), 1000)
 	                        </script>{/literal}
-			            </div>
-			            <div class="swiper-navigation-container">
-				            <div class="swiper-button-prev"></div>
 			            </div>
 			            <div class="swiper-navigation-container">
 				            <div class="swiper-button-next"></div>
