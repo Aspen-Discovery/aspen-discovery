@@ -9,6 +9,9 @@
         {foreach from=$subCategories item=subCategory}
 		    <div id="tabpanel-{$subCategory.textId}" role="tabpanel" aria-labelledby="browse-sub-category-tab-{$subCategory.textId}" {if $subCategory@iteration != 1}class="is-hidden"{/if}>
 			    <div class="swiper {if $subCategory@iteration == 1}swiper-first{/if} swiper-sub-browse-category-{$subCategory.textId}" id="swiper-sub-{$subCategory.textId}">
+					<div class="swiper-navigation-container">
+						<div class="swiper-button-prev"></div>
+					</div>
 				    <div class="swiper-wrapper" id="swiper-sub-browse-category-{$subCategory.textId}">
 					    {if $subCategory@iteration == 1 && !empty($subCategory.initialResults)}
 						    <div class="swiper-slide" id="swiper-loading-{$subCategory.textId}" style="height: 200px">
@@ -26,9 +29,6 @@
 							    <i class="fas fa-lg fa-spinner fa-spin"></i>
 						    </div>
                         {/if}
-				    </div>
-				    <div class="swiper-navigation-container">
-				        <div class="swiper-button-prev"></div>
 				    </div>
 				    <div class="swiper-navigation-container">
 				        <div class="swiper-button-next"></div>
