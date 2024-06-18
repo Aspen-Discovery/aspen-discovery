@@ -218,7 +218,8 @@ class IndexingProfile extends DataObject {
 			'regroupAllRecords',
 			'runFullUpdate',
 			'evergreenOrgUnitSchema',
-			'orderRecordsToSuppressByDate'
+			'orderRecordsToSuppressByDate',
+			'numRetriesForBibLookups'
 		];
 	}
 
