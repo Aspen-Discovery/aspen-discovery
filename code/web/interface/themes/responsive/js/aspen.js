@@ -12768,8 +12768,13 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					}
 				});
 				document.getElementById("collectionSpotlightListId").value = "-1.0";
+				if (listCount == 1) {
+					var $onlyValidOption = $("#collectionSpotlightListId").find("option").filter(function () {
+						return this["hidden"] == false && this['disabled'] == false;
+					});
+					$onlyValidOption.prop("selected", true);
+				}
 			});
-
 		},
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));

@@ -1703,36 +1703,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 */
 	void loadPrintFormatFromBib(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record) {
 		LinkedHashSet<String> printFormats = formatClassifier.getUntranslatedFormatsFromBib(groupedWork, record, settings);
-
-		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
-		if (translatedFormats.isEmpty()){
-			if (settings.getFormatSource().equals("item")){
-				//This generally happens if the library has an item type that they translate to blank to force it to go through bib level evaluation, but that evaluation gets back to the original item type
-				// In that case, just use the raw value.
-				translatedFormats = printFormats;
-			}else{
-				logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats);
+		for (String printFormat : printFormats) {
+			FormatMapValue formatMapValue = settings.getFormatMapValue(printFormat, BaseIndexingSettings.FORMAT_TYPE_BIB_LEVEL);
+			if (formatMapValue != null) {
+				recordInfo.addFormat(formatMapValue.getFormat());
+				recordInfo.addFormatCategory(formatMapValue.getFormatCategory());
+				recordInfo.setFormatBoost(formatMapValue.getFormatBoost());
 			}
 		}
-		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
-		recordInfo.addFormats(translatedFormats);
-		recordInfo.addFormatCategories(translatedFormatCategories);
-		long formatBoost = 0L;
-		HashSet<String> formatBoosts = translateCollection("format_boost", printFormats, recordInfo.getRecordIdentifier());
-		for (String tmpFormatBoost : formatBoosts) {
-			try {
-				long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
-				if (tmpFormatBoostLong > formatBoost) {
-					formatBoost = tmpFormatBoostLong;
-				}
-			} catch (NumberFormatException e) {
-				if (!unableToTranslateWarnings.contains("no_format_boost_" + tmpFormatBoost)){
-					indexer.getLogEntry().addNote("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
-					unableToTranslateWarnings.add("no_format_boost_" + tmpFormatBoost);
-				}
-			}
-		}
-		recordInfo.setFormatBoost(formatBoost);
 	}
 
 	/**

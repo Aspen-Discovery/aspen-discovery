@@ -21,6 +21,7 @@ chown -R www-data:aspen_apache /usr/local/aspen-discovery/tmp
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/code/web
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/sites
 chown -R aspen:aspen_apache /usr/local/aspen-discovery/sites/default
+chown -R aspen:aspen_apache /usr/local/aspen-discovery/code/web/sitemaps
 chown -R solr:aspen /usr/local/aspen-discovery/sites/default/solr-7.6.0
 chown -R solr:aspen /usr/local/aspen-discovery/sites/default/solr-8.11.2
 
