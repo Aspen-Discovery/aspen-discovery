@@ -219,7 +219,9 @@ class IndexingProfile extends DataObject {
 			'runFullUpdate',
 			'evergreenOrgUnitSchema',
 			'orderRecordsToSuppressByDate',
-			'numRetriesForBibLookups'
+			'numRetriesForBibLookups',
+			'numMillisecondsToPauseAfterBibLookups',
+			'numExtractionThreads'
 		];
 	}
 
