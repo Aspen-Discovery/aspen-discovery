@@ -2166,7 +2166,7 @@ class User extends DataObject {
 
 	function freezeAllHolds($reactivationDate = false) {
 		$user = UserAccount::getLoggedInUser();
-		$tmpResult = [ // set default response
+		$result = [ // set default response
 			'success' => false,
 			'title' => translate([
 				'text' => 'Error',
@@ -2224,13 +2224,13 @@ class User extends DataObject {
 						}
 					} else {
 						$failed++;
-						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						$result['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} elseif ($canFreeze == 0) {
 					$failed++;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+					$result['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
 		}
@@ -2254,27 +2254,27 @@ class User extends DataObject {
 					]) . '</div>';
 			}
 
-			$tmpResult['message'] = $message;
-			$tmpResult['title'] = translate([
+			$result['message'] = $message;
+			$result['title'] = translate([
 				'text' => 'Success',
 				'isPublicFacing' => true,
 			]);
 		} else {
 			if ($total == 0) {
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+				$result['message'] = '<div class="alert alert-warning">' . translate([
 						'text' => 'No holds available to freeze',
 						'isPublicFacing' => true,
 						'inAttribute' => true,
 					]) . '</div>';
 			} else {
 				if ($numHoldsAlreadyFrozen == $total) {
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+					$result['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => 'All holds already frozen',
 							'isPublicFacing' => true,
 							'inAttribute' => true,
 						]) . '</div>';
 				}else{
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+					$result['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => '%1% hold(s) could not be frozen',
 							1 => $failed,
 							2 => $total,
@@ -2287,7 +2287,7 @@ class User extends DataObject {
 
 		}
 
-		return $tmpResult;
+		return $result;
 	}
 
 	function thawAllHolds() {

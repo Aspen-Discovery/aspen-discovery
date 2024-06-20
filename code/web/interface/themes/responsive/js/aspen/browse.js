@@ -314,7 +314,7 @@ AspenDiscovery.Browse = (function(){
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-browse-category-' + categoryTextId, {
+					var browseSwiper = new Swiper('.swiper-browse-category-' + categoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -334,6 +334,13 @@ AspenDiscovery.Browse = (function(){
 							enabled: true,
 							slides: Object.values(data.records),
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 				}
 			}).fail(function(){
@@ -493,7 +500,7 @@ AspenDiscovery.Browse = (function(){
 				}else{
 					var resultsTabPanel = document.getElementById('swiper-sub-browse-category-' + subCategoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
+					var browseSwiper = new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -513,6 +520,13 @@ AspenDiscovery.Browse = (function(){
 							enabled: true,
 							slides: Object.values(data.records),
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 
 				}
