@@ -11002,6 +11002,7 @@ AspenDiscovery.Browse = (function(){
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
+					$('#selected-browse-search-link').attr('href', data.searchUrl); // set the Label's link
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
