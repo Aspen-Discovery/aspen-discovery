@@ -401,13 +401,15 @@ class SystemAPI extends AbstractAPI {
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/web_builder_updates.php';
 		$webBuilderUpdates = getWebBuilderUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/grapes_web_builder_updates.php';
+		$grapesWebBuilderUpdates = getGrapesWebBuilderUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/events_integration_updates.php';
 		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/file_upload_updates.php';
 		$fileUploadUpdates = getFileUploadUpdates();
 		$finalBaseUpdates = getFinalBaseUpdates();
 
-		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $summonUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
+		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $summonUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $grapesWebBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
