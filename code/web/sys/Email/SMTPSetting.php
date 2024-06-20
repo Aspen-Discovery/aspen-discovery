@@ -28,7 +28,6 @@ class SMTPSetting extends DataObject {
 				'type' => 'text',
 				'label' => 'Server name',
 				'description' => 'The name of the server',
-				'default' => 'heyo',
 				'required' => true,
 			],
 			'host' => [
