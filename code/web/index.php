@@ -567,6 +567,19 @@ if ($isLoggedIn) {
 					} else {
 						$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
 					}
+				}  elseif ($_REQUEST['followupAction'] == "GrapesPage") {
+					require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
+					$grapesPage = new GrapesPage();
+					$grapesPage->id = $_REQUEST['pageId'];
+					if ($grapesPage->find(true)) {
+						if ($grapesPage->urlAlias) {
+							$followupUrl = $grapesPage->urlAlias;
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
 				} else if($_REQUEST['followupAction'] == "QuickPoll"){
 					require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
 					$quickPoll = new QuickPoll();
