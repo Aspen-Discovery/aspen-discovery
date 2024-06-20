@@ -145,7 +145,7 @@ class DataObjectUtil {
 
 	static function updateFromUI($object, $structure, $fieldLocks) {
 		foreach ($structure as $property) {
-			if ($fieldLocks != null && !in_array($property['property'], $fieldLocks)) {
+			if (($fieldLocks != null && !in_array($property['property'], $fieldLocks)) || $fieldLocks == null) {
 				DataObjectUtil::processProperty($object, $property, $fieldLocks);
 			}
 		}
