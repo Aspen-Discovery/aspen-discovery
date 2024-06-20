@@ -5083,6 +5083,23 @@ class Library extends DataObject {
 
 		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
 
+		$apiInfo['palaceProjectInstructions'] = null;
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectSetting.php';
+		$scope = new PalaceProjectScope();
+		$scope->id = $this->palaceProjectScopeId;
+		if ($this->palaceProjectScopeId > 0) {
+			if ($scope->find(true)) {
+				$settings = new PalaceProjectSetting();
+				$settings->id = $scope->settingId;
+				if ($settings->find(true)) {
+					global $activeLanguage;
+					$instructions = $settings->getTextBlockTranslation('instructionsForUsage', $activeLanguage->code);
+					$apiInfo['palaceProjectInstructions'] = strip_tags($instructions);
+				}
+			}
+		}
+
 		return $apiInfo;
 	}
 

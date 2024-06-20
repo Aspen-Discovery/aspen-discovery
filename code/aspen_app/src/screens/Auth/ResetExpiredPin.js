@@ -94,7 +94,7 @@ export const ResetExpiredPin = (props) => {
                          setExpiredPin(false);
                          setIsOpen(false);
                     } else {
-                         popAlert('Error', result.message ?? 'Unable to update pin', 'error');
+                         popAlert(getTermFromDictionary('en', 'error'), result.message ?? 'Unable to update pin', 'error');
                     }
                });
           } else {

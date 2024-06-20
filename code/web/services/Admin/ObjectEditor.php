@@ -174,7 +174,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		/** @var DataObject $newObject */
 		$newObject = new $objectType;
 		//Check to see if we are getting default values from the
-		$validationResults = $this->updateFromUI($newObject, $structure);
+		$validationResults = $this->updateFromUI($newObject, $structure, null);
 		if ($validationResults['validatedOk']) {
 			$ret = $newObject->insert($this->getContext());
 			if (!$ret) {
@@ -223,9 +223,9 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function updateFromUI($object, $structure) {
+	function updateFromUI($object, $structure, $fieldLocks) {
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
-		DataObjectUtil::updateFromUI($object, $structure);
+		DataObjectUtil::updateFromUI($object, $structure, $fieldLocks);
 		return DataObjectUtil::validateObject($structure, $object);
 	}
 
@@ -588,7 +588,11 @@ abstract class ObjectEditor extends Admin_Admin {
 					if ($objectAction == 'save') {
 						//Update the object
 						$user = UserAccount::getActiveUserObj();
-						$validationResults = $this->updateFromUI($curObject, $structure);
+						$fieldLocks = $this->getFieldLocks();
+						if (UserAccount::userHasPermission('Lock Administration Fields')) {
+							$fieldLocks = null;
+						}
+						$validationResults = $this->updateFromUI($curObject, $structure, $fieldLocks);
 						if ($validationResults['validatedOk']) {
 							//Always save since has changes does not check sub objects for changes (which it should)
 							$ret = $curObject->update($this->getContext());
