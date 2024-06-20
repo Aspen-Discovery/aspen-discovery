@@ -343,7 +343,6 @@ AspenDiscovery.Browse = (function(){
 					});
 					var searchLink = document.getElementById('browse-search-link-' + categoryTextId);
 					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
-					console.log(searchLink);
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
