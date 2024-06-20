@@ -49,7 +49,7 @@
 		{/if}
 	{/strip}
 </head>
-<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
+<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage" || $action=="GrapesPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
 	{if !empty($showTopOfPageButton) && empty($minimalInterface)}
 	<a class="top-link hide" href="" id="js-top">
