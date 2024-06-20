@@ -34,6 +34,7 @@ function getUpdates24_07_00(): array {
 					port int(11) NOT NULL DEFAULT 25,
 					ssl_mode enum('disabled','ssl','tls') NOT NULL,
 					from_address varchar(80) DEFAULT NULL,
+					from_name varchar(80) DEFAULT NULL,
 					user_name varchar(80) DEFAULT NULL,
 					password varchar(80) DEFAULT NULL,
 					PRIMARY KEY (`id`)

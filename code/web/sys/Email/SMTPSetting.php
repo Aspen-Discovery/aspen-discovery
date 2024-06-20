@@ -12,6 +12,7 @@ class SMTPSetting extends DataObject {
 	public $port;
 	public $ssl_mode;
 	public $from_address;
+	public $from_name;
 	public $user_name;
 	public $password;
 
@@ -60,9 +61,16 @@ class SMTPSetting extends DataObject {
 			'from_address' => [
 				'property' => 'from_address',
 				'type' => 'text',
-				'label' => 'From',
+				'label' => '\'From\' address',
 				'description' => 'The \'From:\' e-mail address',
 				'default' => '',
+				'required' => true,
+			],
+			'from_name' => [
+				'property' => 'from_name',
+				'type' => 'text',
+				'label' => '\'From\' name',
+				'description' => 'The \'From:\' name',
 				'required' => true,
 			],
 			'user_name' => [
@@ -103,7 +111,7 @@ class SMTPSetting extends DataObject {
 		}
 
 		$mail->From = $this->from_address;
-		$mail->FromName = 'Aspen Discovery';
+		$mail->FromName = $this->from_name;
 		$mail->addAddress($to);
 
 		for($i = 0; $i < sizeof($attachments['name']); $i++){

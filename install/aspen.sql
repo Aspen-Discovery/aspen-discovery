@@ -4689,6 +4689,7 @@ CREATE TABLE `smtp_settings` (
   `port` int(11) NOT NULL DEFAULT 25,
   `ssl_mode` enum('disabled','ssl','tls') NOT NULL,
   `from_address` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `from_name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `user_name` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `password` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
