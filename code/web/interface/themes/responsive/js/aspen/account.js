@@ -547,7 +547,7 @@ AspenDiscovery.Account = (function () {
 				var action = Globals.activeAction;
 
 				var referer;
-				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))) {
+				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage") || (action === "GrapesPage"))) {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
