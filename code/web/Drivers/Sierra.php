@@ -1941,7 +1941,10 @@ class Sierra extends Millennium {
 
 			if ($this->lastResponseCode == 204) {
 				$result['success'] = true;
-				$result['messages'][] = 'Your home library was updated successfully.';
+				$result['messages'][] = translate([
+					'text' => 'Your home library was updated successfully.',
+					'isPublicFacing' => true,
+				]);
 				$patron->update();
 			} else {
 				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;

@@ -2166,7 +2166,7 @@ class User extends DataObject {
 
 	function freezeAllHolds($reactivationDate = false) {
 		$user = UserAccount::getLoggedInUser();
-		$tmpResult = [ // set default response
+		$result = [ // set default response
 			'success' => false,
 			'title' => translate([
 				'text' => 'Error',
@@ -2183,10 +2183,14 @@ class User extends DataObject {
 		$success = 0;
 		$failed = 0;
 		$total = count($allHolds['unavailable']);
+		$numHoldsAlreadyFrozen = 0;
 
 		if ($total >= 1) {
 			foreach ($allUnavailableHolds as $hold) {
 				$frozen = $hold->frozen;
+				if ($frozen) {
+					$numHoldsAlreadyFrozen++;
+				}
 				$canFreeze = $hold->canFreeze;
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
@@ -2197,6 +2201,8 @@ class User extends DataObject {
 						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} elseif ($holdType == 'axis360') {
 						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -2204,6 +2210,8 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} elseif ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
@@ -2211,16 +2219,18 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
+						}else{
+							$failed++;
 						}
 					} else {
 						$failed++;
-						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						$result['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} elseif ($canFreeze == 0) {
 					$failed++;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+					$result['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
 		}
@@ -2236,7 +2246,7 @@ class User extends DataObject {
 
 			if ($failed >= 1) {
 				$message .= '<div class="alert alert-warning">' . translate([
-						'text' => '%1% holds failed to freeze',
+						'text' => '%1% hold(s) failed to freeze',
 						1 => $failed,
 						2 => $total,
 						'isPublicFacing' => true,
@@ -2244,29 +2254,40 @@ class User extends DataObject {
 					]) . '</div>';
 			}
 
-			$tmpResult['message'] = $message;
-			$tmpResult['title'] = translate([
+			$result['message'] = $message;
+			$result['title'] = translate([
 				'text' => 'Success',
 				'isPublicFacing' => true,
 			]);
 		} else {
 			if ($total == 0) {
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+				$result['message'] = '<div class="alert alert-warning">' . translate([
 						'text' => 'No holds available to freeze',
 						'isPublicFacing' => true,
 						'inAttribute' => true,
 					]) . '</div>';
 			} else {
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
-						'text' => 'All holds already frozen',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]) . '</div>';
+				if ($numHoldsAlreadyFrozen == $total) {
+					$result['message'] = '<div class="alert alert-warning">' . translate([
+							'text' => 'All holds already frozen',
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]) . '</div>';
+				}else{
+					$result['message'] = '<div class="alert alert-warning">' . translate([
+							'text' => '%1% hold(s) could not be frozen',
+							1 => $failed,
+							2 => $total,
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]) . '</div>';
+				}
+
 			}
 
 		}
 
-		return $tmpResult;
+		return $result;
 	}
 
 	function thawAllHolds() {
@@ -3497,6 +3518,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
 		$sections['ecommerce']->addAction(new AdminAction('Square Settings', 'Define Settings for Square.', '/Admin/SquareSettings'), 'Administer Square');
 		$sections['ecommerce']->addAction(new AdminAction('Stripe Settings', 'Define Settings for Stripe.', '/Admin/StripeSettings'), 'Administer Stripe');
+		$sections['ecommerce']->addAction(new AdminAction('NCR Payments Settings', 'Define Settings for NCR Payments.', '/Admin/NCRPaymentsSettings'), 'Administer NCR');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['email'] = new AdminSection('Email');

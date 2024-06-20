@@ -142,6 +142,7 @@ class Library extends DataObject {
 	public $invoiceCloudSettingId;
 	public $deluxeCertifiedPaymentsSettingId;
 	public $paypalPayflowSettingId;
+	public $ncrSettingId;
 	public $usernameField;
 
 	public /** @noinspection PhpUnused */
@@ -723,6 +724,16 @@ class Library extends DataObject {
 		$stripeSettings[-1] = 'none';
 		while ($stripeSetting->fetch()) {
 			$stripeSettings[$stripeSetting->id] = $stripeSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting.php';
+		$ncrSetting = new NCRPaymentsSetting();
+		$ncrSetting->orderBy('name');
+		$ncrSettings = [];
+		$ncrSetting->find();
+		$ncrSettings[-1] = 'none';
+		while ($ncrSetting->fetch()) {
+			$ncrSettings[$ncrSetting->id] = $ncrSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2563,7 +2574,8 @@ class Library extends DataObject {
 							10 => 'Certified Payments by Deluxe',
 							11 => 'PayPal Payflow',
 							12 => 'Square',
-							13 => 'Stripe'
+							13 => 'Stripe',
+							14 => 'NCR'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2737,6 +2749,15 @@ class Library extends DataObject {
 						'values' => $stripeSettings,
 						'label' => 'Stripe Settings',
 						'description' => 'The Stripe settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'ncrSettingId'=> [
+						'property' => 'ncrSettingId',
+						'type' => 'enum',
+						'values' => $ncrSettings,
+						'label' => 'NCR Settings',
+						'description' => 'The NCR settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],

@@ -276,7 +276,7 @@ class OverDriveProcessor {
 															isOnOrder = true;
 														}
 													} else {
-														logEntry.addNote("Error parsing publication date " + publishDateText);
+														logEntry.addNote("Error parsing publication date " + publishDateText + ". Libby Identifier: " + identifier);
 													}
 												}
 											}

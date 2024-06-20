@@ -38,6 +38,8 @@
                     {include file="Donations/squarePayments.tpl"}
                 {elseif $paymentType == 13}
                     {include file="Donations/stripePayments.tpl"}
+                {elseif $paymentType == 14}
+                    {include file="Donations/NCRPayments.tpl"}
                 {/if}
             </form>
         {/if}

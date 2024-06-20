@@ -7105,6 +7105,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'Stripe') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'NCR') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -7131,6 +7133,15 @@ AspenDiscovery.Account = (function () {
 
 		createCompriseOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType, null);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
+		createNCROrder: function (finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'NCR', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -10963,7 +10974,7 @@ AspenDiscovery.Browse = (function(){
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-browse-category-' + categoryTextId, {
+					var browseSwiper = new Swiper('.swiper-browse-category-' + categoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -10983,6 +10994,13 @@ AspenDiscovery.Browse = (function(){
 							enabled: true,
 							slides: Object.values(data.records),
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 				}
 			}).fail(function(){
@@ -11142,7 +11160,7 @@ AspenDiscovery.Browse = (function(){
 				}else{
 					var resultsTabPanel = document.getElementById('swiper-sub-browse-category-' + subCategoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
+					var browseSwiper = new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -11162,6 +11180,13 @@ AspenDiscovery.Browse = (function(){
 							enabled: true,
 							slides: Object.values(data.records),
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 
 				}
@@ -12750,8 +12775,13 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					}
 				});
 				document.getElementById("collectionSpotlightListId").value = "-1.0";
+				if (listCount == 1) {
+					var $onlyValidOption = $("#collectionSpotlightListId").find("option").filter(function () {
+						return this["hidden"] == false && this['disabled'] == false;
+					});
+					$onlyValidOption.prop("selected", true);
+				}
 			});
-
 		},
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));

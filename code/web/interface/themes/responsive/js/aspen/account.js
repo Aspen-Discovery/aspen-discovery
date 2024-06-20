@@ -1608,6 +1608,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'Stripe') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'NCR') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -1634,6 +1636,15 @@ AspenDiscovery.Account = (function () {
 
 		createCompriseOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType, null);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
+		createNCROrder: function (finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'NCR', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {

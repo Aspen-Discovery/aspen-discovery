@@ -201,7 +201,9 @@
                                     {include file="MyAccount/squarePayments.tpl"}
 								{elseif $finePaymentType == 13}
 									{include file="MyAccount/stripePayments.tpl"}
-                                {/if}
+								{elseif $finePaymentType == 14}
+									{include file="MyAccount/NCRPayments.tpl"}
+								{/if}
                             {else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>
                             {/if}
