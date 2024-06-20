@@ -8,7 +8,7 @@
             {foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 
             <div class="browse-category-feed-item" id="browse-category-{$browseCategory.textId}" role="article">
-	            <a id="selected-browse-search-link" title="View all results for {translate text=$browseCategory.label isPublicFacing=true}"><h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2></a>
+	            <a id="browse-search-link-{$browseCategory.textId}" href="" title="View all results for {translate text=$browseCategory.label isPublicFacing=true}"><h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2></a>
 	            {if !empty($browseCategory.subcategories)}
 		            <div class="tabs">
                         {$browseCategory.subcategories nofilter}

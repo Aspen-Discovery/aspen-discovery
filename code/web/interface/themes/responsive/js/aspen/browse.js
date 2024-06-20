@@ -326,12 +326,12 @@ AspenDiscovery.Browse = (function(){
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
 					});
 					// Fix keyboard navigation
@@ -341,7 +341,9 @@ AspenDiscovery.Browse = (function(){
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
-					$('#selected-browse-search-link').attr('href', data.searchUrl); // set the Label's link
+					var searchLink = document.getElementById('browse-search-link-' + categoryTextId);
+					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					console.log(searchLink);
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
