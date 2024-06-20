@@ -10673,6 +10673,7 @@ AspenDiscovery.Browse = (function(){
 		changingDisplay: false,
 		browseStyle: 'masonry',
 		accessibleMode: false,
+		patronId: null,
 
 		addToHomePage: function(searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
@@ -11002,8 +11003,10 @@ AspenDiscovery.Browse = (function(){
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
-					var searchLink = document.getElementById('browse-search-link-' + categoryTextId);
+
+					// update links for more results
 					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					AspenDiscovery.Browse.patronId = data.patronId;
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();

@@ -6305,7 +6305,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
-		$patronId = $_REQUEST['patronId'];
+		$patronId = UserAccount::getActiveUserId();
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 
 		$result = [

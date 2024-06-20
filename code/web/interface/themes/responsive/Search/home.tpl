@@ -11,7 +11,7 @@
 	            <div class="browse-category-group-heading">
 		            <a id="browse-search-link-{$browseCategory.textId}" href="" title="View all results for {translate text=$browseCategory.label isPublicFacing=true}"><h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2></a>
                     {if !empty($isLoggedIn)}
-	                    <button class="btn btn-default selected-browse-dismiss" onclick="" title="{translate text='Hide Category %1%' 1={$browseCategory.label} inAttribute=true isPublicFacing=true}">
+	                    <button id="browse-dismiss-{$browseCategory.textId}" class="btn btn-default browse-dismiss" onclick="AspenDiscovery.Account.dismissBrowseCategory(null, '{$browseCategory.textId}')" title="{translate text='Hide Category %1%' 1={$browseCategory.label} inAttribute=true isPublicFacing=true}">
 		                    <i class="fas fa-times" role="presentation"></i> {translate text='Hide' isPublicFacing=true}
 	                    </button>
                     {/if}
