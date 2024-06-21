@@ -6,11 +6,6 @@
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
-  "autolinking": {
-    "exclude": [
-      "expo-file-system"
-    ]
-  },
   "dependencies": {
     "@expo/config-plugins": "~8.0.5",
     "@expo/prebuild-config": "~7.0.6",
@@ -49,6 +44,7 @@
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.18",
     "expo-device": "~6.0.2",
+    "expo-file-system": "~17.0.1",
     "expo-image": "~1.12.12",
     "expo-insights": "~0.7.0",
     "expo-linear-gradient": "~13.0.2",
