@@ -129,6 +129,15 @@ function getUpdates24_07_00(): array {
 				"ALTER TABLE user ADD COLUMN userCookiePreferenceSideLoad TINYINT(1) DEFAULT 0",
 			],
 		], //update_user_tracking_cookies
+		'add_cookie_management_preferences' => [
+			'title' => 'Cookie Management for Cloud Libray and Website',
+			'description' => 'Add Cookie Management preferences for website and cloud library',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN userCookiePreferenceCloudLibrary TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user ADD COLUMN userCookiePreferenceWebsite TINYINT(1) DEFAULT 0",
+			],
+		], //add_user_tacking_cookie_preferences
 
 		//other
 

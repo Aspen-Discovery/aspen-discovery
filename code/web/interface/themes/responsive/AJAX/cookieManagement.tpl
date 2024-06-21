@@ -13,6 +13,8 @@
             UserOverdrive: {$profile->userCookiePreferenceOverdrive},
             UserPalaceProject: {$profile->userCookiePreferencePalaceProject},    
             UserSideLoad: {$profile->userCookiePreferenceSideLoad},
+            UserCloudLibrary: {$profile->userCookiePreferenceCloudLibrary},
+            UserWebsite: {$profile->userCookiePreferenceWebsite},
         };
         </script> 
        <div>
@@ -75,6 +77,16 @@
     <div>
     <label>
     <input type="checkbox" name="cookieUserSideLoad" id="cookieUserSideLoad"> Side Load
+    </label>
+    </div>
+    <div>
+    <label>
+    <input type="checkbox" name="cookieUserCloudLibrary" id="cookieUserCloudLibrary"> Cloud Library
+    </label>
+    </div>
+    <div>
+    <label>
+    <input type="checkbox" name="cookieUserWebsite" id="cookieUserWebsite"> Website
     </label>
     </div>
     <div>
