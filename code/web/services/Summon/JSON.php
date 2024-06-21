@@ -15,8 +15,8 @@ class Summon_JSON extends JSON_Action {
         $id = $_REQUEST['id'];
 
         require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
-        $summonRecordRecordUsage = new SummonRecordUsage();
-        global $asoenUsage;
+        $summonRecordUsage = new SummonRecordUsage();
+        global $aspenUsage;
         $summonRecordUsage->instance = $aspenUsage->getInstance();
         $summonRecordUsage->summonId = $id;
         $summonRecordUsage->year = date('Y');
@@ -37,19 +37,24 @@ class Summon_JSON extends JSON_Action {
 		if ($userId) {
 			//Track usage for the user
 			require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+			$userObj = UserAccount::getActiveUserObj();
+			$userSummonTracking = $userObj->userCookiePreferenceSummon;
 			$userSummonUsage = new UserSummonUsage();
 			global $aspenUsage;
+			global $library;
 			$userSummonUsage->instance = $aspenUsage->getInstance();
 			$userSummonUsage->userId = $userId;
 			$userSummonUsage->year = date('Y');
 			$userSummonUsage->month = date('n');
 
-			if ($userSummonUsage->find(true)) {
-				$userSummonUsage->usageCount++;
-				$userSummonUsage->update();
-			} else {
-				$userSummonUsage->usageCount = 1;
-				$userSummonUsage->insert();
+			if ($userSummonTracking && $library->cookieStorageConsent) {
+				if ($userSummonUsage->find(true)) {
+					$userSummonUsage->usageCount++;
+					$userSummonUsage->update();
+				} else {
+					$userSummonUsage->usageCount = 1;
+					$userSummonUsage->insert();
+				}
 			}
 		}
 
