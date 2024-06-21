@@ -11149,6 +11149,25 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
+		getMoreSubCategoryResultsLink: function (subCategoryTextId, categoryId) {
+			var url = Globals.path + '/Browse/AJAX';
+			var params = {
+				method : 'getMoreBrowseSubCategoryResultsLink'
+				,textId : categoryId
+				,subCategoryTextId : subCategoryTextId
+			};
+
+			$.getJSON(url, params, function(data){
+				if (data.success === false){
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				}else{
+					window.location = data.searchUrl;
+				}
+			}).fail(function(){
+				AspenDiscovery.ajaxFail();
+			});
+		},
+
 		changeBrowseSubCategoryTab: function (subCategoryTextId, categoryId) {
 			AspenDiscovery.Browse.changingDisplay = true;
 			var url = Globals.path + '/Browse/AJAX';
