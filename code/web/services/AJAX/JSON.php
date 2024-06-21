@@ -657,6 +657,8 @@ class AJAX_JSON extends Action {
 			$userObj->userCookiePreferenceOverdrive = $_REQUEST['cookieUserOverdrive'] == "1" || $_REQUEST['cookieUserOverdrive'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferencePalaceProject = $_REQUEST['cookieUserPalaceProject'] == "1" || $_REQUEST['cookieUserPalaceProject'] == 1 ? 1 :0;
 			$userObj->userCookiePreferenceSideLoad = $_REQUEST['cookieUserSideLoad'] == "1" || $_REQUEST['cookieUserSideLoad'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceCloudLibrary = $_REQUEST['cookieUserCloudLibrary'] == "1" || $_REQUEST['cookieUserCloudLibrary'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceWebsite = $_REQUEST['cookieUserWebsite'] == "1" || $_REQUEST['cookieUserWebsite'] == 1 ? 1 : 0;
 			$userObj->update();
 			return[
 				'success' => true,
@@ -676,6 +678,8 @@ class AJAX_JSON extends Action {
 				'UserOverdrive' => isset($_POST['cookieUserOverdrive']) ? 1 : 0,
 				'UserPalaceProject' => isset($_POST['cookieUserPalaceProject']) ? 1 : 0,
 				'UserSideLoad' => isset($_POST['cookieUserSideLoad']) ? 1 : 0,
+				'UserCloudLibrary' => isset($_POST['cookieUserCloudLibrary']) ? 1 : 0,
+				'UserWebsite' => isset($_POST['cookieUserWebsite']) ? 1 : 0,
 			];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
 			return [

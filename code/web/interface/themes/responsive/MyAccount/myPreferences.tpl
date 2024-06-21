@@ -270,6 +270,17 @@
 							<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
 
 							</div>
+							<div class="form-group propertyRow">
+							<label for='userCookieUserCloudLibrary' class="control-label">{translate text="Cloud Library" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserCloudLibrary" id="userCookieUserCloudLibrary" {if $profile->userCookiePreferenceCloudLibrary==1}checked='checked'{/if} data-switch="">
+
+							</div>
+
+							<div class="form-group propertyRow">
+							<label for='userCookieUserWebsite' class="control-label">{translate text="Website" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="userCookieUserWebsite" id="userCookieUserWebsite" {if $profile->userCookiePreferenceWebsite==1}checked='checked'{/if} data-switch="">
+
+							</div>
 			
 						</div>
 					{/if}

@@ -59,6 +59,8 @@ class User extends DataObject {
 	public $userCookiePreferenceOverdrive;
 	public $userCookiePreferencePalaceProject;
 	public $userCookiePreferenceSideLoad;
+	public $userCookiePreferenceCloudLibrary;
+	public $userCookiePreferenceWebsite;
 	
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -1179,6 +1181,8 @@ class User extends DataObject {
 			$this->__set('userCookiePreferenceOverdrive', (isset($_POST['userCookieUserOverdrive']) && $_POST['userCookieUserOverdrive'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferencePalaceProject', (isset($_POST['userCookieUserPalaceProject']) && $_POST['userCookieUserPalaceProject'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceSideLoad', (isset($_POST['userCookieUserSideLoad']) && $_POST['userCookieUserSideLoad'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceCloudLibrary', (isset($_POST['userCookieUserCloudLibrary']) && $_POST['userCookieUserCloudLibrary'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceWebsite', (isset($_POST['userCookieUserWebsite']) && $_POST['userCookieUserWebsite'] == 'on') ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);

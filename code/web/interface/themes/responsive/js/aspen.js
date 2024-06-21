@@ -15942,6 +15942,8 @@ AspenDiscovery.CookieConsent = (function() {
                     UserOverdrive:1,
                     UserPalaceProject:1,
                     UserSideLoad:1,
+                    UserCloudLibrary:0,
+                    UserWebsite:0,
                 };
             } else if (props == 'essential') {
                 var cookieString = {
@@ -15957,6 +15959,8 @@ AspenDiscovery.CookieConsent = (function() {
                     UserOverdrive:0,
                     UserPalaceProject:0,
                     UserSideLoad:0,
+                    UserCloudLibrary:0,
+                    UserWebsite:0,
                 };
             }
             $('.stripPopup').hide();
@@ -16005,6 +16009,8 @@ AspenDiscovery.CookieConsent = (function() {
                 UserOverdrive:0,
                 UserPalaceProject:0,
                 UserSideLoad:0,
+                UserCloudLibrary:0,
+                UserWebsite:0,
             };
             var params =  {
                 cookieEssential: cookieString['Essential'],
@@ -16019,6 +16025,8 @@ AspenDiscovery.CookieConsent = (function() {
                 cookieUserOverdrive: cookieString['UserOverdrive'],
                 cookieUserPalaceProject: cookieString['UserPalaceProject'],
                 cookieUserSideLoad: cookieString['UserSideLoad'],
+                cookieUserCloudLibrary: cookieString['UserCloudLibrary'],
+                cookieUserWebsite: cookieString['UserWebsite'],
 			};
             $.getJSON(url, params,
                 function(data) {
@@ -16048,6 +16056,8 @@ AspenDiscovery.CookieConsent = (function() {
             var cookieUserOverdrive = $('#cookieUserOverdrive').is(':checked') ? 1 : 0;
             var cookieUserPalaceProject = $('#cookieUserPalaceProject').is(':checked') ? 1 : 0;
             var cookieUserSideLoad = $('#cookieUserSideLoad').is(':checked') ? 1 : 0;
+            var cookieUserCloudLibrary = $('#cookieUserCloudLibrary').is(':checked') ? 1 : 0;
+            var cookieUserWebsite = $('#cookieUserWebsite').is(':checked') ? 1 : 0;
 
             formData.push({name: 'cookieEssential', value: cookieEssential});
             formData.push({name: 'cookieAnalytics', value: cookieAnalytics});
@@ -16061,6 +16071,8 @@ AspenDiscovery.CookieConsent = (function() {
             formData.push({name: 'cookieUserOverdrive', value: cookieUserOverdrive});
             formData.push({name: 'cookieUserPalaceProject', value: cookieUserPalaceProject});
             formData.push({name: 'cookieUserSideLoad', value: cookieUserSideLoad});
+            formData.push({name: 'cookieUserCloudLibrary', value: cookieUserCloudLibrary});
+            formData.push({name: 'cookieUserWebsite', value: cookieUserWebsite});
              var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 
        $.getJSON(url, formData,
