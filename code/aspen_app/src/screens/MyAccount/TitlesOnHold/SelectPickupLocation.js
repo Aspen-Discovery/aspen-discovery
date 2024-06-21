@@ -149,7 +149,7 @@ export const SelectPickupLocation = (props) => {
                                         isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                         onPress={() => {
                                              setLoading(true);
-                                             changeHoldPickUpLocation(holdId, location, libraryContext.baseUrl, userId, language).then((r) => {
+                                             changeHoldPickUpLocation(holdId, location, libraryContext.baseUrl, userId).then((r) => {
                                                   setShowModal(false);
                                                   resetGroup();
                                                   onClose(onClose);

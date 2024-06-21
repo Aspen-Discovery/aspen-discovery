@@ -162,9 +162,9 @@ const DeleteList = (props) => {
                                                   setIsOpen(!isOpen);
                                                   if (res.success === false) {
                                                        status = 'danger';
-                                                       popAlert(res.title, res.message, status);
+                                                       popAlert('Unable to delete list', res.message, status);
                                                   } else {
-                                                       popAlert(res.title, res.message, status);
+                                                       popAlert('List deleted', res.message, status);
                                                        navigateStack('AccountScreenTab', 'MyLists', {
                                                             libraryUrl: library.baseUrl,
                                                             hasPendingChanges: true,

@@ -61,6 +61,7 @@
 		<div class="clearer"></div>
 	</div>
 	{* End Listing Options *}
+
 	{if !empty($placard)}
 		{include file="Search/placard.tpl"}
 	{/if}
@@ -100,7 +101,7 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $displayMaterialsRequest && empty($offline)}
+	{if $displayMaterialsRequest}
 		{if $materialRequestType == 1}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
@@ -130,14 +131,12 @@
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 			{if !empty($showSearchTools)}
 				<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
-				{if empty($offline) || $enableEContentWhileOffline}
-					<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-					{if !empty($enableSavedSearches)}
-						{if !empty($savedSearch)}
-							<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
-						{else}
-							<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
-						{/if}
+				<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
+				{if !empty($enableSavedSearches)}
+					{if !empty($savedSearch)}
+						<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
+					{else}
+						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 					{/if}
 				{/if}
 				{if !empty($excelLink)}<a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a>{/if}

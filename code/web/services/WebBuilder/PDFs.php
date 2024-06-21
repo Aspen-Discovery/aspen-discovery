@@ -37,9 +37,9 @@ class WebBuilder_PDFs extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function updateFromUI($object, $structure, $fieldLocks) {
+	function updateFromUI($object, $structure) {
 		$object->type = 'web_builder_pdf';
-		return parent::updateFromUI($object, $structure, $fieldLocks);
+		return parent::updateFromUI($object, $structure);
 	}
 
 	function getObjectStructure($context = ''): array {

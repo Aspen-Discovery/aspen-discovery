@@ -182,10 +182,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 				$loadDefaultActions = count($this->_actions) == 0;
 			}
 
-			//Check if catalog is offline and login for eResources should be allowed for offline
-			global $offlineMode;
-			global $loginAllowedWhileOffline;
-			if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
+			if ($loadDefaultActions) {
 				if ($isAvailable) {
 					$userId = UserAccount::getActiveUserId();
 					if ($userId == false) {

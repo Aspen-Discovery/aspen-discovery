@@ -652,14 +652,7 @@ abstract class Solr {
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
 			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-            // Fix for date ranges
-            $cleanedQuery = preg_replace("/([0-9a-zA-Z])([-.])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
-            // Fix for ordinal numbers
-            $cleanedQuery = preg_replace("/([0-9])([a-zA-Z])/", "$1 $2", $cleanedQuery);
-			$cleanedQuery = str_replace('-', '\-', $cleanedQuery);
-			$cleanedQuery = str_replace('–', '\-\-', $cleanedQuery);
-            $cleanedQuery = str_replace('+', '\+', $cleanedQuery);
-            $cleanedQuery = str_replace('?', '\?', $cleanedQuery);
+			$cleanedQuery = str_replace('--', ' ', $cleanedQuery);
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
@@ -730,10 +723,6 @@ abstract class Solr {
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$cleanedQuery = str_replace('“', '"', $lookfor);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-            $cleanedQuery = str_replace('+', '\+', $cleanedQuery);
-            $cleanedQuery = str_replace('?', '\?', $cleanedQuery);
-            // Fix for ordinal numbers
-            $cleanedQuery = preg_replace("/([0-9])([a-zA-Z])/", "$1 $2", $cleanedQuery);
 			if (strlen($cleanedQuery) > 0 && $cleanedQuery[0] == '(') {
 				$onephrase = $cleanedQuery;
 			} else {
@@ -1740,10 +1729,11 @@ abstract class Solr {
 					$newWords[count($newWords) - 1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i + 1]);
 					$i = $i + 1;
 				}
-			} else {
-				// Previously we removed -- and any punctuation at this step, but this was causing problems
-				if (strlen($words[$i]) > 0) {
-					$newWords[] = trim($words[$i]);
+			} elseif ($words[$i] != '--') { //The -- word shows up with subject searches.  It causes other errors so don't tokenize it.
+				//If we are tokenizing, remove any punctuation
+				$tmpWord = preg_replace('/[[:punct:]]/', '', $words[$i]);
+				if (strlen($tmpWord) > 0) {
+					$newWords[] = trim($tmpWord);
 				}
 			}
 		}

@@ -2052,22 +2052,28 @@ AspenDiscovery.Account = (function () {
 		},
 
 		regInfoModal: function (trigger, source, id, vendor, regLink) {
-			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {
-				'method': 'eventRegistrationModal',
-				sourceId: id,
-				source: source,
-				regLink: regLink,
-				vendor: vendor
-			};
-			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function (data) {
-				if (data.success) {
-					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false);
-				} else {
-					AspenDiscovery.showMessage("Error", data.message);
-				}
-			}).fail(AspenDiscovery.ajaxFail);
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method': 'eventRegistrationModal',
+					sourceId: id,
+					source: source,
+					regLink: regLink,
+					vendor: vendor
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.regInfoModal(trigger, source, id, vendor, regLink);
+				}, false);
+			}
 			return false;
 		},
 

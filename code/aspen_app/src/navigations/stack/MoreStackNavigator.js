@@ -29,7 +29,6 @@ const MoreStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
-                    gestureEnabled: false,
                     headerBackImage: () => <BackIcon />,
                }}>
                <Stack.Screen name="MoreMenu" component={MoreMenu} options={{ title: getTermFromDictionary(language, 'nav_more') }} />

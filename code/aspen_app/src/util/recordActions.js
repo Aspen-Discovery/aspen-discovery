@@ -9,7 +9,7 @@ import { GLOBALS } from './globals';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = '', sampleNumber = '', pickupBranch = '', url, volumeId = '', holdType = '', holdNotificationPreferences, variationId = '', bibId = '', language = 'en') {
+export async function completeAction(id, actionType, patronId, formatId = '', sampleNumber = '', pickupBranch = '', url, volumeId = '', holdType = '', holdNotificationPreferences, variationId = '', bibId = '') {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -27,7 +27,7 @@ export async function completeAction(id, actionType, patronId, formatId = '', sa
      }
 
      if (actionType.includes('checkout')) {
-          return await checkoutItem(url, itemId, source, patronId, '', '', '', language);
+          return await checkoutItem(url, itemId, source, patronId);
      } else if (actionType.includes('hold')) {
           if (volumeId) {
                return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences);
@@ -43,7 +43,7 @@ export async function completeAction(id, actionType, patronId, formatId = '', sa
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences, variationId, '', language);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences, variationId);
           }
      } else if (actionType.includes('sample')) {
           return await overDriveSample(url, formatId, itemId, sampleNumber);
@@ -66,9 +66,8 @@ export async function completeAction(id, actionType, patronId, formatId = '', sa
  * @param {string} barcode
  * @param {string} locationId
  * @param {string} barcodeType
- * @param {string} language
  **/
-export async function checkoutItem(url, itemId, source, patronId, barcode = '', locationId = '', barcodeType, language = 'en') {
+export async function checkoutItem(url, itemId, source, patronId, barcode = '', locationId = '', barcodeType) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -92,7 +91,7 @@ export async function checkoutItem(url, itemId, source, patronId, barcode = '', 
 
           return responseData.result;
      } else {
-          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
@@ -118,9 +117,8 @@ export async function checkoutItem(url, itemId, source, patronId, barcode = '', 
  * @param {array} holdNotificationPreferences
  * @param {string} variationId
  * @param {string} bibId
- * @param {string} language
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = '', recordId = '', holdNotificationPreferences = null, variationId = null, bibId = null, language = 'en') {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = '', recordId = '', holdNotificationPreferences = null, variationId = null, bibId = null) {
      let id = itemId;
      if (variationId) {
           id = variationId;
@@ -182,12 +180,12 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      if (response.ok) {
           return response.data.result;
      } else {
-          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function overDriveSample(url, formatId, itemId, sampleNumber, language = 'en') {
+export async function overDriveSample(url, formatId, itemId, sampleNumber) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',

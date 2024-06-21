@@ -40,18 +40,17 @@ class DataObjectUtil {
 
 	/**
 	 * Save the object to the database (and optionally solr) based on the structure of the object
-	 * Takes care of determining whether the object is new or not.
+	 * Takes care of determining whether or not the object is new or not.
 	 *
 	 * @param array $structure The structure of the data object
 	 * @param string $dataType The class of the data object
-	 * @param array $fieldLocks A list of locks that apply to the object
 	 * @return array
 	 */
-	static function saveObject($structure, $dataType, $fieldLocks) {
+	static function saveObject($structure, $dataType) {
 		//Check to see if we have a new object or an exiting object to update
 		/** @var DataObject $object */
 		$object = new $dataType();
-		DataObjectUtil::updateFromUI($object, $structure, $fieldLocks);
+		DataObjectUtil::updateFromUI($object, $structure);
 		$primaryKey = $object->__primaryKey;
 		$primaryKeySet = !empty($object->$primaryKey);
 
@@ -143,27 +142,20 @@ class DataObjectUtil {
 		return $validationResults;
 	}
 
-	static function updateFromUI($object, $structure, $fieldLocks) {
+	static function updateFromUI($object, $structure) {
 		foreach ($structure as $property) {
-			if (($fieldLocks != null && !in_array($property['property'], $fieldLocks)) || $fieldLocks == null) {
-				DataObjectUtil::processProperty($object, $property, $fieldLocks);
-			}
+			DataObjectUtil::processProperty($object, $property);
 		}
 	}
 
-	static function processProperty(DataObject $object, $property, $fieldLocks) {
+	static function processProperty(DataObject $object, $property) {
 		global $logger;
 		$propertyName = $property['property'];
 		if ($property['type'] == 'section') {
 			foreach ($property['properties'] as $subProperty) {
-				DataObjectUtil::processProperty($object, $subProperty, $fieldLocks);
+				DataObjectUtil::processProperty($object, $subProperty);
 			}
-			return;
-		}
-		if (($fieldLocks != null && in_array($property['property'], $fieldLocks))) {
-			return;
-		}
-		if (in_array($property['type'], [
+		} elseif (in_array($property['type'], [
 			'regularExpression',
 			'multilineRegularExpression',
 		])) {

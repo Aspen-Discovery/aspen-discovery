@@ -209,10 +209,8 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('palace_project', $this->id));
 				$loadDefaultActions = count($this->_actions) == 0;
 			}
-			//Check if catalog is offline and login for eResources should be allowed for offline
-			global $offlineMode;
-			global $loginAllowedWhileOffline;
-			if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
+
+			if ($loadDefaultActions) {
 				if (!empty($this->palaceProjectRawMetadata)) {
 					foreach ($this->palaceProjectRawMetadata->links as $link) {
 						if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {

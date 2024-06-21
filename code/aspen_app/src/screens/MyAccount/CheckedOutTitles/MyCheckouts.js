@@ -216,7 +216,7 @@ export const MyCheckouts = () => {
                               colorScheme="primary"
                               onPress={() => {
                                    setRenewAll(true);
-                                   renewAllCheckouts(library.baseUrl, language).then((result) => {
+                                   renewAllCheckouts(library.baseUrl).then((result) => {
                                         if (result?.confirmRenewalFee && result.confirmRenewalFee) {
                                              setRenewConfirmationResponse({
                                                   message: result.api.message,
@@ -334,7 +334,7 @@ export const MyCheckouts = () => {
                                                   setConfirmingRenewal(true);
 
                                                   if (renewConfirmationResponse.renewType === 'all') {
-                                                       await confirmRenewAllCheckouts(library.baseUrl, language).then(async (result) => {
+                                                       await confirmRenewAllCheckouts(library.baseUrl).then(async (result) => {
                                                             queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                             queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
 

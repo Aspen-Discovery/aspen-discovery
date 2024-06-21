@@ -58,10 +58,6 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'dateSubmitted desc';
 	}
 
-	function showReturnToList(): bool {
-		return false;
-	}
-
 	function getObjectStructure($context = ''): array {
 		return CustomFormSubmission::getObjectStructure($context);
 	}
