@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ChevronLeftIcon, CloseIcon, Pressable, Icon } from 'native-base';
 import React from 'react';
+import { PalaceProjectInstructions } from '../../components/Action/CheckOut/PalaceProjectInstructions';
 import Scanner from '../../components/Scanner';
 import { LanguageContext, ThemeContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
