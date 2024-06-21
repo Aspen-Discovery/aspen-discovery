@@ -111,8 +111,12 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			if (!isset($spotlight)) {
 				$spotlight = new CollectionSpotlight();
 			}
-			DataObjectUtil::updateFromUI($spotlight, $collectionSpotlight->getObjectStructure());
-			$validationResults = DataObjectUtil::saveObject($collectionSpotlight->getObjectStructure(), "CollectionSpotlight");
+			$fieldLocks = $this->getFieldLocks();
+			if (UserAccount::userHasPermission('Lock Administration Fields')) {
+				$fieldLocks = null;
+			}
+			DataObjectUtil::updateFromUI($spotlight, $collectionSpotlight->getObjectStructure(), $fieldLocks);
+			$validationResults = DataObjectUtil::saveObject($collectionSpotlight->getObjectStructure(), "CollectionSpotlight", $fieldLocks);
 			if (!$validationResults['validatedOk']) {
 				$interface->assign('object', $spotlight);
 				$interface->assign('errors', $validationResults['errors']);

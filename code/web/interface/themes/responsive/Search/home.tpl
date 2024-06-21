@@ -15,6 +15,9 @@
 		            </div>
 	            {else}
 		            <div class="swiper swiper-first swiper-browse-category-{$browseCategory.textId}" id="swiper-{$browseCategory.textId}">
+						<div class="swiper-navigation-container">
+							<div class="swiper-button-prev"></div>
+						</div>
 			            <div class="swiper-wrapper" id="swiper-browse-category-{$browseCategory.textId}">
 				            <div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}" style="height: 200px">
 					            <i class="fas fa-lg fa-spinner fa-spin"></i>
@@ -24,9 +27,6 @@
 	                        </script>{/literal}
 			            </div>
 			            <div class="swiper-navigation-container">
-				            <div class="swiper-button-prev"></div>
-			            </div>
-			            <div class="swiper-navigation-container">
 				            <div class="swiper-button-next"></div>
 			            </div>
 		            </div>
@@ -34,6 +34,17 @@
             </div>
 			{/foreach}
 		</div>
+
+        {if !empty($isLoggedIn)}
+		    <div class="row text-center" style="margin-top: 2em">
+			    <div class="col-xs-12">
+				    <hr/>
+				    <a class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}"  href="#" role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')">
+					    <i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}
+				    </a>
+			    </div>
+		    </div>
+        {/if}
 
 	    {else}
 		<div class="col-sm-12">
