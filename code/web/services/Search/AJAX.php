@@ -357,6 +357,8 @@ class AJAX extends Action {
 		}
 		$searchObject->close();
 
+		global $interface;
+		$interface->assign('isForSearchResults', true);
 		// Process for Display //
 		$recordSet = $searchObject->getResultRecordHTML();
 		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
@@ -377,7 +379,6 @@ class AJAX extends Action {
 			$recordSet[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 		}
 
-		global $interface;
 		$interface->assign('recordSet', $recordSet);
 		$records = $interface->fetch($displayTemplate);
 		$result = [

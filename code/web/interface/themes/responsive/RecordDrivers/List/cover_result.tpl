@@ -1,5 +1,5 @@
 {strip}
-    {if $accessibleBrowseCategories == '1' && $action != 'Results'}
+    {if $accessibleBrowseCategories == '1' && $action != 'Results' && !$isForSearchResults}
 		<div class="swiper-slide browse-thumbnail {$coverStyle}">
 			<a href="{$summUrl}">
 				<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape}" class="{$coverStyle}" loading="lazy">
