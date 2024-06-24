@@ -5095,7 +5095,7 @@ class Library extends DataObject {
 				if ($settings->find(true)) {
 					global $activeLanguage;
 					$instructions = $settings->getTextBlockTranslation('instructionsForUsage', $activeLanguage->code);
-					$apiInfo['palaceProjectInstructions'] = strip_tags($instructions);
+					$apiInfo['palaceProjectInstructions'] = str_replace("\n", '', $instructions);
 				}
 			}
 		}
