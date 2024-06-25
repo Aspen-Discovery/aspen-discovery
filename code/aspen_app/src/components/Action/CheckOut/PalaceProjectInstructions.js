@@ -29,7 +29,7 @@ export const PalaceProjectInstructions = () => {
           },
           a: {
                color: textColor,
-               text-decoration-color: textColor
+               textDecorationColor: textColor,
           },
      };
 
