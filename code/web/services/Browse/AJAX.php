@@ -20,6 +20,7 @@ class Browse_AJAX extends Action {
 			'getBrowseSubCategoryInfo',
 			'getActiveBrowseCategories',
 			'getSubCategories',
+			'getMoreBrowseSubCategoryResultsLink'
 		];
 		if (in_array($method, $allowed_methods)) {
 			$response = $this->$method();
@@ -939,6 +940,33 @@ class Browse_AJAX extends Action {
 
 		$result = (isset($result)) ? array_merge($subCategoryResult, $result) : $subCategoryResult;
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getMoreBrowseSubCategoryResultsLink() {
+		if (isset($_REQUEST['textId'])) {
+			if (($_REQUEST['textId'] == 'system_saved_searches') || ($_REQUEST['textId'] == 'system_user_lists')) {
+				$subCategoryTextId = $_REQUEST['textId'] . '_' . $_REQUEST['subCategoryTextId'];
+			} else {
+				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
+			}
+		} else {
+			$subCategoryTextId = null;
+		}
+		if ($subCategoryTextId == null) {
+			return ['success' => false];
+		}
+
+		$this->setTextId();
+		$this->getBrowseCategory();
+		$this->setTextId($subCategoryTextId); // Override to fetch sub-category results
+		$this->getBrowseCategory(true); // Fetch Selected Sub-Category
+		$results = $this->getBrowseCategoryResults();
+
+		return [
+			'success' => $results['success'],
+			'searchUrl' => $results['searchUrl'] ?? ''
+		];
 	}
 
 	/** @noinspection PhpUnused */

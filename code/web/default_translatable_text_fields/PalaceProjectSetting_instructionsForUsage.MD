@@ -6,7 +6,7 @@ To use the Palace Project, follow these simple steps:
 
 1. Download the App on your device  
 
-  [![Download on the App Store](/images/Download_on_the_App_Store_Badge_US-UK_RGB_blk_092917.svg)](https://apps.apple.com/us/app/the-palace-project/id1574359693#?platform=iphone)
+  [![Download on the App Store](/images/app_store_badge.png)](https://apps.apple.com/us/app/the-palace-project/id1574359693#?platform=iphone)
 
   [![Get it on Google Play](/images/google-play-badge.png)](https://play.google.com/store/apps/details?id=org.thepalaceproject.palace&pli=1)
 
