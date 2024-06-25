@@ -2,10 +2,25 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/CarlXSelfRegistrationForm.php';
 
 class ILS_SelfRegistrationForms extends ObjectEditor {
 	function getObjectType(): string {
-		return 'SelfRegistrationForm';
+		$ils = '';
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils != 'na') {
+				$ils = $accountProfiles->ils;
+			}
+		}
+
+		if ($ils == 'carlx') {
+			return 'CarlXSelfRegistrationForm';
+		} else {
+			return 'SelfRegistrationForm';
+		}
+
 	}
 
 	function getModule(): string {
@@ -21,9 +36,23 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
+		$ils = '';
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils != 'na') {
+				$ils = $accountProfiles->ils;
+			}
+		}
+
+		if ($ils == 'carlx') {
+			$object = new CarlXSelfRegistrationForm();
+		} elseif ($ils == 'symphony') {
+			$object = new SelfRegistrationForm();
+		}
+
 		$list = [];
 
-		$object = new SelfRegistrationForm();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -40,7 +69,21 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return SelfRegistrationForm::getObjectStructure($context);
+		$ils = '';
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils != 'na') {
+				$ils = $accountProfiles->ils;
+			}
+		}
+
+		if ($ils == 'carlx') {
+			return CarlXSelfRegistrationForm::getObjectStructure($context);
+		} else {
+			return SelfRegistrationForm::getObjectStructure($context);
+		}
+
 	}
 
 	function getPrimaryKeyColumn(): string {
