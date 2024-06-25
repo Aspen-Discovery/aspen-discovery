@@ -448,6 +448,31 @@ CREATE TABLE `aspen_usage` (
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS assabet_events;
+CREATE TABLE `assabet_events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `settingsId` int(11) NOT NULL,
+  `externalId` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `rawChecksum` bigint(20) DEFAULT NULL,
+  `rawResponse` mediumtext COLLATE utf8mb4_general_ci,
+  `deleted` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `settingsId` (`settingsId`,`externalId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS assabet_settings;
+CREATE TABLE `assabet_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `baseUrl` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `eventsInLists` tinyint(1) DEFAULT '1',
+  `bypassAspenEventPages` tinyint(1) DEFAULT '0',
+  `registrationModalBody` mediumtext COLLATE utf8mb4_general_ci,
+  `registrationModalBodyApp` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numberOfDaysToIndex` int(11) DEFAULT '365',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS author_authorities;
 CREATE TABLE `author_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1408,7 +1433,7 @@ CREATE TABLE `errors` (
   `userAgent` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   KEY `timestamp` (`timestamp`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS event_library_map_values;
 CREATE TABLE `event_library_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -2689,7 +2714,7 @@ CREATE TABLE `library` (
   `deletePaymentHistoryOlderThan` int(11) DEFAULT '0',
   `showHoldPosition` tinyint(1) DEFAULT '1',
   `minSelfRegAge` int(2) DEFAULT '0',
-  `institutionCode` varchar(100) COLLATE utf8mb4_general_ci DEFAULT '',
+  `institutionCode` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3804,8 +3829,8 @@ DROP TABLE IF EXISTS palace_project_collections;
 CREATE TABLE `palace_project_collections` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingId` int(11) NOT NULL,
-  `palaceProjectName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `displayName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `palaceProjectName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `displayName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `hasCirculation` tinyint(1) DEFAULT NULL,
   `includeInAspen` tinyint(1) DEFAULT '1',
   `lastIndexed` int(11) DEFAULT NULL,
