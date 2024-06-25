@@ -146,7 +146,7 @@ export const HoldPrompt = (props) => {
 
      return (
           <>
-               <Button bgColor={theme['colors']['primary']['500']} onPress={() => setShowModal(true)}>
+               <Button minWidth="100%" maxWidth="100%" bgColor={theme['colors']['primary']['500']} onPress={() => setShowModal(true)}>
                     <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>
                </Button>
                <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
