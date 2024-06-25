@@ -16,7 +16,10 @@ export const LoadOverDriveSample = (props) => {
      return (
           <Button
                size="xs"
+               minWidth="100%"
+               maxWidth="100%"
                variant="link"
+               mb="$1"
                borderWidth={1}
                borderColor={theme['colors']['primary']['500']}
                onPress={() => {
