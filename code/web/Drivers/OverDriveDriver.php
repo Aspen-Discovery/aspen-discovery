@@ -1295,14 +1295,14 @@ class OverDriveDriver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			if (isset($response->message)) {
-                if ($response->message == "An unmapped error has occurred. '7'") {
-                    $cancelHoldResult['message'] .= "  " . translate([
-                        'text' => "An unmapped error has occurred. '7'",
-                        'isPublicFacing' => true,
-                    ]);
-                } else {
-                    $cancelHoldResult['message'] .= "  {$response->message}";
-                }
+				if ($response->message == "An unmapped error has occurred. '7'") {
+					$cancelHoldResult['message'] .= "  " . translate([
+						'text' => "An unmapped error has occurred. '7'",
+						'isPublicFacing' => true,
+					]);
+				} else {
+						$cancelHoldResult['message'] .= "  {$response->message}";
+				}
 			}
 
 			// Result for API or app use
@@ -1315,14 +1315,14 @@ class OverDriveDriver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			if (isset($response->message)) {
-                if ($response->message == "An unmapped error has occurred. '7'") {
-                    $cancelHoldResult['api']['message'] .= "  " . translate([
-                        'text' => "An unmapped error has occurred. '7'",
-                        'isPublicFacing' => true,
-                    ]);
-                } else {
-                    $cancelHoldResult['api']['message'] .= "  {$response->message}";
-                }
+				if ($response->message == "An unmapped error has occurred. '7'") {
+					$cancelHoldResult['api']['message'] .= "  " . translate([
+						'text' => "An unmapped error has occurred. '7'",
+						'isPublicFacing' => true,
+					]);
+				} else {
+					$cancelHoldResult['api']['message'] .= "  {$response->message}";
+				}
 			}
 
 			$this->incrementStat('numApiErrors');
