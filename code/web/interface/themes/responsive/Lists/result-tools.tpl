@@ -5,7 +5,7 @@
 		{/if}
 	</div>
 
-	{if $showFavorites == 1}
+	{if $showFavorites == 1 && (empty($offline) || $enableEContentWhileOffline)}
 		<div class="btn-group btn-group-sm">
 			<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Lists', '{$summShortId|escape}');" class="btn btn-sm addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 		</div>
