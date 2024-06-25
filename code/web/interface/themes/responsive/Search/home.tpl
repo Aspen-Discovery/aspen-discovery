@@ -8,7 +8,14 @@
             {foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 
             <div class="browse-category-feed-item" id="browse-category-{$browseCategory.textId}" role="article">
-	            <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2>
+	            <div class="browse-category-group-heading">
+		            <a id="browse-search-link-{$browseCategory.textId}" href="" title="View all results for {translate text=$browseCategory.label isPublicFacing=true}"> <h2 id="tablist-browse-category-{$browseCategory.textId}">{translate text=$browseCategory.label isPublicFacing=true}</h2></a>
+                    {if !empty($isLoggedIn)}
+	                    <button id="browse-dismiss-{$browseCategory.textId}" class="btn btn-default browse-dismiss" onclick="AspenDiscovery.Account.dismissBrowseCategory(null, '{$browseCategory.textId}')" title="{translate text='Hide Category %1%' 1={$browseCategory.label} inAttribute=true isPublicFacing=true}">
+		                    <i class="fas fa-times" role="presentation"></i> {translate text='Hide' isPublicFacing=true}
+	                    </button>
+                    {/if}
+	            </div>
 	            {if !empty($browseCategory.subcategories)}
 		            <div class="tabs">
                         {$browseCategory.subcategories nofilter}

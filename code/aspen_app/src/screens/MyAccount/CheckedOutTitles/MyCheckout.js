@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 // custom components and helper files
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
-import { navigateStack } from '../../../helpers/RootNavigator';
+import { navigate, navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import { stripHTML } from '../../../util/apiAuth';
@@ -130,6 +130,10 @@ export const MyCheckout = (props) => {
           itemId = checkout.renewalId;
      }
 
+     const handleOpenPalaceProjectInstructions = () => {
+          navigate('PalaceProjectInstructionsModal');
+     };
+
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
@@ -232,6 +236,11 @@ export const MyCheckout = (props) => {
                                    }}
                                    startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6" />}>
                                    {label}
+                              </Actionsheet.Item>
+                         ) : null}
+                         {checkout.source === 'palace_project' ? (
+                              <Actionsheet.Item onPress={() => handleOpenPalaceProjectInstructions()} startIcon={<Icon as={MaterialIcons} name="info" color="trueGray.400" mr="1" size="6" />}>
+                                   {getTermFromDictionary(language, 'access_instructions')}
                               </Actionsheet.Item>
                          ) : null}
                          {checkout.accessOnlineUrl != null ? (
