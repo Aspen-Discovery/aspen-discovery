@@ -11,6 +11,8 @@ export const OpenSideLoad = (props) => {
 
      return (
           <Button
+               minWidth="100%"
+               maxWidth="100%"
                size="md"
                _text={{
                     padding: 0,

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Button, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner } from '@gluestack-ui/themed';
+import { Button, Box, ButtonGroup, ButtonIcon, ButtonText, ButtonSpinner } from '@gluestack-ui/themed';
 import React from 'react';
 
 // custom components and helper files
@@ -116,10 +116,8 @@ export const PlaceHold = (props) => {
                          size="md"
                          bgColor={theme['colors']['primary']['500']}
                          variant="solid"
-                         style={{
-                              flex: 1,
-                              flexWrap: 'wrap',
-                         }}
+                         minWidth="100%"
+                         maxWidth="100%"
                          onPress={async () => {
                               setLoading(true);
                               await completeAction(record, type, user.id, null, null, pickupLocation, library.baseUrl, null, 'default').then(async (ilsResponse) => {
