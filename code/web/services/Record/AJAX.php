@@ -593,7 +593,6 @@ class Record_AJAX extends Action {
 
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
-			$checkVariations = true;
 			/*foreach ($relatedRecord->getItems() as $item) {
 				if (!$item->isEContent){
 					if (empty($item->volume)) {
