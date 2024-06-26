@@ -593,7 +593,8 @@ class Record_AJAX extends Action {
 
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
-			foreach ($relatedRecord->getItems() as $item) {
+			$checkVariations = true;
+			/*foreach ($relatedRecord->getItems() as $item) {
 				if (!$item->isEContent){
 					if (empty($item->volume)) {
 						$numItemsWithoutVolumes++;
@@ -604,6 +605,26 @@ class Record_AJAX extends Action {
 							}
 						}
 						$numItemsWithVolumes++;
+					}
+				}
+			}*/
+			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
+				if (!($variation->isEContent())) {
+					foreach ($variation->getRecords() as $record) {
+						foreach ($record->getItems() as $item) {
+							if (!$item->isEContent) {
+								if (empty($item->volume)) {
+									$numItemsWithoutVolumes++;
+								} else {
+									if ($item->libraryOwned || $item->locallyOwned) {
+										if (array_key_exists($item->volumeId, $volumeData)) {
+											$volumeData[$item->volumeId]->setHasLocalItems(true);
+										}
+									}
+									$numItemsWithVolumes++;
+								}
+							}
+						}
 					}
 				}
 			}
