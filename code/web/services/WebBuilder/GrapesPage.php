@@ -71,7 +71,7 @@ class WebBuilder_GrapesPage extends Action {
 				'Administer All Basic Pages',
 				'Administer Library Basic Pages',
 			])) {
-				$breadcrumbs[] = new Breadcrumb('/WebBuilder/GrapesPages?id=' . $this->grapesPage->id . '&objectAction=createFromBlankPage', 'Edit', true);
+				$breadcrumbs[] = new Breadcrumb('/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->grapesPage->id, 'Edit', 'true');
 			}
 		}
 		return $breadcrumbs;

@@ -15,7 +15,7 @@ class WebBuilder_GrapesJSEditor extends Action {
 
     function getBreadcrumbs(): array {
         $breadcrumbs = [];
-        $breadcrumbs[] = new Breadcrumb('/', 'Home');
+        $breadcrumbs[] = new Breadcrumb('/WebBuilder/GrapesPages', 'Grapes Pages');
         if ($this->grapesPage != null) {
             $breadcrumbs[] = new Breadcrumb('', $this->grapesPage->title, true);
             if (UserAccount::userHasPermission([

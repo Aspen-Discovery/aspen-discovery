@@ -12,10 +12,9 @@ class WebBuilder_GrapesJSTemplates extends Action {
 
     function getBreadCrumbs(): array {
         $breadcrumbs = [];
-        $breadcrumbs[] = new Breadcrumb('/', 'Home');
+        $breadcrumbs[] = new Breadcrumb('/WebBuilder/Templates', 'Templates');
         if ($this->template != null) {
             $breadcrumbs[] = new Breadcrumb('', $this->template->title, true);
-            // $breadcrumbs[] = new Breadcrumb('/WebBuilder/GrapesPages?id=')
         }
         return $breadcrumbs;
     }
