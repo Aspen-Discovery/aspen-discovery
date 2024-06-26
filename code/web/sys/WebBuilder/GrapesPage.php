@@ -287,6 +287,13 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->id . '&templateId=' . $existingObject->templatesSelect, 
 			];
 		}
+		if ($existingObject instanceof GrapesPage) {
+			$objectActions[] = [
+				'text' => 'View As Page',
+				// 'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
+				'url' => $existingObject->urlAlias,
+			];
+		}
 		return $objectActions;
 	}
 
@@ -297,6 +304,12 @@ class GrapesPage extends DB_LibraryLinkedObject {
 			'text' => 'Open in Editor',
 			'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
 		];
+		$objectActions[] = [
+			'text' => 'View As Page',
+			'url' => $this->urlAlias,
+		];
+	
+		
 		return $objectActions;
 	}
 }
