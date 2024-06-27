@@ -34,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -42,6 +43,7 @@ public class EvergreenExportMain {
 	private static Logger logger;
 
 	private static IndexingProfile indexingProfile;
+	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private static MarcRecordGrouper recordGroupingProcessorSingleton;
 	private static GroupedWorkIndexer groupedWorkIndexer;
 	private static Ini configIni;
@@ -168,6 +170,8 @@ public class EvergreenExportMain {
 							logEntry.addNote("Finished updating branch & patron type information");
 
 							exportVolumes(dbConn);
+
+							exportHolds(dbConn, indexingProfile);
 
 							//Update works that have changed since the last index
 							numChanges = updateRecords();
@@ -1873,5 +1877,71 @@ public class EvergreenExportMain {
 			}
 		}
 		return null;
+	}
+
+	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile){
+		File holdsExportFile = new File(indexingProfile.getMarcPath() + "/../supplemental/holds.csv");
+		if (holdsExportFile.exists()){
+			long fileTimeStamp = holdsExportFile.lastModified();
+
+			logEntry.saveResults();
+			boolean fileChanging = true;
+			while (fileChanging){
+				fileChanging = false;
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					logger.debug("Thread interrupted while checking if holds file is changing");
+				}
+				if (fileTimeStamp != holdsExportFile.lastModified()){
+					fileTimeStamp = holdsExportFile.lastModified();
+					fileChanging = true;
+				}
+			}
+
+			//Holds file exists and isn't changing, import it.
+			try {
+				logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
+				logEntry.saveResults();
+
+				//Start a transaction so we can rebuild an entire table
+				dbConn.setAutoCommit(false);
+				dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
+
+				PreparedStatement addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+
+				BufferedReader csvReader = new BufferedReader(new FileReader(holdsExportFile));
+				String holdInfoLine = csvReader.readLine();
+				while (holdInfoLine != null) {
+					String[] holdInfoFields = holdInfoLine.split(",");
+					if (holdInfoFields.length == 2) {
+						String bibNumber = holdInfoFields[0].trim();
+						addIlsHoldSummary.setString(1, bibNumber);
+						addIlsHoldSummary.setString(2, holdInfoFields[1]);
+						addIlsHoldSummary.executeUpdate();
+					}
+					holdInfoLine = csvReader.readLine();
+
+				}
+				logEntry.addNote("Finished export of holds " + dateTimeFormatter.format(new Date()));
+
+				csvReader.close();
+				dbConn.setAutoCommit(true);
+				if (!holdsExportFile.delete()){
+					logEntry.incErrors("Could not delete holds export file");
+				}
+			} catch (FileNotFoundException e) {
+				logEntry.incErrors("Error loading holds", e);
+			} catch (IOException e) {
+				logEntry.incErrors("Error reading holds information", e);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error reading and writing from database while loading holds", e);
+			}
+			logEntry.addNote("Finished export of hold information " + dateTimeFormatter.format(new Date()));
+			logEntry.saveResults();
+		}else{
+			logEntry.addNote("Hold export file (holds.csv) did not exist in " + EvergreenExportMain.indexingProfile.getMarcPath() + "/../supplemental/");
+			logEntry.saveResults();
+		}
 	}
 }
