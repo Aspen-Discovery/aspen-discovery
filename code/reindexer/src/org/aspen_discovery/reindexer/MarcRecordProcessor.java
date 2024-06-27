@@ -855,6 +855,10 @@ abstract class MarcRecordProcessor {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
 			}
+			if (subjectForm.startsWith("fiction")) {
+				addToMapWithCount(literaryFormsWithCount, "Fiction");
+				addToMapWithCount(literaryFormsFull, "Fiction");
+			}
 		}
 		groupedWork.addLiteraryForms(literaryFormsWithCount);
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
