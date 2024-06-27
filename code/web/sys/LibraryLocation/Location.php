@@ -120,6 +120,8 @@ class Location extends DataObject {
 		$defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
+	public $allowUpdatingHoursFromILS;
+
 	protected $_hours;
 	private $_moreDetailsOptions;
 	private $_recordsToInclude;
@@ -1170,21 +1172,41 @@ class Location extends DataObject {
 				],
 			],
 
-			'hours' => [
-				'property' => 'hours',
-				'type' => 'oneToMany',
-				'keyThis' => 'locationId',
-				'keyOther' => 'locationId',
-				'subObjectType' => 'LocationHours',
-				'structure' => $hoursStructure,
-				'label' => 'Hours',
-				'renderAsHeading' => true,
-				'description' => 'Library Hours',
-				'sortable' => false,
-				'storeDb' => true,
-				'permissions' => ['Location Address and Hours Settings'],
-				'canAddNew' => true,
-				'canDelete' => true,
+			'hoursSection' => [
+				'property' => 'hoursSection',
+				'type' => 'section',
+				'label' => 'Library Hours',
+				'hideInLists' => true,
+				'renderAsHeading' => false,
+				'permissions' => ['Location ILS Connection', 'Location Address and Hours Settings'],
+				'properties' => [
+					'allowUpdatingHoursFromILS' =>[
+						'property' => 'allowUpdatingHoursFromILS',
+						'type' => 'checkbox',
+						'label' => 'Automatically update hours from the ILS',
+						'description' => 'Whether hours should be automatically updated (Koha Only).',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Location ILS Connection'],
+					],
+
+					'hours' => [
+						'property' => 'hours',
+						'type' => 'oneToMany',
+						'keyThis' => 'locationId',
+						'keyOther' => 'locationId',
+						'subObjectType' => 'LocationHours',
+						'structure' => $hoursStructure,
+						'label' => 'Hours',
+						'renderAsHeading' => true,
+						'description' => 'Library Hours',
+						'sortable' => false,
+						'storeDb' => true,
+						'permissions' => ['Location Address and Hours Settings'],
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
+				],
 			],
 
 			'recordsToInclude' => [

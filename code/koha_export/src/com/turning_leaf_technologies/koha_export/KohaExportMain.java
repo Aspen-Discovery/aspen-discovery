@@ -927,26 +927,41 @@ public class KohaExportMain {
 
 	private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
 		try {
-			PreparedStatement kohaLibraryGroupStmt = kohaConn.prepareStatement("SELECT * from library_groups where id = ?");
-			PreparedStatement kohaLibraryGroupForBranchCodeStmt = kohaConn.prepareStatement("SELECT parent_id from library_groups where branchcode = ?");
-			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
-			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
-			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?");
+			PreparedStatement kohaLibraryGroupStmt = kohaConn.prepareStatement("SELECT * from library_groups where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement kohaLibraryGroupForBranchCodeStmt = kohaConn.prepareStatement("SELECT parent_id from library_groups where branchcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight, markRecordsAsOwned) VALUES (?, ?, ?, '', 1, 1)");
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight, markRecordsAsOwned) VALUES (?, ?, ?, '', 1, 1) ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
-			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
-			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
-			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?");
+			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement locationsToUpdateHoursStmt = dbConn.prepareStatement("SELECT locationId from location where allowUpdatingHoursFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement librariesToUpdateHolidaysStmt = dbConn.prepareStatement("SELECT libraryId from library where allowUpdatingHolidaysFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, closed, open, close) VALUES (?, ?, 0, '00:30', '00:30') ");
-			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?");
+			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addHolidayStmt = dbConn.prepareStatement("INSERT INTO holiday (libraryId, date, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
 			PreparedStatement removeHolidayStmt = dbConn.prepareStatement("DELETE FROM holiday WHERE id = ?");
 			PreparedStatement markLibraryClosed = dbConn.prepareStatement("UPDATE location_hours set closed = 1 where locationId = ? and day = ?");
 			ResultSet kohaBranches = kohaBranchesStmt.executeQuery();
+
+			ResultSet locationsToUpdateHoursRS = locationsToUpdateHoursStmt.executeQuery();
+			HashSet<Long> locationsToUpdateHours = new HashSet<>();
+			while (locationsToUpdateHoursRS.next()) {
+				locationsToUpdateHours.add(locationsToUpdateHoursRS.getLong("locationId"));
+			}
+
+			ResultSet librariesToUpdateHolidaysRS = librariesToUpdateHolidaysStmt.executeQuery();
+			HashSet<Long> librariesToUpdateHolidays = new HashSet<>();
+			while (librariesToUpdateHolidaysRS.next()) {
+				librariesToUpdateHolidays.add(librariesToUpdateHolidaysRS.getLong("libraryId"));
+			}
+
 			String currentYear = new SimpleDateFormat("yyyy").format(new Date());
 			GregorianCalendar nextYearCal = new GregorianCalendar();
 			nextYearCal.roll(GregorianCalendar.YEAR, 1);
@@ -1072,29 +1087,33 @@ public class KohaExportMain {
 					while (kohaRepeatableHolidaysRS.next()) {
 						int weekday = kohaRepeatableHolidaysRS.getInt("weekday");
 						if (!kohaRepeatableHolidaysRS.wasNull()) {
-							//The library is closed on this date
-							markLibraryClosed.setLong(1, existingLocationId);
-							markLibraryClosed.setInt(2, weekday);
-							markLibraryClosed.executeUpdate();
+							if (locationsToUpdateHours.contains(existingLocationId)) {
+								//The library is closed on this date
+								markLibraryClosed.setLong(1, existingLocationId);
+								markLibraryClosed.setInt(2, weekday);
+								markLibraryClosed.executeUpdate();
+							}
 						} else {
-							//Add the holiday for this year
-							String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
-							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-							String title = kohaRepeatableHolidaysRS.getString("title");
-							addHolidayStmt.setLong(1, libraryId);
-							addHolidayStmt.setDate(2, holidayDateAsDate);
-							addHolidayStmt.setString(3, title);
-							addHolidayStmt.executeUpdate();
-							existingHolidayDates.remove(holidayDateAsDate);
+							if (librariesToUpdateHolidays.contains(libraryId)) {
+								//Add the holiday for this year
+								String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
+								java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+								String title = kohaRepeatableHolidaysRS.getString("title");
+								addHolidayStmt.setLong(1, libraryId);
+								addHolidayStmt.setDate(2, holidayDateAsDate);
+								addHolidayStmt.setString(3, title);
+								addHolidayStmt.executeUpdate();
+								existingHolidayDates.remove(holidayDateAsDate);
 
-							//Add the holiday for next year
-							holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
-							holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-							addHolidayStmt.setLong(1, libraryId);
-							addHolidayStmt.setDate(2, holidayDateAsDate);
-							addHolidayStmt.setString(3, title);
-							addHolidayStmt.executeUpdate();
-							existingHolidayDates.remove(holidayDateAsDate);
+								//Add the holiday for next year
+								holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
+								holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+								addHolidayStmt.setLong(1, libraryId);
+								addHolidayStmt.setDate(2, holidayDateAsDate);
+								addHolidayStmt.setString(3, title);
+								addHolidayStmt.executeUpdate();
+								existingHolidayDates.remove(holidayDateAsDate);
+							}
 						}
 					}
 
@@ -1106,21 +1125,25 @@ public class KohaExportMain {
 						kohaSpecialHolidaysStmt.setString(3, ilsCode);
 						ResultSet kohaSpecialHolidaysRS = kohaSpecialHolidaysStmt.executeQuery();
 						while (kohaSpecialHolidaysRS.next()) {
-							String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
-							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-							String title = kohaSpecialHolidaysRS.getString("title");
-							addHolidayStmt.setLong(1, libraryId);
-							addHolidayStmt.setDate(2, holidayDateAsDate);
-							addHolidayStmt.setString(3, title);
-							addHolidayStmt.executeUpdate();
-							existingHolidayDates.remove(holidayDateAsDate);
+							if (librariesToUpdateHolidays.contains(libraryId)) {
+								String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
+								java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+								String title = kohaSpecialHolidaysRS.getString("title");
+								addHolidayStmt.setLong(1, libraryId);
+								addHolidayStmt.setDate(2, holidayDateAsDate);
+								addHolidayStmt.setString(3, title);
+								addHolidayStmt.executeUpdate();
+								existingHolidayDates.remove(holidayDateAsDate);
+							}
 						}
 					}
 
 					//Remove anything leftover
-					for (Long holidayToBeDeleted : existingHolidayDates.values()) {
-						removeHolidayStmt.setLong(1, holidayToBeDeleted);
-						removeHolidayStmt.executeUpdate();
+					if (librariesToUpdateHolidays.contains(libraryId)) {
+						for (Long holidayToBeDeleted : existingHolidayDates.values()) {
+							removeHolidayStmt.setLong(1, holidayToBeDeleted);
+							removeHolidayStmt.executeUpdate();
+						}
 					}
 				} else {
 					logger.error("Aspen does not currently have a location defined for code " + ilsCode + " please create the location in Aspen first so the library information is properly defined.");

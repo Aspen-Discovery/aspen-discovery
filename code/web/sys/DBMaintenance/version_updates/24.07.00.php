@@ -13,7 +13,15 @@ function getUpdates24_07_00(): array {
 		 ], //name*/
 
 		//mark - ByWater
-
+		'prevent_automatic_hour_updates' => [
+			'title' => 'Prevent Automatic Hour Updates',
+			'description' => 'Prevent automatically updating hours for libraries and locations',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowUpdatingHolidaysFromILS TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN allowUpdatingHoursFromILS TINYINT(1) DEFAULT 1'
+			]
+		], //prevent_automatic_hour_updates
 
 		//kirstien - ByWater
 
