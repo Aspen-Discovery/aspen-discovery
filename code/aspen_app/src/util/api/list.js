@@ -1,7 +1,6 @@
 import { create } from 'apisauce';
 import _ from 'lodash';
 import { popAlert } from '../../components/loadError';
-import { getTermFromDictionary } from '../../translations/TranslationService';
 import { createAuthTokens, ENDPOINT, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
 import { PATRON } from '../loadPatron';
@@ -170,7 +169,7 @@ export async function clearListTitles(listId, url) {
      }
 }
 
-export async function addTitlesToList(id, itemId, url, source = 'GroupedWork', language = 'en') {
+export async function addTitlesToList(id, itemId, url, source = 'GroupedWork') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -187,9 +186,9 @@ export async function addTitlesToList(id, itemId, url, source = 'GroupedWork', l
      if (response.ok) {
           PATRON.listLastUsed = id;
           if (response.data.result.success) {
-               popAlert(getTermFromDictionary(language, 'added_successfully'), response.data.result.numAdded + ' added to list', 'success');
+               popAlert('Success', response.data.result.numAdded + ' added to list', 'success');
           } else {
-               popAlert(getTermFromDictionary(language, 'error'), 'Unable to add item to list', 'error');
+               popAlert('Error', 'Unable to add item to list', 'error');
           }
           return response.data.result;
      } else {

@@ -42,17 +42,6 @@
 			{/foreach}
 		</div>
 
-        {if !empty($isLoggedIn)}
-		    <div class="row text-center" style="margin-top: 2em">
-			    <div class="col-xs-12">
-				    <hr/>
-				    <a class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}"  href="#" role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')">
-					    <i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}
-				    </a>
-			    </div>
-		    </div>
-        {/if}
-
 	    {else}
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
@@ -94,12 +83,16 @@
 			<div class="row" id="selected-browse-label">
 					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
 						<div class="btn-group btn-group-sm" data-toggle="buttons">
-							<button type="button" class="btn btn-sm btn-default" id="covers" onclick="AspenDiscovery.Browse.toggleBrowseMode(this.id)"><i class="fas fa-th" role="presentation"></i><span> {translate text='Covers' isPublicFacing=true}</span></button>
-							<button type="button" class="btn btn-sm btn-default" id="grid" onclick="AspenDiscovery.Browse.toggleBrowseMode(this.id)"><i class="fas fa-th-list" role="presentation"></i> {translate text='Grid' isPublicFacing=true}</span></button>
+							<label for="covers" title="Covers" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+								<i class="fas fa-th" role="presentation"></i><span> {translate text='Covers' isPublicFacing=true}</span>
+							</label>
+							<label for="grid" title="Grid" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+								<i class="fas fa-th-list" role="presentation"></i> {translate text='Grid' isPublicFacing=true}</span>
+							</label>
 						</div>
 						{if !empty($isLoggedIn)}
 						<div class="btn-group" data-toggle="buttons" style="margin-top: -.15em; margin-left: 1em;">
-							<button class="btn btn-default selected-browse-dismiss" onclick="" title="{translate text='Hide Category %1%' 1={$browseCategory->label} inAttribute=true isPublicFacing=true}">
+							<button class="btn btn-default selected-browse-dismiss" onclick="">
 							<i class="fas fa-times" role="presentation"></i> {translate text='Hide' isPublicFacing=true}</button>
 						</div>
 						{/if}
@@ -150,8 +143,8 @@
 			{if !empty($isLoggedIn) && $numHiddenCategory > 0}
 			<div class="row text-center" {if !empty($showBrowseContent)}style="margin-top: 2em"{/if}>
 				<div class="col-xs-12">
-					<a  class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}"  href="#" role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')">
-						<i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}
+					<a role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" tabindex="1">
+						<span class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
 					</a>
 				</div>
 			</div>
@@ -166,7 +159,6 @@
 			AspenDiscovery.Browse.curCategory = '{$selectedBrowseCategory->textId}';
 			{if !empty($subCategoryTextId)}AspenDiscovery.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
 		{/if}
-		$('#'+AspenDiscovery.Browse.browseMode).removeClass('active');
 		{if empty($onInternalIP)}
 		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
 			var temp = window.localStorage.getItem('browseMode');
@@ -177,8 +169,7 @@
 		{else}
 		AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{/if}
-		$('#'+AspenDiscovery.Browse.browseMode).addClass('active'); {* show user which one is selected *}
-
+		$('#'+AspenDiscovery.Browse.browseMode).parent('label').addClass('active'); {* show user which one is selected *}
 		AspenDiscovery.Browse.toggleBrowseMode();
 	{rdelim});
 </script>

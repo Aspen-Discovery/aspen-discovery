@@ -197,7 +197,7 @@ export const AddToList = (props) => {
                                                        isLoading={loading}
                                                        onPress={() => {
                                                             setLoading(true);
-                                                            addTitlesToList(listId, item, library.baseUrl, source, language).then((res) => {
+                                                            addTitlesToList(listId, item, library.baseUrl, source).then((res) => {
                                                                  updateLastListUsed(listId);
                                                                  queryClient.invalidateQueries({ queryKey: ['list', listId] });
                                                                  setLoading(false);

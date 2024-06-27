@@ -185,7 +185,7 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      }
 }
 
-export async function overDriveSample(url, formatId, itemId, sampleNumber, language = 'en') {
+export async function overDriveSample(url, formatId, itemId, sampleNumber) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',

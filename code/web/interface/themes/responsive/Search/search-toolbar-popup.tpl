@@ -38,16 +38,14 @@
 			<div class="form-group">
 			    <div class="col-xs-12">
 				    {if !empty($showSearchTools)}
-						{if empty($offline) || $enableEContentWhileOffline}
-							{if !empty($enableSavedSearches)}
-								{if !empty($savedSearch)}
-									<a href="/MyAccount/SaveSearch?delete={$searchId}" class="btn btn-default btn-block">{translate text='Remove Saved Search' isPublicFacing=true}</a>
-								{else}
-									<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')" class="btn btn-default btn-block">{translate text='Save Search' isPublicFacing=true}</a>
-								{/if}
-							{/if}
-							<a href="#" onclick="return AspenDiscovery.Account.showEmailSearchForm();" class="btn btn-default btn-block">{translate text='Email this Search' isPublicFacing=true}</a>
-						{/if}
+				        {if !empty($enableSavedSearches)}
+				            {if !empty($savedSearch)}
+				            	<a href="/MyAccount/SaveSearch?delete={$searchId}" class="btn btn-default btn-block">{translate text='Remove Saved Search' isPublicFacing=true}</a>
+				            {else}
+				            	<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')" class="btn btn-default btn-block">{translate text='Save Search' isPublicFacing=true}</a>
+				            {/if}
+				        {/if}
+			            <a href="#" onclick="return AspenDiscovery.Account.showEmailSearchForm();" class="btn btn-default btn-block">{translate text='Email this Search' isPublicFacing=true}</a>
 			            <a href="{$rssLink|escape}" class="btn btn-default btn-block">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 			            {if !empty($excelLink)}<a href="{$excelLink|escape}" class="btn btn-default btn-block">{translate text='Export To CSV' isPublicFacing=true}</a>{/if}
                         {if !empty($risLink)}<a href="{$risLink|escape}" class="btn btn-default btn-block">{translate text="Export To RIS" isPublicFacing=true}</a>{/if}

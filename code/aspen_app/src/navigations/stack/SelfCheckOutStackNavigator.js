@@ -25,7 +25,6 @@ const SelfCheckOutStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
-                    gestureEnabled: false,
                }}>
                <Stack.Screen name="StartCheckOutSession" component={StartCheckOutSession} options={{ title: getTermFromDictionary(language, 'self_checkout') }} initialParams={{ startNew: true }} />
                <Stack.Screen name="SelfCheckOut" component={SelfCheckOut} options={{ title: getTermFromDictionary(language, 'self_checkout') }} initialParams={{ startNew: true }} />

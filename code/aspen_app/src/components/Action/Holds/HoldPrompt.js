@@ -222,7 +222,7 @@ export const HoldPrompt = (props) => {
                               {_.isArray(accounts) && _.size(accounts) > 0 ? (
                                    <FormControl>
                                         <FormControlLabel>
-                                             <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControlLabelText>
+                                             <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControlLabelText>
                                         </FormControlLabel>
                                         <Select name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">

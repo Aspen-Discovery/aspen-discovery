@@ -412,14 +412,14 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
-	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)([(]?(?:\\s?a\\s?|\\s?the\\s?)?graphic novel|audio cd|book club kit|large print[)]?)$");
+	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)([(]?(?:a )?graphic novel|audio cd|book club kit|large print[)]?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory) {
 		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, formatCategory, false);
 	}
 
-	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String formatCategory, boolean isDisplayInfo) {
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String formatCategory, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = AspenStringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -456,19 +456,17 @@ public abstract class AbstractGroupedWorkSolr {
 				}
 			}
 
-			if (updateTitle || isDisplayInfo) {
+			if (updateTitle || forceUpdate) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
 				if (!tmpTitle.isEmpty()) {
 					shortTitle = tmpTitle;
 				}
-				//Do not remove common subtitle from display info
-				//if (!isDisplayInfo) {
-					tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
-					if (!tmpTitle.isEmpty()) {
-						shortTitle = tmpTitle;
-					}
-				//}
+				//Remove common formats
+				tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
+				if (!tmpTitle.isEmpty()) {
+					shortTitle = tmpTitle;
+				}
 				this.title = shortTitle;
 				this.titleFormat = formatCategory;
 				//Strip out anything in brackets unless that would cause us to show nothing

@@ -226,6 +226,7 @@ class UserPayment extends DataObject {
 								'text' => 'Payment was cancelled.',
 								'isPublicFacing' => true,
 							]);
+							$userPayment->cancelled = true;
 						}
 						else {
 							$clientKey = $NCRPaymentsSetting->clientKey;

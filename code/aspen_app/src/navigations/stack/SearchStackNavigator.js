@@ -29,7 +29,6 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     headerBackTitleVisible: false,
-                    gestureEnabled: false,
                     headerBackImage: () => <BackIcon />,
                })}>
                <Stack.Group>

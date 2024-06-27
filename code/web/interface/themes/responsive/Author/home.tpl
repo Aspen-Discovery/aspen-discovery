@@ -39,10 +39,10 @@
 		{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{if !empty($showSearchTools) && !$showSearchToolsAtTop && (empty($offline) || $enableEContentWhileOffline)}
+	{if !empty($showSearchTools) && !$showSearchToolsAtTop}
 		<div class="well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong> &nbsp;
-			{if !empty($rssLink)}<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a> &nbsp;{/if}
+			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a> &nbsp;
 			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 		</div>
 	{/if}

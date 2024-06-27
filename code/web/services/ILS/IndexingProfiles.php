@@ -48,12 +48,12 @@ class ILS_IndexingProfiles extends ObjectEditor {
 					fgets($fHnd);
 					while ($formatMapRow = fgetcsv($fHnd)) {
 						$formatMapValue = new FormatMapValue();
-						$formatMapValue->value = $formatMapRow[0];
+						$formatMapValue->value = trim($formatMapRow[0]);
 						$formatMapValue->indexingProfileId = $indexProfile->id;
 						if (!$formatMapValue->find(true)) {
-							$formatMapValue->format = $formatMapRow[1];
-							$formatMapValue->formatCategory = $formatMapRow[2];
-							$formatMapValue->formatBoost = $formatMapRow[3];
+							$formatMapValue->format = trim($formatMapRow[1]);
+							$formatMapValue->formatCategory = trim($formatMapRow[2]);
+							$formatMapValue->formatBoost = trim($formatMapRow[3]);
 							$formatMapValue->appliesToMatType = 0;
 							$formatMapValue->appliesToItemShelvingLocation = 0;
 							$formatMapValue->appliesToItemSublocation = 0;

@@ -25,19 +25,15 @@
 			                <button data-toggle="dropdown" class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownSearchToolsBtn"><i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true} <span class="caret"></span></button>
 			                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownSearchToolsBtn">
 			                    {if !empty($showSearchTools)}
-									{if empty($offline) || $enableEContentWhileOffline}
-										{if !empty($enableSavedSearches)}
-											{if !empty($savedSearch)}
-												<li><a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text='Remove Saved Search' isPublicFacing=true}</a></li>
-											{else}
-												<li><a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a></li>
-											{/if}
-										{/if}
-										<li><a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a></li>
-									{/if}
-									{if !empty($rssLink)}
-			                    		<li><a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a></li>
-									{/if}
+				                    {if !empty($enableSavedSearches)}
+					                    {if !empty($savedSearch)}
+					                        <li><a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text='Remove Saved Search' isPublicFacing=true}</a></li>
+					                    {else}
+					                        <li><a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a></li>
+					                    {/if}
+				                    {/if}
+			                    <li><a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a></li>
+			                    <li><a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a></li>
 			                    {if !empty($excelLink)}<li><a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a></li>{/if}
                                 {if !empty($risLink)}<li><a href="{$risLink|escape}">{translate text="Export To RIS" isPublicFacing=true}</a></li>{/if}
 			                    {/if}
@@ -56,7 +52,7 @@
 	</div>
 	<div class="row visible-sm visible-xs">
 		<div class="col-sm-12">
-            <button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{if !empty($rssLink)}{$rssLink|escape}{/if}', '{if !empty($excelLink)}{$excelLink|escape}{/if}', '{if !empty($risLink)}{$risLink|escape}{/if}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}]);">
+            <button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{$rssLink|escape}', '{if !empty($excelLink)}{$excelLink|escape}{/if}', '{if !empty($risLink)}{$risLink|escape}{/if}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}]);">
               <i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true}
             </button>
 		</div>

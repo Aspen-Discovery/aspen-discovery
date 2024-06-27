@@ -32,7 +32,6 @@ const BrowseStackNavigator = () => {
                initialRouteName="HomeScreen"
                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
-                    gestureEnabled: false,
                     headerBackTitleVisible: false,
                     headerBackImage: () => <BackIcon />,
                })}>

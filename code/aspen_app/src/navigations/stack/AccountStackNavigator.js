@@ -36,7 +36,6 @@ const AccountStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
-                    gestureEnabled: false,
                     headerBackImage: () => <BackIcon />,
                }}>
                <Stack.Group>

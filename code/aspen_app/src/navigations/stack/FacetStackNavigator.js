@@ -16,7 +16,6 @@ const FacetStackNavigator = ({ options, route, back, navigation }) => {
                screenOptions={{
                     headerShown: false,
                     headerBackTitleVisible: false,
-                    gestureEnabled: false,
                }}>
                <Stack.Group screenOptions={{ presentation: 'modal' }}>
                     <Stack.Screen name="Filters" component={Filters} />

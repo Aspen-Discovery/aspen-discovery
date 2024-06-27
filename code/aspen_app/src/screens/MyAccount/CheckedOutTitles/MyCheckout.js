@@ -229,7 +229,7 @@ export const MyCheckout = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'accessing', true)}
                                    onPress={() => {
                                         setAccess(true);
-                                        viewOverDriveItem(checkout.userId, formatId, checkout.overDriveId, library.baseUrl, language).then((result) => {
+                                        viewOverDriveItem(checkout.userId, formatId, checkout.overDriveId, library.baseUrl).then((result) => {
                                              setAccess(false);
                                              toggle();
                                         });
@@ -250,7 +250,7 @@ export const MyCheckout = (props) => {
                                         isLoadingText={getTermFromDictionary(language, 'accessing', true)}
                                         onPress={() => {
                                              setAccess(true);
-                                             viewOnlineItem(checkout.userId, checkout.recordId, checkout.source, checkout.accessOnlineUrl, library.baseUrl, language).then((result) => {
+                                             viewOnlineItem(checkout.userId, checkout.recordId, checkout.source, checkout.accessOnlineUrl, library.baseUrl).then((result) => {
                                                   setAccess(false);
                                                   toggle();
                                              });
@@ -263,7 +263,7 @@ export const MyCheckout = (props) => {
                                         isLoadingText={getTermFromDictionary(language, 'returning', true)}
                                         onPress={() => {
                                              setReturn(true);
-                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId, language).then((result) => {
+                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId).then((result) => {
                                                   setReturn(false);
                                                   reloadCheckouts();
                                                   toggle();
@@ -281,7 +281,7 @@ export const MyCheckout = (props) => {
                                         isLoadingText={getTermFromDictionary(language, 'returning', true)}
                                         onPress={() => {
                                              setReturn(true);
-                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId, language).then((result) => {
+                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId).then((result) => {
                                                   setReturn(false);
                                                   reloadCheckouts();
                                                   toggle();
