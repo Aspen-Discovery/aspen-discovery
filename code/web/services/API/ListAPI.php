@@ -1326,21 +1326,21 @@ class ListAPI extends AbstractAPI {
 					$list->delete();
 					return [
 						'success' => true,
-						'title' => 'Success',
-						'message' => 'List deleted successfully',
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'List deleted successfully', 'isPublicFacing' => true]),
 					];
 				} else {
 					return [
-						'success' => true,
-						'title' => 'Success',
-						'message' => "Sorry you don't have permissions to delete this list.",
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(["text" => "Sorry you don't have permissions to delete this list.", 'isPublicFacing' => true]),
 					];
 				}
 			} else {
 				return [
 					'success' => false,
-					'title' => 'Error',
-					'message' => 'List not found',
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'List not found', 'isPublicFacing' => true]),
 					'listId' => $list->id,
 					'listTitle' => $list->title,
 				];

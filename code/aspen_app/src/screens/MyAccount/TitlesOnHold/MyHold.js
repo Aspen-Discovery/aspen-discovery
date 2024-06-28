@@ -166,7 +166,7 @@ export const MyHold = (props) => {
                          isLoadingText={getTermFromDictionary(language, 'checking_out', true)}
                          onPress={async () => {
                               startCheckingOut(true);
-                              await checkoutItem(library.baseUrl, hold.recordId, hold.source, hold.userId, '', '', '').then((result) => {
+                              await checkoutItem(library.baseUrl, hold.recordId, hold.source, hold.userId, '', '', '', language).then((result) => {
                                    popAlert(result.title, result.message, result.success ? 'success' : 'error');
                                    resetGroup();
                                    onClose();
@@ -197,7 +197,7 @@ export const MyHold = (props) => {
                               startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6" />}
                               onPress={() => {
                                    startCancelling(true);
-                                   cancelHold(hold.cancelId, hold.recordId, hold.source, library.baseUrl, hold.userId).then((r) => {
+                                   cancelHold(hold.cancelId, hold.recordId, hold.source, library.baseUrl, hold.userId, language).then((r) => {
                                         resetGroup();
                                         onClose();
                                         startCancelling(false);
@@ -214,7 +214,7 @@ export const MyHold = (props) => {
                               startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6" />}
                               onPress={() => {
                                    startCancelling(true);
-                                   cancelVdxRequest(library.baseUrl, hold.sourceId, hold.cancelId).then((r) => {
+                                   cancelVdxRequest(library.baseUrl, hold.sourceId, hold.cancelId, language).then((r) => {
                                         resetGroup();
                                         onClose();
                                         startCancelling(false);
@@ -241,7 +241,7 @@ export const MyHold = (props) => {
                               startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1" size="6" />}
                               onPress={() => {
                                    startThawing(true);
-                                   thawHold(hold.cancelId, hold.recordId, hold.source, library.baseUrl, hold.userId).then((r) => {
+                                   thawHold(hold.cancelId, hold.recordId, hold.source, library.baseUrl, hold.userId, language).then((r) => {
                                         resetGroup();
                                         onClose(onClose);
                                         startThawing(false);
@@ -378,7 +378,7 @@ export const ManageSelectedHolds = (props) => {
                     <Actionsheet.Item
                          onPress={() => {
                               startCancelling(true);
-                              cancelHolds(titlesToCancel, library.baseUrl).then((r) => {
+                              cancelHolds(titlesToCancel, library.baseUrl, language).then((r) => {
                                    resetGroup();
                                    onClose(onClose);
                                    startCancelling(false);
@@ -400,7 +400,7 @@ export const ManageSelectedHolds = (props) => {
                     <Actionsheet.Item
                          onPress={() => {
                               startThawing(true);
-                              thawHolds(titlesToThaw, library.baseUrl).then((r) => {
+                              thawHolds(titlesToThaw, library.baseUrl, language).then((r) => {
                                    resetGroup();
                                    onClose(onClose);
                                    startThawing(false);
@@ -503,7 +503,7 @@ export const ManageAllHolds = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'canceling', true)}
                                    onPress={() => {
                                         startCancelling(true);
-                                        cancelHolds(titlesToCancel, library.baseUrl).then((r) => {
+                                        cancelHolds(titlesToCancel, library.baseUrl, language).then((r) => {
                                              resetGroup();
                                              onClose();
                                              startCancelling(false);
@@ -517,7 +517,7 @@ export const ManageAllHolds = (props) => {
                                    isLoadingText={getTermFromDictionary(language, 'thaw_hold', true)}
                                    onPress={() => {
                                         startThawing(true);
-                                        thawHolds(titlesToThaw, library.baseUrl).then((r) => {
+                                        thawHolds(titlesToThaw, library.baseUrl, language).then((r) => {
                                              resetGroup();
                                              onClose(onClose);
                                              startThawing(false);

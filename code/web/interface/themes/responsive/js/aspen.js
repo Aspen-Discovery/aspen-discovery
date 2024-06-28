@@ -7549,28 +7549,22 @@ AspenDiscovery.Account = (function () {
 		},
 
 		regInfoModal: function (trigger, source, id, vendor, regLink) {
-			if (Globals.loggedIn) {
-				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {
-					'method': 'eventRegistrationModal',
-					sourceId: id,
-					source: source,
-					regLink: regLink,
-					vendor: vendor
-				};
-				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false);
-					} else {
-						AspenDiscovery.showMessage("Error", data.message);
-					}
-				}).fail(AspenDiscovery.ajaxFail);
-			}else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					return AspenDiscovery.Account.regInfoModal(trigger, source, id, vendor, regLink);
-				}, false);
-			}
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				'method': 'eventRegistrationModal',
+				sourceId: id,
+				source: source,
+				regLink: regLink,
+				vendor: vendor
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -10801,7 +10795,6 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			console.log("Toggling browse mode...");
 			if(!AspenDiscovery.Browse.accessibleMode) {
 				var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
 				var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');

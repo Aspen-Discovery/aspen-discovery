@@ -36,6 +36,7 @@ const LaunchStackNavigator = () => {
                                                                                                                    screenOptions={{
                                                                                                                         headerShown: false,
                                                                                                                         headerBackTitleVisible: false,
+                                                                                                                        gestureEnabled: false,
                                                                                                                    }}>
                                                                                                                    {refreshUserData ? (
                                                                                                                         <Stack.Screen

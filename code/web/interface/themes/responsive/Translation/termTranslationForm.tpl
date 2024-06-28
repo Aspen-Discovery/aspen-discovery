@@ -5,6 +5,12 @@
 				<input type="hidden" name="termId" value="{$translationTerm->id}" id="termId">
 				<input type="hidden" name="translationId" value="{$translation->id}" id="translationId">
 				<input type="hidden" name="method" value="translateTerm">
+
+				<div class="form-group">
+					<label for="originalTerm" class="control-label">{translate text='Original Term' isAdminFacing=true}</label>
+					<textarea id="originalTerm" name="originalTerm" class="form-control" readonly>{$translationTerm->getTerm()}</textarea>
+				</div>
+
 				{if !empty($englishTranslation)}
 					<div class="form-group">
 						<label for="englishTranslation" class="control-label">{translate text='English Translation' isAdminFacing=true}</label>

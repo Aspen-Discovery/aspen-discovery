@@ -83,7 +83,7 @@ export const SelfCheckOut = () => {
                          } else {
                               // do the checkout
                               setIsProcessingCheckout(true);
-                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount.userId ?? user.id, barcode, location.locationId, barcodeType).then((result) => {
+                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount.userId ?? user.id, barcode, location.locationId, barcodeType, language).then((result) => {
                                    if (!result.success) {
                                         // prompt error
                                         setHasError(true);

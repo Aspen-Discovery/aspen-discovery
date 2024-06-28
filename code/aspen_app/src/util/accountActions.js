@@ -114,7 +114,7 @@ export async function confirmRenewCheckout(barcode, recordId, source, itemId, li
      }
 }
 
-export async function renewAllCheckouts(url) {
+export async function renewAllCheckouts(url, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -139,12 +139,12 @@ export async function renewAllCheckouts(url) {
                popAlert(result.title, result.renewalMessage[0], 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function confirmRenewAllCheckouts(url) {
+export async function confirmRenewAllCheckouts(url, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -172,12 +172,12 @@ export async function confirmRenewAllCheckouts(url) {
                popAlert(result.title, result.renewalMessage[0], 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function returnCheckout(userId, id, source, overDriveId = null, url, version, axis360Id = null) {
+export async function returnCheckout(userId, id, source, overDriveId = null, url, version, axis360Id = null, language = 'en') {
      const postBody = await postData();
 
      let itemId = id;
@@ -211,7 +211,7 @@ export async function returnCheckout(userId, id, source, overDriveId = null, url
                     popAlert(result.title, result.message, 'error');
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
                console.log(response);
           }
      } else {
@@ -237,13 +237,13 @@ export async function returnCheckout(userId, id, source, overDriveId = null, url
                     popAlert(result.title, result.message, 'error');
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
                console.log(response);
           }
      }
 }
 
-export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
+export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url, language = 'en') {
      const postBody = await postData();
 
      if (source === 'hoopla' || source === 'cloud_library') {
@@ -277,17 +277,17 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                              console.log(response);
                                         })
                                         .catch(async (error) => {
-                                             popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
+                                             popToast(getTermFromDictionary(language, 'error_no_open_resource'), getTermFromDictionary(language, 'error_device_block_browser'), 'error');
                                         });
                               } catch (error) {
                                    console.log('Really borked.');
                               }
                          } else {
-                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
+                              popToast(getTermFromDictionary(language, 'error_no_open_resource'), getTermFromDictionary(language, 'error_device_block_browser'), 'error');
                          }
                     });
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           }
      } else {
           await WebBrowser.openBrowserAsync(accessOnlineUrl)
@@ -304,20 +304,20 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                    })
                                    .catch((error) => {
                                         console.log(error);
-                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
+                                        popToast(getTermFromDictionary(language, 'error_no_open_resource'), getTermFromDictionary(language, 'error_device_block_browser'), 'error');
                                    });
                          } catch (error) {
                               console.log(error);
                               console.log('Unable to open.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
+                         popToast(getTermFromDictionary(language, 'error_no_open_resource'), getTermFromDictionary(language, 'error_device_block_browser'), 'error');
                     }
                });
      }
 }
 
-export async function viewOverDriveItem(userId, formatId, overDriveId, url) {
+export async function viewOverDriveItem(userId, formatId, overDriveId, url, language = 'en') {
      const postBody = await postData();
 
      const api = create({
@@ -357,17 +357,17 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, url) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'error');
+                         popToast(getTermFromDictionary(language, 'error_no_open_resource'), getTermFromDictionary(language, 'error_device_block_browser'), 'error');
                     }
                });
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
 /* ACTIONS ON HOLDS */
-export async function freezeHold(cancelId, recordId, source, url, patronId, selectedReactivationDate = null) {
+export async function freezeHold(cancelId, recordId, source, url, patronId, selectedReactivationDate = null, language = 'en') {
      const postBody = await postData();
 
      const today = moment().format('YYYY-MM-DD');
@@ -405,19 +405,19 @@ export async function freezeHold(cancelId, recordId, source, url, patronId, sele
           const result = fetchedData.result;
 
           if (result.success === true) {
-               popAlert('Hold frozen', result.message, 'success');
+               popAlert(result.title ?? getTermFromDictionary(language, 'hold_frozen'), result.message, 'success');
                // reload patron data in the background
                //await reloadHolds(libraryUrl);
           } else {
-               popAlert('Unable to freeze hold', result.message, 'error');
+               popAlert(result.title ?? getTermFromDictionary(language, 'unable_freeze_hold'), result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function freezeHolds(data, url, selectedReactivationDate = null) {
+export async function freezeHolds(data, url, selectedReactivationDate = null, language = 'en') {
      const postBody = await postData();
 
      const today = moment().format('YYYY-MM-DD');
@@ -462,7 +462,7 @@ export async function freezeHolds(data, url, selectedReactivationDate = null) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -479,10 +479,10 @@ export async function freezeHolds(data, url, selectedReactivationDate = null) {
           status = 'warning';
           message = message.concat(' Unable to freeze ' + numFailed + ' holds.');
      }
-     popAlert('Holds frozen', message, status);
+     popAlert(getTermFromDictionary(language, 'holds_frozen'), message, status);
 }
 
-export async function thawHold(cancelId, recordId, source, url, patronId) {
+export async function thawHold(cancelId, recordId, source, url, patronId, language = 'en') {
      const postBody = await postData();
 
      const api = create({
@@ -505,19 +505,17 @@ export async function thawHold(cancelId, recordId, source, url, patronId) {
           const result = fetchedData.result;
 
           if (result.success === true) {
-               popAlert('Hold thawed', result.message, 'success');
-               // reload patron data in the background
-               //await reloadHolds();
+               popAlert(result.title ?? getTermFromDictionary(language, 'hold_thawed'), result.message, 'success');
           } else {
-               popAlert('Unable to thaw hold', result.message, 'error');
+               popAlert(result.title ?? getTermFromDictionary(language, 'unable_thaw_hold'), result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function thawHolds(data, url) {
+export async function thawHolds(data, url, language = 'en') {
      const postBody = await postData();
 
      let numSuccess = 0;
@@ -548,7 +546,7 @@ export async function thawHolds(data, url) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -565,10 +563,10 @@ export async function thawHolds(data, url) {
           status = 'warning';
           message = message.concat(' Unable to thaw ' + numFailed + ' holds.');
      }
-     popAlert('Holds thawed', message, status);
+     popAlert(getTermFromDictionary(language, 'holds_thawed'), message, status);
 }
 
-export async function cancelHold(cancelId, recordId, source, url, patronId) {
+export async function cancelHold(cancelId, recordId, source, url, patronId, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -599,12 +597,12 @@ export async function cancelHold(cancelId, recordId, source, url, patronId) {
 
           //await getProfile();
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function cancelHolds(data, url) {
+export async function cancelHolds(data, url, language = 'en') {
      const postBody = await postData();
 
      let numSuccess = 0;
@@ -636,7 +634,7 @@ export async function cancelHolds(data, url) {
                     numFailed = numFailed + 1;
                }
           } else {
-               popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+               popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
                console.log(response);
           }
      });
@@ -653,10 +651,10 @@ export async function cancelHolds(data, url) {
           status = 'warning';
           message = message.concat(' Unable to cancel ' + numFailed + ' holds.');
      }
-     popAlert('Holds cancelled', message, status);
+     popAlert(getTermFromDictionary(language, 'holds_cancelled'), message, status);
 }
 
-export async function changeHoldPickUpLocation(holdId, newLocation, url = null, userId) {
+export async function changeHoldPickUpLocation(holdId, newLocation, url = null, userId, language = 'en') {
      let baseUrl = url ?? LIBRARY.url;
      const postBody = await postData();
      const api = create({
@@ -686,12 +684,12 @@ export async function changeHoldPickUpLocation(holdId, newLocation, url = null, 
                popAlert(result.title, result.message, 'error');
           }
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function updateOverDriveEmail(itemId, source, patronId, overdriveEmail, promptForOverdriveEmail, libraryUrl) {
+export async function updateOverDriveEmail(itemId, source, patronId, overdriveEmail, promptForOverdriveEmail, libraryUrl, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: libraryUrl + '/API',
@@ -714,12 +712,12 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
           // reload patron data in the background
           return result;
      } else {
-          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'error');
+          popToast(getTermFromDictionary(language, 'error_no_server_connection'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
           console.log(response);
      }
 }
 
-export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
+export async function cancelVdxRequest(libraryUrl, sourceId, cancelId, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: libraryUrl + '/API',
@@ -737,7 +735,7 @@ export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
           } else {
                console.log(response);
-               popAlert('Error', response.data.result.message, 'error');
+               popAlert(getTermFromDictionary(language, 'error'), response.data.result.message, 'error');
           }
      } else {
           const problem = problemCodeMap(response.problem);
