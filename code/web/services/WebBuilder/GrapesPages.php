@@ -97,19 +97,19 @@ class WebBuilder_GrapesPages extends ObjectEditor {
 		return 'web_builder';
 	}
 
-    public function canAddNew(){
-        return true;
-    }
+	public function canAddNew(){
+    	return true;
+	}
 
 	public function canCopy() {
 		return true;
 	}
 
-    public function canDelete() {
-        return true;
+	public function canDelete() {
+    	return true;
 	}
 
-    public function canExportToCSV() {
-        return false;
-    }
+	public function canExportToCSV() {
+    	return false;
+	}
 }

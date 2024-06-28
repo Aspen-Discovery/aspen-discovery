@@ -8,7 +8,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	public $title;
 	public $urlAlias;
 	public $teaser;
-    public $pageType;
+	public $pageType;
 	public $templatesSelect;
 	public $templateNames;
 	public $grapesGenId;
@@ -31,7 +31,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		$templateList = Template::getTemplateList();
 		require_once ROOT_DIR . '/services/WebBuilder/Templates.php';
        
-        return [
+		return [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -254,7 +254,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 			}
 			unset($this->_libraries);
 		}
-    }
+	}
 
 	private function clearLibraries() {
 		//Delete links to the libraries
@@ -264,19 +264,17 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	}
 
 
-	public function canView(): bool {
-		
-			return true;
-		
+	public function canView(): bool {	
+			return true;	
 	}
 
-    public function canDelete(): bool {
-        return true;
-    }
+	public function canDelete(): bool {
+    	return true;
+	}
 
-    public function canEdit(): bool {
-        return false;
-    }
+	public function canEdit(): bool {
+    	return false;
+	}
 
 	function getAdditionalObjectActions($existingObject): array{
 		$objectActions = [];
