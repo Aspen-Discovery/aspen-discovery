@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class WebBuilder_Templates  extends ObjectEditor{
 
-    function getObjectType(): string {
+	function getObjectType(): string {
 		return 'Template';
 	}
 
@@ -19,7 +19,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return 'Templates';
 	}
 
-    function getDefaultSort(): string {
+	function getDefaultSort(): string {
 		return 'templateName';
 	}
 
@@ -27,7 +27,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return Template::getObjectStructure($context);
 	}
 
-    function getPrimaryKeyColumn(): string {
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
@@ -35,8 +35,8 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return 'id';
 	}
 
-    function getAllObjects($page, $recordsPerPage): array {
-        $object = new Template();
+	function getAllObjects($page, $recordsPerPage): array {
+    	$object = new Template();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -49,66 +49,65 @@ class WebBuilder_Templates  extends ObjectEditor{
 			}
 		}
 		return $objectList;
-    }
+	}
 
-    function getTemplateById($id) {
-        $template = new Template();
-        $template->find();
-       while ($template->fetch()){
-        if ($template->id == $id) {
-            return clone $template;
-        }
-       }
-    }
+	function getTemplateById($id) {
+    	$template = new Template();
+    	$template->find();
+    	while ($template->fetch()){
+			if ($template->id == $id) {
+				return clone $template;
+    		}
+    	}
+	}
 
-    function getTemplateByName($templateName) {
-        $template = new Template();
-        $template->find();
-        while ($template->fetch()){
-            if ($template->temaplteName == $templateName) {
-                return clone $template;
-            }
-        }
-    }
+	function getTemplateByName($templateName) {
+    	$template = new Template();
+    	$template->find();
+    	while ($template->fetch()){
+        	if ($template->templateName == $templateName) {
+            	return clone $template;
+			}
+		}
+	}
 
-    function saveAsTemplate(){
-        $newGrapesTemplate = json_decode(file_get_contents("php://input"), true);
-        $html = $newGrapesTemplate['html'];
+	function saveAsTemplate(){
+    	$newGrapesTemplate = json_decode(file_get_contents("php://input"), true);
+    	$html = $newGrapesTemplate['html'];
 		$css = $newGrapesTemplate['css'];
 		$projectData = $newGrapesTemplate['projectData'];
-        $template = new Template();
-        $template->htmlData = $html;
+    	$template = new Template();
+    	$template->htmlData = $html;
 		$template->cssData = $css;
 		$template->templateContent = $projectData;
-        $template->insert();
+    	$template->insert();
+	}
 
-    }
+	function canView(): bool {
+    	return true;
+	}
 
-    function canView(): bool {
-        return true;
-    }
-
-    public function canAddNew(){
-        return true;
-    }
+	public function canAddNew(){
+    	return true;
+	}
 
 	public function canCopy() {
 		return true;
 	}
 
-    public function canDelete() {
-        return true;
+	public function canDelete() {
+    	return true;
 	}
 
-    public function canExportToCSV() {
-        return false;
-    }
+	public function canExportToCSV() {
+    	return false;
+	}
 
-    function getActiveAdminSection(): string {
+	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
 
-    function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof Template && !empty($existingObject->id)){
 			$objectActions[] = [
@@ -119,7 +118,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return $objectActions;
 	}
 
-    function getBreadcrumbs(): array {
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');

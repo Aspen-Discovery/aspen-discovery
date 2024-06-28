@@ -112,16 +112,16 @@
                     }
                 });
             }
-      })
-    editor.on('load', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const templateId = urlParams.get('templateId'); 
-      const grapesPageId = urlParams.get('id');
-      var url = Globals.path + '/WebBuilder/AJAX?method=loadGrapesPage&id=' + grapesPageId + '&templateId=' + templateId;
-      $.ajax({
-        url: url,
-        type: 'GET',
-        success: function(data) {
+      });
+      editor.on('load', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const templateId = urlParams.get('templateId'); 
+        const grapesPageId = urlParams.get('id');
+        var url = Globals.path + '/WebBuilder/AJAX?method=loadGrapesPage&id=' + grapesPageId + '&templateId=' + templateId;
+        $.ajax({
+          url: url,
+          type: 'GET',
+          success: function(data) {
           try {
             if (data.success) {
               editor.setComponents(data.html);
