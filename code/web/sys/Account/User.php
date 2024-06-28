@@ -2591,7 +2591,12 @@ class User extends DataObject {
 	public function updateReadingHistoryBasedOnCurrentCheckouts($isNightlyUpdate) {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
-			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
+			return $catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
+		}else{
+			return [
+				'message' => 'Reading history is not enabled',
+				'skipped' => true
+			];
 		}
 	}
 

@@ -8091,13 +8091,17 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
-			$sql = "SELECT lastseen FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
+			$sql = "SELECT lastseen, dateexpiry FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
 			$results = mysqli_query($this->dbConnection, $sql);
 			$lastSeenDate = null;
+			$expirationDate = null;
 			if ($results !== false) {
 				while ($curRow = $results->fetch_assoc()) {
 					if (!is_null($curRow['lastseen'])) {
 						$lastSeenDate =  strtotime($curRow['lastseen']);
+					}
+					if (!is_null($curRow['dateexpiry'])) {
+						$expirationDate =  strtotime($curRow['dateexpiry']);
 					}
 				}
 			}
@@ -8105,7 +8109,10 @@ class Koha extends AbstractIlsDriver {
 			//Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history
 			$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
 			if ($lastSeenDate != null && ($lastSeenDate > $lastReadingHistoryUpdate)) {
-				return false;
+				//Also do not update if the patron's account expired more than 4 weeks ago.
+				if ($expirationDate == null || ($expirationDate > (time() - 4 * 7 * 24 * 60 * 60))) {
+					return false;
+				}
 			}
 			return true;
 		}
