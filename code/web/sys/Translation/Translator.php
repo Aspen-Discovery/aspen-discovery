@@ -338,11 +338,11 @@ class Translator {
 
 	public function translationModeActive() {
 		if ($this->translationModeActive === null) {
-			if (isset($_REQUEST['startTranslationMode'])) {
+			if (isset($_REQUEST['startTranslationMode']) && $_REQUEST['startTranslationMode'] == 'true' ) {
 				@session_start();
 				$_SESSION['translationMode'] = 'on';
 				$translationModeActive = true;
-			} elseif (isset($_REQUEST['stopTranslationMode'])) {
+			} elseif (isset($_REQUEST['stopTranslationMode']) && $_REQUEST['stopTranslationMode'] == 'true' ) {
 				@session_start();
 				$_SESSION['translationMode'] = 'off';
 				$translationModeActive = false;

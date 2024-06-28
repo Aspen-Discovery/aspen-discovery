@@ -1,19 +1,22 @@
 {strip}
 <div id="main-content" class="col-md-12">
 	<h1>{translate text="Translations" isAdminFacing=true}</h1>
-	<form class="form" id="translationSettings">
+	<form class="form" id="translationSettingstoolbar">
 		<div class="form-group">
-			{if !empty($translationModeActive)}
-				<button class="btn btn-primary" type="submit" name="stopTranslationMode">{translate text="Exit Translation Mode" isAdminFacing=true}</button>
-			{else}
-				<button class="btn btn-primary" type="submit" name="startTranslationMode">{translate text="Start Translation Mode" isAdminFacing=true}</button>
-			{/if}
+            {if !empty($translationModeActive)}
+				<button class="btn btn-primary" type="submit" name="stopTranslationMode" value="true" onclick="return AspenDiscovery.changeTranslationMode(false)" >{translate text="Exit Translation Mode" isAdminFacing=true}</button>
+            {else}
+				<button class="btn btn-primary" type="submit" name="startTranslationMode" value="true" onclick="return AspenDiscovery.changeTranslationMode(true)" >{translate text="Start Translation Mode" isAdminFacing=true}</button>
+            {/if}
 
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations" isAdminFacing=true}</button>
 			<button class="btn btn-primary" type="submit" name="exportForBulkTranslation">{translate text="Export For Bulk Translation" isAdminFacing=true}</button>
 			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations" isAdminFacing=true}</a>
 			<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations" isAdminFacing=true}</a>
 		</div>
+	</form>
+
+	<form class="form" id="translationSettings">
 		<div class="form-group">
 			<input type="checkbox" name="hideTranslated" id="hideTranslated" {if !empty($showTranslated)}checked{/if}>&nbsp;
 			<label for="hideTranslated">{translate text="Hide terms that have been translated already" isAdminFacing=true}</label>
@@ -56,7 +59,7 @@
 			<input class="form-control" type="text" name="filterTranslation" id="filterTranslation" value="{$filterTranslation}">
 		</div>
 		<div class="form-group">
-			<button class="btn btn-primary" type="submit">{translate text="Update Filters" isAdminFacing=true}</button>
+			<button class="btn btn-primary" type="submit" >{translate text="Update Filters" isAdminFacing=true}</button>
 		</div>
 	</form>
 

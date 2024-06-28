@@ -468,7 +468,14 @@ var AspenDiscovery = (function(){
 
 		changeTranslationMode: function(start){
 			var url = window.location.href;
-			url = url.replace(/[&?](start|stop)TranslationMode=true/, '');
+			var isFirstComponent = url.search(/\?(start|stop)TranslationMode=true/) > -1;
+
+			if (isFirstComponent) {
+				url = url.replace(/(start|stop)TranslationMode=true&/,'');
+			}else{
+				url = url.replace(/&(start|stop)TranslationMode=true/,'');
+			}
+
 			if (start) {
 				url = this.buildUrl(url,'startTranslationMode', 'true');
 			}else{
