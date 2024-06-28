@@ -199,7 +199,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		status = getStatusFromSubfield(itemField, 'q', "Checked Out");
 		if (status != null) return status;
 
-		status = getStatusFromSubfield(itemField, '7', "Library Use Only");
+		status = getStatusFromSubfield(itemField, '7', "Library Use Only"); //not for loan
 		if (status != null) return status;
 
 		status = getStatusFromSubfield(itemField, 'k', null);
