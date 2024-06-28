@@ -1124,7 +1124,10 @@ class CatalogConnection {
 	 */
 	public function updateReadingHistoryBasedOnCurrentCheckouts($patron, $isNightlyUpdate) {
 		if ($this->bypassReadingHistoryUpdate($patron, $isNightlyUpdate)) {
-			return;
+			return [
+				'message' => 'Bypassed reading history update',
+				'skipped' => true
+			];
 		}
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
@@ -1214,8 +1217,13 @@ class CatalogConnection {
 		}
 
 		//Set the last update time
-		$patron->lastReadingHistoryUpdate = time();
+		$patron->__set('lastReadingHistoryUpdate', time());
 		$patron->update();
+
+		return [
+			'message' => 'Reading history updated',
+			'skipped' => false
+		];
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
