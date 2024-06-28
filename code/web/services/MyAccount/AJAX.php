@@ -4926,8 +4926,8 @@ class MyAccount_AJAX extends JSON_Action {
 				$result = $patron->completeFinePayment($payment);
 				if ($result['success'] == false) {
 					//If the payment does not complete in the ILS, add information to the payment for tracking
-					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+					//Also send an email to the admin that it was completed in PayPal, but not the ILS
+					$payment->message .= translate(['text'=>'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt.', 'isPublicFacing'=>true]) . ' ' . $result['message'];
 					$payment->update();
 					$result['message'] = $payment->message;
 
