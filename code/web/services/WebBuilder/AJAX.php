@@ -915,4 +915,117 @@ class WebBuilder_AJAX extends JSON_Action {
 			}
 		}
 	}
+	function saveAsTemplate(){
+		require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+		$newGrapesPageContent = json_decode(file_get_contents("php://input"), true);
+		  $templateId = $newGrapesPageContent['templateId'];
+		  $html = $newGrapesPageContent['html'];
+		  $css = $newGrapesPageContent['css'];
+		  $projectData = json_encode($newGrapesPageContent['projectData']);
+  
+		  $template = new Template();
+		  $template->id = $templateId;
+  
+		  if ($template->find(true)) {
+			  $template->templateContent = $projectData;
+			  $template->htmlData = $html;
+			  $template->cssData = $css;
+		  }
+		  $template->update();
+	  }
+  
+	  function saveAsPage() {
+		  require_once ROOT_DIR .  '/sys/WebBuilder/GrapesPage.php';
+		  $newGrapesPageContent = json_decode(file_get_contents("php://input"), true);
+		  $grapesPageId = $newGrapesPageContent['grapesPageId'];
+		  $grapesGenId = $newGrapesPageContent['grapesGenId'];
+		  $templateId = $newGrapesPageContent['templateId'];
+		  $html = $newGrapesPageContent['html'];
+		  $css = $newGrapesPageContent['css'];
+		  $grapesPage = new GrapesPage();
+		  $grapesPage->id = $grapesPageId;
+		  $projectData = json_encode($newGrapesPageContent['projectData']);
+  
+		  if ($grapesPage->find(true)) {
+			  $grapesPage->grapesGenId = $grapesGenId;
+			  $grapesPage->templateContent = $projectData;
+			  $grapesPage->htmlData = $html;
+			  $grapesPage->cssData = $css;
+		  }
+		  $grapesPage->update();
+	  }
+  
+	  function loadGrapesPage() {
+		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
+		  require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+  
+		  $grapesPageId = $_GET['id'];
+		  $response = [];
+  
+		  $grapesPage = new GrapesPage();
+		  $grapesPage->id = $grapesPageId;
+  
+		  if ($grapesPage->find(true)) {
+			  if(empty($grapesPage->templateContent) && $grapesPage->templatesSelect !== null) {
+				  $template = new Template();
+				  $template->id = $grapesPage->templatesSelect;
+  
+				  if ($template->find(true)) {
+					  $response['success'] = true;
+					  $response['html'] = $template->htmlData;
+					  $response['css'] = $template->cssData;
+					  $response['projectData'] = json_decode($template->templateContent, true);
+  
+					  $grapesPage->templateContent = json_decode($template->templateContent, true);
+					  $grapesPage->htmlData = $template->htmlData;
+					  $grapesPage->cssData = $template->cssData;
+					  $grapesPage->update();
+				  } else {
+					  $response['success'] = false;
+					  $response['message'] = 'Template not found';
+				  }
+			  } elseif (!empty($grapesPage->templateContent)) {
+				  $response['success'] = true;
+				  $response['html'] = $grapesPage->htmlData;
+				  $response['css'] = $grapesPage->cssData;
+				  $response['projectData'] = json_decode($grapesPage->templateContent, true);
+			  } else {
+				  $response['success'] = false;
+				  $response['message'] = 'Template Content and Template Select are both empty';
+			  }
+		  } else {
+			  $response['success'] = false;
+			  $response['message'] = 'Page not found';
+		  }
+		  echo json_encode($response);
+		  exit();
+	  }
+  
+	  function loadGrapesTemplate() {
+		  require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+  
+		  $templateId = $_GET['id'];
+		  $response = [];
+  
+		  $template = new Template();
+		  $template->id = $templateId;
+  
+		  if ($template->find(true)) {
+			  if ($template->htmlData !== null && $template->cssData !== null) {
+				  $response['success'] = true;
+				  $response['html'] = $template->htmlData;
+				  $response['css'] = $template->cssData;
+				  $response['projectData'] = json_decode($template->templateContent, true);
+			  } else {
+				  $response['success'] = false;
+				  $response['message'] = 'Template has no data.';
+			  }
+		  } else {
+			  $response['success'] = false;
+			  $response['message'] = 'Template not found.';
+		  }
+		  echo json_encode($response);
+		  exit();
+	  }
+
 }

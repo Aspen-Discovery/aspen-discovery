@@ -138,6 +138,9 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 		} elseif ($current['recordtype'] == 'PortalPage') {
 			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
 			return new PortalPageRecordDriver($current);
+		} elseif ($current['recordtype'] == 'GrapesPage') {
+			require_once ROOT_DIR . '/RecordDrivers/GrapesPageRecordDriver.php';
+			return new GrapesPageRecordDriver($current);
 		} else {
 			AspenError::raiseError("Unknown type of Website result {$current['recordtype']}");
 		}
