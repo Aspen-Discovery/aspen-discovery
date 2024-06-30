@@ -605,10 +605,8 @@ class CarlX extends AbstractIlsDriver {
 	 * @access  public
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
 		return [
-			'success' => false,
-			'message' => 'Unable to place item holds for CARL.X',
+            $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate, 'item', null, null, null, $itemId)
 		];
 	}
 
@@ -622,7 +620,6 @@ class CarlX extends AbstractIlsDriver {
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false): array {
 		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
-
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
@@ -2008,7 +2005,7 @@ class CarlX extends AbstractIlsDriver {
 		];
 	}
 
-	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null) {
+	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null, $itemId = null) {
 		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
@@ -2034,42 +2031,42 @@ class CarlX extends AbstractIlsDriver {
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (strpos($msg_result, "98") === 0) {
-				$result = $mySip->parseACSStatusResponse($msg_result);
+                $result = $mySip->parseACSStatusResponse($msg_result);
 
-				//  Use result to populate SIP2 setings
-				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
-				if (isset($result['variable']['AO'][0])) {
-					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-				} else {
-					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
-				}
-				if (isset($result['variable']['AN'][0])) {
-					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-				} else {
-					$mySip->AN = '';
-				}
+                //  Use result to populate SIP2 setings
+                // These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
+                if (isset($result['variable']['AO'][0])) {
+                    $mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+                } else {
+                    $mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
+                }
+                if (isset($result['variable']['AN'][0])) {
+                    $mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+                } else {
+                    $mySip->AN = '';
+                }
 
-				$mySip->patron = $patron->ils_barcode;
-				$mySip->patronpwd = $patron->ils_password;
+                $mySip->patron = $patron->ils_barcode;
+                $mySip->patronpwd = $patron->ils_password;
 
-				if (empty($pickupBranch)) {
-					//Get the code for the location
-					$locationLookup = new Location();
-					$locationLookup->locationId = $patron->homeLocationId;
-					$locationLookup->find(1);
-					if ($locationLookup->getNumResults() > 0) {
-						$pickupBranch = strtoupper($locationLookup->code);
-					}
-				} else {
-					$pickupBranch = strtoupper($pickupBranch);
-				}
-				$pickupBranchInfo = $this->getBranchInformation(null, $pickupBranch);
-				$pickupBranchNumber = $pickupBranchInfo->BranchNumber;
+                if (empty($pickupBranch)) {
+                    //Get the code for the location
+                    $locationLookup = new Location();
+                    $locationLookup->locationId = $patron->homeLocationId;
+                    $locationLookup->find(1);
+                    if ($locationLookup->getNumResults() > 0) {
+                        $pickupBranch = strtoupper($locationLookup->code);
+                    }
+                } else {
+                    $pickupBranch = strtoupper($pickupBranch);
+                }
+                $pickupBranchInfo = $this->getBranchInformation(null, $pickupBranch);
+                $pickupBranchNumber = $pickupBranchInfo->BranchNumber;
 
-				//place the hold
-				$itemId = '';
-				$recordId = '';
-				if (strpos($holdId, 'ITEM ID: ') === 0) {
+                //place the hold
+                if ($itemId) {
+                    $holdType = 3; // specific copy
+                } elseif (strpos($holdId, 'ITEM ID: ') === 0) {
 					$holdType = 3; // specific copy
 					$itemId = substr($holdId, 9);
 				} elseif (strpos($holdId, 'BID: ') === 0) {
