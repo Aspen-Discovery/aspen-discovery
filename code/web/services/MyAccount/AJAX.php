@@ -4297,29 +4297,29 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/Donations/Donation.php';
 		$donation = new Donation();
 		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation['firstName'];
-		$donation->lastName = $tempDonation['lastName'];
-		$donation->email = $tempDonation['email'];
-		$donation->anonymous = $tempDonation['isAnonymous'];
-		$donation->dedicate = $tempDonation['isDedicated'];
-		if ($tempDonation['isDedicated'] == 1) {
-			$donation->dedicateType = $tempDonation['dedication']['type'];
-			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
-			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		$donation->firstName = $tempDonation->firstName;
+		$donation->lastName = $tempDonation->lastName;
+		$donation->email = $tempDonation->email;
+		$donation->anonymous = $tempDonation->isAnonymous;
+		$donation->dedicate = $tempDonation->isDedicated;
+		if ($tempDonation->isDedicated == 1) {
+			$donation->dedicateType = $tempDonation->dedication->type;
+			$donation->honoreeFirstName = $tempDonation->dedication->honoreeFirstName;
+			$donation->honoreeLastName = $tempDonation->dedication->honoreeLastName;
 		}
-		$donation->shouldBeNotified = $tempDonation['shouldBeNotified'];
-		if($tempDonation['shouldBeNotified'] == 1) {
-			$donation->notificationFirstName = $tempDonation['notification']['notificationFirstName'];
-			$donation->notificationLastName = $tempDonation['notification']['notificationLastName'];
-			$donation->notificationAddress = $tempDonation['notification']['notificationAddress'];
-			$donation->notificationCity = $tempDonation['notification']['notificationCity'];
-			$donation->notificationState = $tempDonation['notification']['notificationState'];
-			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
+		$donation->shouldBeNotified = $tempDonation->shouldBeNotified;
+		if($tempDonation->shouldBeNotified == 1) {
+			$donation->notificationFirstName = $tempDonation->notification->notificationFirstName;
+			$donation->notificationLastName = $tempDonation->notification->notificationLastName;
+			$donation->notificationAddress = $tempDonation->notification->notificationAddress;
+			$donation->notificationCity = $tempDonation->notification->notificationCity;
+			$donation->notificationState = $tempDonation->notification->notificationState;
+			$donation->notificationZip = $tempDonation->notification->notificationZip;
 		}
-		$donation->donateToLocationId = $tempDonation['donateToLocationId'];
-		$donation->donateToLocation = $tempDonation['donateToLocation'];
-		$donation->comments = $tempDonation['comments'];
-		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->donateToLocationId = $tempDonation->donateToLocationId;
+		$donation->donateToLocation = $tempDonation->donateToLocation;
+		$donation->comments = $tempDonation->comments;
+		$donation->donationSettingId = $tempDonation->donationSettingId;
 		$donation->sendEmailToUser = 1;
 		$donation->insert();
 
