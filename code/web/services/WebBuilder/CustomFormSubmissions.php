@@ -66,7 +66,7 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 	}
 
 	function showReturnToList(): bool {
-		return false;
+		return true;
 	}
 
 	function getObjectStructure($context = ''): array {
