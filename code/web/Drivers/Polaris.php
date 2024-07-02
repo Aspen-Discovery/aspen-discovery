@@ -1671,7 +1671,10 @@ class Polaris extends AbstractIlsDriver {
 		if ($patron->ils_password != $oldPin && $patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
-				'message' => "The old PIN provided is incorrect.",
+				'message' => translate([
+					'text' => 'The old PIN provided is incorrect.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 		$result = [

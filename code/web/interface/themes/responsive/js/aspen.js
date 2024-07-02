@@ -13311,7 +13311,9 @@ AspenDiscovery.OverDrive = (function(){
 					url: ajaxUrl,
 					cache: false,
 					success: function(data){
-						AspenDiscovery.showMessage("Title Returned", data.message, data.success);
+						AspenDiscovery.showMessage(
+							data.success ? 'Title Returned' : 'Error Returning Title', data.message, data.success
+						);
 						if (data.success){
 							$(".overdrive_checkout_" + overDriveId).hide();
 							AspenDiscovery.Account.loadMenuData();
