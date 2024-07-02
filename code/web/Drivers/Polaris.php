@@ -1757,12 +1757,13 @@ class Polaris extends AbstractIlsDriver {
 		];
 		$finePayments = explode(',', $payment->finesPaid);
 		$allPaymentsSucceed = true;
+		$orgId = $patron->getHomeLocationCode();
 		foreach ($finePayments as $finePayment) {
 			[
 				$fineId,
 				$paymentAmount,
 			] = explode('|', $finePayment);
-			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/patron/{$patron->getBarcode()}/account/{$fineId}/pay?wsid={$this->getWorkstationID($patron)}&userid={$staffUserInfo['polarisId']}";
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/$orgId/{$staffUserInfo['accessToken']}/patron/{$patron->getBarcode()}/account/{$fineId}/pay?wsid={$this->getWorkstationID($patron)}&userid={$staffUserInfo['polarisId']}";
 			$body = new stdClass();
 			$body->TxnAmount = $paymentAmount;
 			$body->PaymentMethodID = 12;
