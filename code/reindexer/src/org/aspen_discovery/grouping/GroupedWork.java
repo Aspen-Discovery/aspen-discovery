@@ -207,8 +207,8 @@ public class GroupedWork implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static final Pattern commonSubtitlesSimplePattern = Pattern.compile("\\b(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|novel)$");
-	private static final Pattern commonSubtitlesComplexPattern = Pattern.compile("\\b((a|una|an)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+)$");
+	private static final Pattern commonSubtitlesSimplePattern = Pattern.compile("\\b(a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|novel)$");
+	private static final Pattern commonSubtitlesComplexPattern = Pattern.compile("\\b((a|una|an)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+)$");
 	private String removeCommonSubtitles(String groupingTitle) {
 		boolean changeMade = true;
 		while (changeMade){
@@ -325,6 +325,25 @@ public class GroupedWork implements Cloneable {
 		return title;
 	}
 
+	private static final Pattern authorStatementPattern = Pattern.compile("\\b(by\\s\\w+\\s\\w+)");
+	private void removeTitleAuthorStatement() {
+		if (!this.fullTitle.isEmpty() && !this.author.isEmpty()) {
+			Matcher authorStatementMatcher = authorStatementPattern.matcher(this.fullTitle);
+			if (authorStatementMatcher.find() && authorStatementMatcher.hitEnd()) {
+				String[] authorNames = this.author.split("(,\\s|\\s)");
+				String match = authorStatementMatcher.group();
+				String newTitle = this.fullTitle;
+				for (String authorName : authorNames) {
+					if (match.contains(authorName)) {
+						newTitle = authorStatementMatcher.replaceFirst("");
+						break;
+					}
+				}
+				this.fullTitle = newTitle.trim();
+			}
+		}
+	}
+
 	public String getAuthor() {
 		return author;
 	}
@@ -332,6 +351,7 @@ public class GroupedWork implements Cloneable {
 	public void setAuthor(String author) {
 		originalAuthorName = author;
 		this.author = normalizeAuthor(author);
+		removeTitleAuthorStatement();
 	}
 
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|other|comic)$");
