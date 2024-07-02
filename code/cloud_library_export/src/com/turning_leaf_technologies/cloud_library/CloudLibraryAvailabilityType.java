@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.cloud_library;
 
 class CloudLibraryAvailabilityType {
-	private int availabilityType;
+	private int availabilityType = 1;
 
 	private String rawResponse = "";
 

@@ -10673,6 +10673,7 @@ AspenDiscovery.Browse = (function(){
 		changingDisplay: false,
 		browseStyle: 'masonry',
 		accessibleMode: false,
+		patronId: null,
 
 		addToHomePage: function(searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
@@ -10974,7 +10975,7 @@ AspenDiscovery.Browse = (function(){
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-browse-category-' + categoryTextId, {
+					var browseSwiper = new Swiper('.swiper-browse-category-' + categoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -10987,14 +10988,25 @@ AspenDiscovery.Browse = (function(){
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
 					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					});
+
+					// update links for more results
+					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					AspenDiscovery.Browse.patronId = data.patronId;
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
@@ -11137,6 +11149,25 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
+		getMoreSubCategoryResultsLink: function (subCategoryTextId, categoryId) {
+			var url = Globals.path + '/Browse/AJAX';
+			var params = {
+				method : 'getMoreBrowseSubCategoryResultsLink'
+				,textId : categoryId
+				,subCategoryTextId : subCategoryTextId
+			};
+
+			$.getJSON(url, params, function(data){
+				if (data.success === false){
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				}else{
+					window.location = data.searchUrl;
+				}
+			}).fail(function(){
+				AspenDiscovery.ajaxFail();
+			});
+		},
+
 		changeBrowseSubCategoryTab: function (subCategoryTextId, categoryId) {
 			AspenDiscovery.Browse.changingDisplay = true;
 			var url = Globals.path + '/Browse/AJAX';
@@ -11153,7 +11184,7 @@ AspenDiscovery.Browse = (function(){
 				}else{
 					var resultsTabPanel = document.getElementById('swiper-sub-browse-category-' + subCategoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
+					var browseSwiper = new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
@@ -11173,6 +11204,13 @@ AspenDiscovery.Browse = (function(){
 							enabled: true,
 							slides: Object.values(data.records),
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 
 				}
@@ -13273,7 +13311,9 @@ AspenDiscovery.OverDrive = (function(){
 					url: ajaxUrl,
 					cache: false,
 					success: function(data){
-						AspenDiscovery.showMessage("Title Returned", data.message, data.success);
+						AspenDiscovery.showMessage(
+							data.success ? 'Title Returned' : 'Error Returning Title', data.message, data.success
+						);
 						if (data.success){
 							$(".overdrive_checkout_" + overDriveId).hide();
 							AspenDiscovery.Account.loadMenuData();
@@ -14774,7 +14814,6 @@ AspenDiscovery.Searches = (function(){
 		}
 	}
 }(AspenDiscovery.Searches || {}));
-
 AspenDiscovery.SideLoads = (function(){
 	return {
 		deleteMarc: function (sideLoadId, fileName, fileIndex) {

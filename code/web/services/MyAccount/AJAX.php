@@ -4297,29 +4297,29 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/Donations/Donation.php';
 		$donation = new Donation();
 		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation['firstName'];
-		$donation->lastName = $tempDonation['lastName'];
-		$donation->email = $tempDonation['email'];
-		$donation->anonymous = $tempDonation['isAnonymous'];
-		$donation->dedicate = $tempDonation['isDedicated'];
-		if ($tempDonation['isDedicated'] == 1) {
-			$donation->dedicateType = $tempDonation['dedication']['type'];
-			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
-			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		$donation->firstName = $tempDonation->firstName;
+		$donation->lastName = $tempDonation->lastName;
+		$donation->email = $tempDonation->email;
+		$donation->anonymous = $tempDonation->isAnonymous;
+		$donation->dedicate = $tempDonation->isDedicated;
+		if ($tempDonation->isDedicated == 1) {
+			$donation->dedicateType = $tempDonation->dedication->type;
+			$donation->honoreeFirstName = $tempDonation->dedication->honoreeFirstName;
+			$donation->honoreeLastName = $tempDonation->dedication->honoreeLastName;
 		}
-		$donation->shouldBeNotified = $tempDonation['shouldBeNotified'];
-		if($tempDonation['shouldBeNotified'] == 1) {
-			$donation->notificationFirstName = $tempDonation['notification']['notificationFirstName'];
-			$donation->notificationLastName = $tempDonation['notification']['notificationLastName'];
-			$donation->notificationAddress = $tempDonation['notification']['notificationAddress'];
-			$donation->notificationCity = $tempDonation['notification']['notificationCity'];
-			$donation->notificationState = $tempDonation['notification']['notificationState'];
-			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
+		$donation->shouldBeNotified = $tempDonation->shouldBeNotified;
+		if($tempDonation->shouldBeNotified == 1) {
+			$donation->notificationFirstName = $tempDonation->notification->notificationFirstName;
+			$donation->notificationLastName = $tempDonation->notification->notificationLastName;
+			$donation->notificationAddress = $tempDonation->notification->notificationAddress;
+			$donation->notificationCity = $tempDonation->notification->notificationCity;
+			$donation->notificationState = $tempDonation->notification->notificationState;
+			$donation->notificationZip = $tempDonation->notification->notificationZip;
 		}
-		$donation->donateToLocationId = $tempDonation['donateToLocationId'];
-		$donation->donateToLocation = $tempDonation['donateToLocation'];
-		$donation->comments = $tempDonation['comments'];
-		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->donateToLocationId = $tempDonation->donateToLocationId;
+		$donation->donateToLocation = $tempDonation->donateToLocation;
+		$donation->comments = $tempDonation->comments;
+		$donation->donationSettingId = $tempDonation->donationSettingId;
 		$donation->sendEmailToUser = 1;
 		$donation->insert();
 
@@ -4926,8 +4926,8 @@ class MyAccount_AJAX extends JSON_Action {
 				$result = $patron->completeFinePayment($payment);
 				if ($result['success'] == false) {
 					//If the payment does not complete in the ILS, add information to the payment for tracking
-					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+					//Also send an email to the admin that it was completed in PayPal, but not the ILS
+					$payment->message .= translate(['text'=>'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt.', 'isPublicFacing'=>true]) . ' ' . $result['message'];
 					$payment->update();
 					$result['message'] = $payment->message;
 
@@ -6305,7 +6305,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
-		$patronId = $_REQUEST['patronId'];
+		$patronId = UserAccount::getActiveUserId();
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 
 		$result = [

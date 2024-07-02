@@ -242,26 +242,6 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
      return [];
 }
 
-export async function getLanguages(libraryUrl) {
-     const api = create({
-          baseURL: libraryUrl + '/API',
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.get('/SystemAPI?method=getLanguages');
-     if (response.ok) {
-          let languages = [];
-          if (typeof response.data.result !== 'undefined') {
-               languages = _.sortBy(response.data.result.languages, 'id');
-               console.log('Library languages saved');
-          }
-          return languages;
-     } else {
-          console.log(response);
-     }
-}
-
 export async function getVdxForm(url, id) {
      const postBody = await postData();
      const api = create({

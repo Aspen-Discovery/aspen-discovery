@@ -2166,7 +2166,7 @@ class User extends DataObject {
 
 	function freezeAllHolds($reactivationDate = false) {
 		$user = UserAccount::getLoggedInUser();
-		$tmpResult = [ // set default response
+		$result = [ // set default response
 			'success' => false,
 			'title' => translate([
 				'text' => 'Error',
@@ -2224,13 +2224,13 @@ class User extends DataObject {
 						}
 					} else {
 						$failed++;
-						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						$result['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} elseif ($canFreeze == 0) {
 					$failed++;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+					$result['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
 		}
@@ -2254,27 +2254,27 @@ class User extends DataObject {
 					]) . '</div>';
 			}
 
-			$tmpResult['message'] = $message;
-			$tmpResult['title'] = translate([
+			$result['message'] = $message;
+			$result['title'] = translate([
 				'text' => 'Success',
 				'isPublicFacing' => true,
 			]);
 		} else {
 			if ($total == 0) {
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+				$result['message'] = '<div class="alert alert-warning">' . translate([
 						'text' => 'No holds available to freeze',
 						'isPublicFacing' => true,
 						'inAttribute' => true,
 					]) . '</div>';
 			} else {
 				if ($numHoldsAlreadyFrozen == $total) {
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+					$result['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => 'All holds already frozen',
 							'isPublicFacing' => true,
 							'inAttribute' => true,
 						]) . '</div>';
 				}else{
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
+					$result['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => '%1% hold(s) could not be frozen',
 							1 => $failed,
 							2 => $total,
@@ -2287,7 +2287,7 @@ class User extends DataObject {
 
 		}
 
-		return $tmpResult;
+		return $result;
 	}
 
 	function thawAllHolds() {
@@ -2591,7 +2591,12 @@ class User extends DataObject {
 	public function updateReadingHistoryBasedOnCurrentCheckouts($isNightlyUpdate) {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
-			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
+			return $catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
+		}else{
+			return [
+				'message' => 'Reading history is not enabled',
+				'skipped' => true
+			];
 		}
 	}
 
@@ -3525,6 +3530,7 @@ class User extends DataObject {
 		$sections['email']->addAction(new AdminAction('Email Templates', 'Templates for various emails sent from Aspen Discovery.', '/Admin/EmailTemplates'), ['Administer All Email Templates', 'Administer Library Email Templates']);
 		$sections['email']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['email']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
+		$sections['email']->addAction(new AdminAction('SMTP Settings', 'Settings to allow Aspen Discovery to send emails via an SMTP server.', '/Admin/SMTPSettings'), 'Administer SMTP');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');
@@ -3544,7 +3550,7 @@ class User extends DataObject {
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
 			}
-			if ($accountProfile->ils == 'symphony') {
+			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx') {
 				$customSelfRegForms = true;
 			}
             if ($accountProfile->driver == 'Nashville') {

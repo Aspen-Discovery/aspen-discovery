@@ -807,80 +807,88 @@ class Evergreen extends AbstractIlsDriver {
 		$historyActive = false;
 		$readingHistoryTitles = [];
 		$numTitles = 0;
+		$offset = 0;
+		$hasMoreHistory = true;
 
-		$authToken = $this->getAPIAuthToken($patron, false);
-		if ($authToken != null) {
-			//Get a list of checkouts
+		while ($hasMoreHistory){
+			$authToken = $this->getAPIAuthToken($patron, false);
+			if ($authToken != null) {
+				//Get a list of checkouts
 
-			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
-			$headers = [
-				'Content-Type: application/x-www-form-urlencoded',
-			];
-			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$params = [
-				'service' => 'open-ils.actor',
-				'method' => 'open-ils.actor.history.circ',
-				'param' => json_encode($authToken),
-			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+				$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+				$headers = [
+					'Content-Type: application/x-www-form-urlencoded',
+				];
+				$this->apiCurlWrapper->addCustomHeaders($headers, false);
 
-			ExternalRequestLogEntry::logRequest('evergreen.getReadingHistory', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
-			if ($this->apiCurlWrapper->getResponseCode() == 200) {
-				$circHistoryDecoded = json_decode($apiResponse);
-				foreach ($circHistoryDecoded->payload as $circEntry) {
-					$circEntryMapped = $this->mapEvergreenFields($circEntry->__p, $this->fetchIdl('auch'));
+				$params = 'service=open-ils.actor';
+				$params .= '&method=open-ils.actor.history.circ';
+				$params .= '&param=' . json_encode($authToken);
+				$params .= '&param={"offset":' . $offset .',"limit":100}';
+				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
 
-					require_once ROOT_DIR . '/sys/User/Checkout.php';
-					if (empty($circEntryMapped['source_circ'])) {
-						$modsForCopy = $this->getModsForCopy($circEntryMapped['target_copy']);
-						if ($modsForCopy != null) {
-							if (is_integer($modsForCopy['doc_id'])){
-								$modsForCopy['doc_id'] = strval($modsForCopy['doc_id']);
+				ExternalRequestLogEntry::logRequest('evergreen.getReadingHistory', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $params, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+				if ($this->apiCurlWrapper->getResponseCode() == 200) {
+					$circHistoryDecoded = json_decode($apiResponse);
+					if (empty($circHistoryDecoded->payload)) {
+						$hasMoreHistory = false;
+					}
+					foreach ($circHistoryDecoded->payload as $circEntry) {
+						$circEntryMapped = $this->mapEvergreenFields($circEntry->__p, $this->fetchIdl('auch'));
+
+						require_once ROOT_DIR . '/sys/User/Checkout.php';
+						if (empty($circEntryMapped['source_circ'])) {
+							$modsForCopy = $this->getModsForCopy($circEntryMapped['target_copy']);
+							if ($modsForCopy != null) {
+								if (is_integer($modsForCopy['doc_id'])){
+									$modsForCopy['doc_id'] = strval($modsForCopy['doc_id']);
+								}
+								$curTitle = [];
+								$curTitle['id'] = $modsForCopy['doc_id'];
+								$curTitle['shortId'] = $modsForCopy['doc_id'];
+								$curTitle['recordId'] = $modsForCopy['doc_id'];
+								$curTitle['title'] = $modsForCopy['title'];
+								$curTitle['author'] = $modsForCopy['author'];
+								require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+								$marcRecordDriver = new MarcRecordDriver($modsForCopy['doc_id']);
+								if ($marcRecordDriver->isValid()) {
+									$curTitle['format'] = $marcRecordDriver->getPrimaryFormat();
+								}else{
+									$curTitle['format'] = 'Unknown';
+								}
+								if (!empty($circEntryMapped['xact_start'])) {
+									$curTitle['checkout'] = strtotime($circEntryMapped['xact_start']);;
+								}
+								if (!empty($circEntryMapped['checkin_time'])) {
+									$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+								} else {
+									$curTitle['checkin'] = null;
+								}
+							} else {
+								continue;
 							}
+						} else {
+							$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
 							$curTitle = [];
-							$curTitle['id'] = $modsForCopy['doc_id'];
-							$curTitle['shortId'] = $modsForCopy['doc_id'];
-							$curTitle['recordId'] = $modsForCopy['doc_id'];
-							$curTitle['title'] = $modsForCopy['title'];
-							$curTitle['author'] = $modsForCopy['author'];
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$marcRecordDriver = new MarcRecordDriver($modsForCopy['doc_id']);
-							if ($marcRecordDriver->isValid()) {
-								$curTitle['format'] = $marcRecordDriver->getPrimaryFormat();
-							}else{
-								$curTitle['format'] = 'Unknown';
-							}
-							if (!empty($circEntryMapped['xact_start'])) {
-								$curTitle['checkout'] = strtotime($circEntryMapped['xact_start']);;
-							}
+							$curTitle['id'] = $checkout->recordId;
+							$curTitle['shortId'] = $checkout->recordId;
+							$curTitle['recordId'] = $checkout->recordId;
+							$curTitle['title'] = $checkout->title;
+							$curTitle['author'] = $checkout->author;
+							$curTitle['format'] = $checkout->format;
+							$curTitle['checkout'] = $checkout->checkoutDate;
 							if (!empty($circEntryMapped['checkin_time'])) {
 								$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
 							} else {
 								$curTitle['checkin'] = null;
 							}
-						} else {
-							continue;
 						}
-					} else {
-						$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
-						$curTitle = [];
-						$curTitle['id'] = $checkout->recordId;
-						$curTitle['shortId'] = $checkout->recordId;
-						$curTitle['recordId'] = $checkout->recordId;
-						$curTitle['title'] = $checkout->title;
-						$curTitle['author'] = $checkout->author;
-						$curTitle['format'] = $checkout->format;
-						$curTitle['checkout'] = $checkout->checkoutDate;
-						if (!empty($circEntryMapped['checkin_time'])) {
-							$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
-						} else {
-							$curTitle['checkin'] = null;
-						}
+						$readingHistoryTitles[] = $curTitle;
+						$numTitles++;
 					}
-					$readingHistoryTitles[] = $curTitle;
-					$numTitles++;
 				}
 			}
+			$offset += 100;
 		}
 
 		set_time_limit(20 * count($readingHistoryTitles));

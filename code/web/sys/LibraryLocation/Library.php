@@ -453,6 +453,8 @@ class Library extends DataObject {
 	public $cookieStorageConsent;
 	public $cookiePolicyHTML;
 
+	public $allowUpdatingHolidaysFromILS;
+
 	/** @var MaterialsRequestFormFields[] */
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
@@ -3806,21 +3808,41 @@ class Library extends DataObject {
 				],
 			],
 
-			'holidays' => [
-				'property' => 'holidays',
-				'type' => 'oneToMany',
+			'holidaysSection' => [
+				'property' => 'holidaysSection',
+				'type' => 'section',
 				'label' => 'Holidays',
-				'renderAsHeading' => true,
-				'description' => 'Holidays (automatically loaded from Koha)',
-				'keyThis' => 'libraryId',
-				'keyOther' => 'libraryId',
-				'subObjectType' => 'Holiday',
-				'structure' => $holidaysStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'permissions' => ['Library Holidays'],
-				'canAddNew' => true,
-				'canDelete' => true,
+				'hideInLists' => true,
+				'helpLink' => '',
+				'renderAsHeading' => false,
+				'permissions' => ['Library ILS Connection', 'Library Holidays'],
+				'properties' => [
+					'allowUpdatingHolidaysFromILS' =>[
+						'property' => 'allowUpdatingHolidaysFromILS',
+						'type' => 'checkbox',
+						'label' => 'Automatically update holidays from the ILS',
+						'description' => 'Whether holidays should be automatically updated (Koha Only).',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Connection'],
+					],
+					'holidays' => [
+						'property' => 'holidays',
+						'type' => 'oneToMany',
+						'label' => 'Holidays',
+						'renderAsHeading' => false,
+						'description' => 'Holidays (automatically loaded from Koha)',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'Holiday',
+						'structure' => $holidaysStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'permissions' => ['Library Holidays'],
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
+				],
 			],
 
 			'libraryLinks' => [
@@ -5095,7 +5117,9 @@ class Library extends DataObject {
 				if ($settings->find(true)) {
 					global $activeLanguage;
 					$instructions = $settings->getTextBlockTranslation('instructionsForUsage', $activeLanguage->code);
-					$apiInfo['palaceProjectInstructions'] = strip_tags($instructions);
+					$instructions = str_replace("\n", '', $instructions);
+					$instructions = htmlentities($instructions);
+					$apiInfo['palaceProjectInstructions'] = $instructions;
 				}
 			}
 		}

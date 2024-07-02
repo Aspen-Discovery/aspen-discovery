@@ -258,13 +258,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     background-color: {$browseCategoryPanelColor};
 {rdelim}
 
-.browse-category,#browse-sub-category-menu button, .manual [role="tab"]{ldelim}
+.browse-category,#browse-sub-category-menu button, .manual [role="tab"], .manual .hide-browse-sub-category, .manual .more-browse-sub-category{ldelim}
     background-color: {$deselectedBrowseCategoryBackgroundColor} !important;
     border-color: {$deselectedBrowseCategoryBorderColor} !important;
     color: {$deselectedBrowseCategoryForegroundColor} !important;
 {rdelim}
 
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:focus,#browse-sub-category-menu button.selected:hover,#browse-sub-category-menu button:focus,#browse-sub-category-menu button:hover, .manual [role="tab"]:focus, .manual [role="tab"]:hover, .manual [role="tab"][aria-selected="true"]{ldelim}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:focus,#browse-sub-category-menu button.selected:hover,#browse-sub-category-menu button:focus,#browse-sub-category-menu button:hover, .manual [role="tab"]:focus, .manual [role="tab"]:hover, .manual [role="tab"][aria-selected="true"], .manual [role="tab"][aria-selected="true"] + .more-browse-sub-category + .hide-browse-sub-category, .manual .hide-browse-sub-category:hover, .manual .hide-browse-sub-category:focus, .manual [role="tab"][aria-selected="true"] + .more-browse-sub-category,.manual .more-browse-sub-category:hover, .manual .more-browse-sub-category:focus{ldelim}
     border-color: {$selectedBrowseCategoryBorderColor} !important;
     background-color: {$selectedBrowseCategoryBackgroundColor} !important;
     color: {$selectedBrowseCategoryForegroundColor} !important;

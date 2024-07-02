@@ -473,8 +473,9 @@ abstract class MarcRecordProcessor {
 					}
 					if (AspenStringUtils.isNumeric(lexileValue)) {
 						AspenStringUtils.trimTrailingPunctuation(lexileValue);
-						if (lexileValue.endsWith(".")) {
-							lexileValue = lexileValue.substring(0, lexileValue.length() - 1).trim();
+						if (lexileValue.contains(".")) {
+							//We expect the number to be an integer so trim anything that looks like a decimal
+							lexileValue = lexileValue.substring(0, lexileValue.indexOf('.')).trim();
 						}
 						groupedWork.setLexileScore(lexileValue);
 					}else{
@@ -854,6 +855,10 @@ abstract class MarcRecordProcessor {
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
+			}
+			if (subjectForm.startsWith("fiction")) {
+				addToMapWithCount(literaryFormsWithCount, "Fiction");
+				addToMapWithCount(literaryFormsFull, "Fiction");
 			}
 		}
 		groupedWork.addLiteraryForms(literaryFormsWithCount);
