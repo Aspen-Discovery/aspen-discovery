@@ -264,7 +264,7 @@ class UserPayment extends DataObject {
 										$userPayment->message .= "Donation payment completed";
 										$userPayment->completed = true;
 										if ($jsonResponse) {
-											if($jsonResponse->Result->ResultValue == 'SUCCESS') {
+											if($jsonResponse->approvalStatus == 2) {
 												$netAmt = $jsonResponse->totalRemitted;
 												$transactionId = $jsonResponse->transactionidentifier;
 												$userPayment->message .= ", TransactionId = $transactionId, Net Amount = $netAmt. ";
