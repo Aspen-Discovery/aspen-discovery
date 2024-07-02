@@ -875,8 +875,8 @@ class SystemAPI extends AbstractAPI {
 		$validLanguage->find();
 		while ($validLanguage->fetch()) {
 			if (!$validLanguage->displayToTranslatorsOnly) {
-				$validLanguages[$validLanguage->code]['weight'] = $validLanguage->weight;
-				$validLanguages[$validLanguage->code]['id'] = $validLanguage->id;
+				$validLanguages[$validLanguage->code]['weight'] = (int)$validLanguage->weight;
+				$validLanguages[$validLanguage->code]['id'] = (int)$validLanguage->id;
 				$validLanguages[$validLanguage->code]['code'] = $validLanguage->code;
 				$validLanguages[$validLanguage->code]['displayName'] = $validLanguage->displayName;
 				$validLanguages[$validLanguage->code]['displayNameEnglish'] = $validLanguage->displayNameEnglish;
