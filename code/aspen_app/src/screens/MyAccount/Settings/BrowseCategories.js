@@ -1,16 +1,35 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, FlatList, HStack, Switch, Text } from 'native-base';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Box, FlatList, HStack, Switch, Text, Pressable, ChevronLeftIcon } from 'native-base';
 import React from 'react';
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { BrowseCategoryContext, LanguageContext, LibrarySystemContext } from '../../../context/initialContext';
+import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, ThemeContext } from '../../../context/initialContext';
+import { navigate } from '../../../helpers/RootNavigator';
 
 import { getBrowseCategoryListForUser, updateBrowseCategoryStatus } from '../../../util/loadPatron';
 
 export const Settings_BrowseCategories = () => {
+     const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { list, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
+     const { theme } = React.useContext(ThemeContext);
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => (
+                    <Pressable
+                         onPress={() => {
+                              navigation.goBack();
+                         }}
+                         mr={3}
+                         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <ChevronLeftIcon size="md" ml={1} color={theme['colors']['primary']['baseContrast']} />
+                    </Pressable>
+               ),
+          });
+     }, [navigation]);
 
      const { status, data, error, isFetching } = useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
           initialData: list,
