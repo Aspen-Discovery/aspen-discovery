@@ -11007,6 +11007,11 @@ AspenDiscovery.Browse = (function(){
 					// update links for more results
 					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
 					AspenDiscovery.Browse.patronId = data.patronId;
+
+					// Prevent accidental cover selection when the user clicks too fast
+					$(".swiper").on("mousedown", function (e) {
+						e.preventDefault();
+					});
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
@@ -13312,7 +13317,7 @@ AspenDiscovery.OverDrive = (function(){
 					cache: false,
 					success: function(data){
 						AspenDiscovery.showMessage(
-							data.success ? 'Title Returned' : 'Error Returning Title', data.message, data.success
+							data.success ? 'Title Returned' : 'Unable to Return Title', data.message, data.success
 						);
 						if (data.success){
 							$(".overdrive_checkout_" + overDriveId).hide();
