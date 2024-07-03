@@ -39,5 +39,5 @@ max_heap_table_size=256M
 [mysqldump]
 host = localhost
 port = 3306
-user = {aspenDBUser}
-password = {aspenDBPwd}
+user = {databaseUser}
+password = {databasePassword}
