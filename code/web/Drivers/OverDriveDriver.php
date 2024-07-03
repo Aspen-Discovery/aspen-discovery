@@ -1301,7 +1301,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 						'isPublicFacing' => true,
 					]);
 				} else {
-						$cancelHoldResult['message'] .= "  {$response->message}";
+					$cancelHoldResult['message'] .= "  {$response->message}";
 				}
 			}
 

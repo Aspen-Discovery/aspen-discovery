@@ -1807,7 +1807,10 @@ class Sierra extends Millennium {
 		if ($patron->getPasswordOrPin() != $oldPin) {
 			return [
 				'success' => false,
-				'message' => "The old PIN provided is incorrect.",
+				'message' => translate([
+					'text' => 'The old PIN provided is incorrect.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */

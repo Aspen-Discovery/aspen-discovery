@@ -1671,7 +1671,10 @@ class Polaris extends AbstractIlsDriver {
 		if ($patron->ils_password != $oldPin && $patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
-				'message' => "The old PIN provided is incorrect.",
+				'message' => translate([
+					'text' => 'The old PIN provided is incorrect.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 		$result = [
@@ -1757,12 +1760,13 @@ class Polaris extends AbstractIlsDriver {
 		];
 		$finePayments = explode(',', $payment->finesPaid);
 		$allPaymentsSucceed = true;
+		$orgId = $patron->getHomeLocationCode();
 		foreach ($finePayments as $finePayment) {
 			[
 				$fineId,
 				$paymentAmount,
 			] = explode('|', $finePayment);
-			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/patron/{$patron->getBarcode()}/account/{$fineId}/pay?wsid={$this->getWorkstationID($patron)}&userid={$staffUserInfo['polarisId']}";
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/$orgId/{$staffUserInfo['accessToken']}/patron/{$patron->getBarcode()}/account/{$fineId}/pay?wsid={$this->getWorkstationID($patron)}&userid={$staffUserInfo['polarisId']}";
 			$body = new stdClass();
 			$body->TxnAmount = $paymentAmount;
 			$body->PaymentMethodID = 12;
