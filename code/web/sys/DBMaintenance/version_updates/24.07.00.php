@@ -22,6 +22,15 @@ function getUpdates24_07_00(): array {
 				'ALTER TABLE location ADD COLUMN allowUpdatingHoursFromILS TINYINT(1) DEFAULT 1'
 			]
 		], //prevent_automatic_hour_updates
+		'increase_format_length_for_circulation_cache' => [
+			'title' => 'Increase Format Length for Circulation Cache',
+			'description' => 'Make sure that formats can be saved for holds and checkouts',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user_hold CHANGE COLUMN format format varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL',
+				'ALTER TABLE user_checkout CHANGE COLUMN format format varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL'
+			]
+		], //increase_format_length_for_circulation_cache
 
 		//kirstien - ByWater
 
