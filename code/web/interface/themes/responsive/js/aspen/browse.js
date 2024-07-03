@@ -342,6 +342,10 @@ AspenDiscovery.Browse = (function(){
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
 						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
+					// Prevent accidental cover selection when the user clicks too fast
+					$(".swiper").on("mousedown", function (e) {
+						e.preventDefault();
+					});
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
