@@ -1011,37 +1011,39 @@ public class SierraExportAPIMain {
 					Iterator<String> tags = fieldData.keys();
 					while (tags.hasNext()){
 						String tag = tags.next();
-						if (fieldData.get(tag) instanceof JSONObject){
-							JSONObject fieldDataDetails = fieldData.getJSONObject(tag);
-							char ind1 = fieldDataDetails.getString("ind1").charAt(0);
-							char ind2 = fieldDataDetails.getString("ind2").charAt(0);
-							DataField dataField = marcFactory.newDataField(tag, ind1, ind2);
-							JSONArray subfields = fieldDataDetails.getJSONArray("subfields");
-							for (int j = 0; j < subfields.length(); j++){
-								JSONObject subfieldData = subfields.getJSONObject(j);
-								String subfieldIndicatorStr = subfieldData.keys().next();
-								char subfieldIndicator = subfieldIndicatorStr.charAt(0);
-								String subfieldValue = subfieldData.getString(subfieldIndicatorStr);
-								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
-							}
-							if (tag.equals(indexingProfile.getRecordNumberTag())) {
-								Subfield recordNumberSubfield = dataField.getSubfield(indexingProfile.getRecordNumberSubfield());
-								if (recordNumberSubfield == null) {
-									continue;
-								}else{
-									if (!recordNumberSubfield.getData().startsWith(".b")) {
-										continue;
-									}else if (recordNumberSubfield.getData().equals(".b")) {
-										continue;
-									}
+						if (!tag.equals(indexingProfile.getItemTag())) {
+							if (fieldData.get(tag) instanceof JSONObject) {
+								JSONObject fieldDataDetails = fieldData.getJSONObject(tag);
+								char ind1 = fieldDataDetails.getString("ind1").charAt(0);
+								char ind2 = fieldDataDetails.getString("ind2").charAt(0);
+								DataField dataField = marcFactory.newDataField(tag, ind1, ind2);
+								JSONArray subfields = fieldDataDetails.getJSONArray("subfields");
+								for (int j = 0; j < subfields.length(); j++) {
+									JSONObject subfieldData = subfields.getJSONObject(j);
+									String subfieldIndicatorStr = subfieldData.keys().next();
+									char subfieldIndicator = subfieldIndicatorStr.charAt(0);
+									String subfieldValue = subfieldData.getString(subfieldIndicatorStr);
+									dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
 								}
-							} else if (tag.equals(sierraExportFieldMapping.getFixedFieldDestinationField())) {
-								continue;
+								if (tag.equals(indexingProfile.getRecordNumberTag())) {
+									Subfield recordNumberSubfield = dataField.getSubfield(indexingProfile.getRecordNumberSubfield());
+									if (recordNumberSubfield == null) {
+										continue;
+									} else {
+										if (!recordNumberSubfield.getData().startsWith(".b")) {
+											continue;
+										} else if (recordNumberSubfield.getData().equals(".b")) {
+											continue;
+										}
+									}
+								} else if (tag.equals(sierraExportFieldMapping.getFixedFieldDestinationField())) {
+									continue;
+								}
+								marcRecord.addVariableField(dataField);
+							} else {
+								String fieldValue = fieldData.getString(tag);
+								marcRecord.addVariableField(marcFactory.newControlField(tag, fieldValue));
 							}
-							marcRecord.addVariableField(dataField);
-						}else{
-							String fieldValue = fieldData.getString(tag);
-							marcRecord.addVariableField(marcFactory.newControlField(tag, fieldValue));
 						}
 					}
 				}
