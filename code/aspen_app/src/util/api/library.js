@@ -108,7 +108,7 @@ export async function getLibraryLanguages(url = null) {
           let languages = [];
           if (response?.data?.result) {
                console.log('Library languages saved at Loading');
-               return _.sortBy(response.data.result.languages, 'id');
+               return _.sortBy(response.data.result.languages, 'weight', 'displayName');
           }
           return languages;
      } else {

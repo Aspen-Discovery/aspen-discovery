@@ -15,14 +15,14 @@ import { GLOBALS } from '../util/globals';
  ******************************************************************* **/
 export const LanguageSwitcher = () => {
      const { library } = React.useContext(LibrarySystemContext);
-     const { language, updateLanguage, languages, updateDictionary } = React.useContext(LanguageContext);
+     const { language, updateLanguage, languages, updateDictionary, languageDisplayName, updateLanguageDisplayName } = React.useContext(LanguageContext);
      const [label, setLabel] = React.useState(getLanguageDisplayName(language, languages));
 
      const changeLanguage = async (val) => {
           await saveLanguage(val, library.baseUrl).then(async (result) => {
                if (result) {
                     updateLanguage(val);
-                    setLabel(getLanguageDisplayName(val, languages));
+                    updateLanguageDisplayName(getLanguageDisplayName(val, languages));
                     await getTranslatedTermsForUserPreferredLanguage(val, library.baseUrl).then(() => {
                          updateDictionary(translationsLibrary);
                     });
@@ -42,7 +42,7 @@ export const LanguageSwitcher = () => {
                               return (
                                    <Pressable {...triggerProps}>
                                         <Button size="sm" variant="ghost" colorScheme="secondary" leftIcon={<Icon as={MaterialIcons} name="language" size="xs" />} {...triggerProps}>
-                                             {label}
+                                             {languageDisplayName}
                                         </Button>
                                    </Pressable>
                               );
@@ -176,7 +176,7 @@ export async function getTranslationsWithValues(key, values, language, url, addT
 export function getLanguageDisplayName(code, languages) {
      let language = _.filter(languages, ['code', code]);
      language = _.values(language[0]);
-     return language[2];
+     return language[3];
 }
 
 /**
