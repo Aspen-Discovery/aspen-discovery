@@ -2624,9 +2624,6 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($user, $id);
