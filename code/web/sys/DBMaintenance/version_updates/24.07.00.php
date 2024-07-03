@@ -48,6 +48,14 @@ function getUpdates24_07_00(): array {
 			],
 		], // self_registration_form_carlx
 		//katherine - ByWater
+		//greenhouseMonitoring
+		'greenhouseSlackIntegration2' => [
+			'title' => 'Greenhouse Slack Integration 2',
+			'description' => 'Greenhouse Slack Integration - add a second Slack webhook for Sytems alerts',
+			'sql' => [
+				'ALTER TABLE greenhouse_settings ADD COLUMN greenhouseSystemsAlertSlackHook VARCHAR(255)',
+			],
+		], //greenhouse settings
 
 		//pedro - PTFS-Europe
 		'smtp_settings' => [
