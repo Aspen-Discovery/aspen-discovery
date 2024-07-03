@@ -1,6 +1,3 @@
-(README UNDER CONSTRUCTION)
-### 0) Introduction
-
 ### 1) Install Docker & Docker-Compose
 
 Only these components are necessary before proceeding with the installation of Aspen:
@@ -10,127 +7,47 @@ Only these components are necessary before proceeding with the installation of A
 
 ### 2) Prepare host
 
-It will be necessary to create: 
-* The directory where Aspen containers are going to run.
-* Those directories which will be used for the persistence of data.
+This example deployment will persist the data on a directory structure inside
+the directory pointed by `$ASPEN_DATA_DIR`. You will need to adjust it for a production
+deployment.
 
 ```
-ASPEN_INSTANCE=nameOfYourInstance
+ASPEN_INSTANCE=aspen
 echo "export ASPEN_INSTANCE" >> ~/.bashrc
-echo "export ASPEN_REPO=~/aspen-repos/${ASPEN_INSTANCE}" >> ~/.bashrc
+echo "export ASPEN_DATA_DIR=~/aspen-repos/${ASPEN_INSTANCE}" >> ~/.bashrc
 source ~/.bashrc
-
-mkdir -p ${ASPEN_REPO}/mariadb_data ${ASPEN_REPO}/solr_data
-cd ${ASPEN_REPO}
-git clone https://github.com/mdnoble73/aspen-discovery.git
-cp aspen-discovery/docker/docker-compose.yml .
 ```
-### 3.0) Copy env file and set environment variables (mandatory)
-
-With any text editor, the user must set the values for each variable in the **env** file.
-```
-cp aspen-discovery/docker/.env .
-vim .env
-```
-Example : 
-* Site :
+#### 2.1) Create the directories
 
 ```
-SITE_sitename=test.localhost   
-SITE_operatingSystem=debian
-SITE_library=Test Library
-SITE_title=Test Library
-SITE_url=http://test.localhost
-SITE_siteOnWindows=n
-SITE_solrHost=solr
-SITE_solrPort=8080
-SITE_ils=Koha
-SITE_timezone=America/Argentina/Cordoba
+mkdir -p ${ASPEN_DATA_DIR}/database \
+         ${ASPEN_DATA_DIR}/solr \
+         ${ASPEN_DATA_DIR}/conf \
+         ${ASPEN_DATA_DIR}/data \
+         ${ASPEN_DATA_DIR}/logs
 ```
 
-* Aspen :
+### 3.0) Copy docker-compose.yml and .env
 
 ```
-ASPEN_DBHost=db           
-ASPEN_DBPort=3306
-ASPEN_DBName=aspen
-ASPEN_DBUser=aspen
-ASPEN_DBPwd=password
-ASPEN_aspenAdminPwd=password
+curl -O ${ASPEN_DATA_DIR}/docker-compose.yml https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/24.07.00/docker/docker-compose.yml
+curl -O ${ASPEN_DATA_DIR}/.env https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/24.07.00/docker/env/default.env
 ```
-
-* Ils :
-
-```
-ILS_ilsDriver=Koha              
-ILS_ilsUrl=test.koha.theke.io
-ILS_staffUrl=test-admin.koha.theke.io
-```
-
-* Koha :
-
-```
-KOHA_DBHost=tunnel              
-KOHA_DBName=koha_dbname
-KOHA_DBUser=koha_dbuser
-KOHA_DBPwd=password
-KOHA_DBPort=3306
-KOHA_timezone=America/Argentina/Cordoba
-KOHA_ClientId=
-KOHA_ClientSecret=
-```
-
-* Compose :
-
-```
-COMPOSE_ImageVersion=24.01.00
-COMPOSE_DBRoot=root
-COMPOSE_RootPwd=root
-COMPOSE_Apache=on
-COMPOSE_Cron=on
-COMPOSE_Dirs=/etc/apache2/sites-enabled /etc/apache2/sites-available /etc/cron.d /etc/php/8.0/apache2 /usr/local/aspen-discovery/sites/dev.aspen.theke.io /usr/local/aspen-discovery/code/web/files /usr/local/aspen-discovery/code/web/images /data /home /var/log/aspen-discovery
-```
-Observation: COMPOSE_Dirs variable saves all DIRECTORIES ( it doesn't support path files) inside Aspen that users want to be persistant on host server, like images, footers, covers, php settings and all data that shouldn't lost if you want to reset your containers.
-
-* Tunnel :
-
-```
-TUNNEL_LocalPort=3306      
-TUNNEL_RemotePort=3306
-TUNNEL_RemoteHost=127.0.0.1
-TUNNEL_JumpServer=test.koha.theke.io
-```
-
-### 3.1)
-
-* Backup :
-
-```
-BACKUP_Folder=          
-BACKUP_AccountId=
-BACKUP_ApplicationKey=
-BACKUP_Bucket=
-BACKUP_UserDB=
-BACKUP_PassDB=
-BACKUP_DB=
-BACKUP_Sitename=
-BACKUP_HostDB=
-  ```
-Observation : These variables response to a backup service called "BackBlaze". The user needs to search for appropriate setted variables if another backup service is being used.
-
-  
+ 
 ### 4) Create and start containers
 
 We go to the directory where the docker-compose.yml is located and execute :
 
 ```
-docker-compose up -d
+docker compose -p aspen up -d
 ```
 
+You need to wait until "Aspen is ready to use!" message is displayed
+(Check 'docker logs -f aspen_backend' )
 ### 5) Check Aspen instance is up
 
 On the browser :
 
 ```
-SITE_sitename:80
+$URL:80
 ```
