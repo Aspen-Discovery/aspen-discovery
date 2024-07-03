@@ -470,6 +470,7 @@ EOT;
 				select
 					t.bid
 					, t.occur
+					, pb.branchname as PICKUP_BRANCH
 					, p.name as PATRON_NAME
 					, p.sponsor as HOME_ROOM
 					, bb.btyname as GRD_LVL
@@ -487,6 +488,7 @@ EOT;
 				left join branch_v2 ob on t.holdingbranch = ob.branchnumber -- Origin Branch
 				left join item_v2 i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v2 l on i.location = l.locnumber
+				left join branch_v2 pb on t.pickupbranch = pb.branchnumber -- Pickup Branch
 				where ob.branchcode = '$location'
 				-- and t.pickupbranch = ob.branchnumber -- commented out in 23.08.01 to include MNPS Exploratorium holds; originally meant to ensure a lock between school collection and pickup branch ; pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
@@ -508,6 +510,7 @@ EOT;
 			)
 			select
 				PATRON_NAME
+				, PICKUP_BRANCH
 				, HOME_ROOM
 				, GRD_LVL
 				, P_BARCODE
@@ -540,12 +543,12 @@ EOT;
 				, bty_v2.btynumber AS bty
 				, bty_v2.btyname as grade
 				, case 
-						when bty = 13 
+						when (bty = 13 OR bty = 40 OR bty = 51)
 						then patron_v2.name
 						else patron_v2.sponsor
 					end as homeroom
 				, case 
-						when bty = 13 
+						when (bty = 13 OR bty = 40 OR bty = 51) 
 						then patron_v2.patronid
 						else patron_v2.street2
 					end as homeroomid
@@ -568,14 +571,14 @@ EOT;
 						and patronbranch.branchcode = '$location'
 						and patron_v2.street2 = '$homeroom'
 					) or (
-						patron_v2.bty = 13
+						(patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51)
 						and patron_v2.patronid = '$homeroom'
 					)
 				)
 			order by
 				patronbranch.branchcode
 				, case
-					when patron_v2.bty = 13 then 0
+					when (patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51) then 0
 					else 1
 				end
 				, patron_v2.sponsor
@@ -625,7 +628,7 @@ EOT;
 			  where
 				b.branchcode = '$location'
 				and s.street2 is not null
-				and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+				and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47','51')
 			  order by
 				b.branchcode
 				, homeroomname
@@ -693,7 +696,7 @@ EOT;
                       and $statuses
                       and patronbranch.branchgroup = '2'
                       and patronbranchgroup.branchgroup = patronbranch.branchgroup
-                      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47','51')
                       and patronbranch.branchcode = '$location'
                     order by 
                       patronbranch.branchcode
@@ -720,7 +723,7 @@ EOT;
                     from patron_v2 p
                     left join branch_v2 b on p.defaultbranch = b.branchnumber
                     left join bty_v2 t on p.bty = t.btynumber
-                    where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                    where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47','51')
                     and b.branchcode = '$location'
                 ), r as (
                 select
