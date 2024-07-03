@@ -637,8 +637,12 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 				$result['message'] = $checkoutXml->Error->Message;
 				$result['api']['message'] = $checkoutXml->Error->Message;
 			} elseif ($checkoutXml->Message == 'Authentication failed') {
-				$result['message'] = translate(['text' => 'Authentication failed', 'isPublicFacing' => true,]);
-				$result['api']['message'] = translate(['text' => 'Authentication failed', 'isPublicFacing' => true,]);
+				$result['message'] = translate(['text' => 'Sorry, we could not checkout this cloudLibrary title to you.', 'isPublicFacing' => true,]);
+				$result['api']['title'] = translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate(['text' => 'Sorry, we could not checkout this cloudLibrary title to you.', 'isPublicFacing' => true,]);
 			} else {
 				$this->trackUserUsageOfCloudLibrary($patron);
 				$this->trackRecordCheckout($titleId);
