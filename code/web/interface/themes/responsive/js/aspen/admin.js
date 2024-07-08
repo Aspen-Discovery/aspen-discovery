@@ -1877,8 +1877,9 @@ AspenDiscovery.Admin = (function () {
 				$(".propertySectionHeading").show();
 				$(".propertySection").show();
 				//Collapse all panels
-				$(".editor .panel").removeClass('active');
-				$(".editor .accordion_body").removeClass('in');
+				$(".editor .panel-title a").removeClass('expanded').addClass('collapsed').attr("aria-expanded","false");
+				$(".editor .panel").removeClass('active').attr("aria-expanded","false");
+				$(".editor .accordion_body").removeClass('in').hide();
 			} else {
 				var allAPropertyRows = $(".propertyRow");
 				allAPropertyRows.each(function () {
@@ -1891,8 +1892,9 @@ AspenDiscovery.Admin = (function () {
 					}
 				});
 				//Expand all panels
-				$(".editor .panel").addClass('active');
-				$(".editor .accordion_body").addClass('in');
+				$(".editor .panel-title a").removeClass('collapsed').addClass('expanded').attr("aria-expanded","true");
+				$(".editor .panel").addClass('active').attr("aria-expanded","true");
+				$(".editor .accordion_body").addClass('in').show();
 			}
 		},
 
