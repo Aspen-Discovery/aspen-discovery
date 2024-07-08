@@ -116,9 +116,11 @@ class GreenhouseAPI extends AbstractAPI {
 
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
-		$greenhouseAlertSlackHook = null;
+		$greenhouseDevAlertSlackHook = null;
+		$greenhouseSystemsAlertSlackHook = null;
 		if ($greenhouseSettings->find(true)) {
-			$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+			$greenhouseDevAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+			$greenhouseSystemsAlertSlackHook = $greenhouseSettings->greenhouseSystemsAlertSlackHook;
 		}
 		$start = time();
 		while ($sites->fetch()) {
@@ -131,13 +133,14 @@ class GreenhouseAPI extends AbstractAPI {
 
 			//Store checks
 			$alertText = "";
+			$systemsAlertText = "";
 			$notification = "";
 			$sendAlert = false;
 
 			if ($siteStatus['alive'] == false && $sites->isOnline !== 1 && $sites->isOnline !== "1") {
 				if ((($start - $sites->lastOfflineTime) > 4 * 60 * 60) || ($sites->lastOfflineTime > $sites->lastNotificationTime)) {
 					$sendAlert = true;
-					$alertText .= "- :fire: Greenhouse unable to connect to server: {$sites->lastOfflineNote}\n";
+					$systemsAlertText .= "- :fire: Greenhouse unable to connect to server: {$sites->lastOfflineNote}\n";
 					$notification = "<!here>";
 				}
 			}
@@ -145,13 +148,27 @@ class GreenhouseAPI extends AbstractAPI {
 			if ($siteStatus['wasOffline']) {
 				// send offline recovery message
 				$sendAlert = true;
-				$alertText .= "- ~Greenhouse connectivity recovered!~\n";
+				$systemsAlertText .= "- ~Greenhouse connectivity recovered!~\n";
 			}
 
 			foreach ($siteStatus['checks'] as $key => $check) {
 				$aspenSiteCheck = new AspenSiteCheck();
 				$aspenSiteCheck->siteId = $sites->id;
 				$aspenSiteCheck->checkName = $check['name'];
+				if (in_array(strtolower($aspenSiteCheck->checkName), [
+					'antivirus',
+					'backup',
+					'data disk space',
+					'encryption key',
+					'load average',
+					'memory usage',
+					'usr disk space',
+					'wait time',
+				])) {
+					$channel = 'systems';
+				} else {
+					$channel = 'dev';
+				}
 				$checkExists = false;
 				if ($aspenSiteCheck->find(true)) {
 					$checkExists = true;
@@ -159,7 +176,11 @@ class GreenhouseAPI extends AbstractAPI {
 				$status = $check['status'];
 				if ($status == 'okay') {
 					if ($aspenSiteCheck->currentStatus !== "0" && $aspenSiteCheck->currentStatus !== 0) {
-						$alertText .= '- ~' . $check['name'] . " recovered!~\n";
+						if ($channel == 'systems') {
+							$systemsAlertText .= '- ~' . $check['name'] . " recovered!~\n";
+						} else {
+							$alertText .= '- ~' . $check['name'] . " recovered!~\n";
+						}
 						$wasCritical = false;
 						$wasWarning = false;
 						if ($aspenSiteCheck->currentStatus == 2) {
@@ -188,8 +209,12 @@ class GreenhouseAPI extends AbstractAPI {
 						$aspenSiteCheck->currentNote = $check['note'];
 						$aspenSiteCheck->lastWarningTime = $statusTime;
 					}
-					$alertText .= "- <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is warning : {$aspenSiteCheck->currentNote} \n";
-					//We will add this to the alert if we have been warning for more than 4 hours and the warning started after the last alert was sent.
+					if ($channel == 'systems') {
+						$systemsAlertText .= "- <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is warning : {$aspenSiteCheck->currentNote} \n";
+					} else {
+						$alertText .= "- <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is warning : {$aspenSiteCheck->currentNote} \n";
+						//We will add this to the alert if we have been warning for more than 4 hours and the warning started after the last alert was sent.
+					}
 					if ((($start - $aspenSiteCheck->lastWarningTime) > 4 * 60 * 60) && ($aspenSiteCheck->lastWarningTime > $sites->lastNotificationTime)) {
 						$sendAlert = true;
 					}
@@ -205,7 +230,11 @@ class GreenhouseAPI extends AbstractAPI {
 					if ($sites->lastNotificationTime == 0) {
 						$sendAlert = true;
 					}
-					$alertText .= "- :fire: <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is critical : {$aspenSiteCheck->currentNote}\n";
+					if ($channel == 'systems') {
+						$systemsAlertText .= "- :fire: <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is critical : {$aspenSiteCheck->currentNote}\n";
+					} else {
+						$alertText .= "- :fire: <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is critical : {$aspenSiteCheck->currentNote}\n";
+					}
 					$notification = "<!here>";
 				}
 				if ($checkExists) {
@@ -231,7 +260,7 @@ class GreenhouseAPI extends AbstractAPI {
 			global $serverName;
 			if (strlen($alertText) > 0 && $sendAlert) {
 				$alertText = '*' . $sites->name . "* $notification\n" . $alertText . "\nFrom $serverName";
-				if (!empty($greenhouseAlertSlackHook)) {
+				if (!empty($greenhouseDevAlertSlackHook)) {
 					$curlWrapper = new CurlWrapper();
 					$headers = [
 						'Accept: application/json',
@@ -240,7 +269,28 @@ class GreenhouseAPI extends AbstractAPI {
 					$curlWrapper->addCustomHeaders($headers, false);
 					$body = new stdClass();
 					$body->text = $alertText;
-					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+					$curlWrapper->curlPostPage($greenhouseDevAlertSlackHook, json_encode($body));
+				}
+				$sites->lastNotificationTime = $start;
+				$sites->update();
+			}
+			// Also check if there are systems alerts to send
+			if (strlen($systemsAlertText) > 0 && $sendAlert) {
+				$alertText = '*' . $sites->name . "* $notification\n" . $systemsAlertText . "\nFrom $serverName";
+				$slackHook = $greenhouseDevAlertSlackHook;
+				if (!empty($greenhouseSystemsAlertSlackHook)) {
+					$slackHook = $greenhouseSystemsAlertSlackHook;
+				}
+				if (!empty($slackHook)) {
+					$curlWrapper = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Content-Type: application/json',
+					];
+					$curlWrapper->addCustomHeaders($headers, false);
+					$body = new stdClass();
+					$body->text = $alertText;
+					$curlWrapper->curlPostPage($slackHook, json_encode($body));
 				}
 				$sites->lastNotificationTime = $start;
 				$sites->update();
