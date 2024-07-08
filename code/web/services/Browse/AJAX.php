@@ -760,6 +760,11 @@ class Browse_AJAX extends Action {
 			'text' => $this->browseCategory->label,
 			'isPublicFacing' => true,
 		]);
+		$response['hideButtonLabel'] = translate([
+			'text' => 'Hide Category %1%',
+			'1' => $this->browseCategory->label,
+			'isPublicFacing' => true,
+		]);
 
 		// Get Any Subcategories for the subcategory menu
 		$_REQUEST['textId'] = $this->textId;
@@ -820,6 +825,11 @@ class Browse_AJAX extends Action {
 					'text' => $subBrowseCategoryLabel,
 					'isPublicFacing' => true,
 					'isAdminEnteredData' => true,
+				]);
+				$response['subCategoryHideButtonLabel'] = translate([
+					'text' => 'Hide Category %1%',
+					'1' => $subBrowseCategoryLabel,
+					'isPublicFacing' => true
 				]);
 
 				// Reset Main Category with SubCategory to fetch main results
@@ -910,6 +920,11 @@ class Browse_AJAX extends Action {
 				'isPublicFacing' => true,
 				'isAdminEnteredData' => true,
 			]);
+			$result['hideButtonLabel'] = translate([
+				'text' => 'Hide Category %1%',
+				'1' => $this->browseCategory->label,
+				'isPublicFacing' => true,
+			]);
 			$result['subcategories'] = $this->getSubCategories();
 		}
 
@@ -923,6 +938,11 @@ class Browse_AJAX extends Action {
 				'text' => $subCategoryResult['label'],
 				'isPublicFacing' => true,
 				'isAdminEnteredData' => true,
+			]);
+			$subCategoryResult['subCategoryHideButtonLabel'] = translate([
+				'text' => 'Hide Category %1%',
+				'1' => $subCategoryResult['label'],
+				'isPublicFacing' => true,
 			]);
 //			unset($subCategoryResult['label']);
 		}
