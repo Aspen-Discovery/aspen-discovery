@@ -146,6 +146,11 @@
       z-index: 1;
       position: relative;
     }
+
+    .fa-save {
+      background-color: green;
+      border: 1px solid green;
+    }
   </style>
 </body>
 </html>
