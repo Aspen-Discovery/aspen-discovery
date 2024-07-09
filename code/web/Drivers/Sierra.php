@@ -1435,8 +1435,8 @@ class Sierra extends Millennium {
 				$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 			}else{
 				//No expiration date set, just set something 20 years in the future
-				$now = time();
-				$summary->expirationDate = $now + 20 * 365 * 24 * 60 * 60;
+				//$now = time();
+				$summary->expirationDate = 0;
 			}
 		}
 
