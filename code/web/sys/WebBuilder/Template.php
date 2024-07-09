@@ -29,6 +29,7 @@ class Template extends DataObject {
 				'type' => 'text',
 				'label' => 'Template Name',
 				'description' => 'The Name assigned to the template',
+                'required' => true,
 			],
             'templateContent' => [
                 'property' => 'templateContent',

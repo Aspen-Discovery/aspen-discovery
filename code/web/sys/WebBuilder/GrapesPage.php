@@ -45,6 +45,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'description' => 'The title of the page',
 				'size' => '40',
 				'maxLength' => 100,
+				'required' => true,
 			],
 			'urlAlias' => [
 				'property' => 'urlAlias',
@@ -53,6 +54,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'description' => 'The url of the page (no domain name)',
 				'size' => '40',
 				'maxLength' => 100,
+				'required' => true, 
 			],
 			'teaser' => [
 				'property' => 'teaser',
