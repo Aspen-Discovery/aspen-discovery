@@ -96,6 +96,8 @@ class Template extends DataObject {
         $template->orderBy('templateName');
         $template->find();
         $templateList = [];
+
+        $templateList[1] = 'No Template';
         while ($template->fetch()){
             $currentTemplate = new stdClass();
             $currentTemplate->id = $template->id;

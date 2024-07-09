@@ -232,6 +232,13 @@ function getGrapesWebBuilderUpdates() {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Grapes Pages'))"
 			],
 		],
+		'add_a_blank_template' => [
+			'title' => 'Add a blank template',
+			'description' => 'Add a blank template',
+			'sql' => [
+				"INSERT INTO templates (templateName) VALUES ('No Template')",
+			],
+		],
 	];
 }
 	
