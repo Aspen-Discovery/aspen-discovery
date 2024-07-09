@@ -24,7 +24,7 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Template Options for Grapes Web Builder',
 			'description' => 'Store templates for Grapes Web Builder',
 			'sql' => [
-				"CREATE TABLE template_options (
+				"CREATE TABLE IF NOT EXISTS template_options (
 					id INT(11) AUTO_INCREMENT PRIMARY KEY,
 					templateName VARCHAR(100) NOT NULL,
 					contents TEXT NOT NULL
@@ -35,7 +35,7 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Templates for Grapes Web Builder',
 			'description' => 'Store templates for Grapes Web Builder',
 			'sql' => [
-				"CREATE TABLE templates (
+				"CREATE TABLE IF NOT EXISTS templates (
 					id INT(11) AUTO_INCREMENT PRIMARY KEY,
 					templateName VARCHAR(255) NOT NULL UNIQUE,
 					templateDescription TEXT,
@@ -61,14 +61,14 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Remove Description From Templates Table',
 			'description' => 'Remove the description column from the template table',
 			'sql' => [
-				"ALTER TABLE templates DROP COLUMN templateDescription",
+				"ALTER TABLE templates DROP COLUMN IF EXISTS templateDescription",
 			],
 		],
 		'alter_temapltes_table_add_content' => [
 			'title' => 'Add Content to Templates Table',
 			'description' => 'Add content column to templates table',
 			'sql' => [
-				"ALTER TABLE templates ADD COLUMN templateContent TEXT",
+				"ALTER TABLE templates ADD COLUMN IF NOT EXISTS templateContent TEXT",
 			],
 		],
 		'add_default_for_template_file_path' => [
@@ -82,7 +82,7 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Add Template Content Column to Grapes Table',
 			'description' => 'Add a column to the Grapes table to store the content of the chosen template',
 			'sql' => [
-				'ALTER TABLE grapes_web_builder ADD COLUMN templateContent TEXT',
+				'ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS templateContent TEXT',
 			],
 		],
 		'alter_contents_of_grapes_page_table' => [
@@ -98,7 +98,7 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Modify a column and add a new column',
 			'description' => 'Add a new column for template names and modify the templateID column to alter its purpose.',
 			'sql' => [
-				'ALTER TABLE grapes_web_builder ADD COLUMN templateNames INT(11) DEFAULT -1',
+				'ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS templateNames INT(11) DEFAULT -1',
 				'ALTER TABLE grapes_web_builder MODIFY COLUMN templateId VARCHAR(250) UNIQUE',
 			],
 		],
@@ -134,7 +134,7 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Add New Template Column',
 			'description' => 'Add  template column to grapes table',
 			'sql' => [
-				'ALTER TABLE grapes_web_builder ADD COLUMN templatesSelect INT(11) DEFAULT -1',
+				'ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS templatesSelect INT(11) DEFAULT -1',
 			],
 		],
 		'add_template_content_to_grapes_web_builder' => [
@@ -142,22 +142,6 @@ function getGrapesWebBuilderUpdates() {
 			'description' => 'add_column_in_grapes_web_builder_table_for_template_content',
 			'sql' => [
 				'ALTER TABLE grapes_web_builder ADD COLUMN templateContent TEXT',
-			],
-		],
-		'create_table_for_grapes_page_saved_as_page' => [
-			'title' => 'add_table_for_created_grapes_page',
-			'description' => 'add_table_for_created_grapes_page_saved_as_page',
-			'sql' => [
-				"CREATE TABLE created_grapes_page (
-					id INT(11) AUTO_INCREMENT PRIMARY KEY,
-					title VARCHAR(100) NOT NULL,
-					urlAlias VARCHAR(100) NOT NULL,
-					htmlData TEXT NOT NULL DEFAULT ' ',
-					cssData TEXT NOT NULL DEFAULT ' ',
-					assets TEXT NOT NULL DEFAULT '[]',
-					components TEXT NOT NULL DEFAULT '[]',
-					styles TEXT NOT NULL DEFAULT '[]'
-				) ENGINE=INNODB",
 			],
 		],
 		'remove_temaplteID_column' => [
@@ -172,21 +156,6 @@ function getGrapesWebBuilderUpdates() {
 			'description' => 'Delte templateId from grapes_web_builder table',
 			'sql' => [
 				'ALTER TABLE grapes_web_builder DROP COLUMN templateId',
-			],
-		],
-		'add_defaults_for_created_grapes_page_table' => [
-			'title' => 'Add Defaults to Table',
-			'description' => 'Add defaults to created_grapes_page table to handle empty fields',
-			'sql' => [
-				'ALTER TABLE created_grapes_page MODIFY COLUMN urlAlias VARCHAR(100) NOT NULL DEFAULT " "',
-				'ALTER TABLE created_grapes_page MODIFY COLUMN title VARCHAR(100) NOT NULL DEFAULT " "',
-			],
-		],
-		'add_grapes_page_id_column' => [
-			'title' => 'Add Grapes Page Id Column',
-			'description' => 'Add grapes_page_id column to created_grapes_page table',
-			'sql' => [
-				'ALTER TABLE created_grapes_page ADD COLUMN grapes_page_id VARCHAR(100) NOT NULL DEFAULT " "',
 			],
 		],
 		'alterations_to_templates_table' => [
@@ -216,29 +185,18 @@ function getGrapesWebBuilderUpdates() {
 
 			],
 		],
-		'create_a_table_for_creating_grapes_templates' => [
-			'title' => 'Add a Table to Allow Creating Grapes Templates',
-			'description' => 'Add a table to allow crearing grapes templates.',
-			'sql' => [
-				"CREATE TABLE create_grapes_template (
-					id INT(11) AUTO_INCREMENT PRIMARY KEY,
-					title VARCHAR(100) NOT NULL DEFAULT ' ',
-					teaser VARCHAR(250) NOT NULL DEFAULT ' '
-				) ENGINE=INNODB",
-			],
-		],
 		'add_grapesPageId_to_grapes_web_builder' => [
 			'title' => 'Add a Column to Store Page ID',
 			'description' => 'Add a column to the grapes_web_builder table',
 			'sql' => [
-				'ALTER TABLE grapes_web_builder ADD COLUMN grapesPageId VARCHAR(100) Not NULL DEFAULT ""',
+				'ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS grapesGenId VARCHAR(100) Not NULL DEFAULT ""',
 			],
 		],
 		'grapes_page_web_builder_scope_by_library' => [
 			'title' => 'Web Builder Grapes Page Scope By Library',
 			'description' => 'Add the ability to scope Grapes Pages By Library',
 			'sql' => [
-				'CREATE TABLE library_web_builder_grapes_page (
+				'CREATE TABLE IF NOT EXISTS library_web_builder_grapes_page (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					libraryId INT(11) NOT NULL,
 					grapesPageId INT(11) NOT NULL,
@@ -251,24 +209,10 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Add columns to Grapes Web Builder Table',
 			'description' => 'Add columns to Grapes Web Builder Table',
 			'sql' => [
-				"ALTER TABLE grapes_web_builder ADD COLUMN htmlData TEXT NOT NULL DEFAULT ' '",
-				"ALTER TABLE grapes_web_builder ADD COLUMN cddData TEXT NOT NULL DEFAULT ' '",
+				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS htmlData TEXT NOT NULL DEFAULT ' '",
+				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS cssData TEXT NOT NULL DEFAULT ' '",
 			],
 		],
-		'alter_name_of_grapes_web_builder_grapes_id_column' => [
-			'title' => 'Alter Name of grapesPageId column',		
-			'description' => 'Alter name of grapesPageId column for clarity',
-			'sql' => [
-				"ALTER TABLE grapes_web_builder RENAME COLUMN grapesPageId to grapesGenId",
-			],
-		],
-		'correct_typo_in_column_name' => [
-			'title' => 'Correct Typo in Column Name',
-			'description' => 'Correct typo in cssData column',
-			'sql' => [
-				"ALTER TABLE grapes_web_builder RENAME COLUMN cddData to cssData",
-			],
-		],	
 		'grapes_js_web_builder_roles' => [
 			'title' => 'Grapes JS Web Builder Roles and Permissions',
 			'description' => 'Setup roles and permissions for the Grapes JS Web Builder Pages',
