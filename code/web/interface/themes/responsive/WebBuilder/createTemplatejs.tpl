@@ -151,6 +151,10 @@
       background-color: green;
       border: 1px solid green;
     }
+
+    .gjs-block-label {
+      font-size: 10px;
+    }
     </style>
 </body>
 
