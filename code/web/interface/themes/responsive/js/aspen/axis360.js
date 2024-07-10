@@ -294,6 +294,6 @@ AspenDiscovery.Axis360 = (function () {
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.Axis360 || {}));

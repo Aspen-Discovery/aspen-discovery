@@ -321,7 +321,7 @@ AspenDiscovery.Browse = (function(){
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
@@ -535,18 +535,18 @@ AspenDiscovery.Browse = (function(){
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
 					});
 					// Fix keyboard navigation
