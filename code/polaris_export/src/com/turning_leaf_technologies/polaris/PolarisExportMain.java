@@ -1720,6 +1720,10 @@ public class PolarisExportMain {
 		long maxBibId = -1;
 		if (maxBibResponse.isSuccess()){
 			maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
+		}else{
+			logEntry.addNote("Did not get a successful response when getting max bib in polaris, not deleting bibs");
+			logEntry.saveResults();
+			return;
 		}
 
 		//Get a list of all bib ids in Polaris
@@ -1736,6 +1740,10 @@ public class PolarisExportMain {
 					long bibId = bibInfo.getLong("BibliographicRecordID");
 					allBibsInPolaris.add(Long.toString(bibId));
 				}
+			}else{
+				logEntry.addNote("Did not get a successful response when getting a list of all bibs in polaris, not deleting bibs");
+				logEntry.saveResults();
+				return;
 			}
 
 			startId += numberOfRecords;
@@ -1747,7 +1755,14 @@ public class PolarisExportMain {
 		HashSet<String> allBibsInAspen = getRecordGroupingProcessor().loadExistingActiveIds(logEntry);
 		logEntry.addNote("Loaded list of all bibs in Aspen.");
 		logEntry.saveResults();
+
 		if (allBibsInAspen != null) {
+			if (allBibsInAspen.size() * .9 > allBibsInPolaris.size()){
+				logEntry.addNote("The number of bibs in Polaris is less than 90% of the number of bibs in Aspen, not deleting bibs.");
+				logEntry.saveResults();
+				return;
+			}
+
 			for (String bibId : allBibsInAspen) {
 				if (!allBibsInPolaris.contains(bibId)) {
 					//This bib has been deleted
@@ -1759,6 +1774,11 @@ public class PolarisExportMain {
 			}
 
 			logEntry.addNote("Deleting " + bibsToDelete.size() + " bibs that no longer exist in Polaris.");
+			if (bibsToDelete.size() > .1 * allBibsInAspen.size()) {
+				logEntry.addNote("More than 10% of bibs were marked for deletion, not deleting.");
+				logEntry.saveResults();
+				return;
+			}
 			for (String bibToDelete : bibsToDelete) {
 				getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), bibToDelete);
 				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibToDelete);

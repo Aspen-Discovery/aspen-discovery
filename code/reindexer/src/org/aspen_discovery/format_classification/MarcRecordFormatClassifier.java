@@ -150,7 +150,7 @@ public class MarcRecordFormatClassifier {
 		getFormatFromFormField(groupedWork, record, printFormats);
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile) settings;
-			if (printFormats.isEmpty() && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
+			if ((printFormats.isEmpty() || (printFormats.size() == 1 && printFormats.contains("Book"))) && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
 				getFormatFromFallbackField(groupedWork, record, printFormats, settings);
 			}
 		}

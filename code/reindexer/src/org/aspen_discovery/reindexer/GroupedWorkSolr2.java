@@ -177,14 +177,19 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				for (ItemInfo item : record.getRelatedItems()) {
 					numItems++;
 					if (!item.isOrderItem()) {
-						allItemsOnOrder = false;
-						allItemsUnderConsideration = false;
-					}else if (item.getDetailedStatus() != null){
-						if (item.getDetailedStatus().equals("On Order")) {
-							allItemsUnderConsideration = false;
-						} else if (item.getDetailedStatus().equals("Under Consideration")) {
+						if (item.getDetailedStatus() != null) {
+							if (!(item.getGroupedStatus().equals("On Order") || item.getDetailedStatus().equals("On Order") || item.getDetailedStatus().equals("Coming Soon"))) {
+								allItemsOnOrder = false;
+							}
+							if (!item.getDetailedStatus().equals("Under Consideration")) {
+								allItemsUnderConsideration = false;
+							}
+						}else{
 							allItemsOnOrder = false;
+							allItemsUnderConsideration = false;
 						}
+					}else{
+						allItemsUnderConsideration = false;
 					}
 				}
 				if (!record.getFormatCategories().isEmpty()) {
@@ -615,7 +620,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	private Long daysAddedSincePubDate = null;
 	private Long loadScopedDaysAdded(ItemInfo curItem) {
 		Long daysSinceAdded;
-		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getDetailedStatus().equals("On Order") || curItem.getDetailedStatus().equals("Coming Soon") || curItem.getDetailedStatus().equals("Under Consideration")))) {
+		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getGroupedStatus().equals("On Order") || curItem.getDetailedStatus().equals("On Order") || curItem.getDetailedStatus().equals("Coming Soon") || curItem.getDetailedStatus().equals("Under Consideration")))) {
 			if (curItem.getDetailedStatus().equals("Under Consideration")) {
 				daysSinceAdded = (long)Integer.MAX_VALUE;
 			}else{
