@@ -249,7 +249,7 @@ class InclusionRule {
 			}
 
 			//Check Formats to include & exclude
-			if (isIncluded && !format.isEmpty()){
+			if (isIncluded && format != null && !format.isEmpty()){
 				if (!matchAllFormats) {
 					if (!formatPattern.matcher(format).matches()) {
 						isIncluded = false;

@@ -88,6 +88,6 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					$onlyValidOption.prop("selected", true);
 				}
 			});
-		},
+		}
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));

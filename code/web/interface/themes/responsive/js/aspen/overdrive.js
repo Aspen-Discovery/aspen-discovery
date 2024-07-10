@@ -373,6 +373,6 @@ AspenDiscovery.OverDrive = (function(){
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.OverDrive || {}));
