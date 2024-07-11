@@ -466,6 +466,7 @@ EOT;
     public function getHoldsReportData($location): array {
         $this->initDatabaseConnection();
         $sql = <<<EOT
+-- getHoldsReportData, combining bib level and item level holds 2024 07 09
 			with holds_vs_items as (
 				select
 					t.bid
@@ -485,7 +486,7 @@ EOT;
 				left join patron_v2 p on t.patronid = p.patronid
 				left join bbibmap_v2 b on t.bid = b.bid
 				left join bty_v2 bb on p.bty = bb.btynumber
-				left join branch_v2 ob on t.holdingbranch = ob.branchnumber -- Origin Branch
+				left join branch_v2 ob on t.holdingbranch = ob.branchnumber -- Origin/Owning Branch
 				left join item_v2 i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v2 l on i.location = l.locnumber
 				left join branch_v2 pb on t.pickupbranch = pb.branchnumber -- Pickup Branch
@@ -507,18 +508,59 @@ EOT;
 					, h.CALL_NUMBER
 					, h.TITLE
 					, h.occur_dense_rank
-			)
-			select
-				PATRON_NAME
-				, PICKUP_BRANCH
-				, HOME_ROOM
-				, GRD_LVL
-				, P_BARCODE
-				, SHELF_LOCATION
-				, TITLE
-				, CALL_NUMBER
-				, ITEM_ID
-			from fillable
+			), 
+            bib_level_holds as (
+                select
+                    PATRON_NAME
+                    , PICKUP_BRANCH
+                    , HOME_ROOM
+                    , GRD_LVL
+                    , P_BARCODE
+                    , SHELF_LOCATION
+                    , TITLE
+                    , CALL_NUMBER
+                    , ITEM_ID
+                from fillable
+            ),
+            item_level_holds as (
+                select
+                    pb.branchname as PICKUP_BRANCH
+                    , p.name as PATRON_NAME
+                    , p.sponsor as HOME_ROOM
+                    , bb.btyname as GRD_LVL
+                    , p.patronid as P_BARCODE
+                    , l.locname as SHELF_LOCATION
+                    , b.title as TITLE
+                    , i.cn as CALL_NUMBER
+                    , i.item as ITEM_ID
+                from transitem_v2 t
+                left join item_v2 i on t.item = i.item
+                left join patron_v2 p on t.patronid = p.patronid
+                left join bbibmap_v2 b on i.bid = b.bid
+                left join bty_v2 bb on p.bty = bb.btynumber
+                left join branch_v2 ob on t.holdingbranch = ob.branchnumber -- Origin Branch
+                left join location_v2 l on i.location = l.locnumber
+                left join branch_v2 pb on t.pickupbranch = pb.branchnumber -- Pickup Branch
+            	where ob.branchcode = '$location'
+                and t.transcode = 'R*'
+                order by 
+                    i.bid
+            )
+            , holds as (
+                select
+                    bib_level_holds.*
+                from bib_level_holds
+                union
+                select
+                    item_level_holds.*
+                from item_level_holds
+            )
+            select * from holds
+            order by 
+                SHELF_LOCATION
+                , CALL_NUMBER
+                , TITLE
+            ;
 EOT;
         $stid = oci_parse($this->dbConnection, $sql);
         // consider using oci_set_prefetch to improve performance
