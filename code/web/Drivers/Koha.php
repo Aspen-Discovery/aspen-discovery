@@ -5754,7 +5754,9 @@ class Koha extends AbstractIlsDriver {
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonResponse = json_decode($illRequestResponse);
-				$summary->numUnavailableHolds+= count($jsonResponse);
+				if(count($jsonResponse)) {
+					$summary->numUnavailableHolds+= count($jsonResponse);
+				}
 			}
 		}
 
