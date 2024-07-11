@@ -92,6 +92,11 @@ if (!$foundConfig) {
 		$variables['library'] = readline("Enter the library or consortium name, e.g., Aspen Public Library > ");
 	}
 
+	$variables['supportingCompany'] = readline("Enter the name of the supporting company (default: ByWater Solutions) > ");
+	if (empty($variables['supportingCompany'])) {
+		$variables['supportingCompany'] = "ByWater Solutions";
+	}
+
 	$variables['title'] = '';
 	while (empty($variables['title'])) {
 		$variables['title'] = readline("Enter the title of the site, e.g., Aspen Demo (may be same as library name) > ");
