@@ -320,6 +320,10 @@ $aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host={$variables['
 $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where username = 'aspen_admin'");
 $updateUserStmt->execute();
 
+//Assign supportingCompany in the db
+$postSupportingCompanyStmt = $aspen_db->prepare("UPDATE system_variables set supportingCompany=" . $aspen_db->quote($variables['supportingCompany']));
+$postSupportingCompanyStmt->execute();
+
 if ($variables['ils'] == 'Koha'){
 	// Attempt to get the system's temp directory
 	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
