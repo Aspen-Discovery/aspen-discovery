@@ -34,6 +34,7 @@ if (count($_SERVER['argv']) > 1){
 		$variables = [
 			'sitename' => $sitename,
 			'cleanSitename' => $cleanSitename,
+			'supportingCompany' => $configArray['Site']['supportingCompany'],
 			'library' => $configArray['Site']['sitename'],
 			'title' => $configArray['Site']['title'],
 			'url' => $configArray['Site']['url'],
