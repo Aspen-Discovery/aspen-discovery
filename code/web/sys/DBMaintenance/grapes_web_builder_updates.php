@@ -153,7 +153,7 @@ function getGrapesWebBuilderUpdates() {
 		],
 		'delete_column_from_grapes_web_builder' => [
 			'title' => 'Delete column from grapes_web_builder table',
-			'description' => 'Delte templateId from grapes_web_builder table',
+			'description' => 'Delete templateId from grapes_web_builder table',
 			'sql' => [
 				'ALTER TABLE grapes_web_builder DROP COLUMN templateId',
 			],
@@ -162,11 +162,11 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Alterations to Templates Table',
 			'description' => 'Make changes to templates table to handle addition of templates built in grapes editor',
 			'sql' => [
-				'ALTER TABLE templates ADD COLUMN htmlData TEXT NOT NULL DEFAULT " "',
-				'ALTER TABLE templates ADD COLUMN cssData TEXT NOT NULL DEFAULT " "',
-				'ALTER TABLE templates ADD COLUMN assets TEXT NOT NULL DEFAULT "[]"',
-				'ALTER TABLE templates ADD COLUMN components TEXT NOT NULL DEFAULT "[]"',
-				'ALTER TABLE templates ADD COLUMN styles TEXT NOT NULL DEFAULT "[]"',
+				'ALTER TABLE templates ADD COLUMN htmlData TEXT',
+				'ALTER TABLE templates ADD COLUMN cssData TEXT',
+				'ALTER TABLE templates ADD COLUMN assets TEXT',
+				'ALTER TABLE templates ADD COLUMN components TEXT',
+				'ALTER TABLE templates ADD COLUMN styles TEXT NOT',
 			],
 		],
 		'add_id_grapes_page_id_column_to_template_table' => [
@@ -209,8 +209,8 @@ function getGrapesWebBuilderUpdates() {
 			'title' => 'Add columns to Grapes Web Builder Table',
 			'description' => 'Add columns to Grapes Web Builder Table',
 			'sql' => [
-				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS htmlData TEXT NOT NULL DEFAULT ' '",
-				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS cssData TEXT NOT NULL DEFAULT ' '",
+				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS htmlData TEXT",
+				"ALTER TABLE grapes_web_builder ADD COLUMN IF NOT EXISTS cssData TEXT",
 			],
 		],
 		'grapes_js_web_builder_roles' => [
