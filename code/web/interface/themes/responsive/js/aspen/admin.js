@@ -894,7 +894,6 @@ AspenDiscovery.Admin = (function () {
 					document.getElementById(property).value = "#D50000";
 				}
 			}
-			;
 		},
 		checkContrast: function (property1, property2, oneWay, minRatio) {
 			if (oneWay === undefined) {

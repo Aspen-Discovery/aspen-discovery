@@ -239,6 +239,6 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.CloudLibrary || {}));
