@@ -190,6 +190,6 @@ AspenDiscovery.Lists = (function(){
 				}
 			});
 			return false;
-		},
+		}
 	};
 }(AspenDiscovery.Lists || {}));

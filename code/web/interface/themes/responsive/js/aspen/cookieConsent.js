@@ -4,12 +4,12 @@ AspenDiscovery.CookieConsent = (function() {
             if (props == 'all') {
                 var cookieString = {
                     Essential:1,
-                    Analytics:1,
+                    Analytics:1
                 };
             } else if (props == 'essential') {
                 var cookieString = {
                     Essential:1,
-                    Analytics:0,
+                    Analytics:0
                 };
             }
             $('.stripPopup').hide();
@@ -19,7 +19,7 @@ AspenDiscovery.CookieConsent = (function() {
 			var params =  {
 				method : 'saveCookiePreference',
                 cookieEssential: cookieString['Essential'],
-                cookieAnalytics: cookieString['Analytics'],
+                cookieAnalytics: cookieString['Analytics']
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -46,7 +46,7 @@ AspenDiscovery.CookieConsent = (function() {
         fetchUserCookie: function(Values) {
             document.cookie = 'cookieConsent' + '=' + encodeURIComponent(Values) + ';  path=/';
             return;
-        },
+        }
     }
 }(AspenDiscovery.CookieConsent));
 

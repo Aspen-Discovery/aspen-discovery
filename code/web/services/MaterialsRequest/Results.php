@@ -48,8 +48,8 @@ class MaterialsRequest_Results extends Action {
 				$interface->assign('success', true);
 				$interface->assign('materialsRequest', $materialsRequest);
 				// Update Request Counts on success
-				$interface->assign('requestsThisYear', ++$requestsThisYear);
-				$interface->assign('openRequests', ++$openRequests);
+				$interface->assign('requestsThisYear', $requestsThisYear);
+				$interface->assign('openRequests', $openRequests);
 
 				require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
 				MaterialsRequestUsage::incrementStat($materialsRequest->status, $homeLibrary->libraryId);
