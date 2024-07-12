@@ -337,6 +337,7 @@ public class OaiIndexerMain {
 							}
 
 							for (int j = 0; j < 3; j++) {
+								WebServiceResponse oaiResponse = null;
 								try {
 									logger.info("Loading from " + oaiUrl);
 									HashMap<String, String> headers = new HashMap<>();
@@ -344,7 +345,7 @@ public class OaiIndexerMain {
 									headers.put("Accept-Encoding", "gzip");
 									headers.put("Accept-Language", "en-US");
 									headers.put("Pragma", "no-cache");
-									WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
+									oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
 									if (oaiResponse.isSuccess()) {
 										DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 										factory.setValidating(false);
@@ -393,7 +394,7 @@ public class OaiIndexerMain {
 										}
 										break;
 									} else {
-										if (j==2){
+										if (j == 2) {
 											logEntry.incErrors("Could not retrieve records from " + oaiUrl + " response code " + oaiResponse.getResponseCode());
 											logger.error(oaiResponse.getMessage());
 										} else {
@@ -401,7 +402,10 @@ public class OaiIndexerMain {
 										}
 									}
 								} catch (Exception e) {
-									logEntry.incErrors("Error parsing OAI data" , e);
+									logEntry.incErrors("Error parsing OAI data", e);
+									if (oaiResponse != null){
+										logger.error(oaiResponse.getMessage());
+									}
 								}
 								logEntry.saveResults();
 							}

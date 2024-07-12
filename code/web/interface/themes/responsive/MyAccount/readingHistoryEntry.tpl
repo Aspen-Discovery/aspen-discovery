@@ -56,7 +56,9 @@
 						{if is_array($record.format)}
 							{implode subject=$record.format glue=", " translate=true isPublicFacing=true}
 						{else}
-							{translate text=$record.format isPublicFacing=true}
+							{if !empty($record.format)}
+								{translate text=$record.format isPublicFacing=true}
+							{/if}
 						{/if}
 					</div>
 				</div>

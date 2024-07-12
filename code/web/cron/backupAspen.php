@@ -23,9 +23,9 @@ if (!file_exists($backupDir)) {
 	mkdir($backupDir, 700, true);
 }
 
-//Remove any backups older than 3 days
+//Remove any backups older than 2 days
 $currentFilesInBackup = scandir($backupDir);
-$earliestTimeToKeep = time() - (3 * 24 * 60 * 60);
+$earliestTimeToKeep = time() - (2 * 24 * 60 * 60);
 foreach ($currentFilesInBackup as $file) {
 	$okToProcess = false;
 	if (strlen($file) > 4) {

@@ -14,7 +14,7 @@ import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplayAndroidEndOfSupportMessage, DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
 import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, SearchContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
-import { navigateStack } from '../../helpers/RootNavigator';
+import { navigateStack, pushNavigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { formatDiscoveryVersion, reloadBrowseCategories } from '../../util/loadLibrary';
 import { updateBrowseCategoryStatus } from '../../util/loadPatron';
@@ -303,7 +303,7 @@ export const DiscoverHomeScreen = () => {
      };
 
      const onPressSettings = () => {
-          navigateStack('MoreTab', 'MyPreferences_ManageBrowseCategories', {});
+          navigateStack('MoreTab', 'MyPreferences_ManageBrowseCategories', { prevRoute: 'HomeScreen' });
      };
 
      const handleOnPressCategory = (label, key, source) => {
@@ -341,6 +341,7 @@ export const DiscoverHomeScreen = () => {
           return loadingSpinner();
      }
 
+     /* 
      // load notification onboarding prompt
      if (isQueryFetching === 0 && preliminaryLoadingCheck) {
           if (notificationOnboard !== '0' && notificationOnboard !== 0) {
@@ -348,7 +349,7 @@ export const DiscoverHomeScreen = () => {
                     return <NotificationsOnboard isFocused={isFocused} promptOpen={promptOpen} setPromptOpen={setPromptOpen} />;
                }
           }
-     }
+     }*/
 
      const clearSearch = () => {
           setSearchTerm('');

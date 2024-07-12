@@ -168,7 +168,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && displayStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
+		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	private final HashSet<String> additionalStatuses = new HashSet<>();
@@ -199,7 +199,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		status = getStatusFromSubfield(itemField, 'q', "Checked Out");
 		if (status != null) return status;
 
-		status = getStatusFromSubfield(itemField, '7', "Library Use Only");
+		status = getStatusFromSubfield(itemField, '7', "Library Use Only"); //not for loan
 		if (status != null) return status;
 
 		status = getStatusFromSubfield(itemField, 'k', null);

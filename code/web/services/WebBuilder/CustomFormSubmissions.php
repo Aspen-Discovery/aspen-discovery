@@ -21,11 +21,18 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
+		global $interface;
 		$formSubmissionStructure = $this->getObjectStructure();
 		$object = new CustomFormSubmission();
 		if (isset($_REQUEST['formId'])) {
 			$formId = $_REQUEST['formId'];
 			$object->formId = $formId;
+		} else {
+			$user = UserAccount::getActiveUserObj();
+			$user->updateMessage = "Please select a form to view submissions.";
+			$interface->assign('updateMessage', $user->updateMessage);
+			$user->update();
+			header('Location: /WebBuilder/CustomForms');
 		}
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -56,6 +63,10 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 
 	function getDefaultSort(): string {
 		return 'dateSubmitted desc';
+	}
+
+	function showReturnToList(): bool {
+		return true;
 	}
 
 	function getObjectStructure($context = ''): array {

@@ -8785,6 +8785,20 @@ a.placard-link {
 [role="tabpanel"].is-hidden {
   display: none;
 }
+.browse-category-group-heading {
+  display: flex;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+.browse-category-group-heading h2 {
+  margin: 0;
+}
+.browse-category-group-heading button {
+  margin-left: 1em;
+}
+.browse-category-feed-item {
+  margin-bottom: 5em;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

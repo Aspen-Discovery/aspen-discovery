@@ -113,7 +113,7 @@ class CarlX extends AbstractIlsDriver {
 					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 						$user->cat_password = $result->Patron->PatronPIN;
 						$user->ils_password = $result->Patron->PatronPIN;
-					}else {
+					} else {
 						$user->cat_password = $result->Patron->LastName;
 						$user->ils_password = $result->Patron->LastName;
 					}
@@ -171,7 +171,7 @@ class CarlX extends AbstractIlsDriver {
 					//See if we should reset tracking reading history
 					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
 						$homeLibrary = $user->getHomeLibrary();
-						if ($homeLibrary != null){
+						if ($homeLibrary != null) {
 							if ($homeLibrary->optInToReadingHistoryUpdatesILS && $homeLibrary->optOutOfReadingHistoryUpdatesILS) {
 								$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 							}
@@ -348,7 +348,7 @@ class CarlX extends AbstractIlsDriver {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-					if($requestName == 'settleFinesAndFees') {
+					if ($requestName == 'settleFinesAndFees') {
 						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
 						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
 					} else {
@@ -364,7 +364,7 @@ class CarlX extends AbstractIlsDriver {
 					// TODO make empty
 					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', array_filter($longMessages));
 
-					if($requestName == 'settleFinesAndFees') {
+					if ($requestName == 'settleFinesAndFees') {
 						// if ReceiptNumber is present, settlement with Carl.X was successful
 						$result->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
 					}
@@ -605,11 +605,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @access  public
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
-		return [
-			'success' => false,
-			'message' => 'Unable to place item holds for CARL.X',
-		];
+		return $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate, 'item', null, null, null, $itemId);
 	}
 
 	/**
@@ -622,7 +618,6 @@ class CarlX extends AbstractIlsDriver {
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false): array {
 		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
-
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
@@ -656,7 +651,7 @@ class CarlX extends AbstractIlsDriver {
 			$freeze = true;
 			$freezeReactivationDate = $unavailableHoldViaSIP['freezeReactivationDate'];
 		}
-        return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
+		return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 	}
 
 	public function getCheckouts(User $patron): array {
@@ -839,7 +834,7 @@ class CarlX extends AbstractIlsDriver {
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
 				$patron->_zip = $_REQUEST['zip'];
-            }
+			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')) {
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
 				$request->Patron->EmailReceiptFlag = 1;
@@ -909,6 +904,25 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function getSelfRegistrationFields() {
+		$listOfLanguages = [];
+		$phoneTypeList = [];
+		$request = new stdClass();
+		$request->Modifiers = '';
+
+		$soapResult = $this->doSoapRequest('getPhoneTypeList', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		$phoneTypes = $soapResult->PhoneTypes->PhoneType;
+
+		foreach ($phoneTypes as $phoneType){
+			$phoneTypeList[$phoneType->PhoneTypeId] = $phoneType->Description;
+		}
+
+		$soapResult2 = $this->doSoapRequest('getLanguageList', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		$languageList = $soapResult2->Language;
+
+		foreach ($languageList as $language){
+			$listOfLanguages[$language->LanguageCode] = $language->Description;
+		}
+
 		global $library;
 		$fields = [];
 		$fields[] = [
@@ -949,6 +963,14 @@ class CarlX extends AbstractIlsDriver {
 				'autocomplete' => false,
 			];
 		}
+		$fields[] = [
+			'property' => 'language',
+			'type' => 'enum',
+			'label' => 'Language',
+			'values' =>  $listOfLanguages,
+			'required' => true,
+			'autocomplete' => false,
+		];
 		$fields[] = [
 			'property' => 'address',
 			'type' => 'text',
@@ -991,6 +1013,14 @@ class CarlX extends AbstractIlsDriver {
 			'autocomplete' => false,
 		];
 		$fields[] = [
+			'property' => 'phoneType',
+			'type' => 'enum',
+			'label' => 'Phone Type',
+			'values' => $phoneTypeList,
+			'required' => true,
+			'autocomplete' => false,
+		];
+		$fields[] = [
 			'property' => 'email',
 			'type' => 'email',
 			'label' => 'Email',
@@ -1002,30 +1032,40 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	function selfRegister(): array {
-		global $library, $configArray, $active_ip, $interface;
+		require_once ROOT_DIR . '/sys/SelfRegistrationForms/CarlXSelfRegistrationForm.php';
+		global $library, $active_ip, $interface;
+		$selfRegistrationForm = null;
+		if ($library->selfRegistrationFormId > 0){
+			$selfRegistrationForm = new CarlXSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$lastPatronID = $selfRegistrationForm->lastPatronBarcode;
+			}
+		}
+		$selfRegResult = [
+			'success' => false,
+		];
 		$success = false;
 
-// TODO: move last_selfreg_patron_id out of table variables. 20201108
-		$lastPatronID = new Variable();
-		$lastPatronID->get('name', 'last_selfreg_patron_id');
-		if (!empty($lastPatronID->value)) {
-			$currentPatronIDNumber = rand(1, 13) + $lastPatronID->value;
-// TODO: move selfRegIDPrefix to database. 20201108
-			$tempPatronID = $configArray['Catalog']['selfRegIDPrefix'] . str_pad($currentPatronIDNumber, $configArray['Catalog']['selfRegIDNumberLength'], '0', STR_PAD_LEFT);
+		if (!empty($lastPatronID) && $selfRegistrationForm != null) {
+			$currentPatronIDNumber = $lastPatronID + 1;
+			$tempPatronID = $selfRegistrationForm->barcodePrefix . $currentPatronIDNumber;
 
 			$firstName = trim(strtoupper($_REQUEST['firstName']));
 			$middleName = trim(strtoupper($_REQUEST['middleName']));
 			$lastName = trim(strtoupper($_REQUEST['lastName']));
 			if ($library && $library->promptForBirthDateInSelfReg) {
 				$birthDate = trim($_REQUEST['birthDate']);
-				$date = strtotime(str_replace('-', '/', $birthDate));
+				$DOB = strtotime(str_replace('-', '/', $birthDate));
 			}
-            $address = trim(strtoupper($_REQUEST['address']));
+			$address = trim(strtoupper($_REQUEST['address']));
 			$city = trim(strtoupper($_REQUEST['city']));
 			$state = trim(strtoupper($_REQUEST['state']));
 			$zip = trim($_REQUEST['zip']);
 			$email = trim(strtoupper($_REQUEST['email']));
 			$phone = preg_replace('/^(\d{3})(\d{3})(\d{4})$/', '$1-$2-$3', preg_replace('/\D/', '', trim($_REQUEST['phone'])));
+			$phoneType = trim($_REQUEST['phoneType']);
+			$language = trim($_REQUEST['language']);
 
 			// DENY REGISTRATION IF DUPLICATE EMAIL IS FOUND IN CARL.X
 			// searchPatron on Email appears to be case-insensitive and
@@ -1052,6 +1092,15 @@ class CarlX extends AbstractIlsDriver {
 					global $logger;
 					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
 
+					$selfRegResult = [
+						'success' => false,
+						'message' => translate([
+							'text' => 'This email address already exists in our database. Please contact your library for account information or use a different email.',
+							'isPublicFacing' => true,
+						]),
+						'barcode' => $tempPatronID,
+					];
+
 					// SEND EMAIL TO DUPLICATE EMAIL ADDRESS
 					try {
 						require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
@@ -1071,23 +1120,10 @@ class CarlX extends AbstractIlsDriver {
 								$emailTemplate->sendEmail($newUser->email, $parameters);
 							}
 						}
-/*						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_email'));
-						require_once ROOT_DIR . '/sys/Email/Mailer.php';
-						$mail = new Mailer();
-						$subject = 'Nashville Public Library: you have an account!';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						// SendGrid Failed
 					}
-					return [
-						'success' => false,
-						'message' => translate([
-							'text' => 'This email address already exists in our database. Please contact your library for account information or use a different email.',
-							'isPublicFacing' => true,
-						]),
-/*						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',*/
-						'barcode' => $tempPatronID,
-					];
+					return $selfRegResult;
 				}
 			}
 
@@ -1104,7 +1140,7 @@ class CarlX extends AbstractIlsDriver {
 			$request->SearchTerms[1]['Value'] = $lastName;
 			$request->SearchTerms[2]['ApplicationType'] = 'exact match';
 			$request->SearchTerms[2]['Attribute'] = 'Birthdate';
-			$request->SearchTerms[2]['Value'] = date('Ymd', $date);
+			$request->SearchTerms[2]['Value'] = date('Ymd', $DOB);
 			$request->PagingParameters = new stdClass();
 			$request->PagingParameters->StartPos = 0;
 			$request->PagingParameters->NoOfRecords = 20;
@@ -1120,6 +1156,15 @@ class CarlX extends AbstractIlsDriver {
 					}
 					global $logger;
 					$logger->log('Online Registration Name+Birthdate already exists in Carl. Name: ' . $firstName . ' ' . $lastName . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
+
+					$selfRegResult = [
+						'success' => false,
+						'message' => translate([
+							'text' => 'This user already exists in our database. Please contact your library for account information.',
+							'isPublicFacing' => true,
+						]),
+						'barcode' => $tempPatronID,
+					];
 
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
@@ -1140,23 +1185,10 @@ class CarlX extends AbstractIlsDriver {
 								$emailTemplate->sendEmail($newUser->email, $parameters);
 							}
 						}
-/*						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_name+birthdate'));
-						require_once ROOT_DIR . '/sys/Email/Mailer.php';
-						$mail = new Mailer();
-						$subject = 'Nashville Public Library: you might already have an account!';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						//SendGrid failed
 					}
-					return [
-						'success' => false,
-						'message' => translate([
-							'text' => 'This user already exists in our database. Please contact your library for account information.',
-							'isPublicFacing' => true,
-						]),
-/*						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',*/
-						'barcode' => $tempPatronID,
-					];
+					return $selfRegResult;
 				}
 			}
 
@@ -1165,12 +1197,10 @@ class CarlX extends AbstractIlsDriver {
 			$request->Modifiers = new stdClass();
 			$request->Modifiers->ReportMode = false;
 			$request->PatronFlags = new stdClass();
-			//$request->PatronFlags->PatronFlag					= 'DUPCHECK_ALTID'; // Duplicate check for alt id
 			$request->PatronFlags->PatronFlag[0] = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
 			$request->PatronFlags->PatronFlag[1] = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
 			$request->Patron = new stdClass();
 			$request->Patron->PatronID = $tempPatronID;
-			$request->Patron->Email = $email;
 			$request->Patron->FirstName = $firstName;
 			$request->Patron->MiddleName = $middleName;
 			$request->Patron->LastName = $lastName;
@@ -1182,39 +1212,22 @@ class CarlX extends AbstractIlsDriver {
 			$request->Patron->Addresses->Address->State = $state;
 			$request->Patron->Addresses->Address->PostalCode = $zip;
 			$request->Patron->PreferredAddress = 'Primary';
-			//$request->Patron->PatronPIN						= $pin;
+			$request->Patron->BirthDate = $birthDate;
 			$request->Patron->Phone1 = $phone;
+			$request->Patron->Phone2 = "";
+			$request->Patron->PhoneType = $phoneType;
+			$request->Patron->Language = $language;
+			$request->Patron->Email = $email;
 			$request->Patron->RegistrationDate = date('c'); // Registration Date, format ISO 8601
 			$request->Patron->LastActionDate = date('c'); // Registration Date, format ISO 8601
 			$request->Patron->LastEditDate = date('c'); // Registration Date, format ISO 8601
-
-			$request->Patron->EmailNotices = $configArray['Catalog']['selfRegEmailNotices'];
-			$request->Patron->DefaultBranch = $configArray['Catalog']['selfRegDefaultBranch'];
-			$request->Patron->PatronExpirationDate = $configArray['Catalog']['selfRegPatronExpirationDate'];
-			$request->Patron->PatronStatusCode = $configArray['Catalog']['selfRegPatronStatusCode'];
-			$request->Patron->PatronType = $configArray['Catalog']['selfRegPatronType'];
-			$request->Patron->RegBranch = $configArray['Catalog']['selfRegRegBranch'];
-			$request->Patron->RegisteredBy = $configArray['Catalog']['selfRegRegisteredBy'];
-
-			// This is now done through setting minimum age required in Primary Configuration
-/*			// VALIDATE BIRTH DATE.
-			// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
-			if ($library && $library->promptForBirthDateInSelfReg) {
-				$birthDate = trim($_REQUEST['birthDate']);
-				$date = strtotime(str_replace('-', '/', $birthDate));
-				$birthDateMin = strtotime('-113 years');
-				$birthDateMax = strtotime('-13 years');
-				if ($date >= $birthDateMin && $date <= $birthDateMax) {
-					$request->Patron->BirthDate = date('Y-m-d', $date);
-				} else {
-					global $logger;
-					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), Logger::LOG_WARNING);
-					return [
-						'success' => false,
-						'message' => 'You must be 13 years old to register.',
-					];
-				}
-			}*/
+			$request->Patron->EmailNotices = $selfRegistrationForm->selfRegEmailNotices;
+			$request->Patron->PatronType = $selfRegistrationForm->selfRegPatronType;
+			$request->Patron->DefaultBranch = $selfRegistrationForm->selfRegDefaultBranch;
+			$request->Patron->PatronExpirationDate = "2025-07-26T00:00:00";
+			$request->Patron->PatronStatusCode = $selfRegistrationForm->selfRegPatronStatusCode;
+			$request->Patron->RegBranch = $selfRegistrationForm->selfRegDefaultBranch;
+			$request->Patron->RegisteredBy = $selfRegistrationForm->selfRegRegisteredBy;
 			$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
 				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
@@ -1223,22 +1236,22 @@ class CarlX extends AbstractIlsDriver {
 					if (!empty($result->ResponseStatuses->ResponseStatus->LongMessage)) {
 						$errorMessage .= "... " . $result->ResponseStatuses->ResponseStatus->LongMessage;
 					}
-					if (strpos($errorMessage, 'A patron with that id already exists')  !== false) {
+					if (strpos($errorMessage, 'A patron with that id already exists') !== false) {
 						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
 						// Increment the temp patron id number.
-						$lastPatronID->value = $currentPatronIDNumber;
-						if (!$lastPatronID->update()) {
+						$selfRegistrationForm->lastPatronBarcode = $currentPatronIDNumber;
+						if (!$selfRegistrationForm->update()) {
 							$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
 						}
 					}
-					return [
+					$selfRegResult = [
 						'success' => false,
 						'message' => $errorMessage,
 					];
 				} else {
-					$lastPatronID->value = $currentPatronIDNumber;
-					if (!$lastPatronID->update()) {
+					$selfRegistrationForm->lastPatronBarcode = $currentPatronIDNumber;
+					if (!$selfRegistrationForm->update()) {
 						global $logger;
 						$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
 					}
@@ -1266,7 +1279,7 @@ class CarlX extends AbstractIlsDriver {
 							global $logger;
 							$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
 							// Return Success Any way, because the account was created.
-							return [
+							$selfRegResult = [
 								'success' => true,
 								'barcode' => $tempPatronID,
 							];
@@ -1292,25 +1305,11 @@ class CarlX extends AbstractIlsDriver {
 								$emailTemplate->sendEmail($newUser->email, $parameters);
 							}
 						}
-/*						$body = $firstName . " " . $lastName . "\n\n";
-						$body .= translate([
-							'text' => 'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:',
-							'isPublicFacing' => true,
-							'isAdminEnteredData' => true,
-						]);
-						$body .= "\n\n" . $tempPatronID . "\n\n";
-						$body_template = EmailTemplate::getActiveTemplate('welcome');
-						//$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
-						$body .= $body_template;
-						require_once ROOT_DIR . '/sys/Email/Mailer.php';
-						$mail = new Mailer();
-						$subject = 'Welcome to the Nashville Public Library';
-						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');*/
 					} catch (Exception $e) {
 						// SendGrid Failed
 					}
-					return [
-						'success' => $success,
+					$selfRegResult = [
+						'success' => true,
 						'barcode' => $tempPatronID,
 						'patronName' => $firstName . ' ' . $lastName,
 					];
@@ -1323,10 +1322,7 @@ class CarlX extends AbstractIlsDriver {
 			global $logger;
 			$logger->log('No value for "last_selfreg_patron_id" set in Variables table. Can not self-register patron in CarlX Driver.', Logger::LOG_ERROR);
 		}
-		return [
-			'success' => $success,
-		];
-
+		return $selfRegResult;
 	}
 
 	function getSelfRegTemplate($reason) {
@@ -1451,11 +1447,11 @@ class CarlX extends AbstractIlsDriver {
 		];
 	}
 
-	public function performsReadingHistoryUpdatesOfILS() : bool {
+	public function performsReadingHistoryUpdatesOfILS(): bool {
 		return true;
 	}
 
-	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles): void {
 		if ($action == 'optIn' || $action == 'optOut') {
 			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset ($request->Patron)) {
@@ -1658,7 +1654,7 @@ class CarlX extends AbstractIlsDriver {
 			'message' => 'Unknown error completing fine payment',
 		];
 
-		if(empty($library->accountProfileId)) {
+		if (empty($library->accountProfileId)) {
 			$logger->log('No Account Profile configured in Library Systems', Logger::LOG_ERROR);
 			$result['message'] = 'No Account Profile configured in Library Systems';
 			return $result;
@@ -1669,7 +1665,7 @@ class CarlX extends AbstractIlsDriver {
 		$accountProfile = new AccountProfile();
 		$accountProfile->id = $library->accountProfileId;
 		if ($accountProfile->find(true)) {
-			if(empty($accountProfile->staffUsername)) {
+			if (empty($accountProfile->staffUsername)) {
 				$logger->log('No Staff Username configured in Account Profile', Logger::LOG_ERROR);
 				$result['message'] = 'No Staff Username configured in Account Profile';
 				return $result;
@@ -1684,7 +1680,7 @@ class CarlX extends AbstractIlsDriver {
 		}
 
 		$homeLocation = $patron->getHomeLocationCode();
-		if(!$homeLocation) {
+		if (!$homeLocation) {
 			global $logger;
 			$logger->log('Failed to find any location to make the payment from', Logger::LOG_ERROR);
 			$result['messages'][] = translate([
@@ -1704,7 +1700,7 @@ class CarlX extends AbstractIlsDriver {
 
 			$occurrence = 0;
 			foreach ($allFines as $fine) {
-				if($fine['fineId'] == $feeId) {
+				if ($fine['fineId'] == $feeId) {
 					$occurrence = $fine['occurrence'];
 					break;
 				}
@@ -1729,7 +1725,7 @@ class CarlX extends AbstractIlsDriver {
 			$requestOptions['login'] = $this->accountProfile->oAuthClientId;
 			$requestOptions['password'] = $this->accountProfile->oAuthClientSecret;
 			$settleFinesAndFeesResult = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $requestOptions, []);
-			if($result) {
+			if ($result) {
 				if (!$settleFinesAndFeesResult->ReceiptNumber) {
 					$allPaymentsSucceed = false;
 					$result['message'] = translate([
@@ -1769,7 +1765,7 @@ class CarlX extends AbstractIlsDriver {
 				];
 			}
 
-			if($allPaymentsSucceed) {
+			if ($allPaymentsSucceed) {
 				$paymentNote = new stdClass();
 				$paymentNote->Note = new stdClass();
 				$paymentNote->Note->PatronID = $patron->ils_barcode;
@@ -1777,9 +1773,9 @@ class CarlX extends AbstractIlsDriver {
 				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
 				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
-				if($addPaymentNoteResult) {
+				if ($addPaymentNoteResult) {
 					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
-					if(!$success) {
+					if (!$success) {
 						$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
 					}
 				} else {
@@ -1811,7 +1807,7 @@ class CarlX extends AbstractIlsDriver {
 	 */
 	private function getPatronTransactions(User $user) {
 		$request = $this->getSearchbyPatronIdRequest($user);
-        return $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		return $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 	}
 
 	public function getPhoneTypeList() {
@@ -2008,7 +2004,7 @@ class CarlX extends AbstractIlsDriver {
 		];
 	}
 
-	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null) {
+	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null, $itemId = null) {
 		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
@@ -2067,9 +2063,9 @@ class CarlX extends AbstractIlsDriver {
 				$pickupBranchNumber = $pickupBranchInfo->BranchNumber;
 
 				//place the hold
-				$itemId = '';
-				$recordId = '';
-				if (strpos($holdId, 'ITEM ID: ') === 0) {
+				if (!empty($itemId)) {
+					$holdType = 3; // specific copy
+				} elseif (strpos($holdId, 'ITEM ID: ') === 0) {
 					$holdType = 3; // specific copy
 					$itemId = substr($holdId, 9);
 				} elseif (strpos($holdId, 'BID: ') === 0) {
@@ -2317,24 +2313,24 @@ class CarlX extends AbstractIlsDriver {
 		return false;
 	}
 
-    public function getHoldsReportData($location) {
-        return false;
-    }
+	public function getHoldsReportData($location) {
+		return false;
+	}
 
-    public function getStudentBarcodeData($location, $homeroom) {
-        return false;
-    }
+	public function getStudentBarcodeData($location, $homeroom) {
+		return false;
+	}
 
-    public function getStudentBarcodeDataHomerooms($location) {
-        return false;
-    }
+	public function getStudentBarcodeDataHomerooms($location) {
+		return false;
+	}
 
-    public function getStudentReportData($location, $showOverdueOnly, $date) : ?array {
-        return false;
-    }
+	public function getStudentReportData($location, $showOverdueOnly, $date): ?array {
+		return false;
+	}
 
 
-        //Defaults are correct for this
+	//Defaults are correct for this
 //	function getPasswordPinValidationRules(){
 //		return [
 //			'minLength' => 4,
@@ -2453,17 +2449,17 @@ class CarlX extends AbstractIlsDriver {
 	function getForgotPasswordType() {
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			return 'emailAspenResetLink';
-		}else{
+		} else {
 			return 'none';
 		}
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {
-        if($this->accountProfile->carlXViewVersion == 'v2') {
-            $version = 'v2';
-        }else{
-            $version = 'v';
-        }
+		if ($this->accountProfile->carlXViewVersion == 'v2') {
+			$version = 'v2';
+		} else {
+			$version = 'v';
+		}
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlDialectInspection */
@@ -2509,7 +2505,7 @@ EOT;
 		return false;
 	}
 
-	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate): bool {
 		//Check to see if the last seen date is after the last time we updated reading history
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);

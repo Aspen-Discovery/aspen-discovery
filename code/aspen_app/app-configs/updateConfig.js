@@ -85,7 +85,7 @@ const app_config = {
      privacy: 'public',
      platforms: ['ios', 'android'],
      version: version['version'],
-     sdkVersion: '50.0.0',
+     sdkVersion: '51.0.0',
      orientation: 'default',
      icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
      updates: {
@@ -207,8 +207,13 @@ const app_config = {
           [
                'expo-build-properties',
                {
+                    android: {
+                         compileSdkVersion: 34,
+                         targetSdkVersion: 34,
+                         buildToolsVersion: '34.0.0',
+                    },
                     ios: {
-                         deploymentTarget: '16.0',
+                         deploymentTarget: '15.0',
                     },
                },
           ],

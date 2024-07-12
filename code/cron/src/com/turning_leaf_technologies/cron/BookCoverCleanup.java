@@ -1,6 +1,11 @@
 package com.turning_leaf_technologies.cron;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.util.Date;
 
@@ -17,6 +22,9 @@ public class BookCoverCleanup implements IProcessHandler {
 		String coverPath = configIni.get("Site", "coverPath");
 		String[] coverPaths = new String[] { "/small", "/medium", "/large" };
 		long currentTime = new Date().getTime();
+		long oneWeekAgo = currentTime - (7L * 24 * 3600 * 1000);
+		long twoWeeksAgo = currentTime - (2L * 7 * 24 * 3600 * 1000);
+		long fourWeeksAgo = currentTime - (4L * 7 * 24 * 3600 * 1000);
 
 		//TODO: Get a smarter list of covers to remove
 		//Any default covers created more than a week ago
@@ -37,14 +45,29 @@ public class BookCoverCleanup implements IProcessHandler {
 				if (filesToCheck != null) {
 					for (File curFile : filesToCheck) {
 						//Remove any files created more than 2 weeks ago.
-						if (curFile.lastModified() < (currentTime - 2 * 7 * 24 * 3600 * 1000)) {
-							if (curFile.delete()) {
-								numFilesDeleted++;
-								processLog.incUpdated();
-							} else {
-								processLog.incErrors("Unable to delete file " + curFile);
+						try {
+							BasicFileAttributes fileAttributes = Files.readAttributes(curFile.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+							FileTime dateCreated = fileAttributes.creationTime();
+							FileTime lastAccessed = fileAttributes.lastAccessTime();
+							if (lastAccessed.toMillis() < twoWeeksAgo) {
+								if (curFile.delete()) {
+									numFilesDeleted++;
+									processLog.incUpdated();
+								} else {
+									processLog.incErrors("Unable to delete file " + curFile);
+								}
+							}else if (dateCreated.toMillis() < fourWeeksAgo) {
+								if (curFile.delete()) {
+									numFilesDeleted++;
+									processLog.incUpdated();
+								} else {
+									processLog.incErrors("Unable to delete file " + curFile);
+								}
 							}
+						} catch (IOException e) {
+							throw new RuntimeException(e);
 						}
+
 					}
 				}
 				if (numFilesDeleted > 0) {

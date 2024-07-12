@@ -31,6 +31,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 	@Override
 	public void run() {
 		boolean hadError = false;
+		boolean wasSkipped = false;
 		try {
 			int numTries = 0;
 			boolean retry = true;
@@ -74,7 +75,14 @@ public class UpdateReadingHistoryTask implements Runnable {
 								processLog.incSkipped();
 								//Don't log that we couldn't update them, the skipped is enough
 								logger.debug("Updating reading history failed for " + cat_username + " " + message);
+								wasSkipped = true;
 								//processLog.addNote("Updating reading history failed for " + cat_username + " " + message);
+							}
+						}else{
+							//We can also have things skipped if the last changed hasn't updated or the patron expires
+							if (result.getBoolean("skipped")){
+								processLog.incSkipped();
+								wasSkipped = true;
 							}
 						}
 					} catch (JSONException e) {
@@ -103,7 +111,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 			processLog.incErrors("Unable to retrieve information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorMessage);
 			hadError = true;
 		}
-		if (!hadError){
+		if (!hadError && !wasSkipped){
 			processLog.incUpdated();
 		}
 	}

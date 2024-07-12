@@ -21,10 +21,17 @@ class WebBuilder_QuickPollSubmissions extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
+		global $interface;
 		$object = new QuickPollSubmission();
 		if (!empty($_REQUEST['pollId'])) {
 			$pollId = $_REQUEST['pollId'];
 			$object->pollId = $pollId;
+		} else {
+			$user = UserAccount::getActiveUserObj();
+			$user->updateMessage = "Please select a poll to view submissions.";
+			$interface->assign('updateMessage', $user->updateMessage);
+			$user->update();
+			header('Location: /WebBuilder/QuickPolls');
 		}
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());

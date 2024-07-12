@@ -835,9 +835,9 @@ class Sierra extends Millennium {
 			];
 		} else {
 			$return = [
-				'success' => true,
+				'success' => false,
 				'message' => translate([
-					'text' => "Unable to freeze your hold.",
+					'text' => 'Unable to freeze your hold.',
 					'isPublicFacing' => true,
 				]),
 				'api' => [
@@ -1435,8 +1435,8 @@ class Sierra extends Millennium {
 				$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 			}else{
 				//No expiration date set, just set something 20 years in the future
-				$now = time();
-				$summary->expirationDate = $now + 20 * 365 * 24 * 60 * 60;
+				//$now = time();
+				$summary->expirationDate = 0;
 			}
 		}
 
@@ -1807,7 +1807,10 @@ class Sierra extends Millennium {
 		if ($patron->getPasswordOrPin() != $oldPin) {
 			return [
 				'success' => false,
-				'message' => "The old PIN provided is incorrect.",
+				'message' => translate([
+					'text' => 'The old PIN provided is incorrect.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
@@ -1941,7 +1944,10 @@ class Sierra extends Millennium {
 
 			if ($this->lastResponseCode == 204) {
 				$result['success'] = true;
-				$result['messages'][] = 'Your home library was updated successfully.';
+				$result['messages'][] = translate([
+					'text' => 'Your home library was updated successfully.',
+					'isPublicFacing' => true,
+				]);
 				$patron->update();
 			} else {
 				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;

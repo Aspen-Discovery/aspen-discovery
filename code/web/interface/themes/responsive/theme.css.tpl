@@ -258,13 +258,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     background-color: {$browseCategoryPanelColor};
 {rdelim}
 
-.browse-category,#browse-sub-category-menu button{ldelim}
+.browse-category,#browse-sub-category-menu button, .manual [role="tab"], .manual .hide-browse-sub-category, .manual .more-browse-sub-category{ldelim}
     background-color: {$deselectedBrowseCategoryBackgroundColor} !important;
     border-color: {$deselectedBrowseCategoryBorderColor} !important;
     color: {$deselectedBrowseCategoryForegroundColor} !important;
 {rdelim}
 
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover{ldelim}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:focus,#browse-sub-category-menu button.selected:hover,#browse-sub-category-menu button:focus,#browse-sub-category-menu button:hover, .manual [role="tab"]:focus, .manual [role="tab"]:hover, .manual [role="tab"][aria-selected="true"], .manual [role="tab"][aria-selected="true"] + .more-browse-sub-category + .hide-browse-sub-category, .manual .hide-browse-sub-category:hover, .manual .hide-browse-sub-category:focus, .manual [role="tab"][aria-selected="true"] + .more-browse-sub-category,.manual .more-browse-sub-category:hover, .manual .more-browse-sub-category:focus{ldelim}
     border-color: {$selectedBrowseCategoryBorderColor} !important;
     background-color: {$selectedBrowseCategoryBackgroundColor} !important;
     color: {$selectedBrowseCategoryForegroundColor} !important;
@@ -449,13 +449,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
-.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited, .manual [role="tab"]{ldelim}
+.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
     background-color: {$primaryButtonBackgroundColor} !important;
     color: {$primaryButtonForegroundColor} !important;
     border-color: {$primaryButtonBorderColor};
 {rdelim}
 
-.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary, .manual [role="tab"]:focus, .manual [role="tab"]:hover, .manual [role="tab"][aria-selected="true"]{ldelim}
+.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
     background-color: {$primaryButtonHoverBackgroundColor} !important;
     color: {$primaryButtonHoverForegroundColor} !important;
     border-color: {$primaryButtonHoverBorderColor};

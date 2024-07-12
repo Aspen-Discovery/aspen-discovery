@@ -16,7 +16,7 @@ const LaunchStackNavigator = () => {
                     <SystemMessagesContext.Consumer>
                          {(systemMessages, updateSystemMessages) => (
                               <LanguageContext.Consumer>
-                                   {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
+                                   {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary, languageDisplayName, updateLanguageDisplayName) => (
                                         <LibrarySystemContext.Consumer>
                                              {(library, version, url, menu, catalogStatus, catalogStatusMessage) => (
                                                   <LibraryBranchContext.Consumer>
@@ -36,6 +36,7 @@ const LaunchStackNavigator = () => {
                                                                                                                    screenOptions={{
                                                                                                                         headerShown: false,
                                                                                                                         headerBackTitleVisible: false,
+                                                                                                                        gestureEnabled: false,
                                                                                                                    }}>
                                                                                                                    {refreshUserData ? (
                                                                                                                         <Stack.Screen
@@ -67,7 +68,7 @@ const LaunchStackNavigator = () => {
                                                                                                                              },
                                                                                                                              checkoutsContext: checkouts,
                                                                                                                              holdsContext: holds,
-                                                                                                                             languageContext: { language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary },
+                                                                                                                             languageContext: { language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary, languageDisplayName, updateLanguageDisplayName },
                                                                                                                              systemMessagesContext: { systemMessages, updateSystemMessages },
                                                                                                                              themeContext: { mode, updateColorMode },
                                                                                                                         }}

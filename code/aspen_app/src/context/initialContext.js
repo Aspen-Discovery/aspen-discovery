@@ -106,11 +106,13 @@ export const GroupedWorkContext = React.createContext({
 export const LanguageContext = React.createContext({
      updateLanguage: () => {},
      language: '',
+     languageDisplayName: '',
      languages: [],
      dictionary: [],
      updateLanguages: () => {},
      updateDictionary: () => {},
      resetLanguage: () => {},
+     updateLanguageDisplayName: () => {},
 });
 export const SystemMessagesContext = React.createContext({
      updateSystemMessages: () => {},
@@ -360,6 +362,7 @@ export const UserProvider = ({ children }) => {
      const [viewers, setLinkedViewerAccounts] = useState([]);
      const [lists, setLists] = useState([]);
      const [language, setLanguage] = useState('en');
+     const [languageDisplayName, setLanguageDisplayName] = useState('English');
      const [locations, setPickupLocations] = useState([]);
      const [readingHistory, setReadingHistory] = useState([]);
      const [savedEvents, setSavedEvents] = useState([]);
@@ -414,6 +417,11 @@ export const UserProvider = ({ children }) => {
      const updateLanguage = (data) => {
           setLanguage(data);
           console.log('updated language in UserContext');
+     };
+
+     const updateLanguageDisplayName = (data) => {
+          setLanguageDisplayName(data);
+          console.log('updated language display in UserContext');
      };
 
      const updatePickupLocations = (data) => {
@@ -586,6 +594,8 @@ export const UserProvider = ({ children }) => {
                     updateLinkedViewerAccounts,
                     language,
                     updateLanguage,
+                    languageDisplayName,
+                    updateLanguageDisplayName,
                     locations,
                     updatePickupLocations,
                     readingHistory,
@@ -759,6 +769,7 @@ export const LanguageProvider = ({ children }) => {
      const [language, setLanguage] = useState();
      const [languages, setLanguages] = useState();
      const [dictionary, setDictionary] = useState();
+     const [languageDisplayName, setLanguageDisplayName] = useState();
 
      const updateLanguage = (data) => {
           console.log('updated language to ' + data + ' in LanguageContext');
@@ -776,6 +787,11 @@ export const LanguageProvider = ({ children }) => {
           setDictionary(data);
      };
 
+     const updateLanguageDisplayName = (data) => {
+          console.log('updated language display name in LanguageContext');
+          setLanguageDisplayName(data);
+     };
+
      return (
           <LanguageContext.Provider
                value={{
@@ -785,6 +801,8 @@ export const LanguageProvider = ({ children }) => {
                     updateLanguages,
                     dictionary,
                     updateDictionary,
+                    languageDisplayName,
+                    updateLanguageDisplayName,
                }}>
                {children}
           </LanguageContext.Provider>

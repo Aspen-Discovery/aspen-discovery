@@ -7105,6 +7105,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'Stripe') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'NCR') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -7131,6 +7133,15 @@ AspenDiscovery.Account = (function () {
 
 		createCompriseOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType, null);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
+		createNCROrder: function (finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'NCR', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -9048,7 +9059,6 @@ AspenDiscovery.Admin = (function () {
 					document.getElementById(property).value = "#D50000";
 				}
 			}
-			;
 		},
 		checkContrast: function (property1, property2, oneWay, minRatio) {
 			if (oneWay === undefined) {
@@ -10031,8 +10041,9 @@ AspenDiscovery.Admin = (function () {
 				$(".propertySectionHeading").show();
 				$(".propertySection").show();
 				//Collapse all panels
-				$(".editor .panel").removeClass('active');
-				$(".editor .accordion_body").removeClass('in');
+				$(".editor .panel-title a").removeClass('expanded').addClass('collapsed').attr("aria-expanded","false");
+				$(".editor .panel").removeClass('active').attr("aria-expanded","false");
+				$(".editor .accordion_body").removeClass('in').hide();
 			} else {
 				var allAPropertyRows = $(".propertyRow");
 				allAPropertyRows.each(function () {
@@ -10045,8 +10056,9 @@ AspenDiscovery.Admin = (function () {
 					}
 				});
 				//Expand all panels
-				$(".editor .panel").addClass('active');
-				$(".editor .accordion_body").addClass('in');
+				$(".editor .panel-title a").removeClass('collapsed').addClass('expanded').attr("aria-expanded","true");
+				$(".editor .panel").addClass('active').attr("aria-expanded","true");
+				$(".editor .accordion_body").addClass('in').show();
 			}
 		},
 
@@ -10645,7 +10657,7 @@ AspenDiscovery.Axis360 = (function () {
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.Axis360 || {}));
 AspenDiscovery.Browse = (function(){
@@ -10662,6 +10674,7 @@ AspenDiscovery.Browse = (function(){
 		changingDisplay: false,
 		browseStyle: 'masonry',
 		accessibleMode: false,
+		patronId: null,
 
 		addToHomePage: function(searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
@@ -10783,7 +10796,6 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			console.log("Toggling browse mode...");
 			if(!AspenDiscovery.Browse.accessibleMode) {
 				var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
 				var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');
@@ -10896,6 +10908,7 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.removeAttr('onclick');
 						var thisCategoryToDismiss = data.subCategoryTextId || categoryTextId;
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ thisCategoryToDismiss +'")');
+						dismissButton.attr('title', data.hideButtonLabel);
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -10929,6 +10942,7 @@ AspenDiscovery.Browse = (function(){
 								$('.selected-browse-sub-category-label-search-text')
 									.html(data.subCategoryLabel)
 									.fadeIn()
+								dismissButton.attr('title', data.subCategoryHideButtonLabel);
 							}
 						}
 						if (data.lastPage){
@@ -10964,26 +10978,42 @@ AspenDiscovery.Browse = (function(){
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-browse-category-' + categoryTextId, {
+					var browseSwiper = new Swiper('.swiper-browse-category-' + categoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					});
+
+					// update links for more results
+					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					AspenDiscovery.Browse.patronId = data.patronId;
+
+					// Prevent accidental cover selection when the user clicks too fast
+					$(".swiper").on("mousedown", function (e) {
+						e.preventDefault();
 					});
 				}
 			}).fail(function(){
@@ -11079,6 +11109,8 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 					}
 
+					dismissButton.attr('title', data.subCategoryHideButtonLabel);
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
@@ -11127,6 +11159,25 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
+		getMoreSubCategoryResultsLink: function (subCategoryTextId, categoryId) {
+			var url = Globals.path + '/Browse/AJAX';
+			var params = {
+				method : 'getMoreBrowseSubCategoryResultsLink'
+				,textId : categoryId
+				,subCategoryTextId : subCategoryTextId
+			};
+
+			$.getJSON(url, params, function(data){
+				if (data.success === false){
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				}else{
+					window.location = data.searchUrl;
+				}
+			}).fail(function(){
+				AspenDiscovery.ajaxFail();
+			});
+		},
+
 		changeBrowseSubCategoryTab: function (subCategoryTextId, categoryId) {
 			AspenDiscovery.Browse.changingDisplay = true;
 			var url = Globals.path + '/Browse/AJAX';
@@ -11143,26 +11194,33 @@ AspenDiscovery.Browse = (function(){
 				}else{
 					var resultsTabPanel = document.getElementById('swiper-sub-browse-category-' + subCategoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
+					var browseSwiper = new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 
 				}
@@ -11505,7 +11563,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.CloudLibrary || {}));
 AspenDiscovery.CourseReserves = (function(){
@@ -12665,7 +12723,7 @@ AspenDiscovery.Lists = (function(){
 				}
 			});
 			return false;
-		},
+		}
 	};
 }(AspenDiscovery.Lists || {}));
 AspenDiscovery.CollectionSpotlights = (function(){
@@ -12751,9 +12809,14 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					}
 				});
 				document.getElementById("collectionSpotlightListId").value = "-1.0";
+				if (listCount == 1) {
+					var $onlyValidOption = $("#collectionSpotlightListId").find("option").filter(function () {
+						return this["hidden"] == false && this['disabled'] == false;
+					});
+					$onlyValidOption.prop("selected", true);
+				}
 			});
-
-		},
+		}
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));
 AspenDiscovery.MaterialsRequest = (function(){
@@ -13258,7 +13321,9 @@ AspenDiscovery.OverDrive = (function(){
 					url: ajaxUrl,
 					cache: false,
 					success: function(data){
-						AspenDiscovery.showMessage("Title Returned", data.message, data.success);
+						AspenDiscovery.showMessage(
+							data.success ? 'Title Returned' : 'Unable to Return Title', data.message, data.success
+						);
 						if (data.success){
 							$(".overdrive_checkout_" + overDriveId).hide();
 							AspenDiscovery.Account.loadMenuData();
@@ -13335,7 +13400,7 @@ AspenDiscovery.OverDrive = (function(){
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.OverDrive || {}));
 AspenDiscovery.OpenArchives = (function () {
@@ -14571,7 +14636,7 @@ AspenDiscovery.Searches = (function(){
 						select: function (event, ui) {
 							var form = $(searchTermSelector).closest('form');
 							$(searchTermSelector).val(ui.item.value);
-							if (form.attr('id') == 'searchForm') { form.submit() };
+							if (form.attr('id') == 'searchForm') { form.submit(); }
 							return false;
 						}
 					}).data('ui-autocomplete')._renderItem = function (ul, item) {
@@ -14583,7 +14648,7 @@ AspenDiscovery.Searches = (function(){
 				}
 			} catch (e) {
 				alert("error during autocomplete setup:\n" + e);
-			};
+			}
 		},
 
 		sendEmail: function(){
@@ -14759,7 +14824,6 @@ AspenDiscovery.Searches = (function(){
 		}
 	}
 }(AspenDiscovery.Searches || {}));
-
 AspenDiscovery.SideLoads = (function(){
 	return {
 		deleteMarc: function (sideLoadId, fileName, fileIndex) {
@@ -15668,130 +15732,129 @@ AspenDiscovery.IndexingClass = (function () {
  *   Desc:   Implements ARIA Authoring Practices for switching tabs
  */
 'use strict';
-class TabsSwitcher {
-	constructor(groupNode) {
-		this.tablistNode = groupNode;
-		this.tabs = [];
-		this.firstTab = null;
-		this.lastTab = null;
-		this.tabs = Array.from(this.tablistNode.querySelectorAll('[role=tab]'));
-		this.tabpanels = [];
+function TabsSwitcher (groupNode) {
+	this.tablistNode = groupNode;
+	this.tabs = [];
+	this.firstTab = null;
+	this.lastTab = null;
+	this.tabs = Array.from(this.tablistNode.querySelectorAll('[role=tab]'));
+	this.tabpanels = [];
 
-		for (let i = 0; i < this.tabs.length; i++) {
-			const tab = this.tabs[i];
-			const tabPanel = document.getElementById(tab.getAttribute('aria-controls'));
+	for (var i = 0; i < this.tabs.length; i++) {
+		var tab = this.tabs[i];
+		var tabPanel = document.getElementById(tab.getAttribute('aria-controls'));
 
-			tab.setAttribute('aria-selected', 'false');
-			this.tabpanels.push(tabPanel);
+		tab.setAttribute('aria-selected', 'false');
+		this.tabpanels.push(tabPanel);
 
-			tab.addEventListener('keydown', this.onKeydown.bind(this));
-			tab.addEventListener('click', this.onClick.bind(this));
+		tab.addEventListener('keydown', this.onKeydown.bind(this));
+		tab.addEventListener('click', this.onClick.bind(this));
 
-			if (!this.firstTab) {
-				this.firstTab = tab;
+		if (!this.firstTab) {
+			this.firstTab = tab;
+		}
+		this.lastTab = tab;
+	}
+
+	//this.setSelectedTab(this.firstTab, false);
+}
+
+TabsSwitcher.prototype.setSelectedTab = function (currentTab, setFocus) {
+	if (typeof setFocus !== 'boolean') {
+		setFocus = true;
+	}
+	for (var i = 0; i < this.tabs.length; i++) {
+		var tab = this.tabs[i];
+		if (currentTab === tab) {
+			//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
+			$(tab).attr('aria-selected', 'true');
+			$(tab).addClass('active');
+			//this.tabs[i].classList.add('active');
+			if (setFocus) {
+				tab.focus();
 			}
-			this.lastTab = tab;
-		}
-
-		//this.setSelectedTab(this.firstTab, false);
-	}
-
-	 setSelectedTab(currentTab, setFocus) {
-		if (typeof setFocus !== 'boolean') {
-			setFocus = true;
-		}
-		for (let i = 0; i < this.tabs.length; i++) {
-			const tab = this.tabs[i];
-			if (currentTab === tab) {
-				//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
-				$(tab).attr('aria-selected', 'true');
-				$(tab).addClass('active');
-				//this.tabs[i].classList.add('active');
-				if (setFocus) {
-					tab.focus();
-				}
-			} else {
-				//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
-				$(tab).attr('aria-selected', 'false');
-				$(tab).removeClass('active');
-				//this.tabs[i].classList.remove('active');
-			}
-		}
-	}
-
-	setSelectedToPreviousTab(currentTab) {
-		let index;
-
-		if (currentTab === this.tabs.firstTab) {
-			this.setSelectedTab(this.tabs.lastTab);
 		} else {
-			index = this.tabs.indexOf(currentTab);
-			this.setSelectedTab(this.tabs[index - 1]);
+			//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
+			$(tab).attr('aria-selected', 'false');
+			$(tab).removeClass('active');
+			//this.tabs[i].classList.remove('active');
 		}
-	}
-
-	setSelectedToNextTab(currentTab) {
-		let index;
-
-		if (currentTab === this.tabs.lastTab) {
-			this.setSelectedTab(this.tabs.firstTab);
-		} else {
-			index = this.tabs.indexOf(currentTab);
-			this.setSelectedTab(this.tabs[index + 1]);
-		}
-	}
-
-	onKeydown(event) {
-		const tgt = event.currentTarget;
-		let flag = false;
-
-		switch (event.key) {
-			case 'ArrowLeft':
-				this.setSelectedToPreviousTab(tgt);
-				flag = true;
-				break;
-
-			case 'ArrowRight':
-				this.setSelectedToNextTab(tgt);
-				flag = true;
-				break;
-
-			case 'Home':
-				this.setSelectedTab(this.tabs.firstTab);
-				flag = true;
-				break;
-
-			case 'End':
-				this.setSelectedTab(this.tabs.lastTab);
-				flag = true;
-				break;
-
-			default:
-				break;
-		}
-
-		if (flag) {
-			event.stopPropagation();
-			event.preventDefault();
-		}
-	}
-
-	onClick(event) {
-		this.setSelectedTab(event.currentTarget);
 	}
 }
+
+TabsSwitcher.prototype.setSelectedToPreviousTab = function (currentTab) {
+	var index;
+
+	if (currentTab === this.tabs.firstTab) {
+		this.setSelectedTab(this.tabs.lastTab);
+	} else {
+		index = this.tabs.indexOf(currentTab);
+		this.setSelectedTab(this.tabs[index - 1]);
+	}
+}
+
+TabsSwitcher.prototype.setSelectedToNextTab = function (currentTab) {
+	var index;
+
+	if (currentTab === this.tabs.lastTab) {
+		this.setSelectedTab(this.tabs.firstTab);
+	} else {
+		index = this.tabs.indexOf(currentTab);
+		this.setSelectedTab(this.tabs[index + 1]);
+	}
+}
+
+TabsSwitcher.prototype.onKeydown = function(event) {
+	var tgt = event.currentTarget;
+	var flag = false;
+
+	switch (event.key) {
+		case 'ArrowLeft':
+			this.setSelectedToPreviousTab(tgt);
+			flag = true;
+			break;
+
+		case 'ArrowRight':
+			this.setSelectedToNextTab(tgt);
+			flag = true;
+			break;
+
+		case 'Home':
+			this.setSelectedTab(this.tabs.firstTab);
+			flag = true;
+			break;
+
+		case 'End':
+			this.setSelectedTab(this.tabs.lastTab);
+			flag = true;
+			break;
+
+		default:
+			break;
+	}
+
+	if (flag) {
+		event.stopPropagation();
+		event.preventDefault();
+	}
+}
+
+TabsSwitcher.prototype.onClick = function(event) {
+	this.setSelectedTab(event.currentTarget);
+}
+
 AspenDiscovery.CookieConsent = (function() {
     return {
         cookieAgree: function(props) {
             if (props == 'all') {
                 var cookieString = {
                     Essential:1,
-                    Analytics:1,
+                    Analytics:1
                 };
             } else if (props == 'essential') {
                 var cookieString = {
                     Essential:1,
-                    Analytics:0,
+                    Analytics:0
                 };
             }
             $('.stripPopup').hide();
@@ -15801,7 +15864,7 @@ AspenDiscovery.CookieConsent = (function() {
 			var params =  {
 				method : 'saveCookiePreference',
                 cookieEssential: cookieString['Essential'],
-                cookieAnalytics: cookieString['Analytics'],
+                cookieAnalytics: cookieString['Analytics']
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -15828,7 +15891,7 @@ AspenDiscovery.CookieConsent = (function() {
         fetchUserCookie: function(Values) {
             document.cookie = 'cookieConsent' + '=' + encodeURIComponent(Values) + ';  path=/';
             return;
-        },
+        }
     }
 }(AspenDiscovery.CookieConsent));
 

@@ -232,7 +232,7 @@ export const Variations = (props) => {
                                                        bgColor={theme['colors']['primary']['500']}
                                                        onPress={async () => {
                                                             setPlacingItemHold(true);
-                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
+                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId, language).then(async (result) => {
                                                                  setResponse(result);
                                                                  queryClient.invalidateQueries({ queryKey: ['holds', holdSelectItemResponse.patronId, library.baseUrl, language] });
                                                                  queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
@@ -298,76 +298,72 @@ const Variation = (payload) => {
      console.log(status);
      return (
           <Box mt="$5" mb="$0">
-               <Center p="$3" bgColor={colorMode === 'light' ? theme['colors']['warmGray']['100'] : theme['colors']['coolGray']['900']} borderRadius="$md" alignSelf="center" sx={{ '@base': { width: '100%' }, '@lg': { width: '75%' } }}>
-                    <HStack justifyContent="space-between" alignItems="center" space="sm" flex={1}>
-                         <VStack space="sm" maxW="40%" flex={1} justifyContent="center">
-                              <Center>
-                                   <Badge variant="solid" action={status.indicator} borderRadius="$sm">
-                                        <BadgeText textTransform="none" sx={{ '@lg': { fontSize: 16, lineHeight: 20 } }}>
-                                             {status.label}
-                                        </BadgeText>
-                                   </Badge>
-                              </Center>
-                              {status.message ? (
-                                   <Text color={textColor} sx={{ '@base': { fontSize: 10, lineHeight: 12 }, '@lg': { fontSize: 12, lineHeight: 14 } }} textAlign="center" italic maxW="75%">
-                                        {status.message}
-                                   </Text>
-                              ) : null}
+               <Center m="$1" softShadow="5" p="$3" bgColor={colorMode === 'light' ? theme['colors']['white'] : theme['colors']['coolGray']['900']} borderRadius="$md" alignSelf="center" sx={{ '@base': { width: '100%' }, '@lg': { width: '75%' } }}>
+                    <VStack mb="$3" width="100%" space="md">
+                         <HStack width="100%" space="sm" justifyContent="space-around" alignItems="center">
+                              <Badge variant="solid" action={status.indicator} borderRadius="$sm" p="$1">
+                                   <BadgeText textTransform="none" sx={{ '@base': { fontSize: 12, lineHeight: 13 }, '@lg': { fontSize: 16, lineHeight: 20 } }}>
+                                        {status.label}
+                                   </BadgeText>
+                              </Badge>
                               {source === 'ils' ? (
-                                   <Button variant="link" size="sm" onPress={handleOnPress}>
+                                   <Button variant="link" size="xs" onPress={handleOnPress}>
                                         <ButtonIcon as={MapPinIcon} size="xs" color={theme['colors']['tertiary']['500']} mr="$1" />
                                         <ButtonText color={theme['colors']['tertiary']['500']}>{getTermFromDictionary(language, 'where_is_it')}</ButtonText>
                                    </Button>
                               ) : null}
-                         </VStack>
-                         <ButtonGroup width="50%" justifyContent="center" alignItems="stretch" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
-                              <FlatList
-                                   data={actions}
-                                   renderItem={({ item }) => (
-                                        <ActionButton
-                                             language={language}
-                                             groupedWorkId={id}
-                                             recordId={recordId}
-                                             recordSource={source}
-                                             fullRecordId={variation.id}
-                                             variationId={variationId}
-                                             holdTypeForFormat={holdTypeForFormat}
-                                             title={title}
-                                             author={author}
-                                             publisher={publisher}
-                                             isbn={isbn}
-                                             oclcNumber={oclcNumber}
-                                             actions={item}
-                                             volumeInfo={volumeInfo}
-                                             prevRoute={prevRoute}
-                                             setResponseIsOpen={setResponseIsOpen}
-                                             responseIsOpen={responseIsOpen}
-                                             onResponseClose={onResponseClose}
-                                             cancelResponseRef={cancelResponseRef}
-                                             response={response}
-                                             setResponse={setResponse}
-                                             setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
-                                             holdConfirmationIsOpen={holdConfirmationIsOpen}
-                                             onHoldConfirmationClose={onHoldConfirmationClose}
-                                             cancelHoldConfirmationRef={cancelHoldConfirmationRef}
-                                             holdConfirmationResponse={holdConfirmationResponse}
-                                             setHoldConfirmationResponse={setHoldConfirmationResponse}
-                                             setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
-                                             holdItemSelectIsOpen={holdItemSelectIsOpen}
-                                             onHoldItemSelectClose={onHoldItemSelectClose}
-                                             cancelHoldItemSelectRef={cancelHoldItemSelectRef}
-                                             holdSelectItemResponse={holdSelectItemResponse}
-                                             setHoldSelectItemResponse={setHoldSelectItemResponse}
-                                        />
-                                   )}
-                              />
-                         </ButtonGroup>
-                    </HStack>
-                    <Center mt="$2">
-                         <Button size="xs" variant="outline" borderColor={theme['colors']['tertiary']['500']} onPress={handleOpenEditions}>
-                              <ButtonText color={theme['colors']['tertiary']['500']}>{getTermFromDictionary(language, 'show_editions')}</ButtonText>
-                         </Button>
-                    </Center>
+                         </HStack>
+                         {status.message ? (
+                              <Text color={textColor} sx={{ '@base': { fontSize: 12, lineHeight: 14 }, '@lg': { fontSize: 12, lineHeight: 14 } }} textAlign="center" italic>
+                                   {status.message}
+                              </Text>
+                         ) : null}
+                    </VStack>
+                    <ButtonGroup width="100%" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
+                         <FlatList
+                              data={actions}
+                              renderItem={({ item }) => (
+                                   <ActionButton
+                                        language={language}
+                                        groupedWorkId={id}
+                                        recordId={recordId}
+                                        recordSource={source}
+                                        fullRecordId={variation.id}
+                                        variationId={variationId}
+                                        holdTypeForFormat={holdTypeForFormat}
+                                        title={title}
+                                        author={author}
+                                        publisher={publisher}
+                                        isbn={isbn}
+                                        oclcNumber={oclcNumber}
+                                        actions={item}
+                                        volumeInfo={volumeInfo}
+                                        prevRoute={prevRoute}
+                                        setResponseIsOpen={setResponseIsOpen}
+                                        responseIsOpen={responseIsOpen}
+                                        onResponseClose={onResponseClose}
+                                        cancelResponseRef={cancelResponseRef}
+                                        response={response}
+                                        setResponse={setResponse}
+                                        setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                        holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                        onHoldConfirmationClose={onHoldConfirmationClose}
+                                        cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                        holdConfirmationResponse={holdConfirmationResponse}
+                                        setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                        setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                        holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                        onHoldItemSelectClose={onHoldItemSelectClose}
+                                        cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                        holdSelectItemResponse={holdSelectItemResponse}
+                                        setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                   />
+                              )}
+                         />
+                    </ButtonGroup>
+                    <Button width="100%" mt="$2" size="xs" variant="solid" bgColor={theme['colors']['gray']['200']} onPress={handleOpenEditions}>
+                         <ButtonText color={theme['colors']['gray']['900']}>{getTermFromDictionary(language, 'show_editions')}</ButtonText>
+                    </Button>
                </Center>
           </Box>
      );

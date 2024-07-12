@@ -2624,9 +2624,6 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($user, $id);
@@ -3664,14 +3661,26 @@ class UserAPI extends AbstractAPI {
 			$user = new User();
 			$user->ils_barcode = $username;
 			if ($user->find(true)) {
-				$user->updateReadingHistoryBasedOnCurrentCheckouts(true);
+				$updateResult = $user->updateReadingHistoryBasedOnCurrentCheckouts(true);
 
-				return ['success' => true];
-			} else {
 				return [
-					'success' => false,
-					'message' => 'Could not find a user with that user name',
+					'success' => true,
+					'message' => $updateResult['message'],
+					'skipped' => $updateResult['skipped']
 				];
+			} else {
+				if ($user->count() == 0) {
+					return [
+						'success' => false,
+						'message' => 'Could not find a user with that barcode',
+					];
+				}else{
+					return [
+						'success' => false,
+						'message' => 'More than one user found with that barcode, merge the barcodes',
+					];
+				}
+
 			}
 		}
 	}

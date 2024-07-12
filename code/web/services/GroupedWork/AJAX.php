@@ -522,7 +522,8 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]) . "</button></a>";
         global $offlineMode;
-		if(!$showFavorites || $offlineMode) {
+        global $loginAllowedWhileOffline;
+		if(!$showFavorites || ($offlineMode && !$loginAllowedWhileOffline)) {
 			$buttons = "<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate([
 					'text' => 'More Info',
 					'isPublicFacing' => true,

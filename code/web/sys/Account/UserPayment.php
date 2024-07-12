@@ -23,6 +23,7 @@ class UserPayment extends DataObject {
 	public $aciToken;
 	public $deluxeRemittanceId;
 	public $deluxeSecurityId;
+	public $ncrTransactionId;
 	public $requestingUrl;
 
 	public static function getObjectStructure($context = '') {
@@ -190,6 +191,171 @@ class UserPayment extends DataObject {
 			}
 		}
 		return $this->_data[$name] ?? null;
+	}
+
+	public static function completeNCRPayment($queryParams) {
+		$paymentId = $_REQUEST['transid'];
+		$success = false;
+		$error = '';
+		$message = '';
+
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$userPayment = new UserPayment();
+		$userPayment->orderId = $paymentId;
+		if ($userPayment->find(true)) {
+			if ($userPayment->completed == true) {
+				$success = true;
+				$message = translate([
+					'text' => 'Your payment has been completed. ',
+					'isPublicFacing' => true,
+				]);
+			} else {
+				$user = new User();
+				$user->id = $userPayment->userId;
+				if ($user->find(true)) {
+					$userLibrary = $user->getHomeLibrary();
+
+					require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting.php';
+					$NCRPaymentsSetting = new NCRPaymentsSetting();
+					$NCRPaymentsSetting->id = $userLibrary->NCRSettingId;
+
+					if ($NCRPaymentsSetting->find(true)) {
+
+						if (str_ends_with($_SERVER['REQUEST_URI'],"0")){  //payment was cancelled
+							$error = translate([
+								'text' => 'Payment was cancelled.',
+								'isPublicFacing' => true,
+							]);
+							$userPayment->cancelled = true;
+						}
+						else {
+							$clientKey = $NCRPaymentsSetting->clientKey;
+							$transactionID = $userPayment->orderId;
+
+							$url = "https://magic.collectorsolutions.com/magic-api/api/transaction/redirect/".$clientKey."/".$transactionID;
+
+							$curlWrapper = new CurlWrapper();
+							$curlWrapper->addCustomHeaders([
+								'Accept: application/json',
+								'Content-Type: application/json',
+								'Accept-Charset: utf-8',
+							], true);
+
+							$hostedTransactionResultsResponse = $curlWrapper->curlGetPage($url);
+
+							$jsonResponse = null;
+
+							if ($hostedTransactionResultsResponse && $curlWrapper->getResponseCode() == 200) {
+								$jsonResponse = json_decode($hostedTransactionResultsResponse);
+							}
+
+							if ($jsonResponse->status == "ok") {
+								if($userPayment->transactionType == 'donation') {
+									//Check to see if we have a donation for this payment
+									require_once ROOT_DIR . '/sys/Donations/Donation.php';
+									$donation = new Donation();
+									$donation->paymentId = $userPayment->id;
+									if ($donation->find(true)) {
+										$success = true;
+										$message = translate([
+											'text' => 'Your donation payment has been completed. ',
+											'isPublicFacing' => true,
+										]);
+										$userPayment->message .= "Donation payment completed";
+										$userPayment->completed = true;
+										if ($jsonResponse) {
+											if($jsonResponse->approvalStatus == 2) {
+												$netAmt = $jsonResponse->totalRemitted;
+												$transactionId = $jsonResponse->transactionidentifier;
+												$userPayment->message .= ", TransactionId = $transactionId, Net Amount = $netAmt. ";
+											}
+										}
+										$userPayment->update();
+
+										$donation->sendReceiptEmail();
+									} else {
+										$message = translate([
+											'text' => 'Unable to locate donation with given payment id %1%',
+											'isPublicFacing' => true,
+											1 => $userPayment->id,
+										]);
+									}
+								} else {
+									$userPayment->completed = true;
+									if ($jsonResponse == null) {
+										$userPayment->error = true;
+										$userPayment->message = 'Could not receive transaction response from NCR.  Please visit the library with your receipt to have the fine removed from your account.';
+									} else {
+										if ($jsonResponse->approvalStatus == 2) {
+											$success = true;
+											$amountPaid = $jsonResponse->amount;
+											if ($amountPaid != (int)round($userPayment->totalPaid * 100)) {
+												$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
+												$userPayment->totalPaid = $amountPaid;
+											}
+											$user = new User();
+											$user->id = $userPayment->userId;
+											if ($user->find(true)) {
+												$finePaymentCompleted = $user->completeFinePayment($userPayment);
+												if ($finePaymentCompleted['success']) {
+													$success = true;
+													$message = translate([
+														'text' => 'Your payment has been completed. ',
+														'isPublicFacing' => true,
+													]);
+													$netAmt = $jsonResponse->totalRemitted;
+													$transactionId = $jsonResponse->transactionidentifier;
+
+													$userPayment->message .= "Payment completed, TransactionId = $transactionId, Net Amount = $netAmt. ";
+												} else {
+													$success = false;
+													$userPayment->error = true;
+													$userPayment->message .= $finePaymentCompleted['message'];
+												}
+											} else {
+												$userPayment->error = true;
+												$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+											}
+										} else {
+											$userPayment->error = true;
+											$userPayment->message .= 'Payment processing failed. ' . $jsonResponse->errors;
+										}
+										$userPayment->completed = true;
+									}
+								}
+							} else {
+								$userPayment->error = true;
+								$userPayment->message = "Unknown result, processing payment.";
+							}
+							if (empty($userPayment->message)) {
+								$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
+							} else {
+								if ($userPayment->error) {
+									$error = $userPayment->message;
+								} else {
+									if (empty($message)) {
+										$message = $userPayment->message;
+									}
+								}
+							}
+						}
+						$userPayment->update();
+					} else {
+						$error = 'Could not find settings for the user payment';
+					}
+				} else {
+					$error = 'Incorrect User for the payment';
+				}
+			}
+		} else {
+			$error = 'Incorrect Payment ID provided';
+		}
+		$result = [
+			'success' => $success,
+			'message' => $success ? $message : $error,
+		];
+
+		return $result;
 	}
 
 	public static function completeComprisePayment($queryParams) {

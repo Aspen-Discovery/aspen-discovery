@@ -969,6 +969,13 @@ class MyAccount_AJAX extends JSON_Action {
 							'text' => 'Success',
 							'isPublicFacing' => true,
 						]);
+					}else{
+						$message = '<div class="alert alert-danger">' . $result['message'] . '</div>';
+						$result['message'] = $message;
+						$result['title'] = translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]);
 					}
 
 					if (!$result['success'] && is_array($result['message'])) {
@@ -1006,6 +1013,9 @@ class MyAccount_AJAX extends JSON_Action {
 		]);
 
 		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+		if ($promptForReactivationDate === "false") {
+			$promptForReactivationDate = false;
+		}
 
 		if($promptForReactivationDate) {
 			global $interface;
@@ -1168,6 +1178,9 @@ class MyAccount_AJAX extends JSON_Action {
 		]);
 
 		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+		if ($promptForReactivationDate === "false") {
+			$promptForReactivationDate = false;
+		}
 
 		if($promptForReactivationDate) {
 			global $interface;
@@ -4284,29 +4297,29 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/Donations/Donation.php';
 		$donation = new Donation();
 		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation['firstName'];
-		$donation->lastName = $tempDonation['lastName'];
-		$donation->email = $tempDonation['email'];
-		$donation->anonymous = $tempDonation['isAnonymous'];
-		$donation->dedicate = $tempDonation['isDedicated'];
-		if ($tempDonation['isDedicated'] == 1) {
-			$donation->dedicateType = $tempDonation['dedication']['type'];
-			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
-			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		$donation->firstName = $tempDonation->firstName;
+		$donation->lastName = $tempDonation->lastName;
+		$donation->email = $tempDonation->email;
+		$donation->anonymous = $tempDonation->isAnonymous;
+		$donation->dedicate = $tempDonation->isDedicated;
+		if ($tempDonation->isDedicated == 1) {
+			$donation->dedicateType = $tempDonation->dedication->type;
+			$donation->honoreeFirstName = $tempDonation->dedication->honoreeFirstName;
+			$donation->honoreeLastName = $tempDonation->dedication->honoreeLastName;
 		}
-		$donation->shouldBeNotified = $tempDonation['shouldBeNotified'];
-		if($tempDonation['shouldBeNotified'] == 1) {
-			$donation->notificationFirstName = $tempDonation['notification']['notificationFirstName'];
-			$donation->notificationLastName = $tempDonation['notification']['notificationLastName'];
-			$donation->notificationAddress = $tempDonation['notification']['notificationAddress'];
-			$donation->notificationCity = $tempDonation['notification']['notificationCity'];
-			$donation->notificationState = $tempDonation['notification']['notificationState'];
-			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
+		$donation->shouldBeNotified = $tempDonation->shouldBeNotified;
+		if($tempDonation->shouldBeNotified == 1) {
+			$donation->notificationFirstName = $tempDonation->notification->notificationFirstName;
+			$donation->notificationLastName = $tempDonation->notification->notificationLastName;
+			$donation->notificationAddress = $tempDonation->notification->notificationAddress;
+			$donation->notificationCity = $tempDonation->notification->notificationCity;
+			$donation->notificationState = $tempDonation->notification->notificationState;
+			$donation->notificationZip = $tempDonation->notification->notificationZip;
 		}
-		$donation->donateToLocationId = $tempDonation['donateToLocationId'];
-		$donation->donateToLocation = $tempDonation['donateToLocation'];
-		$donation->comments = $tempDonation['comments'];
-		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->donateToLocationId = $tempDonation->donateToLocationId;
+		$donation->donateToLocation = $tempDonation->donateToLocation;
+		$donation->comments = $tempDonation->comments;
+		$donation->donationSettingId = $tempDonation->donationSettingId;
 		$donation->sendEmailToUser = 1;
 		$donation->insert();
 
@@ -4913,8 +4926,8 @@ class MyAccount_AJAX extends JSON_Action {
 				$result = $patron->completeFinePayment($payment);
 				if ($result['success'] == false) {
 					//If the payment does not complete in the ILS, add information to the payment for tracking
-					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+					//Also send an email to the admin that it was completed in PayPal, but not the ILS
+					$payment->message .= translate(['text'=>'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt.', 'isPublicFacing'=>true]) . ' ' . $result['message'];
 					$payment->update();
 					$result['message'] = $payment->message;
 
@@ -5796,6 +5809,114 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
+	function createNCROrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('NCR');
+		} else {
+			$result = $this->createGenericOrder('NCR');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)) {
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */ /** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting.php';
+			$NCRPaymentsSetting = new NCRPaymentsSetting();
+			$NCRPaymentsSetting->id = $userLibrary->ncrSettingId;
+			if ($NCRPaymentsSetting->find(true)) {
+				//hard coded api route
+				$url = "https://magic.collectorsolutions.com/magic-api/api/transaction/redirect";
+
+				$transactionIDNumber = $NCRPaymentsSetting->lastTransactionNumber + 1;
+				$NCRPaymentsSetting->lastTransactionNumber = $transactionIDNumber;
+				$NCRPaymentsSetting->update();
+				$transactionIdentifier = "AspenPayment" .$userLibrary->libraryId . $userLibrary->ilsCode . $transactionIDNumber;
+				$newRedirectRequest = new CurlWrapper();
+				$newRedirectRequest->addCustomHeaders([
+					"Content-Type: application/json",
+					"Accept: application/json",
+					"Accept-Charset: utf-8",
+				], true);
+
+				$lineItem = new stdClass(); //line items need to be objects not arrays
+				$lineItem->identifiers[0] = "Illinet/OCLC Invoice";
+				$lineItem->amount = $payment->totalPaid;
+				$lineItem->paymentType = $NCRPaymentsSetting->paymentTypeId;
+
+				$postParams = [
+					'clientKey' => $NCRPaymentsSetting->clientKey,
+					'transactionIdentifier' => $transactionIdentifier,
+					'collectionMode' => 1,
+					'amount' => $payment->totalPaid,
+					'billing' => [
+						'email' => $patron->email
+					],
+					'lineItems' => [$lineItem],
+					'urlReturnPost' => $configArray['Site']['url'] . "/MyAccount/NCRComplete",
+					'allowedPaymentMethod' => 3,
+				];
+
+				$result = $newRedirectRequest->curlPostBodyData($url, $postParams, true);
+				$result = json_decode($result);
+
+				if ($result->status != "ok"){
+					return [
+						'success' => false,
+						'message' => $result->errors[0]->message,
+					];
+				}
+				$paymentRequestUrl = "https://magic.collectorsolutions.com/magic-ui/PaymentRedirect/" . $NCRPaymentsSetting->webKey . "/" . $transactionIdentifier;
+
+				$payment->orderId = $transactionIdentifier;
+				$payment->update();
+
+				return [
+					'success' => true,
+					'message' => 'Redirecting to payment processor',
+					'paymentRequestUrl' => $paymentRequestUrl,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'NCR was not properly configured for the library.',
+				];
+			}
+		}
+	}
+
 	function createPayPalPayflowOrder() {
 		global $configArray;
 		global $interface;
@@ -6184,7 +6305,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
-		$patronId = $_REQUEST['patronId'];
+		$patronId = UserAccount::getActiveUserId();
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 
 		$result = [

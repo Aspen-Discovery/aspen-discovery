@@ -7,3 +7,5 @@ fi
 
 printf "Updating apache configuration\n"
 php /usr/local/aspen-discovery/install/updateApacheConf_24_06.php $1
+
+chown -R aspen:aspen_apache /usr/local/aspen-discovery/code/web/sitemaps

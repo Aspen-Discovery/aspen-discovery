@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
+import { PalaceProjectInstructions } from '../../components/Action/CheckOut/PalaceProjectInstructions';
 import { LanguageContext } from '../../context/initialContext';
 import { EventScreen } from '../../screens/Event/Event';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
@@ -34,6 +36,7 @@ const AccountStackNavigator = () => {
                screenOptions={{
                     headerShown: true,
                     headerBackTitleVisible: false,
+                    gestureEnabled: false,
                     headerBackImage: () => <BackIcon />,
                }}>
                <Stack.Group>
@@ -79,6 +82,14 @@ const AccountStackNavigator = () => {
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyCheckouts' }}
+                    />
+                    <Stack.Screen
+                         name="PalaceProjectInstructionsModal"
+                         component={PalaceProjectInstructionsModal}
+                         options={{
+                              headerShown: false,
+                              presentation: 'modal',
+                         }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -219,6 +230,38 @@ const AccountStackNavigator = () => {
                     })}
                />
           </Stack.Navigator>
+     );
+};
+
+const PalaceProjectStack = createStackNavigator();
+export const PalaceProjectInstructionsModal = () => {
+     const { language } = React.useContext(LanguageContext);
+     return (
+          <PalaceProjectStack.Navigator
+               id="PalaceProjectStack"
+               screenOptions={({ navigation, route }) => ({
+                    headerShown: false,
+                    animationTypeForReplace: 'push',
+                    gestureEnabled: false,
+                    headerLeft: () => {
+                         return null;
+                    },
+                    headerRight: () => (
+                         <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                              <CloseIcon size={5} color="primary.baseContrast" />
+                         </Pressable>
+                    ),
+               })}>
+               <PalaceProjectStack.Screen
+                    name="Instructions"
+                    component={PalaceProjectInstructions}
+                    options={{
+                         title: getTermFromDictionary(language, 'using_palace_project'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+          </PalaceProjectStack.Navigator>
      );
 };
 

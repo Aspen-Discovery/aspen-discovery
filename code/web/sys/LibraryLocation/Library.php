@@ -142,6 +142,7 @@ class Library extends DataObject {
 	public $invoiceCloudSettingId;
 	public $deluxeCertifiedPaymentsSettingId;
 	public $paypalPayflowSettingId;
+	public $ncrSettingId;
 	public $usernameField;
 
 	public /** @noinspection PhpUnused */
@@ -452,6 +453,8 @@ class Library extends DataObject {
 	public $cookieStorageConsent;
 	public $cookiePolicyHTML;
 
+	public $allowUpdatingHolidaysFromILS;
+
 	/** @var MaterialsRequestFormFields[] */
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
@@ -723,6 +726,16 @@ class Library extends DataObject {
 		$stripeSettings[-1] = 'none';
 		while ($stripeSetting->fetch()) {
 			$stripeSettings[$stripeSetting->id] = $stripeSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting.php';
+		$ncrSetting = new NCRPaymentsSetting();
+		$ncrSetting->orderBy('name');
+		$ncrSettings = [];
+		$ncrSetting->find();
+		$ncrSettings[-1] = 'none';
+		while ($ncrSetting->fetch()) {
+			$ncrSettings[$ncrSetting->id] = $ncrSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2563,7 +2576,8 @@ class Library extends DataObject {
 							10 => 'Certified Payments by Deluxe',
 							11 => 'PayPal Payflow',
 							12 => 'Square',
-							13 => 'Stripe'
+							13 => 'Stripe',
+							14 => 'NCR'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2737,6 +2751,15 @@ class Library extends DataObject {
 						'values' => $stripeSettings,
 						'label' => 'Stripe Settings',
 						'description' => 'The Stripe settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'ncrSettingId'=> [
+						'property' => 'ncrSettingId',
+						'type' => 'enum',
+						'values' => $ncrSettings,
+						'label' => 'NCR Settings',
+						'description' => 'The NCR settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
@@ -3785,21 +3808,41 @@ class Library extends DataObject {
 				],
 			],
 
-			'holidays' => [
-				'property' => 'holidays',
-				'type' => 'oneToMany',
+			'holidaysSection' => [
+				'property' => 'holidaysSection',
+				'type' => 'section',
 				'label' => 'Holidays',
-				'renderAsHeading' => true,
-				'description' => 'Holidays (automatically loaded from Koha)',
-				'keyThis' => 'libraryId',
-				'keyOther' => 'libraryId',
-				'subObjectType' => 'Holiday',
-				'structure' => $holidaysStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'permissions' => ['Library Holidays'],
-				'canAddNew' => true,
-				'canDelete' => true,
+				'hideInLists' => true,
+				'helpLink' => '',
+				'renderAsHeading' => false,
+				'permissions' => ['Library ILS Connection', 'Library Holidays'],
+				'properties' => [
+					'allowUpdatingHolidaysFromILS' =>[
+						'property' => 'allowUpdatingHolidaysFromILS',
+						'type' => 'checkbox',
+						'label' => 'Automatically update holidays from the ILS',
+						'description' => 'Whether holidays should be automatically updated (Koha Only).',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Connection'],
+					],
+					'holidays' => [
+						'property' => 'holidays',
+						'type' => 'oneToMany',
+						'label' => 'Holidays',
+						'renderAsHeading' => false,
+						'description' => 'Holidays (automatically loaded from Koha)',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'Holiday',
+						'structure' => $holidaysStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'permissions' => ['Library Holidays'],
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
+				],
 			],
 
 			'libraryLinks' => [
@@ -5061,6 +5104,25 @@ class Library extends DataObject {
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
 
 		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
+
+		$apiInfo['palaceProjectInstructions'] = null;
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectSetting.php';
+		$scope = new PalaceProjectScope();
+		$scope->id = $this->palaceProjectScopeId;
+		if ($this->palaceProjectScopeId > 0) {
+			if ($scope->find(true)) {
+				$settings = new PalaceProjectSetting();
+				$settings->id = $scope->settingId;
+				if ($settings->find(true)) {
+					global $activeLanguage;
+					$instructions = $settings->getTextBlockTranslation('instructionsForUsage', $activeLanguage->code);
+					$instructions = str_replace("\n", '', $instructions);
+					$instructions = htmlentities($instructions);
+					$apiInfo['palaceProjectInstructions'] = $instructions;
+				}
+			}
+		}
 
 		return $apiInfo;
 	}

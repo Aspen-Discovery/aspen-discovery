@@ -585,7 +585,7 @@ class Koha extends AbstractIlsDriver {
 			$eligibleForRenewal = 0;
 			$willAutoRenew = 0;
 			$library = $patron->getHomeLibrary();
-			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id'], $patron->getHomeLocationCode());
 			$timer->logTime("Load check allow renewals for checkout");
 			if ($allowRenewals['success']) {
 				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
@@ -2544,50 +2544,50 @@ class Koha extends AbstractIlsDriver {
 			ExternalRequestLogEntry::logRequest('koha.getILLRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $illRequestResponse, []);
 			if ($responseCode == 200) {
 				$jsonResponse = json_decode($illRequestResponse);
-				foreach ($jsonResponse as $illHold) {
-					$newHold = new Hold();
-					$newHold->userId = $patron->id;
-					$newHold->type = 'ils';
-					$newHold->source = 'ILL';
-					$newHold->canFreeze = false;
-					if(!empty($library->interLibraryLoanName)) {
-						$newHold->source = $library->interLibraryLoanName;
-					}
-					$newHold->sourceId = $illHold->ill_request_id;
-//					$newHold->recordId = $illHold->ill_request_id;
-//					$newHold->shortId = $illHold->ill_request_id;
-					$newHold->isIll = true;
-					foreach ($illHold->extended_attributes as $extendedAttribute) {
-						if ($extendedAttribute->type == 'author') {
-							$newHold->author = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'callNumber') {
-							$newHold->callNumber = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'callNumber') {
-							$newHold->callNumber = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'itemId') {
-							$newHold->itemId = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'needBefore') {
-							$newHold->automaticCancellationDate = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'title') {
-							$newHold->title = $extendedAttribute->value;
+				if (!empty($jsonResponse) && is_array($jsonResponse)) {
+					foreach ($jsonResponse as $illHold) {
+						$newHold = new Hold();
+						$newHold->userId = $patron->id;
+						$newHold->type = 'ils';
+						$newHold->source = 'ILL';
+						$newHold->canFreeze = false;
+						if (!empty($library->interLibraryLoanName)) {
+							$newHold->source = $library->interLibraryLoanName;
 						}
-						$curPickupBranch = new Location();
-						$curPickupBranch->code = $illHold->library_id;
-						if ($curPickupBranch->find(true)) {
-							$curPickupBranch->fetch();
-							$newHold->pickupLocationId = $curPickupBranch->locationId;
-							$newHold->pickupLocationName = $curPickupBranch->displayName;
+						$newHold->sourceId = $illHold->ill_request_id;
+						//					$newHold->recordId = $illHold->ill_request_id;
+						//					$newHold->shortId = $illHold->ill_request_id;
+						$newHold->isIll = true;
+						foreach ($illHold->extended_attributes as $extendedAttribute) {
+							if ($extendedAttribute->type == 'author') {
+								$newHold->author = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'callNumber') {
+								$newHold->callNumber = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'itemId') {
+								$newHold->itemId = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'needBefore') {
+								$newHold->automaticCancellationDate = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'title') {
+								$newHold->title = $extendedAttribute->value;
+							}
+							$curPickupBranch = new Location();
+							$curPickupBranch->code = $illHold->library_id;
+							if ($curPickupBranch->find(true)) {
+								$curPickupBranch->fetch();
+								$newHold->pickupLocationId = $curPickupBranch->locationId;
+								$newHold->pickupLocationName = $curPickupBranch->displayName;
+							} else {
+								$newHold->pickupLocationName = $curPickupBranch->code;
+							}
+						}
+						$newHold->createDate = strtotime($illHold->requested_date);
+						if (isset($illHold->_strings->status)) {
+							$newHold->status = $illHold->_strings->status->str;
 						} else {
-							$newHold->pickupLocationName = $curPickupBranch->code;
+							$newHold->status = $illHold->status;
 						}
+						$holds['unavailable'][$newHold->source . 'ill' . $newHold->sourceId . $newHold->userId] = $newHold;
 					}
-					$newHold->createDate = strtotime($illHold->requested_date);
-					if (isset($illHold->_strings->status)) {
-						$newHold->status = $illHold->_strings->status->str;
-					} else {
-						$newHold->status = $illHold->status;
-					}
-					$holds['unavailable'][$newHold->source . 'ill' . $newHold->sourceId . $newHold->userId] = $newHold;
 				}
 //				if (!empty($jsonResponse->outstanding_credits)) {
 //					return $jsonResponse->outstanding_credits->total;
@@ -4753,7 +4753,10 @@ class Koha extends AbstractIlsDriver {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
-				'message' => "The old PIN provided is incorrect.",
+				'message' => translate([
+					'text' => 'The old PIN provided is incorrect.',
+					'isPublicFacing' => true,
+				])
 			];
 		}
 		$result = [
@@ -5751,7 +5754,9 @@ class Koha extends AbstractIlsDriver {
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonResponse = json_decode($illRequestResponse);
-				$summary->numUnavailableHolds+= count($jsonResponse);
+				if(!empty($jsonResponse) && is_array($jsonResponse)) {
+					$summary->numUnavailableHolds+= count($jsonResponse);
+				}
 			}
 		}
 
@@ -7610,7 +7615,7 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	public function checkAllowRenewals($issueId) {
+	public function checkAllowRenewals($issueId, $patronLibraryId) {
 		$result = [
 			'success' => false,
 			'error' => null,
@@ -7631,9 +7636,10 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' . $patronLibraryId,
 			], true);
 
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal/";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal";
 
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
 			//ExternalRequestLogEntry::logRequest('koha.checkouts_allowRenewals', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -8091,13 +8097,17 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
-			$sql = "SELECT lastseen FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
+			$sql = "SELECT lastseen, dateexpiry FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
 			$results = mysqli_query($this->dbConnection, $sql);
 			$lastSeenDate = null;
+			$expirationDate = null;
 			if ($results !== false) {
 				while ($curRow = $results->fetch_assoc()) {
 					if (!is_null($curRow['lastseen'])) {
 						$lastSeenDate =  strtotime($curRow['lastseen']);
+					}
+					if (!is_null($curRow['dateexpiry'])) {
+						$expirationDate =  strtotime($curRow['dateexpiry']);
 					}
 				}
 			}
@@ -8105,7 +8115,10 @@ class Koha extends AbstractIlsDriver {
 			//Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history
 			$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
 			if ($lastSeenDate != null && ($lastSeenDate > $lastReadingHistoryUpdate)) {
-				return false;
+				//Also do not update if the patron's account expired more than 4 weeks ago.
+				if ($expirationDate == null || ($expirationDate > (time() - 4 * 7 * 24 * 60 * 60))) {
+					return false;
+				}
 			}
 			return true;
 		}

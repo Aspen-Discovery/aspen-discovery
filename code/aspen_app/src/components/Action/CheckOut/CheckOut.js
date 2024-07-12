@@ -53,7 +53,8 @@ export const CheckOut = (props) => {
           return (
                <>
                     <Button
-                         size="md"
+                         minWidth="100%"
+                         maxWidth="100%"
                          bgColor={theme['colors']['primary']['500']}
                          variant="solid"
                          onPress={async () => {

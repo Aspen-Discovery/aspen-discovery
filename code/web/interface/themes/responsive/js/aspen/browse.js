@@ -12,6 +12,7 @@ AspenDiscovery.Browse = (function(){
 		changingDisplay: false,
 		browseStyle: 'masonry',
 		accessibleMode: false,
+		patronId: null,
 
 		addToHomePage: function(searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
@@ -133,7 +134,6 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			console.log("Toggling browse mode...");
 			if(!AspenDiscovery.Browse.accessibleMode) {
 				var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
 				var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');
@@ -246,6 +246,7 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.removeAttr('onclick');
 						var thisCategoryToDismiss = data.subCategoryTextId || categoryTextId;
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ thisCategoryToDismiss +'")');
+						dismissButton.attr('title', data.hideButtonLabel);
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -279,6 +280,7 @@ AspenDiscovery.Browse = (function(){
 								$('.selected-browse-sub-category-label-search-text')
 									.html(data.subCategoryLabel)
 									.fadeIn()
+								dismissButton.attr('title', data.subCategoryHideButtonLabel);
 							}
 						}
 						if (data.lastPage){
@@ -314,26 +316,42 @@ AspenDiscovery.Browse = (function(){
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-browse-category-' + categoryTextId, {
+					var browseSwiper = new Swiper('.swiper-browse-category-' + categoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					});
+
+					// update links for more results
+					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					AspenDiscovery.Browse.patronId = data.patronId;
+
+					// Prevent accidental cover selection when the user clicks too fast
+					$(".swiper").on("mousedown", function (e) {
+						e.preventDefault();
 					});
 				}
 			}).fail(function(){
@@ -429,6 +447,8 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 					}
 
+					dismissButton.attr('title', data.subCategoryHideButtonLabel);
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
@@ -477,6 +497,25 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
+		getMoreSubCategoryResultsLink: function (subCategoryTextId, categoryId) {
+			var url = Globals.path + '/Browse/AJAX';
+			var params = {
+				method : 'getMoreBrowseSubCategoryResultsLink'
+				,textId : categoryId
+				,subCategoryTextId : subCategoryTextId
+			};
+
+			$.getJSON(url, params, function(data){
+				if (data.success === false){
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				}else{
+					window.location = data.searchUrl;
+				}
+			}).fail(function(){
+				AspenDiscovery.ajaxFail();
+			});
+		},
+
 		changeBrowseSubCategoryTab: function (subCategoryTextId, categoryId) {
 			AspenDiscovery.Browse.changingDisplay = true;
 			var url = Globals.path + '/Browse/AJAX';
@@ -493,26 +532,33 @@ AspenDiscovery.Browse = (function(){
 				}else{
 					var resultsTabPanel = document.getElementById('swiper-sub-browse-category-' + subCategoryTextId) ;
 					resultsTabPanel.innerHTML = "";
-					new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
+					var browseSwiper = new Swiper('.swiper-sub-browse-category-' + subCategoryTextId, {
 						slidesPerView: 5,
 						spaceBetween: 20,
 						direction: 'horizontal',
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
+					});
+					// Fix keyboard navigation
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+					$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+					browseSwiper.on('slideChangeTransitionEnd', function () {
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+						$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
 					});
 
 				}

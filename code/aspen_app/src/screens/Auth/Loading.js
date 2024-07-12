@@ -9,7 +9,7 @@ import React from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { createGlueTheme } from '../../themes/theme';
-import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
+import { getLanguageDisplayName, getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
 import { getCatalogStatus, getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { getAppPreferencesForUser, getLinkedAccounts, refreshProfile } from '../../util/api/user';
@@ -47,7 +47,7 @@ export const LoadingScreen = () => {
      const { library, updateLibrary, updateMenu, updateCatalogStatus, catalogStatus, catalogStatusMessage } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
-     const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
+     const { language, updateLanguage, updateLanguages, updateDictionary, dictionary, languageDisplayName, updateLanguageDisplayName, languages } = React.useContext(LanguageContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const { theme, updateTheme, updateColorMode } = React.useContext(ThemeContext);
 
@@ -156,6 +156,7 @@ export const LoadingScreen = () => {
                          setProgress(30);
                          updateUser(data);
                          updateLanguage(data.interfaceLanguage ?? 'en');
+                         updateLanguageDisplayName(getLanguageDisplayName(data.interfaceLanguage ?? 'en', languages));
                          PATRON.language = data.interfaceLanguage ?? 'en';
                          setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
                     }
