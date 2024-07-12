@@ -45,6 +45,7 @@ class Location extends DataObject {
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $showOnDonationsPage;
+	public $showInSearchFacet;
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;
