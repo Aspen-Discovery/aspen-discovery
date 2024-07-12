@@ -165,7 +165,7 @@
 					<div id="panelStatus_{$property.label|escapeCSS}" class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
-								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}">
+								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}" class="{if !empty($property.expandByDefault)}expanded{else}collapsed{/if}">
 									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
@@ -176,7 +176,7 @@
 							{/if}
 						</div>
 
-						<div id="accordion_body_{$property.label|escapeCSS}" {if empty($property.expandByDefault)}style="display:none"{/if} aria-labelledby="panelToggle_{$property.property}" role="region">
+						<div id="accordion_body_{$property.label|escapeCSS}" class="accordion_body panel-collapse {if !empty($property.expandByDefault)}in{else}collapse{/if}" {if empty($property.expandByDefault)}style="display:none"{/if} aria-labelledby="panelToggle_{$property.property}" role="region">
 							<div class="panel-body">
 								{if !empty($property.instructions)}
 									<div class="alert alert-info">
