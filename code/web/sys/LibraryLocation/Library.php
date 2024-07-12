@@ -142,7 +142,8 @@ class Library extends DataObject {
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
-	public $squareSettingId;
+    public $snapPaySettingId;
+    public $squareSettingId;
 	public $stripeSettingId;
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
@@ -717,6 +718,15 @@ class Library extends DataObject {
 			$paypalPayflowSettings[$paypalPayflowSetting->id] = $paypalPayflowSetting->name;
 		}
 
+        require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
+        $snapPaySetting = new SnapPaySetting();
+        $snapPaySetting->orderBy('name');
+        $snapPaySettings = [];
+        $snapPaySetting->find();
+        $snapPaySettings[-1] = 'none';
+        while ($snapPaySetting->fetch()) {
+            $snapPaySettings[$snapPaySetting->id] = $snapPaySetting->name;
+        }
 		require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
 		$squareSetting = new SquareSetting();
 		$squareSetting->orderBy('name');
@@ -2595,6 +2605,7 @@ class Library extends DataObject {
 							12 => 'Square',
 							13 => 'Stripe',
 							14 => 'NCR'
+                            15 => 'SnapPay'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2753,6 +2764,15 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
+                    'snapPaySettingId' => [
+                        'property' => 'snapPaySettingId',
+                        'type' => 'enum',
+                        'values' => $snapPaySettings,
+                        'label' => 'SnapPay Settings',
+                        'description' => 'The SnapPay settings to use',
+                        'hideInLists' => true,
+                        'default' => -1,
+                    ],
 					'squareSettingId' => [
 						'property' => 'squareSettingId',
 						'type' => 'enum',
