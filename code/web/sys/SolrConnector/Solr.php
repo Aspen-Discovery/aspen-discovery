@@ -660,6 +660,7 @@ abstract class Solr {
 			$cleanedQuery = str_replace('–', '\-\-', $cleanedQuery);
             $cleanedQuery = str_replace('+', '\+', $cleanedQuery);
             $cleanedQuery = str_replace('?', '\?', $cleanedQuery);
+			$cleanedQuery = str_replace('/', '\/', $cleanedQuery);
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
@@ -732,6 +733,7 @@ abstract class Solr {
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
             $cleanedQuery = str_replace('+', '\+', $cleanedQuery);
             $cleanedQuery = str_replace('?', '\?', $cleanedQuery);
+			$cleanedQuery = str_replace('/', '\/', $cleanedQuery);
             // Fix for ordinal numbers
             $cleanedQuery = preg_replace("/([0-9])([a-zA-Z])/", "$1 $2", $cleanedQuery);
 			if (strlen($cleanedQuery) > 0 && $cleanedQuery[0] == '(') {
@@ -1894,9 +1896,11 @@ abstract class Solr {
 		//Remove any semi-colons that Solr will handle incorrectly.
 		$input = str_replace(';', ' ', $input);
 
-		//Remove any slashes that Solr will handle incorrectly.
-		$input = str_replace('\\', ' ', $input);
-		$input = str_replace('/', ' ', $input);
+		//Remove slashes occur in the middle of a word that Solr will handle incorrectly.
+		$input = preg_replace("/([0-9a-zA-Z])([\/])([0-9a-zA-Z])/", "$1 $3", $input);
+		$input = preg_replace("/([0-9a-zA-Z])([\\\\])([0-9a-zA-Z])/", "$1 $3", $input);
+		$input = str_replace('\\', '\\\\', $input);
+
 		//$input = preg_replace('/\\\\(?![&:])/', ' ', $input);
 
 		//Look for any colons that are not identifying fields
