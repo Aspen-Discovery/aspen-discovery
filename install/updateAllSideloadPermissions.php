@@ -18,16 +18,16 @@ $sideLoads = $sideLoad->fetchAll('name', 'marcPath');
 foreach ($sideLoads as $name => $marcPath) {
 	echo("Updating permissions for $name\n");
 	if ($operatingSystem == 'centos') {
-		exec("chown aspen:aspen_apache ' . $marcPath/..)");
-		exec("chmod 775 ' . $marcPath/..)");
+		exec("chown aspen:aspen_apache ' . $marcPath/..");
+		exec("chmod 775 ' . $marcPath/..");
 
 		exec("chown -R apache:aspen_apache ' . $marcPath)");
-		exec("chmod 775 ' . $marcPath)");
+		exec("chmod 775 ' . $marcPath");
 	}else{
-		exec("chown aspen:aspen_apache ' . $marcPath/..)");
-		exec("chmod 775 ' . $marcPath/..)");
+		exec("chown aspen:aspen_apache ' . $marcPath/..");
+		exec("chmod 775 ' . $marcPath/..");
 
-		exec("chown -R www-data:aspen_apache ' . $marcPath)");
-		exec("chmod 775 ' . $marcPath)");
+		exec("chown -R www-data:aspen_apache ' . $marcPath");
+		exec("chmod 775 ' . $marcPath");
 	}
 }
