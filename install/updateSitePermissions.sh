@@ -5,6 +5,9 @@ if [ -z "$1" ]
     echo "Please provide the server name to update as the first argument."
     exit 1
 fi
+chown root:root /data
+chown -R aspen:aspen_apache /data/aspen-discovery
+
 chown -R aspen:aspen_apache /data/aspen-discovery/$1
 chmod -R 775 /data/aspen-discovery/$1
 chgrp -R aspen_apache /data/aspen-discovery/accelerated_reader
