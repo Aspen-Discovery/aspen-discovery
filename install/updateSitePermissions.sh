@@ -42,3 +42,5 @@ chown -R aspen:aspen_apache /usr/local/aspen-discovery/code/web/sitemaps
 chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-7.6.0
 chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-8.11.2
 chown -R solr:solr /data/aspen-discovery/$1/solr7
+
+php updateAllSideloadPermissions.php $1 centos
