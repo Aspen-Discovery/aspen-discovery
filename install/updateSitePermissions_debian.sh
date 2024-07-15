@@ -7,6 +7,7 @@ if [ -z "$1" ]
 fi
 
 # /data directory
+echo "Updating /data directory"
 chown root:root /data
 chown -R aspen:aspen_apache /data/aspen-discovery
 chown -R root:aspen_apache /data/aspen-discovery/accelerated_reader
@@ -22,6 +23,7 @@ chown -R solr:aspen /data/aspen-discovery/$1/solr7
 chown -R root:root /data/aspen-discovery/$1/sql_backup
 
 # /usr/local directory
+echo "Updating /usr/local directory"
 chown -R root:root /usr/local/aspen-discovery
 chown -R aspen:aspen /usr/local/aspen-discovery/code
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/code/web
@@ -49,9 +51,11 @@ chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/config*
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/tmp
 
 ## /var/log directory
+echo "Updating /var/log directory"
 chmod -R 755 /var/log/aspen-discovery/$1
 chmod -R 755 /var/log/aspen-discovery/$1/logs
 chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 chown www-data:aspen_apache /var/log/aspen-discovery/$1/*
 
+echo "Updating sideload permissions"
 php /usr/local/aspen-discovery/install/updateAllSideloadPermissions.php $1 debian
