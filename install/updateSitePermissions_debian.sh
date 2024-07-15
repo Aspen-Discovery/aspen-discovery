@@ -30,8 +30,7 @@ chmod -R 755 /usr/local/aspen-discovery/code/web/fonts
 chown -R aspen:aspen_apache /usr/local/aspen-discovery/code/web/sitemaps
 chown -R root:root /usr/local/aspen-discovery/docker
 chown -R www-data:aspen_apache /usr/local/aspen-discovery/sites
-chown -R aspen:aspen_apache /usr/local/aspen-discovery/default
-chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-7.6.0
+chown -R aspen:aspen_apache /usr/local/aspen-discovery/sites/default
 chown -R solr:solr /usr/local/aspen-discovery/sites/default/solr-8.11.2
 chown root:root /usr/local/aspen-discovery/sites/$1
 chown root:root /usr/local/aspen-discovery/sites/$1/httpd-*.conf
@@ -55,4 +54,4 @@ chmod -R 755 /var/log/aspen-discovery/$1/logs
 chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 chown www-data:aspen_apache /var/log/aspen-discovery/$1/*
 
-php updateAllSideloadPermissions.php $1 debian
+php /usr/local/aspen-discovery/install/updateAllSideloadPermissions.php $1 debian
