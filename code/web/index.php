@@ -1173,6 +1173,7 @@ function loadModuleActionId() {
 			$basicPageLibrary = new LibraryBasicPage();
 			$basicPageLibrary->libraryId = $library->libraryId;
 			$basicPage->joinAdd($basicPageLibrary, 'INNER', 'libraryFilter', 'id', 'basicPageId');
+			$pageExists = false;
 			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
 				$_GET['action'] = 'BasicPage';
@@ -1180,6 +1181,7 @@ function loadModuleActionId() {
 				$_REQUEST['module'] = 'WebBuilder';
 				$_REQUEST['action'] = 'BasicPage';
 				$_REQUEST['id'] = $basicPage->id;
+				$pageExists = true;
 			} else {
 				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 				$portalPage = new PortalPage();
@@ -1194,6 +1196,7 @@ function loadModuleActionId() {
 					$_REQUEST['module'] = 'WebBuilder';
 					$_REQUEST['action'] = 'PortalPage';
 					$_REQUEST['id'] = $portalPage->id;
+					$pageExists = true;
 				} else {
 					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 					$form = new CustomForm();
@@ -1208,6 +1211,7 @@ function loadModuleActionId() {
 						$_REQUEST['module'] = 'WebBuilder';
 						$_REQUEST['action'] = 'Form';
 						$_REQUEST['id'] = $form->id;
+						$pageExists = true;
 					} else {
 						require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
 						$quickPoll = new QuickPoll();
@@ -1222,9 +1226,13 @@ function loadModuleActionId() {
 							$_REQUEST['module'] = 'WebBuilder';
 							$_REQUEST['action'] = 'QuickPoll';
 							$_REQUEST['id'] = $quickPoll->id;
+							$pageExists = true;
 						}
 					}
 				}
+			}
+			if ($pageExists && $_SERVER['REDIRECT_STATUS'] == '404') {
+				http_response_code('200');
 			}
 		}
 	} catch (Exception $e) {
