@@ -34,6 +34,7 @@ if (count($_SERVER['argv']) > 1){
 		$variables = [
 			'sitename' => $sitename,
 			'cleanSitename' => $cleanSitename,
+			'supportingCompany' => $configArray['Site']['supportingCompany'],
 			'library' => $configArray['Site']['sitename'],
 			'title' => $configArray['Site']['title'],
 			'url' => $configArray['Site']['url'],
@@ -90,6 +91,11 @@ if (!$foundConfig) {
 	$variables['library'] = '';
 	while (empty($variables['library'])) {
 		$variables['library'] = readline("Enter the library or consortium name, e.g., Aspen Public Library > ");
+	}
+
+	$variables['supportingCompany'] = readline("Enter the name of the supporting company (default: ByWater Solutions) > ");
+	if (empty($variables['supportingCompany'])) {
+		$variables['supportingCompany'] = "ByWater Solutions";
 	}
 
 	$variables['title'] = '';
@@ -314,6 +320,10 @@ exec("$mysqlConnectionCommand {$variables['aspenDBName']} < $installDir/install/
 $aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host={$variables['aspenDBHost']}",$variables['aspenDBUser'],$variables['aspenDBPwd']);
 $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where username = 'aspen_admin'");
 $updateUserStmt->execute();
+
+//Assign supportingCompany in the db
+$postSupportingCompanyStmt = $aspen_db->prepare("UPDATE system_variables set supportingCompany=" . $aspen_db->quote($variables['supportingCompany']));
+$postSupportingCompanyStmt->execute();
 
 if ($variables['ils'] == 'Koha'){
 	// Attempt to get the system's temp directory

@@ -56,6 +56,14 @@ function getUpdates24_07_00(): array {
 				) ENGINE INNODB',
 			],
 		], // self_registration_form_carlx
+		'overdrive_format_length' => [
+			'title' => 'Format Length',
+			'description' => 'Increase column length for format in user_hold table to accomodate concatenated OverDrive/Libby formats',
+			'sql' => [
+				'ALTER TABLE user_hold CHANGE COLUMN format format VARCHAR(150)',
+			],
+		],//overdrive_format_length
+
 		//katherine - ByWater
 		//greenhouseMonitoring
 		'greenhouseSlackIntegration2' => [
