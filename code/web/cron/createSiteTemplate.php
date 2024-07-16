@@ -7,6 +7,9 @@ global $serverName;
 
 //Create a template for $serverName
 $templateName = "$serverName.ini";
+if (!file_exists($configArray['Site']['local'] . "/../../install/templates/")){
+	mkdir($configArray['Site']['local'] . "/../../install/templates/");
+}
 $fhnd = fopen($configArray['Site']['local'] . "/../../install/templates/$templateName", 'w');
 $dbHost = empty($configArray['Database']['database_aspen_host']) ? 'localhost' : $configArray['Database']['database_aspen_host'];
 $dbPort = empty($configArray['Database']['database_aspen_dbport']) ? '3306' : $configArray['Database']['database_aspen_dbport'];
