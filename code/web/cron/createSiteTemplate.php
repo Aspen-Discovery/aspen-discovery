@@ -36,7 +36,7 @@ if (array_key_exists('solrPort', $configArray['Index'])) {
 	fwrite($fhnd, "solrPort = 8080\n");
 }
 fwrite($fhnd, "; Which ILS does the library use?\n");
-fwrite($fhnd, "ils = {$configArray['Index']['driver']}\n");
+fwrite($fhnd, "ils = {$configArray['Catalog']['driver']}\n");
 fwrite($fhnd, "; timezone of the library (e.g. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php)\n");
 fwrite($fhnd, "timezone = {$configArray['Site']['timezone']}\n");
 fwrite($fhnd, "\n");
