@@ -103,8 +103,6 @@ AspenDiscovery.CookieConsent = (function() {
 			};
             $.getJSON(url, params,
                 function(data) {
-                    console.log('data success:', data.success);
-                    console.log('DATA:', data);
                     if(data.success){
                         AspenDiscovery.showMessage("Manage Your Cookie Preferences", data.modalBody);
                     } else {
