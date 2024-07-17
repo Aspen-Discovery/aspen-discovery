@@ -16032,6 +16032,7 @@ AspenDiscovery.CookieConsent = (function() {
                 function(data) {
                     if(data.success){
                         AspenDiscovery.showMessage("Manage Your Cookie Preferences", data.modalBody);
+                        $('.stripPopup').hide();
                     } else {
                         AspenDiscovery.showMessage("There was an error retreiving your cookie preference options");
                     }
@@ -16040,7 +16041,6 @@ AspenDiscovery.CookieConsent = (function() {
             return false;
         },
         cookieManagementPreferences: function() {
-            console.log('LAST FUNCTION');
             var formData = $('#cookieManagementPreferencesForm').serializeArray();
             var cookieEssential = $('#cookieEssential').is(':checked') ? 1 : 0;
             var cookieAnalytics = $('#cookieAnalytics').is(':checked') ? 1 : 0;
@@ -16075,7 +16075,6 @@ AspenDiscovery.CookieConsent = (function() {
 
        $.getJSON(url, formData,
          function(data) {
-            console.log('LAST DATA:', data);
             if(data.success) {
                 AspenDiscovery.showMessage(data.message);
             } else {
