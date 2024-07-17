@@ -1,23 +1,4 @@
-{* {if $loggedIn && $profile->userCookiePreferenceEssential == 1} *}
-    {* <script>
-        cookieValues = {
-            Essential: {$profile->userCookiePreferenceEssential},
-            Analytics: {$profile->userCookiePreferenceAnalytics},
-            UserAxis360: {$profile->userCookiePreferenceAxis360},
-            UserEbscoEds: {$profile->userCookiePreferenceEbscoEds},
-            UserEbscoHost: {$profile->userCookiePreferenceEbscoHost},
-            UserSummon: {$profile->userCookiePreferenceSummon},
-            UserEvents: {$profile->userCookiePreferenceEvents},
-            UserHoopla: {$profile->userCookiePreferenceHoopla},
-            UserOpenArchives: {$profile->userCookiePreferenceOpenArchives},
-            UserOverdrive: {$profile->userCookiePreferenceOverdrive},
-            UserPalaceProject: {$profile->userCookiePreferencePalaceProject},    
-            UserSideLoad: {$profile->userCookiePreferenceSideLoad},        
-        };
-        AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
-    </script> *}
-{* {elseif (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))}  *}
-    <div class="stripPopup">
+ <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
                 <span>{translate text="We use cookies on this site to enhance your user experience." isPublicFacing=true}</span>
