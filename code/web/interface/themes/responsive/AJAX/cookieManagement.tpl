@@ -90,7 +90,6 @@
     </label>
     </div>
     <div>
-            {* <button type="submit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.CookieConsent.cookieManagementPreferences()" id="cookieConsentManage">{translate text="Save Preferences" isPublicFacing=true}</button> *}
             <button type="submit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.CookieConsent.cookieManagementPreferences()">{translate text="Save Preferences" isPublicFacing=true}</button>
            </form>
        </div>
