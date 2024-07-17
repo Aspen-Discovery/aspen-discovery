@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class Summon_JSON extends JSON_Action {
     /**@noinspection PhpUnused */
-    
     public function trackSummonUsage(): array {
 		global $library;
         if (!isset($_REQUEST['id'])) {
