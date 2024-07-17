@@ -56,6 +56,15 @@ function getUpdates24_08_00(): array {
 		//katherine - ByWater
 
 		//alexander - PTFS-Europe
+		'display_explore_more_bar' => [
+			'title' => 'Display Explore More Bar',
+			'description' => 'Display Explore More Bar',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBar TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBar TINYINT(1) DEFAULT 1',
+			],
+		],
+		
 
 		//pedro - PTFS-Europe
 

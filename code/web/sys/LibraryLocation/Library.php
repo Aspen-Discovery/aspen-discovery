@@ -67,6 +67,7 @@ class Library extends DataObject {
 	public $headerText;
 	public $footerText;
 	public $systemMessage;
+	public $displayExploreMoreBar;
 
 	public $generateSitemap;
 
@@ -1008,6 +1009,15 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Show Language and Display Settings in Page Header',
 						'description' => 'Whether to display the language and display settings in the page header',
+						'hideInLists' => true,
+						'default' => true,
+						'permissions' => ['Library Theme Configuration'],
+					],
+					'displayExploreMoreBar'=> [
+						'property' => 'displayExploreMoreBar',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Search Results',
+						'description' => 'Whether to display the Explore More Bar in the search results',
 						'hideInLists' => true,
 						'default' => true,
 						'permissions' => ['Library Theme Configuration'],
@@ -5012,6 +5022,7 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
+			'displayExploreMoreBar' => $this->displayExploreMoreBar,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

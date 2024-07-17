@@ -52,6 +52,7 @@ class Location extends DataObject {
 	public $_themes;
 	public $showDisplayNameInHeader;
 	public $languageAndDisplayInHeader;
+	public $displayExploreMoreBar;
 	public $headerText;
 	public $address;
 	public $phone;
@@ -631,6 +632,15 @@ class Location extends DataObject {
 						'type' =>'checkbox',
 						'label' => 'Show language and display settings in page header',
 						'description' => 'Whether or not to display the language and display settings in the page header',
+						'hideInLists' => true,
+						'default' => true,
+						'permissions' => ['Location Theme Configuration'],
+					],
+					'displayExploreMoreBar'=> [
+						'property' => 'displayExploreMoreBar',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Search Results',
+						'description' => 'Whether to display the Explore More Bar in the search results',
 						'hideInLists' => true,
 						'default' => true,
 						'permissions' => ['Location Theme Configuration'],
