@@ -14931,6 +14931,7 @@ AspenDiscovery.SideLoads = (function(){
 }(AspenDiscovery.SideLoads || {}));
 AspenDiscovery.Summon = (function(){
 	return {
+<<<<<<< HEAD
 		getSummonResults: function(searchTerm){
 			var url = Globals.path + "/Search/AJAX";
 			var params = "method=getSummonResults&searchTerm=" + encodeURIComponent(searchTerm);
@@ -14949,6 +14950,9 @@ AspenDiscovery.Summon = (function(){
 			});
 		},
 		trackSummonUsage: function (id) {
+=======
+		trackSummonUsage: function(id) {
+>>>>>>> 3fbc7d2c5 (fix: Fix tracking of summon usage)
 			var ajaxUrl = Globals.path + "/Summon/JSON?method=trackSummonUsage&id=" + id;
 			$.getJSON(ajaxUrl);
 		}
