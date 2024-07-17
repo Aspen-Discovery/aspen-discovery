@@ -32,7 +32,7 @@
 		{/if}
 		{if empty($inPopUp)}
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
-			{if $numRemainingCopies > 0 || ($showQuickCopy == 2 || $showQuickCopy == 3)}
+			{if $numRemainingCopies > 0 || ($showQuickCopy == 1 || $showQuickCopy == 2 || $showQuickCopy == 3)}
 				{if $showQuickCopy == 1 || $showQuickCopy == 2 || $showQuickCopy == 3}
 					{if $totalCopies > 0}
 						<div class="itemSummary">
