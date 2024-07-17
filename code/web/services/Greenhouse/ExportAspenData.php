@@ -154,7 +154,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 				'name' => 'Summon Record Usage',
 			],
 			'user_summon_usage' => [
-				'classFile' => ROOT_DIR . '/sys/Ebsco/UserSummonUsage.php',
+				'classFile' => ROOT_DIR . '/sys/Summon/UserSummonUsage.php',
 				'className' => 'UserSummonUsage',
 				'name' => 'User Summon Usage',
 			],
