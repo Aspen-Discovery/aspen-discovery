@@ -6,6 +6,7 @@ class Summon_JSON extends JSON_Action {
     /**@noinspection PhpUnused */
     
     public function trackSummonUsage(): array {
+		global $library;
         if (!isset($_REQUEST['id'])) {
             return [
                 'success' => false,
@@ -33,21 +34,21 @@ class Summon_JSON extends JSON_Action {
             $summonRecordUsage->insert();
         }
 
-        $userId = UserAccount::getActiveUserId();
-		if ($userId) {
-			//Track usage for the user
-			require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
-			$userObj = UserAccount::getActiveUserObj();
-			$userSummonTracking = $userObj->userCookiePreferenceSummon;
-			$userSummonUsage = new UserSummonUsage();
-			global $aspenUsage;
-			global $library;
-			$userSummonUsage->instance = $aspenUsage->getInstance();
-			$userSummonUsage->userId = $userId;
-			$userSummonUsage->year = date('Y');
-			$userSummonUsage->month = date('n');
+		$userObj = UserAccount::getActiveUserObj();
+		$userSummonTracking = $userObj->userCookiePreferenceSummon;
 
-			if ($userSummonTracking && $library->cookieStorageConsent) {
+		if ($userSummonTracking && $library->cookieStorageConsent) {
+			$userId = UserAccount::getActiveUserId();
+			if ($userId) {
+				//Track usage for the user
+				require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+				$userSummonUsage = new UserSummonUsage();
+				global $aspenUsage;
+				$userSummonUsage->instance = $aspenUsage->getInstance();
+				$userSummonUsage->userId = $userId;
+				$userSummonUsage->year = date('Y');
+				$userSummonUsage->month = date('n');
+
 				if ($userSummonUsage->find(true)) {
 					$userSummonUsage->usageCount++;
 					$userSummonUsage->update();
