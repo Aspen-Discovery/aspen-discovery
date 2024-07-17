@@ -21,5 +21,5 @@ AspenDiscovery.Summon = (function(){
 			var ajaxUrl = Globals.path + "/Summon/JSON?method=trackSummonUsage&id=" + id;
 			$.getJSON(ajaxUrl);
 		}
-	}
+	};
 }(AspenDiscovery.Summon || {}));

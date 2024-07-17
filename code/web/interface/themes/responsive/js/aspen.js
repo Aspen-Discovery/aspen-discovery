@@ -14952,7 +14952,7 @@ AspenDiscovery.Summon = (function(){
 			var ajaxUrl = Globals.path + "/Summon/JSON?method=trackSummonUsage&id=" + id;
 			$.getJSON(ajaxUrl);
 		}
-	}
+	};
 }(AspenDiscovery.Summon || {}));
 /**
  * Create a title scroller object for display
