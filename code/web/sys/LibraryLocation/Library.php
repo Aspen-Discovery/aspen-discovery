@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryExploreMoreBarSection.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTheme.php';
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
@@ -67,7 +68,15 @@ class Library extends DataObject {
 	public $headerText;
 	public $footerText;
 	public $systemMessage;
+
+	//Explore More Bar Display
 	public $displayExploreMoreBar;
+	public $displayExploreMoreSummonSearch;
+	public $displayExploreMoreEbscoEds;
+	public $disableExploreMoreBarInSummon;
+	public $disableExploreMoreBarInEbscoEds;
+			
+
 
 	public $generateSitemap;
 
@@ -479,6 +488,7 @@ class Library extends DataObject {
 
 	/** @var LibraryCombinedResultSection[] */
 	private $_combinedResultSections;
+	private $_exploreMoreSections;
 	private $_accountProfile = null;
 
 	public function getNumericColumnNames(): array {
@@ -542,6 +552,10 @@ class Library extends DataObject {
 		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
+		
+		$exploreMoreBarStructure = LibraryExploreMoreBarSection::getObjectStructure($context);
+		unset($exploreMoreBarStructure['libraryId']);
+		unset($exploreMoreBarStructure['weight']);
 
 		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
 		unset($libraryThemeStructure['libraryId']);
@@ -1009,15 +1023,6 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Show Language and Display Settings in Page Header',
 						'description' => 'Whether to display the language and display settings in the page header',
-						'hideInLists' => true,
-						'default' => true,
-						'permissions' => ['Library Theme Configuration'],
-					],
-					'displayExploreMoreBar'=> [
-						'property' => 'displayExploreMoreBar',
-						'type' => 'checkbox',
-						'label' => 'Display Explore More Bar in Search Results',
-						'description' => 'Whether to display the Explore More Bar in the search results',
 						'hideInLists' => true,
 						'default' => true,
 						'permissions' => ['Library Theme Configuration'],
@@ -3021,6 +3026,56 @@ class Library extends DataObject {
 						'canAddNew' => true,
 						'canDelete' => true,
 						'additionalOneToManyActions' => [],
+					],
+				],
+			],
+			
+			'exploreMoreBarSection' => [
+				'property' => 'exploreMoreBarSection',
+				'type' => 'section',
+				'label' => 'Explore More Bar Section',
+				'hideInLists' => true,
+				'properties' => [
+					'displayExploreMoreBar'=> [
+						'property' => 'displayExploreMoreBar',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in All Search Results',
+						'description' => 'Whether to display the Explore More Bar in the search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreSummonSearch' => [
+						'property' => 'displayExploreMoreSummonSearch',
+						'type' => 'section',
+						'label' => 'Explore More Bar for Summon Search',
+						'hideInLists' => true,
+						'properties' => [
+							'disableExploreMoreBarInSummon' => [
+								'property' => 'disableExploreMoreBarInSummon',
+								'type' => 'checkbox',
+								'label' => 'Disable Explore More Bar in Summon Search Results',
+								'description' => 'Whether to display the Explore More Bar in Summon search results',
+								'hideInLists' => true,
+								'default' => false,
+								'readOnly' => true,
+							],
+						],
+					],
+					'displayExploreMoreEbscoEdsSearch' => [
+						'property' => 'displayExploreMoreEbscoEdsSearch',
+						'type' => 'section',
+						'label' => 'Explore More Bar for Ebsco EDS Search',
+						'hideInLists' => true,
+						'properties' => [
+							'disableExploreMoreBarInEbscoEds' => [
+								'property' => 'disableExploreMoreBarInEbscoEds',
+								'type' => 'checkbox',
+								'label' => 'Disable Explore More Bar in Ebsco EDS Search Results',
+								'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
+								'hideInLists' => true,
+								'default' => false,
+							],
+						],
 					],
 				],
 			],
