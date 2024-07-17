@@ -948,6 +948,10 @@ public class MarcRecordFormatClassifier {
 								result.add("PhysicalObject");
 								break;
 						}
+					} else {
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format PhysicalObject based on Leader and no 008 field", 2);}
+						result.add("PhysicalObject");
+						break;
 					}
 					break;
 				case 'T':

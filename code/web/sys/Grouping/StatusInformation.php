@@ -277,7 +277,15 @@ class Grouping_StatusInformation {
 						$numberOfCopiesMessage .= '%1% copies available';
 					}
 				}
-				if (($this->getNumHolds() > 0 && $this->getHoldableCopies() > 0) && ($this->getAvailableCopies() == 0 && !$this->isAvailableOnline())) {
+
+				if ($library->showGroupedHoldCopiesCount == 2) {
+					$showWaitList = true;
+				}else if ($library->showGroupedHoldCopiesCount == 1) {
+					$showWaitList = $this->getAvailableCopies() == 0 && !$this->isAvailableOnline();
+				}else{
+					$showWaitList = false;
+				}
+				if (($this->getNumHolds() > 0 && $this->getHoldableCopies() > 0) && ($showWaitList)) {
 					if ($this->getCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy';
 					} elseif ($this->getCopies() > 1) {

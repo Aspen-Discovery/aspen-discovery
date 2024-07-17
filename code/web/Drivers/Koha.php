@@ -3596,14 +3596,36 @@ class Koha extends AbstractIlsDriver {
 		];
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+
+		$kohaVersion = $this->getKohaVersion();
+		$csrfToken = '';
+		if ($kohaVersion >= 24.05) {
+			//First get the page to get the csrf token
+			$getResults = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl');
+			if (preg_match('/<input type="hidden" name="csrf_token" value="(.*?)" \/>/', $getResults, $matches)) {
+				$csrfToken = $matches[1];
+			}
+		}
+
+
 		$username = isset($_REQUEST['username']) ? strip_tags($_REQUEST['username']) : '';
 		$email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
-		$postVariables = [
-			'koha_login_context' => 'opac',
-			'username' => $username,
-			'email' => $email,
-			'sendEmail' => 'Submit',
-		];
+		if ($kohaVersion >= 24.05) {
+			$postVariables = [
+				'koha_login_context' => 'opac',
+				'username' => $username,
+				'email' => $email,
+				'op' => 'cud-sendEmail',
+				'csrf_token' => $csrfToken
+			];
+		}else{
+			$postVariables = [
+				'koha_login_context' => 'opac',
+				'username' => $username,
+				'email' => $email,
+				'sendEmail' => 'Submit',
+			];
+		}
 		if (isset($_REQUEST['resendEmail'])) {
 			$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
 		}
