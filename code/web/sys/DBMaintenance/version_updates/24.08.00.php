@@ -22,9 +22,13 @@ function getUpdates24_08_00(): array {
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS ils_notification_setting (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					messageId VARCHAR(100) NOT NULL,
-					type VARCHAR(255),
-					status VARCHAR(255)
+					attributeId VARCHAR(100),
+					module VARCHAR(255),
+					code VARCHAR(255),
+					isDigest TINYINT(1) DEFAULT 0,
+					locationCode VARCHAR(255),
+					isEnabled TINYINT(1) DEFAULT 1,
+					notificationSettingId INT(11)
 				) ENGINE INNODB',
 			]
 		], //add_ils_notification_settings
