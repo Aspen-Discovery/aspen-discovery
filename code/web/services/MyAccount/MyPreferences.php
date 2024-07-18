@@ -168,6 +168,8 @@ class MyAccount_MyPreferences extends MyAccount {
         $patron->userCookiePreferenceOverdrive = isset($_POST['userCookieUserOverdrive']) ? 1 : 0;
         $patron->userCookiePreferencePalaceProject = isset($_POST['userCookieUserPalaceProject']) ? 1 : 0;
         $patron->userCookiePreferenceSideLoad = isset($_POST['userCookieUserSideLoad']) ? 1 : 0;
+		$patron->userCookiePreferenceCloudLibrary = isset($_POST['userCookieUserCloudLibrary']) ? 1 : 0;
+		$patron->userCookiePreferenceWebsite = isset($_POST['userCookieUserWebsite']) ? 1 : 0;
 
         if (!$patron->update()) {
             $success = false;
