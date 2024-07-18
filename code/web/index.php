@@ -301,6 +301,8 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$userObj->userCookiePreferenceOverdrive = $userOverdrivePref;
 				$userObj->userCookiePreferencePalaceProject = $userPalaceProjectPref;
 				$userObj->userCookiePreferenceSideLoad = $userSideLoadPref;
+				$userObj->userCookiePreferenceCloudLibrary = $userCloudLibraryPref;
+				$userObj->userCookiePreferenceWebsite = $userWebsitePref;
 				$userObj->update();
 			}
 		}
