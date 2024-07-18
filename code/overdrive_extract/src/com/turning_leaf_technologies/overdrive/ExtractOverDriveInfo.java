@@ -785,7 +785,7 @@ class ExtractOverDriveInfo {
 				return false;
 			}
 		}else{
-			logEntry.incErrors("Unable to load library information for library " + settings.getAccountId());
+			logEntry.incErrors("Unable to load library product information for library " + settings.getAccountId());
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
@@ -922,7 +922,7 @@ class ExtractOverDriveInfo {
 				return false;
 			}
 		}else{
-			logEntry.incErrors("Unable to load library information for library " + settings.getAccountId());
+			logEntry.incErrors("Unable to load library account information for library " + settings.getAccountId());
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
@@ -1694,7 +1694,7 @@ class ExtractOverDriveInfo {
 				overDriveAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
 				//logger.debug("Libby token is " + overDriveAPIToken);
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " connecting to Libby authentication service");
+				logger.error("Received error " + conn.getResponseCode() + " connecting to Libby authentication service. Encoded auth header: " + encoded);
 				// Get any errors
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
 				String line;
