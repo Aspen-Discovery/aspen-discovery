@@ -1,5 +1,5 @@
 import { useIsFocused, useRoute } from '@react-navigation/native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera, CameraView } from 'expo-camera';
 import _ from 'lodash';
 import { Button, Center, View } from 'native-base';
 import React from 'react';
@@ -21,43 +21,9 @@ export default function SelfCheckScanner() {
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
 
-     let allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8, BarCodeScanner.Constants.BarCodeType.codabar];
+     let allowedBarcodes = ['upc_a', 'upc_e', 'ean13', 'ean8', 'codabar'];
      if (selfCheckSettings.barcodeStyles && _.isArray(selfCheckSettings.barcodeStyles)) {
-          const barcodeStyles = selfCheckSettings.barcodeStyles;
-          allowedBarcodes = [];
-          _.map(barcodeStyles, function (item, index, collection) {
-               if (item === 'aztec') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.aztec);
-               } else if (item === 'codabar') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.codabar);
-               } else if (item === 'code39') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code39);
-               } else if (item === 'code93') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code93);
-               } else if (item === 'code128') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code128);
-               } else if (item === 'datamatrix') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.datamatrix);
-               } else if (item === 'ean13') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.ean13);
-               } else if (item === 'ean8') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.ean8);
-               } else if (item === 'itf14') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.itf14);
-               } else if (item === 'pdf417') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.pdf417);
-               } else if (item === 'upc_e') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_e);
-               } else if (item === 'upc_a') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_a);
-               } else if (item === 'upc_ean') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_ean);
-               } else if (item === 'qr') {
-                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.qr);
-               } else {
-                    // invalid or unexpected value
-               }
-          });
+          allowedBarcodes = selfCheckSettings.barcodeStyles;
      }
 
      let activeAccount = useRoute().params?.activeAccount ?? false;
@@ -66,7 +32,7 @@ export default function SelfCheckScanner() {
 
      React.useEffect(() => {
           (async () => {
-               const { status } = await BarCodeScanner.requestPermissionsAsync();
+               const { status } = await Camera.requestCameraPermissionsAsync();
                setHasPermission(status === 'granted');
                /* for testing on simulators, assign a random barcode from array since camera does not work */
                /*if (!Device.isDevice) {
@@ -116,9 +82,9 @@ export default function SelfCheckScanner() {
           <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
                {isFocused && (
                     <>
-                         <BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barCodeTypes={allowedBarcodes}>
+                         <CameraView onBarcodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barcodeScannerSettings={{ barcodeTypes: allowedBarcodes }}>
                               <BarcodeMask edgeColor="#62B1F6" showAnimatedLine={false} />
-                         </BarCodeScanner>
+                         </CameraView>
                          {scanned && (
                               <Center pb={20}>
                                    <Button onPress={() => setScanned(false)}>{getTermFromDictionary(language, 'scan_again')}</Button>
