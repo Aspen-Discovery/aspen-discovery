@@ -1219,7 +1219,7 @@ class Polaris extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('polaris.authenticatePatron', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $authenticationResponseRaw, ['password' => $password]);
 				if ($authenticationResponseRaw) {
 					$authenticationResponse = json_decode($authenticationResponseRaw);
-					if ($authenticationResponse->PAPIErrorCode == 0) {
+					if (empty($authenticationResponse->PAPIErrorCode) || $authenticationResponse->PAPIErrorCode == 0) {
 						$accessToken = $authenticationResponse->AccessToken;
 						$patronId = $authenticationResponse->PatronID;
 						$session = [
