@@ -826,4 +826,18 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function allowUpdatesOfPreferredName(User $patron) : bool {
 		return false;
 	}
+
+	public function getMessageTypes(): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function updateMessageQueue(User $patron): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
 }
