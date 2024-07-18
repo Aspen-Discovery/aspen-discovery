@@ -506,6 +506,7 @@ public class PalaceProjectExportMain {
 									collection.displayName = linkTitle;
 									collection.hasCirculation = linkTitle.toLowerCase().contains("marketplace");
 									collection.includeInAspen = true;
+									collection.settingId = settingsId;
 									palaceProjectCollections.put(collection.palaceProjectName, collection);
 								}
 							}

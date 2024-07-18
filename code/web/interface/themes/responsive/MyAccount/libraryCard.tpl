@@ -28,6 +28,11 @@
 			{if !empty($showCardExpirationDate) && !empty($expirationDate)}
 				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}
 			{/if}
+			{if $showRenewalLink}
+				<div class="text-center">
+					<a class="btn btn-info btn-sm" href="{$cardRenewalLink}">{translate text="Renew your card" isPublicFacing=true}</a>
+				</div>
+			{/if}
 		</div>
 	</div>
 

@@ -3139,7 +3139,12 @@ class Library extends DataObject {
 					],
 					'showGroupedHoldCopiesCount' => [
 						'property' => 'showGroupedHoldCopiesCount',
-						'type' => 'checkbox',
+						'type' => 'enum',
+						'values' => [
+							0 => 'Never',
+							1 => 'Only for unavailable titles',
+							2 => 'Always'
+						],
 						'label' => 'Show Hold and Copy Counts',
 						'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.',
 						'hideInLists' => true,

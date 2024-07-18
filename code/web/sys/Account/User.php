@@ -3729,6 +3729,10 @@ class User extends DataObject {
 				'View Dashboards',
 				'View System Reports',
 			]);
+			$sections['palace_project']->addAction(new AdminAction('CollectionReport', 'View collection report for Palace Project.', '/PalaceProject/CollectionReport'), [
+				'Administer Palace Project',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {

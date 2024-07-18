@@ -51,7 +51,7 @@ class WebBuilder_SubmitForm extends Action {
 				$structure = $this->form->getFormStructure();
 				require_once ROOT_DIR . '/sys/DB/UnsavedDataObject.php';
 				$serializedData = new UnsavedDataObject();
-				DataObjectUtil::updateFromUI($serializedData, $structure);
+				DataObjectUtil::updateFromUI($serializedData, $structure, null);
 
 				//Convert the form values to JSON
 				if ($this->form->includeIntroductoryTextInEmail) {
