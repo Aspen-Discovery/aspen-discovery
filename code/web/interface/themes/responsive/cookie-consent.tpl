@@ -3,6 +3,18 @@
         cookieValues = {
             Essential: {$profile->userCookiePreferenceEssential},
             Analytics: {$profile->userCookiePreferenceAnalytics},
+            UserAxis360: {$profile->userCookiePreferenceAxis360},
+            UserEbscoEds: {$profile->userCookiePreferenceEbscoEds},
+            UserEbscoHost: {$profile->userCookiePreferenceEbscoHost},
+            UserSummon: {$profile->userCookiePreferenceSummon},
+            UserEvents: {$profile->userCookiePreferenceEvents},
+            UserHoopla: {$profile->userCookiePreferenceHoopla},
+            UserOpenArchives: {$profile->userCookiePreferenceOpenArchives},
+            UserOverdrive: {$profile->userCookiePreferenceOverdrive},
+            UserPalaceProject: {$profile->userCookiePreferencePalaceProject},    
+            UserSideLoad: {$profile->userCookiePreferenceSideLoad},
+            UserCloudLibrary: {$profile->userCookiePreferenceCloudLibrary},
+            UserWebsite: {$profile->userCookiePreferenceWebsite},
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
