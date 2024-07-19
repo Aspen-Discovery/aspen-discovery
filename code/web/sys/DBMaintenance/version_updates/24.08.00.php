@@ -60,18 +60,13 @@ function getUpdates24_08_00(): array {
 			'title' => 'Display Explore More Bar',
 			'description' => 'Display Explore More Bar',
 			'sql' => [
-				'ALTER TABLE library ADD COLUMN displayExploreMoreBar TINYINT(1) DEFAULT 1',
-				'ALTER TABLE location ADD COLUMN displayExploreMoreBar TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInSummon TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInSummon TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 1',
 			],
 		],
-		'display_explore_more_bar_for_specific_searches' => [
-			'title' => 'Display Explore More Bar for Specific Searches',
-			'description' => 'Display explore more bar for specific searches',
-			'sql' => [
-				'ALTER TABLE library ADD COLUMN disableExploreMoreBarInSummon TINYINT(1) DEFAULT 0',
-				'ALTER TABLE library ADD COLUMN disableExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 0',
-			],
-		],
+		
 		
 
 		//pedro - PTFS-Europe

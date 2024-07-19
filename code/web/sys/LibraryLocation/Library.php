@@ -69,11 +69,8 @@ class Library extends DataObject {
 	public $systemMessage;
 
 	//Explore More Bar Display
-	public $displayExploreMoreBar;
-	public $displayExploreMoreSummonSearch;
-	public $displayExploreMoreEbscoEds;
-	public $disableExploreMoreBarInSummon;
-	public $disableExploreMoreBarInEbscoEds;
+	public $displayExploreMoreBarInSummon;
+	public $displayExploreMoreBarInEbscoEds;
 			
 
 
@@ -3030,46 +3027,21 @@ class Library extends DataObject {
 				'label' => 'Explore More Bar Section',
 				'hideInLists' => true,
 				'properties' => [
-					'displayExploreMoreBar'=> [
-						'property' => 'displayExploreMoreBar',
+					'displayExploreMoreBarInSummon' => [
+						'property' => 'displayExploreMoreBarInSummon',
 						'type' => 'checkbox',
-						'label' => 'Display Explore More Bar in All Search Results',
-						'description' => 'Whether to display the Explore More Bar in the search results',
+						'label' => 'Display Explore More Bar in Summon Search Results',
+						'description' => 'Whether to display the Explore More Bar in Summon search results',
 						'hideInLists' => true,
 						'default' => true,
 					],
-					'displayExploreMoreSummonSearch' => [
-						'property' => 'displayExploreMoreSummonSearch',
-						'type' => 'section',
-						'label' => 'Explore More Bar for Summon Search',
+					'displayExploreMoreBarInEbscoEds' => [
+						'property' => 'displayExploreMoreBarInEbscoEds',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Ebsco EDS Search Results',
+						'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
 						'hideInLists' => true,
-						'properties' => [
-							'disableExploreMoreBarInSummon' => [
-								'property' => 'disableExploreMoreBarInSummon',
-								'type' => 'checkbox',
-								'label' => 'Disable Explore More Bar in Summon Search Results',
-								'description' => 'Whether to display the Explore More Bar in Summon search results',
-								'hideInLists' => true,
-								'default' => false,
-								'readOnly' => true,
-							],
-						],
-					],
-					'displayExploreMoreEbscoEdsSearch' => [
-						'property' => 'displayExploreMoreEbscoEdsSearch',
-						'type' => 'section',
-						'label' => 'Explore More Bar for Ebsco EDS Search',
-						'hideInLists' => true,
-						'properties' => [
-							'disableExploreMoreBarInEbscoEds' => [
-								'property' => 'disableExploreMoreBarInEbscoEds',
-								'type' => 'checkbox',
-								'label' => 'Disable Explore More Bar in Ebsco EDS Search Results',
-								'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
-								'hideInLists' => true,
-								'default' => false,
-							],
-						],
+						'default' => true,
 					],
 				],
 			],
@@ -5071,7 +5043,6 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
-			'displayExploreMoreBar' => $this->displayExploreMoreBar,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

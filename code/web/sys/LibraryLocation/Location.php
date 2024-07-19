@@ -52,7 +52,8 @@ class Location extends DataObject {
 	public $_themes;
 	public $showDisplayNameInHeader;
 	public $languageAndDisplayInHeader;
-	public $displayExploreMoreBar;
+	public $displayExploreMoreBarInSummon;
+	public $displayExploreMoreBarInEbscoEds;
 	public $headerText;
 	public $address;
 	public $phone;
@@ -636,15 +637,6 @@ class Location extends DataObject {
 						'default' => true,
 						'permissions' => ['Location Theme Configuration'],
 					],
-					'displayExploreMoreBar'=> [
-						'property' => 'displayExploreMoreBar',
-						'type' => 'checkbox',
-						'label' => 'Display Explore More Bar in Search Results',
-						'description' => 'Whether to display the Explore More Bar in the search results',
-						'hideInLists' => true,
-						'default' => true,
-						'permissions' => ['Location Theme Configuration'],
-					],
 					[
 						'property' => 'homeLink',
 						'type' => 'text',
@@ -970,6 +962,31 @@ class Location extends DataObject {
 								'canDelete' => true,
 							],
 						],
+					],
+				],
+			],
+
+			'exploreMoreBarSection' => [
+				'property' => 'exploreMoreBarSection',
+				'type' => 'section',
+				'label' => 'Explore More Bar Section',
+				'hideInLists' => true,
+				'properties' => [
+					'displayExploreMoreBarInSummon' => [
+						'property' => 'displayExploreMoreBarInSummon',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Summon Search Results',
+						'description' => 'Whether to display the Explore More Bar in Summon search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreBarInEbscoEds' => [
+						'property' => 'displayExploreMoreBarInEbscoEds',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Ebsco EDS Search Results',
+						'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
+						'hideInLists' => true,
+						'default' => true,
 					],
 				],
 			],
