@@ -3729,6 +3729,10 @@ class User extends DataObject {
 				'View Dashboards',
 				'View System Reports',
 			]);
+			$sections['palace_project']->addAction(new AdminAction('CollectionReport', 'View collection report for Palace Project.', '/PalaceProject/CollectionReport'), [
+				'Administer Palace Project',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
@@ -3840,6 +3844,8 @@ class User extends DataObject {
 			} else {
 				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 			}
+			$sections['aspen_lida']->addAction(new AdminAction('ILS Notification Settings', 'Define settings for ILS notifications in Aspen LiDA.', '/AspenLiDA/ILSNotificationSettings'), 'Administer Aspen LiDA Settings');
+
 			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
 				'Send Notifications to All Libraries',
 				'Send Notifications to All Locations',

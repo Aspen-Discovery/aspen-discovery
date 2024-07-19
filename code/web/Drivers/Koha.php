@@ -8332,4 +8332,61 @@ class Koha extends AbstractIlsDriver {
 			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
+
+	public function getMessageTypes(): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_transports where message_transport_type like 'email'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$transports = [];
+		if($results) {
+			$i = 0;
+			while ($curRow = $results->fetch_assoc()) {
+				$transports[$curRow['letter_module']][$i]['attribute_id'] = $curRow['message_attribute_id'];
+				$transports[$curRow['letter_module']][$i]['module'] = $curRow['letter_module'];
+				$transports[$curRow['letter_module']][$i]['code'] = $curRow['letter_code'];
+				$transports[$curRow['letter_module']][$i]['is_digest'] = $curRow['is_digest'];
+				$transports[$curRow['letter_module']][$i]['branch'] = $curRow['branchcode'];
+				$i++;
+			}
+		}
+
+		return $transports;
+	}
+
+	public function updateMessageQueue(User $patron): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			while ($curRow = $results->fetch_assoc()) {
+				$existingMessage = new UserILSMessage();
+				$existingMessage->userId = $patron->id;
+				$existingMessage->type = $curRow['letter_code'];
+				$existingMessage->dateQueued = $curRow['time_queued'];
+				if (!$existingMessage->find(true)) {
+					$userMessage = new UserILSMessage();
+					$userMessage->messageId = $curRow['message_id'];
+					$userMessage->userId = $patron->id;
+					$userMessage->status = 'pending';
+					$userMessage->type = $curRow['letter_code'];
+					$userMessage->dateQueued = $curRow['time_queued'];
+					$userMessage->insert();
+				}
+			}
+
+			return [
+				'success' => true,
+				'message' => 'Updated user message queue'
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => 'Error updating user message queue'
+		];
+	}
 }

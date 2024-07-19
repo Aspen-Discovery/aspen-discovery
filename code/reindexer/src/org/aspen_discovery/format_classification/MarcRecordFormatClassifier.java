@@ -25,7 +25,7 @@ public class MarcRecordFormatClassifier {
 	protected Logger logger;
 
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?[+\\\\/]\\s?dvd.*)|(blu-ray 3d\\s?[+\\\\/]\\s?dvd.*)|(.*dvd\\s?[+\\\\/]\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?(?:\\+|and)\\s?blu-ray.*)|(.*blu-ray\\s?(?:\\+|and)\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?(?:\\+|and)\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 
 	public MarcRecordFormatClassifier(Logger logger) {
 		this.logger = logger;
@@ -1344,6 +1344,9 @@ public class MarcRecordFormatClassifier {
 		}
 		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Manga")){
+			printFormats.remove("GraphicNovel");
 		}
 		if (printFormats.contains("MusicalScore")){
 			printFormats.remove("Book");
