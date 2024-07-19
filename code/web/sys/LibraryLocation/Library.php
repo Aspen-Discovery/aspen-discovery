@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryCombinedResultSection.php';
-require_once ROOT_DIR . '/sys/LibraryLocation/LibraryExploreMoreBarSection.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTheme.php';
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
@@ -488,7 +487,6 @@ class Library extends DataObject {
 
 	/** @var LibraryCombinedResultSection[] */
 	private $_combinedResultSections;
-	private $_exploreMoreSections;
 	private $_accountProfile = null;
 
 	public function getNumericColumnNames(): array {
@@ -552,10 +550,6 @@ class Library extends DataObject {
 		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
-		
-		$exploreMoreBarStructure = LibraryExploreMoreBarSection::getObjectStructure($context);
-		unset($exploreMoreBarStructure['libraryId']);
-		unset($exploreMoreBarStructure['weight']);
 
 		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
 		unset($libraryThemeStructure['libraryId']);
