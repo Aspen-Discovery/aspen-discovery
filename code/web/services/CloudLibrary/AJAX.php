@@ -90,9 +90,21 @@ class CloudLibrary_AJAX extends JSON_Action {
 		$interface->assign('id', $id);
 
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
+		$driver = new CloudLibraryDriver();
+		$settings = $driver->getSettings($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
 			$promptTitle = 'cloudLibrary Hold Options';
+			$interface->assign('useAlternateLibraryCard', $settings->useAlternateLibraryCard);
+			$validCards = [];
+			if ($settings->useAlternateLibraryCard) {
+				foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
+					if (!empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
+						$validCards[] = $userWithAccess;
+					}
+				}
+			}
+			$interface->assign('validCards', $validCards);
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => $promptTitle,
@@ -104,6 +116,9 @@ class CloudLibrary_AJAX extends JSON_Action {
 					]) . '" onclick="return AspenDiscovery.CloudLibrary.processHoldPrompts();">',
 			];
 		} elseif (count($usersWithCloudLibraryAccess) == 1) {
+			if ($settings->useAlternateLibraryCard && (empty($user->alternateLibraryCard) || !$driver->checkAuthentication($user))) {
+				return $this->getAlternateLibraryCardPrompts('placeHold', $user->id, $id);
+			}
 			return [
 				'patronId' => reset($usersWithCloudLibraryAccess)->id,
 				'promptNeeded' => false,
@@ -150,9 +165,21 @@ class CloudLibrary_AJAX extends JSON_Action {
 		$interface->assign('checkoutType', 'book');
 
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
+		$driver = new CloudLibraryDriver();
+		$settings = $driver->getSettings($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
 			$promptTitle = 'cloudLibrary Checkout Options';
+			$interface->assign('useAlternateLibraryCard', $settings->useAlternateLibraryCard);
+			$validCards = [];
+			if ($settings->useAlternateLibraryCard) {
+				foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
+					if (!empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
+						$validCards[] = $userWithAccess;
+					}
+				}
+			}
+			$interface->assign('validCards', $validCards);
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => $promptTitle,
@@ -164,6 +191,9 @@ class CloudLibrary_AJAX extends JSON_Action {
 					]) . '" onclick="return AspenDiscovery.CloudLibrary.processCheckoutPrompts();">',
 			];
 		} elseif (count($usersWithCloudLibraryAccess) == 1) {
+			if ($settings->useAlternateLibraryCard && (empty($user->alternateLibraryCard) || !$driver->checkAuthentication($user))) {
+				return $this->getAlternateLibraryCardPrompts('checkOutTitle', $user->id, $id);
+			}
 			return [
 				'patronId' => reset($usersWithCloudLibraryAccess)->id,
 				'promptNeeded' => false,
@@ -302,6 +332,26 @@ class CloudLibrary_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 		$driver = new CloudLibraryDriver();
 
+		//If using alternate library cards, first check if account exists in cloudLibrary
+		$settings = $driver->getSettings($patron);
+		if ($settings->useAlternateLibraryCard && !$driver->checkAuthentication($patron)) {
+			$result['message'] = translate([
+				'text' => 'Sorry, your alternate library card is not valid for cloudLibrary. Please check that you have entered it correctly.',
+				'isPublicFacing' => true,
+			]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate([
+				'text' => 'Invalid alternate library card.',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Sorry, your alternate library card is not valid for cloudLibrary. Please check that you have entered it correctly.',
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
 		//Before we place the hold, check the status since cloudLibrary doesn't always update properly
 		$itemStatus = $driver->getItemStatus($id, $patron);
 		if ($itemStatus == 'CAN_LOAN' || $itemStatus == 'RESERVATION') {
@@ -416,5 +466,81 @@ class CloudLibrary_AJAX extends JSON_Action {
 			'modalBody' => $interface->fetch("CloudLibrary/largeCover.tpl"),
 			'modalButtons' => "",
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	function addAlternateLibraryCard(): array {
+		$jsonData = file_get_contents('php://input');
+		$cardData = json_decode($jsonData, true);
+		$user = UserAccount::getLoggedInUser();
+		$user = $user->getUserReferredTo($cardData['patronId']);
+		if (!$user) {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Failed to add Alternate Library Card',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+		if (isset($cardData['alternateLibraryCard'])) {
+			$user->alternateLibraryCard = $cardData['alternateLibraryCard'];
+		}
+		if (isset($cardData['alternateLibraryCardPassword'])) {
+			$user->alternateLibraryCardPassword = $cardData['alternateLibraryCardPassword'];
+		}
+		$user->update();
+		if (!empty($user->alternateLibraryCard)) {
+			return [
+				'success' => true,
+				'message' => translate([
+					'text' => 'Alternate Library Card successfully added',
+					'isPublicFacing' => true,
+				]),
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Failed to add Alternate Library Card',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getAlternateLibraryCardPrompts($type, $patronId, $titleId): array {
+		global $library;
+		global $interface;
+		$user = UserAccount::getLoggedInUser();
+		$user = $user->getUserReferredTo($patronId);
+		$interface->assign('id', $titleId);
+		$interface->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
+		$interface->assign('showAlternateLibraryCardPassword', $library->showAlternateLibraryCardPassword);
+		$interface->assign('alternateLibraryCardLabel', $library->alternateLibraryCardLabel);
+		$interface->assign('alternateLibraryCardPasswordLabel', $library->alternateLibraryCardPasswordLabel);
+		$interface->assign('patronId', $patronId);
+		$interface->assign('type', $type);
+		$interface->assign('user', $user);
+		$promptTitle = translate(['text' =>'Add an Alternate Library Card', 'isPublicFacing' => true]);
+		return [
+			'promptNeeded' => true,
+			'promptTitle' => $promptTitle,
+			'prompts' => $interface->fetch('CloudLibrary/add-alternate-library-card.tpl'),
+			'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate([
+					'text' => 'Add Card',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]) . '" onclick="return AspenDiscovery.CloudLibrary.addAlternateLibraryCard();">',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function prepareAlternateLibraryCardPrompts(): array {
+		$type = $_REQUEST['type'];
+		$patronId = $_REQUEST['patronId'];
+		$titleId = $_REQUEST['id'];
+		return $this->getAlternateLibraryCardPrompts($type, $patronId, $titleId);
 	}
 }
