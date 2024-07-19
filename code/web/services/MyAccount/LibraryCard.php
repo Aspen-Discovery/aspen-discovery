@@ -40,6 +40,11 @@ class LibraryCard extends MyAccount {
 				$user->alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'];
 			}
 			$user->update();
+			$message = translate([
+				'text' => 'Your alternate library card has been updated. ',
+				'isPublicFacing' => true,
+			]);
+			$interface->assign('message', $message);
 		}
 
 		$interface->assign('profile', $user);

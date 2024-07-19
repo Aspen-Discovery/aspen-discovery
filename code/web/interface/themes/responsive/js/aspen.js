@@ -11486,15 +11486,59 @@ AspenDiscovery.CloudLibrary = (function () {
 		processCheckoutPrompts: function () {
 			var id = $("#id").val();
 			var patronId = $("#patronId option:selected").val();
-			AspenDiscovery.closeLightbox();
-			return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
+			var useAlternateCard = $("#useAlternateLibraryCard").val();
+			var validCard = $("#patronId option:selected").attr("data-valid-card");
+			if (useAlternateCard === 0 || validCard === "1") {
+				return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
+			} else {
+				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=checkOutTitle&patronId=" + patronId;
+				var result = true;
+				$.ajax({
+					url: url,
+					cache: false,
+					success: function (data) {
+						result = data;
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request.  Please try again in a few minutes.");
+						AspenDiscovery.closeLightbox();
+					}
+				});
+				return result;
+			}
 		},
 
 		processHoldPrompts: function () {
 			var id = $("#id").val();
 			var patronId = $("#patronId option:selected").val();
-			AspenDiscovery.closeLightbox();
-			return AspenDiscovery.CloudLibrary.doHold(patronId, id);
+			var useAlternateCard = $("#useAlternateLibraryCard").val();
+			var validCard = $("#patronId option:selected").attr("data-valid-card");
+			if (useAlternateCard === 0 || validCard === "1") {
+				return AspenDiscovery.CloudLibrary.doHold(patronId, id);
+			} else {
+				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=placeHold&patronId=" + patronId;
+				var result = true;
+				$.ajax({
+					url: url,
+					cache: false,
+					success: function (data) {
+						result = data;
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request.  Please try again in a few minutes.");
+						AspenDiscovery.closeLightbox();
+					}
+				});
+				return result;
+			}
 		},
 
 		renewCheckout: function (patronId, recordId) {
@@ -11558,6 +11602,44 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			);
 			return false;
+		},
+
+		addAlternateLibraryCard: function () {
+			var id = $("#id").val();
+			var patronId = $("#patronId").val();
+			var type = $("#type").val();
+			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=addAlternateLibraryCard&type=" + type;
+			var alternateLibraryCard = $("#alternateLibraryCard").val();
+			var alternateLibraryCardPassword = $("#alternateLibraryCardPassword").val();
+			$.ajax({
+				url: url,
+				cache: false,
+				type: "POST",
+				data:  JSON.stringify({
+					alternateLibraryCard: alternateLibraryCard,
+					alternateLibraryCardPassword: alternateLibraryCardPassword,
+					patronId: patronId,
+				}),
+				success: function (data) {
+					if (data.success) {
+						if (type === "checkOutTitle") {
+							AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
+						} else if (type === "placeHold") {
+							AspenDiscovery.CloudLibrary.doHold(patronId, id);
+						} else {
+							AspenDiscovery.showMessage("Card Added", data.message, false);
+						}
+					} else {
+						AspenDiscovery.showMessage("Error Adding Card", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Adding Card", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+				}
+			});
 		},
 	}
 }(AspenDiscovery.CloudLibrary || {}));

@@ -11,6 +11,13 @@
 	{if !empty($ilsMessages)}
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
+	{if !empty($message)}
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="alert alert-success">{translate text=$message isPublicFacing=true isMetadata=true}</div>
+			</div>
+		</div>
+	{/if}
 
 	<h1>{translate text="Library Card" isPublicFacing=true}</h1>
 	<div class="row">

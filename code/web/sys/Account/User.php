@@ -379,6 +379,14 @@ class User extends DataObject {
 		return 'ils_barcode';
 	}
 
+	function getAlternateLibraryCardBarcode() {
+		return empty($this->alternateLibraryCard) ? '' : $this->alternateLibraryCard;
+	}
+
+	function getAlternateLibraryCardPasswordOrPin() {
+		return empty($this->alternateLibraryCardPassword) ? '' : $this->alternateLibraryCardPassword;
+	}
+
 	function saveRoles() {
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)) {
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
