@@ -8333,6 +8333,28 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	public function getMessageTypes(): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_transports where message_transport_type like 'email'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$transports = [];
+		if($results) {
+			$i = 0;
+			while ($curRow = $results->fetch_assoc()) {
+				$transports[$curRow['letter_module']][$i]['attribute_id'] = $curRow['message_attribute_id'];
+				$transports[$curRow['letter_module']][$i]['module'] = $curRow['letter_module'];
+				$transports[$curRow['letter_module']][$i]['code'] = $curRow['letter_code'];
+				$transports[$curRow['letter_module']][$i]['is_digest'] = $curRow['is_digest'];
+				$transports[$curRow['letter_module']][$i]['branch'] = $curRow['branchcode'];
+				$i++;
+			}
+		}
+
+		return $transports;
+	}
+
 	public function updateMessageQueue(User $patron): array {
 		$this->initDatabaseConnection();
 

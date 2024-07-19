@@ -1,5 +1,5 @@
 import { useIsFocused } from '@react-navigation/native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera, CameraView } from 'expo-camera';
 import { Button, Center, View } from 'native-base';
 import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
@@ -17,9 +17,11 @@ export default function Scanner() {
      const [scanned, setScanned] = React.useState(false);
      const { language } = React.useContext(LanguageContext);
 
+     let allowedBarcodes = ['upc_a', 'upc_e', 'ean13', 'ean8', 'codabar'];
+
      React.useEffect(() => {
           (async () => {
-               const { status } = await BarCodeScanner.requestPermissionsAsync();
+               const { status } = await Camera.requestCameraPermissionsAsync();
                setHasPermission(status === 'granted');
           })();
      }, []);
@@ -54,9 +56,9 @@ export default function Scanner() {
           <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
                {isFocused && (
                     <>
-                         <BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barCodeTypes={[BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8]}>
+                         <CameraView onBarcodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barcodeScannerSettings={{ barcodeTypes: allowedBarcodes }}>
                               <BarcodeMask edgeColor="#62B1F6" showAnimatedLine={false} />
-                         </BarCodeScanner>
+                         </CameraView>
                          {scanned && (
                               <Center pb={20}>
                                    <Button onPress={() => setScanned(false)}>{getTermFromDictionary(language, 'scan_again')}</Button>
