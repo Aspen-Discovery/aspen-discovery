@@ -1345,6 +1345,9 @@ public class MarcRecordFormatClassifier {
 		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Book");
 		}
+		if (printFormats.contains("Manga")){
+			printFormats.remove("GraphicNovel");
+		}
 		if (printFormats.contains("MusicalScore")){
 			printFormats.remove("Book");
 		}
