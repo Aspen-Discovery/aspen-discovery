@@ -77,20 +77,14 @@ class MyAccount_MyPreferences extends MyAccount {
 					}
 					$user->updateMessageIsError = !$result['success'];
 
-					$cookieResult = $this->updateUserCookiePreferences($patron);
-					if (isset($cookieResult['message'])) {
-						$user->updateMessage .= ' ' . $cookieResult['message'];
+					if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
+						$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
+						if (!empty($user->updateMessage)) {
+							$user->updateMessage .= '<br/>';
+						}
+						$user->updateMessage .= implode('<br/>', $result2['messages']);
+						$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
 					}
-					$user->updateMessageIsError = $user->updateMessageIsError || $cookieResult['success'];
-
-					// if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
-					// 	$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
-					// 	if (!empty($user->updateMessage)) {
-					// 		$user->updateMessage .= '<br/>';
-					// 	}
-					// 	$user->updateMessage .= implode('<br/>', $result2['messages']);
-					// 	$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
-					// }
 				}else{
 					$user->updateMessage = translate([
 						'text' => 'Wrong account credentials, please try again.',
@@ -153,32 +147,6 @@ class MyAccount_MyPreferences extends MyAccount {
 		$this->display('myPreferences.tpl', 'My Preferences');
 	}
 
-	function updateUserCookiePreferences($patron) {
-		$siccess = true;
-		$message = ' ';
-		$patron->userCookiePreferenceEssential = 1; // Essential cookies are always enabled
-        $patron->userCookiePreferenceAnalytics = isset($_POST['userCookieAnalytics']) ? 1 : 0;
-        $patron->userCookiePreferenceAxis360 = isset($_POST['userCookieUserAxis360']) ? 1 : 0;
-        $patron->userCookiePreferenceEbscoEds = isset($_POST['userCookieUserEbscoEds']) ? 1 : 0;
-        $patron->userCookiePreferenceEbscoHost = isset($_POST['userCookieUserEbscoHost']) ? 1 : 0;
-        $patron->userCookiePreferenceSummon = isset($_POST['userCookieUserSummon']) ? 1 : 0;
-        $patron->userCookiePreferenceEvents = isset($_POST['userCookieUserEvents']) ? 1 : 0;
-        $patron->userCookiePreferenceHoopla = isset($_POST['userCookieUserHoopla']) ? 1 : 0;
-        $patron->userCookiePreferenceOpenArchives = isset($_POST['userCookieUserOpenArchives']) ? 1 : 0;
-        $patron->userCookiePreferenceOverdrive = isset($_POST['userCookieUserOverdrive']) ? 1 : 0;
-        $patron->userCookiePreferencePalaceProject = isset($_POST['userCookieUserPalaceProject']) ? 1 : 0;
-        $patron->userCookiePreferenceSideLoad = isset($_POST['userCookieUserSideLoad']) ? 1 : 0;
-		$patron->userCookiePreferenceCloudLibrary = isset($_POST['userCookieUserCloudLibrary']) ? 1 : 0;
-		$patron->userCookiePreferenceWebsite = isset($_POST['userCookieUserWebsite']) ? 1 : 0;
-
-        if (!$patron->update()) {
-            $success = false;
-            $message = 'Failed to update cookie preferences.';
-        }
-
-        return ['success' => $success, 'message' => $message];
-
-	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
