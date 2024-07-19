@@ -1176,7 +1176,7 @@ class User extends DataObject {
 			$this->__set('userCookiePreferenceEbscoHost', (isset($_POST['userCookieUserEbscoHost']) && $_POST['userCookieUserEbscoHost'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceSummon', (isset($_POST['userCookieSummon']) && $_POST['userCookieSummon'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceEvents', (isset($_POST['userCookieEvents']) && $_POST['userCookieEvents'] == 'on') ? 1 : 0);
-			$this->__set('userCookiePreferenceHoopla', (isset($_POST['userCookieUserHoopla']) && $_POST['userCookieUsrHoopla'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceHoopla', (isset($_POST['userCookieUserHoopla']) && $_POST['userCookieUserHoopla'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceOpenArchives', (isset($_POST['userCookieUserOpenArchives']) && $_POST['userCookieUserOpenArchives'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceOverdrive', (isset($_POST['userCookieUserOverdrive']) && $_POST['userCookieUserOverdrive'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferencePalaceProject', (isset($_POST['userCookieUserPalaceProject']) && $_POST['userCookieUserPalaceProject'] == 'on') ? 1 : 0);
