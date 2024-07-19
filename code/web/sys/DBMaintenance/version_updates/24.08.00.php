@@ -66,6 +66,14 @@ function getUpdates24_08_00(): array {
 				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 1',
 			],
 		],
+		'display_explore_more_bar_additional_options' => [
+			'title' => 'Display Explore More Bar Additional Options',
+			'description' => 'Display Explore More Bar in Catalog Search',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInCatalogSearch TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInCatalogSearch TINYINT(1) DEFAULT 1',
+			],
+		],
 		
 		
 

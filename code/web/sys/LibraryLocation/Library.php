@@ -71,6 +71,7 @@ class Library extends DataObject {
 	//Explore More Bar Display
 	public $displayExploreMoreBarInSummon;
 	public $displayExploreMoreBarInEbscoEds;
+	public $displayExploreMoreBarInCatalogSearch;
 			
 
 
@@ -3027,6 +3028,14 @@ class Library extends DataObject {
 				'label' => 'Explore More Bar Section',
 				'hideInLists' => true,
 				'properties' => [
+					'displayExploreMoreBarInCatalogSearch' => [
+						'property' => 'displayExploreMoreBarInCatalogSearch',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Catalog Search Results',
+						'description' => 'Whether to display the Explore More Bar in catalog search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
 					'displayExploreMoreBarInSummon' => [
 						'property' => 'displayExploreMoreBarInSummon',
 						'type' => 'checkbox',
