@@ -15,14 +15,6 @@
 		</div>
 		<div class="col-xs-6">
 			<div id="selected-browse-label">
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" title="Covers" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="covers">
-						<span class="thumbnail-icon" role="presentation"></span><span> {translate text=Covers isPublicFacing=true}</span>
-					</label>
-					<label for="list" title="Lists" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="list">
-						<span class="list-icon" role="presentation"></span><span> {translate text=List isPublicFacing=true}</span>
-					</label>
-				</div>
 				<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
 					<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers' isPublicFacing=true}
 						<input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>

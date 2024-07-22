@@ -20,14 +20,6 @@
                       <input class="form-check-input" type="checkbox" id="hideCovers" {if $showCovers == false}checked{/if} style="position: relative; top: 5px">
                       <label class="form-check-label" for="hideCovers">{translate text='Hide Covers' isPublicFacing=true}</label>
                     </div>
-					<div class="btn-group btn-group-sm" data-toggle="buttons" style="margin-right: 1rem">
-		                <label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="covers">
-		                    <i class='fas fa-th'></i> {translate text=Covers isPublicFacing=true}
-		                </label>
-		                <label for="list" title="Lists" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="list">
-		                    <i class='fas fa-list'></i> {translate text=List isPublicFacing=true}
-		                </label>
-		            </div>
 		            {if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 			            <div class="btn-group btn-group-sm">
 			                <button data-toggle="dropdown" class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownSearchToolsBtn"><i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true} <span class="caret"></span></button>
