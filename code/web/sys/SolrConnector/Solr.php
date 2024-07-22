@@ -653,7 +653,7 @@ abstract class Solr {
 			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
             // Fix for date ranges
-            $cleanedQuery = preg_replace("/([0-9a-zA-Z])([-.])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
+            $cleanedQuery = preg_replace("/([0-9a-zA-Z])([-])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
             // Fix for ordinal numbers
             $cleanedQuery = preg_replace("/([0-9])([a-zA-Z])/", "$1 $2", $cleanedQuery);
 			$cleanedQuery = str_replace('-', '\-', $cleanedQuery);
