@@ -103,8 +103,14 @@
     <input type="checkbox" name="cookieUserWebsite" id="cookieUserWebsite"> Website
     </label>
     </div>
-    <div>
-            <button type="submit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.CookieConsent.cookieManagementPreferences()">{translate text="Save Preferences" isPublicFacing=true}</button>
-           </form>
-       </div>
     {/if}
+
+<script type="text/javascript">
+	{literal}
+	$("#cookieManagementPreferencesForm").validate({
+		submitHandler: function(){
+			AspenDiscovery.CookieConsent.cookieManagementPreferences();
+		}
+	});
+	{/literal}
+</script>
