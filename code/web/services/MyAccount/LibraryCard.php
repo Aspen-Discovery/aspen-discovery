@@ -19,6 +19,27 @@ class LibraryCard extends MyAccount {
 		$interface->assign('showCardExpirationDate', $library->showCardExpirationDate);
 		$interface->assign('expirationDate', $user->getAccountSummary()->expirationDate);
 
+		$interface->assign('showRenewalLink', false);
+		if ($user->hasIlsConnection()) {
+			$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
+			$showRenewalLink = $user->showRenewalLink($ilsSummary);
+			$interface->assign('showRenewalLink', $showRenewalLink);
+			if ($showRenewalLink) {
+				$userLibrary = $user->getHomeLibrary();
+				if ($userLibrary->enableCardRenewal == 2) {
+					if (!empty($userLibrary->cardRenewalUrl)) {
+						$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
+					}
+				} elseif ($userLibrary->enableCardRenewal == 3) {
+					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+					$quipuECardSettings = new QuipuECardSetting();
+					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+						$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
+					}
+				}
+			}
+		}
+
 		$linkedUsers = $user->getLinkedUsers();
 		$linkedCards = [];
 		foreach ($linkedUsers as $tmpUser) {
@@ -40,6 +61,11 @@ class LibraryCard extends MyAccount {
 				$user->alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'];
 			}
 			$user->update();
+			$message = translate([
+				'text' => 'Your alternate library card has been updated. ',
+				'isPublicFacing' => true,
+			]);
+			$interface->assign('message', $message);
 		}
 
 		$interface->assign('profile', $user);

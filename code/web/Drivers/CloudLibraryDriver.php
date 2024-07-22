@@ -133,7 +133,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			]),
 		];
 		$settings = $this->getSettings($patron);
-		$patronId = str_replace(' ', ' ', $patron->getBarcode());
+		$patronId = $this->getPatronId($patron);
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
 		$requestBody = "<CheckinRequest>
 				<ItemId>{$recordId}</ItemId>
@@ -294,7 +294,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			]),
 		];
 		$settings = $this->getSettings($patron);
-		$patronId = str_replace(' ', ' ', $patron->getBarcode());
+		$patronId = $this->getPatronId($patron);
 		$password = $patron->getPasswordOrPin();
 		$patronEligibleForHolds = $patron->eligibleForHolds();
 		if ($patronEligibleForHolds['fineLimitReached']) {
@@ -462,7 +462,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			]),
 		];
 		$settings = $this->getSettings($patron);
-		$patronId = str_replace(' ', ' ', $patron->getBarcode());
+		$patronId = $this->getPatronId($patron);
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
 		$requestBody = "<CancelHoldRequest>
 				<ItemId>{$recordId}</ItemId>
@@ -604,8 +604,8 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		]);
 
 		$settings = $this->getSettings($patron);
-		$patronId = str_replace(' ', ' ', $patron->getBarcode());
-		$password = $patron->getPasswordOrPin();
+		$patronId = $this->getPatronId($patron);
+		$password = $this->getCloudLibraryPasswordOrPin($patron);
 		if (!$patron->eligibleForHolds()) {
 			$result['message'] = translate([
 				'text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.',
@@ -696,8 +696,8 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	private function getPatronCirculation(User $user) {
 		$settings = $this->getSettings($user);
 		if ($settings != false) {
-			$patronId = str_replace(' ', '%20', $user->getBarcode());
-			$password = $user->getPasswordOrPin();
+			$patronId = $this->getPatronId($user);
+			$password = $this->getCloudLibraryPasswordOrPin($user);
 			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 			ExternalRequestLogEntry::logRequest('cloudLibrary.getPatronCirculation', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $circulationInfo, ['password' => $password]);
@@ -711,7 +711,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 * @param User|null $user
 	 * @return CloudLibrarySetting|false
 	 */
-	private function getSettings(User $user = null) {
+	public function getSettings(User $user = null) {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$activeLibrary = null;
@@ -733,6 +733,24 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			}
 		}
 		return false;
+	}
+
+	private function getPatronId($patron)
+	{
+		$settings = $this->getSettings($patron);
+		if ($settings->useAlternateLibraryCard) {
+			return str_replace(' ', '%20', $patron->getAlternateLibraryCardBarcode());
+		}
+		return str_replace(' ', '%20', $patron->getBarcode());
+	}
+
+	private function getCloudLibraryPasswordOrPin($patron)
+	{
+		$settings = $this->getSettings($patron);
+		if ($settings->useAlternateLibraryCard) {
+			return $patron->getAlternateLibraryCardPasswordOrPin();
+		}
+		return $patron->getPasswordOrPin();
 	}
 
 	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null) {
@@ -825,15 +843,17 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		}
 	}
 
-	function checkAuthentication(User $user) {
+	public function checkAuthentication(User $user): bool
+	{
 		$settings = $this->getSettings($user);
 		if ($settings == false) {
 			return false;
 		}
-		$patronId = str_replace(' ', '%20', $user->getBarcode());
-		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
+		$patronId = $this->getPatronId($user);
+		$password = $this->getCloudLibraryPasswordOrPin($user);
+		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId?password=$password";
 		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
-		ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $user->getPasswordOrPin()]);
+		ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $password]);
 		/** @var SimpleXMLElement $authentication */
 		$authentication = simplexml_load_string($authenticationResponse);
 		if ($authentication->result == 'SUCCESS') {
@@ -886,7 +906,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 */
 	public function getItemStatus($itemId, $patron) {
 		$settings = $this->getSettings($patron);
-		$patronId = str_replace(' ', '%20', $patron->getBarcode());
+		$patronId = $this->getPatronId($patron);
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 		ExternalRequestLogEntry::logRequest('cloudLibrary.getItemStatus', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $itemStatusInfo, []);
@@ -921,8 +941,8 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		//Login the user to CloudLibrary
 		$loginUrl = "{$userInterfaceUrl}/login";
 		$postParams = [
-			'username' => $patron->getBarcode(),
-			'password' => $patron->getPasswordOrPin(),
+			'username' => $this->getPatronId($patron),
+			'password' => $this->getCloudLibraryPasswordOrPin($patron),
 		];
 		$curlWrapper = new CurlWrapper();
 		$headers = [

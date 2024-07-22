@@ -246,6 +246,7 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.removeAttr('onclick');
 						var thisCategoryToDismiss = data.subCategoryTextId || categoryTextId;
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ thisCategoryToDismiss +'")');
+						dismissButton.attr('title', data.hideButtonLabel);
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -279,6 +280,7 @@ AspenDiscovery.Browse = (function(){
 								$('.selected-browse-sub-category-label-search-text')
 									.html(data.subCategoryLabel)
 									.fadeIn()
+								dismissButton.attr('title', data.subCategoryHideButtonLabel);
 							}
 						}
 						if (data.lastPage){
@@ -321,7 +323,7 @@ AspenDiscovery.Browse = (function(){
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
@@ -445,6 +447,8 @@ AspenDiscovery.Browse = (function(){
 						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 					}
 
+					dismissButton.attr('title', data.subCategoryHideButtonLabel);
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
@@ -535,18 +539,18 @@ AspenDiscovery.Browse = (function(){
 
 						// Accessibility
 						a11y: {
-							enabled: true,
+							enabled: true
 						},
 
 						// Navigation arrows
 						navigation: {
 							nextEl: '.swiper-button-next',
-							prevEl: '.swiper-button-prev',
+							prevEl: '.swiper-button-prev'
 						},
 
 						virtual: {
 							enabled: true,
-							slides: Object.values(data.records),
+							slides: Object.values(data.records)
 						}
 					});
 					// Fix keyboard navigation

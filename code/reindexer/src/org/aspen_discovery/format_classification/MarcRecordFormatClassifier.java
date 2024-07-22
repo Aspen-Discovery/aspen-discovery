@@ -25,7 +25,7 @@ public class MarcRecordFormatClassifier {
 	protected Logger logger;
 
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?[+\\\\/]\\s?dvd.*)|(blu-ray 3d\\s?[+\\\\/]\\s?dvd.*)|(.*dvd\\s?[+\\\\/]\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?(?:\\+|and)\\s?blu-ray.*)|(.*blu-ray\\s?(?:\\+|and)\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?(?:\\+|and)\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 
 	public MarcRecordFormatClassifier(Logger logger) {
 		this.logger = logger;
@@ -150,7 +150,7 @@ public class MarcRecordFormatClassifier {
 		getFormatFromFormField(groupedWork, record, printFormats);
 		if (settings instanceof IndexingProfile) {
 			IndexingProfile indexingProfile = (IndexingProfile) settings;
-			if (printFormats.isEmpty() && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
+			if ((printFormats.isEmpty() || (printFormats.size() == 1 && printFormats.contains("Book"))) && indexingProfile.getFallbackFormatField() != null && !indexingProfile.getFallbackFormatField().isEmpty()) {
 				getFormatFromFallbackField(groupedWork, record, printFormats, settings);
 			}
 		}
@@ -948,6 +948,10 @@ public class MarcRecordFormatClassifier {
 								result.add("PhysicalObject");
 								break;
 						}
+					} else {
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format PhysicalObject based on Leader and no 008 field", 2);}
+						result.add("PhysicalObject");
+						break;
 					}
 					break;
 				case 'T':
@@ -1340,6 +1344,9 @@ public class MarcRecordFormatClassifier {
 		}
 		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Manga")){
+			printFormats.remove("GraphicNovel");
 		}
 		if (printFormats.contains("MusicalScore")){
 			printFormats.remove("Book");

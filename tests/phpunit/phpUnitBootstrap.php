@@ -15,6 +15,13 @@ $dbPort = $configArray['Database']['database_aspen_dbport'];
 $curDir = __DIR__;
 $baseAspenSQL = "$curDir/../../install/aspen.sql";
 
+//Remove all existing database tables
+$result = $aspen_db->query("SELECT TABLE_NAME FROM information_schema.tables where TABLE_SCHEMA = '$dbName'");
+$allTables = $result->fetchAll(PDO::FETCH_ASSOC);
+foreach ($allTables as $table) {
+	$aspen_db->exec("DROP TABLE {$table['TABLE_NAME']}");
+}
+
 //Import blank database
 $importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $baseAspenSQL";
 exec($importCommand);

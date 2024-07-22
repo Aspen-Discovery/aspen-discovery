@@ -5,6 +5,7 @@ class GreenhouseSettings extends DataObject {
 	public $__table = 'greenhouse_settings';
 	public $id;
 	public $greenhouseAlertSlackHook;
+	public $greenhouseSystemsAlertSlackHook;
 	public $apiKey1;
 	public $apiKey2;
 	public $apiKey3;
@@ -28,8 +29,16 @@ class GreenhouseSettings extends DataObject {
 			'greenhouseAlertSlackHook' => [
 				'property' => 'greenhouseAlertSlackHook',
 				'type' => 'url',
-				'label' => 'Alert Slack Hook',
-				'description' => 'A slack hook to send alerts to',
+				'label' => 'Dev Alert Slack Hook',
+				'description' => 'A slack hook to send dev alerts to',
+				'maxLength' => 255,
+				'required' => false,
+			],
+			'greenhouseSystemsAlertSlackHook' => [
+				'property' => 'greenhouseSystemsAlertSlackHook',
+				'type' => 'url',
+				'label' => 'Systems Alert Slack Hook',
+				'description' => 'A slack hook to send systems alerts to',
 				'maxLength' => 255,
 				'required' => false,
 			],

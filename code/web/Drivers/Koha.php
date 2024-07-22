@@ -2544,50 +2544,50 @@ class Koha extends AbstractIlsDriver {
 			ExternalRequestLogEntry::logRequest('koha.getILLRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $illRequestResponse, []);
 			if ($responseCode == 200) {
 				$jsonResponse = json_decode($illRequestResponse);
-				foreach ($jsonResponse as $illHold) {
-					$newHold = new Hold();
-					$newHold->userId = $patron->id;
-					$newHold->type = 'ils';
-					$newHold->source = 'ILL';
-					$newHold->canFreeze = false;
-					if(!empty($library->interLibraryLoanName)) {
-						$newHold->source = $library->interLibraryLoanName;
-					}
-					$newHold->sourceId = $illHold->ill_request_id;
-//					$newHold->recordId = $illHold->ill_request_id;
-//					$newHold->shortId = $illHold->ill_request_id;
-					$newHold->isIll = true;
-					foreach ($illHold->extended_attributes as $extendedAttribute) {
-						if ($extendedAttribute->type == 'author') {
-							$newHold->author = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'callNumber') {
-							$newHold->callNumber = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'callNumber') {
-							$newHold->callNumber = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'itemId') {
-							$newHold->itemId = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'needBefore') {
-							$newHold->automaticCancellationDate = $extendedAttribute->value;
-						}elseif ($extendedAttribute->type == 'title') {
-							$newHold->title = $extendedAttribute->value;
+				if (!empty($jsonResponse) && is_array($jsonResponse)) {
+					foreach ($jsonResponse as $illHold) {
+						$newHold = new Hold();
+						$newHold->userId = $patron->id;
+						$newHold->type = 'ils';
+						$newHold->source = 'ILL';
+						$newHold->canFreeze = false;
+						if (!empty($library->interLibraryLoanName)) {
+							$newHold->source = $library->interLibraryLoanName;
 						}
-						$curPickupBranch = new Location();
-						$curPickupBranch->code = $illHold->library_id;
-						if ($curPickupBranch->find(true)) {
-							$curPickupBranch->fetch();
-							$newHold->pickupLocationId = $curPickupBranch->locationId;
-							$newHold->pickupLocationName = $curPickupBranch->displayName;
+						$newHold->sourceId = $illHold->ill_request_id;
+						//					$newHold->recordId = $illHold->ill_request_id;
+						//					$newHold->shortId = $illHold->ill_request_id;
+						$newHold->isIll = true;
+						foreach ($illHold->extended_attributes as $extendedAttribute) {
+							if ($extendedAttribute->type == 'author') {
+								$newHold->author = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'callNumber') {
+								$newHold->callNumber = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'itemId') {
+								$newHold->itemId = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'needBefore') {
+								$newHold->automaticCancellationDate = $extendedAttribute->value;
+							} elseif ($extendedAttribute->type == 'title') {
+								$newHold->title = $extendedAttribute->value;
+							}
+							$curPickupBranch = new Location();
+							$curPickupBranch->code = $illHold->library_id;
+							if ($curPickupBranch->find(true)) {
+								$curPickupBranch->fetch();
+								$newHold->pickupLocationId = $curPickupBranch->locationId;
+								$newHold->pickupLocationName = $curPickupBranch->displayName;
+							} else {
+								$newHold->pickupLocationName = $curPickupBranch->code;
+							}
+						}
+						$newHold->createDate = strtotime($illHold->requested_date);
+						if (isset($illHold->_strings->status)) {
+							$newHold->status = $illHold->_strings->status->str;
 						} else {
-							$newHold->pickupLocationName = $curPickupBranch->code;
+							$newHold->status = $illHold->status;
 						}
+						$holds['unavailable'][$newHold->source . 'ill' . $newHold->sourceId . $newHold->userId] = $newHold;
 					}
-					$newHold->createDate = strtotime($illHold->requested_date);
-					if (isset($illHold->_strings->status)) {
-						$newHold->status = $illHold->_strings->status->str;
-					} else {
-						$newHold->status = $illHold->status;
-					}
-					$holds['unavailable'][$newHold->source . 'ill' . $newHold->sourceId . $newHold->userId] = $newHold;
 				}
 //				if (!empty($jsonResponse->outstanding_credits)) {
 //					return $jsonResponse->outstanding_credits->total;
@@ -3596,14 +3596,36 @@ class Koha extends AbstractIlsDriver {
 		];
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+
+		$kohaVersion = $this->getKohaVersion();
+		$csrfToken = '';
+		if ($kohaVersion >= 24.05) {
+			//First get the page to get the csrf token
+			$getResults = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl');
+			if (preg_match('/<input type="hidden" name="csrf_token" value="(.*?)" \/>/', $getResults, $matches)) {
+				$csrfToken = $matches[1];
+			}
+		}
+
+
 		$username = isset($_REQUEST['username']) ? strip_tags($_REQUEST['username']) : '';
 		$email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
-		$postVariables = [
-			'koha_login_context' => 'opac',
-			'username' => $username,
-			'email' => $email,
-			'sendEmail' => 'Submit',
-		];
+		if ($kohaVersion >= 24.05) {
+			$postVariables = [
+				'koha_login_context' => 'opac',
+				'username' => $username,
+				'email' => $email,
+				'op' => 'cud-sendEmail',
+				'csrf_token' => $csrfToken
+			];
+		}else{
+			$postVariables = [
+				'koha_login_context' => 'opac',
+				'username' => $username,
+				'email' => $email,
+				'sendEmail' => 'Submit',
+			];
+		}
 		if (isset($_REQUEST['resendEmail'])) {
 			$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
 		}
@@ -5754,7 +5776,9 @@ class Koha extends AbstractIlsDriver {
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonResponse = json_decode($illRequestResponse);
-				$summary->numUnavailableHolds+= count($jsonResponse);
+				if(!empty($jsonResponse) && is_array($jsonResponse)) {
+					$summary->numUnavailableHolds+= count($jsonResponse);
+				}
 			}
 		}
 
@@ -8306,6 +8330,63 @@ class Koha extends AbstractIlsDriver {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function getMessageTypes(): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_transports where message_transport_type like 'email'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$transports = [];
+		if($results) {
+			$i = 0;
+			while ($curRow = $results->fetch_assoc()) {
+				$transports[$curRow['letter_module']][$i]['attribute_id'] = $curRow['message_attribute_id'];
+				$transports[$curRow['letter_module']][$i]['module'] = $curRow['letter_module'];
+				$transports[$curRow['letter_module']][$i]['code'] = $curRow['letter_code'];
+				$transports[$curRow['letter_module']][$i]['is_digest'] = $curRow['is_digest'];
+				$transports[$curRow['letter_module']][$i]['branch'] = $curRow['branchcode'];
+				$i++;
+			}
+		}
+
+		return $transports;
+	}
+
+	public function updateMessageQueue(User $patron): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			while ($curRow = $results->fetch_assoc()) {
+				$existingMessage = new UserILSMessage();
+				$existingMessage->userId = $patron->id;
+				$existingMessage->type = $curRow['letter_code'];
+				$existingMessage->dateQueued = $curRow['time_queued'];
+				if (!$existingMessage->find(true)) {
+					$userMessage = new UserILSMessage();
+					$userMessage->messageId = $curRow['message_id'];
+					$userMessage->userId = $patron->id;
+					$userMessage->status = 'pending';
+					$userMessage->type = $curRow['letter_code'];
+					$userMessage->dateQueued = $curRow['time_queued'];
+					$userMessage->insert();
+				}
+			}
+
+			return [
+				'success' => true,
+				'message' => 'Updated user message queue'
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => 'Error updating user message queue'
 		];
 	}
 }

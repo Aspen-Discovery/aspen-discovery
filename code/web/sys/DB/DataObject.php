@@ -189,9 +189,10 @@ abstract class DataObject implements JsonSerializable {
 	 * @param string? $fieldName
 	 * @param string? $fieldValue
 	 * @param bool $lowerCaseKey - Forces the key to be lower cased
+	 * @param bool $usePrimaryKey - sets the key of the result to the primary key of the object
 	 * @return array
 	 */
-	public function fetchAll(?string $fieldName = null, ?string $fieldValue = null, bool $lowerCaseKey = false): array {
+	public function fetchAll(?string $fieldName = null, ?string $fieldValue = null, bool $lowerCaseKey = false, bool $usePrimaryKey = false): array {
 		$this->__fetchingFromDB = true;
 		$results = [];
 		if ($fieldName != null && $fieldValue != null) {
@@ -212,7 +213,11 @@ abstract class DataObject implements JsonSerializable {
 					$key = $lowerCaseKey ? strtolower($result->$fieldName) : $result->$fieldName;
 					$results[$key] = $result->$fieldName;
 				} else {
-					$results[] = clone $result;
+					if ($usePrimaryKey) {
+						$results[$result->getPrimaryKeyValue()] = clone $result;
+					}else{
+						$results[] = clone $result;
+					}
 				}
 				$result = $this->fetch();
 			}

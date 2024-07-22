@@ -11,6 +11,13 @@
 	{if !empty($ilsMessages)}
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
+	{if !empty($message)}
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="alert alert-success">{translate text=$message isPublicFacing=true isMetadata=true}</div>
+			</div>
+		</div>
+	{/if}
 
 	<h1>{translate text="Library Card" isPublicFacing=true}</h1>
 	<div class="row">
@@ -27,6 +34,11 @@
 			{/if}
 			{if !empty($showCardExpirationDate) && !empty($expirationDate)}
 				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}
+			{/if}
+			{if $showRenewalLink}
+				<div class="text-center">
+					<a class="btn btn-info btn-sm" href="{$cardRenewalLink}">{translate text="Renew your card" isPublicFacing=true}</a>
+				</div>
 			{/if}
 		</div>
 	</div>

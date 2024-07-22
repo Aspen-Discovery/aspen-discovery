@@ -44,8 +44,9 @@ mkdir -p /usr/local/aspen-discovery/tmp
 chown -R www-data:www-data /usr/local/aspen-discovery/tmp
 chmod -R 755 /usr/local/aspen-discovery/tmp
 
-# Raise process and open file limits for the solr user
+# Raise process and open file limits for the aspen and solr users
 cp solr_limits.conf /etc/security/limits.d/solr.conf
+cp aspen_limits.conf /etc/security/limits.d/aspen.conf
 
 # Create aspen MySQL superuser
 printf "Please enter the username for the Aspen MySQL superuser (cannot be root) : " >&2

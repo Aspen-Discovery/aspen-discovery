@@ -1797,4 +1797,12 @@ class CatalogConnection {
 	public function allowUpdatesOfPreferredName(User $patron) : bool {
 		return $this->driver->allowUpdatesOfPreferredName($patron);
 	}
+
+	public function getMessageTypes(): array {
+		return $this->driver->getMessageTypes();
+	}
+
+	public function updateMessageQueue(User $patron): array {
+		return $this->driver->updateMessageQueue($patron);
+	}
 }

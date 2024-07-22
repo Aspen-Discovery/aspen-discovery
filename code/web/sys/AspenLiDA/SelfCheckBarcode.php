@@ -35,7 +35,6 @@ class AspenLiDASelfCheckBarcode extends DataObject {
 					'pdf417' => 'PDF417',
 					'upc_e' => 'UPC E',
 					'upc_a' => 'UPC A (Android Only)',
-					'upc_ean' => 'UPC/EAN (Android Only)',
 					'qr' => 'QR',
 				],
 			],

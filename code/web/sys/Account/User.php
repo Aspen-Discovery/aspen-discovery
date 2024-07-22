@@ -379,6 +379,14 @@ class User extends DataObject {
 		return 'ils_barcode';
 	}
 
+	function getAlternateLibraryCardBarcode() {
+		return empty($this->alternateLibraryCard) ? '' : $this->alternateLibraryCard;
+	}
+
+	function getAlternateLibraryCardPasswordOrPin() {
+		return empty($this->alternateLibraryCardPassword) ? '' : $this->alternateLibraryCardPassword;
+	}
+
 	function saveRoles() {
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)) {
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
@@ -3729,6 +3737,10 @@ class User extends DataObject {
 				'View Dashboards',
 				'View System Reports',
 			]);
+			$sections['palace_project']->addAction(new AdminAction('CollectionReport', 'View collection report for Palace Project.', '/PalaceProject/CollectionReport'), [
+				'Administer Palace Project',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
@@ -3840,6 +3852,8 @@ class User extends DataObject {
 			} else {
 				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 			}
+			$sections['aspen_lida']->addAction(new AdminAction('ILS Notification Settings', 'Define settings for ILS notifications in Aspen LiDA.', '/AspenLiDA/ILSNotificationSettings'), 'Administer Aspen LiDA Settings');
+
 			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
 				'Send Notifications to All Libraries',
 				'Send Notifications to All Locations',

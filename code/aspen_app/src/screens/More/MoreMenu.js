@@ -1,6 +1,7 @@
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { ListItem } from '@rneui/themed';
 import * as WebBrowser from 'expo-web-browser';
+import { useNavigation } from '@react-navigation/native';
 import _ from 'lodash';
 import moment from 'moment';
 import { Box, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
@@ -16,11 +17,13 @@ export const MoreMenu = () => {
      const { locations } = React.useContext(LibraryBranchContext);
      const { menu } = React.useContext(LibrarySystemContext);
      const hasMenuItems = _.size(menu);
+     const navigation = useNavigation();
 
-     const viewAllLocations = () => {
-          navigate('AllLocations', {});
-     };
-
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: null,
+          });
+     }, [navigation]);
      return (
           <ScrollView>
                <Box>
