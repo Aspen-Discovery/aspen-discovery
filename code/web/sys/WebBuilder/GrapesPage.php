@@ -2,15 +2,14 @@
 require_once ROOT_DIR . '/sys/WebBuilder/LibraryGrapesPage.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
 require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+
 class GrapesPage extends DB_LibraryLinkedObject {
 	public $__table = 'grapes_web_builder';
 	public $id;
 	public $title;
 	public $urlAlias;
 	public $teaser;
-	public $pageType;
 	public $templatesSelect;
-	public $templateNames;
 	public $grapesGenId;
 	public $templateContent;
 	public $htmlData;
@@ -30,8 +29,8 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grapes Pages'));
 		$templateList = Template::getTemplateList();
 		require_once ROOT_DIR . '/services/WebBuilder/Templates.php';
-       
-		return [
+
+		$structure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -107,13 +106,15 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'hideInLists' => true,
 			],
 		];
-		if($context == 'addNew') {
+		if ($context == 'addNew') {
 			unset($structure['templateSelect']);
 		}
 
-		if($context != 'addNew') {
+		if ($context != 'addNew') {
 			unset($structure['templateContent']);
 		}
+
+		return $structure;
 	}
 
 	public function getFormattedContents() {
@@ -143,7 +144,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	}
 
 	public function getTplFilePath() {
-		$relativePath = 	'code/web/interface/themes/responsive/WebBuilder/grapesjs.tpl';
+		$relativePath = 'code/web/interface/themes/responsive/WebBuilder/grapesjs.tpl';
 		return $relativePath;
 	}
 
@@ -168,9 +169,9 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	public function __get($name) {
 		if ($name == "libraries") {
 			return $this->getLibraries();
-         } elseif ($name == "templateContent") {
+		} elseif ($name == "templateContent") {
 			return $this->getTemplates();
-		 } else {
+		} else {
 			return parent::__get($name);
 		}
 	}
@@ -185,7 +186,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		}
 	}
 
-	public function delete($useWhere = false) : int{
+	public function delete($useWhere = false): int {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$this->clearLibraries();
@@ -210,28 +211,28 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		if (is_null($this->_templates)) {
 			$this->_templates = [];
 			require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
-	
+
 			/** @noinspection SqlResolve */
 			$this->query("SELECT htmlData, cssData, templatesSelect FROM grapes_web_builder WHERE id=" . (int)$this->id);
-			
+
 			while ($this->fetch()) {
 				$htmlData = $this->htmlData;
 				$cssData = $this->cssData;
 				$templatesSelect = $this->templatesSelect;
-	
+
 				// If htmlData and cssData are empty, fetch from templates table
 				if (empty($htmlData) && empty($cssData) && !empty($templatesSelect)) {
 					$template = new Template();
 					$template->id = $templatesSelect;
-					
+
 					if ($template->find(true)) {
 						$htmlData = $template->htmlData;
 						$cssData = $template->cssData;
 					}
 				}
-	
+
 				$templateContent = "<style>" . $cssData . "</style>" . $htmlData;
-				
+
 				// Ensure _templates[$this->id] is correctly instantiated as Template
 				$this->_templates[$this->id] = new Template();
 				$this->_templates[$this->id]->templateContent = $templateContent;
@@ -239,7 +240,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		}
 		return $this->_templates;
 	}
-	
+
 
 	public function saveLibraries() {
 		if (isset($this->_libraries) && is_array($this->_libraries)) {
@@ -264,25 +265,25 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	}
 
 
-	public function canView(): bool {	
-			return true;	
+	public function canView(): bool {
+		return true;
 	}
 
 	public function canDelete(): bool {
-    	return true;
+		return true;
 	}
 
 	public function canEdit(): bool {
-    	return false;
+		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array{
+	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
 
 		if ($existingObject instanceof GrapesPage) {
 			$objectActions[] = [
 				'text' => 'Open in Editor',
-				'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->id . '&templateId=' . $existingObject->templatesSelect, 
+				'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->id . '&templateId=' . $existingObject->templatesSelect,
 			];
 		}
 		if ($existingObject instanceof GrapesPage) {
@@ -306,8 +307,8 @@ class GrapesPage extends DB_LibraryLinkedObject {
 			'text' => 'View As Page',
 			'url' => $this->urlAlias,
 		];
-	
-		
+
+
 		return $objectActions;
 	}
 }
