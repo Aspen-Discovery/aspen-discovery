@@ -39,83 +39,143 @@
 
 					{*TODO:: At the moment, if a user ignores the cookie consent banner, the essential cookies are set to zero, so this does not show in the my accout preferences - check with MN*}
 					{if !empty($loggedIn) && !empty($cookieConsentEnabled)}
+
 						<div class="form-group #propertyRow">
 						<strong class="control-label">{translate text="Cookies to allow" isPublicFacing=true}:</strong>&nbsp;
 						<div style='padding:0.5em 1em;'>
-							<div class="form-group propertyRow">
-								<label for='userCookieEssential' class="control-label">{translate text="Essential" isPublicFacing=true}</label>&nbsp;
+
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieEssential' class="control-label">{translate text="Essential" isPublicFacing=true}</label>
+							</div>
+							<div class="col-xs-6 col-sm-8">
 								<input disabled="disabled" type="checkbox" class="form-control" name="userCookieEssential" id="userCookieEssential" {if $profile->userCookiePreferenceEssential==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div> 
 
-							</div> 
-							<div class="form-group propertyRow">
-								<label for='userCookieAnalytics' class="control-label">{translate text="Analytics" isPublicFacing=true}</label>&nbsp;
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieAnalytics' class="control-label">{translate text="Analytics" isPublicFacing=true}</label>
+							</div>
+							<div class="col-xs-6 col-sm-8">
 								<input type="checkbox" class="form-control" name="userCookieAnalytics" id="userCookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
 
-							</div> 
-
-							<div class="form-group propertyRow">
+						{if array_key_exists('Axis 360', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
 								<label for='userCookieUserAxis360' class="control-label">{translate text="Axis 360" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
 								<input type="checkbox" class="form-control" name="userCookieUserAxis360" id="userCookieUserAxis360" {if $profile->userCookiePreferenceAxis360==1}checked='checked'{/if} data-switch="">
-
-							</div> 
-
-							<div class="form-group propertyRow">
+							</div>
+						</div>
+						{/if}
+						{if array_key_exists('EBSCO EDS', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
 								<label for='userCookieUserEbscoEds' class="control-label">{translate text="Ebsco Eds" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
 								<input type="checkbox" class="form-control" name="userCookieUserEbscoEds" id="userCookieUserEbscoEds" {if $profile->userCookiePreferenceEbscoEds==1}checked='checked'{/if} data-switch="">
-
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserEbscoHost' class="control-label">{translate text="Ebsco Host" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserEbscoHost" id="userCookieUserEbscoHost" {if $profile->userCookiePreferenceEbscoHost==1}checked='checked'{/if} data-switch="">
-
+						</div>
+						{/if}
+						{if array_key_exists('EBSCOhost', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserEbscoHost' class="control-label">{translate text="Ebsco Host" isPublicFacing=true}</label>&nbsp;
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserSummon' class="control-label">{translate text="Summon" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserSummon" id="userCookieUserSummon" {if $profile->userCookiePreferenceSummon==1}checked='checked'{/if} data-switch="">
-
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserEbscoHost" id="userCookieUserEbscoHost" {if $profile->userCookiePreferenceEbscoHost==1}checked='checked'{/if} data-switch="">
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserEvents' class="control-label">{translate text="Events" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserEvents" id="userCookieUserEvents" {if $profile->userCookiePreferenceEvents==1}checked='checked'{/if} data-switch="">
-
+						</div>
+						{/if}
+						{if array_key_exists('Summon', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserSummon' class="control-label">{translate text="Summon" isPublicFacing=true}</label>&nbsp;
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserHoopla' class="control-label">{translate text="Hoopla" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserHoopla" id="userCookieUserHoopla" {if $profile->userCookiePreferenceHoopla==1}checked='checked'{/if} data-switch="">
-
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserSummon" id="userCookieUserSummon" {if $profile->userCookiePreferenceSummon==1}checked='checked'{/if} data-switch="">
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserOpenArchives' class="control-label">{translate text="Open Archives" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserOpenArchives" id="userCookieUserOpenArchives" {if $profile->userCookiePreferenceOpenArchives==1}checked='checked'{/if} data-switch="">
-
+						</div>
+						{/if}
+						{if array_key_exists('Events', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserEvents' class="control-label">{translate text="Events" isPublicFacing=true}</label>&nbsp;
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserOverdrive' class="control-label">{translate text="Overdrive" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserOverdrive" id="userCookieUserOverdrive" {if $profile->userCookiePreferenceOverdrive==1}checked='checked'{/if} data-switch="">
-
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserEvents" id="userCookieUserEvents" {if $profile->userCookiePreferenceEvents==1}checked='checked'{/if} data-switch="">
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserPalaceproject' class="control-label">{translate text="Palace Project" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserPalaceProject" id="userCookieUserPalaceProject" {if $profile->userCookiePreferencePalaceProject==1}checked='checked'{/if} data-switch="">
-
+						</div>
+						{/if}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserHoopla' class="control-label">{translate text="Hoopla" isPublicFacing=true}</label>&nbsp;
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserSideLoad' class="control-label">{translate text="Side Load" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
-
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserHoopla" id="userCookieUserHoopla" {if $profile->userCookiePreferenceHoopla==1}checked='checked'{/if} data-switch="">
 							</div>
-							<div class="form-group propertyRow">
-							<label for='userCookieUserCloudLibrary' class="control-label">{translate text="Cloud Library" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserCloudLibrary" id="userCookieUserCloudLibrary" {if $profile->userCookiePreferenceCloudLibrary==1}checked='checked'{/if} data-switch="">
-
+						</div>
+						{if array_key_exists('Open Archives', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserOpenArchives' class="control-label">{translate text="Open Archives" isPublicFacing=true}</label>&nbsp;
 							</div>
-
-							<div class="form-group propertyRow">
-							<label for='userCookieUserWebsite' class="control-label">{translate text="Website" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="userCookieUserWebsite" id="userCookieUserWebsite" {if $profile->userCookiePreferenceWebsite==1}checked='checked'{/if} data-switch="">
-
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserOpenArchives" id="userCookieUserOpenArchives" {if $profile->userCookiePreferenceOpenArchives==1}checked='checked'{/if} data-switch="">
 							</div>
-			
+						</div>
+						{/if}
+
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserOverdrive' class="control-label">{translate text="Overdrive" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserOverdrive" id="userCookieUserOverdrive" {if $profile->userCookiePreferenceOverdrive==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
+						
+						{if array_key_exists('Palace Project', $enabledModules)}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserPalaceproject' class="control-label">{translate text="Palace Project" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserPalaceProject" id="userCookieUserPalaceProject" {if $profile->userCookiePreferencePalaceProject==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
+						{/if}
+
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserSideLoad' class="control-label">{translate text="Side Load" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
+
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserCloudLibrary' class="control-label">{translate text="Cloud Library" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserCloudLibrary" id="userCookieUserCloudLibrary" {if $profile->userCookiePreferenceCloudLibrary==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
+
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieUserWebsite' class="control-label">{translate text="Website" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieUserWebsite" id="userCookieUserWebsite" {if $profile->userCookiePreferenceWebsite==1}checked='checked'{/if} data-switch="">
+							</div>
 						</div>
 					{/if}
 
