@@ -211,7 +211,7 @@
 					{/if}
 				</form>
 
-				{* <script type="text/javascript">
+				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
 					<!-- $(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
@@ -228,7 +228,7 @@
 						return false;
 					}) -->
 					{/literal}
-				</script> *}
+				</script> 
 			{/if}
 		{else}
 			<div class="page">
