@@ -326,7 +326,7 @@ class Grouping_Manifestation {
 			foreach ($this->_variations as $variation) {
 				$itemSummary = mergeItemSummary($itemSummary, $variation->getItemSummary());
 			}
-			ksort($itemSummary);
+			ksort($itemSummary, SORT_NATURAL);
 			$this->_itemSummary = $itemSummary;
 			$timer->logTime("Got item summary for manifestation");
 		}
@@ -345,7 +345,7 @@ class Grouping_Manifestation {
 					$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
 				}
 			}
-			ksort($itemsDisplayedByDefault);
+			ksort($itemsDisplayedByDefault, SORT_NATURAL);
 			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
 		}
 		return $this->_itemsDisplayedByDefault;
