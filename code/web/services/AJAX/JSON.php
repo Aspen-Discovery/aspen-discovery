@@ -639,6 +639,11 @@ class AJAX_JSON extends Action {
 		return [
 			'success' => true,
 			'modalBody' => $interface->fetch('AJAX/cookieManagement.tpl'),
+			'modalButtons' => '<button type="button" class="btn btn-primary" onclick="$(\'#cookieManagementPreferencesForm\').submit();">' . translate([
+					'text' => 'Save Preferences',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]) . '</button>',
 		];
 	}
 

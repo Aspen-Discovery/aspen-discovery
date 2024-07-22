@@ -104,7 +104,7 @@ AspenDiscovery.CookieConsent = (function() {
             $.getJSON(url, params,
                 function(data) {
                     if(data.success){
-                        AspenDiscovery.showMessage("Manage Your Cookie Preferences", data.modalBody);
+                        AspenDiscovery.showMessageWithButtons("Manage Your Cookie Preferences", data.modalBody, data.modalButtons);
                         $('.stripPopup').hide();
                     } else {
                         AspenDiscovery.showMessage("There was an error retreiving your cookie preference options");
