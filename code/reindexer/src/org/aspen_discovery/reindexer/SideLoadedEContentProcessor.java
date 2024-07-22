@@ -234,7 +234,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 						econtentItem.setFormat("Newspaper");
 						econtentItem.setFormatCategory("eBook");
 						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("GraphicNovel")) {
+					} else if (format.equalsIgnoreCase("GraphicNovel") || format.equalsIgnoreCase("Manga")) {
 						econtentItem.setFormat("eComic");
 						econtentItem.setFormatCategory("eBook");
 						econtentRecord.setFormatBoost(8);

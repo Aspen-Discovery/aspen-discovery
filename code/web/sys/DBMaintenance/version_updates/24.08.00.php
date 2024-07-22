@@ -52,6 +52,13 @@ function getUpdates24_08_00(): array {
 		 ], //add_user_ils_messages
 
 		//kodi - ByWater
+		'overdrive_series_length' => [
+			'title' => 'Series Length',
+			'description' => 'Increase column length for series in overdrive_api_products table to accommodate long series names in Libby',
+			'sql' => [
+				'ALTER TABLE overdrive_api_products CHANGE COLUMN series series VARCHAR(255)',
+			],
+		],//overdrive_series_length
 
 		//katherine - ByWater
 
