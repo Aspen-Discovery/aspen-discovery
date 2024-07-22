@@ -11,6 +11,7 @@ class CloudLibrarySetting extends DataObject {
 	public $accountId;
 	public $accountKey;
 	public $runFullUpdate;
+	public $useAlternateLibraryCard;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 
@@ -61,6 +62,13 @@ class CloudLibrarySetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Run Full Update',
 				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
+				'default' => 0,
+			],
+			'useAlternateLibraryCard' => [
+				'property' => 'useAlternateLibraryCard',
+				'type' => 'checkbox',
+				'label' => 'Use Alternate Library Card',
+				'description' => 'Whether or not to use the alternate library card (for example, a state library card), for cloudLibrary checkouts',
 				'default' => 0,
 			],
 			'lastUpdateOfChangedRecords' => [
