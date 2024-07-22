@@ -834,7 +834,14 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function updateMessageQueue(User $patron): array {
+	public function updateMessageQueue(): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function updateUserMessageQueue(User $patron): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',

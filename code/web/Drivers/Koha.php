@@ -8355,7 +8355,57 @@ class Koha extends AbstractIlsDriver {
 		return $transports;
 	}
 
-	public function updateMessageQueue(User $patron): array {
+	public function updateMessageQueue(): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			$numAdded = 0;
+			while ($curRow = $results->fetch_assoc()) {
+				$timeQueued = strtotime($curRow['time_queued']);
+				$now = time();
+				$diff = ($now - $timeQueued);
+				if($diff <= 86400) {
+					// skip messages older than 24 hours
+					$user = new User();
+					$user->unique_ils_id = $curRow['borrowernumber'];
+					if($user->find(true)) {
+						// will also probably need a check to make sure the letter_code is allowed based on configuration for the library
+						$existingMessage = new UserILSMessage();
+						$existingMessage->userId = $user->id;
+						$existingMessage->type = $curRow['letter_code'];
+						$existingMessage->dateQueued = $timeQueued;
+						if (!$existingMessage->find(true)) {
+							$userMessage = new UserILSMessage();
+							$userMessage->messageId = $curRow['message_id'];
+							$userMessage->userId = $user->id;
+							$userMessage->status = 'pending';
+							$userMessage->type = $curRow['letter_code'];
+							$userMessage->dateQueued = $timeQueued;
+							$userMessage->insert();
+							$numAdded++;
+						}
+					} else {
+						// borrower not found in aspen
+					}
+				}
+			}
+
+			return [
+				'success' => true,
+				'message' => 'Added ' . $numAdded . ' to message queue'
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => 'Error updating message queue'
+		];
+	}
+
+	public function updateUserMessageQueue(User $patron): array {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
