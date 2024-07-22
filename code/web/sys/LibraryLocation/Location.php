@@ -54,6 +54,7 @@ class Location extends DataObject {
 	public $languageAndDisplayInHeader;
 	public $displayExploreMoreBarInSummon;
 	public $displayExploreMoreBarInEbscoEds;
+	public $displayExploreMoreBarInEbscoHost;
 	public $displayExploreMoreBarInCatalogSearch;
 	public $headerText;
 	public $address;
@@ -994,6 +995,14 @@ class Location extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Display Explore More Bar in Ebsco EDS Search Results',
 						'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreBarInEbscoHost' => [
+						'property' => 'displayExploreMoreBarInEbscoHost',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Ebsco Host Search Results',
+						'description' => 'Whether to display the Explore More Bar in Ebsco Host search results',
 						'hideInLists' => true,
 						'default' => true,
 					],

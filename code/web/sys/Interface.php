@@ -752,6 +752,8 @@ class UInterface extends Smarty {
 		$this->assign('displayExploreMoreBarInSummon', $library->displayExploreMoreBarInSummon);
 		$this->assign('displayExploreMoreBarInEbscoEds', $library->displayExploreMoreBarInEbscoEds);
 		$this->assign('displayExploreMoreBarInCatalogSearch', $library->displayExploreMoreBarInCatalogSearch);
+		$this->assign('displayExploreMoreBarInEbscoHost', $library->displayExploreMoreBarInEbscoHost);
+
 
 
 		if ($location != null) {

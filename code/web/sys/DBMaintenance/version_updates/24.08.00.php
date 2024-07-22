@@ -74,6 +74,14 @@ function getUpdates24_08_00(): array {
 				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInCatalogSearch TINYINT(1) DEFAULT 1',
 			],
 		],
+		'display_explore_more_bar_in_ebsco_host_search' => [
+			'title' => 'Display Explore More Bar in Esbco Host Search',
+			'description' => 'Display Explore More Bar in Esbco Host Search',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInEbscoHost TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoHost TINYINT(1) DEFAULT 1',
+			],
+		],
 		
 		
 
