@@ -90,6 +90,7 @@ class NotificationSetting extends DataObject {
 				'type' => 'enum',
 				'label' => 'ILS Notification Settings',
 				'description' => 'The ILS Notification Settings to use for these settings',
+				'note' => 'Applies to Koha only',
 				'values' => $ilsNotificationSettings,
 				'hideInLists' => true,
 			],
