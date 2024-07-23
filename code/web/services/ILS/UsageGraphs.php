@@ -213,7 +213,31 @@ class ILS_UsageGraphs extends Admin_Admin {
 				];
 				$recordILSUsage->selectAdd('SUM(timesUsed) as totalHolds');
 			}
+			
+			//Collect results
+			$recordILSUsage->find();
+			while ($recordILSUsage->fetch()) {
+				$curPeriod = "{$recordILSUsage->month}-{$recordILSUsage->year}";
+				$columnLabels[] = $curPeriod;
+				if ($stat == 'pdfsDownloaded' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['PDFs Downloaded']['data'][$curPeriod] = $recordILSUsage->sumPdfsDownloaded;
+				}
+				if ($stat == 'pdfsViewed' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['PDFs Viewed']['data'][$curPeriod] = $recordILSUsage->sumPdfsViewed;
+				}
+				if ($stat == 'supplementalFilesDownloaded' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Supplemental Files Downloaded']['data'][$curPeriod] = $recordILSUsage->sumSupplementalFilesDownloaded;
+				}
+				if ($stat == 'totalHolds') {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Total Holds']['data'][$curPeriod] = $recordILSUsage->totalHolds;
+				}	
+			}
 		}
+
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
