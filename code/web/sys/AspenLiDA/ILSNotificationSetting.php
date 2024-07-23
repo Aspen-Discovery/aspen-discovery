@@ -10,6 +10,7 @@ class ILSNotificationSetting extends DataObject {
 
 	private $_messageTypes;
 	private $_notificationSettings;
+	private $_catalogDriver;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -155,9 +156,18 @@ class ILSNotificationSetting extends DataObject {
 	}
 
 	public function updateMessageTypes() {
+		global $library;
 		$messageTypesList = [];
-		if (UserAccount::getActiveUserObj()->getCatalogDriver()) {
-			$messageTypesList = UserAccount::getActiveUserObj()->getCatalogDriver()->getMessageTypes();
+
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if($accountProfile->find(true)) {
+			$catalogDriver = trim($accountProfile->driver);
+			if (!empty($catalogDriver)) {
+				$this->_catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+				$messageTypesList = $this->_catalogDriver->getMessageTypes();
+			}
 		}
 
 		foreach ($messageTypesList as $messageTypes) {
