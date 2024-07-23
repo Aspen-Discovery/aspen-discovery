@@ -172,6 +172,47 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$recordILSUsage->selectAdd('year');
 			$recordILSUsage->selectAdd('month');
 			$recordILSUsage->orderBy('year, month');
+
+			if ($stat == 'pdfsDownloaded') {
+				$dataSeries['PDFs Downloaded'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$recordILSUsage->selectAdd('SUM(pdfDownloadCount) as sumPdfsDownloaded');
+			}
+			if ($stat == 'pdfsViewed') {
+				$dataSeries['PDFs Viewed'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$recordILSUsage->selectAdd('SUM(pdfViewCount) as sumPdfsViewed');
+			}
+			if ($stat == 'supplementalFilesDownloaded') {
+				$dataSeries['Supplemental Files Downloaded'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$recordILSUsage->selectAdd('SUM(supplementalFileDownloadCount) as sumSupplementalFilesDownloaded');
+			}
+			if ($stat == 'recordsHeld') {
+				$dataSeries['Records Held'] = [
+					'borderColor' => 'rgba(154, 75, 244, 1)',
+					'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
+					'data' => [],
+				];
+				$recordILSUsage->selectAdd('SUM(recordsHeld) as sumRecordsHeld');
+			}
+			if ($stat == 'totalHolds') {
+				$dataSeries['Total Holds'] = [
+					'borderColor' => 'rgba(54, 162, 235, 1)',
+					'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+					'data' => [],
+				];
+				$recordILSUsage->selectAdd('SUM(timesUsed) as totalHolds');
+			}
 		}
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
