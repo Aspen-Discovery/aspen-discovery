@@ -777,17 +777,22 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 */
 	public function trackUserUsageOfCloudLibrary($user): void {
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
+		global $library;
+		$userObj = UserAccount::getActiveUserObj();
+		$userCloudLibraryTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		$userUsage = new UserCloudLibraryUsage();
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 
-		if ($userUsage->find(true)) {
-			$userUsage->usageCount++;
-			$userUsage->update();
-		} else {
-			$userUsage->usageCount = 1;
-			$userUsage->insert();
+		if ($userCloudLibraryTracking && $library->cookieStorageConsent) {
+			if ($userUsage->find(true)) {
+				$userUsage->usageCount++;
+				$userUsage->update();
+			} else {
+				$userUsage->usageCount = 1;
+				$userUsage->insert();
+			}
 		}
 	}
 

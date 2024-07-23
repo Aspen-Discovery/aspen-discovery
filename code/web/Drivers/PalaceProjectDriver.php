@@ -722,18 +722,22 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	public function trackUserUsageOfPalaceProject($user): void {
 		require_once ROOT_DIR . '/sys/PalaceProject/UserPalaceProjectUsage.php';
 		$userUsage = new UserPalaceProjectUsage();
+		$userObj = UserAccount::getActiveUserObj();
+		$userPalaceProjectTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 		global $aspenUsage;
+		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
-
-		if ($userUsage->find(true)) {
-			$userUsage->usageCount++;
-			$userUsage->update();
-		} else {
-			$userUsage->usageCount = 1;
-			$userUsage->insert();
+		if ($userPalaceProjectTracking && $library->cookieStorageConsent) {
+			if ($userUsage->find(true)) {
+				$userUsage->usageCount++;
+				$userUsage->update();
+			} else {
+				$userUsage->usageCount = 1;
+				$userUsage->insert();
+			}
 		}
 	}
 
