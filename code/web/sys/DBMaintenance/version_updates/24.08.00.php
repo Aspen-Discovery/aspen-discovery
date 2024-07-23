@@ -40,7 +40,8 @@ function getUpdates24_08_00(): array {
 					status enum('pending', 'sent', 'failed') DEFAULT 'pending',
 					error VARCHAR(255),
 					dateQueued TIMESTAMP,
-					dateSent INT(11)
+					dateSent INT(11),
+					isRead TINYINT(1) DEFAULT 0
 				) ENGINE INNODB",
 			 ]
 		 ], //add_user_ils_messages
