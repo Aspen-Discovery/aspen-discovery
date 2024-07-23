@@ -26,7 +26,7 @@ AspenDiscovery.IndexingClass = (function () {
 					'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs',
 					'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm',
 					'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs',
-					'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers',
+					'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowbibCallNumberFields', 'propertyRowuseItemBasedCallNumbers',
 					'propertyRowcallNumberPrestamp', 'propertyRowcallNumberPrestamp2', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
 					'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations',
 					'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection',
