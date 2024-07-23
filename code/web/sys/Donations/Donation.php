@@ -608,6 +608,32 @@ class Donation extends DataObject {
 					$clientId = $payPalSetting->clientId;
 				}
 			}
+			// Square
+			if ($paymentType == 12) {
+				require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+				$squareSetting = new SquareSetting();
+				$squareSetting->id = $library->squareSettingId;
+				if ($squareSetting->find(true)) {
+					$cdnUrl = 'https://web.squarecdn.com/v1/square.js';
+					if ($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
+						$cdnUrl = 'https://sandbox.web.squarecdn.com/v1/square.js';
+					}
+					$squareCdnUrl = $cdnUrl;
+					$squareApplicationId = $squareSetting->applicationId;
+					$squareAccessToken = $squareSetting->accessToken;
+					$squareLocationId = $squareSetting->locationId;
+				}
+			}
+			//Stripe
+			if ($paymentType == 13) {
+				require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+				$stripeSetting = new StripeSetting();
+				$stripeSetting->id = $library->stripeSettingId;
+				if ($stripeSetting->find(true)) {
+					$stripePublicKey = $stripeSetting->stripePublicKey;
+					$stripeSecretKey = $stripeSetting->stripeSecretKey;
+				}
+			}
 		}
 		$currencyCode = "USD";
 		$systemVariables = SystemVariables::getSystemVariables();

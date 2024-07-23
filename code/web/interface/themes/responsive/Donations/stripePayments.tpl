@@ -40,7 +40,7 @@
 								cardButton.disabled = false;
 								cardButton.innerHTML = "{/literal}{translate text = 'Submit Payment' isPublicFacing=true}{literal}";
 							} else {
-								AspenDiscovery.Account.completeStripeOrder({/literal}{$userId}{literal}, 'donation', paymentId, result.paymentMethod.id);
+								AspenDiscovery.Account.completeStripeOrder('{/literal}{$userId}{literal}', 'donation', paymentId, result.paymentMethod.id);
 							}
 						});
 			});
