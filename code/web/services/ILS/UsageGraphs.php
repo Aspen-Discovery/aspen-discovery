@@ -246,4 +246,13 @@ class ILS_UsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $title);
 		$this->display('usage-graph.tpl', $title);
 	}
+
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/Dashboard', 'Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
 }
