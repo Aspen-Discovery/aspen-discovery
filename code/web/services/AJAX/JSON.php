@@ -652,17 +652,8 @@ class AJAX_JSON extends Action {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceAxis360 = $_REQUEST['cookieUserAxis360'] == "1"  || $_REQUEST['cookieUserAxis360'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceEbscoEds = $_REQUEST['cookieUserEbscoEds'] == "1" || $_REQUEST['cookieUserEbscoEds'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceEbscoHost = $_REQUEST['cookieUserEbscoHost'] == "1" || $_REQUEST['cookieUserEbscoHost'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceSummon = $_REQUEST['cookieUserSummon'] == "1" || $_REQUEST['cookieUserSummon'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceEvents = $_REQUEST['cookieUserEvents'] == "1" || $_REQUEST['cookieUserEvents'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceHoopla = $_REQUEST['cookieUserHoopla'] == "1" || $_REQUEST['cookieUserHoopla'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceOpenArchives = $_REQUEST['cookieUserOpenArchives'] == "1" || $_REQUEST['cookieUserOpenArchives'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceOverdrive = $_REQUEST['cookieUserOverdrive'] == "1" || $_REQUEST['cookieUserOverdrive'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferencePalaceProject = $_REQUEST['cookieUserPalaceProject'] == "1" || $_REQUEST['cookieUserPalaceProject'] == 1 ? 1 :0;
-			//$userObj->userCookiePreferenceSideLoad = $_REQUEST['cookieUserSideLoad'] == "1" || $_REQUEST['cookieUserSideLoad'] == 1 ? 1 : 0;
-			//$userObj->userCookiePreferenceCloudLibrary = $_REQUEST['cookieUserCloudLibrary'] == "1" || $_REQUEST['cookieUserCloudLibrary'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceWebsite = $_REQUEST['cookieUserWebsite'] == "1" || $_REQUEST['cookieUserWebsite'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceExternalSearchServices = $_REQUEST['cookieUserExternalSearchServices'] == "1" || $_REQUEST['cookieUserExternalSearchServices'] == 1 ? 1 : 0;
 			$userObj->update();
@@ -674,17 +665,8 @@ class AJAX_JSON extends Action {
 			$userCookiePost = [
 				'Essential' => 1,
 				'Analytics' => $_REQUEST['cookieAnalytics'],
-				// 'UserAxis360' => isset($_POST['cookieUserAxis360']) ? 1 : 0,
-				// 'UserEbscoEds' => isset($_POST['cookieUserEbscoEds']) ? 1 : 0,
-				// 'UserEbscoHost' => isset($_POST['cookieUserEbscoHost']) ? 1 : 0,
-				// 'UserSummon' => isset($_POST['cookieUserSummon']) ? 1: 0,
 				'UserEvents' => isset($_POST['cookieUserEvents']) ? 1 : 0,
-				//'UserHoopla' => isset($_POST['cookieUserHoopla']) ? 1 : 0,
 				'UserOpenArchives' => isset($_POST['cookieUserOpenArchives']) ? 1 : 0,
-				// 'UserOverdrive' => isset($_POST['cookieUserOverdrive']) ? 1 : 0,
-				// 'UserPalaceProject' => isset($_POST['cookieUserPalaceProject']) ? 1 : 0,
-				// 'UserSideLoad' => isset($_POST['cookieUserSideLoad']) ? 1 : 0,
-				// 'UserCloudLibrary' => isset($_POST['cookieUserCloudLibrary']) ? 1 : 0,
 				'UserWebsite' => isset($_POST['cookieUserWebsite']) ? 1 : 0,
 				'UserExternalSearchServices' => isset($_POST['cookieUserExternalSearchServices']) ? 1 : 0,
 			];
