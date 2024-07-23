@@ -1172,17 +1172,8 @@ class User extends DataObject {
 			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
 			$this->__set('userCookiePreferenceEssential', 1);
 			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceAxis360', (isset($_POST['userCookieUserAxis360']) && $_POST['userCookieUserAxis360'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceEbscoEds', (isset($_POST['userCookieUserEbscoEds']) && $_POST['userCookieUserEbscoEds'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceEbscoHost', (isset($_POST['userCookieUserEbscoHost']) && $_POST['userCookieUserEbscoHost'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceSummon', (isset($_POST['userCookieSummon']) && $_POST['userCookieSummon'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceEvents', (isset($_POST['userCookieEvents']) && $_POST['userCookieEvents'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceHoopla', (isset($_POST['userCookieUserHoopla']) && $_POST['userCookieUserHoopla'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceOpenArchives', (isset($_POST['userCookieUserOpenArchives']) && $_POST['userCookieUserOpenArchives'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceOverdrive', (isset($_POST['userCookieUserOverdrive']) && $_POST['userCookieUserOverdrive'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferencePalaceProject', (isset($_POST['userCookieUserPalaceProject']) && $_POST['userCookieUserPalaceProject'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceSideLoad', (isset($_POST['userCookieUserSideLoad']) && $_POST['userCookieUserSideLoad'] == 'on') ? 1 : 0);
-			//$this->__set('userCookiePreferenceCloudLibrary', (isset($_POST['userCookieUserCloudLibrary']) && $_POST['userCookieUserCloudLibrary'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceWebsite', (isset($_POST['userCookieUserWebsite']) && $_POST['userCookieUserWebsite'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceExternalSearchServices', (isset($_POST['userCookieUserExternalSearchServices']) && $_POST['userCookieUserExternalSearchServices'] == 'on') ? 1 : 0);
 		}
