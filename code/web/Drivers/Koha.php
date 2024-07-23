@@ -8421,14 +8421,14 @@ class Koha extends AbstractIlsDriver {
 				$existingMessage = new UserILSMessage();
 				$existingMessage->userId = $patron->id;
 				$existingMessage->type = $curRow['letter_code'];
-				$existingMessage->dateQueued = $curRow['time_queued'];
+				$existingMessage->dateQueued = strtotime($curRow['time_queued']);
 				if (!$existingMessage->find(true)) {
 					$userMessage = new UserILSMessage();
 					$userMessage->messageId = $curRow['message_id'];
 					$userMessage->userId = $patron->id;
 					$userMessage->status = 'pending';
 					$userMessage->type = $curRow['letter_code'];
-					$userMessage->dateQueued = $curRow['time_queued'];
+					$userMessage->dateQueued = strtotime($curRow['time_queued']);
 					$userMessage->insert();
 				}
 			}

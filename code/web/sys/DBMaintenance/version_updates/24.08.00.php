@@ -41,7 +41,7 @@ function getUpdates24_08_00(): array {
 					title VARCHAR(200),
 					content MEDIUMTEXT,
 					error VARCHAR(255),
-					dateQueued TIMESTAMP,
+					dateQueued INT(11),
 					dateSent INT(11),
 					isRead TINYINT(1) DEFAULT 0
 				) ENGINE INNODB",
