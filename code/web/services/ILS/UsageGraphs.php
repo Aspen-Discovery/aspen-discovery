@@ -156,6 +156,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 				}
 			}
 		}
+
 		// for graphs displaying data retrieved from the ils_record_usage table
 		if (
 			$stat == 'pdfsDownloaded' ||
