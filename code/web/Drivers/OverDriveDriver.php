@@ -1619,7 +1619,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
 		$userObj = UserAccount::getActiveUserObj();
-		$userOverDriveTracking = $userObj->userCookiePreferenceOverdrive;
+		$userOverDriveTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		global $aspenUsage;
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();

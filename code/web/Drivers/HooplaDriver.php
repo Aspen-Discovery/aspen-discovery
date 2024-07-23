@@ -684,7 +684,7 @@ class HooplaDriver extends AbstractEContentDriver {
 		global $library;
 		$userUsage = new UserHooplaUsage();
 		$userObj = UserAccount::getActiveUserObj();
-		$userHooplaTracking = $userObj->userCookiePreferenceHoopla;
+		$userHooplaTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		global $aspenUsage;
 		$userUsage->instance = $aspenUsage->getInstance();
 		$userUsage->userId = $user->id;

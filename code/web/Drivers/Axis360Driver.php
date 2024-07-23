@@ -707,7 +707,7 @@ class Axis360Driver extends AbstractEContentDriver {
 
 		$userUsage->instance = $aspenUsage->getInstance();
 		$userObj = UserAccount::getActiveUserObj();
-		$userAxis360Tracking = $userObj->userCookiePreferenceAxis360;
+		$userAxis360Tracking = $userObj->userCookiePreferenceExternalSearchServices;
 		if ($userAxis360Tracking && $library->cookieStorageConsent){
 			if ($userUsage->find(true)) {
 				$userUsage->usageCount++;

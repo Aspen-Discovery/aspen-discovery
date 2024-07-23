@@ -120,6 +120,14 @@ function getUpdates24_08_00(): array {
 				"ALTER TABLE user ADD COLUMN userCookiePreferenceWebsite TINYINT(1) DEFAULT 0",
 			],
 		], //add_user_tacking_cookie_preferences
+		'add_cookie_management_preference_for_all_external_search_services' => [
+			'title' => 'Cookie Management Preference for All External Search Services',
+			'description' => 'Add a Cookie Management Preference that controls consent for all external search services',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN userCookiePreferenceExternalSearchServices TINYINT(1) DEFAULT 0",
+			],
+		], //add_user_tracking_preferences_for_all_external_search_services
 		'display_explore_more_bar' => [
 			'title' => 'Display Explore More Bar',
 			'description' => 'Display Explore More Bar',
