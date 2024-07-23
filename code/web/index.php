@@ -289,6 +289,7 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$userOverdrivePref = $cookie['UserOverdrive'];
 				$userPalaceProjectPref = $cookie['UserPalaceProject'];
 				$userSideLoadPref = $cookie['UserSideLoad'];
+				$userWebsitePref = $cookie['UserWebsite'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
 				$userObj->userCookiePreferenceAxis360 = $userAxis360Pref;
@@ -303,6 +304,7 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$userObj->userCookiePreferenceSideLoad = $userSideLoadPref;
 				$userObj->userCookiePreferenceCloudLibrary = $userCloudLibraryPref;
 				$userObj->userCookiePreferenceWebsite = $userWebsitePref;
+				$userObj->userCookiePreferenceExternalSearchServices = $userExternalSearchServicesPref;
 				$userObj->update();
 			}
 		}

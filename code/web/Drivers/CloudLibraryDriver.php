@@ -779,7 +779,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		global $library;
 		$userObj = UserAccount::getActiveUserObj();
-		$userCloudLibraryTracking = $userObj->userCookiePreferenceCloudLibrary;
+		$userCloudLibraryTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		$userUsage = new UserCloudLibraryUsage();
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
