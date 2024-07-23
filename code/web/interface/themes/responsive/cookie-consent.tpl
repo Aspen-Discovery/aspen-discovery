@@ -1,25 +1,16 @@
-{* {if $loggedIn && $profile->userCookiePreferenceEssential == 1}
+{if $loggedIn && $profile->userCookiePreferenceEssential == 1}
     <script>
         cookieValues = {
             Essential: {$profile->userCookiePreferenceEssential},
             Analytics: {$profile->userCookiePreferenceAnalytics},
-            UserAxis360: {$profile->userCookiePreferenceAxis360},
-            UserEbscoEds: {$profile->userCookiePreferenceEbscoEds},
-            UserEbscoHost: {$profile->userCookiePreferenceEbscoHost},
-            UserSummon: {$profile->userCookiePreferenceSummon},
             UserEvents: {$profile->userCookiePreferenceEvents},
-            UserHoopla: {$profile->userCookiePreferenceHoopla},
             UserOpenArchives: {$profile->userCookiePreferenceOpenArchives},
-            UserOverdrive: {$profile->userCookiePreferenceOverdrive},
-            UserPalaceProject: {$profile->userCookiePreferencePalaceProject},    
-            UserSideLoad: {$profile->userCookiePreferenceSideLoad},
-            UserCloudLibrary: {$profile->userCookiePreferenceCloudLibrary},
             UserWebsite: {$profile->userCookiePreferenceWebsite},
             UserExternalSearchServices: {$profile->userCookiePreferenceExternalSearchServices},
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
-{elseif $loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))}  *}
+{elseif $loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
     <div class="stripPopup">
     <div class="cookieContainer">
         <div class="contentWrap">
@@ -33,7 +24,7 @@
         </div>
     </div>
 </div>
-{* {elseif !$loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))}
+{elseif !$loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))}
     <div class="stripPopup">
     <div class="cookieContainer">
         <div class="contentWrap">
@@ -46,4 +37,4 @@
         </div>
     </div>
 </div>
-{/if} *}
+{/if}
