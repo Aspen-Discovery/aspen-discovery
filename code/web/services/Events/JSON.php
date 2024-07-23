@@ -33,25 +33,29 @@ class Events_JSON extends JSON_Action {
 //			$webPageUsage->timesUsed = 1;
 //			$webPageUsage->insert();
 //		}
-//
-//		$userId = UserAccount::getActiveUserId();
-//		if ($userId) {
-//			//Track usage for the user
-//			require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
-//			$userWebsiteUsage = new UserWebsiteUsage();
-//			$userWebsiteUsage->userId = $userId;
-//			$userWebsiteUsage->year = date('Y');
-//			$userWebsiteUsage->month = date('n');
-//			$userWebsiteUsage->websiteId = $webPage->websiteId;
-//
-//			if ($userWebsiteUsage->find(true)) {
-//				$userWebsiteUsage->usageCount++;
-//				$userWebsiteUsage->update();
-//			} else {
-//				$userWebsiteUsage->usageCount = 1;
-//				$userWebsiteUsage->insert();
-//			}
-//		}
+//		
+		//$userObj = UserAccount::getActiveUserObj();
+		//$userEventsTracking = $userObj->userCookiePreferenceEvents;
+		//if ($userEventsTracking && $library->cookieStorageConsent) {
+	//		$userId = UserAccount::getActiveUserId();
+	//		if ($userId) {
+	//			//Track usage for the user
+	//			require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
+	//			$userWebsiteUsage = new UserWebsiteUsage();
+	//			$userWebsiteUsage->userId = $userId;
+	//			$userWebsiteUsage->year = date('Y');
+	//			$userWebsiteUsage->month = date('n');
+	//			$userWebsiteUsage->websiteId = $webPage->websiteId;
+	//
+	//			if ($userWebsiteUsage->find(true)) {
+	//				$userWebsiteUsage->usageCount++;
+	//				$userWebsiteUsage->update();
+	//			} else {
+	//				$userWebsiteUsage->usageCount = 1;
+	//				$userWebsiteUsage->insert();
+	//			}
+	//		}
+	//}
 //
 //		return ['success' => true, 'message' => 'Updated usage for webpage ' . $id];
 	}

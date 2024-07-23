@@ -93,7 +93,7 @@ class Record_AccessOnline extends Action {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
 		$userObj = UserAccount::getActiveUserObj();
-		$userSideLoadTracking = $userObj->userCookiePreferenceSideLoad;
+		$userSideLoadTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		global $aspenUsage;
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();

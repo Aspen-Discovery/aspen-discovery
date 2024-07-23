@@ -723,7 +723,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/PalaceProject/UserPalaceProjectUsage.php';
 		$userUsage = new UserPalaceProjectUsage();
 		$userObj = UserAccount::getActiveUserObj();
-		$userPalaceProjectTracking = $userObj->userCookiePreferencePalaceProject;
+		$userPalaceProjectTracking = $userObj->userCookiePreferenceExternalSearchServices;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
