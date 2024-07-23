@@ -123,6 +123,38 @@ class ILS_UsageGraphs extends Admin_Admin {
 				];
 				$userILSUsage->selectAdd('SUM(IF(usageCount>0,1,0)) as usersWithHolds');
 			}
+
+			//Collect results
+			$userILSUsage->find();
+	
+			while ($userILSUsage->fetch()) {
+				$curPeriod = "{$userILSUsage->month}-{$userILSUsage->year}";
+				$columnLabels[] = $curPeriod;
+				if ($stat == 'userLogins' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['User Logins']['data'][$curPeriod] = $userILSUsage->sumUserLogins;
+				}
+				if ($stat == 'selfRegistrations' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Self Registrations']['data'][$curPeriod] = $userILSUsage->sumSelfRegistrations;
+				}
+				if ($stat == 'usersWithPdfDownloads' ) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Users Who Downloaded At Least One PDF']['data'][$curPeriod] = $userILSUsage->usersWithPdfDownloads;
+				}
+				if ($stat == 'usersWithPdfViews') {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Users Who Viewed At Least One PDF']['data'][$curPeriod] = $userILSUsage->usersWithPdfViews;	
+				}
+				if ($stat == 'usersWithHolds') {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Users Who Placed At Least One Hold']['data'][$curPeriod] = $userILSUsage->usersWithHolds;	
+				}
+				if ($stat == 'usersWithSupplementalFileDownloads') {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Users Who Downloaded At Least One Supplemental File']['data'][$curPeriod] = $userILSUsage->usersWithSupplementalFileDownloads;	
+				}
+			}
 		}
 		// for graphs displaying data retrieved from the ils_record_usage table
 		if (
