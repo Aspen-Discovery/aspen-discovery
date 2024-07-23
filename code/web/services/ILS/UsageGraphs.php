@@ -255,4 +255,9 @@ class ILS_UsageGraphs extends Admin_Admin {
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection(): string {
+		return 'ils_integration';
+	}
+
 }
