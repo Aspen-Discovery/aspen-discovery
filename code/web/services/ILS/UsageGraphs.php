@@ -56,6 +56,26 @@ class ILS_UsageGraphs extends Admin_Admin {
 				$title .= ' - Supplemental Files Downloaded';
 				break;
 		}
+		
+		// for graphs displaying data retrieved from the user_ils_usage table
+		if (
+			$stat == 'userLogins' ||
+			$stat == 'selfRegistrations' ||
+			$stat == 'usersWithPdfDownloads' ||
+			$stat == 'usersWithPdfViews' ||
+			$stat == 'usersWithSupplementalFileDownloads' ||
+			$stat == 'usersWithHolds'
+		) {
+		}
+		// for graphs displaying data retrieved from the ils_record_usage table
+		if (
+			$stat == 'pdfsDownloaded' ||
+			$stat == 'pdfsViewed' ||
+			$stat == 'supplementalFilesDownloaded' ||
+			$stat == 'recordsHeld' ||
+			$stat == 'totalHolds'
+		) {
+		}
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
