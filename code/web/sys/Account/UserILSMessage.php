@@ -9,11 +9,13 @@ class UserILSMessage extends DataObject {
 	public $status;
 	public $dateQueued;
 	public $dateSent;
+	public $isRead;
 
 	public function getNumericColumnNames(): array {
 		return [
 			'messageId',
-			'userId'
+			'userId',
+			'isRead'
 		];
 	}
 

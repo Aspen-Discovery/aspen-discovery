@@ -8373,6 +8373,7 @@ class Koha extends AbstractIlsDriver {
 					$user->unique_ils_id = $curRow['borrowernumber'];
 					if($user->find(true)) {
 						// will also probably need a check to make sure the letter_code is allowed based on configuration for the library
+						require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 						$existingMessage = new UserILSMessage();
 						$existingMessage->userId = $user->id;
 						$existingMessage->type = $curRow['letter_code'];
@@ -8412,6 +8413,7 @@ class Koha extends AbstractIlsDriver {
 		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if($results) {
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			while ($curRow = $results->fetch_assoc()) {
 				$existingMessage = new UserILSMessage();
 				$existingMessage->userId = $patron->id;
