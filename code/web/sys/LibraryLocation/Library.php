@@ -5065,6 +5065,7 @@ class Library extends DataObject {
 		$pinValidationRules = null;
 		$forgotPasswordType = 'none';
 		$ils = 'unknown';
+		$hasIlsInbox = false;
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if($catalog != null) {
@@ -5072,6 +5073,7 @@ class Library extends DataObject {
 				$forgotPasswordType = $catalog->getForgotPasswordType();
 			}
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
+			$hasIlsInbox = $catalog->hasIlsInbox();
 		}
 
 		$accountProfile = $this->getAccountProfile();
@@ -5082,6 +5084,7 @@ class Library extends DataObject {
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
+		$apiInfo['displayIlsInbox'] = $hasIlsInbox;
 
 		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
