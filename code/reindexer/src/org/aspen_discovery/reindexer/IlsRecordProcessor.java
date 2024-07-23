@@ -1248,33 +1248,20 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		if (!hasCallNumber){
+			String[] bibCallNumberFields = settings.getBibCallNumberFields().split(":");
 			StringBuilder callNumber = null;
-			if (use099forBibLevelCallNumbers()) {
-				DataField localCallNumberField = record.getDataField(99);
-				if (localCallNumberField != null) {
-					callNumber = new StringBuilder();
-					for (Subfield curSubfield : localCallNumberField.getSubfields()) {
-						callNumber.append(" ").append(curSubfield.getData().trim());
-					}
+			for (String field : bibCallNumberFields) {
+				if (Objects.equals(field, "099") && !use099forBibLevelCallNumbers()) {
+					//MDN #ARL-217 do not use 099 as a call number
+					continue;
 				}
-			}
-			//MDN #ARL-217 do not use 099 as a call number
-			if (callNumber == null) {
-				DataField deweyCallNumberField = record.getDataField(92);
-				if (deweyCallNumberField != null) {
+				DataField bibCallNumberField = record.getDataField(field);
+				if (bibCallNumberField != null) {
 					callNumber = new StringBuilder();
-					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
+					for (Subfield curSubfield : bibCallNumberField.getSubfields()) {
 						callNumber.append(" ").append(curSubfield.getData().trim());
 					}
-				}
-			}
-			if (callNumber == null) {
-				DataField deweyCallNumberField = record.getDataField(82);
-				if (deweyCallNumberField != null) {
-					callNumber = new StringBuilder();
-					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
-						callNumber.append(" ").append(curSubfield.getData().trim());
-					}
+					break;
 				}
 			}
 			if (callNumber != null) {

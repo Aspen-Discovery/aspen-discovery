@@ -1049,6 +1049,14 @@ function getIndexingUpdates() {
 			],
 		],
 
+		'indexing_profile_bibCallNumberFields' => [
+			'title' => 'Indexing Profile - Bib Call Number Fields',
+			'description' => 'Add ability to set which fields to look for call numbers in the bib record',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN bibCallNumberFields VARCHAR(25) DEFAULT '099:092:082'",
+			],
+		],
+
 	];
 }
 
