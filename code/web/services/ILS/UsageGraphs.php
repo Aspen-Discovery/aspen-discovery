@@ -66,6 +66,15 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$stat == 'usersWithSupplementalFileDownloads' ||
 			$stat == 'usersWithHolds'
 		) {
+			$userILSUsage = new UserILSUsage();
+			$userILSUsage->groupBy('year, month');
+			if (!empty($instanceName)) {
+				$userILSUsage->instance = $instanceName;
+			}
+			$userILSUsage->selectAdd();
+			$userILSUsage->selectAdd('year');
+			$userILSUsage->selectAdd('month');
+			$userILSUsage->orderBy('year, month');
 		}
 		// for graphs displaying data retrieved from the ils_record_usage table
 		if (
