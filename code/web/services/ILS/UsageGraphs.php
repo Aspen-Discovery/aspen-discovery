@@ -260,4 +260,10 @@ class ILS_UsageGraphs extends Admin_Admin {
 		return 'ils_integration';
 	}
 
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
 }
