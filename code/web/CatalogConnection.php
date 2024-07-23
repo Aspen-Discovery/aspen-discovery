@@ -1798,6 +1798,10 @@ class CatalogConnection {
 		return $this->driver->allowUpdatesOfPreferredName($patron);
 	}
 
+	public function hasIlsInbox(): bool {
+		return $this->driver->hasIlsInbox();
+	}
+
 	public function getMessageTypes(): array {
 		return $this->driver->getMessageTypes();
 	}

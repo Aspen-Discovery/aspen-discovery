@@ -8333,6 +8333,10 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	public function hasIlsInbox(): bool {
+		return true;
+	}
+
 	public function getMessageTypes(): array {
 		$this->initDatabaseConnection();
 

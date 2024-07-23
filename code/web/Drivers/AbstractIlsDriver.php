@@ -827,6 +827,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function hasIlsInbox() : bool {
+		return false;
+	}
+
 	public function getMessageTypes(): array {
 		return [
 			'success' => false,
