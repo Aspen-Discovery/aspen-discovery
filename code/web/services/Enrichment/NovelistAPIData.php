@@ -10,10 +10,13 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/Enrichment/Novelist3.php';
 
 		$driver = new Novelist3();
+		$novelistSettings = $driver->getNovelistSettings();
+
+		$interface->assign('novelist_enabled', ($novelistSettings != null));
 
 		$contents = '';
 
-		if (!empty($_REQUEST['id'])) {
+		if ($novelistSettings != null && !empty($_REQUEST['id'])) {
 			$ISBN = $_REQUEST['id'];
 			$interface->assign('ISBN', $ISBN);
 
