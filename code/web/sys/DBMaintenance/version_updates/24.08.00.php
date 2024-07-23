@@ -38,6 +38,8 @@ function getUpdates24_08_00(): array {
 					userId INT(11),
 					type VARCHAR(50),
 					status enum('pending', 'sent', 'failed') DEFAULT 'pending',
+					title VARCHAR(200),
+					content MEDIUMTEXT,
 					error VARCHAR(255),
 					dateQueued TIMESTAMP,
 					dateSent INT(11),
