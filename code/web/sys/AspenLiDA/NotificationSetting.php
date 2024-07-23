@@ -1,6 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/ILSNotificationSetting.php';
+
 
 class NotificationSetting extends DataObject {
 
@@ -11,6 +13,7 @@ class NotificationSetting extends DataObject {
 	public $notifySavedSearch;
 	public $notifyCustom;
 	public $notifyAccount;
+	public $ilsNotificationSettingId;
 
 	private $_libraries;
 
@@ -21,6 +24,16 @@ class NotificationSetting extends DataObject {
 			2 => 'All Users',
 		];
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/ILSNotificationSetting.php';
+		$ilsNotificationSetting = new ILSNotificationSetting();
+		$ilsNotificationSetting->orderBy('name');
+		$ilsNotificationSettings = [];
+		$ilsNotificationSetting->find();
+		$ilsNotificationSettings[-1] = 'none';
+		while ($ilsNotificationSetting->fetch()) {
+			$ilsNotificationSettings[$ilsNotificationSetting->id] = $ilsNotificationSetting->name;
+		}
 
 		$structure = [
 			'id' => [
@@ -72,6 +85,14 @@ class NotificationSetting extends DataObject {
 					],
 				],
 			],
+			'ilsNotificationSettingId' => [
+				'property' => 'ilsNotificationSettingId',
+				'type' => 'enum',
+				'label' => 'ILS Notification Settings',
+				'description' => 'The ILS Notification Settings to use for these settings',
+				'values' => $ilsNotificationSettings,
+				'hideInLists' => true,
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -81,6 +102,7 @@ class NotificationSetting extends DataObject {
 				'values' => $libraryList,
 			],
 		];
+
 		if (!UserAccount::userHasPermission('Administer Aspen LiDA Settings')) {
 			unset($structure['libraries']);
 		}
