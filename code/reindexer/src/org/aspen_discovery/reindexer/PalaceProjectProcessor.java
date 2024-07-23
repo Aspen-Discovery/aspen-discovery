@@ -286,7 +286,7 @@ public class PalaceProjectProcessor {
 					if (collection != null) {
 						String collectionName = collection.displayName;
 						ItemInfo itemInfo = new ItemInfo();
-						itemInfo.setItemIdentifier(identifier);
+						itemInfo.setItemIdentifier(identifier + "_" + collectionId);
 						itemInfo.seteContentSource(collectionName);
 						itemInfo.setIsEContent(true);
 						itemInfo.seteContentUrl(contentUrl);
@@ -348,6 +348,7 @@ public class PalaceProjectProcessor {
 						palaceProjectRecord.addItem(itemInfo);
 					}
 				}
+				collectionsForTitleRS.close();
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
