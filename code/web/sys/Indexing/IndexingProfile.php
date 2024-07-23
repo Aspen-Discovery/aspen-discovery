@@ -613,7 +613,7 @@ class IndexingProfile extends DataObject {
 					'bibCallNumberFields' => [
 						'property' => 'bibCallNumberFields',
 						'type' => 'text',
-						'label' => 'Bib based call number fields',
+						'label' => 'Bib Based Call Number Fields',
 						'maxLength' => 25,
 						'description' => 'Which bib record fields to use for call numbers in order of preference - separate fields with a colon (ex. 099:092:082)',
 						'default' => '099:092:082',
