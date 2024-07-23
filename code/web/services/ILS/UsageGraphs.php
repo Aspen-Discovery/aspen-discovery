@@ -75,6 +75,54 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$userILSUsage->selectAdd('year');
 			$userILSUsage->selectAdd('month');
 			$userILSUsage->orderBy('year, month');
+			if ($stat == 'userLogins') {
+				$dataSeries['User Logins'] = [
+					'borderColor' => 'rgba(255, 99, 132, 1)',
+					'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(usageCount) as sumUserLogins');
+			}
+			if ($stat == 'selfRegistrations') {
+				$dataSeries['Self Registration'] = [
+					'borderColor' => 'rgba(255, 159, 64, 1)',
+					'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(selfRegistrationCount) as sumSelfRegistrations');
+			}
+			if ($stat == 'usersWithPdfDownloads') {
+				$dataSeries['Users Who Downloaded At Least One PDF'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(IF(pdfDownloadCount>0,1,0)) as usersWithPdfDownloads');
+			}
+			if ($stat == 'usersWithPdfViews') {
+				$dataSeries['Users Who Viewed At Least One PDF'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(IF(pdfViewCount>0,1,0)) as usersWithPdfViews');
+			}
+			if ($stat == 'usersWithSupplementalFileDownloads') {
+				$dataSeries['Users Who Downloaded At Least One Supplemental File'] = [
+					'borderColor' => 'rgba(255, 206, 86, 1)',
+					'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(IF(supplementalFileDownloadCount>0,1,0)) as usersWithSupplementalFileDownloads');
+			}
+			if ($stat == 'usersWithHolds') {
+				$dataSeries['Users Who Placed At Least One Hold'] = [
+					'borderColor' => 'rgba(0, 255, 55, 1)',
+					'backgroundColor' => 'rgba(0, 255, 55, 0.2)',
+					'data' => [],
+				];
+				$userILSUsage->selectAdd('SUM(IF(usageCount>0,1,0)) as usersWithHolds');
+			}
 		}
 		// for graphs displaying data retrieved from the ils_record_usage table
 		if (
