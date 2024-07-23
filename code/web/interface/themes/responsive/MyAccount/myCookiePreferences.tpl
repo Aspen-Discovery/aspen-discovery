@@ -62,46 +62,50 @@
 							</div>
 						</div>
 
-						{if array_key_exists('Axis 360', $enabledModules)}
+						{if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
+						 || array_key_exists('Palace Project', $enabledModules) || array_key_exists('Side Loads', $enabledModules) || array_key_exists('Side Loads', $enabledModules)}
 						<div class="form-group propertyRow row">
 							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserAxis360' class="control-label">{translate text="Axis 360" isPublicFacing=true}</label>&nbsp;
+								<label for='userCookieUserExternalSearchServices' class="control-label">{translate text="External Search Services" isPublicFacing=true}</label>&nbsp;<i class="fas fa-question-circle" onclick="return displayMyCookieExplanation()"></i>
 							</div>
 							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserAxis360" id="userCookieUserAxis360" {if $profile->userCookiePreferenceAxis360==1}checked='checked'{/if} data-switch="">
+								<input type="checkbox" class="form-control" name="userCookieUserExternalSearchServices" id="userCookieUserExternalSearchServices" {if $profile->userCookiePreferenceExternalSearchServices==1}checked='checked'{/if} data-switch="">
 							</div>
 						</div>
-						{/if}
-						{if array_key_exists('EBSCO EDS', $enabledModules)}
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserEbscoEds' class="control-label">{translate text="Ebsco Eds" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserEbscoEds" id="userCookieUserEbscoEds" {if $profile->userCookiePreferenceEbscoEds==1}checked='checked'{/if} data-switch="">
-							</div>
+						<div id="myCookieExplanation" style="display:none; margin-top:10px;" class="btn-sm">
+							By checking this box you are giving consent to the tracking of your usage of:
+							<ul>
+							{if array_key_exists('Axis 360', $enabledModules)}
+							<li>Axis 360</li>
+							{/if}
+							{if array_key_exists('Cloud Library', $enabledModules)}
+								<li>Cloud Library</li>
+							{/if}
+							{if array_key_exists('EBSCO EDS', $enabledModules)}
+								<li>Ebsco Eds</li>
+							{/if}
+							{if array_key_exists('EBSCOhost', $enabledModules)}
+								<li>Ebsco Host</li>
+							{/if}
+							{if array_key_exists('Hoopla', $enabledModules)}
+								<li>Hoopla</li>
+							{/if}
+							{if array_key_exists('OverDrive', $enabledModules)}
+								<li>Overdrive</li>
+							{/if}
+							{if array_key_exists('Palace Project', $enabledModules)}
+								<li>Palace Project</li>
+							{/if}
+							{if array_key_exists('Side Loads', $enabledModules)}
+								<li>Side Loaded eContent</li>
+							{/if}
+							{if array_key_exists('Summon', $enabledModules)}
+								<li>Summon</li>
+							{/if}
+							</ul>
 						</div>
 						{/if}
-						{if array_key_exists('EBSCOhost', $enabledModules)}
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserEbscoHost' class="control-label">{translate text="Ebsco Host" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserEbscoHost" id="userCookieUserEbscoHost" {if $profile->userCookiePreferenceEbscoHost==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-						{/if}
-						{if array_key_exists('Summon', $enabledModules)}
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserSummon' class="control-label">{translate text="Summon" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserSummon" id="userCookieUserSummon" {if $profile->userCookiePreferenceSummon==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-						{/if}
+				
 						{if array_key_exists('Events', $enabledModules)}
 						<div class="form-group propertyRow row">
 							<div class="col-xs-6 col-sm-4">
@@ -112,14 +116,7 @@
 							</div>
 						</div>
 						{/if}
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserHoopla' class="control-label">{translate text="Hoopla" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserHoopla" id="userCookieUserHoopla" {if $profile->userCookiePreferenceHoopla==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
+					
 						{if array_key_exists('Open Archives', $enabledModules)}
 						<div class="form-group propertyRow row">
 							<div class="col-xs-6 col-sm-4">
@@ -130,45 +127,6 @@
 							</div>
 						</div>
 						{/if}
-
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserOverdrive' class="control-label">{translate text="Overdrive" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserOverdrive" id="userCookieUserOverdrive" {if $profile->userCookiePreferenceOverdrive==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-						
-						{if array_key_exists('Palace Project', $enabledModules)}
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserPalaceproject' class="control-label">{translate text="Palace Project" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserPalaceProject" id="userCookieUserPalaceProject" {if $profile->userCookiePreferencePalaceProject==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-						{/if}
-
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserSideLoad' class="control-label">{translate text="Side Load" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserSideLoad" id="userCookieUserSideLoad" {if $profile->userCookiePreferenceSideLoad==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-
-						<div class="form-group propertyRow row">
-							<div class="col-xs-6 col-sm-4">
-								<label for='userCookieUserCloudLibrary' class="control-label">{translate text="Cloud Library" isPublicFacing=true}</label>&nbsp;
-							</div>
-							<div class="col-xs-6 col-sm-8">
-								<input type="checkbox" class="form-control" name="userCookieUserCloudLibrary" id="userCookieUserCloudLibrary" {if $profile->userCookiePreferenceCloudLibrary==1}checked='checked'{/if} data-switch="">
-							</div>
-						</div>
-
 						<div class="form-group propertyRow row">
 							<div class="col-xs-6 col-sm-4">
 								<label for='userCookieUserWebsite' class="control-label">{translate text="Website" isPublicFacing=true}</label>&nbsp;
@@ -189,6 +147,14 @@
 				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
+					function displayMyCookieExplanation () {
+						var explanationDiv = document.getElementById("myCookieExplanation");
+						if (explanationDiv.style.display === "none") {
+							explanationDiv.style.display = "block";
+						} else {
+							explanationDiv.style.display = "none";
+						}
+					}
 					$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
 					$("#usernameHelpButton").click(function() {
 						var helpButton = $(this);
