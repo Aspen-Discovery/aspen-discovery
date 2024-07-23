@@ -53,9 +53,9 @@ function getUpdates24_08_00(): array {
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS ils_message_type (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					attributeId VARCHAR(100),
 					module VARCHAR(255),
 					code VARCHAR(255),
+					name VARCHAR(255),
 					isDigest TINYINT(1) DEFAULT 0,
 					locationCode VARCHAR(255),
 					isEnabled TINYINT(1) DEFAULT 1,
