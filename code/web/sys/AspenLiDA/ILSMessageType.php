@@ -3,7 +3,7 @@
 class ILSMessageType extends DataObject {
 	public $__table = 'ils_message_type';
 	public $id;
-	public $attributeId;
+	public $name;
 	public $module;
 	public $code;
 	public $isDigest;
@@ -14,7 +14,6 @@ class ILSMessageType extends DataObject {
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
-			'attributeId',
 			'isDigest',
 			'isEnabled',
 			'ilsNotificationSettingId'
@@ -29,11 +28,11 @@ class ILSMessageType extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id within the database',
 			],
-			'module' => [
-				'property' => 'module',
+			'name' => [
+				'property' => 'name',
 				'type' => 'text',
-				'label' => 'Category',
-				'description' => 'The Category of Message from the ILS',
+				'label' => 'Name',
+				'description' => 'The name of the Type of Message from the ILS',
 				'readOnly' => true,
 			],
 			'code' => [
@@ -47,7 +46,7 @@ class ILSMessageType extends DataObject {
 				'property' => 'locationCode',
 				'type' => 'text',
 				'label' => 'Location',
-				'description' => '',
+				'description' => 'The location code of the Type of Message from the ILS',
 				'readOnly' => true,
 			],
 			'isDigest' => [

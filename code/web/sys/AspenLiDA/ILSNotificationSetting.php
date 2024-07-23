@@ -174,10 +174,9 @@ class ILSNotificationSetting extends DataObject {
 			foreach($messageTypes as $messageType) {
 				$newILSMessageType = new ILSMessageType();
 				$newILSMessageType->ilsNotificationSettingId = $this->id;
-				$newILSMessageType->attributeId = $messageType['attribute_id'];
+				$newILSMessageType->name = $messageType['name'];
 				$newILSMessageType->module = $messageType['module'];
 				$newILSMessageType->code = $messageType['code'];
-				$newILSMessageType->isDigest = (bool)$messageType['is_digest'];
 				$newILSMessageType->locationCode = $messageType['branch'];
 				$newILSMessageType->insert();
 			}
