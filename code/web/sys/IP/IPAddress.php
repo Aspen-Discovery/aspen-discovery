@@ -225,8 +225,9 @@ class IPAddress extends DataObject {
 			}
 		}
 		//echo("\r\n<br/>$ipAddress: " . sprintf('%u', $startIp) . " - " .  sprintf('%u', $endIp));
-		$this->startIpVal = $startIp;
-		$this->endIpVal = $endIp;
+		$objectStructure = IPAddress::getObjectStructure();
+		$this->setProperty('startIpVal', $startIp, $objectStructure);
+		$this->setProperty('endIpVal', $endIp, $objectStructure);
 		if ($startIp == false || $endIp == false) {
 			return false;
 		} else {
