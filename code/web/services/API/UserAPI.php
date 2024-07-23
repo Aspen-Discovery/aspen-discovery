@@ -5791,4 +5791,120 @@ class UserAPI extends AbstractAPI {
 			];
 		}
 	}
+
+	function getInbox(): array {
+		$user = $this->getUserForApiCall();
+		$forceUpdate = $_REQUEST['forceUpdate'] ?? false;
+		if ($user && !($user instanceof AspenError)) {
+			if($forceUpdate) {
+				$user->getCatalogDriver()->updateUserMessageQueue($user);
+			}
+			$allMessages = [];
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$message = new UserILSMessage();
+			$message->userId = $user->id;
+			$message->orderBy('dateQueued DESC'); //newest first
+			$message->find();
+			while($message->fetch()) {
+				$allMessages[] = clone $message;
+			}
+			return [
+				'success' => true,
+				'title' => 'Success',
+				'message' => 'Found all messages for user',
+				'inbox' => $allMessages,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+				'inbox' => [],
+ 			];
+		}
+	}
+
+	function markMessageAsRead(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$messageId = $_REQUEST['id'] ?? null;
+			if($messageId) {
+				require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+				$message = new UserILSMessage();
+				$message->id = $messageId;
+				$message->userId = $user->id;
+				$message->isRead = 0;
+				if ($message->find(true)) {
+					$message->isRead = 1;
+					if($message->update()) {
+						return [
+							'success' => true,
+							'title' => translate(['text' => 'Updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Marked message as read', 'isPublicFacing' => true]),
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Message not found for this user', 'isPublicFacing' => true]),
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Message id not provided', 'isPublicFacing' => true]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function markMessageAsUnread(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$messageId = $_REQUEST['id'] ?? null;
+			if($messageId) {
+				require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+				$message = new UserILSMessage();
+				$message->id = $messageId;
+				$message->userId = $user->id;
+				$message->isRead = 1;
+				if ($message->find(true)) {
+					$message->isRead = 0;
+					if($message->update()) {
+						return [
+							'success' => true,
+							'title' => translate(['text' => 'Updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Marked message as unread', 'isPublicFacing' => true]),
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Message not found for this user', 'isPublicFacing' => true]),
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Message id not provided', 'isPublicFacing' => true]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
 }
