@@ -8,7 +8,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="User Logins" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=userLogins&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="User Logins" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=userLogins&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -30,6 +30,7 @@
 						</div>
 					</div>
 				</div>
+
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
@@ -112,7 +113,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="Total Holds" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=totalHolds&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -135,12 +135,10 @@
 					</div>
 				</div>
 
-
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one PDF" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=usersWhoDownloadedAtLeastOnePdf&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -167,7 +165,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="Users who viewed at least one PDF" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=usersWhoViewedAtLeastOnePdf&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -194,7 +191,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="PDFs Downloaded" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=pdfsDownloaded&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -221,7 +217,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="PDFs Viewed" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=pdfsViewed&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -248,7 +243,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one Supplemental File" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=usersWhoDownloadedAtLeastOneSupplementalFile&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
@@ -275,7 +269,6 @@
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
 							<h2 class="dashboardCategoryLabel">{translate text="Supplemental Files Downloaded" isAdminFacing=true}<a href="/ILS/UsageGraphs?stat=supplementalFilesDownloaded&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
-
 						</div>
 					</div>
 					<div class="row">
