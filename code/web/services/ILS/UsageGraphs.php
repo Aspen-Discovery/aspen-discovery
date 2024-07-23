@@ -204,7 +204,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 					'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
 					'data' => [],
 				];
-				$recordILSUsage->selectAdd('SUM(recordsHeld) as sumRecordsHeld');
+				$recordILSUsage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
 			}
 			if ($stat == 'totalHolds') {
 				$dataSeries['Total Holds'] = [
@@ -232,6 +232,10 @@ class ILS_UsageGraphs extends Admin_Admin {
 					/** @noinspection PhpUndefinedFieldInspection */
 					$dataSeries['Supplemental Files Downloaded']['data'][$curPeriod] = $recordILSUsage->sumSupplementalFilesDownloaded;
 				}
+				if ($stat == 'recordsHeld') {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$dataSeries['Total Holds']['data'][$curPeriod] = $recordILSUsage->numRecordsUsed;
+				}	
 				if ($stat == 'totalHolds') {
 					/** @noinspection PhpUndefinedFieldInspection */
 					$dataSeries['Total Holds']['data'][$curPeriod] = $recordILSUsage->totalHolds;
@@ -241,7 +245,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
-		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
