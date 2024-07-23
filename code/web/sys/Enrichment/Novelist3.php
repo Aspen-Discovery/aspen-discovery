@@ -112,6 +112,9 @@ class Novelist3 {
 	function getRawNovelistDataISBN($isbn, $infoSetting) {
 		global $timer;
 		$novelistSettings = $this->getNovelistSettings();
+		if ($novelistSettings == null) {
+			return null;
+		}
 
 		$requestUrl = "https://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier=test&ISBN={$isbn}&version=2.6&tmpstmp=" . time();
 
@@ -702,7 +705,7 @@ class Novelist3 {
 	/**
 	 * @return NovelistSetting | null
 	 */
-	private function getNovelistSettings() {
+	public function getNovelistSettings() {
 		global $library;
 		if ($library->novelistSettingId != -1) {
 			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
