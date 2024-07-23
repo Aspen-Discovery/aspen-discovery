@@ -164,6 +164,14 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$stat == 'recordsHeld' ||
 			$stat == 'totalHolds'
 		) {
+			$recordILSUsage = new ILSRecordUsage();
+			if (!empty($instanceName)) {
+				$recordILSUsage->instance = $instanceName;
+			}
+			$recordILSUsage->selectAdd();
+			$recordILSUsage->selectAdd('year');
+			$recordILSUsage->selectAdd('month');
+			$recordILSUsage->orderBy('year, month');
 		}
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
