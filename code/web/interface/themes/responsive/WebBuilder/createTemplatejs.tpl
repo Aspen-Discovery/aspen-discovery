@@ -148,8 +148,8 @@
         position: relative;
     }
     .fa-save {
-      background-color: green;
-      border: 1px solid green;
+      background-color: #3174AF;
+      border: 1px solid #3174AF;
     }
 
     .gjs-block-label {
