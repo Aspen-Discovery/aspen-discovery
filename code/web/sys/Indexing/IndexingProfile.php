@@ -53,6 +53,8 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$itemRecordNumber;
 	public /** @noinspection PhpUnused */
+		$bibCallNumberFields;
+	public /** @noinspection PhpUnused */
 		$useItemBasedCallNumbers;
 	public /** @noinspection PhpUnused */
 		$callNumberPrestamp;
@@ -606,6 +608,15 @@ class IndexingProfile extends DataObject {
 						'label' => 'Item Record Number',
 						'maxLength' => 1,
 						'description' => 'Subfield for the record number for the item',
+						'forcesReindex' => true,
+					],
+					'bibCallNumberFields' => [
+						'property' => 'bibCallNumberFields',
+						'type' => 'text',
+						'label' => 'Bib Based Call Number Fields',
+						'maxLength' => 25,
+						'description' => 'Which bib record fields to use for call numbers in order of preference - separate fields with a colon (ex. 099:092:082)',
+						'default' => '099:092:082',
 						'forcesReindex' => true,
 					],
 					'useItemBasedCallNumbers' => [

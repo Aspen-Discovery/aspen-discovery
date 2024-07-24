@@ -46,6 +46,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char yearToDateCheckoutsSubfield;
 	private char totalCheckoutsSubfield;
 	private boolean useItemBasedCallNumbers;
+	private String bibCallNumberFields;
 	private char callNumberPrestampSubfield;
 	private char callNumberPrestamp2Subfield;
 	private char callNumberSubfield;
@@ -203,6 +204,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
 		this.useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+		this.bibCallNumberFields = (indexingProfileRS.getString("bibCallNumberFields"));
 		this.setCallNumberPrestampSubfield(getCharFromRecordSet(indexingProfileRS,"callNumberPrestamp"));
 		callNumberPrestamp2Subfield = getCharFromRecordSet(indexingProfileRS, "callNumberPrestamp2");
 		this.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
@@ -982,6 +984,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setUseItemBasedCallNumbers(boolean useItemBasedCallNumbers) {
 		this.useItemBasedCallNumbers = useItemBasedCallNumbers;
+	}
+
+	public String getBibCallNumberFields() {
+		return this.bibCallNumberFields;
+	}
+
+	public void setBibCallNumberFields(String bibCallNumberFields) {
+		this.bibCallNumberFields = bibCallNumberFields;
 	}
 
 	public char getCallNumberPrestamp2Subfield() {
