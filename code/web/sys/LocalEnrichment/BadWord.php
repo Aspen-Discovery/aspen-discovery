@@ -33,20 +33,16 @@ class BadWord extends DataObject {
 		global $memCache;
 		global $configArray;
 		global $timer;
-		$badWordsList = $memCache->get('bad_words_list');
-		if ($badWordsList === false) {
-			$badWordsList = [];
-			$this->find();
-			if ($this->getNumResults()) {
-				while ($this->fetch()) {
-					$quotedWord = preg_quote(trim($this->word));
-					//$badWordExpression = '/^(?:.*\W)?(' . preg_quote(trim($badWord->word)) . ')(?:\W.*)?$/';
-					$badWordsList[] = "/^$quotedWord(?=\W)|(?<=\W)$quotedWord(?=\W)|(?<=\W)$quotedWord$|^$quotedWord$/i";
-				}
+		$badWordsList = [];
+		$this->find();
+		if ($this->getNumResults()) {
+			while ($this->fetch()) {
+				$quotedWord = preg_quote(trim($this->word));
+				//$badWordExpression = '/^(?:.*\W)?(' . preg_quote(trim($badWord->word)) . ')(?:\W.*)?$/';
+				$badWordsList[] = "/^$quotedWord(?=\W)|(?<=\W)$quotedWord(?=\W)|(?<=\W)$quotedWord$|^$quotedWord$/i";
 			}
-			$timer->logTime("Loaded bad words");
-			$memCache->set('bad_words_list', $badWordsList, $configArray['Caching']['bad_words_list']);
 		}
+		$timer->logTime("Loaded bad words");
 		return $badWordsList;
 	}
 
