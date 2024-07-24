@@ -8333,21 +8333,24 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	public function hasIlsInbox(): bool {
+		return true;
+	}
+
 	public function getMessageTypes(): array {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM message_transports where message_transport_type like 'email'";
+		$sql = "SELECT * FROM letter where message_transport_type like 'email'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$transports = [];
 		if($results) {
 			$i = 0;
 			while ($curRow = $results->fetch_assoc()) {
-				$transports[$curRow['letter_module']][$i]['attribute_id'] = $curRow['message_attribute_id'];
-				$transports[$curRow['letter_module']][$i]['module'] = $curRow['letter_module'];
-				$transports[$curRow['letter_module']][$i]['code'] = $curRow['letter_code'];
-				$transports[$curRow['letter_module']][$i]['is_digest'] = $curRow['is_digest'];
-				$transports[$curRow['letter_module']][$i]['branch'] = $curRow['branchcode'];
+				$transports[$curRow['module']][$i]['module'] = $curRow['module'];
+				$transports[$curRow['module']][$i]['code'] = $curRow['code'];
+				$transports[$curRow['module']][$i]['branch'] = $curRow['branchcode'];
+				$transports[$curRow['module']][$i]['name'] = $curRow['name'];
 				$i++;
 			}
 		}
@@ -8355,25 +8358,77 @@ class Koha extends AbstractIlsDriver {
 		return $transports;
 	}
 
-	public function updateMessageQueue(User $patron): array {
+	public function updateMessageQueue(): array {
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			$numAdded = 0;
+			while ($curRow = $results->fetch_assoc()) {
+				$timeQueued = strtotime($curRow['time_queued']);
+				$now = time();
+				$diff = ($now - $timeQueued);
+				if($diff <= 86400) {
+					// skip messages older than 24 hours
+					$user = new User();
+					$user->unique_ils_id = $curRow['borrowernumber'];
+					if($user->find(true)) {
+						// will also probably need a check to make sure the letter_code is allowed based on configuration for the library
+						require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+						$existingMessage = new UserILSMessage();
+						$existingMessage->userId = $user->id;
+						$existingMessage->type = $curRow['letter_code'];
+						$existingMessage->dateQueued = $timeQueued;
+						if (!$existingMessage->find(true)) {
+							$userMessage = new UserILSMessage();
+							$userMessage->messageId = $curRow['message_id'];
+							$userMessage->userId = $user->id;
+							$userMessage->status = 'pending';
+							$userMessage->type = $curRow['letter_code'];
+							$userMessage->dateQueued = $timeQueued;
+							$userMessage->insert();
+							$numAdded++;
+						}
+					} else {
+						// borrower not found in aspen
+					}
+				}
+			}
+
+			return [
+				'success' => true,
+				'message' => 'Added ' . $numAdded . ' to message queue'
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => 'Error updating message queue'
+		];
+	}
+
+	public function updateUserMessageQueue(User $patron): array {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if($results) {
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			while ($curRow = $results->fetch_assoc()) {
 				$existingMessage = new UserILSMessage();
 				$existingMessage->userId = $patron->id;
 				$existingMessage->type = $curRow['letter_code'];
-				$existingMessage->dateQueued = $curRow['time_queued'];
+				$existingMessage->dateQueued = strtotime($curRow['time_queued']);
 				if (!$existingMessage->find(true)) {
 					$userMessage = new UserILSMessage();
 					$userMessage->messageId = $curRow['message_id'];
 					$userMessage->userId = $patron->id;
 					$userMessage->status = 'pending';
 					$userMessage->type = $curRow['letter_code'];
-					$userMessage->dateQueued = $curRow['time_queued'];
+					$userMessage->dateQueued = strtotime($curRow['time_queued']);
 					$userMessage->insert();
 				}
 			}

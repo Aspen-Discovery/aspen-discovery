@@ -67,6 +67,19 @@
 								}
 								return false;
 							})
+                            $("#facetToggle_{/literal}{$title}{literal}").keypress(function() {
+	                            var toggleButton = $(this);
+	                            $(this).toggleClass('expanded');
+	                            $(this).toggleClass('collapsed');
+	                            $('#facetDetails_{/literal}{$title}{literal}').toggle()
+	                            if (toggleButton.attr("aria-expanded") === "true") {
+		                            $(this).attr("aria-expanded","false");
+	                            }
+	                            else if (toggleButton.attr("aria-expanded") === "false") {
+		                            $(this).attr("aria-expanded","true");
+	                            }
+	                            return false;
+                            })
                             {/literal}
 						</script>
 					{/if}

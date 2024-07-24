@@ -827,6 +827,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function hasIlsInbox() : bool {
+		return false;
+	}
+
 	public function getMessageTypes(): array {
 		return [
 			'success' => false,
@@ -834,7 +838,14 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function updateMessageQueue(User $patron): array {
+	public function updateMessageQueue(): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function updateUserMessageQueue(User $patron): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',

@@ -3550,6 +3550,7 @@ class User extends DataObject {
 		}
 
 		$hasCurbside = false;
+		$allowILSMessaging = false;
 		$customSelfRegForms = false;
 		$circulationReports = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
@@ -3557,6 +3558,7 @@ class User extends DataObject {
 			$accountProfile = $accountProfileInfo['accountProfile'];
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
+				$allowILSMessaging = true;
 			}
 			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx') {
 				$customSelfRegForms = true;
@@ -3852,8 +3854,9 @@ class User extends DataObject {
 			} else {
 				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 			}
-			$sections['aspen_lida']->addAction(new AdminAction('ILS Notification Settings', 'Define settings for ILS notifications in Aspen LiDA.', '/AspenLiDA/ILSNotificationSettings'), 'Administer Aspen LiDA Settings');
-
+			if($allowILSMessaging) {
+				$sections['aspen_lida']->addAction(new AdminAction('ILS Notification Settings', 'Define settings for ILS notifications in Aspen LiDA.', '/AspenLiDA/ILSNotificationSettings'), 'Administer Aspen LiDA Settings');
+			}
 			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
 				'Send Notifications to All Libraries',
 				'Send Notifications to All Locations',
