@@ -4084,7 +4084,10 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$donateToLocation = $_REQUEST['toLocation'];
+		$donateToLocation = false;
+		if (!empty($_REQUEST['toLocation'])) {
+			$donateToLocation = $_REQUEST['toLocation'];
+		}
 		$toLocation = -1;
 		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
@@ -4220,7 +4223,11 @@ class MyAccount_AJAX extends JSON_Action {
 		$payment->paidFromInstance = $library->subdomain;
 
 		if (isset($_REQUEST['token'])) {
-			$payment->aciToken = $_REQUEST['token'];
+			if ($paymentType == 'square'){
+				$payment->squareToken = $_REQUEST['token'];
+			} else {
+				$payment->aciToken = $_REQUEST['token'];
+			}
 		}
 
 		$paymentInsert = $payment->insert();
