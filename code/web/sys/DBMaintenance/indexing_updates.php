@@ -1054,6 +1054,7 @@ function getIndexingUpdates() {
 			'description' => 'Add ability to set which fields to look for call numbers in the bib record',
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN bibCallNumberFields VARCHAR(25) DEFAULT '099:092:082'",
+				"UPDATE indexing_profiles SET bibCallNumberFields = '092:082' WHERE indexingClass = 'ArlingtonKoha'",
 			],
 		],
 

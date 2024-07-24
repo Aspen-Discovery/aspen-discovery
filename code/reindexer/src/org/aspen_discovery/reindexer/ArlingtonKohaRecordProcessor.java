@@ -168,8 +168,5 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 			}
 		}
 	}
-
-	protected boolean use099forBibLevelCallNumbers() {
-		return false;
-	}
+	
 }
