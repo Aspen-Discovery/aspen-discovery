@@ -123,7 +123,7 @@ public class BackupAspen implements IProcessHandler {
 				tarExecutable = "C:\\cygwin64\\bin\\tar.exe";
 				executeCommand(tarExecutable + " -rf " + new File(backupFile).getName() + " " + exportFile, debug, backupDir.getAbsoluteFile());
 			}else{
-				tarExecutable = "gzip";
+				tarExecutable = "tar";
 				executeCommand(tarExecutable + " -rf " + backupFile + " " + exportFile, debug, backupDir);
 			}
 
