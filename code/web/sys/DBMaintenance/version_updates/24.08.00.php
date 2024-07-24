@@ -90,6 +90,16 @@ function getUpdates24_08_00(): array {
 
 		//pedro - PTFS-Europe
 
+		//James Staub - Nashville Public Library
+		'web_builder_custom_form_increase_email' => [
+			'title' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'description' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE web_builder_custom_form MODIFY COLUMN emailResultsTo VARCHAR(150)",
+			]
+		], //web_builder_custom_form_increase_email
+
 		//other
 
 	];
