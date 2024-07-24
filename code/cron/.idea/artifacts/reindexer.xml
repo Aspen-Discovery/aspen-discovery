@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="reindexer">
-    <output-path>$PROJECT_DIR$/../reindexer/</output-path>
+    <output-path>$PROJECT_DIR$/../reindexer</output-path>
     <root id="archive" name="reindexer.jar">
       <element id="module-output" name="reindexer" />
       <element id="directory" name="META-INF">
