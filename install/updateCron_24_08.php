@@ -6,21 +6,37 @@ if (count($_SERVER['argv']) > 1) {
 	$fhnd = fopen("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", 'r');
 	if ($fhnd) {
 		$lines = [];
-		$insertUpdateTranslations = true;
+		$insertFetchILSMessages = true;
+		$insertSendILSMessages = true;
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'fetchILSMessages') > 0) {
-				$insertUpdateTranslations = false;
+				$insertFetchILSMessages = false;
+			}
+			if(strpos($line, 'sendILSMessages') > 0) {
+				$insertSendILSMessages = false;
 			}
 			$lines[] = $line;
 		}
 		fclose($fhnd);
-		if ($insertUpdateTranslations) {
+
+		if ($insertFetchILSMessages) {
 			$lines[] = "######################################\n";
 			$lines[] = "# Fetch ILS Messages #\n";
 			$lines[] = "######################################\n";
 			$lines[] = "*/30 * * * * root php /usr/local/aspen-discovery/code/web/cron/fetchILSMessages.php $serverName\n";
 		}
-		if ($insertUpdateTranslations) {
+		if ($insertFetchILSMessages) {
+			$newContent = implode('', $lines);
+			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
+		}
+
+		if ($insertSendILSMessages) {
+			$lines[] = "######################################\n";
+			$lines[] = "# Send ILS Messages #\n";
+			$lines[] = "######################################\n";
+			$lines[] = "*/59 * * * * root php /usr/local/aspen-discovery/code/web/cron/sendILSMessages.php $serverName\n";
+		}
+		if ($insertSendILSMessages) {
 			$newContent = implode('', $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}
