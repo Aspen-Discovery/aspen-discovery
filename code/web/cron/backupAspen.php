@@ -14,7 +14,6 @@ $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
 $dbHost = $configArray['Database']['database_aspen_host'];
-/** @noinspection SpellCheckingInspection */
 $dbPort = $configArray['Database']['database_aspen_dbport'];
 
 //Make sure our backup directory exists
