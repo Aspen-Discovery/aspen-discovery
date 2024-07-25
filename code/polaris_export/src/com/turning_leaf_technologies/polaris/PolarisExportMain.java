@@ -1312,6 +1312,11 @@ public class PolarisExportMain {
 				org.marc4j.marc.Record marcRecord = marcXmlReader.next();
 
 				if (marcRecord != null) {
+					//Check to see if any of the fields we got in the bib will conflict with item records
+					List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTag());
+					for (DataField itemField : itemFields) {
+						marcRecord.removeVariableField(itemField);
+					}
 					//Get Items from the API
 					boolean gotItems = getItemsForBibFromPolaris(marcFactory, bibliographicRecordId, marcRecord);
 					if (gotItems){
