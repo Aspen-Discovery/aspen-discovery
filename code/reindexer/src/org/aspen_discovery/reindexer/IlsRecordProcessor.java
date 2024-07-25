@@ -461,7 +461,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//Create virtual items with one for each location code
 				ItemInfo virtualItem = new ItemInfo();
 				virtualItem.setLocationCode(locationCode.trim());
-				virtualItem.setShelfLocation(locationCode.trim());
+				virtualItem.setShelfLocation(translateValue("shelf_location", locationCode.trim(), recordInfo.getRecordIdentifier(), true));
 				virtualItem.setIsVirtualHoldingsRecord(true);
 				recordInfo.addItem(virtualItem);
 			}
@@ -1251,10 +1251,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String[] bibCallNumberFields = settings.getBibCallNumberFields().split(":");
 			StringBuilder callNumber = null;
 			for (String field : bibCallNumberFields) {
-				if (Objects.equals(field, "099") && !use099forBibLevelCallNumbers()) {
-					//MDN #ARL-217 do not use 099 as a call number
-					continue;
-				}
 				DataField bibCallNumberField = record.getDataField(field);
 				if (bibCallNumberField != null) {
 					callNumber = new StringBuilder();
@@ -1288,10 +1284,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.setCallNumber(callNumber.trim());
 			itemInfo.setSortableCallNumber(callNumber.trim());
 		}
-	}
-
-	protected boolean use099forBibLevelCallNumbers() {
-		return true;
 	}
 
 	private final HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked = new HashMap<>();
