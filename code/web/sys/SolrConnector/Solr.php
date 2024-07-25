@@ -644,7 +644,7 @@ abstract class Solr {
 	 * @access    private
 	 * @param string $lookfor The string to search for in the field
 	 * @param array $custom Custom munge settings from YAML search specs
-	 * @param bool $basic Is $lookfor a basic (true) or advanced (false) query?(ISN:2166-3262)
+	 * @param bool $basic Is $lookfor a basic (true) or advanced (false) query?
 	 * @return    array                             Array for use as _applySearchSpecs() values param
 	 */
 	private function _buildMungeValues($lookfor, $custom = null, $basic = true) {
