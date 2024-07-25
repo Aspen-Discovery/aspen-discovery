@@ -29,7 +29,7 @@ public class BackupAspen implements IProcessHandler {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Backup Aspen", dbConn, logger);
 		processLog.saveResults();
 
-		String curDateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+		String curDateTime = new SimpleDateFormat("yyMMddHHmmss").format(new Date());
 
 		String backupDirName = "/data/aspen-discovery/" + servername + "/sql_backup";
 		boolean debug = false;
