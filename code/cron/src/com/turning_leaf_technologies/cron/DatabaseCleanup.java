@@ -34,6 +34,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldIndexingDiagnostics(dbConn, logger, processLog);
 
 		removeOldObjectHistory(dbConn, logger, processLog);
+		removeExternalSearchTracking(dbConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveResults();
