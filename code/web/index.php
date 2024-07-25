@@ -1167,7 +1167,13 @@ function loadModuleActionId() {
 			$requestPath = $requestURI;
 			if (strpos($requestPath, '?') > 0) {
 				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
+
 			}
+
+			//Store query parameters
+			$urlComponents = parse_url($requestURI);
+			parse_str($urlComponents['query'],$queryParameters);
+
 			$basicPage = new BasicPage();
 			$basicPage->urlAlias = $requestPath;
 			$basicPageLibrary = new LibraryBasicPage();
@@ -1211,7 +1217,12 @@ function loadModuleActionId() {
 						$_REQUEST['module'] = 'WebBuilder';
 						$_REQUEST['action'] = 'Form';
 						$_REQUEST['id'] = $form->id;
-						$pageExists = true;
+
+						foreach ($queryParameters as $key => $value) {
+							$_GET[$key] = $value;
+							$_REQUEST[$key] = $value;
+						}
+						
 					} else {
 						require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
 						$quickPoll = new QuickPoll();
