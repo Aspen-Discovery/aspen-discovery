@@ -4,7 +4,7 @@
     {$record}
 </div>
 
-{if !empty($showExploreMoreBar) && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2)}
+{if !empty($showExploreMoreBar) && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2) && $displayExploreMoreBarInSummon}
     <div id="explore-more-bar-placeholder"></div>
     <script type="text/javascript">
         $(document).ready(
