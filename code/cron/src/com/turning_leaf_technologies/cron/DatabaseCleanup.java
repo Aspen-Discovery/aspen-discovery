@@ -467,4 +467,91 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	private void removeExternalSearchTracking(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try {
+			//Get userIDs that have cookie consent for external search sources set to 0
+			PreparedStatement getNoExternalTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id FROM user WHERE userCookiePreferenceExternalSearchServices = 0");
+			ResultSet userIdsRS = getNoExternalTrackingUserIdsStmt.executeQuery();
+
+			PreparedStatement removeAxis360UsageStmt = dbConn.prepareStatement("DELETE FROM user_axis360_usage WHERE id = ?");
+			PreparedStatement removeCloudLibraryUsageStmt = dbConn.prepareStatement("DELETE FROM user_cloud_library_usage WHERE id = ?");
+			PreparedStatement removeEbscoHostUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebscohost_usage WHERE id = ?");
+			PreparedStatement removeEbscoEdsUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebsco_eds_usage WHERE id = ?");
+			PreparedStatement removeHooplaUsageStmt = dbConn.prepareStatement("DELETE FROM user_hoopla_usage WHERE id = ?");
+			PreparedStatement removeOverdriveUsageStmt = dbConn.prepareStatement("DELETE FROM user_overdrive_usage WHERE id = ?");
+			PreparedStatement removePalaceProjectUsageStmt = dbConn.prepareStatement("DELETE FROM user_palace_project_usage WHERE id = ?");
+			PreparedStatement removeSideloadUsageStmt = dbConn.prepareStatement("DELETE FROM user_sideload_usage WHERE id = ?");
+			PreparedStatement removeSummonUsageStmt = dbConn.prepareStatement("DELETE FROM user_summon_usage WHERE id = ?");
+
+			int totalRowsRemovedAXIS360 = 0;
+			int totalRowsRemovedCloudLibrary = 0;
+			int totalRowsRemovedEbscoHost = 0;
+			int totalRowsRemovedEbscoEds = 0;
+			int totalRowsRemovedHoopla = 0;
+			int totalRowsRemovedOverdrive = 0;
+			int totalRowsRemovedPalaceProject = 0;
+			int totalRowsRemovedSideload = 0;
+			int totalRowsRemovedSummon = 0;
+
+			while (userIdsRS.next()) {
+				int userId = userIdsRS.getInt("id");
+
+				removeAxis360UsageStmt.setInt(1, userId);
+				totalRowsRemovedAXIS360 += removeAxis360UsageStmt.executeUpdate();
+
+				removeCloudLibraryUsageStmt.setInt(1, userId);
+				totalRowsRemovedCloudLibrary += removeCloudLibraryUsageStmt.executeUpdate();
+
+				removeEbscoHostUsageStmt.setInt(1, userId);
+				totalRowsRemovedEbscoHost += removeEbscoHostUsageStmt.executeUpdate();
+
+				removeEbscoEdsUsageStmt.setInt(1, userId);
+				totalRowsRemovedEbscoEds += removeEbscoEdsUsageStmt.executeUpdate();
+
+				removeHooplaUsageStmt.setInt(1, userId);
+				totalRowsRemovedHoopla += removeHooplaUsageStmt.executeUpdate();
+
+				removeOverdriveUsageStmt.setInt(1, userId);
+				totalRowsRemovedOverdrive += removeOverdriveUsageStmt.executeUpdate();
+
+				removePalaceProjectUsageStmt.setInt(1, userId);
+				totalRowsRemovedPalaceProject += removePalaceProjectUsageStmt.executeUpdate();
+
+				removeSideloadUsageStmt.setInt(1, userId);
+				totalRowsRemovedSideload += removeSideloadUsageStmt.executeUpdate();
+
+				removeSummonUsageStmt.setInt(1, userId);
+				totalRowsRemovedSummon += removeSummonUsageStmt.executeUpdate();
+			}
+
+
+			//Log results
+			processLog.addNote("Removed " + totalRowsRemovedAXIS360 + " AXIS 360 usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedCloudLibrary + " Cloud Library usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedEbscoHost + " Ebsco Host usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedEbscoEds + " Ebsco EDS usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedHoopla + " Hoopla usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedOverdrive + " Overdrive usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedPalaceProject + " Palace Project usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedSideload + " Sideload usage records for users with externalSearchSources set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedSummon + " Summon usage records for users with externalSearchSources set to 0");
+			processLog.incUpdated();
+			processLog.saveResults();
+
+			//Close statements and results sets
+			getNoExternalTrackingUserIdsStmt.close();
+			userIdsRS.close();
+			removeAxis360UsageStmt.close();
+			removeCloudLibraryUsageStmt.close();
+			removeEbscoHostUsageStmt.close();
+			removeEbscoEdsUsageStmt.close();
+			removeHooplaUsageStmt.close();
+			removeOverdriveUsageStmt.close();
+			removePalaceProjectUsageStmt.close();
+			removeSideloadUsageStmt.close();
+			removeSummonUsageStmt.close();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to remove external search tracking. ", e);
+		}
+	}
 }
