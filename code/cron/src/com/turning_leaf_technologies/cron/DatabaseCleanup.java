@@ -473,15 +473,15 @@ public class DatabaseCleanup implements IProcessHandler {
 			PreparedStatement getNoExternalTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id FROM user WHERE userCookiePreferenceExternalSearchServices = 0");
 			ResultSet userIdsRS = getNoExternalTrackingUserIdsStmt.executeQuery();
 
-			PreparedStatement removeAxis360UsageStmt = dbConn.prepareStatement("DELETE FROM user_axis360_usage WHERE id = ?");
-			PreparedStatement removeCloudLibraryUsageStmt = dbConn.prepareStatement("DELETE FROM user_cloud_library_usage WHERE id = ?");
-			PreparedStatement removeEbscoHostUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebscohost_usage WHERE id = ?");
-			PreparedStatement removeEbscoEdsUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebsco_eds_usage WHERE id = ?");
-			PreparedStatement removeHooplaUsageStmt = dbConn.prepareStatement("DELETE FROM user_hoopla_usage WHERE id = ?");
-			PreparedStatement removeOverdriveUsageStmt = dbConn.prepareStatement("DELETE FROM user_overdrive_usage WHERE id = ?");
-			PreparedStatement removePalaceProjectUsageStmt = dbConn.prepareStatement("DELETE FROM user_palace_project_usage WHERE id = ?");
-			PreparedStatement removeSideloadUsageStmt = dbConn.prepareStatement("DELETE FROM user_sideload_usage WHERE id = ?");
-			PreparedStatement removeSummonUsageStmt = dbConn.prepareStatement("DELETE FROM user_summon_usage WHERE id = ?");
+			PreparedStatement removeAxis360UsageStmt = dbConn.prepareStatement("DELETE FROM user_axis360_usage WHERE userId = ?");
+			PreparedStatement removeCloudLibraryUsageStmt = dbConn.prepareStatement("DELETE FROM user_cloud_library_usage WHERE userId = ?");
+			PreparedStatement removeEbscoHostUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebscohost_usage WHERE userId = ?");
+			PreparedStatement removeEbscoEdsUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebsco_eds_usage WHERE userId = ?");
+			PreparedStatement removeHooplaUsageStmt = dbConn.prepareStatement("DELETE FROM user_hoopla_usage WHERE userId = ?");
+			PreparedStatement removeOverdriveUsageStmt = dbConn.prepareStatement("DELETE FROM user_overdrive_usage WHERE userId = ?");
+			PreparedStatement removePalaceProjectUsageStmt = dbConn.prepareStatement("DELETE FROM user_palace_project_usage WHERE userId = ?");
+			PreparedStatement removeSideloadUsageStmt = dbConn.prepareStatement("DELETE FROM user_sideload_usage WHERE userId = ?");
+			PreparedStatement removeSummonUsageStmt = dbConn.prepareStatement("DELETE FROM user_summon_usage WHERE userId = ?");
 
 			int totalRowsRemovedAXIS360 = 0;
 			int totalRowsRemovedCloudLibrary = 0;
