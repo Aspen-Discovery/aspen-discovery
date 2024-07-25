@@ -44,6 +44,7 @@ if [ -f "/usr/local/aspen-discovery/sites/$1/conf/log4j" ]; then
 fi
 if [ -f "/usr/local/aspen-discovery/sites/$1/conf/passkey" ]; then
   chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/passkey
+  chmod 440 /usr/local/aspen-discovery/sites/$1/conf/passkey
 fi
 chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/config*
 chown -R apache:aspen_apache /usr/local/aspen-discovery/tmp
