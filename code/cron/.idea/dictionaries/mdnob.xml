@@ -76,6 +76,7 @@
       <w>datecancelled</w>
       <w>datelastborrowed</w>
       <w>datelastseen</w>
+      <w>dbport</w>
       <w>deletedbiblio</w>
       <w>deleteditems</w>
       <w>dests</w>
