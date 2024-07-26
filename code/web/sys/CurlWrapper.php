@@ -49,7 +49,7 @@ class CurlWrapper {
 	}
 
 	public function setCookieJar($prefix = "CURLCOOKIE") {
-		$cookieJar = tempnam("/tmp", $prefix);
+		$cookieJar = @tempnam("/tmp", $prefix);
 		$this->cookieJar = $cookieJar;
 	}
 
