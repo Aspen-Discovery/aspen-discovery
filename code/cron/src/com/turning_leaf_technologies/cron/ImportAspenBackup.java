@@ -144,11 +144,9 @@ public class ImportAspenBackup implements IProcessHandler {
 		String tarExecutable;
 		String cdExecutable;
 		if (operatingSystem.equals("windows")) {
-			tarExecutable = "cmd /c tar";
-			executeCommand(tarExecutable + " -xzf " + latestBackupFile.getName() , debug, backupDir.getAbsoluteFile());
+			executeCommand(new String[]{"cmd", "/c", "tar", "-xzf", latestBackupFile.getName()}, debug, backupDir.getAbsoluteFile());
 		}else{
-			tarExecutable = "tar";
-			executeCommand(tarExecutable + " -xzf " + latestBackupFile.getName(), debug, backupDir);
+			executeCommand(new String[]{"tar","-xzf", latestBackupFile.getName()}, debug, backupDir);
 		}
 
 		File[] filesToCheck = backupDir.listFiles((dir, name) -> name.toLowerCase().endsWith("sql"));
@@ -159,12 +157,12 @@ public class ImportAspenBackup implements IProcessHandler {
 		return filesToCheck;
 	}
 
-	public void executeCommand(String command, boolean log, File activeDirectory) throws IOException, InterruptedException {
+	public void executeCommand(String[] command, boolean log, File activeDirectory) throws IOException, InterruptedException {
 		if (log) {
 			if (activeDirectory == null) {
-				System.out.println("RUNNING: " + command);
+				System.out.println("RUNNING: " + String.join(" ", command));
 			}else{
-				System.out.println("RUNNING: " + command + " in " + activeDirectory);
+				System.out.println("RUNNING: " + String.join(" ", command) + " in " + activeDirectory);
 			}
 		}
 
@@ -172,7 +170,6 @@ public class ImportAspenBackup implements IProcessHandler {
 		if (activeDirectory == null) {
 			process = Runtime.getRuntime().exec(command);
 		}else{
-			String[] args = command.split(" ");
 			ProcessBuilder pb = new ProcessBuilder(command);
 			pb.directory(activeDirectory);
 			process = pb.start();
