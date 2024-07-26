@@ -142,7 +142,11 @@ public class ImportAspenBackup implements IProcessHandler {
 
 	public void executeCommand(String command, boolean log, File activeDirectory) throws IOException, InterruptedException {
 		if (log) {
-			System.out.println("RUNNING: " + command);
+			if (activeDirectory == null) {
+				System.out.println("RUNNING: " + command);
+			}else{
+				System.out.println("RUNNING: " + command + " in " + activeDirectory);
+			}
 		}
 
 		Process process;
