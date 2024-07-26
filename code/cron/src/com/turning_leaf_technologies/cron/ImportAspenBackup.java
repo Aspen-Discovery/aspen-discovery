@@ -23,7 +23,7 @@ public class ImportAspenBackup implements IProcessHandler {
 		String curDateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
 		String backupDirName = "/data/aspen-discovery/" + servername + "/sql_backup";
-		boolean debug = false;
+		boolean debug = true;
 
 		try {
 			File backupDir = new File(backupDirName);
