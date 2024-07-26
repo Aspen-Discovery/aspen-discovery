@@ -85,7 +85,7 @@ public class ImportAspenBackup implements IProcessHandler {
 			importExecutable = "mariadb";
 		}
 
-		String[] importCommand = new String[]{importExecutable, "-u" + dbUser, "-p" + dbPassword, "-h" + dbHost, "-P" + dbPort, dbName, "-f",  "< " + fileToImport.getName()};
+		String[] importCommand = new String[]{importExecutable, "-f",  "-u" + dbUser, "-p" + dbPassword, "-h" + dbHost, "-P" + dbPort, dbName, "< " + fileToImport.getName()};
 
 		try {
 			executeCommand(importCommand, debug, backupDir);
