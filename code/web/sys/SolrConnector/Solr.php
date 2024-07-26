@@ -579,7 +579,7 @@ abstract class Solr {
 							continue;
 						}
 					} elseif ($field == 'issn') {
-						if (!preg_match('/^"?[\dXx-]+"?$/', $fieldValue)) {
+						if (!preg_match('/^"?[\d\hXx-]+"?$/', $fieldValue)) {
 							continue;
 						}
 					} elseif ($field == 'upc') {
@@ -648,19 +648,26 @@ abstract class Solr {
 	 * @return    array                             Array for use as _applySearchSpecs() values param
 	 */
 	private function _buildMungeValues($lookfor, $custom = null, $basic = true) {
+		$grouped_word_id_pattern_1 = '/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i';
+		$grouped_word_id_pattern_2 = '/^"?(\d+|.?[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}|MWT\d+|CARL\d+)"?$/i';
 		if ($basic) {
-			$cleanedQuery = str_replace(':', ' ', $lookfor);
-			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
-			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-            // Fix for date ranges
-            $cleanedQuery = preg_replace("/([0-9a-zA-Z])([-])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
-            // Fix for ordinal numbers
-            $cleanedQuery = preg_replace("/([0-9])([a-zA-Z])/", "$1 $2", $cleanedQuery);
-			$cleanedQuery = str_replace('-', '\-', $cleanedQuery);
-			$cleanedQuery = str_replace('–', '\-\-', $cleanedQuery);
-            $cleanedQuery = str_replace('+', '\+', $cleanedQuery);
-            $cleanedQuery = str_replace('?', '\?', $cleanedQuery);
-			$cleanedQuery = str_replace('/', '\/', $cleanedQuery);
+			// Don't strip characters out/escape them if it's a grouped work ID
+			if (!preg_match($grouped_word_id_pattern_1, $lookfor) && !preg_match($grouped_word_id_pattern_2, $lookfor)) {
+				$cleanedQuery = str_replace(':', ' ', $lookfor);
+				$cleanedQuery = str_replace('“', '"', $cleanedQuery);
+				$cleanedQuery = str_replace('”', '"', $cleanedQuery);
+				// Fix for date ranges
+				$cleanedQuery = preg_replace("/([0-9a-zA-Z])([-])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
+				// Fix for ordinal numbers
+				$cleanedQuery = preg_replace("/([0-9])(st|nd|rd|th)/", "$1 $2", $cleanedQuery);
+				$cleanedQuery = str_replace('-', '\-', $cleanedQuery);
+				$cleanedQuery = str_replace('–', '\-\-', $cleanedQuery);
+				$cleanedQuery = str_replace('+', '\+', $cleanedQuery);
+				$cleanedQuery = str_replace('?', '\?', $cleanedQuery);
+				$cleanedQuery = str_replace('/', '\/', $cleanedQuery);
+			} else {
+				$cleanedQuery = $lookfor;
+			}
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 

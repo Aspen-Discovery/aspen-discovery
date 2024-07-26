@@ -141,12 +141,15 @@ ISN:
   QueryFields:
     - issn:
       - [and, 100]
+      - [onephrase, 100]
       - [or, ~]
     - isbn:
       - [and, 100]
+      - [onephrase, 100]
       - [or, ~]
     - upc:
       - [and, 100]
+      - [onephrase, 100]
       - [or, ~]
 
 Subject:
