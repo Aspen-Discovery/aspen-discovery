@@ -81,7 +81,7 @@ public class ImportAspenBackup implements IProcessHandler {
 		if (operatingSystem.equals("windows")) {
 			importExecutable = "cmd /c mysql";
 		}else{
-			importExecutable = "mariadb";
+			importExecutable = "mysql";
 		}
 
 		String importCommand = importExecutable + " -u" + dbUser + " -p" + dbPassword + " -h" + dbHost + " -P" + dbPort + " -D" + dbName + " -f < " + fileToImport.getName();
@@ -153,8 +153,8 @@ public class ImportAspenBackup implements IProcessHandler {
 		if (activeDirectory == null) {
 			process = Runtime.getRuntime().exec(command);
 		}else{
-			String[] args = command.split(" ");
-			ProcessBuilder pb = new ProcessBuilder(args);
+			//String[] args = command.split(" ");
+			ProcessBuilder pb = new ProcessBuilder(command);
 			pb.directory(activeDirectory);
 			process = pb.start();
 		}
