@@ -45,6 +45,7 @@ class Location extends DataObject {
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $showOnDonationsPage;
+	public $showInSearchFacet;
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;
@@ -890,6 +891,15 @@ class Location extends DataObject {
 								'hideInLists' => true,
 								'default' => true,
 								'forcesReindex' => true,
+							],
+							[
+								'property' => 'showInSearchFacet',
+								'type' => 'checkbox',
+								'label' => 'Show This Branch In Search Facet',
+								'description' => 'Whether or not the library should appear as a location that can be selected to filter search results by.',
+								'hideInLists' => true,
+								'default' => true,
+								'forcesReindex' => false,
 							],
 							[
 								'property' => 'additionalLocationsToShowAvailabilityFor',
