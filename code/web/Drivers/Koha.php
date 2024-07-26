@@ -362,6 +362,7 @@ class Koha extends AbstractIlsDriver {
 
 					$postVariables['csrf_token'] = $csr_token;
 					$postVariables['action'] = 'update';
+					$postVariables['op'] = 'cud-update';
 
 					if (isset($_REQUEST['resendEmail'])) {
 						$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
@@ -3540,6 +3541,25 @@ class Koha extends AbstractIlsDriver {
 			'password' => $user->ils_password,
 			'userid' => $user->ils_barcode,
 		];
+
+		$kohaVersion = $this->getKohaVersion();
+		$csrfToken = '';
+		if ($kohaVersion >= 24.05) {
+			//First get the page to get the csrf token
+			$getResults = $this->getKohaPage("$catalogUrl/cgi-bin/koha/opac-user.pl");
+			if (preg_match('/<input type="hidden" name="csrf_token" value="(.*?)" \/>/', $getResults, $matches)) {
+				$csrfToken = $matches[1];
+			}
+
+			$postParams = [
+				'koha_login_context' => 'opac',
+				'login_password' => $user->ils_password,
+				'login_userid' => $user->ils_barcode,
+				'csrf_token' => $csrfToken,
+				'op' => 'cud-login'
+			];
+		}
+
 		$sResult = $this->postToKohaPage($loginUrl, $postParams);
 		//Parse the response to make sure the login went ok
 		//If we can see the logout link, it means that we logged in successfully.
@@ -6195,17 +6215,33 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 
+			$postParams = [];
 			//Get the csr token
 			$updatePage = $this->getKohaPage($updateMessageUrl);
 			if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
 				$getParams[] = 'csrf_token=' . $matches[1];
+				$postParams['csrf_token'] = $matches[1];
 			}
 
-			$updateMessageUrl .= implode('&', $getParams);
+			$kohaVersion = $this->getKohaVersion();
+			if ($kohaVersion >= 24.05) {
+				foreach ($params as $key => $value) {
+					if (is_array($value)) {
+						foreach ($value as $arrayValue) {
+							$postParams[$key] = $arrayValue;
+						}
+					} else {
+						$postParams[$key] = $value;
+					}
+				}
+				$postParams['op'] = 'cud-modify';
+				$result = $this->postToKohaPage("$catalogUrl/cgi-bin/koha/opac-messaging.pl?", $postParams);
+			} else {
+				$updateMessageUrl .= implode('&', $getParams);
+				$updateMessageUrl .= '&' . $digestParams;
+				$result = $this->getKohaPage($updateMessageUrl);
+			}
 
-			$updateMessageUrl .= '&' . $digestParams;
-
-			$result = $this->getKohaPage($updateMessageUrl);
 			if (strpos($result, 'Settings updated') !== false) {
 				//Check to see if we also need to update Shoutbomb settings
 				$extendedAttributesInfo = $this->setExtendedAttributes();
