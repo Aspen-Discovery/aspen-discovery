@@ -7,6 +7,31 @@ require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
 
 class Summon_UsageGraphs extends Admin_Admin {
 
+	function launch() {
+		global $interface;
+
+		$title = 'Summon Usage Graphs';
+		$stat = $_REQUEST['stat'];
+
+		switch ($stat) {
+			case 'activeUsers':
+				$title .= ' - Active Users';
+			break;
+			case 'numRecordsViewed':
+				$title .= ' - Number of Records Viewed';
+			break;
+			case 'numRecordsClicked':
+				$title .= ' - Number of Records Clicked';
+			break;
+			case 'totalClicks':
+				$title .= ' - Total Clicks';
+			break;
+		}
+
+		$interface->assign('graphTitle', $title);
+		$this->display('usage-graph.tpl', $title);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'summon';
 	}
