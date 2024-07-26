@@ -5,5 +5,5 @@ if [ -z "$1" ]
     exit 1
 fi
 
-printf "Updating apache configuration\n"
+printf "Updating cron configuration\n"
 php /usr/local/aspen-discovery/install/updateCron_24_08.php $1
