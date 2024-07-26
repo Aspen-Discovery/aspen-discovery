@@ -13,7 +13,7 @@ import { loadError } from '../../../components/loadError';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
-import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
+import { getAuthor, getCleanTitle, getDateLastUsed, getFormat, getTitle } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory } from '../../../util/api/user';
@@ -32,7 +32,7 @@ export const MyReadingHistory = () => {
      const { user, updateUser, readingHistory, updateReadingHistory } = React.useContext(UserContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
-     const pageSize = 25;
+     const pageSize = 20;
      const systemMessagesForScreen = [];
      const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
      const { textColor } = React.useContext(ThemeContext);
@@ -66,6 +66,8 @@ export const MyReadingHistory = () => {
           },
           onSettle: (data) => setLoading(false),
      });
+
+     const state = queryClient.getQueryState(['reading_history']);
 
      useFocusEffect(
           React.useCallback(() => {
@@ -149,6 +151,15 @@ export const MyReadingHistory = () => {
           queryClient.invalidateQueries({ queryKey: ['reading_history'] });
           setDeleteAllIsOpen(false);
           setDeleting(false);
+     };
+
+     const updateSort = async (value) => {
+          console.log('updateSort: ' + value);
+          setLoading(true);
+          setSort(value);
+          await queryClient.invalidateQueries({ queryKey: ['reading_history', user.id, library.baseUrl, page, sort] });
+          await queryClient.refetchQueries({ queryKey: ['reading_history', user.id, library.baseUrl, page, value] });
+          setLoading(false);
      };
 
      const [expanded, setExpanded] = React.useState(false);
@@ -236,7 +247,7 @@ export const MyReadingHistory = () => {
                                              bg: 'tertiary.300',
                                              endIcon: <CheckIcon size="5" />,
                                         }}
-                                        onValueChange={(itemValue) => setSort(itemValue)}>
+                                        onValueChange={(itemValue) => updateSort(itemValue)}>
                                         <Select.Item label={sortBy.title} value="title" key={0} />
                                         <Select.Item label={sortBy.author} value="author" key={1} />
                                         <Select.Item label={sortBy.last_used} value="checkedOut" key={2} />
@@ -339,7 +350,7 @@ export const MyReadingHistory = () => {
                                                        queryClient.setQueryData(['reading_history', user.id, library.baseUrl, page, sort], result);
                                                        queryClient.setQueryData(['reading_history', user.id, library.baseUrl, newPage, sort], result);
                                                   });
-                                                  setLoading(falses);
+                                                  setLoading(false);
                                              }
                                         }}
                                         isDisabled={isPreviousData || !data?.hasMore}>
@@ -380,7 +391,7 @@ export const MyReadingHistory = () => {
                ) : (
                     <>
                          {getActionButtons()}
-                         {status === 'loading' || isFetching ? (
+                         {status === 'loading' || isFetching || isLoading ? (
                               loadingSpinner()
                          ) : status === 'error' ? (
                               loadError('Error', '')
@@ -431,67 +442,71 @@ const Item = (data) => {
      ///bookcover.php?id=af5d146c-d9d8-130b-9857-03d4126be9fd-eng&size=small&type=grouped_work&category=Books"
      const key = 'medium_' + item.permanentId;
      let url = library.baseUrl + '/bookcover.php?id=' + item.permanentId + '&size=medium';
-     return (
-          <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
-               <HStack space={3}>
-                    <VStack maxW="30%">
-                         <Image
-                              alt={item.title}
-                              source={url}
-                              style={{
-                                   width: 100,
-                                   height: 150,
-                                   borderRadius: 4,
-                              }}
-                              placeholder={blurhash}
-                              transition={1000}
-                              contentFit="cover"
-                         />
-                         <AddToList itemId={item.permanentId} btnStyle="sm" />
-                    </VStack>
-                    <VStack w="65%">
-                         {getTitle(item.title)}
-                         {getAuthor(item.author)}
-                         {getFormat(item.format)}
-                    </VStack>
-               </HStack>
-               <Actionsheet isOpen={isOpen} onClose={toggle} size="full">
-                    <Actionsheet.Content>
-                         <Box w="100%" h={60} px={4} justifyContent="center">
-                              <Text
-                                   fontSize="18"
-                                   color="gray.500"
-                                   _dark={{
-                                        color: 'gray.300',
-                                   }}>
-                                   {getTitle(item.title)}
-                              </Text>
-                         </Box>
-                         {item.existsInCatalog ? (
+     if (item.title) {
+          return (
+               <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
+                    <HStack space={3}>
+                         <VStack maxW="30%">
+                              <Image
+                                   alt={item.title}
+                                   source={url}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   placeholder={blurhash}
+                                   transition={1000}
+                                   contentFit="cover"
+                              />
+                              <AddToList itemId={item.permanentId} btnStyle="sm" />
+                         </VStack>
+                         <VStack w="65%">
+                              {getTitle(item.title)}
+                              {getAuthor(item.author)}
+                              {getFormat(item.format)}
+                              {getDateLastUsed(item.checkout, item.checkedOut)}
+                         </VStack>
+                    </HStack>
+                    <Actionsheet isOpen={isOpen} onClose={toggle} size="full">
+                         <Actionsheet.Content>
+                              <Box w="100%" h={60} px={4} justifyContent="center">
+                                   <Text
+                                        fontSize="18"
+                                        color="gray.500"
+                                        _dark={{
+                                             color: 'gray.300',
+                                        }}>
+                                        {getTitle(item.title)}
+                                   </Text>
+                              </Box>
+                              {item.existsInCatalog ? (
+                                   <Actionsheet.Item
+                                        onPress={() => {
+                                             openGroupedWork(item.permanentId, item.title);
+                                             toggle();
+                                        }}
+                                        startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
+                                        {getTermFromDictionary(language, 'view_item_details')}
+                                   </Actionsheet.Item>
+                              ) : null}
                               <Actionsheet.Item
-                                   onPress={() => {
-                                        openGroupedWork(item.permanentId, item.title);
+                                   isLoading={deleting}
+                                   isLoadingText={getTermFromDictionary(language, 'removing', true)}
+                                   onPress={async () => {
+                                        setDelete(true);
+                                        await deleteFromHistory(item.permanentId).then((r) => {
+                                             setDelete(false);
+                                        });
                                         toggle();
                                    }}
-                                   startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
-                                   {getTermFromDictionary(language, 'view_item_details')}
+                                   startIcon={<Icon as={MaterialIcons} name="delete" color="trueGray.400" mr="1" size="6" />}>
+                                   {getTermFromDictionary(language, 'reading_history_delete')}
                               </Actionsheet.Item>
-                         ) : null}
-                         <Actionsheet.Item
-                              isLoading={deleting}
-                              isLoadingText={getTermFromDictionary(language, 'removing', true)}
-                              onPress={async () => {
-                                   setDelete(true);
-                                   await deleteFromHistory(item.permanentId).then((r) => {
-                                        setDelete(false);
-                                   });
-                                   toggle();
-                              }}
-                              startIcon={<Icon as={MaterialIcons} name="delete" color="trueGray.400" mr="1" size="6" />}>
-                              {getTermFromDictionary(language, 'reading_history_delete')}
-                         </Actionsheet.Item>
-                    </Actionsheet.Content>
-               </Actionsheet>
-          </Pressable>
-     );
+                         </Actionsheet.Content>
+                    </Actionsheet>
+               </Pressable>
+          );
+     }
+     return null;
 };
