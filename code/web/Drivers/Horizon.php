@@ -77,7 +77,7 @@ abstract class Horizon extends AbstractIlsDriver {
 		$header[] = "Connection: keep-alive";
 		$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
 		$header[] = "Accept-Language: en-us,en;q=0.5";
-		$cookie = tempnam("/tmp", "CURLCOOKIE");
+		$cookie = tempnam(sys_get_temp_dir(), "CURLCOOKIE");
 
 		//Go to items out page
 		$curl_url = $this->hipUrl . "/ipac20/ipac.jsp?profile={$configArray['Catalog']['hipProfile']}&menu=account&submenu=blocks";
