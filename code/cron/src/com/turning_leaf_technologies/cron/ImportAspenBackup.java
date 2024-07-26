@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.cron;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
+import org.jsoup.internal.StringUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,10 +82,10 @@ public class ImportAspenBackup implements IProcessHandler {
 		if (operatingSystem.equals("windows")) {
 			importExecutable = "cmd /c mysql";
 		}else{
-			importExecutable = "mysql";
+			importExecutable = "mariadb";
 		}
 
-		String importCommand = importExecutable + " -u" + dbUser + " -p" + dbPassword + " -h" + dbHost + " -P" + dbPort + " -D" + dbName + " -f < " + fileToImport.getName();
+		String[] importCommand = new String[]{importExecutable, "-u" + dbUser, "-p" + dbPassword, "-h" + dbHost, "-P" + dbPort, dbName, "-f",  "< " + fileToImport.getName()};
 
 		try {
 			executeCommand(importCommand, debug, backupDir);
@@ -138,6 +139,35 @@ public class ImportAspenBackup implements IProcessHandler {
 			return new File[]{};
 		}
 		return filesToCheck;
+	}
+
+	public void executeCommand(String[] command, boolean log, File activeDirectory) throws IOException, InterruptedException {
+		if (log) {
+			if (activeDirectory == null) {
+				System.out.println("RUNNING: " + String.join(" ", command));
+			}else{
+				System.out.println("RUNNING: " + String.join(" ", command) + " in " + activeDirectory);
+			}
+		}
+
+		Process process;
+		if (activeDirectory == null) {
+			process = Runtime.getRuntime().exec(command);
+		}else{
+			//String[] args = command.split(" ");
+			ProcessBuilder pb = new ProcessBuilder(command);
+			pb.directory(activeDirectory);
+			process = pb.start();
+		}
+		int exitCode = process.waitFor();
+		if (log) {
+			StringBuilder output = new StringBuilder();
+			byte[] buffer = new byte[1024];
+			while (process.getInputStream().read(buffer) != -1) {
+				output.append(new String(buffer));
+			}
+			System.out.println("RESULT: " + exitCode + "\n" + output);
+		}
 	}
 
 	public void executeCommand(String command, boolean log, File activeDirectory) throws IOException, InterruptedException {
