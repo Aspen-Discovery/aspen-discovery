@@ -162,6 +162,15 @@ export const MyReadingHistory = () => {
           setLoading(false);
      };
 
+     const updatePage = async (value) => {
+          console.log('updatePage: ' + value);
+          setLoading(true);
+          setPage(value);
+          await queryClient.invalidateQueries({ queryKey: ['reading_history', user.id, library.baseUrl, page, sort] });
+          await queryClient.refetchQueries({ queryKey: ['reading_history', user.id, library.baseUrl, value, sort] });
+          setLoading(false);
+     };
+
      const [expanded, setExpanded] = React.useState(false);
      const getDisclaimer = () => {
           return (
@@ -328,7 +337,7 @@ export const MyReadingHistory = () => {
                          alignItems="center">
                          <ScrollView horizontal>
                               <Button.Group size="sm">
-                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
+                                   <Button onPress={() => updatePage(page - 1)} isDisabled={page === 1}>
                                         {getTermFromDictionary(language, 'previous')}
                                    </Button>
                                    <Button
@@ -336,9 +345,9 @@ export const MyReadingHistory = () => {
                                              if (!isPreviousData && data?.hasMore) {
                                                   console.log('Adding to page');
                                                   let newPage = page + 1;
-                                                  setPage(page + 1);
+                                                  updatePage(newPage);
                                                   setLoading(true);
-                                                  await fetchReadingHistory(page, pageSize, sort, library.baseUrl).then((result) => {
+                                                  await fetchReadingHistory(newPage, pageSize, sort, library.baseUrl).then((result) => {
                                                        updateReadingHistory(data);
                                                        if (data.totalPages) {
                                                             let tmp = getTermFromDictionary(language, 'page_of_page');
