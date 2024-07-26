@@ -7,3 +7,6 @@ fi
 
 printf "Updating cron configuration\n"
 php /usr/local/aspen-discovery/install/updateCron_24_08.php $1
+
+printf "Updating apache configuration\n"
+php /usr/local/aspen-discovery/install/updateApacheConf_24_08.php $1
