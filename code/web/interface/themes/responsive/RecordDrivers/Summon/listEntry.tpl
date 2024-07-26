@@ -9,7 +9,7 @@
             {if !empty($showCovers)}
                 <div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
                     {if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
-                        <a href="{$summUrl}" target="_blank" aria-hidden="true">
+                        <a href="{$summUrl}" onclick="AspenDiscovery.Summon.trackSummonUsage('{$summId}')" target="_blank" aria-hidden="true">
                             <img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
                         </a>
                     {/if}
@@ -20,7 +20,7 @@
                 <div class="row">
                     <div class="col-xs-12">
                         <span class="result-index">{$resultIndex})</span>&nbsp;
-                        <a href="{$summUrl}" class="result-title notranslate" target="_blank" aria-label="{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if} ({translate text='opens in new window' isPublicFacing=true})">
+                        <a href="{$summUrl}" class="result-title notranslate" onclick="AspenDiscovery.Summon.trackSummonUsage('{$summId}')" target="_blank" aria-label="{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if} ({translate text='opens in new window' isPublicFacing=true})">
                             {if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
                         </a>
                     </div>

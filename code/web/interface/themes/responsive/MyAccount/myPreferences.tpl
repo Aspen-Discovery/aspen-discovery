@@ -204,23 +204,6 @@
 						{/if}
 					</div>
 
-					{if !empty($loggedIn) && $profile->userCookiePreferenceEssential == 1 && !empty($cookieConsentEnabled)}
-						<div class="form-group #propertyRow">
-						<strong class="control-label">{translate text="Cookies to allow" isPublicFacing=true}:</strong>&nbsp;
-						<div style='padding:0.5em 1em;'>
-							<div class="form-group propertyRow">
-								<label for='userCookieEssential' class="control-label">{translate text="Essential" isPublicFacing=true}</label>&nbsp;
-								<input disabled="disabled" type="checkbox" class="form-control" name="userCookieEssential" id="userCookieEssential" {if $profile->userCookiePreferenceEssential==1}checked='checked'{/if} data-switch="">
-
-							</div>
-							<div class="form-group propertyRow">
-								<label for='userCookieAnalytics' class="control-label">{translate text="Analytics" isPublicFacing=true}</label>&nbsp;
-								<input type="checkbox" class="form-control" name="userCookieAnalytics" id="userCookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch="">
-
-							</div>
-						</div>
-					{/if}
-
 					{if empty($offline) && $edit == true}
 						<div class="form-group propertyRow">
 							<button type="submit" name="updateMyPreferences" class="btn btn-sm btn-primary">{translate text="Update My Preferences" isPublicFacing=true}</button>
@@ -231,7 +214,7 @@
 				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
-					$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
+					<!-- $(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
 					$("#usernameHelpButton").click(function() {
 						var helpButton = $(this);
 						if (helpButton.attr("aria-expanded") === "true") {
@@ -243,9 +226,9 @@
 							$("#usernameHelpButton").attr("aria-expanded","true");
 						}
 						return false;
-					})
+					}) -->
 					{/literal}
-				</script>
+				</script> 
 			{/if}
 		{else}
 			<div class="page">

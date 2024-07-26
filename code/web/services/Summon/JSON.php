@@ -4,8 +4,8 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class Summon_JSON extends JSON_Action {
     /**@noinspection PhpUnused */
-    
     public function trackSummonUsage(): array {
+		global $library;
         if (!isset($_REQUEST['id'])) {
             return [
                 'success' => false,
@@ -15,8 +15,8 @@ class Summon_JSON extends JSON_Action {
         $id = $_REQUEST['id'];
 
         require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
-        $summonRecordRecordUsage = new SummonRecordUsage();
-        global $asoenUsage;
+        $summonRecordUsage = new SummonRecordUsage();
+        global $aspenUsage;
         $summonRecordUsage->instance = $aspenUsage->getInstance();
         $summonRecordUsage->summonId = $id;
         $summonRecordUsage->year = date('Y');
@@ -33,23 +33,28 @@ class Summon_JSON extends JSON_Action {
             $summonRecordUsage->insert();
         }
 
-        $userId = UserAccount::getActiveUserId();
-		if ($userId) {
-			//Track usage for the user
-			require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
-			$userSummonUsage = new UserSummonUsage();
-			global $aspenUsage;
-			$userSummonUsage->instance = $aspenUsage->getInstance();
-			$userSummonUsage->userId = $userId;
-			$userSummonUsage->year = date('Y');
-			$userSummonUsage->month = date('n');
+		$userObj = UserAccount::getActiveUserObj();
+		$userSummonTracking = $userObj->userCookiePreferenceExternalSearchServices;
 
-			if ($userSummonUsage->find(true)) {
-				$userSummonUsage->usageCount++;
-				$userSummonUsage->update();
-			} else {
-				$userSummonUsage->usageCount = 1;
-				$userSummonUsage->insert();
+		if ($userSummonTracking && $library->cookieStorageConsent) {
+			$userId = UserAccount::getActiveUserId();
+			if ($userId) {
+				//Track usage for the user
+				require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+				$userSummonUsage = new UserSummonUsage();
+				global $aspenUsage;
+				$userSummonUsage->instance = $aspenUsage->getInstance();
+				$userSummonUsage->userId = $userId;
+				$userSummonUsage->year = date('Y');
+				$userSummonUsage->month = date('n');
+
+				if ($userSummonUsage->find(true)) {
+					$userSummonUsage->usageCount++;
+					$userSummonUsage->update();
+				} else {
+					$userSummonUsage->usageCount = 1;
+					$userSummonUsage->insert();
+				}
 			}
 		}
 
