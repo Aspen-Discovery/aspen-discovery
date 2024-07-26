@@ -37,7 +37,7 @@ public class ImportAspenBackup implements IProcessHandler {
 
 				if (filesToImport.length > 0) {
 					//Import each sql file using multiple threads.
-					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 					for (File fileToImport : filesToImport) {
 						es.execute(() -> importFile(fileToImport, backupDir, debug, configIni, processLog));
 					}
@@ -84,7 +84,7 @@ public class ImportAspenBackup implements IProcessHandler {
 			importExecutable = "mariadb";
 		}
 
-		String importCommand = importExecutable + " -u" + dbUser + " -p" + dbPassword + " -h" + dbHost + " -P" + dbPort + " -D " + dbName + "  --force < " + fileToImport.getName();
+		String importCommand = importExecutable + " -u" + dbUser + " -p" + dbPassword + " -h" + dbHost + " -P" + dbPort + " -D" + dbName + " -f < " + fileToImport.getName();
 
 		try {
 			executeCommand(importCommand, debug, backupDir);
