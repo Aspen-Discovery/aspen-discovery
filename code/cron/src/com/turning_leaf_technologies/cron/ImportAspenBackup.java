@@ -3,14 +3,10 @@ package com.turning_leaf_technologies.cron;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
-import org.jsoup.internal.StringUtil;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -43,7 +39,18 @@ public class ImportAspenBackup implements IProcessHandler {
 					//Import each sql file using multiple threads.
 					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 					for (File fileToImport : filesToImport) {
-						es.execute(() -> importFile(fileToImport, dbConn, debug, configIni, processLog));
+						//Since we are actively updating cron_log and cron_process log we can't import those
+						if (fileToImport.getName().endsWith("cron_log.sql") || fileToImport.getName().endsWith("cron_process_log.sql")) {
+							//noinspection ConstantValue
+							if (debug) {
+								System.out.println("Skipping cron log table");
+							}
+							if (!fileToImport.delete()) {
+								processLog.incErrors("Unable to delete " + fileToImport.getName());
+							}
+						}else{
+							es.execute(() -> importFile(fileToImport, backupDir, debug, configIni, processLog));
+						}
 					}
 					es.shutdown();
 					while (true) {
@@ -71,50 +78,33 @@ public class ImportAspenBackup implements IProcessHandler {
 		processLog.saveResults();
 	}
 
-	private void importFile(File fileToImport, Connection dbConn, boolean debug, Ini configIni, CronProcessLogEntry processLog) {
-		boolean exportData = true;
+	private void importFile(File fileToImport, File backupDir, boolean debug, Ini configIni, CronProcessLogEntry processLog) {
+		if (debug) {
+			System.out.println("PROCESSING: " + fileToImport.getName());
+		}
 
-		BufferedReader reader;
+		String dbUser = configIni.get("Database", "database_user");
+		String dbPassword = configIni.get("Database", "database_password");
+		String dbName = configIni.get("Database", "database_aspen_dbname");
+		String dbHost = configIni.get("Database", "database_aspen_host");
+		String dbPort = configIni.get("Database", "database_aspen_dbport");
+
+		String[] importCommand;
+		String operatingSystem = configIni.get("System", "operatingSystem");
+		if (operatingSystem.equals("windows")) {
+			importCommand = new String[]{"cmd", "/c", "\"mysql --force" + "-u" + dbUser + " -p" + dbPassword + " -h" + dbHost + " -P" + dbPort + " -D" + dbName + " < " + fileToImport.getName() + "\""};
+		}else{
+			importCommand = new String[]{"mysql", "--force", "-u" + dbUser, " -p" + dbPassword, " -h" + dbHost, " -P" + dbPort, dbName, "< " + fileToImport.getName()};
+		}
 
 		try {
-			if (debug) {
-				System.out.println("PROCESSING: " + fileToImport.getName());
-			}
+			executeCommand(importCommand, debug, backupDir);
+		} catch (IOException | InterruptedException e) {
+			processLog.incErrors("Exception loading " + fileToImport.getName(), e);
+		}
 
-			reader = new BufferedReader(new FileReader(fileToImport));
-			String line = reader.readLine();
-
-			StringBuilder statementToExecute = new StringBuilder();
-			while (line != null) {
-				if (line.isEmpty() || line.startsWith("-") || line.startsWith("/")){
-					//This is a comment or blank line that we can ignore.
-					if (debug) {
-						System.out.println("SKIPPING: " + line);
-					}
-				}else{
-					statementToExecute.append(line).append("\n");
-					if (line.endsWith(";")){
-						try {
-							//reset the statement
-							boolean result = dbConn.prepareCall(statementToExecute.toString()).execute();
-							if (debug) {
-								System.out.println("EXECUTED: " + statementToExecute);
-							}
-							statementToExecute = new StringBuilder();
-						} catch (SQLException e) {
-							System.out.println("ERROR: " + line);
-							System.out.println(e.toString());
-						}
-					}
-
-				}
-				// read next line
-				line = reader.readLine();
-			}
-
-			reader.close();
-		} catch (IOException e) {
-			processLog.incErrors("Error loading import file", e);
+		if (!fileToImport.delete()) {
+			processLog.incErrors("Unable to delete " + fileToImport.getName());
 		}
 	}
 
