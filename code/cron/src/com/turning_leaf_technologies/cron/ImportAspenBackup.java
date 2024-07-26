@@ -5,9 +5,12 @@ import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.jsoup.internal.StringUtil;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -38,9 +41,9 @@ public class ImportAspenBackup implements IProcessHandler {
 
 				if (filesToImport.length > 0) {
 					//Import each sql file using multiple threads.
-					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 					for (File fileToImport : filesToImport) {
-						es.execute(() -> importFile(fileToImport, backupDir, debug, configIni, processLog));
+						es.execute(() -> importFile(fileToImport, dbConn, debug, configIni, processLog));
 					}
 					es.shutdown();
 					while (true) {
@@ -68,35 +71,50 @@ public class ImportAspenBackup implements IProcessHandler {
 		processLog.saveResults();
 	}
 
-	private void importFile(File fileToImport, File backupDir, boolean debug, Ini configIni, CronProcessLogEntry processLog) {
+	private void importFile(File fileToImport, Connection dbConn, boolean debug, Ini configIni, CronProcessLogEntry processLog) {
 		boolean exportData = true;
 
-		String dbUser = configIni.get("Database", "database_user");
-		String dbPassword = configIni.get("Database", "database_password");
-		String dbName = configIni.get("Database", "database_aspen_dbname");
-		String dbHost = configIni.get("Database", "database_aspen_host");
-		String dbPort = configIni.get("Database", "database_aspen_dbport");
-
-		String operatingSystem = configIni.get("System", "operatingSystem");
-		String importExecutable;
-		if (operatingSystem.equals("windows")) {
-			importExecutable = "cmd /c mysql";
-		}else{
-			importExecutable = "mariadb";
-		}
-
-		String[] importCommand = new String[]{importExecutable, "-f",  "-u" + dbUser, "-p" + dbPassword, "-h" + dbHost, "-P" + dbPort, "-D" + dbName, "< " + fileToImport.getName()};
+		BufferedReader reader;
 
 		try {
-			executeCommand(importCommand, debug, backupDir);
-			if (!fileToImport.delete()){
-				processLog.incErrors("Could not delete file " + fileToImport.getName());
-			}else{
-				processLog.incUpdated();
-				processLog.saveResults();
+			if (debug) {
+				System.out.println("PROCESSING: " + fileToImport.getName());
 			}
-		} catch (IOException | InterruptedException e) {
-			processLog.incErrors("Could not import file " + fileToImport.getName(), e);
+
+			reader = new BufferedReader(new FileReader(fileToImport));
+			String line = reader.readLine();
+
+			StringBuilder statementToExecute = new StringBuilder();
+			while (line != null) {
+				if (line.isEmpty() || line.startsWith("-") || line.startsWith("/")){
+					//This is a comment or blank line that we can ignore.
+					if (debug) {
+						System.out.println("SKIPPING: " + line);
+					}
+				}else{
+					statementToExecute.append(line).append("\n");
+					if (line.endsWith(";")){
+						try {
+							//reset the statement
+							boolean result = dbConn.prepareCall(statementToExecute.toString()).execute();
+							if (debug) {
+								System.out.println("EXECUTED: " + statementToExecute);
+							}
+							statementToExecute = new StringBuilder();
+						} catch (SQLException e) {
+							System.out.println("ERROR: " + line);
+							System.out.println(e.toString());
+						}
+					}
+
+				}
+				// read next line
+				line = reader.readLine();
+			}
+
+			reader.close();
+		} catch (IOException e) {
+			processLog.incErrors("Error loading import file", e);
 		}
 	}
 
@@ -126,7 +144,7 @@ public class ImportAspenBackup implements IProcessHandler {
 		String tarExecutable;
 		String cdExecutable;
 		if (operatingSystem.equals("windows")) {
-			tarExecutable = "C:\\cygwin64\\bin\\tar.exe";
+			tarExecutable = "cmd /c tar";
 			executeCommand(tarExecutable + " -xzf " + latestBackupFile.getName() , debug, backupDir.getAbsoluteFile());
 		}else{
 			tarExecutable = "tar";
@@ -139,35 +157,6 @@ public class ImportAspenBackup implements IProcessHandler {
 			return new File[]{};
 		}
 		return filesToCheck;
-	}
-
-	public void executeCommand(String[] command, boolean log, File activeDirectory) throws IOException, InterruptedException {
-		if (log) {
-			if (activeDirectory == null) {
-				System.out.println("RUNNING: " + String.join(" ", command));
-			}else{
-				System.out.println("RUNNING: " + String.join(" ", command) + " in " + activeDirectory);
-			}
-		}
-
-		Process process;
-		if (activeDirectory == null) {
-			process = Runtime.getRuntime().exec(command);
-		}else{
-			//String[] args = command.split(" ");
-			ProcessBuilder pb = new ProcessBuilder(command);
-			pb.directory(activeDirectory);
-			process = pb.start();
-		}
-		int exitCode = process.waitFor();
-		if (log) {
-			StringBuilder output = new StringBuilder();
-			byte[] buffer = new byte[1024];
-			while (process.getInputStream().read(buffer) != -1) {
-				output.append(new String(buffer));
-			}
-			System.out.println("RESULT: " + exitCode + "\n" + output);
-		}
 	}
 
 	public void executeCommand(String command, boolean log, File activeDirectory) throws IOException, InterruptedException {
@@ -183,7 +172,7 @@ public class ImportAspenBackup implements IProcessHandler {
 		if (activeDirectory == null) {
 			process = Runtime.getRuntime().exec(command);
 		}else{
-			//String[] args = command.split(" ");
+			String[] args = command.split(" ");
 			ProcessBuilder pb = new ProcessBuilder(command);
 			pb.directory(activeDirectory);
 			process = pb.start();
