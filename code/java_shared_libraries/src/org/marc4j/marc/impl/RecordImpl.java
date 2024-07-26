@@ -159,6 +159,10 @@ class RecordImpl implements org.marc4j.marc.Record {
             //noinspection SuspiciousMethodCalls
             dataFields.remove(field);
         }
+        Integer tagAsInt = Integer.parseInt(tag);
+        if (fieldsByTag.containsKey(tagAsInt)) {
+            fieldsByTag.get(tagAsInt).remove(field);
+        }
         stringRepresentation = null;
     }
 
