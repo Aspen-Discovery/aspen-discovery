@@ -82,7 +82,7 @@ class BookCoverProcessor {
 			if ($this->getAssabetCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
+		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage' || $this->type == 'GrapesPage') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
 			}
@@ -1776,6 +1776,9 @@ class BookCoverProcessor {
 		} elseif ($this->type == 'WebResource') {
 			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 			$recordDriver = new WebResourceRecordDriver($this->type . ':' . $id);
+		} elseif ($this->type == 'GrapesPage') {
+			require_once ROOT_DIR . '/RecordDrivers/GrapesPageRecordDriver.php';
+			$recordDriver = new GrapesPageRecordDriver($this->type . ':' . $id);
 		}
 
 		if ($recordDriver != null && $recordDriver->isValid()) {
