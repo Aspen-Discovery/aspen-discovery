@@ -4623,24 +4623,8 @@ class User extends DataObject {
 	}
 
 	public function isNotificationHistoryEnabled() {
-		if($this->getILSName() == 'koha') {
-			global $library;
-			$homeLibrary =  $this->getHomeLibrary();
-			if($homeLibrary) {
-				$notificationSettings = new NotificationSetting();
-				$notificationSettings->id = $homeLibrary->lidaNotificationSettingId;
-				if($notificationSettings->find(true)) {
-					return $notificationSettings->notifyAccount;
-				}
-			} else {
-				$notificationSettings = new NotificationSetting();
-				$notificationSettings->id = $library->lidaNotificationSettingId;
-				if($notificationSettings->find(true)) {
-					return $notificationSettings->notifyAccount;
-				}
-			}
-		}
-		return false;
+		$catalogDriver = $this->getCatalogDriver();
+		return $catalogDriver->hasIlsInbox();
 	}
 
 }
