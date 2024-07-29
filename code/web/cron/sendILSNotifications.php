@@ -20,7 +20,7 @@ foreach ($notifications as $notification) {
 		$user = new User();
 		$user->id = $ilsMessage->userId;
 		if($user->find(true)) {
-			if($user->canReceiveNotifications('notifyAccount')) {
+			if($user->canReceiveNotifications('notifyAccount') && $user->canReceiveILSNotification($ilsMessage->type)) {
 				$tokens = $user->getNotificationPushToken();
 				foreach($tokens as $token => $patron) {
 					if($ilsMessage->title && $ilsMessage->content) {

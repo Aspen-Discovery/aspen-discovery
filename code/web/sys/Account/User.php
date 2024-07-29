@@ -4300,6 +4300,31 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function canReceiveILSNotification($code): bool {
+		$userHomeLocation = $this->homeLocationId;
+		$userLocation = new Location();
+		$userLocation->locationId = $this->homeLocationId;
+		if($userLocation->find(true)) {
+			$userLibrary = $userLocation->getParentLibrary();
+			if ($userLibrary) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+				$settings = new NotificationSetting();
+				$settings->id = $userLibrary->lidaNotificationSettingId;
+				if ($settings->find(true)) {
+					$ilsMessageTypes = new ILSMessageType();
+					$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
+					$ilsMessageTypes->code = $code;
+					$ilsMessageTypes->isEnabled = 1;
+					if($ilsMessageTypes->find(true)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function saveNotificationPushToken($token, $device): bool {
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
