@@ -10,7 +10,7 @@ class Summon_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
 
-		$title = 'Summon Usage Graphs';
+		$title = 'Summon Usage Graph';
 		$stat = $_REQUEST['stat'];
 
 		switch ($stat) {
