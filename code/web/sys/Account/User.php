@@ -4301,27 +4301,28 @@ class User extends DataObject {
 	}
 
 	public function canReceiveILSNotification($code): bool {
-		$userHomeLocation = $this->homeLocationId;
-		$userLocation = new Location();
-		$userLocation->locationId = $this->homeLocationId;
-		if($userLocation->find(true)) {
-			$userLibrary = $userLocation->getParentLibrary();
-			if ($userLibrary) {
-				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
-				$settings = new NotificationSetting();
-				$settings->id = $userLibrary->lidaNotificationSettingId;
-				if ($settings->find(true)) {
-					$ilsMessageTypes = new ILSMessageType();
-					$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
-					$ilsMessageTypes->code = $code;
-					$ilsMessageTypes->isEnabled = 1;
-					if($ilsMessageTypes->find(true)) {
-						return true;
+		if($this->isNotificationHistoryEnabled()) { // check if ils notifications are enabled for the ils
+			$userHomeLocation = $this->homeLocationId;
+			$userLocation = new Location();
+			$userLocation->locationId = $this->homeLocationId;
+			if($userLocation->find(true)) {
+				$userLibrary = $userLocation->getParentLibrary();
+				if ($userLibrary) {
+					require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+					$settings = new NotificationSetting();
+					$settings->id = $userLibrary->lidaNotificationSettingId;
+					if ($settings->find(true)) {
+						$ilsMessageTypes = new ILSMessageType();
+						$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
+						$ilsMessageTypes->code = $code;
+						$ilsMessageTypes->isEnabled = 1;
+						if($ilsMessageTypes->find(true)) {
+							return true;
+						}
 					}
 				}
 			}
 		}
-
 		return false;
 	}
 
@@ -4653,6 +4654,11 @@ class User extends DataObject {
 			}
 		}
 		return $showRenewalLink;
+	}
+
+	public function isNotificationHistoryEnabled(): bool {
+		$catalogDriver = $this->getCatalogDriver();
+		return $catalogDriver->hasIlsInbox();
 	}
 }
 
