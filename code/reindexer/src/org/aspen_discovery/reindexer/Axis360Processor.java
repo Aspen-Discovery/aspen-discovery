@@ -235,6 +235,7 @@ class Axis360Processor {
 		String genre = getFieldValue(titleData, "genre");
 		genres.add(genre);
 		Util.addToMapWithCount(literaryForm, genre);
+		if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is " + genre + " based on Axis360 record", 2);}
 		Util.addToMapWithCount(literaryFormFull, genre);
 
 		String targetAudience;
