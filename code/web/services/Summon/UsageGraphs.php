@@ -17,7 +17,7 @@ class Summon_UsageGraphs extends Admin_Admin {
 		} else {
 			$instanceName = '';
 		}
-
+		
 		$dataSeries = [];
 		$columnLabels = [];
 
@@ -64,7 +64,7 @@ class Summon_UsageGraphs extends Admin_Admin {
 				$dataSeries['Active Users']['data'][$curPeriod] = $userSummonUsage->activeUsers;
 			}
 		}
-
+			
 		// gets data from from summon_usage
 		if (
 			$stat == 'numRecordsViewed' ||
@@ -80,6 +80,7 @@ class Summon_UsageGraphs extends Admin_Admin {
 			$summonRecordUsage->selectAdd('year');
 			$summonRecordUsage->selectAdd('month');
 			$summonRecordUsage->orderBy('year, month');
+		
 			if ($stat == 'numRecordsViewed') {
 				$dataSeries['Number of Records Viewed'] = [
 					'borderColor' => 'rgba(255, 99, 132, 1)',
@@ -120,13 +121,13 @@ class Summon_UsageGraphs extends Admin_Admin {
 				if ($stat == 'totalClicks') {
 					/** @noinspection PhpUndefinedFieldInspection */
 					$dataSeries['Total Clicks']['data'][$curPeriod] = $summonRecordUsage->numClicks;
-				}
-				}
+				}	
 			}
-		}
+		}	
+
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
-		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
