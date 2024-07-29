@@ -73,6 +73,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateHomeLibrary', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -234,6 +235,7 @@ class Koha extends AbstractIlsDriver {
 						'Cache-Control: no-cache',
 						'Content-Type: application/json;charset=UTF-8',
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+						'x-koha-library: ' .  $patron->getHomeLocationCode(),
 					], true);
 					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 					ExternalRequestLogEntry::logRequest('koha.updatePatronInfo', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -1832,6 +1834,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
@@ -2030,6 +2033,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -2181,6 +2185,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
@@ -2539,6 +2544,7 @@ class Koha extends AbstractIlsDriver {
 				'x-koha-embed: +strings,extended_attributes',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -2894,6 +2900,7 @@ class Koha extends AbstractIlsDriver {
 					'Content-Type: application/json',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					'Accept-Encoding: gzip, deflate',
+					'x-koha-library: ' .  $patron->getHomeLocationCode(),
 				], true);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST');
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -3145,6 +3152,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -3258,6 +3266,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			ExternalRequestLogEntry::logRequest('koha.freezeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -3363,6 +3372,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', null);
 			ExternalRequestLogEntry::logRequest('koha.thawHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -3433,6 +3443,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			//Get the current hold so we can load priority
@@ -5066,6 +5077,7 @@ class Koha extends AbstractIlsDriver {
 					'Cache-Control: no-cache',
 					'Content-Type: application/json;charset=UTF-8',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'x-koha-library: ' .  $user->getHomeLocationCode(),
 				], true);
 				$postParams = json_encode($postFields);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
@@ -5194,6 +5206,7 @@ class Koha extends AbstractIlsDriver {
 					'Cache-Control: no-cache',
 					'Content-Type: application/json;charset=UTF-8',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'x-koha-library: ' .  $user->getHomeLocationCode(),
 				], true);
 				$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
 				ExternalRequestLogEntry::logRequest('koha.getMaterialRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -5792,6 +5805,7 @@ class Koha extends AbstractIlsDriver {
 				'x-koha-embed: +strings,extended_attributes',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
@@ -6395,6 +6409,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id/account/credits";
 			if (count($accountLinesPaid) > 0) {
@@ -6622,6 +6637,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateAutoRenewal', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), json_encode($postParams), $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -7077,6 +7093,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateEditableUsername', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -7466,6 +7483,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron->unique_ils_id . "/pickups";
@@ -7495,6 +7513,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 		$postVariables = [
 			'library_id' => $location,
@@ -7535,6 +7554,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/pickup/" . $pickupId;
@@ -7584,6 +7604,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/mark_arrived/" . $pickupId;

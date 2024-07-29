@@ -559,5 +559,7 @@
   "appears_on_list": "Appears on list",
   "android_end_of_life": "Your version of Android is no longer supported. Please upgrade to continue receiving updates to this app.",
   "access_instructions": "Access Instructions",
-  "using_palace_project": "Using Palace Project"
+  "using_palace_project": "Using Palace Project",
+  "last_used": "Last Used",
+  "in_use": "In Use"
 }
