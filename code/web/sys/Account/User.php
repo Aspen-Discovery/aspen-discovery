@@ -3408,6 +3408,16 @@ class User extends DataObject {
 				'Administer All Basic Pages',
 				'Administer Library Basic Pages',
 			]);
+			if (!empty(SystemVariables::getSystemVariables()->enableGrapesEditor)) {
+				$sections['web_builder']->addAction(new AdminAction('Grapes Pages', 'Create pages with the Grapes JS visual editor.', '/WebBuilder/GrapesPages'), [
+					'Administer All Grapes Pages',
+					'Administer Library Grapes Pages',
+				]);
+				$sections['web_builder']->addAction(new AdminAction('Grapes Templates', 'Create templates with the Grapes JS visual editor.', '/WebBuilder/Templates'), [
+					'Administer All Grapes Pages',
+					'Administer Library Grapes Pages',
+				]);
+			}
 			$sections['web_builder']->addAction(new AdminAction('Custom Pages', 'Create custom pages with a more complex cell based layout.', '/WebBuilder/PortalPages'), [
 				'Administer All Custom Pages',
 				'Administer Library Custom Pages',
@@ -3884,9 +3894,7 @@ class User extends DataObject {
 			}
 			$showSubmitTicket = false;
 			try {
-				require_once ROOT_DIR . '/sys/SystemVariables.php';
-				$systemVariables = new SystemVariables();
-				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+				if (!empty(SystemVariables::getSystemVariables()->ticketEmail)) {
 					$showSubmitTicket = true;
 				}
 			} catch (Exception $e) {
