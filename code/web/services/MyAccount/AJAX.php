@@ -8454,4 +8454,96 @@ class MyAccount_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	function getILSMessage() {
+		global $interface;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Something went wrong.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if(isset($_REQUEST['messageId']) && ctype_digit($_REQUEST['messageId'])) {
+			$userMessageId = $_REQUEST['messageId'];
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$ilsMessage = new UserILSMessage();
+			$ilsMessage->id = $userMessageId;
+			$ilsMessage->userId = UserAccount::getActiveUserId();
+			if($ilsMessage->find(true)) {
+				$interface->assign('userMessage', $ilsMessage);
+				return [
+					'title' => translate(['text' => 'Notification', 'isPublicFacing' => true]),
+					'modalBody' => $interface->fetch('MyAccount/message.tpl'),
+				];
+			}
+		}
+
+		return $result;
+	}
+
+	function markILSMessageAsRead() {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Something went wrong.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if(isset($_REQUEST['messageId']) && ctype_digit($_REQUEST['messageId'])) {
+			$userMessageId = $_REQUEST['messageId'];
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$ilsMessage = new UserILSMessage();
+			$ilsMessage->id = $userMessageId;
+			$ilsMessage->userId = UserAccount::getActiveUserId();
+			if($ilsMessage->find(true)) {
+				$ilsMessage->isRead = 1;
+				if($ilsMessage->update()) {
+					$result = [
+						'success' => true,
+						'message' => translate([
+							'text' => 'Message marked as read',
+							'isPublicFacing' => true,
+						]),
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	function markILSMessageAsUnread() {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Something went wrong.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if(isset($_REQUEST['messageId']) && ctype_digit($_REQUEST['messageId'])) {
+			$userMessageId = $_REQUEST['messageId'];
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$ilsMessage = new UserILSMessage();
+			$ilsMessage->id = $userMessageId;
+			$ilsMessage->userId = UserAccount::getActiveUserId();
+			if($ilsMessage->find(true)) {
+				$ilsMessage->isRead = 0;
+				if($ilsMessage->update()) {
+					$result = [
+						'success' => true,
+						'message' => translate([
+							'text' => 'Message marked as unread',
+							'isPublicFacing' => true,
+						]),
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
 }

@@ -4621,6 +4621,28 @@ class User extends DataObject {
 		}
 		return $showRenewalLink;
 	}
+
+	public function isNotificationHistoryEnabled() {
+		if($this->getILSName() == 'koha') {
+			global $library;
+			$homeLibrary =  $this->getHomeLibrary();
+			if($homeLibrary) {
+				$notificationSettings = new NotificationSetting();
+				$notificationSettings->id = $homeLibrary->lidaNotificationSettingId;
+				if($notificationSettings->find(true)) {
+					return $notificationSettings->notifyAccount;
+				}
+			} else {
+				$notificationSettings = new NotificationSetting();
+				$notificationSettings->id = $library->lidaNotificationSettingId;
+				if($notificationSettings->find(true)) {
+					return $notificationSettings->notifyAccount;
+				}
+			}
+		}
+		return false;
+	}
+
 }
 
 function modifiedEmpty($var) {
