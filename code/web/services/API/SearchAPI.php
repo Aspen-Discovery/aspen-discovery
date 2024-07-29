@@ -511,25 +511,32 @@ class SearchAPI extends AbstractAPI {
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 						require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+						require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
 						$portalPage = new PortalPage();
 						$basicPage = new BasicPage();
 						$webResource = new WebResource();
+						$grapesPage = new GrapesPage();
 						$portalPage->find();
 						$basicPage->find();
 						$webResource->find();
+						$grapesPage->find();
 						if ($portalPage->getNumResults() > 0) {
 							$checkEntriesInLast24Hours = true;
 						} else {
 							if ($basicPage->getNumResults() > 0) {
 								$checkEntriesInLast24Hours = true;
 							} else {
-								if ($webResource->getNumResults() > 0) {
+								if ($grapesPage->getNumResults() > 0) {
 									$checkEntriesInLast24Hours = true;
 								} else {
-									$checkEntriesInLast24Hours = false;
-									$checkEntriesInLast1Hours = false;
-									//Nothing to index, skip adding a check.
-									continue;
+									if ($webResource->getNumResults() > 0) {
+										$checkEntriesInLast24Hours = true;
+									} else {
+										$checkEntriesInLast24Hours = false;
+										$checkEntriesInLast1Hours = false;
+										//Nothing to index, skip adding a check.
+										continue;
+									}
 								}
 							}
 						}
