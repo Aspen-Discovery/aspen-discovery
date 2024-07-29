@@ -42,7 +42,11 @@ class WebBuilder_GrapesPage extends Action {
 		$title = $this->grapesPage->title;
 		$interface->assign('id', $this->grapesPage->id);
 		$interface->assign('contents', $this->grapesPage->getFormattedContents());
-		
+		$editButton = $this->generateEditPageUrl();
+		$interface->assign('editPageUrl', $editButton);
+		$canEdit = UserAccount::userHasPermission(	'Administer All Grapes Pages',
+		'Administer Library Grapes Pages');
+		$interface->assign('canEdit', $canEdit);
 		// $interface->assign('templateContent', $this->grapesPage->templateContent);
 		// $interface->assign('title', $title);
 
@@ -60,6 +64,12 @@ class WebBuilder_GrapesPage extends Action {
 
 	function canView(): bool {
 		return true;
+	}
+
+	function generateEditPageUrl() {
+		$objectId = $this->grapesPage->id;
+		$templatesSelect - $this->grapesPage->templatesSelect;
+		return '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $objectId . '&tempalteId=' . $templatesSelect;
 	}
 
 	function getBreadcrumbs(): array {

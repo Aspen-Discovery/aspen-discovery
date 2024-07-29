@@ -75,6 +75,13 @@ function getGrapesWebBuilderUpdates() {
 			'sql' => [
 				"ALTER TABLE system_variables ADD COLUMN enableGrapesEditor TINYINT(1) DEFAULT 0"
 			],
-		]
-	];
+		],
+		'add_a_blank_template_to_template_list' => [
+			'title' => 'Add a blank template to list',
+			'description' => 'Add a blank template to template list',
+			'sql' => [
+				"INSERT INTO templates (templateName, templateContent) VALUES ('No Template', ' ')",
+			],
+		],
+   ];
 }

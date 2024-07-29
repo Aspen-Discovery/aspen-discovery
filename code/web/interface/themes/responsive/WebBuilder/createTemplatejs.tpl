@@ -147,6 +147,14 @@
         z-index: 1;
         position: relative;
     }
+    .fa-save {
+      background-color: #3174AF;
+      border: 1px solid #3174AF;
+    }
+
+    .gjs-block-label {
+      font-size: 10px;
+    }
     </style>
 </body>
 
