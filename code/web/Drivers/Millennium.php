@@ -947,7 +947,7 @@ class Millennium extends AbstractIlsDriver {
 		$zip = trim($_REQUEST['zip']);
 		$email = trim($_REQUEST['email']);
 
-		$cookie = tempnam("/tmp", "CURLCOOKIE");
+		$cookie = tempnam(sys_get_temp_dir(), "CURLCOOKIE");
 		$curl_url = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
 		$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
 		//echo "$curl_url";
@@ -1152,7 +1152,7 @@ class Millennium extends AbstractIlsDriver {
 
 		//Go to the pinreset page
 		$pinResetUrl = $this->getVendorOpacUrl() . '/pinreset';
-		$cookieJar = tempnam("/tmp", "CURLCOOKIE");
+		$cookieJar = tempnam(sys_get_temp_dir(), "CURLCOOKIE");
 		$curl_connection = curl_init();
 		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");

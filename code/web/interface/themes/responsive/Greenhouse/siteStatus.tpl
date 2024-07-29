@@ -5,7 +5,7 @@
 		</div>
 	</div>
 
-	<form class="form" id="translationSettings">
+	<form class="form" id="serverOptions">
 		<div class="row">
 			<div class="col-xs-12 col-md-3">
 				<label for="showErrorsOnly">{translate text='Show Errors Only' isAdminFacing=true}</label>

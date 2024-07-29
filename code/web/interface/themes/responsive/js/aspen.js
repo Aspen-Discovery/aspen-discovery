@@ -5135,7 +5135,7 @@ var AspenDiscovery = (function(){
 
 		changeTranslationMode: function(start){
 			var url = window.location.href;
-			url = url.replace(/[&?](start|stop)TranslationMode=true/, '');
+			url = url.replace(/[&?](start|stop)TranslationMode=(true)?/, '');
 			if (start) {
 				url = this.buildUrl(url,'startTranslationMode', 'true');
 			}else{
