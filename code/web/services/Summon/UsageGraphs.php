@@ -35,6 +35,36 @@ class Summon_UsageGraphs extends Admin_Admin {
 				$title .= ' - Total Clicks';
 			break;
 		}
+
+		// gets data from from user_summon_usage
+		if ($stat == 'activeUsers') {
+			$userSummonUsage = new UserSummonUsage();
+			$userSummonUsage->groupBy('year, month');
+			if (!empty($instanceName)) {
+				$userSummonUsage->instance = $instanceName;
+			}
+			$userSummonUsage->selectAdd();
+			$userSummonUsage->selectAdd('year');
+			$userSummonUsage->selectAdd('month');
+			$userSummonUsage->orderBy('year, month');
+
+			$dataSeries['Active Users'] = [
+				'borderColor' => 'rgba(255, 99, 132, 1)',
+				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+				'data' => [],
+			];
+			$userSummonUsage->selectAdd('COUNT(DISTINCT userId) as activeUsers');
+
+			// Collects results
+			$userSummonUsage->find();
+			while($userSummonUsage->fetch()) {
+				$curPeriod = "{$userSummonUsage->month}-{$userSummonUsage->year}";
+				$columnLabels[] = $curPeriod;
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Active Users']['data'][$curPeriod] = $userSummonUsage->activeUsers;
+			}
+		}
+
 		if (
 			$stat == 'numRecordsViewed' ||
 			$stat == 'numRecordsClicked' ||
