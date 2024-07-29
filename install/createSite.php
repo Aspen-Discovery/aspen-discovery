@@ -41,24 +41,24 @@ if (count($_SERVER['argv']) > 1){
 			'solrHost' => $configArray['Site']['solrHost'] ?? 'localhost',
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
-			'aspenDBHost' => $configArray['Aspen']['DBHost'] ?? 'localhost',
-			'aspenDBPort' => $configArray['Aspen']['DBPort'] ?? 3306,
-			'aspenDBName' => $configArray['Aspen']['DBName'],
-			'aspenDBUser' => $configArray['Aspen']['DBUser'],
-			'aspenDBPwd' => $configArray['Aspen']['DBPwd'],
-			'aspenAdminPwd' => $configArray['Aspen']['aspenAdminPwd'],
+			'databaseHost' => $configArray['Aspen']['DBHost'] ?? 'localhost',
+			'databasePort' => $configArray['Aspen']['DBPort'] ?? 3306,
+			'databaseName' => $configArray['Aspen']['DBName'],
+			'databaseUser' => $configArray['Aspen']['DBUser'],
+			'databasePassword' => $configArray['Aspen']['DBPwd'],
+			'aspenAdminPassword' => $configArray['Aspen']['aspenAdminPwd'],
 			'ils' => $configArray['Site']['ils'],
 			'ilsUrl' => $configArray['ILS']['ilsUrl'],
-			'staffUrl' => $configArray['ILS']['staffUrl'],
+			'ilsStaffUrl' => $configArray['ILS']['ilsStaffUrl'],
 		];
 		if ($variables['ils'] == 'Koha') {
 			$variables['ilsDriver'] = 'Koha';
-			$variables['ilsDBHost'] = $configArray['Koha']['DBHost'];
-			$variables['ilsDBName'] = $configArray['Koha']['DBName'];
-			$variables['ilsDBUser'] = $configArray['Koha']['DBUser'];
-			$variables['ilsDBPwd'] = $configArray['Koha']['DBPwd'];
-			$variables['ilsDBPort'] = $configArray['Koha']['DBPort'];
-			$variables['ilsDBTimezone'] = $configArray['Koha']['DBTimezone'];
+			$variables['ilsDatabaseHost'] = $configArray['Koha']['DBHost'];
+			$variables['ilsDatabaseName'] = $configArray['Koha']['DBName'];
+			$variables['ilsDatabaseUser'] = $configArray['Koha']['DBUser'];
+			$variables['ilsDatabasePassword'] = $configArray['Koha']['DBPwd'];
+			$variables['ilsDatabasePort'] = $configArray['Koha']['DBPort'];
+			$variables['ilsDatabaseTimezone'] = $configArray['Koha']['DBTimezone'];
 			$variables['ilsClientId'] = $configArray['Koha']['ClientId'];
 			$variables['ilsClientSecret'] = $configArray['Koha']['ClientSecret'];
 		}else{
@@ -88,6 +88,7 @@ if (!$foundConfig) {
 	];
 
 	//Prompt for needed information
+
 	$variables['library'] = '';
 	while (empty($variables['library'])) {
 		$variables['library'] = readline("Enter the library or consortium name, e.g., Aspen Public Library > ");
@@ -139,29 +140,29 @@ if (!$foundConfig) {
 
 	if ($variables['ils'] == 'Koha'){
 		$variables['ilsDriver'] = 'Koha';
-		$variables['ilsDBHost'] = '';
-		while (empty($variables['ilsDBHost'])) {
-			$variables['ilsDBHost'] = readline("Database host for Koha > ");
+		$variables['ilsDatabaseHost'] = '';
+		while (empty($variables['ilsDatabaseHost'])) {
+			$variables['ilsDatabaseHost'] = readline("Database host for Koha > ");
 		}
-		$variables['ilsDBPort'] = '';
-		while (empty($variables['ilsDBPort'])) {
-			$variables['ilsDBPort'] = readline("Database port for Koha > ");
+		$variables['ilsDatabasePort'] = '';
+		while (empty($variables['ilsDatabasePort'])) {
+			$variables['ilsDatabasePort'] = readline("Database port for Koha > ");
 		}
-		$variables['ilsDBName'] = '';
-		while (empty($variables['ilsDBName'])) {
-			$variables['ilsDBName'] = readline("Database schema name for Koha > ");
+		$variables['ilsDatabaseName'] = '';
+		while (empty($variables['ilsDatabaseName'])) {
+			$variables['ilsDatabaseName'] = readline("Database schema name for Koha > ");
 		}
-		$variables['ilsDBUser'] = '';
-		while (empty($variables['ilsDBUser'])) {
-			$variables['ilsDBUser'] = readline("Database username for Koha > ");
+		$variables['ilsDatabaseUser'] = '';
+		while (empty($variables['ilsDatabaseUser'])) {
+			$variables['ilsDatabaseUser'] = readline("Database username for Koha > ");
 		}
-		$variables['ilsDBPwd'] = '';
-		while (empty($variables['ilsDBPwd'])) {
-			$variables['ilsDBPwd'] = readline("Database password for {$variables['ilsDBUser']} for Koha > ");
+		$variables['ilsDatabasePassword'] = '';
+		while (empty($variables['ilsDatabasePassword'])) {
+			$variables['ilsDatabasePassword'] = readline("Database password for {$variables['ilsDatabaseUser']} for Koha > ");
 		}
-		$variables['ilsDBTimezone'] = readline("Database timezone for Koha (e.g., US/Central) > ");
-		if (empty($variables['ilsDBTimezone'])){
-			$variables['ilsDBTimezone'] = 'US/Central';
+		$variables['ilsDatabaseTimezone'] = readline("Database timezone for Koha (e.g., US/Central) > ");
+		if (empty($variables['ilsDatabaseTimezone'])){
+			$variables['ilsDatabaseTimezone'] = 'US/Central';
 		}
 		$variables['ilsClientId'] = readline("Client ID for Koha API > ");
 		$variables['ilsClientSecret'] = readline("Client Secret for Koha API > ");
@@ -177,31 +178,31 @@ if (!$foundConfig) {
 	}
 
 	//This can be blank
-	$variables['staffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
+	$variables['ilsStaffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
 
-	$variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
-	if (empty($variables['aspenDBHost'])){
-		$variables['aspenDBHost'] = "localhost";
+	$variables['databaseHost'] =  readline("Database host for Aspen (default: localhost) > ");
+	if (empty($variables['databaseHost'])){
+		$variables['databaseHost'] = "localhost";
 	}
 
-	$variables['aspenDBPort'] =  readline("Database host for Aspen (default: 3306) > ");
-	if (empty($variables['aspenDBPort'])){
-		$variables['aspenDBPort'] = "3306";
+	$variables['databasePort'] =  readline("Database host for Aspen (default: 3306) > ");
+	if (empty($variables['databasePort'])){
+		$variables['databasePort'] = "3306";
 	}
 
-	$variables['aspenDBName'] =  readline("Database name for Aspen (default: aspen) > ");
-	if (empty($variables['aspenDBName'])){
-		$variables['aspenDBName'] = "aspen";
+	$variables['databaseName'] =  readline("Database name for Aspen (default: aspen) > ");
+	if (empty($variables['databaseName'])){
+		$variables['databaseName'] = "aspen";
 	}
 
-	$variables['aspenDBUser'] =  readline("Database username for Aspen (default: root) > ");
-	if (empty($variables['aspenDBUser'])){
-		$variables['aspenDBUser'] = "root";
+	$variables['databaseUser'] =  readline("Database username for Aspen (default: root) > ");
+	if (empty($variables['databaseUser'])){
+		$variables['databaseUser'] = "root";
 	}
 
-	$variables['aspenDBPwd'] = '';
-	while (empty($variables['aspenDBPwd'])) {
-		$variables['aspenDBPwd'] = readline("Database password for {$variables['aspenDBUser']} for Aspen > ");
+	$variables['databasePassword'] = '';
+	while (empty($variables['databasePassword'])) {
+		$variables['databasePassword'] = readline("Database password for {$variables['databaseUser']} for Aspen > ");
 	}
 
 	$variables['timezone'] =  readline("Enter the timezone of the library (e.g. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php) > ");
@@ -209,9 +210,9 @@ if (!$foundConfig) {
 		$variables['timezone'] = "America/Los_Angeles";
 	}
 
-	$variables['aspenAdminPwd'] = '';
-	while (empty($variables['aspenAdminPwd'])) {
-		$variables['aspenAdminPwd'] = readline("Select a password for the 'aspen_admin' user > ");
+	$variables['aspenAdminPassword'] = '';
+	while (empty($variables['aspenAdminPassword'])) {
+		$variables['aspenAdminPassword'] = readline("Select a password for the 'aspen_admin' user > ");
 	}
 }
 
@@ -236,6 +237,8 @@ if ($runningOnWindows){
 	$installDir = 'c:/web/aspen-discovery';
 }
 $siteDir = $installDir . '/sites/' . $sitename;
+
+$variables['configDir'] = $siteDir;
 
 $clearExisting = false;
 if (file_exists($siteDir)){
@@ -299,26 +302,26 @@ if (!$siteOnWindows) {
 
 //Import the database
 if ($runningOnWindows) {
-	$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+	$mysqlConnectionCommand = "mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\"";
 }else{
-	$mysqlConnectionCommand = "mariadb -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+	$mysqlConnectionCommand = "mariadb -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\"";
 }
-if ($variables['aspenDBPort'] != "3306") {
-	$mysqlConnectionCommand .= " --port \"{$variables['aspenDBPort']}\"";
+if ($variables['databasePort'] != "3306") {
+	$mysqlConnectionCommand .= " --port \"{$variables['databasePort']}\"";
 }
 if ($clearExisting) {
 	echo("Removing existing database\r\n");
-	exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+	exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['databaseName']}\"");
 }
 echo("Creating database\r\n");
-exec("$mysqlConnectionCommand -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
+exec("$mysqlConnectionCommand -e\"CREATE DATABASE {$variables['databaseName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
 echo("Loading default database\r\n");
-exec("$mysqlConnectionCommand {$variables['aspenDBName']} < $installDir/install/aspen.sql");
+exec("$mysqlConnectionCommand {$variables['databaseName']} < $installDir/install/aspen.sql");
 
 
 //Connect to the database
-$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host={$variables['aspenDBHost']}",$variables['aspenDBUser'],$variables['aspenDBPwd']);
-$updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where username = 'aspen_admin'");
+$aspen_db = new PDO("mysql:dbname={$variables['databaseName']};host={$variables['databaseHost']}",$variables['databaseUser'],$variables['databasePassword']);
+$updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPassword']) . ", password=" . $aspen_db->quote($variables['aspenAdminPassword']) . " where username = 'aspen_admin'");
 $updateUserStmt->execute();
 
 //Assign supportingCompany in the db
@@ -331,7 +334,7 @@ if ($variables['ils'] == 'Koha'){
 	echo("Loading Koha information to database\r\n");
 	copy("$installDir/install/koha_connection.sql", "$tmp_dir/koha_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/koha_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $tmp_dir/koha_connection_{$sitename}.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_{$sitename}.sql");
 }
 
 $aspen_db = null;
