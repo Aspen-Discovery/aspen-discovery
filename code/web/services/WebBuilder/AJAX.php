@@ -916,14 +916,14 @@ class WebBuilder_AJAX extends JSON_Action {
 		}
 	}
 	function saveAsTemplate(){
-		require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 		$newGrapesPageContent = json_decode(file_get_contents("php://input"), true);
 		  $templateId = $newGrapesPageContent['templateId'];
 		  $html = $newGrapesPageContent['html'];
 		  $css = $newGrapesPageContent['css'];
 		  $projectData = json_encode($newGrapesPageContent['projectData']);
   
-		  $template = new Template();
+		  $template = new GrapesTemplate();
 		  $template->id = $templateId;
   
 		  if ($template->find(true)) {
@@ -957,7 +957,7 @@ class WebBuilder_AJAX extends JSON_Action {
   
 	  function loadGrapesPage() {
 		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
-		  require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
   
 		  $grapesPageId = $_GET['id'];
 		  $response = [];
@@ -967,7 +967,7 @@ class WebBuilder_AJAX extends JSON_Action {
   
 		  if ($grapesPage->find(true)) {
 			  if(empty($grapesPage->templateContent) && $grapesPage->templatesSelect !== null) {
-				  $template = new Template();
+				  $template = new GrapesTemplate();
 				  $template->id = $grapesPage->templatesSelect;
   
 				  if ($template->find(true)) {
@@ -1002,12 +1002,12 @@ class WebBuilder_AJAX extends JSON_Action {
 	  }
   
 	  function loadGrapesTemplate() {
-		  require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
   
 		  $templateId = $_GET['id'];
 		  $response = [];
   
-		  $template = new Template();
+		  $template = new GrapesTemplate();
 		  $template->id = $templateId;
   
 		  if ($template->find(true)) {

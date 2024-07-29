@@ -1,9 +1,9 @@
 <?php
- require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+ require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
 class WebBuilder_GrapesJSTemplates extends Action {
 
-    /** @var Template */
+    /** @var GrapesTemplate */
     private $template;
 
     function launch() {

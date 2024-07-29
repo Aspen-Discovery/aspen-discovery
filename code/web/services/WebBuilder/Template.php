@@ -2,18 +2,18 @@
 require_once ROOT_DIR . '/code/web/Action.php';
 
 class WebBuilder_Template extends Action {
-	/** @var Template */
+	/** @var GrapesTemplate */
 	private $template;
 
 	function __construct() {
 		parent::__construct();
 
-		require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
-		$this->template = new Template();
+		$this->template = new GrapesTemplate();
 		$this->template->id = $id;
 
 		if (!$this->template->find(true)) {
@@ -38,7 +38,7 @@ class WebBuilder_Template extends Action {
 
 	function launch() {
 		global $interface;
-		// $template = new Template();
+		// $template = new GrapesTemplate();
 
 		$title = $this->template->title;
 		$interface->assign('id', $this->template->id);
@@ -54,7 +54,7 @@ class WebBuilder_Template extends Action {
         $html = $newGrapesTemplate['html'];
 		$css = $newGrapesTemplate['css'];
 		$projectData = $newGrapesTemplate['projectData'];
-        $template = new Template();
+        $template = new GrapesTemplate();
         $template->htmlData = $html;
 		$template->cssData = $css;
 		$template->templateContent = $projectData;
@@ -66,7 +66,7 @@ class WebBuilder_Template extends Action {
 	}
 	function getAdditionalObjectActions($id): array {
 		$objectActions = [];
-		if (!empty($existingObject) && $existingObject instanceof Template && !empty($existingObject->id)){
+		if (!empty($existingObject) && $existingObject instanceof GrapesTemplate && !empty($existingObject->id)){
 			$objectActions[] = [
 				'text' => 'Open Editor',
 				//'url' => '/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->templateId,

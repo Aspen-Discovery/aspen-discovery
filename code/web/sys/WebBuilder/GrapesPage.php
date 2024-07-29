@@ -1,7 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/WebBuilder/LibraryGrapesPage.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
-require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
 class GrapesPage extends DB_LibraryLinkedObject {
 	public $__table = 'grapes_web_builder';
@@ -16,7 +16,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	public $cssData;
 	private $_libraries;
 
-	/** @var Template[] */
+	/** @var GrapesTemplate[] */
 	private $_templates;
 
 	public function getUniquenessFields(): array {
@@ -27,7 +27,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grapes Pages'));
-		$templateList = Template::getTemplateList();
+		$templateList = GrapesTemplate::getTemplateList();
 		require_once ROOT_DIR . '/services/WebBuilder/Templates.php';
 
 		$structure = [
@@ -210,7 +210,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 	public function getTemplates() {
 		if (is_null($this->_templates)) {
 			$this->_templates = [];
-			require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
 			/** @noinspection SqlResolve */
 			$this->query("SELECT htmlData, cssData, templatesSelect FROM grapes_web_builder WHERE id=" . (int)$this->id);
@@ -222,7 +222,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 
 				// If htmlData and cssData are empty, fetch from templates table
 				if (empty($htmlData) && empty($cssData) && !empty($templatesSelect)) {
-					$template = new Template();
+					$template = new GrapesTemplate();
 					$template->id = $templatesSelect;
 
 					if ($template->find(true)) {
@@ -233,8 +233,8 @@ class GrapesPage extends DB_LibraryLinkedObject {
 
 				$templateContent = "<style>" . $cssData . "</style>" . $htmlData;
 
-				// Ensure _templates[$this->id] is correctly instantiated as Template
-				$this->_templates[$this->id] = new Template();
+				// Ensure _templates[$this->id] is correctly instantiated as GrapesTemplate
+				$this->_templates[$this->id] = new GrapesTemplate();
 				$this->_templates[$this->id]->templateContent = $templateContent;
 			}
 		}

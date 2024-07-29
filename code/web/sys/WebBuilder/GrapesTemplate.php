@@ -1,7 +1,7 @@
 <?php
 
-class Template extends DataObject {
-	public $__table = 'templates';
+class GrapesTemplate extends DataObject {
+	public $__table = 'grapes_templates';
 	public $id;
 	public $templateName;
 	public $templateContent;
@@ -62,7 +62,7 @@ class Template extends DataObject {
 	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
 
-		if ($existingObject instanceof Template) {
+		if ($existingObject instanceof GrapesTemplate) {
 			$objectActions[] = [
 				'text' => 'Open in Editor',
 				'url' => '/services/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $existingObject->id,
@@ -92,7 +92,7 @@ class Template extends DataObject {
 	 * @return array
 	 */
 	static function getTemplateList(): array {
-		$template = new Template();
+		$template = new GrapesTemplate();
 		$template->orderBy('templateName');
 		$template->find();
 		$templateList = [];
@@ -106,7 +106,7 @@ class Template extends DataObject {
 	}
 
 	function getTemplateById($id) {
-		$template = new Template();
+		$template = new GrapesTemplate();
 		$template->id = $id;
 		if ($template->find()) {
 			return true;
@@ -117,7 +117,7 @@ class Template extends DataObject {
 	function saveAsTemplate() {
 		$newGrapesTemplate = json_decode(file_get_contents("php://input"), true);
 		$html = $newGrapesTemplate['html'];
-		$template = new Template();
+		$template = new GrapesTemplate();
 		$template->htmlData = $html;
 		$template->insert();
 

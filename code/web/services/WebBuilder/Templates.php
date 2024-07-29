@@ -1,10 +1,10 @@
 <?php
-require_once ROOT_DIR . '/sys/WebBuilder/Template.php';
+require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class WebBuilder_Templates  extends ObjectEditor{
 
 	function getObjectType(): string {
-		return 'Template';
+		return 'GrapesTemplate';
 	}
 
 	function getToolName(): string {
@@ -24,7 +24,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 	}
 
 	function getObjectStructure($context = ''): array {
-		return Template::getObjectStructure($context);
+		return GrapesTemplate::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -36,7 +36,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-    	$object = new Template();
+    	$object = new GrapesTemplate();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -52,23 +52,25 @@ class WebBuilder_Templates  extends ObjectEditor{
 	}
 
 	function getTemplateById($id) {
-    	$template = new Template();
+    	$template = new GrapesTemplate();
     	$template->find();
     	while ($template->fetch()){
 			if ($template->id == $id) {
 				return clone $template;
     		}
     	}
+		return null;
 	}
 
 	function getTemplateByName($templateName) {
-    	$template = new Template();
+    	$template = new GrapesTemplate();
     	$template->find();
     	while ($template->fetch()){
         	if ($template->templateName == $templateName) {
             	return clone $template;
 			}
 		}
+		return null;
 	}
 
 	function saveAsTemplate(){
@@ -76,7 +78,7 @@ class WebBuilder_Templates  extends ObjectEditor{
     	$html = $newGrapesTemplate['html'];
 		$css = $newGrapesTemplate['css'];
 		$projectData = $newGrapesTemplate['projectData'];
-    	$template = new Template();
+    	$template = new GrapesTemplate();
     	$template->htmlData = $html;
 		$template->cssData = $css;
 		$template->templateContent = $projectData;
@@ -109,7 +111,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 
 	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && $existingObject instanceof Template && !empty($existingObject->id)){
+		if (!empty($existingObject) && $existingObject instanceof GrapesTemplate && !empty($existingObject->id)){
 			$objectActions[] = [
 				'text' => 'Open Editor',
 				'url' => '/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $existingObject->id,
