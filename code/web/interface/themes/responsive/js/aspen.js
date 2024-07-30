@@ -8160,6 +8160,57 @@ AspenDiscovery.Account = (function () {
 		},
 		logout: function () {
 			window.location = Globals.path + '/MyAccount/Logout';
+		},
+		showILSMessage: function (id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'getILSMessage',
+					messageId: id
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					AspenDiscovery.showMessage(data.title, data.modalBody, false);
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.showILSMessage(id);
+				}, false);
+			}
+
+			return false;
+		},
+		markILSMessageAsRead: function (id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'markILSMessageAsRead',
+					messageId: id
+				};
+				$.getJSON(url, params, function (data) {
+					window.location.href = Globals.path + "/MyAccount/Messages";
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.markILSMessageAsRead(id);
+				}, false);
+			}
+		},
+		markILSMessageAsUnread: function (id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'markILSMessageAsUnread',
+					messageId: id
+				};
+				$.getJSON(url, params, function (data) {
+					window.location.href = Globals.path + "/MyAccount/Messages";
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.markILSMessageAsUnread(id);
+				}, false);
+			}
 		}
 	};
 }(AspenDiscovery.Account || {}));

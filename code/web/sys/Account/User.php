@@ -4657,13 +4657,14 @@ class User extends DataObject {
 		return $showRenewalLink;
 	}
 
-	public function isNotificationHistoryEnabled(): bool {
+	public function isNotificationHistoryEnabled() {
 		$catalogDriver = $this->getCatalogDriver();
 		if($catalogDriver) {
 			return $catalogDriver->hasIlsInbox();
 		}
 		return false;
 	}
+
 }
 
 function modifiedEmpty($var) {
