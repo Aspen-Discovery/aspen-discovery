@@ -8432,21 +8432,35 @@ class Koha extends AbstractIlsDriver {
 					$user = new User();
 					$user->unique_ils_id = $curRow['borrowernumber'];
 					if($user->find(true)) {
-						// will also probably need a check to make sure the letter_code is allowed based on configuration for the library
-						require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
-						$existingMessage = new UserILSMessage();
-						$existingMessage->userId = $user->id;
-						$existingMessage->type = $curRow['letter_code'];
-						$existingMessage->dateQueued = $timeQueued;
-						if (!$existingMessage->find(true)) {
-							$userMessage = new UserILSMessage();
-							$userMessage->messageId = $curRow['message_id'];
-							$userMessage->userId = $user->id;
-							$userMessage->status = 'pending';
-							$userMessage->type = $curRow['letter_code'];
-							$userMessage->dateQueued = $timeQueued;
-							$userMessage->insert();
-							$numAdded++;
+						// make sure the user is eligible to receive notifications and the message type is enabled
+						if($user->canReceiveNotifications('notifyAccount') && $user->canReceiveILSNotification($curRow['letter_code'])) {
+							require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+							$existingMessage = new UserILSMessage();
+							$existingMessage->userId = $user->id;
+							$existingMessage->type = $curRow['letter_code'];
+							$existingMessage->dateQueued = $timeQueued;
+							if (!$existingMessage->find(true)) {
+								$translation = $this->getUserMessageTranslation($curRow['letter_code'], $user);
+								$content = $translation['content'];
+								$title = $translation['title'];
+								if (empty($translation['content'])) {
+									$content = trim(strip_tags($curRow['content']));
+								}
+								if (empty($translation['title'])) {
+									$title = trim(strip_tags($curRow['subject']));
+								}
+
+								$userMessage = new UserILSMessage();
+								$userMessage->messageId = $curRow['message_id'];
+								$userMessage->userId = $user->id;
+								$userMessage->status = 'pending';
+								$userMessage->type = $curRow['letter_code'];
+								$userMessage->dateQueued = $timeQueued;
+								$userMessage->content = $content;
+								$userMessage->title = $title;
+								$userMessage->insert();
+								$numAdded++;
+							}
 						}
 					} else {
 						// borrower not found in aspen
@@ -8475,19 +8489,41 @@ class Koha extends AbstractIlsDriver {
 		if($results) {
 			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			while ($curRow = $results->fetch_assoc()) {
-				$existingMessage = new UserILSMessage();
-				$existingMessage->userId = $patron->id;
-				$existingMessage->type = $curRow['letter_code'];
-				$existingMessage->dateQueued = strtotime($curRow['time_queued']);
-				if (!$existingMessage->find(true)) {
-					$userMessage = new UserILSMessage();
-					$userMessage->messageId = $curRow['message_id'];
-					$userMessage->userId = $patron->id;
-					$userMessage->status = 'pending';
-					$userMessage->type = $curRow['letter_code'];
-					$userMessage->dateQueued = strtotime($curRow['time_queued']);
-					$userMessage->insert();
+				// make sure the user is eligible to receive notifications and the message type is enabled
+				if($patron->canReceiveNotifications('notifyAccount') && $patron->canReceiveILSNotification($curRow['letter_code'])) {
+					$timeQueued = strtotime($curRow['time_queued']);
+					$now = time();
+					$diff = ($now - $timeQueued);
+					if($diff > 0) {
+						// skip messages older than 24 hours
+						$existingMessage = new UserILSMessage();
+						$existingMessage->userId = $patron->id;
+						$existingMessage->type = $curRow['letter_code'];
+						$existingMessage->dateQueued = strtotime($curRow['time_queued']);
+						if (!$existingMessage->find(true)) {
+							$translation = $this->getUserMessageTranslation($curRow['letter_code'], $patron);
+							$content = $translation['content'];
+							$title = $translation['title'];
+							if (empty($translation['content'])) {
+								$content = trim(strip_tags($curRow['content']));
+							}
+							if (empty($translation['title'])) {
+								$title = trim(strip_tags($curRow['subject']));
+							}
+
+							$userMessage = new UserILSMessage();
+							$userMessage->messageId = $curRow['message_id'];
+							$userMessage->userId = $patron->id;
+							$userMessage->status = 'pending';
+							$userMessage->type = $curRow['letter_code'];
+							$userMessage->dateQueued = strtotime($curRow['time_queued']);
+							$userMessage->content = $content;
+							$userMessage->title = $title;
+							$userMessage->insert();
+						}
+					}
 				}
+
 			}
 
 			return [
@@ -8500,5 +8536,26 @@ class Koha extends AbstractIlsDriver {
 			'success' => false,
 			'message' => 'Error updating user message queue'
 		];
+	}
+
+	protected function getUserMessageTranslation($code, User $patron): array {
+		$result = [
+			'title' => null,
+			'content' => null,
+		];
+
+		/*if($code == 'HOLD') {
+			$result = [
+				'title' => translate(['text' => 'Hold Available for Pickup', 'isPublicFacing' => true]),
+				'content' => translate(['text' => 'You have a hold available for pickup. Tap for details.', 'isPublicFacing' => true])
+			];
+		} elseif($code == 'CHECKOUT') {
+			$result = [
+				'title' => translate(['text' => 'Checkouts', 'isPublicFacing' => true]),
+				'content' => translate(['text' => 'You have new checkouts on your account. Tap for details.', 'isPublicFacing' => true])
+			];
+		}*/
+
+		return $result;
 	}
 }
