@@ -20,9 +20,9 @@
 		    <tr>
 			    <td>
                     {if !$message->isRead}
-                        <strong>{$message->dateQueued|date_format:"%D %l:%M %p"}</strong>
+                        <strong>{$message->dateSent|date_format:"%D %l:%M %p"}</strong>
 				    {else}
-                        {$message->dateQueued|date_format:"%D %l:%M %p"}
+                        {$message->dateSent|date_format:"%D %l:%M %p"}
 				    {/if}
 			    </td>
 	            <td>

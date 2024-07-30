@@ -9,6 +9,7 @@ class MyAccount_NotificationHistory extends MyAccount {
 
 		$userMessages = new UserILSMessage();
 		$userMessages->userId = UserAccount::getActiveUserId();
+		$userMessages->status = 'sent';
 
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $page);
@@ -16,7 +17,7 @@ class MyAccount_NotificationHistory extends MyAccount {
 		$messagesPerPage = 20;
 		$interface->assign('startingNumber', ($page - 1) * $messagesPerPage);
 		$interface->assign('curPage', $page);
-		$userMessages->orderBy('dateQueued DESC');
+		$userMessages->orderBy('dateSent DESC');
 		$userMessages->limit(($page - 1) * $messagesPerPage, $messagesPerPage);
 		$messageCount = $userMessages->count();
 		$userMessages->find();

@@ -5,7 +5,7 @@
 				<h2 id="messageTitle">{translate text="Unknown Title" isPublicFacing=true}</h2>
 			{/if}
 			<div class="text-left">
-				<p class="text-muted"><small>{translate text="Sent on %1%" 1=$userMessage->dateQueued|date_format:"%B %e, %Y %l:%M %p" isPublicFacing=true}</small></p>
+				<p class="text-muted"><small>{translate text="Sent on %1%" 1=$userMessage->dateSent|date_format:"%B %e, %Y %l:%M %p" isPublicFacing=true}</small></p>
 			</div>
 			<div class="btn-toolbar">
 				<div class="btn-group btn-group-sm">
