@@ -128,6 +128,25 @@ function getUpdates24_08_00(): array {
 			]
 		], //web_builder_custom_form_increase_email
 
+		//James Staub - Nashville Public Library
+		'web_builder_custom_form_increase_email' => [
+			'title' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'description' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE web_builder_custom_form MODIFY COLUMN emailResultsTo VARCHAR(150)",
+			]
+		], //web_builder_custom_form_increase_email
+
+		//chloe - PTFS-Europe
+		'show_in_search_facet_column' => [
+			'title' => 'Show In Search Facet Column',
+			'description' => 'Adds the showInSearchFacet column to the Location table',
+			// 'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN showInSearchFacet TINYINT(1) DEFAULT 1'
+			]
+			], //show_in_search_facet_column
 		//other
 
 	];
