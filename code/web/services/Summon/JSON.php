@@ -15,8 +15,8 @@ class Summon_JSON extends JSON_Action {
         $id = $_REQUEST['id'];
 
         require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
-        $summonRecordRecordUsage = new SummonRecordUsage();
-        global $asoenUsage;
+        $summonRecordUsage = new SummonRecordUsage();
+        global $aspenUsage;
         $summonRecordUsage->instance = $aspenUsage->getInstance();
         $summonRecordUsage->summonId = $id;
         $summonRecordUsage->year = date('Y');
