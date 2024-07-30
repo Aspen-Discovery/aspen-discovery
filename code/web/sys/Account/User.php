@@ -4312,6 +4312,7 @@ class User extends DataObject {
 					$settings = new NotificationSetting();
 					$settings->id = $userLibrary->lidaNotificationSettingId;
 					if ($settings->find(true)) {
+						require_once ROOT_DIR . '/sys/AspenLiDA/ILSMessageType.php';
 						$ilsMessageTypes = new ILSMessageType();
 						$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
 						$ilsMessageTypes->code = $code;
@@ -4658,7 +4659,10 @@ class User extends DataObject {
 
 	public function isNotificationHistoryEnabled(): bool {
 		$catalogDriver = $this->getCatalogDriver();
-		return $catalogDriver->hasIlsInbox();
+		if($catalogDriver) {
+			return $catalogDriver->hasIlsInbox();
+		}
+		return false;
 	}
 }
 
