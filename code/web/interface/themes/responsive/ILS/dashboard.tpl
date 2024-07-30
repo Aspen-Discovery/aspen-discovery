@@ -34,7 +34,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Self Registrations" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=selfRegistrations&instance={$selectedInstance}" title="{translate text="Show Self Registration Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Self Registrations" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=selfRegistrations&instance={$selectedInstance}" title="{translate text="Show Self Registrations Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -138,7 +138,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfDownloads&instance={$selectedInstance}" title="{translate text="Show Who Downloaded At Least One PDF Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfDownloads&instance={$selectedInstance}" title="{translate text="Show Users Who Downloaded At Least One PDF Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
