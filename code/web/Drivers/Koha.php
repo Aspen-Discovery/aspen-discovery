@@ -8456,8 +8456,8 @@ class Koha extends AbstractIlsDriver {
 								$userMessage->status = 'pending';
 								$userMessage->type = $curRow['letter_code'];
 								$userMessage->dateQueued = $timeQueued;
-								$userMessage->content = $content;
-								$userMessage->title = $title;
+								$userMessage->content = '';
+								$userMessage->title = '';
 								$userMessage->insert();
 								$numAdded++;
 							}
@@ -8517,8 +8517,8 @@ class Koha extends AbstractIlsDriver {
 							$userMessage->status = 'pending';
 							$userMessage->type = $curRow['letter_code'];
 							$userMessage->dateQueued = strtotime($curRow['time_queued']);
-							$userMessage->content = $content;
-							$userMessage->title = $title;
+							$userMessage->content = '';
+							$userMessage->title = '';
 							$userMessage->insert();
 						}
 					}
