@@ -5135,7 +5135,7 @@ var AspenDiscovery = (function(){
 
 		changeTranslationMode: function(start){
 			var url = window.location.href;
-			url = url.replace(/[&?](start|stop)TranslationMode=true/, '');
+			url = url.replace(/[&?](start|stop)TranslationMode=(true)?/, '');
 			if (start) {
 				url = this.buildUrl(url,'startTranslationMode', 'true');
 			}else{
@@ -6044,7 +6044,7 @@ AspenDiscovery.Account = (function () {
 				var action = Globals.activeAction;
 
 				var referer;
-				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))) {
+				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage") || (action === "GrapesPage"))) {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
@@ -14947,6 +14947,10 @@ AspenDiscovery.Summon = (function(){
 					}
 				}
 			});
+		},
+		trackSummonUsage: function (id) {
+			var ajaxUrl = Globals.path + "/Summon/JSON?method=trackSummonUsage&id=" + id;
+			$.getJSON(ajaxUrl);
 		}
 	}
 }(AspenDiscovery.Summon || {}));

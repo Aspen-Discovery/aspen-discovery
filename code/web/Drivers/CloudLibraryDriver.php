@@ -943,6 +943,9 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		$postParams = [
 			'username' => $this->getPatronId($patron),
 			'password' => $this->getCloudLibraryPasswordOrPin($patron),
+			'eula' => 'eula',
+			'login_form' => 'true',
+			'library_id' => $settings->accountId,
 		];
 		$curlWrapper = new CurlWrapper();
 		$headers = [

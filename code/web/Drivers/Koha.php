@@ -73,6 +73,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateHomeLibrary', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -234,6 +235,7 @@ class Koha extends AbstractIlsDriver {
 						'Cache-Control: no-cache',
 						'Content-Type: application/json;charset=UTF-8',
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+						'x-koha-library: ' .  $patron->getHomeLocationCode(),
 					], true);
 					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 					ExternalRequestLogEntry::logRequest('koha.updatePatronInfo', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -1832,6 +1834,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
@@ -2030,6 +2033,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -2181,6 +2185,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
@@ -2539,6 +2544,7 @@ class Koha extends AbstractIlsDriver {
 				'x-koha-embed: +strings,extended_attributes',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -2894,6 +2900,7 @@ class Koha extends AbstractIlsDriver {
 					'Content-Type: application/json',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					'Accept-Encoding: gzip, deflate',
+					'x-koha-library: ' .  $patron->getHomeLocationCode(),
 				], true);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST');
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -3145,6 +3152,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
@@ -3258,6 +3266,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			ExternalRequestLogEntry::logRequest('koha.freezeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -3363,6 +3372,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', null);
 			ExternalRequestLogEntry::logRequest('koha.thawHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -3433,6 +3443,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 
 			//Get the current hold so we can load priority
@@ -5066,6 +5077,7 @@ class Koha extends AbstractIlsDriver {
 					'Cache-Control: no-cache',
 					'Content-Type: application/json;charset=UTF-8',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'x-koha-library: ' .  $user->getHomeLocationCode(),
 				], true);
 				$postParams = json_encode($postFields);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
@@ -5194,6 +5206,7 @@ class Koha extends AbstractIlsDriver {
 					'Cache-Control: no-cache',
 					'Content-Type: application/json;charset=UTF-8',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'x-koha-library: ' .  $user->getHomeLocationCode(),
 				], true);
 				$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
 				ExternalRequestLogEntry::logRequest('koha.getMaterialRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -5792,6 +5805,7 @@ class Koha extends AbstractIlsDriver {
 				'x-koha-embed: +strings,extended_attributes',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
@@ -6395,6 +6409,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id/account/credits";
 			if (count($accountLinesPaid) > 0) {
@@ -6622,6 +6637,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateAutoRenewal', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), json_encode($postParams), $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -7077,6 +7093,7 @@ class Koha extends AbstractIlsDriver {
 				'Cache-Control: no-cache',
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'x-koha-library: ' .  $patron->getHomeLocationCode(),
 			], true);
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateEditableUsername', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -7466,6 +7483,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron->unique_ils_id . "/pickups";
@@ -7495,6 +7513,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 		$postVariables = [
 			'library_id' => $location,
@@ -7535,6 +7554,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/pickup/" . $pickupId;
@@ -7584,6 +7604,7 @@ class Koha extends AbstractIlsDriver {
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'x-koha-library: ' .  $patron->getHomeLocationCode(),
 		], true);
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/mark_arrived/" . $pickupId;
@@ -8411,21 +8432,35 @@ class Koha extends AbstractIlsDriver {
 					$user = new User();
 					$user->unique_ils_id = $curRow['borrowernumber'];
 					if($user->find(true)) {
-						// will also probably need a check to make sure the letter_code is allowed based on configuration for the library
-						require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
-						$existingMessage = new UserILSMessage();
-						$existingMessage->userId = $user->id;
-						$existingMessage->type = $curRow['letter_code'];
-						$existingMessage->dateQueued = $timeQueued;
-						if (!$existingMessage->find(true)) {
-							$userMessage = new UserILSMessage();
-							$userMessage->messageId = $curRow['message_id'];
-							$userMessage->userId = $user->id;
-							$userMessage->status = 'pending';
-							$userMessage->type = $curRow['letter_code'];
-							$userMessage->dateQueued = $timeQueued;
-							$userMessage->insert();
-							$numAdded++;
+						// make sure the user is eligible to receive notifications and the message type is enabled
+						if($user->canReceiveNotifications('notifyAccount') && $user->canReceiveILSNotification($curRow['letter_code'])) {
+							require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+							$existingMessage = new UserILSMessage();
+							$existingMessage->userId = $user->id;
+							$existingMessage->type = $curRow['letter_code'];
+							$existingMessage->dateQueued = $timeQueued;
+							if (!$existingMessage->find(true)) {
+								$translation = $this->getUserMessageTranslation($curRow['letter_code'], $user);
+								$content = $translation['content'];
+								$title = $translation['title'];
+								if (empty($translation['content'])) {
+									$content = trim(strip_tags($curRow['content']));
+								}
+								if (empty($translation['title'])) {
+									$title = trim(strip_tags($curRow['subject']));
+								}
+
+								$userMessage = new UserILSMessage();
+								$userMessage->messageId = $curRow['message_id'];
+								$userMessage->userId = $user->id;
+								$userMessage->status = 'pending';
+								$userMessage->type = $curRow['letter_code'];
+								$userMessage->dateQueued = $timeQueued;
+								$userMessage->content = '';
+								$userMessage->title = '';
+								$userMessage->insert();
+								$numAdded++;
+							}
 						}
 					} else {
 						// borrower not found in aspen
@@ -8454,19 +8489,41 @@ class Koha extends AbstractIlsDriver {
 		if($results) {
 			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			while ($curRow = $results->fetch_assoc()) {
-				$existingMessage = new UserILSMessage();
-				$existingMessage->userId = $patron->id;
-				$existingMessage->type = $curRow['letter_code'];
-				$existingMessage->dateQueued = strtotime($curRow['time_queued']);
-				if (!$existingMessage->find(true)) {
-					$userMessage = new UserILSMessage();
-					$userMessage->messageId = $curRow['message_id'];
-					$userMessage->userId = $patron->id;
-					$userMessage->status = 'pending';
-					$userMessage->type = $curRow['letter_code'];
-					$userMessage->dateQueued = strtotime($curRow['time_queued']);
-					$userMessage->insert();
+				// make sure the user is eligible to receive notifications and the message type is enabled
+				if($patron->canReceiveNotifications('notifyAccount') && $patron->canReceiveILSNotification($curRow['letter_code'])) {
+					$timeQueued = strtotime($curRow['time_queued']);
+					$now = time();
+					$diff = ($now - $timeQueued);
+					if($diff > 0) {
+						// skip messages older than 24 hours
+						$existingMessage = new UserILSMessage();
+						$existingMessage->userId = $patron->id;
+						$existingMessage->type = $curRow['letter_code'];
+						$existingMessage->dateQueued = strtotime($curRow['time_queued']);
+						if (!$existingMessage->find(true)) {
+							$translation = $this->getUserMessageTranslation($curRow['letter_code'], $patron);
+							$content = $translation['content'];
+							$title = $translation['title'];
+							if (empty($translation['content'])) {
+								$content = trim(strip_tags($curRow['content']));
+							}
+							if (empty($translation['title'])) {
+								$title = trim(strip_tags($curRow['subject']));
+							}
+
+							$userMessage = new UserILSMessage();
+							$userMessage->messageId = $curRow['message_id'];
+							$userMessage->userId = $patron->id;
+							$userMessage->status = 'pending';
+							$userMessage->type = $curRow['letter_code'];
+							$userMessage->dateQueued = strtotime($curRow['time_queued']);
+							$userMessage->content = '';
+							$userMessage->title = '';
+							$userMessage->insert();
+						}
+					}
 				}
+
 			}
 
 			return [
@@ -8479,5 +8536,26 @@ class Koha extends AbstractIlsDriver {
 			'success' => false,
 			'message' => 'Error updating user message queue'
 		];
+	}
+
+	protected function getUserMessageTranslation($code, User $patron): array {
+		$result = [
+			'title' => null,
+			'content' => null,
+		];
+
+		/*if($code == 'HOLD') {
+			$result = [
+				'title' => translate(['text' => 'Hold Available for Pickup', 'isPublicFacing' => true]),
+				'content' => translate(['text' => 'You have a hold available for pickup. Tap for details.', 'isPublicFacing' => true])
+			];
+		} elseif($code == 'CHECKOUT') {
+			$result = [
+				'title' => translate(['text' => 'Checkouts', 'isPublicFacing' => true]),
+				'content' => translate(['text' => 'You have new checkouts on your account. Tap for details.', 'isPublicFacing' => true])
+			];
+		}*/
+
+		return $result;
 	}
 }

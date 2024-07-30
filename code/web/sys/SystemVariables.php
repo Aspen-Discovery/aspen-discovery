@@ -15,6 +15,7 @@ class SystemVariables extends DataObject {
 	public $allowableHtmlTags;
 	public $allowHtmlInMarkdownFields;
 	public $useHtmlEditorRatherThanMarkdown;
+	public $enableGrapesEditor;
 	public $storeRecordDetailsInSolr;
 	public $storeRecordDetailsInDatabase;
 	public $indexVersion;
@@ -209,29 +210,44 @@ class SystemVariables extends DataObject {
 				'default' => true,
 				'forcesReindex' => true,
 			],
-
-			'allowableHtmlTags' => [
-				'property' => 'allowableHtmlTags',
-				'type' => 'text',
-				'label' => 'Allowable HTML Tags',
-				'description' => 'HTML Tags to allow in HTML and Markdown fields',
-				'maxLength' => 512,
-				'default' => 'p|em|i|strong|b|span|style|a|table|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|code|hr|table|tbody|tr|th|td|caption|img|br|div|span',
+			'webBuilderSection' => [
+				'property' => 'webBuilderSection',
+				'type' => 'section',
+				'label' => 'Web Builder Settings',
 				'hideInLists' => true,
-			],
-			'allowHtmlInMarkdownFields' => [
-				'property' => 'allowHtmlInMarkdownFields',
-				'type' => 'checkbox',
-				'label' => 'Allow HTML in Markdown fields',
-				'description' => 'Whether administrators can add HTML to a Markdown field, if disabled, all tags will be stripped',
-				'default' => true,
-			],
-			'useHtmlEditorRatherThanMarkdown' => [
-				'property' => 'useHtmlEditorRatherThanMarkdown',
-				'type' => 'checkbox',
-				'label' => 'Use HTML Editor rather than Markdown',
-				'description' => 'Changes all Markdown fields to HTML fields',
-				'default' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'allowableHtmlTags' => [
+						'property' => 'allowableHtmlTags',
+						'type' => 'text',
+						'label' => 'Allowable HTML Tags',
+						'description' => 'HTML Tags to allow in HTML and Markdown fields',
+						'maxLength' => 512,
+						'default' => 'p|em|i|strong|b|span|style|a|table|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|code|hr|table|tbody|tr|th|td|caption|img|br|div|span',
+						'hideInLists' => true,
+					],
+					'allowHtmlInMarkdownFields' => [
+						'property' => 'allowHtmlInMarkdownFields',
+						'type' => 'checkbox',
+						'label' => 'Allow HTML in Markdown fields',
+						'description' => 'Whether administrators can add HTML to a Markdown field, if disabled, all tags will be stripped',
+						'default' => true,
+					],
+					'useHtmlEditorRatherThanMarkdown' => [
+						'property' => 'useHtmlEditorRatherThanMarkdown',
+						'type' => 'checkbox',
+						'label' => 'Use HTML Editor rather than Markdown',
+						'description' => 'Changes all Markdown fields to HTML fields',
+						'default' => true,
+					],
+					'enableGrapesEditor' => [
+						'property' => 'enableGrapesEditor',
+						'type' => 'checkbox',
+						'label' => 'Enable Grapes Editor',
+						'description' => 'Allows the Grapes Editor to be used within Aspen',
+						'default' => true,
+					],
+				],
 			],
 			'libraryToUseForPayments' => [
 				'property' => 'libraryToUseForPayments',
@@ -321,6 +337,7 @@ class SystemVariables extends DataObject {
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
+			$objectStructure['webBuilderSection']['properties']['enableGrapesEditor']['type'] = 'hidden';
 			$objectStructure['enableBrandedApp']['type'] = 'hidden';
 		}
 

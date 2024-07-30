@@ -85,7 +85,7 @@ export const getAuthor = (author) => {
 export const getFormat = (format, source = null) => {
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
-     if (format !== 'Unknown') {
+     if (format && format !== 'Unknown') {
           if (source) {
                if (source !== 'ils') {
                     if (source === 'interlibrary_loan') {
@@ -274,6 +274,28 @@ export const getDueDate = (date) => {
                          lg: 'sm',
                     }}>
                     <Text bold>{getTermFromDictionary(language, 'checkout_due')}:</Text> {itemDueOn}
+               </Text>
+          );
+     }
+
+     return null;
+};
+
+export const getDateLastUsed = (date, checkedOut) => {
+     const { language } = React.useContext(LanguageContext);
+     if (date && date !== 0) {
+          const dateLastUsed = moment.unix(date);
+          let itemLastUsedOn = moment(dateLastUsed).format('MMM D, YYYY');
+          if (checkedOut) {
+               itemLastUsedOn = getTermFromDictionary(language, 'in_use');
+          }
+          return (
+               <Text
+                    fontSize={{
+                         base: 'xs',
+                         lg: 'sm',
+                    }}>
+                    <Text bold>{getTermFromDictionary(language, 'last_used')}:</Text> {itemLastUsedOn}
                </Text>
           );
      }

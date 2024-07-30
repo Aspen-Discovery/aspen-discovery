@@ -1,0 +1,8 @@
+tunnel:
+  image: ${TUNNEL_IMAGE_TAG:-aspendiscoveryofficial/tunnel}
+  env_file:
+    - .env
+  networks:
+    - net-aspen
+  depends_on:
+    - backend

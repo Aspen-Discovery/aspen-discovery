@@ -567,6 +567,19 @@ if ($isLoggedIn) {
 					} else {
 						$followupUrl .="?id=" . strip_tags($_REQUEST['pageId']);
 					}
+				}  elseif ($_REQUEST['followupAction'] == "GrapesPage") {
+					require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
+					$grapesPage = new GrapesPage();
+					$grapesPage->id = $_REQUEST['pageId'];
+					if ($grapesPage->find(true)) {
+						if ($grapesPage->urlAlias) {
+							$followupUrl = $grapesPage->urlAlias;
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
 				} else if($_REQUEST['followupAction'] == "QuickPoll"){
 					require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
 					$quickPoll = new QuickPoll();
@@ -1168,6 +1181,15 @@ function loadModuleActionId() {
 			if (strpos($requestPath, '?') > 0) {
 				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
 			}
+
+			//Store query parameters
+			$urlComponents = parse_url($requestURI);
+			if (!empty($urlComponents['query'])) {
+				parse_str($urlComponents['query'], $queryParameters);
+			}else{
+				$queryParameters = [];
+			}
+
 			$basicPage = new BasicPage();
 			$basicPage->urlAlias = $requestPath;
 			$basicPageLibrary = new LibraryBasicPage();
@@ -1211,7 +1233,12 @@ function loadModuleActionId() {
 						$_REQUEST['module'] = 'WebBuilder';
 						$_REQUEST['action'] = 'Form';
 						$_REQUEST['id'] = $form->id;
-						$pageExists = true;
+
+						foreach ($queryParameters as $key => $value) {
+							$_GET[$key] = $value;
+							$_REQUEST[$key] = $value;
+						}
+						
 					} else {
 						require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
 						$quickPoll = new QuickPoll();
@@ -1227,6 +1254,22 @@ function loadModuleActionId() {
 							$_REQUEST['action'] = 'QuickPoll';
 							$_REQUEST['id'] = $quickPoll->id;
 							$pageExists = true;
+						} else {
+							require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
+							$grapesPage = new GrapesPage();
+							$grapesPage->urlAlias = $requestPath;
+							$grapesPageLibrary = new LibraryGrapesPage();
+							$grapesPageLibrary->libraryId = $library->libraryId;
+							$grapesPage->joinAdd($grapesPageLibrary, 'INNER', 'libraryFilter', 'id', 'grapesPageId');
+							if ($grapesPage->find(true)) {
+								$_GET['module'] = 'WebBuilder';
+								$_GET['action'] = 'GrapesPage';
+								$_GET['id'] = $grapesPage->id;
+								$_REQUEST['module'] = 'WebBuilder';
+								$_REQUEST['action'] = 'GrapesPage';
+								$_REQUEST['id'] = $grapesPage->id;
+								$pageExists = true;
+							}
 						}
 					}
 				}
@@ -1235,7 +1278,7 @@ function loadModuleActionId() {
 				http_response_code('200');
 			}
 		}
-	} catch (Exception $e) {
+	}catch (Exception $e) {
 		//This happens if web builder is not fully installed, ignore the error.
 	}
 	//Correct some old actions

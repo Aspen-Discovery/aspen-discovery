@@ -21,7 +21,7 @@
 
 LOCK TABLES `account_profiles` WRITE;
 /*!40000 ALTER TABLE `account_profiles` DISABLE KEYS */;
-INSERT INTO `account_profiles` (id, name, driver, loginConfiguration, authenticationMethod, vendorOpacUrl, patronApiUrl, recordSource, weight, databaseHost, databaseName, databaseUser, databasePassword, databasePort, databaseTimezone, oAuthClientId, oAuthClientSecret, ils) VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDBHost}','{ilsDBName}','{ilsDBUser}','{ilsDBPwd}','{ilsDBPort}','{ilsDBTimezone}','{ilsClientId}','{ilsClientSecret}', 'koha');
+INSERT INTO `account_profiles` (id, name, driver, loginConfiguration, authenticationMethod, vendorOpacUrl, patronApiUrl, recordSource, weight, databaseHost, databaseName, databaseUser, databasePassword, databasePort, databaseTimezone, oAuthClientId, oAuthClientSecret, ils) VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDatabaseHost}','{ilsDatabaseName}','{ilsDatabaseUser}','{ilsDatabasePassword}','{ilsDatabasePort}','{ilsDatabaseTimezone}','{ilsClientId}','{ilsClientSecret}', 'koha');
 /*!40000 ALTER TABLE `account_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 

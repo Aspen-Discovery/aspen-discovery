@@ -62,7 +62,9 @@ export const MyHolds = () => {
      const toggleReadySort = async (value) => {
           updateReadySortMethod(value);
           const sortedHolds = sortHolds(holds, pendingSortMethod, value);
+          setLoading(true);
           queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
+          setLoading(false);
           updateHolds(sortedHolds);
      };
 
@@ -70,7 +72,9 @@ export const MyHolds = () => {
           updatePendingSortMethod(value);
           const sortedHolds = sortHolds(holds, value, readySortMethod);
           //console.log(sortedHolds[1]);
+          setLoading(true);
           queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
+          setLoading(false);
           updateHolds(sortedHolds);
      };
 

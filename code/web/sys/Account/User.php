@@ -3408,6 +3408,16 @@ class User extends DataObject {
 				'Administer All Basic Pages',
 				'Administer Library Basic Pages',
 			]);
+			if (!empty(SystemVariables::getSystemVariables()->enableGrapesEditor)) {
+				$sections['web_builder']->addAction(new AdminAction('Grapes Pages', 'Create pages with the Grapes JS visual editor.', '/WebBuilder/GrapesPages'), [
+					'Administer All Grapes Pages',
+					'Administer Library Grapes Pages',
+				]);
+				$sections['web_builder']->addAction(new AdminAction('Grapes Templates', 'Create templates with the Grapes JS visual editor.', '/WebBuilder/Templates'), [
+					'Administer All Grapes Pages',
+					'Administer Library Grapes Pages',
+				]);
+			}
 			$sections['web_builder']->addAction(new AdminAction('Custom Pages', 'Create custom pages with a more complex cell based layout.', '/WebBuilder/PortalPages'), [
 				'Administer All Custom Pages',
 				'Administer Library Custom Pages',
@@ -3884,9 +3894,7 @@ class User extends DataObject {
 			}
 			$showSubmitTicket = false;
 			try {
-				require_once ROOT_DIR . '/sys/SystemVariables.php';
-				$systemVariables = new SystemVariables();
-				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+				if (!empty(SystemVariables::getSystemVariables()->ticketEmail)) {
 					$showSubmitTicket = true;
 				}
 			} catch (Exception $e) {
@@ -4292,6 +4300,33 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function canReceiveILSNotification($code): bool {
+		if($this->isNotificationHistoryEnabled()) { // check if ils notifications are enabled for the ils
+			$userHomeLocation = $this->homeLocationId;
+			$userLocation = new Location();
+			$userLocation->locationId = $this->homeLocationId;
+			if($userLocation->find(true)) {
+				$userLibrary = $userLocation->getParentLibrary();
+				if ($userLibrary) {
+					require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+					$settings = new NotificationSetting();
+					$settings->id = $userLibrary->lidaNotificationSettingId;
+					if ($settings->find(true)) {
+						require_once ROOT_DIR . '/sys/AspenLiDA/ILSMessageType.php';
+						$ilsMessageTypes = new ILSMessageType();
+						$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
+						$ilsMessageTypes->code = $code;
+						$ilsMessageTypes->isEnabled = 1;
+						if($ilsMessageTypes->find(true)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	public function saveNotificationPushToken($token, $device): bool {
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
@@ -4620,6 +4655,14 @@ class User extends DataObject {
 			}
 		}
 		return $showRenewalLink;
+	}
+
+	public function isNotificationHistoryEnabled(): bool {
+		$catalogDriver = $this->getCatalogDriver();
+		if($catalogDriver) {
+			return $catalogDriver->hasIlsInbox();
+		}
+		return false;
 	}
 }
 

@@ -226,7 +226,15 @@ public class WebsiteIndexerMain {
 				}
 				getPortalPagesRS.close();
 				getPortalPagesStmt.close();
-				if ((numBasicPages > 0) || (numResources > 0) || (numPortalPages > 0)){
+				PreparedStatement getGrapesPagesStmt = aspenConn.prepareStatement("SELECT count(*) as numGrapesPages from grapes_web_builder");
+				ResultSet getGrapesPagesRS = getGrapesPagesStmt.executeQuery();
+				int numGrapesPages = 0;
+				if (getGrapesPagesRS.next()) {
+					numGrapesPages = getGrapesPagesRS.getInt("numGrapesPages");
+				}
+				getGrapesPagesRS.close();
+				getGrapesPagesStmt.close();
+				if ((numBasicPages > 0) || (numResources > 0) || (numPortalPages > 0) || (numGrapesPages > 0)){
 					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
 					WebBuilderIndexer indexer = new WebBuilderIndexer(configIni, logEntry, aspenConn, solrUpdateServer);
 					indexer.indexContent();

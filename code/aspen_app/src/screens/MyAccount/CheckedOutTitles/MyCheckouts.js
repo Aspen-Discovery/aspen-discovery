@@ -83,7 +83,7 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
                await queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, source] });
-               await queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, value] });
+               await queryClient.refetchQueries({ queryKey: ['checkouts', user.id, library.baseUrl, value] });
           }
           setLoading(false);
      };

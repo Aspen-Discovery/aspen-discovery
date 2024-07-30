@@ -470,7 +470,7 @@ class Grouping_Record {
 	}
 
 	public function sortItemSummary($variationId): void {
-		ksort($this->_itemSummary[$variationId]);
+		ksort($this->_itemSummary[$variationId], SORT_NATURAL);
 	}
 
 	/**
@@ -534,7 +534,7 @@ class Grouping_Record {
 	}
 
 	public function sortItemDetails($variationId): void {
-		ksort($this->_itemDetails[$variationId]);
+		ksort($this->_itemDetails[$variationId], SORT_NATURAL);
 	}
 
 	/**

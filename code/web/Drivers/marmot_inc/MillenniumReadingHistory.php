@@ -120,7 +120,7 @@ class MillenniumReadingHistory {
 		$scope = $this->driver->getDefaultScope();
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory";
 
-		$cookie = tempnam("/tmp", "CURLCOOKIE");
+		$cookie = tempnam(sys_get_temp_dir(), "CURLCOOKIE");
 		$curl_connection = curl_init($curl_url);
 		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");

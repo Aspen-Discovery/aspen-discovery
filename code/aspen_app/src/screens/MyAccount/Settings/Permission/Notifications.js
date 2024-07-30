@@ -39,8 +39,16 @@ export const NotificationPermissionStatus = () => {
                setAppStateVisible(appState.current);
           });
 
+          const subscriptionAndroid = AppState.addEventListener('focus', async (nextAppState) => {
+               const { status } = await Notifications.getPermissionsAsync();
+               setPermissionStatus(status === 'granted');
+               appState.current = nextAppState;
+               setAppStateVisible(appState.current);
+          });
+
           return () => {
                subscription.remove();
+               subscriptionAndroid.remove();
           };
      }, []);
 

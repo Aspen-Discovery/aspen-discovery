@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 
 class WebBuilderIndexer {
 	private final WebsiteIndexLogEntry logEntry;
@@ -43,6 +44,7 @@ class WebBuilderIndexer {
 			solrUpdateServer.deleteByQuery("recordtype:\"WebResource\"");
 			solrUpdateServer.deleteByQuery("recordtype:\"BasicPage\"");
 			solrUpdateServer.deleteByQuery("recordtype:\"PortalPage\"");
+			solrUpdateServer.deleteByQuery("recordtype:\"GrapesPage\"");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 			logEntry.addNote("Solr is not running properly, try restarting " + rse);
@@ -54,6 +56,7 @@ class WebBuilderIndexer {
 		indexBasicPages();
 		indexCustomPages();
 		indexResources();
+		indexGrapesPages();
 
 		try {
 			solrUpdateServer.commit(true, true, false);
@@ -355,6 +358,87 @@ class WebBuilderIndexer {
 			getPortalPagesStmt.close();
 		}catch (SQLException e){
 			logEntry.incErrors("Error indexing portal pages", e);
+		}
+	}
+
+	private void indexGrapesPages() {
+		try {
+			PreparedStatement getLibrariesForGrapesPageStmt = aspenConn.prepareStatement("SELECT libraryId from library_web_builder_grapes_page WHERE grapesPageId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getGrapesPagesStmt = aspenConn.prepareStatement("SELECT * FROM grapes_web_builder", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			ResultSet getGrapesPagesRS = getGrapesPagesStmt.executeQuery();
+
+			while (getGrapesPagesRS.next()) {
+				SolrInputDocument solrDocument = new SolrInputDocument();
+
+				//Load basic information
+				String id = getGrapesPagesRS.getString("id");
+				solrDocument.addField("id", "GrapesPage:" + id);
+				solrDocument.addField("recordtype", "GrapesPage");
+				solrDocument.addField("settingId", -1);
+				solrDocument.addField("website_name", "Library Website");
+				solrDocument.addField("search_category", "Website");
+
+				String url = getGrapesPagesRS.getString("urlAlias");
+				if (url.isEmpty()) {
+					url = "/WebBuilder/GrapesPage?id=" + id;
+				}
+				solrDocument.addField("source_url", url);
+
+				String title = getGrapesPagesRS.getString("title");
+				solrDocument.addField("title", title);
+				solrDocument.addField("title_display", title);
+				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
+
+				//Load libraries
+				getLibrariesForGrapesPageStmt.setString(1, id);
+				ResultSet getLibrariesForGrapesPageRS = getLibrariesForGrapesPageStmt.executeQuery();
+				long firstLibraryId = -1;
+				while (getLibrariesForGrapesPageRS.next()) {
+					if (firstLibraryId == -1) {
+						long tmpFirstLibraryId = getLibrariesForGrapesPageRS.getLong("libraryId");
+						if (libraryBaseUrls.containsKey(tmpFirstLibraryId)) {
+							firstLibraryId = tmpFirstLibraryId;
+						}
+					}
+					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForGrapesPageRS.getLong("libraryId")));
+				}
+				if (firstLibraryId == -1) {
+					continue;
+				}
+				if (libraryBaseUrls.get(firstLibraryId) == null) {
+					logEntry.incErrors("Could not get base URL for library ID " + firstLibraryId + " for GrapesPage " + id);
+					continue;
+				}
+
+				String aspenRawUrl = libraryBaseUrls.get(firstLibraryId) + "/WebBuilder/GrapesPage?id=" + id + "&raw=true";
+
+				try {
+					//Load content from URL
+					Document pageDoc = Jsoup.connect(aspenRawUrl).followRedirects(true).get();
+					String contents = pageDoc.title();
+					String body = pageDoc.body().text();
+
+					String teaser = AspenStringUtils.trimTo(250, body);
+
+					solrDocument.addField("description", teaser);
+					solrDocument.addField("keywords", contents + body);
+
+					logEntry.incNumPages();
+					try {
+						solrUpdateServer.add(solrDocument);
+						logEntry.incUpdated();
+					} catch (SolrServerException | IOException e) {
+						logEntry.incErrors("Error adding GrapesPage to index", e);
+					}
+				} catch (IOException ioe) {
+					logEntry.incErrors("Error loading content from " + aspenRawUrl, ioe);
+				}
+			}
+			getGrapesPagesRS.close();
+			getGrapesPagesStmt.close();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error indexing GrapesPages", e);
 		}
 	}
 }
