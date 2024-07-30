@@ -4659,7 +4659,10 @@ class User extends DataObject {
 
 	public function isNotificationHistoryEnabled(): bool {
 		$catalogDriver = $this->getCatalogDriver();
-		return $catalogDriver->hasIlsInbox();
+		if($catalogDriver) {
+			return $catalogDriver->hasIlsInbox();
+		}
+		return false;
 	}
 }
 
