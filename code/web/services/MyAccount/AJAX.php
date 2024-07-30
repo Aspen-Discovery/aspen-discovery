@@ -8474,7 +8474,7 @@ class MyAccount_AJAX extends JSON_Action {
 			if($ilsMessage->find(true)) {
 				$interface->assign('userMessage', $ilsMessage);
 				return [
-					'title' => translate(['text' => 'Notification', 'isPublicFacing' => true]),
+					'title' => $ilsMessage->title ?? '',
 					'modalBody' => $interface->fetch('MyAccount/message.tpl'),
 				];
 			}
