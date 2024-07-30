@@ -34,7 +34,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Self Registrations" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=selfRegistrations&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Self Registrations" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=selfRegistrations&instance={$selectedInstance}" title="{translate text="Show Self Registration Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -60,7 +60,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Users who placed at least one hold" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithHolds&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Users who placed at least one hold" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithHolds&instance={$selectedInstance}" title="{translate text="Show Users Who Placed At Least One Hold Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -86,7 +86,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Records Held" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=recordsHeld&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Records Held" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=recordsHeld&instance={$selectedInstance}" title="{translate text="Show Records Held Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -112,7 +112,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Total Holds" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=totalHolds&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Total Holds" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=totalHolds&instance={$selectedInstance}" title="{translate text="Show Total Holds Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -138,7 +138,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfDownloads&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfDownloads&instance={$selectedInstance}" title="{translate text="Show Who Downloaded At Least One PDF Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -164,7 +164,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Users who viewed at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfViews&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Users who viewed at least one PDF" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithPdfViews&instance={$selectedInstance}" title="{translate text="Show Users Who Viewed At Least One PDF Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -190,7 +190,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="PDFs Downloaded" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=pdfsDownloaded&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="PDFs Downloaded" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=pdfsDownloaded&instance={$selectedInstance}" title="{translate text="Show PDFs Downloaded Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -216,7 +216,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="PDFs Viewed" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=pdfsViewed&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="PDFs Viewed" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=pdfsViewed&instance={$selectedInstance}" title="{translate text="Show PDFs Viewed Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -242,7 +242,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one Supplemental File" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithSupplementalFileDownloads&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Users who downloaded at least one Supplemental File" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=usersWithSupplementalFileDownloads&instance={$selectedInstance}" title="{translate text="Show Users Who Downloaded At Least One Supplemental File Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
@@ -268,7 +268,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h2 class="dashboardCategoryLabel">{translate text="Supplemental Files Downloaded" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=supplementalFilesDownloaded&instance={$selectedInstance}" title="{translate text="Show User Logins Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+							<h2 class="dashboardCategoryLabel">{translate text="Supplemental Files Downloaded" isAdminFacing=true} <a href="/ILS/UsageGraphs?stat=supplementalFilesDownloaded&instance={$selectedInstance}" title="{translate text="Show Supplemental Files Downloaded Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 						</div>
 					</div>
 					<div class="row">
