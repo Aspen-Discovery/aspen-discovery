@@ -1,9 +1,13 @@
 networks:
   net-aspen:
+volumes:
+  solr:
 services:
 
   backend:
-    image: ${BACKEND_IMAGE_TAG:-aspendiscoveryofficial/aspen}
+    image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
+    env_file:
+      - .env
     environment:
       - ASPEN_BACKEND=yes
     ports:
@@ -19,7 +23,9 @@ services:
       - db
 
   cron:
-    image: ${BACKEND_IMAGE_TAG:-aspendiscoveryofficial/aspen}
+    image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
+    env_file:
+      - .env
     environment:
       - ASPEN_CRON=yes
     networks:
@@ -37,6 +43,8 @@ services:
   db:
     image: ${MARIADB_IMAGE:-mariadb:10.5}
     restart: always
+    env_file:
+      - .env
     environment:
       - MARIADB_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD:-password}
       - MARIADB_USER=${DATABASE_USER:-user123}
@@ -46,15 +54,28 @@ services:
       - ${ASPEN_DATA_DIR}/database:/var/lib/mysql
     networks:
       - net-aspen
+    healthcheck:
+      interval: 60s
+      retries: 10
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
 
   solr:
-    image: ${SOLR_IMAGE_TAG:-aspendiscoveryofficial/solr}
+    image: ${SOLR_IMAGE_TAG:-aspendiscovery/solr}
+    env_file:
+      - .env
     environment:
-      - SOLR_PORT=${SOLR_PORT}
+      - SOLR_PORT=${SOLR_PORT:-8983}
     ports:
-      - "${SOLR_PORT}:${SOLR_PORT}"
+      - "${SOLR_PORT}:${SOLR_PORT:-8983}"
     volumes:
-      - ${ASPEN_DATA_DIR}/solr:/var/solr
+      - solr:/var/solr
     networks:
       - net-aspen
     depends_on:
