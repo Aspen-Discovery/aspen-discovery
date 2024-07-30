@@ -1180,12 +1180,15 @@ function loadModuleActionId() {
 			$requestPath = $requestURI;
 			if (strpos($requestPath, '?') > 0) {
 				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
-
 			}
 
 			//Store query parameters
 			$urlComponents = parse_url($requestURI);
-			parse_str($urlComponents['query'],$queryParameters);
+			if (!empty($urlComponents['query'])) {
+				parse_str($urlComponents['query'], $queryParameters);
+			}else{
+				$queryParameters = [];
+			}
 
 			$basicPage = new BasicPage();
 			$basicPage->urlAlias = $requestPath;
