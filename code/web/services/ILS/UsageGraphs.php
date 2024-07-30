@@ -75,6 +75,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$userILSUsage->selectAdd('year');
 			$userILSUsage->selectAdd('month');
 			$userILSUsage->orderBy('year, month');
+			
 			if ($stat == 'userLogins') {
 				$dataSeries['User Logins'] = [
 					'borderColor' => 'rgba(255, 99, 132, 1)',
@@ -166,6 +167,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$stat == 'totalHolds'
 		) {
 			$recordILSUsage = new ILSRecordUsage();
+			$recordILSUsage->groupBy('year, month');
 			if (!empty($instanceName)) {
 				$recordILSUsage->instance = $instanceName;
 			}
