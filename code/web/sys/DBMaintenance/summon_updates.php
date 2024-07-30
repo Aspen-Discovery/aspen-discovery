@@ -91,5 +91,12 @@ function getSummonUpdates() {
 				"ALTER TABLE library ADD COLUMN showAvailableCoversInSummon TINYINT(1) DEFAULT 0",
 			],
 		],
+		'alter_summonId_length' => [
+			'title' => 'Alter summonId Length',
+			'description' => 'Increase summonId length',
+			'sql' => [
+				"ALTER TABLE summon_usage MODIFY summonId VARCHAR(100)",
+			],
+		],
     ];
 }

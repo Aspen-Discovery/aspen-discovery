@@ -5,6 +5,7 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Account/User.php';
 require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
 $allNotifications = new UserILSMessage();
 $allNotifications->status = "pending";
@@ -20,12 +21,12 @@ foreach ($notifications as $notification) {
 		$user = new User();
 		$user->id = $ilsMessage->userId;
 		if($user->find(true)) {
-			if($user->canReceiveNotifications('notifyAccount')) {
+			if($user->canReceiveNotifications('notifyAccount') && $user->canReceiveILSNotification($ilsMessage->type)) {
 				$tokens = $user->getNotificationPushToken();
-				foreach($tokens as $token => $patron) {
+				foreach($tokens as $token) {
 					if($ilsMessage->title && $ilsMessage->content) {
 						$body = [
-							'to' => $user['token'],
+							'to' => $token,
 							'title' => $ilsMessage->title,
 							'body' => $ilsMessage->content,
 							'categoryId' => 'accountAlert',
@@ -43,7 +44,7 @@ foreach ($notifications as $notification) {
 						}
 
 						$expoNotification = new ExpoNotification();
-						$expoNotification->sendExpoPushNotification($body, $user['token'], $user['uid'], "ils_message");
+						$expoNotification->sendExpoPushNotification($body, $token, $user->id, "ils_message");
 						$expoNotification = null;
 					}
 				}
@@ -58,5 +59,11 @@ foreach ($notifications as $notification) {
 
 global $aspen_db;
 $aspen_db = null;
+
+function console_log($message, $prefix = '') {
+	$STDERR = fopen('php://stderr', 'w');
+	fwrite($STDERR, $prefix . $message . "\n");
+	fclose($STDERR);
+}
 
 die();
