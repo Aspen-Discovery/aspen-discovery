@@ -85,7 +85,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 				$userILSUsage->selectAdd('SUM(usageCount) as sumUserLogins');
 			}
 			if ($stat == 'selfRegistrations') {
-				$dataSeries['Self Registration'] = [
+				$dataSeries['Self Registrations'] = [
 					'borderColor' => 'rgba(255, 159, 64, 1)',
 					'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
 					'data' => [],
@@ -236,7 +236,7 @@ class ILS_UsageGraphs extends Admin_Admin {
 				}
 				if ($stat == 'recordsHeld') {
 					/** @noinspection PhpUndefinedFieldInspection */
-					$dataSeries['Total Holds']['data'][$curPeriod] = $recordILSUsage->numRecordsUsed;
+					$dataSeries['Records Held']['data'][$curPeriod] = $recordILSUsage->numRecordsUsed;
 				}	
 				if ($stat == 'totalHolds') {
 					/** @noinspection PhpUndefinedFieldInspection */
