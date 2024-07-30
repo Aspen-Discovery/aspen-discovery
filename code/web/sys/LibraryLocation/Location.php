@@ -52,6 +52,10 @@ class Location extends DataObject {
 	public $_themes;
 	public $showDisplayNameInHeader;
 	public $languageAndDisplayInHeader;
+	public $displayExploreMoreBarInSummon;
+	public $displayExploreMoreBarInEbscoEds;
+	public $displayExploreMoreBarInEbscoHost;
+	public $displayExploreMoreBarInCatalogSearch;
 	public $headerText;
 	public $address;
 	public $phone;
@@ -960,6 +964,47 @@ class Location extends DataObject {
 								'canDelete' => true,
 							],
 						],
+					],
+				],
+			],
+
+			'exploreMoreBarSection' => [
+				'property' => 'exploreMoreBarSection',
+				'type' => 'section',
+				'label' => 'Explore More Bar Section',
+				'hideInLists' => true,
+				'properties' => [
+					'displayExploreMoreBarInCatalogSearch' => [
+						'property' => 'displayExploreMoreBarInCatalogSearch',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Catalog Search Results',
+						'description' => 'Whether to display the Explore More Bar in catalog search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreBarInSummon' => [
+						'property' => 'displayExploreMoreBarInSummon',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Summon Search Results',
+						'description' => 'Whether to display the Explore More Bar in Summon search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreBarInEbscoEds' => [
+						'property' => 'displayExploreMoreBarInEbscoEds',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Ebsco EDS Search Results',
+						'description' => 'Whether to display the Explore More Bar in Ebsco EDS search results',
+						'hideInLists' => true,
+						'default' => true,
+					],
+					'displayExploreMoreBarInEbscoHost' => [
+						'property' => 'displayExploreMoreBarInEbscoHost',
+						'type' => 'checkbox',
+						'label' => 'Display Explore More Bar in Ebsco Host Search Results',
+						'description' => 'Whether to display the Explore More Bar in Ebsco Host search results',
+						'hideInLists' => true,
+						'default' => true,
 					],
 				],
 			],
