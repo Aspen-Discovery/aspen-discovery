@@ -461,7 +461,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//Create virtual items with one for each location code
 				ItemInfo virtualItem = new ItemInfo();
 				virtualItem.setLocationCode(locationCode.trim());
-				virtualItem.setShelfLocation(locationCode.trim());
+				virtualItem.setShelfLocation(translateValue("shelf_location", locationCode.trim(), recordInfo.getRecordIdentifier(), true));
 				virtualItem.setIsVirtualHoldingsRecord(true);
 				recordInfo.addItem(virtualItem);
 			}
