@@ -899,8 +899,8 @@ class Location extends DataObject {
 							[
 								'property' => 'showInSearchFacet',
 								'type' => 'checkbox',
-								'label' => 'Show This Branch In Search Facet',
-								'description' => 'Whether or not the library should appear as a location that can be selected to filter search results by.',
+								'label' => 'Show This Branch In Available At and Owning Location Facets',
+								'description' => 'Whether or not the library should appear as a location that can be selected to filter search results by in the Available At and Owning Location facets.',
 								'hideInLists' => true,
 								'default' => true,
 								'forcesReindex' => false,
