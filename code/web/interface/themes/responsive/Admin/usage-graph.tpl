@@ -28,6 +28,9 @@
 				</tbody>
 			</table>
 		</div>
+		<div>
+			<a id="UsageGraphExport" class="btn btn-sm btn-default" href="">{translate text='Export To CSV' isAdminFacing=true}</a>
+		</div>
 	</div>
 {/strip}
 {literal}
