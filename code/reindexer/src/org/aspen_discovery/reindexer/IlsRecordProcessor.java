@@ -1837,8 +1837,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (settings.getDetermineLiteraryFormBy() == 0){
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining literary form by bib record data", 1);}
 			super.loadLiteraryForms(groupedWork, record, printItems, identifier);
 		}else{
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining literary form by item subfield with literary_form map", 1);}
 			//Load based on a subfield of the items
 			for (ItemInfo printItem : printItems) {
 				if (printItem.getMarcField() != null) {
@@ -1847,6 +1849,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						if (subfield.getData() != null) {
 							String translatedValue = translateValue("literary_form", subfield.getData(), identifier, true);
 							if (translatedValue != null) {
+								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Subfield " + settings.getLiteraryFormSubfield() + " for item " + printItem.getItemIdentifier() + " is " + subfield.getData() + " which maps to " + translatedValue, 2);}
 								groupedWork.addLiteraryForm(translatedValue);
 								groupedWork.addLiteraryFormFull(translatedValue);
 							}

@@ -587,21 +587,26 @@ class OverDriveProcessor {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
 					genres.add("Non Fiction");
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction based on OverDrive subjects", 2);}
 				} else if (curSubject.contains("Fiction")) {
 					Util.addToMapWithCount(literaryForm, "Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Fiction");
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction based on OverDrive subjects", 2);}
 					genres.add("Fiction");
 				}
 
 				if (curSubject.contains("Poetry")) {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Poetry");
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non-fiction/poetry based on OverDrive subjects", 2);}
 				} else if (curSubject.contains("Essays")) {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, curSubject);
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction/" + curSubject + " based on OverDrive subjects", 2);}
 				} else if (curSubject.contains("Short Stories") || curSubject.contains("Drama")) {
 					Util.addToMapWithCount(literaryForm, "Fiction");
 					Util.addToMapWithCount(literaryFormFull, curSubject);
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/" + curSubject + "  based on OverDrive subject", 2);}
 				}
 
 				if (curSubject.contains("Juvenile")) {
