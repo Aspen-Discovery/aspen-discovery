@@ -339,9 +339,11 @@ class HooplaProcessor {
 					if (rawResponse.getBoolean("fiction")){
 						Util.addToMapWithCount(literaryForm, "Fiction");
 						Util.addToMapWithCount(literaryFormFull, "Fiction");
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction based on Hoopla record", 2);}
 					}else{
 						Util.addToMapWithCount(literaryForm, "Non Fiction");
 						Util.addToMapWithCount(literaryFormFull, "Non Fiction");
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction based on Hoopla record", 2);}
 					}
 				}
 				if (!literaryForm.isEmpty()){
