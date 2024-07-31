@@ -30,6 +30,7 @@
 		</div>
 		<div>
 			<a id="UsageGraphExport" class="btn btn-sm btn-default" href="">{translate text='Export To CSV' isAdminFacing=true}</a>
+			<div id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Exporting will cause the page to refresh so the latest data can be retrieved and displayed" isAdminFacing=true}</small></div>
 		</div>
 	</div>
 {/strip}
