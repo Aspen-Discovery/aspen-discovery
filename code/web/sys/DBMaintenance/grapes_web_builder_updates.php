@@ -83,5 +83,12 @@ function getGrapesWebBuilderUpdates() {
 				"INSERT INTO templates (templateName, templateContent) VALUES ('No Template', ' ')",
 			],
 		],
+		'add_blank_tempalte_to_grapes_templates' => [
+			'title' => 'Add Blank Tempalte to Grapes Templates',
+			'description' => 'Add blank template to grapes templates',
+			'sql' => [
+				"INSERT INTO grapes_templates (templateName, templateContent) VALUES ('No Template', ' ')",
+			],
+		],
    ];
 }
