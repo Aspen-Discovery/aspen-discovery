@@ -14,7 +14,7 @@
 		{/if}
 
 		{*Cookie Preferences*}
-		<h1>{translate text='My Cookie & Analytics Preferences' isPublicFacing=true}</h1>
+		<h1>{translate text='My Privacy Settings' isPublicFacing=true}</h1>
 		{if !empty($profileUpdateMessage)}
 			{foreach from=$profileUpdateMessage item=msg}
 				<div class="alert alert-success">{$msg}</div>
