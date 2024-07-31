@@ -49,17 +49,8 @@ class User extends DataObject {
 	public $isLoggedInViaSSO;
 	public $userCookiePreferenceEssential;
 	public $userCookiePreferenceAnalytics;
-	public $userCookiePreferenceAxis360;
-	public $userCookiePreferenceEbscoEds;
-	public $userCookiePreferenceEbscoHost;
-	public $userCookiePreferenceSummon;
 	public $userCookiePreferenceEvents;
-	public $userCookiePreferenceHoopla;
 	public $userCookiePreferenceOpenArchives;
-	public $userCookiePreferenceOverdrive;
-	public $userCookiePreferencePalaceProject;
-	public $userCookiePreferenceSideLoad;
-	public $userCookiePreferenceCloudLibrary;
 	public $userCookiePreferenceWebsite;
 	public $userCookiePreferenceExternalSearchServices;
 	

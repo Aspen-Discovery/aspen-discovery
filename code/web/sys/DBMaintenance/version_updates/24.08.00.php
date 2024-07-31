@@ -154,6 +154,19 @@ function getUpdates24_08_00(): array {
 				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoHost TINYINT(1) DEFAULT 1',
 			],
 		],
+		'remove_individual_eContent_analytics_controls' => [
+			'title' => 'Remove Individual eContent Analytics Controls',
+			'description' => 'Remove individual eContent Analytics Controls',
+			'sql' => [
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceEbscoEds TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceEbscoHost TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceSummon TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceHoopla TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceOverdrive TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferencePalaceProject TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceSideLoad TINYINT(1) DEFAULT 0",
+			],
+		],
 		
 		
 

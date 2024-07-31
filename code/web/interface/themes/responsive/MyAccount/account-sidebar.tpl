@@ -228,7 +228,7 @@
 						<div class="panel-body">
 							{if empty($offline)}
 								{if !empty($showUserPreferences)}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
-								{if $cookieConsentEnabled}	<div class="header-menu-option"><a href="/MyAccount/MyCookiePreferences">{translate text="Your Cookie Preferences" isPublicFacing=true}</a></div>{/if}
+								{if $cookieConsentEnabled}	<div class="header-menu-option"><a href="/MyAccount/MyCookiePreferences">{translate text="Your Analytics Preferences" isPublicFacing=true}</a></div>{/if}
 
 								{if !empty($showUserContactInformation)}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 								{if $user->showHoldNotificationPreferences()}

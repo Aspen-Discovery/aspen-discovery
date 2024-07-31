@@ -72,10 +72,10 @@ AspenDiscovery.CookieConsent = (function() {
             $.getJSON(url, params,
                 function(data) {
                     if(data.success){
-                        AspenDiscovery.showMessageWithButtons("Manage Your Cookie Preferences", data.modalBody, data.modalButtons);
+                        AspenDiscovery.showMessageWithButtons("Manage Your Cookie & Analytics Preferences", data.modalBody, data.modalButtons);
                         $('.stripPopup').hide();
                     } else {
-                        AspenDiscovery.showMessage("There was an error retreiving your cookie preference options");
+                        AspenDiscovery.showMessage("There was an error retreiving your preferences");
                     }
                 }
              ).fail(AspenDiscovery.ajaxFail);
@@ -103,7 +103,7 @@ AspenDiscovery.CookieConsent = (function() {
             if(data.success) {
                 AspenDiscovery.showMessage(data.message);
             } else {
-                AspenDiscovery.showMessage("There was an error updating your cookie management preferences");
+                AspenDiscovery.showMessage("There was an error updating your preferences");
             }
          }
         ).fail(AspenDiscovery.ajaxFail);

@@ -214,7 +214,7 @@
 				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
-					<!-- $(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
+					$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
 					$("#usernameHelpButton").click(function() {
 						var helpButton = $(this);
 						if (helpButton.attr("aria-expanded") === "true") {
@@ -226,9 +226,9 @@
 							$("#usernameHelpButton").attr("aria-expanded","true");
 						}
 						return false;
-					}) -->
+					})
 					{/literal}
-				</script> 
+				</script>
 			{/if}
 		{else}
 			<div class="page">

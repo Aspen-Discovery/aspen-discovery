@@ -13,50 +13,50 @@
             <form method="post" name="cookieManagementPreferencesForm" id="cookieManagementPreferencesForm" class="form">
             <div>
             <label>
-                <input type="checkbox" name="cookieEssential" id="cookieEssential" checked disabled> Essential Cookies
+                <input type="checkbox" name="cookieEssential" id="cookieEssential" checked disabled> {translate text="Essential Cookies" isPublicFacing=true}
             </label>
             </div>
             <div>
                 <label>
-                    <input type="checkbox" name="cookieAnalytics" id="cookieAnalytics"> Analytics Cookies
+                    <input type="checkbox" name="cookieAnalytics" id="cookieAnalytics"> {translate text="Google Analytics Cookies" isPublicFacing=true}
                 </label>
             </div>
              {if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
             || array_key_exists('Palace Project', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('Side Loads', $enabledModules) || array_key_exists('Cloud Library', $enabledModules) || array_key_exists('Web Indexer', $enabledModules)}
                 <div>
                     <label>
-                        <input type="checkbox" name="cookieUserExternalSearchServices" id="cookieUserExternalSearchServices"> External Search Services&nbsp;<i class="fas fa-question-circle" onclick="return displayCookieExplanation()"></i>
+                        <input type="checkbox" name="cookieUserExternalSearchServices" id="cookieUserExternalSearchServices"> {translate text="External Search Services" isPublicFacing=true}&nbsp;<i class="fas fa-question-circle" onclick="return displayCookieExplanation()"></i>
                     </label>
                 </div>
                 <div id="cookieExplanation" style="display:none; margin-top:10px;">
-                    By checking this box you are giving consent to the tracking of your usage of:
+                    {translate text="By checking this box you are giving consent to the tracking of your usage of:" isPublicFacing=true}
                     <ul>
                     {if array_key_exists('Axis 360', $enabledModules)}
-                    <li>Axis 360</li>
+                    <li>{translate text="Axis 360" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('Cloud Library', $enabledModules)}
-                        <li>Cloud Library</li>
+                        <li>{translate text="Cloud Library" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('EBSCO EDS', $enabledModules)}
-                        <li>Ebsco Eds</li>
+                        <li>{translate text="Ebsco Eds" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('EBSCOhost', $enabledModules)}
-                        <li>Ebsco Host</li>
+                        <li>{translate text="Ebsco Host" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('Hoopla', $enabledModules)}
-                        <li>Hoopla</li>
+                        <li>{translate text="Hoopla" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('OverDrive', $enabledModules)}
-                        <li>Overdrive</li>
+                        <li>{translate text="Overdrive" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('Palace Project', $enabledModules)}
-                        <li>Palace Project</li>
+                        <li>{translate text="Palace Project" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('Side Loads', $enabledModules)}
-                        <li>Side Loaded eContent</li>
+                        <li>{translate text="Side Loaded eContent" isPublicFacing=true}</li>
                     {/if}
                     {if array_key_exists('Summon', $enabledModules)}
-                        <li>Summon</li>
+                        <li>{translate text="Summon" isPublicFacing=true}</li>
                     {/if}
                     </ul>
                 </div>
@@ -64,21 +64,21 @@
             {if array_key_exists('Events', $enabledModules)}
                 <div>
                 <label>
-                    <input type="checkbox" name="cookieUserEvents" id="cookieUserEvents"> Events
+                    <input type="checkbox" name="cookieUserEvents" id="cookieUserEvents">{translate text="Events" isPublicFacing=true}
                 </label>
                 </div>
             {/if} 
             {if array_key_exists('Open Archives', $enabledModules)}
                 <div>
                     <label>
-                        <input type="checkbox" name="cookieUserOpenArchives" id="cookieUserOpenArchives"> Open Archives
+                        <input type="checkbox" name="cookieUserOpenArchives" id="cookieUserOpenArchives">{translate text="Open Archives" isPublicFacing=true}
                     </label>
                 </div>
             {/if}
             {if array_key_exists('Web Indexer', $enabledModules)}
                 <div>
                     <label>
-                        <input type="checkbox" name="cookieUserWebsite" id="cookieUserWebsite"> Website
+                        <input type="checkbox" name="cookieUserWebsite" id="cookieUserWebsite"> {translate text="Website" isPublicFacing=true}
                     </label>
                 </div> 
             {/if}
