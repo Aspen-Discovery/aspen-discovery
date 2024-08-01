@@ -41,13 +41,31 @@ class Admin_UsageGraphs extends Admin_Admin {
 			'View System Reports',
 		]);
 	}
+
+	public function buildCSV() {
+		global $interface;
+
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
-	// Helper functions
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$dataSeries = $interface->getVariable('dataSeries');
+
+		$filename = "ApsenUsageData_{$stat}.csv";
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+		header('Content-Type: text/csv; charset=utf-8');
+		header("Content-Disposition: attachment;filename={$filename}");
+		$fp = fopen('php://output', 'w');
+		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
+		fputcsv($fp, ['Dates', $stat]);
+		exit();
+	}
 	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
 		global $interface;
 		global $enabledModules;
