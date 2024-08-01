@@ -6,15 +6,40 @@ require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 class Admin_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
-		global $enabledModules;
-		global $library;
 		$title = 'Aspen Usage Graph';
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$this->display('usage-graph.tpl', $title);
+	}
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('/Admin/UsageDashboard', 'Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection(): string {
+		return 'system_reports';
+	}
+
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
+	// Helper functions
+	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+		global $interface;
+		global $enabledModules;
+		global $library;
 
 		$dataSeries = [];
 		$columnLabels = [];
@@ -276,8 +301,6 @@ class Admin_UsageGraphs extends Admin_Admin {
 			$userUsage->selectAdd('SUM(emailsFailed) as sumFailedEmails');
 		}
 
-
-
 		//Collect results
 		$userUsage->find();
 
@@ -378,28 +401,8 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
 		$interface->assign('translateColumnLabels', false);
-
-		$interface->assign('graphTitle', $title);
-		$this->display('usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
-		$breadcrumbs[] = new Breadcrumb('/Admin/UsageDashboard', 'Usage Dashboard');
-		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
-		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection(): string {
-		return 'system_reports';
-	}
-
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
 }
