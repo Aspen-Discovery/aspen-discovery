@@ -53,8 +53,9 @@ class CloudLibrarySetting extends DataObject {
 			],
 			'accountKey' => [
 				'property' => 'accountKey',
-				'type' => 'text',
+				'type' => 'storedPassword',
 				'label' => 'API Token',
+				'hideInLists' => true,
 				'description' => 'The Account Key provided by cloudLibrary when registering',
 			],
 			'runFullUpdate' => [

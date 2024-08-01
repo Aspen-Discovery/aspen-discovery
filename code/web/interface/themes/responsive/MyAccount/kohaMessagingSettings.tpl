@@ -189,6 +189,7 @@ $(document).ready(function(){
 			var rowId = $(this).attr("id");
 			var newId = Number(rowId.replace("none",""));
 			$("#sms"+newId).removeAttr("checked");
+			$("#phone"+newId).removeAttr("checked");
 			$("#email"+newId).removeAttr("checked");
 			$("#digest"+newId).removeAttr("checked");
 			$("#rss"+newId).removeAttr("checked");
