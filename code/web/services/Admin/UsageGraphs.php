@@ -7,7 +7,10 @@ class Admin_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
 		$title = 'Aspen Usage Graph';
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
 	function getBreadcrumbs(): array {
@@ -52,72 +55,6 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$userUsage->selectAdd('year');
 		$userUsage->selectAdd('month');
 		$userUsage->orderBy('year, month');
-
-		switch ($stat) {
-			case 'generalUsage':
-				$title .= ' - General Usage';
-				break;
-			case 'pageViews':
-				$title .= ' - Pages Viewed';
-				break;
-			case 'authenticatedPageViews':
-				$title .= ' - Authenticated Page Views';
-				break;
-			case 'sessionsStarted':
-				$title = ' - Sessions Started';
-				break;
-			case 'pageViewsByBots':
-				$title .= ' - Pages Viewed By Bots';
-				break;
-			case 'asyncRequests':
-				$title .= ' - Asynchronous Requests';
-				break;
-			case 'coversRequested':
-				$title .= ' - Covers Requested';
-				break;
-			case 'searches':
-				$title .= ' - Searches';
-				break;
-			case 'groupedWorksSearches':
-				$title .= ' - Grouped Work Searches';
-				break;
-			case 'listSearches':
-				$title .= ' - List Searches';
-				break;
-			case 'edsSearches':
-				$title .= ' - EBSCO EDS Searches';
-				break;
-			case 'eventSearches':
-				$title .= ' - Event Searches';
-				break;
-			case 'openArchivesSearches':
-				$title .= ' - Open Archives Searches';
-				break;
-			case 'genealogySearches':
-				$title .= ' - Genealogy Searches';
-				break;
-			case 'exceptionsReport':
-				$title .= ' - Exceptions';
-				break;
-			case 'blockedPages':
-				$title .= ' - Blocked Pages';
-				break;
-			case 'blockedApiRequests':
-				$title .= ' - Blocked API Requests';
-				break;
-			case 'errors':
-				$title .= ' - Errors';
-				break;
-			case 'emailSending':
-				$title .= ' - Email Sending';
-				break;
-			case 'emailsSent':
-				$title .= ' - Emails Sent';
-				break;
-			case 'failedEmails':
-				$title .= ' - Failed Emails';
-				break;
-		}
 
 		//General Usage Stats
 		if ($stat == 'pageViews' || $stat == 'generalUsage') {
@@ -403,6 +340,75 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$interface->assign('translateColumnLabels', false);
 	}
 
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle');
+		switch ($stat) {
+			case 'generalUsage':
+				$title .= ' - General Usage';
+				break;
+			case 'pageViews':
+				$title .= ' - Pages Viewed';
+				break;
+			case 'authenticatedPageViews':
+				$title .= ' - Authenticated Page Views';
+				break;
+			case 'sessionsStarted':
+				$title = ' - Sessions Started';
+				break;
+			case 'pageViewsByBots':
+				$title .= ' - Pages Viewed By Bots';
+				break;
+			case 'asyncRequests':
+				$title .= ' - Asynchronous Requests';
+				break;
+			case 'coversRequested':
+				$title .= ' - Covers Requested';
+				break;
+			case 'searches':
+				$title .= ' - Searches';
+				break;
+			case 'groupedWorksSearches':
+				$title .= ' - Grouped Work Searches';
+				break;
+			case 'listSearches':
+				$title .= ' - List Searches';
+				break;
+			case 'edsSearches':
+				$title .= ' - EBSCO EDS Searches';
+				break;
+			case 'eventSearches':
+				$title .= ' - Event Searches';
+				break;
+			case 'openArchivesSearches':
+				$title .= ' - Open Archives Searches';
+				break;
+			case 'genealogySearches':
+				$title .= ' - Genealogy Searches';
+				break;
+			case 'exceptionsReport':
+				$title .= ' - Exceptions';
+				break;
+			case 'blockedPages':
+				$title .= ' - Blocked Pages';
+				break;
+			case 'blockedApiRequests':
+				$title .= ' - Blocked API Requests';
+				break;
+			case 'errors':
+				$title .= ' - Errors';
+				break;
+			case 'emailSending':
+				$title .= ' - Email Sending';
+				break;
+			case 'emailsSent':
+				$title .= ' - Emails Sent';
+				break;
+			case 'failedEmails':
+				$title .= ' - Failed Emails';
+				break;
+		}
+		$interface->assign('graphTitle', $title);
 	}
 
 }
