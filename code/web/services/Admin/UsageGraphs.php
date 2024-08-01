@@ -6,10 +6,19 @@ require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 class Admin_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
+
+		$stat = $_REQUEST['stat'];
+		if (!empty($_REQUEST['instance'])) {
+			$instanceName = $_REQUEST['instance'];
+		} else {
+			$instanceName = '';
+		}
+
 		$title = 'Aspen Usage Graph';
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
 		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
