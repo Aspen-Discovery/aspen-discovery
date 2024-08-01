@@ -64,6 +64,19 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$fp = fopen('php://output', 'w');
 		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
 		fputcsv($fp, ['Dates', $stat]);
+		// builds each subsequent data row - aka the column value
+		foreach ($dataSeries as $dataSerie) {
+			    $data = $dataSerie['data'];
+				$numRows = count($data);
+				$dates = array_keys($data);
+
+				for($i = 0; $i < $numRows; $i++) {
+					$date = $dates[$i];
+					$value = $data[$date];
+					$row = [$date, $value];
+					fputcsv($fp, $row);
+				}
+		}
 		exit();
 	}
 	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
