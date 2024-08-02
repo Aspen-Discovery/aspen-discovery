@@ -64,7 +64,7 @@
 					{if !empty($alternateLibraryCardLabel)}
 						{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}
 					{else}
-						Alternate Library Card
+						{translate text="Alternate Library Card" isPublicFacing=true isAdminEnteredData=false}
 					{/if}
 				</label>
 				<div class="col-md-6 col-md-offset-3">
@@ -77,14 +77,14 @@
 						{if !empty($alternateLibraryCardPasswordLabel)}
 							{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true}
 						{else}
-							Password/PIN
+							{translate text="Password/PIN" isPublicFacing=true isAdminEnteredData=false}
 						{/if}
 					</label>
 					<div class="col-md-6 col-md-offset-3">
 						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$profile->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
 					</div>
 				</div>
-			{/if}s
+			{/if}
 			<div class="form-group">
 				<div class="col-md-6 col-md-offset-3 text-center">
 					<input type="submit" name="submit" value="{translate text="Update" isPublicFacing=true}" id="alternateLibraryCardFormSubmit" class="btn btn-primary">
