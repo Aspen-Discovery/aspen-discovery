@@ -785,10 +785,34 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$numValidLibraries = 0;
 			// Loop through values:
 			$isScopedField = $this->isScopedField($field);
+
+			// Get a list of branches so we can access their 'showInSearchFacet' value
+			// Also rename the keys to the branches' names so they can easily be accessed later
+			$branchList = null;
+			if ($field == 'available_at' || $field == 'owning_location') {
+				$mainBranch = new Location();
+				$branchList = $mainBranch->getLocationListAsObjects(false);
+				// may need to be optimised / unsure how heavy this is
+				foreach ($branchList as $key=>$value) {
+					$branchList[$value->displayName] = $value;
+					unset($branchList[$key]);
+				}
+			}
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
 				$currentSettings = [];
 				$facetValue = $facet[0];
+				
+				// if populating the array of facet options for 'available at'
+				// then filter out any branch (location) for which showInSearchFacet has been set to "0"
+				// thus preventing these branches from being displayed as search by options
+				if ($field == 'available_at' || $field == 'owning_location') {
+					$branchName = substr($facetValue, 5);
+					if (empty($branchList[$branchName]->showInSearchFacet)) {
+						continue;
+					}
+				}
+			
 				if ($isScopedField && strpos($facetValue, '#') !== false) {
 					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
 				}

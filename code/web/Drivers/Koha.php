@@ -6239,16 +6239,10 @@ class Koha extends AbstractIlsDriver {
 
 			$kohaVersion = $this->getKohaVersion();
 			if ($kohaVersion >= 24.05) {
-				foreach ($params as $key => $value) {
-					if (is_array($value)) {
-						foreach ($value as $arrayValue) {
-							$postParams[$key] = $arrayValue;
-						}
-					} else {
-						$postParams[$key] = $value;
-					}
-				}
-				$postParams['op'] = 'cud-modify';
+				$postParams = $getParams;
+				$postParams[] = 'op=' . 'cud-modify';
+				$postParams = implode('&', $postParams);
+				$postParams .= '&' . $digestParams;
 				$result = $this->postToKohaPage("$catalogUrl/cgi-bin/koha/opac-messaging.pl?", $postParams);
 			} else {
 				$updateMessageUrl .= implode('&', $getParams);

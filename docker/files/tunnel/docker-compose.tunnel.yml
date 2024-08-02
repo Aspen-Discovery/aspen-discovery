@@ -1,5 +1,5 @@
 tunnel:
-  image: ${TUNNEL_IMAGE_TAG:-aspendiscoveryofficial/tunnel}
+  image: ${TUNNEL_IMAGE_TAG:-aspendiscovery/tunnel}
   env_file:
     - .env
   networks:

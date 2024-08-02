@@ -309,12 +309,15 @@ public abstract class AbstractGroupedWorkSolr {
 					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
+					if (this.debugEnabled) {this.addDebugMessage("Fiction and non fiction score are the same - literary form is unknown ", 2);}
 				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0) {
 					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Non Fiction");
+					if (this.debugEnabled) {this.addDebugMessage("Fiction has the highest literary form score", 2);}
 				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) < 0) {
 					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Fiction");
+					if (this.debugEnabled) {this.addDebugMessage("Non fiction has the highest literary form score", 2);}
 				}
 			}
 		}
@@ -343,6 +346,7 @@ public abstract class AbstractGroupedWorkSolr {
 					//Check to see if the highest usage literary forms are inconsistent
 					if (hasInconsistentLiteraryForms(highestUsageLiteraryForms)) {
 						//Ugh, we have inconsistent literary forms and can't make an educated guess as to which is correct.
+						if (this.debugEnabled) {this.addDebugMessage("Literary forms (" + literaryFormFull  + ") don't match - full form is Unknown", 2);}
 						literaryFormFull.clear();
 						literaryFormFull.put("Unknown", 1);
 					}
@@ -361,6 +365,7 @@ public abstract class AbstractGroupedWorkSolr {
 			for (String curLiteraryForm : literaryFormFull.keySet()) {
 				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)) {
 					logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					if (this.debugEnabled) {this.addDebugMessage(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.", 2);}
 					literaryFormFull.remove(curLiteraryForm);
 					changeMade = true;
 					break;

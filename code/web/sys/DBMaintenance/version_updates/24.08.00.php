@@ -87,6 +87,34 @@ function getUpdates24_08_00(): array {
 		//katherine - ByWater
 
 		//alexander - PTFS-Europe
+		'display_explore_more_bar' => [
+			'title' => 'Display Explore More Bar',
+			'description' => 'Display Explore More Bar',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInSummon TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInSummon TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoEds TINYINT(1) DEFAULT 1',
+			],
+		],
+		'display_explore_more_bar_additional_options' => [
+			'title' => 'Display Explore More Bar Additional Options',
+			'description' => 'Display Explore More Bar in Catalog Search',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInCatalogSearch TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInCatalogSearch TINYINT(1) DEFAULT 1',
+			],
+		],
+		'display_explore_more_bar_in_ebsco_host_search' => [
+			'title' => 'Display Explore More Bar in Esbco Host Search',
+			'description' => 'Display Explore More Bar in Esbco Host Search',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayExploreMoreBarInEbscoHost TINYINT(1) DEFAULT 1',
+				'ALTER TABLE location ADD COLUMN displayExploreMoreBarInEbscoHost TINYINT(1) DEFAULT 1',
+			],
+		],
+		
+		
 
 		//pedro - PTFS-Europe
 
@@ -100,6 +128,25 @@ function getUpdates24_08_00(): array {
 			]
 		], //web_builder_custom_form_increase_email
 
+		//James Staub - Nashville Public Library
+		'web_builder_custom_form_increase_email' => [
+			'title' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'description' => 'Increase Web Builder Custom Form "Email Results To" field character limit.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE web_builder_custom_form MODIFY COLUMN emailResultsTo VARCHAR(150)",
+			]
+		], //web_builder_custom_form_increase_email
+
+		//chloe - PTFS-Europe
+		'show_in_search_facet_column' => [
+			'title' => 'Show In Search Facet Column',
+			'description' => 'Adds the showInSearchFacet column to the Location table',
+			// 'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN showInSearchFacet TINYINT(1) DEFAULT 1'
+			]
+			], //show_in_search_facet_column
 		//other
 
 	];

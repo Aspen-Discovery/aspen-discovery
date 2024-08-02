@@ -223,6 +223,7 @@ public class PalaceProjectProcessor {
 				if (fictionNonFiction != null){
 					groupedWork.addLiteraryForm(fictionNonFiction);
 					groupedWork.addLiteraryFormFull(fictionNonFiction);
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is " + fictionNonFiction + " based on Palace Project", 2);}
 				}
 				if (!genres.isEmpty()) {
 					groupedWork.addGenre(genres);
