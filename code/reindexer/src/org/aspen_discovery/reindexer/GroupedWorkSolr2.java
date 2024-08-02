@@ -124,10 +124,12 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			checkDefaultValue(literaryFormFull, "Not Coded");
 			checkDefaultValue(literaryFormFull, "Other");
 			checkDefaultValue(literaryFormFull, "Unknown");
+			if (this.isDebugEnabled()) {this.addDebugMessage("Total full literary form score: " + this.literaryFormFull, 2);}
 			checkInconsistentLiteraryFormsFull();
 			checkDefaultValue(literaryForm, "Not Coded");
 			checkDefaultValue(literaryForm, "Other");
 			checkDefaultValue(literaryForm, "Unknown");
+			if (this.isDebugEnabled()) {this.addDebugMessage("Total fiction vs non fiction score: " + this.literaryForm, 2);}
 			checkInconsistentLiteraryForms();
 			//Check if .isHide
 			if (groupedWorkIndexer.isHideUnknownLiteraryForm()) {
@@ -139,6 +141,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				literaryFormFull.remove("Not Coded");
 			}
 			//Add field
+			if (this.debugEnabled) {this.addDebugMessage("Literary form is " + literaryForm.keySet(), 4);}
+			if (this.debugEnabled) {this.addDebugMessage("Full literary form is " + literaryFormFull.keySet(), 4);}
 			doc.addField("literary_form_full", literaryFormFull.keySet());
 			doc.addField("literary_form", literaryForm.keySet());
 			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {

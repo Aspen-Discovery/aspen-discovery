@@ -702,12 +702,14 @@ abstract class MarcRecordProcessor {
 					literaryFormChar = Character.toUpperCase(ohOhSixField.getData().charAt(16));
 					if (literaryFormChar != ' ') {
 						literaryForms.add(Character.toString(literaryFormChar));
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record is a book based on Leader and Literary Form is " + indexer.translateSystemCollection("literary_form", literaryForms, identifier).toString() + " based on Leader and 006", 2);}
 					}
 				}
 				if (literaryForms.isEmpty() && ohOhEightField != null && ohOhEightField.getData().length() > 33) {
 					literaryFormChar = Character.toUpperCase(ohOhEightField.getData().charAt(33));
 					if (literaryFormChar != ' ') {
 						literaryForms.add(Character.toString(literaryFormChar));
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record is a book based on Leader 6/7 and Literary Form is  " + indexer.translateSystemCollection("literary_form", literaryForms, identifier).toString() + " based on Leader and 008 (counts for 2 points)", 2);}
 					}
 				}
 				addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
@@ -720,14 +722,19 @@ abstract class MarcRecordProcessor {
 					if (position30 == 'F' || position31 == 'F'){
 						addToMapWithCount(literaryFormsWithCount, "Fiction", 2);
 						addToMapWithCount(literaryFormsFull, "Fiction", 2);
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record is audio based on based on Leader 6/7 and Literary Form is fiction based on 008 position 30, 31 (counts for 2 points)", 2);}
 					}else if ((position30 == '|' || position30 == ' ') && (position31 == '|' || position31 == ' ')){
 						addToMapWithCount(literaryFormsWithCount, "Not Coded", 1);
 						addToMapWithCount(literaryFormsFull, "Not Coded", 1);
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record is audio based on based on Leader 6/7 and Literary Form is not coded based on 008 position 30, 31", 2);}
 					}else{
 						addToMapWithCount(literaryFormsWithCount, "Non Fiction", 2);
 						addToMapWithCount(literaryFormsFull, "Non Fiction", 2);
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Record is audio based on Leader 6/7 and Literary Form is non fiction based on 008 position 30, 31 (counts for 2 points)", 2);}
 					}
 				}
+			} else {
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Could not determine literary form based on Leader 6/7", 2);}
 			}
 		} catch (Exception e) {
 			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
@@ -756,15 +763,18 @@ abstract class MarcRecordProcessor {
 					){
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction based on 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Biography")){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction based on 'biography' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Novela juvenil")
 					|| subjectForm.equalsIgnoreCase("Novela")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Novels");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/novel based on 'novela' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Drama")
 					|| subjectForm.equalsIgnoreCase("Dramas")
 					|| subjectForm.equalsIgnoreCase("Juvenile drama")
@@ -772,11 +782,13 @@ abstract class MarcRecordProcessor {
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Dramas");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/drama based on 'drama' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Poetry");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction/poetry based on 'poetry' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Humor")
 					|| subjectForm.equalsIgnoreCase("Juvenile Humor")
 					|| subjectForm.equalsIgnoreCase("Comedy")
@@ -788,19 +800,23 @@ abstract class MarcRecordProcessor {
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Humor, Satires, etc.");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/humor based on 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Correspondence")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Letters");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction/letters based on 'correspondence' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Short Stories")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Short Stories");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/short stories based on 'short stories' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("essays")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Essays");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction/essays based on 'essays' in 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Personal narratives, American")
 					|| subjectForm.equalsIgnoreCase("Personal narratives, Polish")
 					|| subjectForm.equalsIgnoreCase("Personal narratives, Sudanese")
@@ -837,6 +853,7 @@ abstract class MarcRecordProcessor {
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction based on 650v, 651v", 2);}
 			}else{
 				//noinspection RedundantCollectionOperation
 				if (!unknownSubjectForms.contains(subjectForm)){
@@ -855,10 +872,12 @@ abstract class MarcRecordProcessor {
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction based on 655a", 2);}
 			}
 			if (subjectForm.startsWith("fiction")) {
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction based on 655a", 2);}
 			}
 		}
 		groupedWork.addLiteraryForms(literaryFormsWithCount);

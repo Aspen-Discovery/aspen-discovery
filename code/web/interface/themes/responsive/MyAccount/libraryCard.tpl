@@ -11,10 +11,10 @@
 	{if !empty($ilsMessages)}
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
-	{if !empty($message)}
+	{if !empty($updateMessage)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-success">{translate text=$message isPublicFacing=true isMetadata=true}</div>
+				<div class="alert alert-success">{translate text=$updateMessage isPublicFacing=true isMetadata=true}</div>
 			</div>
 		</div>
 	{/if}

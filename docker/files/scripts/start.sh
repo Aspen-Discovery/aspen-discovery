@@ -2,7 +2,7 @@
 set -e
 
 # Wait for 'db' service responses
-while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 3; done
+while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 1; done
 
 export CONFIG_DIRECTORY="/usr/local/aspen-discovery/sites/$SITE_NAME"
 
