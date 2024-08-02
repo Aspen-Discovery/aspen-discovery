@@ -25,7 +25,9 @@ class AJAX_JSON extends Action {
 				'saveCookiePreference',
 				'deleteTranslationTerm',
 				'getDisplaySettingsForm',
-				'updateDisplaySettings'
+				'updateDisplaySettings',
+				'manageCookiePreferences',
+				'saveCookieManagementPreferences'
 			])) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
@@ -630,6 +632,50 @@ class AJAX_JSON extends Action {
 				'isPublicFacing' => true,
 			]),
 		];
+	}
+
+	function manageCookiePreferences(){
+		global $interface;
+		return [
+			'success' => true,
+			'modalBody' => $interface->fetch('AJAX/cookieManagement.tpl'),
+			'modalButtons' => '<button type="button" class="btn btn-primary" onclick="$(\'#cookieManagementPreferencesForm\').submit();">' . translate([
+					'text' => 'Save Preferences',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]) . '</button>',
+		];
+	}
+
+	function saveCookieManagementPreferences() {
+		if (UserAccount::isLoggedIn()) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceEvents = $_REQUEST['cookieUserEvents'] == "1" || $_REQUEST['cookieUserEvents'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceOpenArchives = $_REQUEST['cookieUserOpenArchives'] == "1" || $_REQUEST['cookieUserOpenArchives'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceWebsite = $_REQUEST['cookieUserWebsite'] == "1" || $_REQUEST['cookieUserWebsite'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceExternalSearchServices = $_REQUEST['cookieUserExternalSearchServices'] == "1" || $_REQUEST['cookieUserExternalSearchServices'] == 1 ? 1 : 0;
+			$userObj->update();
+			return[
+				'success' => true,
+				'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
+			];
+		} else {
+			$userCookiePost = [
+				'Essential' => 1,
+				'Analytics' => $_REQUEST['cookieAnalytics'],
+				'UserEvents' => isset($_POST['cookieUserEvents']) ? 1 : 0,
+				'UserOpenArchives' => isset($_POST['cookieUserOpenArchives']) ? 1 : 0,
+				'UserWebsite' => isset($_POST['cookieUserWebsite']) ? 1 : 0,
+				'UserExternalSearchServices' => isset($_POST['cookieUserExternalSearchServices']) ? 1 : 0,
+			];
+			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
+			return [
+				'success' => true,
+				'message' => '',
+			];
+		}
 	}
 
 	function getBreadcrumbs(): array {
