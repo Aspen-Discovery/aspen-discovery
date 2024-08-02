@@ -16,6 +16,7 @@ class FormatMapValue extends DataObject {
 	public $appliesToItemType;
 	public $appliesToItemFormat;
 	public $appliesToFallbackFormat;
+	public $displaySierraCheckoutGrid;
 
 	public $suppress;
 	public /** @noinspection PhpUnused */
@@ -196,6 +197,15 @@ class FormatMapValue extends DataObject {
 				'description' => 'When placing holds, only branches where the item is can be used as pickup locations.',
 				'default' => 0,
 				'required' => true,
+				'forcesReindex' => false,
+			],
+			'displaySierraCheckoutGrid' => [
+				'property' => 'displaySierraCheckoutGrid',
+				'type' => 'checkbox',
+				'label' => 'Display Sierra Checkout Grid?',
+				'description' => 'Whether or not checkout grids are shown for this type of item',
+				'default' => 0,
+				'required' => false,
 				'forcesReindex' => false,
 			],
 		];

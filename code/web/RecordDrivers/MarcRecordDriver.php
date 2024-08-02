@@ -1612,12 +1612,29 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		//Get copies for the record
 		$this->assignCopiesInformation();
 
+		$ils = 'Unknown';
+		if ($this->getIndexingProfile()->getAccountProfile() != null) {
+			$ils = $this->getIndexingProfile()->getAccountProfile()->ils;
+
+		}
+
 		//If this is a periodical we may have additional information
 		$isPeriodical = false;
+		require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
 		foreach ($this->getFormats() as $format) {
-			if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
-				$isPeriodical = true;
-				break;
+			if ($ils == 'sierra' || $ils == 'millennium') {
+				$formatValue = new FormatMapValue();
+				$formatValue->format = $format;
+				$formatValue->displaySierraCheckoutGrid = 1;
+				if ($formatValue->find(true)) {
+					$isPeriodical = true;
+					break;
+				}
+			}else{
+				if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
+					$isPeriodical = true;
+					break;
+				}
 			}
 		}
 		if ($isPeriodical) {
@@ -1641,7 +1658,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		$showLastCheckIn = false;
 		if ($this->getIndexingProfile()->getAccountProfile() != null) {
 			$ils = $this->getIndexingProfile()->getAccountProfile()->ils;
-			if ($ils == 'Sierra' || $ils == 'Millennium') {
+			if ($ils == 'sierra' || $ils == 'millennium') {
 				$showLastCheckIn = $interface->getVariable('hasLastCheckinData');
 			}
 		}
