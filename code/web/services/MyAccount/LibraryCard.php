@@ -12,6 +12,7 @@ class LibraryCard extends MyAccount {
 
 		$interface->assign('libraryCardBarcodeStyle', $library->libraryCardBarcodeStyle);
 		$interface->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
+		$interface->assign('alternateLibraryCardFormMessage', $library->alternateLibraryCardFormMessage);
 		$interface->assign('showAlternateLibraryCardPassword', $library->showAlternateLibraryCardPassword);
 		$interface->assign('alternateLibraryCardLabel', $library->alternateLibraryCardLabel);
 		$interface->assign('alternateLibraryCardPasswordLabel', $library->alternateLibraryCardPasswordLabel);
