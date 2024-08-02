@@ -9,6 +9,7 @@ class UserILSMessage extends DataObject {
 	public $status;
 	public $title;
 	public $content;
+	public $defaultContent;
 	public $dateQueued;
 	public $dateSent;
 	public $isRead;
