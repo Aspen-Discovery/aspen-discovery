@@ -8,6 +8,7 @@
         UserWebsite: {$profile->userCookiePreferenceWebsite},
         UserExternalSearchServices: {$profile->userCookiePreferenceExternalSearchServices},
     };
+    AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script> 
    <div>
         <form method="post" name="cookieManagementPreferencesForm" id="cookieManagementPreferencesForm" class="form">
@@ -18,14 +19,14 @@
         </div>
         <div>
             <label>
-                <input type="checkbox" name="cookieAnalytics" id="cookieAnalytics"> {translate text="Google Analytics Cookies" isPublicFacing=true}
+                <input type="checkbox" name="cookieAnalytics" id="cookieAnalytics"  {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch=""> {translate text="Google Analytics Cookies" isPublicFacing=true}
             </label>
         </div>
          {if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
         || array_key_exists('Palace Project', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('Side Loads', $enabledModules) || array_key_exists('Cloud Library', $enabledModules) || array_key_exists('Web Indexer', $enabledModules)}
             <div>
                 <label>
-                    <input type="checkbox" name="cookieUserExternalSearchServices" id="cookieUserExternalSearchServices"> {translate text="External Search Services" isPublicFacing=true}&nbsp;<i class="fas fa-question-circle" onclick="return displayCookieExplanation()"></i>
+                    <input type="checkbox" name="cookieUserExternalSearchServices" id="cookieUserExternalSearchServices" {if $profile->userCookiePreferenceExternalSearchServices==1}checked='checked'{/if} data-switch=""> {translate text="External Search Services" isPublicFacing=true}&nbsp;<i class="fas fa-question-circle" onclick="return displayCookieExplanation()"></i>
                 </label>
             </div>
             <div id="cookieExplanation" style="display:none; margin-top:10px;">
