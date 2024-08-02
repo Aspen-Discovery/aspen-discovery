@@ -284,6 +284,7 @@ class Library extends DataObject {
 		$maxBarcodeLength;
 
 	public $showAlternateLibraryCard;
+	public $alternateLibraryCardFormMessage;
 	public $alternateLibraryCardStyle;
 	public $showAlternateLibraryCardPassword;
 	public $alternateLibraryCardLabel;
@@ -1692,11 +1693,19 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 0,
 							],
+							'alternateLibraryCardFormMessage' => [
+								'property' => 'alternateLibraryCardFormMessage',
+								'type' => 'html',
+								'label' => 'Alternate Library Card Form Message',
+								'description' => 'Optional message shown to users with the form add or edit their alternate library card.',
+								'hideInLists' => true,
+								'default' => '',
+							],
 							'alternateLibraryCardLabel' => [
 								'property' => 'alternateLibraryCardLabel',
 								'type' => 'text',
 								'label' => 'Alternate Library Card Label',
-								'description' => 'A label describing the alternate library card.',
+								'description' => 'A label describing the alternate library card - if blank will display default.',
 								'hideInLists' => true,
 								'default' => '',
 							],
@@ -1704,7 +1713,7 @@ class Library extends DataObject {
 								'property' => 'alternateLibraryCardPasswordLabel',
 								'type' => 'text',
 								'label' => 'Alternate Library Card PIN/Password Label',
-								'description' => 'A label describing the PIN/Password field for the alternate library card',
+								'description' => 'A label describing the PIN/Password field for the alternate library card  - if blank will display default',
 								'hideInLists' => true,
 								'default' => '',
 							],

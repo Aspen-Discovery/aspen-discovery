@@ -45,6 +45,11 @@
 
 	{if !empty($showAlternateLibraryCard)}
 		<h1>{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}</h1>
+		{if !empty($alternateLibraryCardFormMessage)}
+			<div class="row">
+				<div class="col-xs-12">{$alternateLibraryCardFormMessage}<div>
+			</div>
+		{/if}
 		{if $alternateLibraryCardStyle != 'none'}
 			<div class="row">
 				<div class="col-xs-12 text-center" id="library-alternateLibraryCard" style="display: none">
@@ -55,16 +60,28 @@
 		{/if}
 		<form name="alternateLibraryCard" method="post" class="form-horizontal">
 			<div class="form-group">
-				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true} </label>
+				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">
+					{if !empty($alternateLibraryCardLabel)}
+						{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}
+					{else}
+						{translate text="Alternate Library Card" isPublicFacing=true isAdminEnteredData=false}
+					{/if}
+				</label>
 				<div class="col-md-6 col-md-offset-3">
-					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$user->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
+					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$profile->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
 				</div>
 			</div>
 			{if !empty($showAlternateLibraryCardPassword)}
 				<div class="form-group">
-					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true} </label>
+					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">
+						{if !empty($alternateLibraryCardPasswordLabel)}
+							{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true}
+						{else}
+							{translate text="Password/PIN" isPublicFacing=true isAdminEnteredData=false}
+						{/if}
+					</label>
 					<div class="col-md-6 col-md-offset-3">
-						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$user->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
+						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$profile->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
 					</div>
 				</div>
 			{/if}
@@ -116,7 +133,9 @@
 			var alternateLibraryCardVal = $("#alternateLibraryCard").val();
 			var alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
 			if (alternateLibraryCardVal.length > 0){ldelim}
-				alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal, {ldelim}format:'{$alternateLibraryCardStyle}',displayValue:false{rdelim});
+				{if $alternateLibraryCardStyle != 'none'}
+					alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal, {ldelim}format:'{$alternateLibraryCardStyle}',displayValue:false{rdelim});
+				{/if}
 				$("#library-alternateLibraryCard").show();
 			{rdelim}else{ldelim}
 				$("#library-alternateLibraryCard").hide();
