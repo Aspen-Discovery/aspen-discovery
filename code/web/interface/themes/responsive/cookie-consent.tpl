@@ -10,7 +10,7 @@
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
-{elseif $loggedIn (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
+{elseif $loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
     <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
