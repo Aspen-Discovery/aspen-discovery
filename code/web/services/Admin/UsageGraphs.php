@@ -62,17 +62,21 @@ class Admin_UsageGraphs extends Admin_Admin {
 		header('Content-Type: text/csv; charset=utf-8');
 		header("Content-Disposition: attachment;filename={$filename}");
 		$fp = fopen('php://output', 'w');
-		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
-		fputcsv($fp, ['Dates', $stat]);
-		// builds each subsequent data row - aka the column value
-		foreach ($dataSeries as $dataSerie) {
-			    $data = $dataSerie['data'];
-				$numRows = count($data);
-				$dates = array_keys($data);
+		$graphTitles = array_keys($dataSeries);
+		$numGraphTitles = count($dataSeries);
 
-				for($i = 0; $i < $numRows; $i++) {
-					$date = $dates[$i];
-					$value = $data[$date];
+		// builds the header for each section of the table in the CSV - column headers: Dates, and the title of the graph
+		for($i = 0; $i < $numGraphTitles; $i++) {
+			$dataSerie = $dataSeries[$graphTitles[$i]];
+			$numRows = count($dataSerie['data']);
+			$dates = array_keys($dataSerie['data']);
+			$header = ['Dates', $graphTitles[$i]];
+			fputcsv($fp, $header);
+
+				// builds each subsequent data row - aka the column value
+				for($j = 0; $j < $numRows; $j++) {
+					$date = $dates[$j];
+					$value = $dataSerie['data'][$date];
 					$row = [$date, $value];
 					fputcsv($fp, $row);
 				}
