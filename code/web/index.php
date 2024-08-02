@@ -281,6 +281,10 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$analyticsPref = $cookie['Analytics'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+				$userEventsPref = $cookie['UserEvents'];
+				$userOpenArchivesPref = $cookie['UserOpenArchives'];
+				$userWebsitePref = $cookie['UserWebsite'];
+				$userExternalSearchServicesPref = $cookie['UserExternalSearchServices'];
 				$userObj->update();
 			}
 		}
