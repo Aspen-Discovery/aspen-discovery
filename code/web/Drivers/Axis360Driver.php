@@ -703,14 +703,19 @@ class Axis360Driver extends AbstractEContentDriver {
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 		global $aspenUsage;
+		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
+		$userObj = UserAccount::getActiveUserObj();
+		$userAxis360Tracking = $userObj->userCookiePreferenceExternalSearchServices;
 
-		if ($userUsage->find(true)) {
-			$userUsage->usageCount++;
-			$userUsage->update();
-		} else {
-			$userUsage->usageCount = 1;
-			$userUsage->insert();
+		if ($userAxis360Tracking && $library->cookieStorageConsent) {
+			if ($userUsage->find(true)) {
+				$userUsage->usageCount++;
+				$userUsage->update();
+			} else {
+				$userUsage->usageCount = 1;
+				$userUsage->insert();
+			}
 		}
 	}
 
