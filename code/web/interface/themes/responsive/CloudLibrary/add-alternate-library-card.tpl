@@ -14,7 +14,7 @@
                     {if !empty($alternateLibraryCardLabel)}
                         {translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}
                     {else}
-                        Alternate Library Card
+                        {translate text="Alternate Library Card" isPublicFacing=true isAdminEnteredData=false}
                     {/if}
                 </label>
                 <div class="col-md-6">
@@ -27,7 +27,7 @@
                         {if !empty($alternateLibraryCardPasswordLabel)}
                             {translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true}
                         {else}
-                            Password/PIN
+                            {translate text="Password/PIN" isPublicFacing=true isAdminEnteredData=false}
                         {/if}
                     </label>
                     <div class="col-md-6">
