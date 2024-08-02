@@ -3,10 +3,14 @@
         cookieValues = {
             Essential: {$profile->userCookiePreferenceEssential},
             Analytics: {$profile->userCookiePreferenceAnalytics},
+            UserEvents: {$profile->userCookiePreferenceEvents},
+            UserOpenArchives: {$profile->userCookiePreferenceOpenArchives},
+            UserWebsite: {$profile->userCookiePreferenceWebsite},
+            UserExternalSearchServices: {$profile->userCookiePreferenceExternalSearchServices},
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
-{elseif (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
+{elseif $loggedIn (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
     <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
@@ -16,6 +20,7 @@
             <div class="btnWrap">
                 <a onclick="AspenDiscovery.CookieConsent.cookieAgree('all');" href="#" id="consentAgree" class="button">{translate text="Accept all cookies" isPublicFacing=true}</a>
                 <a onclick="AspenDiscovery.CookieConsent.cookieAgree('essential');" href="#" id="consentDisagree" class="button">{translate text="Only accept essential cookies" isPublicFacing=true}</a>
+                <a onclick="AspenDiscovery.CookieConsent.cookieManage();" href="#" id="consentManage" class="button">{translate text="Manage Cookies" isPublicFacing=true}</a>
             </div>
         </div>
     </div>
