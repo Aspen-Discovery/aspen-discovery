@@ -33,8 +33,10 @@ class Events_JSON extends JSON_Action {
 //			$webPageUsage->timesUsed = 1;
 //			$webPageUsage->insert();
 //		}
-//
-//		$userId = UserAccount::getActiveUserId();
+//		$userObj = UserAccount::getActiveUserObj();
+// 		$userEventsTracking = $userObj->userCookiePreferenceEvents;
+//		if ($userEventsTracking && $library->cookieStorageConsent) {
+		//		$userId = UserAccount::getActiveUserId();
 //		if ($userId) {
 //			//Track usage for the user
 //			require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
@@ -52,6 +54,7 @@ class Events_JSON extends JSON_Action {
 //				$userWebsiteUsage->insert();
 //			}
 //		}
+//	}
 //
 //		return ['success' => true, 'message' => 'Updated usage for webpage ' . $id];
 	}

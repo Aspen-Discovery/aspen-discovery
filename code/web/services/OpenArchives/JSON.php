@@ -26,6 +26,9 @@ class OpenArchives_JSON extends JSON_Action {
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		global $aspenUsage;
+		global $library;
+		$userObj = UserAccount::getActiveUserObj();
+		$userOpenArchivesTracking = $userObj->userCookiePreferenceOpenArchives;
 		$openArchivesUsage->instance = $aspenUsage->getInstance();
 		$openArchivesUsage->openArchivesRecordId = $id;
 		$openArchivesUsage->year = date('Y');
@@ -42,24 +45,26 @@ class OpenArchives_JSON extends JSON_Action {
 			$openArchivesUsage->insert();
 		}
 
-		$userId = UserAccount::getActiveUserId();
-		if ($userId) {
-			//Track usage for the user
-			require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
-			$userOpenArchivesUsage = new UserOpenArchivesUsage();
-			global $aspenUsage;
-			$userOpenArchivesUsage->instance = $aspenUsage->getInstance();
-			$userOpenArchivesUsage->userId = $userId;
-			$userOpenArchivesUsage->year = date('Y');
-			$userOpenArchivesUsage->month = date('n');
-			$userOpenArchivesUsage->openArchivesCollectionId = $openArchivesRecord->sourceCollection;
-
-			if ($userOpenArchivesUsage->find(true)) {
-				$userOpenArchivesUsage->usageCount++;
-				$userOpenArchivesUsage->update();
-			} else {
-				$userOpenArchivesUsage->usageCount = 1;
-				$userOpenArchivesUsage->insert();
+		if ($userOpenArchivesTracking && $library->cookieStorageConsent) {
+			$userId = UserAccount::getActiveUserId();
+			if ($userId) {
+				//Track usage for the user
+				require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
+				$userOpenArchivesUsage = new UserOpenArchivesUsage();
+				global $aspenUsage;
+				$userOpenArchivesUsage->instance = $aspenUsage->getInstance();
+				$userOpenArchivesUsage->userId = $userId;
+				$userOpenArchivesUsage->year = date('Y');
+				$userOpenArchivesUsage->month = date('n');
+				$userOpenArchivesUsage->openArchivesCollectionId = $openArchivesRecord->sourceCollection;
+	
+				if ($userOpenArchivesUsage->find(true)) {
+					$userOpenArchivesUsage->usageCount++;
+					$userOpenArchivesUsage->update();
+				} else {
+					$userOpenArchivesUsage->usageCount = 1;
+					$userOpenArchivesUsage->insert();
+				}
 			}
 		}
 
