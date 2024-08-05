@@ -44,6 +44,8 @@ export const UserContext = React.createContext({
      updateNotificationOnboardStatus: () => {},
      appPreferences: [],
      updateAppPreferences: () => {},
+     notificationHistory: [],
+     updateNotificationHistory: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -373,6 +375,7 @@ export const UserProvider = ({ children }) => {
      const [expoToken, setExpoToken] = useState(false);
      const [aspenToken, setAspenToken] = useState(false);
      const [seenNotificationOnboardPrompt, setSeenNotificationOnboardPrompt] = useState(true);
+     const [notificationHistory, setNotificationHistory] = useState([]);
 
      const updateUser = (data) => {
           if (user !== data) {
@@ -580,6 +583,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated notification onboard status in UserContext');
      };
 
+     const updateNotificationHistory = (data) => {
+          setNotificationHistory(data);
+          console.log('updated notification history in UserContext');
+     };
+
      return (
           <UserContext.Provider
                value={{
@@ -616,6 +624,8 @@ export const UserProvider = ({ children }) => {
                     updateSeenNotificationOnboardPrompt,
                     updateAppPreferences,
                     appPreferences,
+                    notificationHistory,
+                    updateNotificationHistory,
                }}>
                {children}
           </UserContext.Provider>
