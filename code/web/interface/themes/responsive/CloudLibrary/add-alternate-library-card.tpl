@@ -4,26 +4,37 @@
         <input type="hidden" name="patronId" id="patronId" value="{$patronId}"/>
         <input type="hidden" name="type" id="type" value="{$type}"/>
         <div>
-            <div class="form-group">
-                <label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true} </label>
+            {if !empty($alternateLibraryCardFormMessage)}
+                <div class="row">
+                    <div class="col-xs-12">{$alternateLibraryCardFormMessage}</div>
+                </div>
+            {/if}
+            <div class="form-group row">
+                <label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">
+                    {if !empty($alternateLibraryCardLabel)}
+                        {translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}
+                    {else}
+                        {translate text="Alternate Library Card" isPublicFacing=true isAdminEnteredData=false}
+                    {/if}
+                </label>
                 <div class="col-md-6">
                     <input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$user->alternateLibraryCard}" maxlength="60" class="form-control" >
                 </div>
             </div>
             {if !empty($showAlternateLibraryCardPassword)}
-                <br/><br/>
-                <div class="form-group">
-                    <label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true} </label>
+                <div class="form-group row">
+                    <label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">
+                        {if !empty($alternateLibraryCardPasswordLabel)}
+                            {translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true}
+                        {else}
+                            {translate text="Password/PIN" isPublicFacing=true isAdminEnteredData=false}
+                        {/if}
+                    </label>
                     <div class="col-md-6">
                         <input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$user->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
                     </div>
                 </div>
             {/if}
-{*            <div class="form-group">*}
-{*                <div class="col-md-6 col-md-offset-3 text-center">*}
-{*                    <input type="submit" name="submit" value="{translate text="Update" isPublicFacing=true}" id="alternateLibraryCardFormSubmit" class="btn btn-primary">*}
-{*                </div>*}
-{*            </div>*}
         </div>
     </form>
 {/strip}

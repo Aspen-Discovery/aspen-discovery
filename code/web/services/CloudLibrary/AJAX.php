@@ -517,6 +517,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 		$user = $user->getUserReferredTo($patronId);
 		$interface->assign('id', $titleId);
 		$interface->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
+		$interface->assign('alternateLibraryCardFormMessage', $library->alternateLibraryCardFormMessage);
 		$interface->assign('showAlternateLibraryCardPassword', $library->showAlternateLibraryCardPassword);
 		$interface->assign('alternateLibraryCardLabel', $library->alternateLibraryCardLabel);
 		$interface->assign('alternateLibraryCardPasswordLabel', $library->alternateLibraryCardPasswordLabel);
