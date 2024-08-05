@@ -2318,7 +2318,7 @@ function getLibraryLocationUpdates() {
 			'title' => 'Add field for Alternate Library Card Form Message',
 			'description' => 'Add field for Alternate Library Card Form Message',
 			'sql' => [
-				"ALTER TABLE library ADD COLUMN alternateLibraryCardFormMessage MEDIUMTEXT DEFAULT ''",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardFormMessage MEDIUMTEXT",
 			],
 		],
 	];
