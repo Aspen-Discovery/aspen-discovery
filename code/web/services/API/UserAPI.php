@@ -91,7 +91,10 @@ class UserAPI extends AbstractAPI {
 					'prepareSharedSession',
 					'updateScreenBrightnessStatus',
 					'validateUserCredentials',
-					'getAppPreferencesForUser'
+					'getAppPreferencesForUser',
+					'getInbox',
+					'markMessageAsRead',
+					'markMessageAsUnread'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
