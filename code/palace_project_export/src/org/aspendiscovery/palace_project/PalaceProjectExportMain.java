@@ -122,8 +122,8 @@ public class PalaceProjectExportMain {
 			//Do work here
 			boolean updatesRun;
 			if (singleWorkId == null) {
-				//updatesRun = exportPalaceProjectData();
-				updatesRun = false;
+				updatesRun = exportPalaceProjectData();
+				//updatesRun = false;
 			} else {
 				//exportSinglePalaceProjectTitle(singleWorkId);
 				System.out.println("Palace Project does not currently support extracting individual records.");
