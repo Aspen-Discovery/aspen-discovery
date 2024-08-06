@@ -28,6 +28,7 @@ RUN apt -y update \
 	  locales \
 	  gnupg2 \
 	  netcat-openbsd \
+	  inetutils-ping \
 	  rsync \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/* \
