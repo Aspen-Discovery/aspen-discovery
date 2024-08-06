@@ -171,6 +171,13 @@ function getUpdates24_09_00(): array {
 		//alexander - PTFS-Europe
 
 		//chloe - PTFS-Europe
+		'sourceId_allow_255_char' => [
+			'title'=> 'SourceId Allow 255 char',
+			'description' => 'Allow for longer source ids so that summon and ebsco records can be included without clashing with the length constraint',
+			'continueOnError' => false,
+			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
+
+		], //
 
 		//pedro - PTFS-Europe
 
