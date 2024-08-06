@@ -196,8 +196,7 @@ if (IPAddress::isClientIpBlocked()) {
 if (IPAddress::showDebuggingInformation()) {
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-}
-else{
+}else{
 	ini_set('display_errors', false);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 }
