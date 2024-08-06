@@ -235,9 +235,11 @@ public class PalaceProjectProcessor {
 					audience = "Unknown";
 					groupedWork.addTargetAudience("Unknown");
 					groupedWork.addTargetAudienceFull("Unknown");
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is unknown based on Palace Project record", 2);}
 				}else {
 					groupedWork.addTargetAudience(audience);
 					groupedWork.addTargetAudienceFull(audience);
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is " + audience + " based on Palace Project record", 2);}
 				}
 
 				if (metadata.has("narrator")) {

@@ -612,15 +612,22 @@ class OverDriveProcessor {
 				if (curSubject.contains("Juvenile")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Juvenile";
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is Juvenile based on Overdrive subject " + curSubject, 2);}
 				} else if (curSubject.contains("Young Adult")) {
 					targetAudience = "Young Adult";
 					targetAudienceFull = "Adolescent (14-17)";
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is Young Adult based on Overdrive subject " + curSubject, 2);}
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience is Adolescent (14-17) based on Overdrive subject " + curSubject, 2);}
 				} else if (curSubject.contains("Picture Book")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Preschool (0-5)";
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is Juvenile based on Overdrive subject " + curSubject, 2);}
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience is Preschool (0-5) based on Overdrive subject " + curSubject, 2);}
 				} else if (curSubject.contains("Beginning Reader")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Primary (6-8)";
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is Juvenile based on Overdrive subject " + curSubject, 2);}
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience is Primary (6-8) based on Overdrive subject " + curSubject, 2);}
 				}
 
 				topics.add(curSubject);

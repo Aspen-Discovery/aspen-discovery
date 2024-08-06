@@ -1788,45 +1788,55 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (settings.getDetermineAudienceBy() == 0) {
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining target audience by bib record data", 1);}
 			super.loadTargetAudiences(groupedWork, record, printItems, identifier, settings.getTreatUnknownAudienceAs());
 		}else{
 			HashSet<String> targetAudiences = new HashSet<>();
 			if (settings.getDetermineAudienceBy() == 1) {
 				//Load based on collection
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining audience by collection", 1);}
 				for (ItemInfo printItem : printItems){
 					String collection = printItem.getCollection();
 					if (collection != null) {
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code includes " + collection.toLowerCase() + " based on collection for item " + printItem.getItemIdentifier(), 1);}
 						targetAudiences.add(collection.toLowerCase());
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 2) {
 				//Load based on shelf location
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining audience by location", 1);}
 				for (ItemInfo printItem : printItems){
 					String shelfLocationCode = printItem.getShelfLocationCode();
 					if (shelfLocationCode != null) {
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + shelfLocationCode.toLowerCase() + " based on shelf location for item " + printItem.getItemIdentifier(), 1);}
 						targetAudiences.add(shelfLocationCode.toLowerCase());
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 3){
 				//Load based on a specified subfield
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining audience by subfield " + settings.getAudienceSubfield(), 1);}
 				for (ItemInfo printItem : printItems){
 					List<String> audienceCodes = printItem.getSubfields(settings.getAudienceSubfield());
 					for (String audienceCode : audienceCodes) {
 						String audienceCodeLower = audienceCode.toLowerCase();
 						if (hasTranslation("audience", audienceCodeLower)) {
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + audienceCodeLower + " based on subfield for item " + printItem.getItemIdentifier(), 1);}
 							targetAudiences.add(audienceCodeLower);
 						}
 					}
 				}
 			}
 			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code(s) " + targetAudiences + " translate(s) to " + translatedAudiences, 1);}
 
 			if (! settings.getTreatUnknownAudienceAs().equals("Unknown") && translatedAudiences.contains("Unknown")) {
 				translatedAudiences.remove("Unknown");
 				translatedAudiences.add( settings.getTreatUnknownAudienceAs());
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Replacing unknown target audience with " + settings.getTreatUnknownAudienceAs(), 1);}
 			}
 			if (translatedAudiences.isEmpty()){
 				//We didn't get anything from the items (including Unknown), check the bib record
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Could not find target audience based on item - checking the bib record", 1);}
 				super.loadTargetAudiences(groupedWork, record, printItems, identifier,  settings.getTreatUnknownAudienceAs());
 			}else {
 				groupedWork.addTargetAudiences(translatedAudiences);
