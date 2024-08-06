@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# Wait for 'db' service responses
-while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 1; done
-
 export CONFIG_DIRECTORY="/usr/local/aspen-discovery/sites/$SITE_NAME"
 
 # Move to docker directory
@@ -49,9 +46,6 @@ localDir="/usr/local/aspen-discovery/code/web"
 ln -s "$dataDir/images" "$localDir/images"
 ln -s "$dataDir/files" "$localDir/files"
 ln -s "$dataDir/fonts" "$localDir/fonts"
-
-# Wait for mysql startup
-while ! nc -z "$DATABASE_HOST" "$DATABASE_PORT"; do sleep 1; done
 
 # FIXME ENABLE_APACHE and ENABLE_CRON should be mutually exclusive
 # and instead of using 'service' they should run in foreground as the last
