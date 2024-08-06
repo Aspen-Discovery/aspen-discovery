@@ -18,7 +18,7 @@ export const MyNotificationHistory = () => {
      const [paginationLabel, setPaginationLabel] = React.useState('Page 1 of 1');
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, notificationHistory, updateNotificationHistory } = React.useContext(UserContext);
+     const { user, notificationHistory, updateNotificationHistory, inbox, updateInbox } = React.useContext(UserContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
      const pageSize = 25;
@@ -45,7 +45,8 @@ export const MyNotificationHistory = () => {
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
-               updateNotificationHistory(data.inbox);
+               updateNotificationHistory(data);
+               updateInbox(data?.inbox ?? []);
                if (data.totalPages) {
                     let tmp = getTermFromDictionary(language, 'page_of_page');
                     tmp = tmp.replace('%1%', page);
@@ -127,13 +128,15 @@ export const MyNotificationHistory = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <FlatList data={notificationHistory} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Message />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                         <FlatList data={inbox} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Message />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                     </>
                )}
           </SafeAreaView>
      );
 };
 
-const Message = () => {
+const Message = (data) => {
+     const message = data.data;
+     console.log(message);
      return null;
 };
