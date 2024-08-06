@@ -2,8 +2,8 @@ networks:
   net-aspen:
 volumes:
   solr:
-services:
 
+services:
   backend:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
     env_file:
@@ -20,7 +20,8 @@ services:
       - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
       - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   cron:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
@@ -37,7 +38,6 @@ services:
       - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery
     depends_on:
       - backend
-    #entrypoint: ["crond", "-d", "8", "-f"]
     entrypoint: cron -f -L 2
 
   db:
