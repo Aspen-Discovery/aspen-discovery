@@ -5809,6 +5809,7 @@ class UserAPI extends AbstractAPI {
 			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			$message = new UserILSMessage();
 			$message->userId = $user->id;
+			//$message->status = 'sent';
 			$message->orderBy('dateQueued DESC'); //newest first
 			$message->limit(($page - 1) * $messagesPerPage, $messagesPerPage);
 			$messageCount = $message->count();
