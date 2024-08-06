@@ -1519,14 +1519,282 @@ class Sierra extends Millennium {
 		return $result;
 	}
 
+	public function getSelfRegistrationTerms() {
+		global $library;
+
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php';
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$tosId = $selfRegistrationForm->termsOfServiceSetting;
+				require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
+				$tos = new SelfRegistrationTerms();
+				$tos->id = $tosId;
+				if ($tosId != -1){
+					if ($tos->find(true)) {
+						return $tos;
+					}
+				}
+			}
+			return null;
+		}
+		return null;
+	}
+
 	public function getSelfRegistrationFields() {
-		return parent::getSelfRegistrationFields();
-		// TODO: Use Sierra APIs to get Self Registration fields
+		global $library;
+
+		$pickupLocations = [];
+		$location = new Location();
+		//0 = no restrictions (ignore location setting)
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			//All Library Locations (ignore location setting)
+			$location->libraryId = $library->libraryId;
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			//Valid pickup locations
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		}
+		if ($location->find()) {
+			while ($location->fetch()) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+			if (count($pickupLocations) > 1) {
+				array_unshift($pickupLocations, translate([
+					'text' => 'Please select a location',
+					'isPublicFacing' => true,
+				]));
+			}
+		}
+
+		global $library;
+		$hasCustomSelfRegistrationFrom = false;
+
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php';
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$customFields = $selfRegistrationForm->getFields();
+				if ($customFields != null && count($customFields) > 0) {
+					$hasCustomSelfRegistrationFrom = true;
+				}
+			}
+		}
+
+		$pickupLocationField = [
+			'property' => 'pickupLocation',
+			'type' => 'enum',
+			'label' => 'Home Library',
+			'description' => 'Please choose the Library location you would prefer to use',
+			'values' => $pickupLocations,
+			'required' => true,
+		];
+
+		$fields = [];
+		if ($hasCustomSelfRegistrationFrom) {
+			$hiddenDefault = false;
+			$fields['librarySection'] = [
+				'property' => 'librarySection',
+				'type' => 'section',
+				'label' => 'Library',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['identitySection'] = [
+				'property' => 'identitySection',
+				'type' => 'section',
+				'label' => 'Identity',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['mainAddressSection'] = [
+				'property' => 'mainAddressSection',
+				'type' => 'section',
+				'label' => 'Main Address',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['contactInformationSection'] = [
+				'property' => 'contactInformationSection',
+				'type' => 'section',
+				'label' => 'Contact Information',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			//Use self registration fields
+			/** @var SelfRegistrationFormValues $customField */
+			foreach ($customFields as $customField) {
+				if ($customField->ilsName == 'library') {
+					if (count($pickupLocations) == 1) {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->ilsName => $pickupLocationField,
+							],
+							'hiddenByDefault' => true,
+						];
+					} else {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->ilsName => $pickupLocationField,
+							],
+						];
+					}
+				} elseif ($customField->ilsName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
+					$fields[$customField->section]['properties'][] = [
+						'property' => $customField->ilsName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note,
+						'validationPattern' => $library->validSelfRegistrationZipCodes,
+						'validationMessage' => translate([
+							'text' => 'Please enter a valid zip code',
+							'isPublicFacing' => true,
+						]),
+					];
+				} elseif ($customField->ilsName == 'state') {
+					if (!empty($library->validSelfRegistrationStates)){
+						$validStates = explode('|', $library->validSelfRegistrationStates);
+						$validStates = array_combine($validStates, $validStates);
+						$fields[$customField->section]['properties'][] = [
+							'property' => $customField->ilsName,
+							'type' => 'enum',
+							'values' => $validStates,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+						];
+					} else {
+						$fields[$customField->section]['properties'][] = [
+							'property' => $customField->ilsName,
+							'type' => $customField->fieldType,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+							'maxLength' => 2,
+						];
+					}
+				} else {
+					$fields[$customField->section]['properties'][] = [
+						'property' => $customField->ilsName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+				}
+			}
+			foreach ($fields as $section) {
+				if ($section['type'] == 'section') {
+					if (empty($section['properties'])) {
+						unset ($fields[$section['property']]);
+					}
+				}
+			}
+		}
+		return $fields;
 	}
 
 	public function selfRegister(): array {
-		return parent::selfRegister();
-		// TODO: Use Sierra APIs to self register
+		global $library;
+		$selfRegResult = [
+			'success' => false,
+			'message' => 'Unknown Error while registering your account'
+		];
+
+		$selfRegistrationForm = null;
+		$formFields = null;
+		if ($library->selfRegistrationFormId > 0){
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$formFields = $selfRegistrationForm->getFields();
+			}else {
+				$selfRegistrationForm = null;
+			}
+		}
+
+		$params = [];
+
+		if ($formFields != null) {
+			foreach ($formFields as $fieldObj){
+				$field = $fieldObj->ilsName;
+				if ($field == 'firstName') {
+					if (isset($_REQUEST['middleName'])) {
+						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['middleName'] . ' ' . $_REQUEST['lastName'];
+					} else {
+						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['lastName'];
+					}
+					$params['names'] = [$fullName];
+				}
+				elseif ($field == 'birthDate') {
+					$params['birthDate'] = $_REQUEST['birthDate'];
+				}
+				elseif ($field == 'email') {
+					$params['emails'] = [$_REQUEST['email']];
+					if ($selfRegistrationForm->selfRegEmailBarcode) {
+						$params['barcodes'] = [$_REQUEST['email']];
+					}
+				}
+				elseif ($field == 'phone') {
+					$tmpPhone = new stdClass();
+					$tmpPhone->type = 'p';
+					$tmpPhone->number = $_REQUEST['phone'];
+					$params['phones'][] = $tmpPhone;
+				}
+				elseif ($field == 'street') {
+					$params['addresses'] = [];
+					$address = new stdClass();
+					$address->lines = [];
+					$address->type = 'a';
+					$address->lines[] = $_REQUEST['street'];
+					$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+					$address->lines[] = $cityStateZip;
+
+					$params['addresses'][] = $address;
+				}
+				elseif ($field == 'barcode') {
+					$params['barcodes'] = [$_REQUEST['barcode']];
+				}
+				elseif ($field == 'pin') {
+					$params['pin'] = $_REQUEST['pin'];
+				}
+			}
+		}
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/";
+		$this->_postPage('sierra.createPatron', $sierraUrl, json_encode($params));
+
+		if ($this->lastResponseCode == 200) {
+			$selfRegResult = [
+				'success' => true,
+				'barcode' => $params['barcodes'][0],
+				'password' => $params['pin']
+			];
+		}
+
+		return $selfRegResult;
 	}
 
 	public function getFines($patron = null, $includeMessages = false): array {
