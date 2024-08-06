@@ -2313,6 +2313,14 @@ function getLibraryLocationUpdates() {
 				"ALTER TABLE library ADD tiktokLink VARCHAR(255) DEFAULT ''",
 			],
 		],
+
+		'alternate_library_card_form_message' => [
+			'title' => 'Add field for Alternate Library Card Form Message',
+			'description' => 'Add field for Alternate Library Card Form Message',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardFormMessage MEDIUMTEXT",
+			],
+		],
 	];
 }
 

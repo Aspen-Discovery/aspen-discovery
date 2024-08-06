@@ -123,6 +123,7 @@ public class PalaceProjectExportMain {
 			boolean updatesRun;
 			if (singleWorkId == null) {
 				updatesRun = exportPalaceProjectData();
+				//updatesRun = false;
 			} else {
 				//exportSinglePalaceProjectTitle(singleWorkId);
 				System.out.println("Palace Project does not currently support extracting individual records.");
@@ -739,58 +740,66 @@ public class PalaceProjectExportMain {
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='palace_project'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getIdForPalaceProjectIdStmt = aspenConn.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String rawPalaceProjectId = getRecordsToReloadRS.getString("identifier");
 				long palaceProjectId;
+				logEntry.incRecordsRegrouped();
 				if (AspenStringUtils.isNumeric(rawPalaceProjectId)) {
 					palaceProjectId = Long.parseLong(rawPalaceProjectId);
-				}else{
-					getIdForPalaceProjectIdStmt.setString(1, rawPalaceProjectId);
-					ResultSet getIdForPalaceProjectIdRS = getIdForPalaceProjectIdStmt.executeQuery();
-					if (getIdForPalaceProjectIdRS.next()) {
-						palaceProjectId = getIdForPalaceProjectIdRS.getLong("id");
-						getIdForPalaceProjectIdRS.close();
-					}else{
-						logEntry.addNote("Could not get details for record to reload " + rawPalaceProjectId + " it has been deleted");
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-						getIdForPalaceProjectIdRS.close();
-						continue;
-					}
-				}
-				//Regroup the record
-				getItemDetailsForRecordStmt.setLong(1, palaceProjectId);
-				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
-				if (getItemDetailsForRecordRS.next()){
-					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
-					try {
-						JSONObject itemDetails = new JSONObject(rawResponse);
-						String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(itemDetails, palaceProjectId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 
+					//Regroup the record
+					getItemDetailsForRecordStmt.setLong(1, palaceProjectId);
+					ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
+					if (getItemDetailsForRecordRS.next()){
+						String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+						try {
+							JSONObject itemDetails = new JSONObject(rawResponse);
+							String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(itemDetails, palaceProjectId);
+							//Reindex the record
+							getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+							markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+							markRecordToReloadAsProcessedStmt.executeUpdate();
+							numRecordsToReloadProcessed++;
+							logEntry.incChangedAfterGrouping();
+						}catch (JSONException e){
+							logEntry.incErrors("Could not parse item details for record to reload " + palaceProjectId, e);
+						}
+					}else{
+						//The record has likely been deleted
+						logEntry.addNote("Could not get details for record to reload " + palaceProjectId + " it has been deleted");
 						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 						markRecordToReloadAsProcessedStmt.executeUpdate();
+						logEntry.incDeleted();
 						numRecordsToReloadProcessed++;
-					}catch (JSONException e){
-						logEntry.incErrors("Could not parse item details for record to reload " + palaceProjectId, e);
 					}
+					getItemDetailsForRecordRS.close();
+
 				}else{
-					//The record has likely been deleted
-					logEntry.addNote("Could not get details for record to reload " + palaceProjectId + " it has been deleted");
+					//Just delete this record
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", rawPalaceProjectId);
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					}
 					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 					markRecordToReloadAsProcessedStmt.executeUpdate();
 					numRecordsToReloadProcessed++;
+					logEntry.incDeleted();
 				}
-				getItemDetailsForRecordRS.close();
+				if (numRecordsToReloadProcessed % 250 == 0) {
+					getGroupedWorkIndexer().commitChanges();
+					logEntry.saveResults();
+				}
 			}
 			if (numRecordsToReloadProcessed > 0){
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				getGroupedWorkIndexer().commitChanges();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
