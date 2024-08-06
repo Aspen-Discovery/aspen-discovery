@@ -59,7 +59,7 @@
 	</table>
 {/if}
 
-{if !empty($isUngrouped)}
+{if !empty($isUngrouped) && !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
 	<div id="ungrouping">
 		<h4>{translate text="Record Ungrouped" isPublicFacing=true}</h4>
 		<table class="table-striped table table-condensed notranslate">
