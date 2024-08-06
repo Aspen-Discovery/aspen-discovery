@@ -17,6 +17,8 @@ $variables = [
     'databaseUser' => getenv('DATABASE_USER'),
     'databasePassword' => getenv('DATABASE_PASSWORD'),
     'databaseName' => getenv('DATABASE_NAME'),
+    'databaseHost' => getenv('DATABASE_HOST') ?? 'localhost',
+    'databasePort' => getenv('DATABASE_PORT') ?? 3306,
     'ilsDatabaseHost' => getenv('KOHA_DATABASE_HOST'),
     'ilsDatabasePort' => getenv('KOHA_DATABASE_PORT'),
     'ilsDatabaseUser' => getenv('KOHA_DATABASE_USER'),
@@ -36,9 +38,9 @@ try {
 // Attempt to get the system's temp directory
     $tmp_dir = rtrim(sys_get_temp_dir(), "/");
     echo("--> Loading Koha information to database...\r\n");
-    copy("$aspenDir/install/koha_connection.sql", "$tmp_dir/koha_connection_${variables['sitename']}.sql");
-    replaceVariables("$tmp_dir/koha_connection_${variables['sitename']}.sql", $variables);
-    exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_${variables['siteName']}.sql");
+    copy("$aspenDir/install/koha_connection.sql", "$tmp_dir/koha_connection_{$variables['sitename']}.sql");
+    replaceVariables("$tmp_dir/koha_connection_{$variables['sitename']}.sql", $variables);
+    exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h{$variables['databaseHost']} -P{$variables['databasePort']} {$variables['databaseName']} < $tmp_dir/koha_connection_{$variables['sitename']}.sql");
 } catch (Exception $e) {
     echo "ERROR MESSAGE : " . $e->getMessage() . "\n";
     echo "IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
