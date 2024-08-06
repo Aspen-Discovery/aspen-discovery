@@ -29,7 +29,7 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE format_map_values ADD COLUMN displaySierraCheckoutGrid TINYINT(1) DEFAULT 0',
 				"UPDATE format_map_values SET displaySierraCheckoutGrid = 1 where format IN ('Journal', 'Newspaper', 'Print Periodical', 'Magazine')"
 			]
-		]
+		],
 
 		//katherine - ByWater
 
