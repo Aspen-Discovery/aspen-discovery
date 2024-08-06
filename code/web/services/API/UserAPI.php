@@ -91,7 +91,10 @@ class UserAPI extends AbstractAPI {
 					'prepareSharedSession',
 					'updateScreenBrightnessStatus',
 					'validateUserCredentials',
-					'getAppPreferencesForUser'
+					'getAppPreferencesForUser',
+					'getInbox',
+					'markMessageAsRead',
+					'markMessageAsUnread'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -5800,18 +5803,34 @@ class UserAPI extends AbstractAPI {
 				$user->getCatalogDriver()->updateUserMessageQueue($user);
 			}
 			$allMessages = [];
+			$messagesPerPage = $_REQUEST['pageSize'] ?? 20;
+			$page = $_REQUEST['page'] ?? 1;
+
 			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
 			$message = new UserILSMessage();
 			$message->userId = $user->id;
+			//$message->status = 'sent';
 			$message->orderBy('dateQueued DESC'); //newest first
+			$message->limit(($page - 1) * $messagesPerPage, $messagesPerPage);
+			$messageCount = $message->count();
 			$message->find();
 			while($message->fetch()) {
 				$allMessages[] = clone $message;
 			}
+
+			$options = [
+				'totalItems' => $messageCount,
+				'perPage' => $messagesPerPage,
+			];
+
+			$pager = new Pager($options);
 			return [
 				'success' => true,
 				'title' => 'Success',
 				'message' => 'Found all messages for user',
+				'page_current' => $pager->getCurrentPage(),
+				'page_total' => $pager->getTotalPages(),
+				'totalResults' => $pager->getTotalItems(),
 				'inbox' => $allMessages,
 			];
 		} else {

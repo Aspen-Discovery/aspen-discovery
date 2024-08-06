@@ -24,7 +24,7 @@ import { fetchSavedEvents } from '../../util/api/event';
 import { getCatalogStatus } from '../../util/api/library';
 import { getLists } from '../../util/api/list';
 import { getLocations } from '../../util/api/location';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
+import { fetchNotificationHistory, fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { passUserToDiscovery } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
@@ -45,7 +45,7 @@ export const DrawerContent = () => {
      const [userLongitude, setUserLongitude] = React.useState(0);
      const linkTo = useLinkTo();
      const queryClient = useQueryClient();
-     const { user, accounts, viewers, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
+     const { user, accounts, viewers, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateSavedEvents, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard, notificationHistory, updateNotificationHistory } = React.useContext(UserContext);
      const { library, catalogStatus, updateCatalogStatus } = React.useContext(LibrarySystemContext);
      const [notifications, setNotifications] = React.useState([]);
      const [messages, setILSMessages] = React.useState([]);
@@ -171,6 +171,15 @@ export const DrawerContent = () => {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
+     });
+
+     useQuery(['notification_history', user.id, library.baseUrl, language], () => fetchNotificationHistory(1, 20, false, library.baseUrl, language), {
+          initialData: notificationHistory,
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               updateNotificationHistory(data);
+          },
      });
 
      useQuery(['pickup_locations', library.baseUrl, language], () => getPickupLocations(library.baseUrl), {
@@ -398,6 +407,7 @@ export const DrawerContent = () => {
                               <SavedSearches />
                               <ReadingHistory />
                               <Fines />
+                              <NotificationHistory />
                               <Events />
                          </VStack>
 
@@ -724,6 +734,30 @@ const UserProfile = () => {
                </HStack>
           </Pressable>
      );
+};
+
+const NotificationHistory = () => {
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+
+     if (library.displayIlsInbox === '1' || library.displayIlsInbox === 1) {
+          return (
+               <Pressable
+                    px="2"
+                    py="3"
+                    onPress={() => {
+                         navigateStack('AccountScreenTab', 'MyProfile', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         });
+                    }}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <Text fontWeight="500">{getTermFromDictionary(language, 'notification_history')}</Text>
+                    </HStack>
+               </Pressable>
+          );
+     }
 };
 
 const LinkedAccounts = () => {
