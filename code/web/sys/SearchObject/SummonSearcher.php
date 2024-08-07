@@ -280,7 +280,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	/**
 	 * Use the data that is returned when from the API and process it to assign it to variables
 	 */
-	public function processData($recordData, $textQuery) {
+	public function processData($recordData, $textQuery = null) {
 			$recordData = $this->process($recordData, $textQuery);
 			if (is_array($recordData)){
 				$this->sessionId = $recordData['sessionId'];
