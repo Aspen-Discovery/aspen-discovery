@@ -34,7 +34,7 @@ public class PalaceProjectProcessor {
 		try {
 			getProductIdForPalaceProjectIdStmt = dbConn.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getAvailabilityForPalaceProjectTitleStmt = dbConn.prepareStatement("SELECT collectionId from palace_project_title_availability where titleId = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getAvailabilityForPalaceProjectTitleStmt = dbConn.prepareStatement("SELECT * from palace_project_title_availability where titleId = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement getCollectionInfoStmt = dbConn.prepareStatement("SELECT * from palace_project_collections", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			ResultSet collectionInfoRS = getCollectionInfoStmt.executeQuery();
 			while (collectionInfoRS.next()) {
@@ -256,23 +256,13 @@ public class PalaceProjectProcessor {
 					groupedWork.addKeywords(artistsToAdd);
 				}
 
-				String contentUrl = "";
-				boolean available = true;
+				String defaultContentUrl = "";
 				if (rawResponse.has("links")) {
 					JSONArray links = rawResponse.getJSONArray("links");
 					for (int i = 0; i < links.length(); i++) {
 						JSONObject linkObject = links.getJSONObject(i);
 						if (linkObject.has("rel") && linkObject.get("rel").equals("http://opds-spec.org/acquisition/borrow")){
-							contentUrl = linkObject.getString("href");
-
-							if (linkObject.has("properties")) {
-								JSONObject properties = linkObject.getJSONObject("properties");
-								if (properties.has("availability")){
-									JSONObject availability = properties.getJSONObject("availability");
-									available = availability.getString("state").equals("available");
-								}
-							}
-
+							defaultContentUrl = linkObject.getString("href");
 						}
 					}
 				}
@@ -282,6 +272,8 @@ public class PalaceProjectProcessor {
 				ResultSet collectionsForTitleRS = getAvailabilityForPalaceProjectTitleStmt.executeQuery();
 				while (collectionsForTitleRS.next()) {
 					long collectionId = collectionsForTitleRS.getLong("collectionId");
+					String contentUrl = collectionsForTitleRS.getString("borrowLink");
+					boolean needsHold = collectionsForTitleRS.getBoolean("needsHold");
 					PalaceProjectCollection collection = allCollections.get(collectionId);
 					//Collection will sometimes be null if the collection is deleted
 					if (collection != null) {
@@ -290,7 +282,11 @@ public class PalaceProjectProcessor {
 						itemInfo.setItemIdentifier(identifier + "_" + collectionId);
 						itemInfo.seteContentSource(collectionName);
 						itemInfo.setIsEContent(true);
-						itemInfo.seteContentUrl(contentUrl);
+						if (contentUrl == null || contentUrl.isEmpty()) {
+							itemInfo.seteContentUrl(defaultContentUrl);
+						}else{
+							itemInfo.seteContentUrl(contentUrl);
+						}
 						itemInfo.setShelfLocation("Online " + collectionName);
 						itemInfo.setDetailedLocation("Online " + collectionName);
 						itemInfo.setCallNumber("Online " + collectionName);
@@ -299,7 +295,7 @@ public class PalaceProjectProcessor {
 						itemInfo.setFormatCategory(formatCategory);
 						//Palace Project does not currently provide more info so can't give accurate number of copies, but we can tell if it's available or not
 						itemInfo.setNumCopies(1);
-						itemInfo.setAvailable(available);
+						itemInfo.setAvailable(!needsHold);
 						itemInfo.setDetailedStatus("Available Online");
 						itemInfo.setGroupedStatus("Available Online");
 						itemInfo.setHoldable(false);

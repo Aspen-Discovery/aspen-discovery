@@ -2,9 +2,14 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
+require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectTitle.php';
+require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectTitleAvailability.php';
 
 class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
+	/** @var PalaceProjectDriver */
+	private static $driver;
+
 	private $id;
 	/** @var PalaceProjectTitle */
 	private $palaceProjectTitle;
@@ -12,6 +17,9 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	private $valid;
 
 	public function __construct($recordId, $groupedWork = null) {
+		if (PalaceProjectRecordDriver::$driver == null) {
+			PalaceProjectRecordDriver::$driver = new PalaceProjectDriver();
+		}
 		$this->id = $recordId;
 
 		$this->palaceProjectTitle = new PalaceProjectTitle();
@@ -213,40 +221,28 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 			global $offlineMode;
 			global $loginAllowedWhileOffline;
 			if ($loadDefaultActions && (!$offlineMode || $loginAllowedWhileOffline)) {
-				if (!empty($this->palaceProjectRawMetadata)) {
-					foreach ($this->palaceProjectRawMetadata->links as $link) {
-						if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-							$needsHold = false;
-							if (!empty($link->properties)) {
-								if (!empty($link->properties->availability)) {
-									if ($link->properties->availability->state != 'available') {
-										$needsHold = true;
-									}
-								}
-							}
-							if (!$needsHold) {
-								$this->_actions[] = [
-									'title' => translate([
-										'text' => 'Check Out Palace Project',
-										'isPublicFacing' => true,
-									]),
-									'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
-									'requireLogin' => false,
-									'type' => 'palace_project_checkout',
-								];
-							} else {
-								$this->_actions[] = [
-									'title' => translate([
-										'text' => 'Place Hold Palace Project',
-										'isPublicFacing' => true,
-									]),
-									'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
-									'requireLogin' => false,
-									'type' => 'palace_project_hold',
-								];
-							}
-							break;
-						}
+				$titleAvailability = $this->getTitleAvailability();
+				if ($titleAvailability != null) {
+					if (!$titleAvailability->needsHold) {
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Check Out Palace Project',
+								'isPublicFacing' => true,
+							]),
+							'onclick' => "return AspenDiscovery.PalaceProject.checkOutTitle('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'palace_project_checkout',
+						];
+					}else{
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Place Hold Palace Project',
+								'isPublicFacing' => true,
+							]),
+							'onclick' => "return AspenDiscovery.PalaceProject.placeHold('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'palace_project_hold',
+						];
 					}
 				}
 			}
@@ -257,25 +253,36 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getBorrowLink() {
-		if (!empty($this->palaceProjectRawMetadata)) {
-			$links = $this->palaceProjectRawMetadata->links;
-			foreach ($links as $link) {
-				if ($link->rel == 'http://opds-spec.org/acquisition/borrow') {
-					return $link->href;
-				}
-			}
+		$titleAvailability = $this->getTitleAvailability();
+		if ($titleAvailability != null) {
+			return $titleAvailability->borrowLink;
+		}
+
+		return null;
+	}
+
+	function getActiveCollectionIds() : array {
+		return PalaceProjectRecordDriver::$driver->getActiveCollectionIds();
+	}
+
+	function getTitleAvailability() : ?PalaceProjectTitleAvailability{
+		$titleAvailability = new PalaceProjectTitleAvailability();
+		$titleAvailability->titleId = $this->id;
+		$titleAvailability->whereAddIn('collectionId', $this->getActiveCollectionIds(), false);
+		$titleAvailability->deleted = 0;
+		if ($titleAvailability->find(true)){
+			return $titleAvailability;
 		}
 		return null;
 	}
 
 	function getPreviewUrl() {
-		if (!empty($this->palaceProjectRawMetadata)) {
-			$links = $this->palaceProjectRawMetadata->links;
-			foreach ($links as $link) {
-				if ($link->rel == 'preview' && $link->type == 'text/html') {
-					return $link->href;
-				}
-			}
+		//Get the preview URL based on the title availability.
+		//To do that, we need to get the settings for the active user and/or library
+		//Then we can get a list of availability
+		$titleAvailability = $this->getTitleAvailability();
+		if ($titleAvailability !== null){
+			return $titleAvailability->previewLink;
 		}
 		return null;
 	}

@@ -6,4 +6,7 @@ public class PalaceProjectTitleAvailability {
 	public long collectionId;
 	public long lastSeen;
 	public boolean deleted;
+	public String borrowLink;
+	public boolean needsHold;
+	public String previewLink;
 }

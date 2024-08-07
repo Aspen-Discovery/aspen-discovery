@@ -29,7 +29,25 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE format_map_values ADD COLUMN displaySierraCheckoutGrid TINYINT(1) DEFAULT 0',
 				"UPDATE format_map_values SET displaySierraCheckoutGrid = 1 where format IN ('Journal', 'Newspaper', 'Print Periodical', 'Magazine')"
 			]
-		],
+		], //force_reindex_of_old_style_palace_project_identifiers
+		'add_additional_info_to_palace_project_availability' => [
+			'title' => 'Add Additional Info to Palace Project Availability',
+			'description' => 'Store borrow and preview links as well as if a hold is needed',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE palace_project_title_availability ADD COLUMN borrowLink TINYTEXT',
+				'ALTER TABLE palace_project_title_availability ADD COLUMN needsHold TINYINT DEFAULT 1',
+				'ALTER TABLE palace_project_title_availability ADD COLUMN previewLink TINYTEXT',
+			]
+		], //add_additional_info_to_palace_project_availability
+		'run_full_update_for_palace_project_24_09' =>[
+			'title' => 'Run full update for Palace Project',
+			'description' => 'Run full update for Palace Project',
+			'continueOnError' => false,
+			'sql' => [
+				'UPDATE palace_project_settings SET runFullUpdate = 1',
+			]
+		], //run_full_update_for_palace_project_24_09
 
 		//katherine - ByWater
 
