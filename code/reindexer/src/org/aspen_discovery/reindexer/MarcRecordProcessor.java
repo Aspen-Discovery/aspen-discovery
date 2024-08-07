@@ -631,17 +631,21 @@ abstract class MarcRecordProcessor {
 					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData().charAt(5));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience determined by 006/5", 2);}
 					}
 				}
 				if (targetAudiences.isEmpty() && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
 					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
+						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience determined by 008/22", 2);}
 					}
 				} else if (targetAudiences.isEmpty()) {
 					targetAudiences.add(unknownAudienceLabel);
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience " + unknownAudienceLabel + " because 006/5 and 008/22 did not exist", 2);}
 				}
 			} else {
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience unknown based on Leader 6/7", 2);}
 				targetAudiences.add(unknownAudienceLabel);
 			}
 		} catch (Exception e) {
@@ -651,30 +655,36 @@ abstract class MarcRecordProcessor {
 		}
 
 		if (targetAudiences.isEmpty()) {
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + unknownAudienceLabel + " because 006/5 and 008/22 were both blank", 2);}
 			targetAudiences.add(unknownAudienceLabel);
 		}
 
 		LinkedHashSet<String> translatedAudiences;
 		if (settings == null) {
 			translatedAudiences = indexer.translateSystemCollection("target_audience", targetAudiences, identifier);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + translatedAudiences + " based on system target_audience translation map", 2);}
 		}else{
 			translatedAudiences = settings.translateCollection("target_audience", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + translatedAudiences + " based on target_audience translation map in settings", 2);}
 		}
 		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiences.contains("Unknown")){
 			translatedAudiences.remove("Unknown");
 			translatedAudiences.add(unknownAudienceLabel);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown target audience to " + unknownAudienceLabel, 2);}
 		}
 		groupedWork.addTargetAudiences(translatedAudiences);
-
 		LinkedHashSet<String> translatedAudiencesFull;
 		if (settings == null) {
 			translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience is " + translatedAudiencesFull + " based on system target_audience translation map", 2);}
 		}else {
 			translatedAudiencesFull = settings.translateCollection("target_audience_full", targetAudiences, identifier, indexer.getLogEntry(), logger, true);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience is " + translatedAudiencesFull + " based on target_audience translation map in settings", 2);}
 		}
 		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiencesFull.contains("Unknown")){
 			translatedAudiencesFull.remove("Unknown");
 			translatedAudiencesFull.add(unknownAudienceLabel);
+			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown full target audience to " + unknownAudienceLabel, 2);}
 		}
 		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}

@@ -275,7 +275,8 @@ class Axis360Processor {
 				groupedWork.addLiteraryFormsFull(literaryFormFull);
 			}
 		}
-
+		if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + targetAudience + " based on Boundless record", 2);}
+		if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience list is " + targetAudienceFull + " based on Boundless record", 2);}
 		groupedWork.addTargetAudience(targetAudience);
 		groupedWork.addTargetAudienceFull(targetAudienceFull);
 
