@@ -17,7 +17,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $responseType = "json";
 
     private static $searchOptions;
-   
     private $curl_connection;
 
 	/**Track query time info */
@@ -828,5 +827,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			curl_close($this->curl_connection);
 		}
 	}
+
+	public function getRecords($ids) {
+		$records = [];
+		require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+		foreach ($ids as $index => $id) {
+			$records[$index] = new SummonRecordDriver($id);
+		}
+		return $records;
+	}
+
 
 }
