@@ -96,7 +96,7 @@ $validLanguages = [];
 try {
 	require_once ROOT_DIR . '/sys/Translation/Language.php';
 	$validLanguage = new Language();
-	$validLanguage->orderBy("weight");
+	$validLanguage->orderBy(["weight", "displayName"]);
 	$validLanguage->find();
 	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
 	while ($validLanguage->fetch()) {
