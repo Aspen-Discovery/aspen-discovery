@@ -150,6 +150,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				if (targetAudience.equals("ADULT")) {
 					targetAudience = "Adult";
 				}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + targetAudience + " based on cloudLibrary record", 2);}
 				groupedWork.addTargetAudience(targetAudience);
 
 				boolean isAdult = targetAudience.equalsIgnoreCase("Adult");

@@ -682,6 +682,28 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		return $result;
 	}
 
+	private $_activeSettings = false;
+	public function getActiveSettings() : ?PalaceProjectSetting {
+		if ($this->_activeSettings !== null && !is_object($this->_activeSettings)) {
+			if (UserAccount::isLoggedIn()) {
+				$this->_activeSettings = $this->getSettings(UserAccount::getActiveUserObj());
+			} else {
+				$this->_activeSettings = $this->getSettings(null);
+			}
+		}
+		return $this->_activeSettings;
+	}
+
+	private $_activeCollections = null;
+	function getActiveCollectionIds() : array {
+		if ($this->_activeCollections === null) {
+			$settings = $this->getActiveSettings();
+			$collectionsForSettings = $settings->collections;
+			$this->_activeCollections = array_keys($collectionsForSettings);
+		}
+		return $this->_activeCollections;
+	}
+
 	/**
 	 * @param User|null $user
 	 * @return false|PalaceProjectSetting
