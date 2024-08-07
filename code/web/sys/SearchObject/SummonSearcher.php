@@ -280,8 +280,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	/**
 	 * Use the data that is returned when from the API and process it to assign it to variables
 	 */
-	public function processData($recordData) {
-			$recordData = $this->process($recordData); 
+	public function processData($recordData, $textQuery) {
+			$recordData = $this->process($recordData, $textQuery);
 			if (is_array($recordData)){
 				$this->sessionId = $recordData['sessionId'];
 				$this->lastSearchResults = $recordData['documents'];
@@ -550,7 +550,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$headers = $this->authenticate($settings, $queryString);
 		$recordData = $this->httpRequest($baseUrl, $queryString, $headers);
 		if (!empty($recordData)){
-			$recordData = $this->processData($recordData); 
+			$recordData = $this->processData($recordData, $queryString);
 		}return $recordData['documents'][0];
 	}
 
@@ -639,8 +639,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $recordData;
 	}
 
-    public function process($input) {
-        if (SearchObject_SummonSearcher::$searchOptions == null) {
+    public function process($input, $textQuery = null) {
+		// if no search options are found, assing them
+		// alternatively, if the search options do not match the current search, update them
+        if (SearchObject_SummonSearcher::$searchOptions == null ||
+			SearchObject_SummonSearcher::$searchOptions['textQuery'] != $textQuery ) {
             if ($this->responseType != 'json') {
                 return $input;
             }
