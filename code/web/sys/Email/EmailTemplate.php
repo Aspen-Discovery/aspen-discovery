@@ -36,7 +36,7 @@ class EmailTemplate extends DataObject {
 		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
 		$validLanguage = new Language();
-		$validLanguage->orderBy("weight");
+		$validLanguage->orderBy(["weight", "displayName"]);
 		$validLanguage->find();
 		$availableLanguages = [];
 		while ($validLanguage->fetch()) {

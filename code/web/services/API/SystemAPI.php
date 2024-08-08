@@ -839,7 +839,7 @@ class SystemAPI extends AbstractAPI {
 		$validLanguages = [];
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
 		$validLanguage = new Language();
-		$validLanguage->orderBy("weight");
+		$validLanguage->orderBy(["weight", "displayName"]);
 		$validLanguage->find();
 		while ($validLanguage->fetch()) {
 			if (!$validLanguage->displayToTranslatorsOnly) {
