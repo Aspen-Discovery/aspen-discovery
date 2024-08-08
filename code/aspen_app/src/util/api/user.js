@@ -1002,7 +1002,7 @@ export async function fetchNotificationHistory(page = 1, pageSize = 20, forceUpd
      let data = [];
      let morePages = false;
      if (response.ok) {
-          data = response.data;
+          data = response.data.result;
           if (data.page_current !== data.page_total) {
                morePages = true;
           }

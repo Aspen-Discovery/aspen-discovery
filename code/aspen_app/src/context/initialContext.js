@@ -46,6 +46,8 @@ export const UserContext = React.createContext({
      updateAppPreferences: () => {},
      notificationHistory: [],
      updateNotificationHistory: () => {},
+     inbox: [],
+     updateInbox: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -376,6 +378,7 @@ export const UserProvider = ({ children }) => {
      const [aspenToken, setAspenToken] = useState(false);
      const [seenNotificationOnboardPrompt, setSeenNotificationOnboardPrompt] = useState(true);
      const [notificationHistory, setNotificationHistory] = useState([]);
+     const [inbox, setInbox] = useState([]);
 
      const updateUser = (data) => {
           if (user !== data) {
@@ -588,6 +591,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated notification history in UserContext');
      };
 
+     const updateInbox = (data) => {
+          setInbox(data);
+          console.log('updated notification inbox in UserContext');
+     };
+
      return (
           <UserContext.Provider
                value={{
@@ -626,6 +634,8 @@ export const UserProvider = ({ children }) => {
                     appPreferences,
                     notificationHistory,
                     updateNotificationHistory,
+                    inbox,
+                    updateInbox,
                }}>
                {children}
           </UserContext.Provider>

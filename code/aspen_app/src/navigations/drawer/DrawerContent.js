@@ -740,14 +740,13 @@ const NotificationHistory = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     if (library.displayIlsInbox === '1' || library.displayIlsInbox === 1) {
+     if (library.displayIlsInbox === '1' || library.displayIlsInbox === 1 || library.displayIlsInbox === true) {
           return (
                <Pressable
                     px="2"
                     py="3"
                     onPress={() => {
-                         navigateStack('AccountScreenTab', 'MyProfile', {
-                              libraryUrl: library.baseUrl,
+                         navigateStack('AccountScreenTab', 'MyNotificationHistory', {
                               hasPendingChanges: false,
                          });
                     }}>
