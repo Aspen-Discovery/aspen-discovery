@@ -2654,7 +2654,11 @@ class User extends DataObject {
 	}
 
 	public function updateHomeLibrary($newHomeLocationCode) {
-		$result = $this->getCatalogDriver()->updateHomeLibrary($this, $newHomeLocationCode);
+		$catalogDriver = $this->getCatalogDriver();
+		if (empty($catalogDriver)) { // getCatalogDriver() may return null, guard clause required
+			return;
+		}
+		$result = $catalogDriver->updateHomeLibrary($this, $newHomeLocationCode);
 		$this->clearCache();
 		return $result;
 	}
