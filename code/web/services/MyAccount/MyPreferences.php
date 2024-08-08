@@ -82,8 +82,10 @@ class MyAccount_MyPreferences extends MyAccount {
 						if (!empty($user->updateMessage)) {
 							$user->updateMessage .= '<br/>';
 						}
-						$user->updateMessage .= implode('<br/>', $result2['messages']);
-						$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+						if(!empty($result2)){ // $result2 may be null, guard clause required
+							$user->updateMessage .= implode('<br/>', $result2['messages']);
+							$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+						}
 					}
 				}else{
 					$user->updateMessage = translate([
