@@ -17,6 +17,8 @@ class SystemVariables extends DataObject {
 	public $useHtmlEditorRatherThanMarkdown;
 	public $storeRecordDetailsInSolr;
 	public $storeRecordDetailsInDatabase;
+	public $deletionCommitInterval;
+	public $waitAfterDeleteCommit;
 	public $indexVersion;
 	public $searchVersion;
 	public $enableNovelistSeriesIntegration;
@@ -198,6 +200,22 @@ class SystemVariables extends DataObject {
 						'description' => 'Whether or not covers can be loaded from the 020z',
 						'default' => false,
 					],
+					'deletionCommitInterval' => [
+						'property' => 'deletionCommitInterval',
+						'type' => 'integer',
+						'label' => 'Deletion Commit Interval (# of records)',
+						'description' => 'Based on this setting, Aspen will call a solr commit after the specified number of records are marked for deletion',
+						'required' => true,
+						'default' => 1000,
+						'min' => 250,
+					],
+					'waitAfterDeleteCommit' => [
+						'property' => 'waitAfterDeleteCommit',
+						'type' => 'checkbox',
+						'label' => 'Wait after delete commit',
+						'description' => 'Whether or not to wait for Solr to finish processing the commit before deleting more records',
+						'default' => false,
+					]
 				],
 			],
 

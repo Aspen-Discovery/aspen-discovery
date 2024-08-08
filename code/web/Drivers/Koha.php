@@ -3651,6 +3651,9 @@ class Koha extends AbstractIlsDriver {
 				$error = str_replace('<h3>', '<h4>', $error);
 				$error = str_replace('</h3>', '</h4>', $error);
 				$error = str_replace('/cgi-bin/koha/opac-password-recovery.pl', '/MyAccount/EmailResetPin', $error);
+				if ($kohaVersion >= 24.05) {
+					$error = str_replace('#', '/MyAccount/EmailResetPin', $error);
+				}
 				$result['error'] = trim($error);
 			} elseif (preg_match('%<div id="password-recovery">\s+<div class="alert alert-info">(.*?)<a href="/cgi-bin/koha/opac-main.pl">Return to the main page</a>\s+</div>\s+</div>%s', $postResults, $messageInformation)) {
 				$message = $messageInformation[1];
