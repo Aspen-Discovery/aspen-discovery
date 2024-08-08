@@ -13,6 +13,7 @@ import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckout
 import { MyEvents } from '../../screens/MyAccount/Events/Events';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
+import { MyNotificationHistory } from '../../screens/MyAccount/NotificationHistory/NotificationHistory';
 import { MyProfile } from '../../screens/MyAccount/Profile/MyProfile';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
@@ -185,6 +186,15 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? getTermFromDictionary(language, 'event_details'),
                          })}
+                    />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="MyNotificationHistory"
+                         component={MyNotificationHistory}
+                         options={{
+                              title: getTermFromDictionary(language, 'my_notification_history'),
+                         }}
                     />
                </Stack.Group>
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />
