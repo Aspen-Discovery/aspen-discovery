@@ -1,21 +1,16 @@
 <?php
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationFormValues.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
-class CarlXSelfRegistrationForm extends DataObject {
-	public $__table = 'self_registration_form_carlx';
+
+class SierraSelfRegistrationForm extends DataObject {
+	public $__table = 'self_registration_form_sierra';
 	public $id;
 	public $name;
-	public $selfRegEmailNotices;
-	public $selfRegDefaultBranch;
-	public $selfRegPatronExpirationDate;
-	public $selfRegPatronStatusCode;
-	public $selfRegPatronType;
-	public $selfRegRegBranch;
-	public $selfRegRegisteredBy;
-	public $lastPatronBarcode;
-	public $barcodePrefix;
-	public $selfRegIDNumberLength;
+	public $selfRegistrationTemplate;
 	public $termsOfServiceSetting;
+	public $selfRegEmailBarcode;
 
+	private $_fields;
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
@@ -28,6 +23,10 @@ class CarlXSelfRegistrationForm extends DataObject {
 		while ($selfRegistrationTOS->fetch()) {
 			$selfRegistrationTerms[$selfRegistrationTOS->id] = (string)$selfRegistrationTOS->name;
 		}
+
+		$fieldValuesStructure = SelfRegistrationFormValues::getObjectStructure($context);
+		unset($fieldValuesStructure['weight']);
+		unset($fieldValuesStructure['selfRegistrationFormId']);
 
 		return [
 			'id' => [
@@ -50,68 +49,38 @@ class CarlXSelfRegistrationForm extends DataObject {
 				'values' => $selfRegistrationTerms,
 				'label' => 'Terms of Service Form',
 			],
-			'selfRegEmailNotices' => [
-				'property' => 'selfRegEmailNotices',
-				'type' => 'text',
-				'label' => 'Email Notices',
-				'description' => 'What the default setting for Email Notices is in the ILS',
-				'default' => 'DO_NOT_SEND_EMAIL',
+			'fields' => [
+				'property' => 'fields',
+				'type' => 'oneToMany',
+				'label' => 'Fields',
+				'description' => 'The fields for self registration',
+				'keyThis' => 'libraryId',
+				'keyOther' => 'libraryId',
+				'subObjectType' => 'SelfRegistrationFormValues',
+				'structure' => $fieldValuesStructure,
+				'sortable' => true,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'note' => 'Home Library must be included in the form'
 			],
-			'selfRegDefaultBranch' => [
-				'property' => 'selfRegDefaultBranch',
+			'selfRegistrationTemplate' => [
+				'property' => 'selfRegistrationTemplate',
 				'type' => 'text',
-				'label' => 'Default Branch',
-				'description' => 'The default branch for self registration.',
-			],
-			'selfRegPatronExpirationDate' => [
-				'property' => 'selfRegPatronExpirationDate',
-				'type' => 'date',
-				'label' => 'Self Registration Expiration Date',
-				'description' => 'Expiration date for self registered patrons.',
-			],
-			'selfRegPatronStatusCode' => [
-				'property' => 'selfRegPatronStatusCode',
-				'type' => 'text',
-				'label' => 'Self Registration Status Code',
-				'description' => 'Status code for registering patron.',
+				'label' => 'Self Registration Template',
+				'description' => 'The ILS template to use during self registration',
 				'hideInLists' => true,
-				'default' => 'GOOD',
+				'default' => 'default',
 			],
-			'selfRegPatronType' => [
-				'property' => 'selfRegPatronType',
-				'type' => 'text',
-				'label' => 'Patron Type',
-				'description' => 'The patron type for self registering patrons',
+			'selfRegEmailBarcode' => [
+				'property' => 'selfRegEmailBarcode',
+				'type' => 'checkbox',
+				'label' => 'Use Email for Barcode',
+				'description' => "Use user's email for their barcode",
 				'hideInLists' => true,
-				'default' => 'SELFREG',
-			],
-			'selfRegRegisteredBy' => [
-				'property' => 'selfRegRegisteredBy',
-				'type' => 'text',
-				'label' => 'Self Registered By',
-				'description' => 'Self registered by',
-				'hideInLists' => true,
-			],
-			'lastPatronBarcode' => [
-				'property' => 'lastPatronBarcode',
-				'type' => 'integer',
-				'label' => 'Last Patron Barcode',
-				'description' => 'Barcode of last registered patron (will update after each new self-registered patron)',
-				'hideInLists' => true,
-			],
-			'barcodePrefix' => [
-				'property' => 'barcodePrefix',
-				'type' => 'text',
-				'label' => 'Barcode Prefix',
-				'description' => 'Barcode Prefix',
-				'hideInLists' => true,
-			],
-			'selfRegIDNumberLength' => [
-				'property' => 'selfRegIDNumberLength',
-				'type' => 'text',
-				'label' => 'Self Reg Barcode Number Length',
-				'description' => 'Self Reg Barcode Number Length',
-				'hideInLists' => true,
+				'default' => 0,
 			],
 			'libraries' => [
 				'property' => 'libraries',
@@ -127,6 +96,7 @@ class CarlXSelfRegistrationForm extends DataObject {
 	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
+			$this->saveFields();
 			$this->saveLibraries();
 		}
 		return $ret;
@@ -135,24 +105,57 @@ class CarlXSelfRegistrationForm extends DataObject {
 	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
+			$this->saveFields();
 			$this->saveLibraries();
 		}
 		return $ret;
 	}
 
 	public function __get($name) {
-		if ($name == "libraries") {
+		if ($name == 'fields') {
+			return $this->getFields();
+		} if ($name == 'libraries') {
 			return $this->getLibraries();
-		} else {
+		}else {
 			return parent::__get($name);
 		}
 	}
 
 	public function __set($name, $value) {
-		if ($name == "libraries") {
+		if ($name == 'fields') {
+			$this->_fields = $value;
+		} if ($name == "libraries") {
 			$this->_libraries = $value;
 		} else {
 			parent::__set($name, $value);
+		}
+	}
+
+	/** @return SelfRegistrationFormValues[] */
+	public function getFields(): ?array {
+		if (!isset($this->_fields) && $this->id) {
+			$this->_fields = [];
+			$field = new SelfRegistrationFormValues();
+			$field->selfRegistrationFormId = $this->id;
+			$field->orderBy('weight');
+			$field->find();
+			while ($field->fetch()) {
+				$this->_fields[$field->id] = clone($field);
+			}
+		}
+		return $this->_fields;
+	}
+
+	public function clearFields() {
+		$this->clearOneToManyOptions('SelfRegistrationFormValues', 'selfRegistrationFormId');
+		/** @noinspection PhpUndefinedFieldInspection */
+		$this->fields = [];
+	}
+
+	public function saveFields() {
+		if (isset ($this->_fields) && is_array($this->_fields)) {
+			$this->saveOneToManyOptions($this->_fields, 'selfRegistrationFormId');
+			unset($this->fields);
 		}
 	}
 
@@ -191,6 +194,16 @@ class CarlXSelfRegistrationForm extends DataObject {
 				}
 			}
 			unset($this->_libraries);
+		}
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->getFields();
+		$index = -1;
+		foreach ($this->_fields as $subObject) {
+			$subObject->id = $index;
+			$subObject->selfRegistrationFormId = $this->id;
+			$index--;
 		}
 	}
 }

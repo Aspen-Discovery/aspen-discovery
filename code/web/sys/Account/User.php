@@ -3570,7 +3570,7 @@ class User extends DataObject {
 				$hasCurbside = true;
 				$allowILSMessaging = true;
 			}
-			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx') {
+			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx' || $accountProfile->ils == 'sierra') {
 				$customSelfRegForms = true;
 			}
             if ($accountProfile->driver == 'Nashville') {
