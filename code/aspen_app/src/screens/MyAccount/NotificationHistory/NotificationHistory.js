@@ -1,7 +1,5 @@
 import React from 'react';
-import { MaterialIcons } from '@expo/vector-icons';
 import { ChevronRight, Dot } from 'lucide-react-native';
-
 import { SafeAreaView } from 'react-native';
 import _ from 'lodash';
 import { useNavigation } from '@react-navigation/native';
@@ -11,9 +9,11 @@ import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { Heading, Box, Button, ButtonText, ButtonGroup, Center, FlatList, HStack, Icon, Pressable, ScrollView, Text, VStack } from '@gluestack-ui/themed';
+import { navigate } from '../../../helpers/RootNavigator';
+import { MyMessageModal } from '../../../navigations/stack/AccountStackNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { fetchSavedEvents } from '../../../util/api/event';
-import { decodeHTML, stripHTML } from '../../../util/apiAuth';
+import { stripHTML } from '../../../util/apiAuth';
 export const MyNotificationHistory = () => {
      const navigation = useNavigation();
      const queryClient = useQueryClient();
@@ -138,8 +138,14 @@ const Message = (data) => {
      const message = data.data;
      let content = stripHTML(message.content);
      content = _.truncate(content, { length: 35 });
+
+     console.log(message.title);
+     const handleOpenMyMessage = () => {
+          navigate('MyMessageModal', { title: message.title, data: message });
+     };
+
      return (
-          <Pressable borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']} pl="$4" pr="$5" py="$2">
+          <Pressable onPress={() => handleOpenMyMessage()} borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']} pl="$4" pr="$5" py="$2">
                <HStack alignItems="start">
                     {message.isRead === '0' ? (
                          <Box width="7%">
