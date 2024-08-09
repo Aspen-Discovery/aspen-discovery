@@ -189,23 +189,21 @@ const AccountStackNavigator = () => {
                          })}
                     />
                </Stack.Group>
-               <Stack.Group>
-                    <Stack.Screen
-                         name="MyNotificationHistory"
-                         component={MyNotificationHistory}
-                         options={{
-                              title: getTermFromDictionary(language, 'my_notification_history'),
-                         }}
-                    />
-                    <Stack.Screen
-                         name="MyMessageModal"
-                         component={MyMessageModal}
-                         options={{
-                              headerShown: false,
-                              presentation: 'modal',
-                         }}
-                    />
-               </Stack.Group>
+               <Stack.Screen
+                    name="MyNotificationHistory"
+                    component={MyNotificationHistory}
+                    options={{
+                         title: getTermFromDictionary(language, 'my_notification_history'),
+                    }}
+               />
+               <Stack.Screen
+                    name="MyMessageModal"
+                    component={MyMessageModal}
+                    options={{
+                         headerShown: false,
+                         presentation: 'modal',
+                    }}
+               />
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />
                <Stack.Screen
                     name="CopyDetails"
@@ -284,12 +282,12 @@ export const PalaceProjectInstructionsModal = () => {
      );
 };
 
-const NotificationHistoryStack = createStackNavigator();
+const MyMessageStack = createNativeStackNavigator();
 export const MyMessageModal = () => {
      const { language } = React.useContext(LanguageContext);
      return (
-          <NotificationHistoryStack.Navigator
-               id="NotificationHistoryStack"
+          <MyMessageStack.Navigator
+               id="MyMessageStack"
                screenOptions={({ navigation, route }) => ({
                     headerShown: false,
                     animationTypeForReplace: 'push',
@@ -303,16 +301,16 @@ export const MyMessageModal = () => {
                          </Pressable>
                     ),
                })}>
-               <NotificationHistoryStack.Screen
+               <MyMessageStack.Screen
                     name="MyMessage"
                     component={MyMessage}
-                    options={({ route }) => ({
-                         title: route?.params?.title ?? getTermFromDictionary(language, 'my_message'),
+                    options={{
+                         title: getTermFromDictionary(language, 'my_message'),
                          headerShown: true,
                          presentation: 'card',
-                    })}
+                    }}
                />
-          </NotificationHistoryStack.Navigator>
+          </MyMessageStack.Navigator>
      );
 };
 

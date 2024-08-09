@@ -10,10 +10,11 @@ import { DisplaySystemMessage } from '../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { Heading, Box, Button, ButtonText, ButtonGroup, Center, FlatList, HStack, Icon, Pressable, ScrollView, Text, VStack } from '@gluestack-ui/themed';
 import { navigate } from '../../../helpers/RootNavigator';
-import { MyMessageModal } from '../../../navigations/stack/AccountStackNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { fetchSavedEvents } from '../../../util/api/event';
 import { stripHTML } from '../../../util/apiAuth';
+import { CommonActions } from '@react-navigation/native';
+
 export const MyNotificationHistory = () => {
      const navigation = useNavigation();
      const queryClient = useQueryClient();
@@ -117,6 +118,12 @@ export const MyNotificationHistory = () => {
           return null;
      };
 
+     const handleOpenMyMessage = (item) => {
+          navigate('MyMessageModal', {
+               message: item,
+          });
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {_.size(systemMessagesForScreen) > 0 ? <Box safeArea="$2">{showSystemMessage()}</Box> : null}
@@ -126,26 +133,22 @@ export const MyNotificationHistory = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <FlatList data={inbox} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Message data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                         <FlatList data={inbox} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={item} handleOpenMyMessage={handleOpenMyMessage} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                     </>
                )}
           </SafeAreaView>
      );
 };
 
-const Message = (data) => {
+const Item = (data) => {
      const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const message = data.data;
+     const handleOpenMyMessage = data.handleOpenMyMessage;
      let content = stripHTML(message.content);
      content = _.truncate(content, { length: 35 });
 
-     console.log(message.title);
-     const handleOpenMyMessage = () => {
-          navigate('MyMessageModal', { title: message.title, data: message });
-     };
-
      return (
-          <Pressable onPress={() => handleOpenMyMessage()} borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']} pl="$4" pr="$5" py="$2">
+          <Pressable onPress={() => handleOpenMyMessage(message)} borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']} pl="$4" pr="$5" py="$2">
                <HStack alignItems="start">
                     {message.isRead === '0' ? (
                          <Box width="7%">
