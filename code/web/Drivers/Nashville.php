@@ -578,16 +578,64 @@ EOT;
         $this->initDatabaseConnection();
         // query students by school and homeroom
         /** @noinspection SqlResolve */
+		// If homeroom is ALLSTUDENTS, then we are looking for all students in the school
+		if ($homeroom == 'ALLSTUDENTS') {
+			$sql = <<<EOT
+				select
+					patronbranch.branchcode
+					, patronbranch.branchname
+					, p.bty as bty
+					, case
+						when p.bty < 21 or p.bty > 34
+							then null
+						-- bty 21 = Pre-K, 22 = K, 23 = 1st ... 34 = 12th
+						when p.bty = 21 then 'PreK'
+						when p.bty = 22 then 'K'
+						when p.bty = 23 then '1st'
+						when p.bty = 24 then '2nd'
+						when p.bty = 25 then '3rd'
+						else p.bty-22 || 'th'
+					end as grade
+					, 'HR: ' || initcap(p.sponsor) as homeroom
+					, p.street2 as homeroomid
+					, p.name as patronname
+					, p.patronid
+					, p.lastname
+					, p.firstname
+					, p.middlename
+					, p.suffixname
+				from
+					patron_v2 p
+					left join branch_v2 patronbranch on patronbranch.branchnumber = p.defaultbranch
+					left join bty_v2 bty on p.bty = bty.btynumber
+				where
+					p.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+					and patronbranch.branchcode = '$location'
+					and p.street2 is not null
+				order by
+					1, 3, 5, 7
+EOT;
+		}
 		// If homeroom is ALL_*, then we are looking for all students in a grade level
-		if (strpos($homeroom, 'ALL_') === 0) {
+		elseif (strpos($homeroom, 'ALL_') === 0) {
 			$bty = substr($homeroom, 4);
 			$sql = <<<EOT
 				select
 					patronbranch.branchcode
 					, patronbranch.branchname
-					, bty.btynumber as bty
-					, bty.btyname as grade
-					, p.sponsor as homeroom
+					, p.bty.btynumber as bty
+					, case
+						when p.bty < 21 or p.bty > 34
+							then null
+						-- bty 21 = Pre-K, 22 = K, 23 = 1st ... 34 = 12th
+						when p.bty = 21 then 'PreK'
+						when p.bty = 22 then 'K'
+						when p.bty = 23 then '1st'
+						when p.bty = 24 then '2nd'
+						when p.bty = 25 then '3rd'
+						else p.bty-22 || 'th'
+					end as grade
+					, 'HR: ' || initcap(p.sponsor) as homeroom
 					, p.street2 as homeroomid
 					, p.name as patronname
 					, p.patronid
@@ -606,57 +654,68 @@ EOT;
 					and p.street2 is not null
 				order by
 					patronbranch.branchcode
+				    , p.sponsor
 					, p.name
 EOT;
-
+// If homeroom is a specific homeroom, then we are looking for students -- and staff -- in that homeroom
 		} else {
 			$sql = <<<EOT
 				select
 					patronbranch.branchcode
 					, patronbranch.branchname
-					, bty_v2.btynumber AS bty
-					, bty_v2.btyname as grade
-					, case 
-							when (bty = 13 OR bty = 40 OR bty = 51)
-							then patron_v2.name
-							else patron_v2.sponsor
+					, p.bty AS bty
+					, case
+						when p.bty < 21 or p.bty > 34
+							then null
+						-- bty 21 = Pre-K, 22 = K, 23 = 1st ... 34 = 12th
+						when p.bty = 21 then 'PreK'
+						when p.bty = 22 then 'K'
+						when p.bty = 23 then '1st'
+						when p.bty = 24 then '2nd'
+						when p.bty = 25 then '3rd'
+						else p.bty-22 || 'th'
+					end as grade
+				     , case 
+							when (p.bty = 13 OR p.bty = 40 OR p.bty = 51)
+							then 'HR: ' || initcap(p.name)
+							else 'HR: ' || initcap(p.sponsor)
 						end as homeroom
 					, case 
-							when (bty = 13 OR bty = 40 OR bty = 51) 
-							then patron_v2.patronid
-							else patron_v2.street2
+							when (p.bty = 13 OR p.bty = 40 OR p.bty = 51) 
+							then p.patronid
+							else p.street2
 						end as homeroomid
-					, patron_v2.name AS patronname
-					, patron_v2.patronid
-					, patron_v2.lastname
-					, patron_v2.firstname
-					, patron_v2.middlename
-					, patron_v2.suffixname
+					, p.name AS patronname
+					, p.patronid
+					, p.lastname
+					, p.firstname
+					, p.middlename
+					, p.suffixname
 				from
-					branch_v2 patronbranch
-					, bty_v2
-					, patron_v2
+					patron_v2 p
+					left join branch_v2 patronbranch on patronbranch.branchnumber = p.defaultbranch
+					left join bty_v2 bty on p.bty = bty.btynumber
 				where
-					patron_v2.bty = bty_v2.btynumber
-					and patronbranch.branchnumber = patron_v2.defaultbranch
+					p.bty = bty.btynumber
+					and patronbranch.branchnumber = p.defaultbranch
 					and (
 						(
-							patron_v2.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+							p.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
 							and patronbranch.branchcode = '$location'
-							and patron_v2.street2 = '$homeroom'
+							and p.street2 = '$homeroom'
 						) or (
-							(patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51)
-							and patron_v2.patronid = '$homeroom'
+							(p.bty = 13 OR p.bty = 40 OR p.bty = 51)
+							and p.patronid = '$homeroom'
 						)
 					)
 				order by
 					patronbranch.branchcode
 					, case
-						when (patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51) then 0
+						when (p.bty = 13 OR p.bty = 40 OR p.bty = 51) then 0 -- sort staff above students
 						else 1
 					end
-					, patron_v2.sponsor
-					, patron_v2.name
+					, p.sponsor
+					, p.name
 EOT;
 		}
         $stid = oci_parse($this->dbConnection, $sql);
@@ -722,6 +781,19 @@ EOT;
                     when (p.bty >= 21 and p.bty <= 34) then 'all ' || replace(replace(trim(to_char(p.bty-22,'00')),'-01','PK'),'00','KI') || ' ' || bty.btyname
                     else 'all ' || bty.btyname
 				end as grade
+            from patron_v2 p
+            left join branch_v2 b on p.defaultBranch = b.branchnumber
+            left join bty_v2 bty on p.bty = bty.btynumber
+            where ((p.bty >= 21 and p.bty <= 34) or p.bty in (35,36,37,46,47))
+            and b.branchcode = '$location'
+            union all
+            -- entry for All Students
+			select
+                distinct b.branchcode
+                , 999 as bty
+                , 'ALLSTUDENTS' as homeroomid
+                , '' as homeroomname
+                , 'all students' as grade
             from patron_v2 p
             left join branch_v2 b on p.defaultBranch = b.branchnumber
             left join bty_v2 bty on p.bty = bty.btynumber
