@@ -578,54 +578,87 @@ EOT;
         $this->initDatabaseConnection();
         // query students by school and homeroom
         /** @noinspection SqlResolve */
-        $sql = <<<EOT
-			select
-				patronbranch.branchcode
-				, patronbranch.branchname
-				, bty_v2.btynumber AS bty
-				, bty_v2.btyname as grade
-				, case 
-						when (bty = 13 OR bty = 40 OR bty = 51)
-						then patron_v2.name
-						else patron_v2.sponsor
-					end as homeroom
-				, case 
-						when (bty = 13 OR bty = 40 OR bty = 51) 
-						then patron_v2.patronid
-						else patron_v2.street2
-					end as homeroomid
-				, patron_v2.name AS patronname
-				, patron_v2.patronid
-				, patron_v2.lastname
-				, patron_v2.firstname
-				, patron_v2.middlename
-				, patron_v2.suffixname
-			from
-				branch_v2 patronbranch
-				, bty_v2
-				, patron_v2
-			where
-				patron_v2.bty = bty_v2.btynumber
-				and patronbranch.branchnumber = patron_v2.defaultbranch
-				and (
-					(
-						patron_v2.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
-						and patronbranch.branchcode = '$location'
-						and patron_v2.street2 = '$homeroom'
-					) or (
-						(patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51)
-						and patron_v2.patronid = '$homeroom'
-					)
-				)
-			order by
-				patronbranch.branchcode
-				, case
-					when (patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51) then 0
-					else 1
-				end
-				, patron_v2.sponsor
-				, patron_v2.name
+		// If homeroom is ALL_*, then we are looking for all students in a grade level
+		if (strpos($homeroom, 'ALL_') === 0) {
+			$bty = substr($homeroom, 4);
+			$sql = <<<EOT
+				select
+					patronbranch.branchcode
+					, patronbranch.branchname
+					, bty.btynumber as bty
+					, bty.btyname as grade
+					, p.sponsor as homeroom
+					, p.street2 as homeroomid
+					, p.name as patronname
+					, p.patronid
+					, p.lastname
+					, p.firstname
+					, p.middlename
+					, p.suffixname
+				from
+					patron_v2 p
+					left join branch_v2 patronbranch on patronbranch.branchnumber = p.defaultbranch
+					left join bty_v2 bty on p.bty = bty.btynumber
+				where
+				    p.bty = '$bty'
+					and p.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+					and patronbranch.branchcode = '$location'
+					and p.street2 is not null
+				order by
+					patronbranch.branchcode
+					, p.name
 EOT;
+
+		} else {
+			$sql = <<<EOT
+				select
+					patronbranch.branchcode
+					, patronbranch.branchname
+					, bty_v2.btynumber AS bty
+					, bty_v2.btyname as grade
+					, case 
+							when (bty = 13 OR bty = 40 OR bty = 51)
+							then patron_v2.name
+							else patron_v2.sponsor
+						end as homeroom
+					, case 
+							when (bty = 13 OR bty = 40 OR bty = 51) 
+							then patron_v2.patronid
+							else patron_v2.street2
+						end as homeroomid
+					, patron_v2.name AS patronname
+					, patron_v2.patronid
+					, patron_v2.lastname
+					, patron_v2.firstname
+					, patron_v2.middlename
+					, patron_v2.suffixname
+				from
+					branch_v2 patronbranch
+					, bty_v2
+					, patron_v2
+				where
+					patron_v2.bty = bty_v2.btynumber
+					and patronbranch.branchnumber = patron_v2.defaultbranch
+					and (
+						(
+							patron_v2.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+							and patronbranch.branchcode = '$location'
+							and patron_v2.street2 = '$homeroom'
+						) or (
+							(patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51)
+							and patron_v2.patronid = '$homeroom'
+						)
+					)
+				order by
+					patronbranch.branchcode
+					, case
+						when (patron_v2.bty = 13 OR patron_v2.bty = 40 OR patron_v2.bty = 51) then 0
+						else 1
+					end
+					, patron_v2.sponsor
+					, patron_v2.name
+EOT;
+		}
         $stid = oci_parse($this->dbConnection, $sql);
         // consider using oci_set_prefetch to improve performance
         // oci_set_prefetch($stid, 1000);
@@ -646,12 +679,13 @@ EOT;
         $sql = <<<EOT
 			select 
 			  branchcode
+              , min(grade) as bty
 			  , homeroomid
 			  , min(homeroomname) as homeroomname
 			  , case
 				when min(grade) < max(grade)
 				  then replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '-' || replace(replace(trim(to_char(max(grade),'00')),'-01','PK'),'00','KI')
-				  else replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '___'
+				else replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '___'
 			  end as grade
 			from (
 			  select distinct
@@ -659,9 +693,9 @@ EOT;
 				, s.street2 as homeroomid
 				, nvl(regexp_replace(upper(h.name),'[^A-Z]','_'),'_NULL_') as homeroomname
 				, case
-                  when s.bty > 36
+                  when s.bty < 21 or s.bty > 34
                     then null
-                    else s.bty-22 
+                  else s.bty-22 -- bty 21 = Pre-K, 22 = K, 23 = 1st ... 34 = 12th
                 end as grade
 			  from
 				branch_v2 b
@@ -675,8 +709,25 @@ EOT;
 				b.branchcode
 				, homeroomname
 			) a
-			group by branchcode, homeroomid
-			order by branchcode, homeroomname
+            group by branchcode, homeroomid
+--			order by branchcode, homeroomname
+            union all
+            -- entries for 'all students by grade', e.g., 'All Fifth Grade Students'
+            select
+                distinct b.branchcode
+                , p.bty
+                , 'ALL_' || p.bty as homeroomid
+                , '' as homeroomname
+                , case
+                    when (p.bty >= 21 and p.bty <= 34) then 'all ' || replace(replace(trim(to_char(p.bty-22,'00')),'-01','PK'),'00','KI') || ' ' || bty.btyname
+                    else 'all ' || bty.btyname
+				end as grade
+            from patron_v2 p
+            left join branch_v2 b on p.defaultBranch = b.branchnumber
+            left join bty_v2 bty on p.bty = bty.btynumber
+            where ((p.bty >= 21 and p.bty <= 34) or p.bty in (35,36,37,46,47))
+            and b.branchcode = '$location'
+            order by 2, 5, 4
 EOT;
         $stid = oci_parse($this->dbConnection, $sql);
         // consider using oci_set_prefetch to improve performance
