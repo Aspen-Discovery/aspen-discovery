@@ -525,22 +525,27 @@ abstract class ObjectEditor extends Admin_Admin {
 			$objectType = $this->getObjectType();
 			$existingObject = new $objectType;
 			$this->setDefaultValues($existingObject, $structure);
+			$isNewObject = true;
 		} else {
 			$structure = $existingObject->updateStructureForEditingObject($structure);
 			$interface->assign('structure', $structure);
+			$isNewObject = false;
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
 		$contentType = DataObjectUtil::getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
 
-		$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
-		$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
-		$fieldLocks = $this->getFieldLocks();
-		$interface->assign('fieldLocks', $fieldLocks);
-		if (!empty($fieldLocks)) {
-			$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
-			$interface->assign('structure', $structure);
+		//ADM-7 Do not apply field locks to new records.
+		if (!$isNewObject) {
+			$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
+			$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
+			$fieldLocks = $this->getFieldLocks();
+			$interface->assign('fieldLocks', $fieldLocks);
+			if (!empty($fieldLocks)) {
+				$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
+				$interface->assign('structure', $structure);
+			}
 		}
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
