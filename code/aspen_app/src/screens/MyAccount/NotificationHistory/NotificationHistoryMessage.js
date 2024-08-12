@@ -1,11 +1,16 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { Heading, Box, Button, ButtonText, ButtonGroup, Center, FlatList, HStack, Icon, Pressable, ScrollView, Text, VStack } from '@gluestack-ui/themed';
+import _ from 'lodash';
 
-export const MyMessage = () => {
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { Heading, Box, Button, ButtonText, ButtonGroup, ScrollView, Text, VStack } from '@gluestack-ui/themed';
+
+export const MyNotificationHistoryMessage = () => {
      const navigation = useNavigation();
      const route = useRoute();
+     let routeB = navigation.getParent().getState().routes;
+     console.log(routeB);
+     routeB = _.filter(routeB, { name: 'MyNotificationHistoryMessageModal' });
+     console.log(routeB);
      const defaultMessage = {
           title: '',
           content: '',
