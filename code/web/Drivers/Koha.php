@@ -43,10 +43,9 @@ class Koha extends AbstractIlsDriver {
 		$address = '';
 		$city = '';
 		if ($results !== false) {
-			while ($curRow = $results->fetch_assoc()) {
-				$address = $curRow['address'];
-				$city = $curRow['city'];
-			}
+			$curRow = $results->fetch_assoc();
+			$address = $curRow['address'];
+			$city = $curRow['city'];
 		}
 
 		$postVariables = [
