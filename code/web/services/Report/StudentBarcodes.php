@@ -36,7 +36,6 @@ class Report_StudentBarcodes extends Admin_Admin {
 		foreach ($homeroomList as $homeroom) {
 			$homeroomLookupList[$homeroom['HOMEROOMID']] = $homeroom['GRADE'] . " " . $homeroom['HOMEROOMNAME'];
 		}
-		asort($homeroomLookupList);
 		if (count($homeroomLookupList) > 1) {
 			$homeroomLookupList = ['' => 'Select a homeroom'] + $homeroomLookupList;
 		}
