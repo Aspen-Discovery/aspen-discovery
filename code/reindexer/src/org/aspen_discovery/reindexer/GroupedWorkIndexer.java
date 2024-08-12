@@ -33,6 +33,8 @@ public class GroupedWorkIndexer {
 	private final BaseIndexingLogEntry logEntry;
 	private final Logger logger;
 	private final Long indexStartTime;
+	private int deletionCommitInterval = 1000;
+	private boolean waitAfterDeleteCommit = false;
 	private int totalRecordsHandled = 0;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private RecordGroupingProcessor recordGroupingProcessor;
@@ -207,7 +209,7 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
@@ -215,6 +217,8 @@ public class GroupedWorkIndexer {
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
 				this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
+				this.deletionCommitInterval = systemVariablesRS.getInt("deletionCommitInterval");
+				this.waitAfterDeleteCommit = systemVariablesRS.getBoolean("waitAfterDeleteCommit");
 				if (fullReindex) {
 					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
 				}
@@ -605,8 +609,12 @@ public class GroupedWorkIndexer {
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 1000 == 0) {
-				this.commitChanges();
+			if (totalRecordsHandled % this.deletionCommitInterval == 0) {
+				if (this.waitAfterDeleteCommit) {
+					this.commitChangesWithWait();
+				}else{
+					this.commitChanges();
+				}
 			}
 
 			/*
@@ -665,6 +673,14 @@ public class GroupedWorkIndexer {
 	public void commitChanges(){
 		try {
 			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logEntry.incErrors("Error committing changes ", e);
+		}
+	}
+
+	public void commitChangesWithWait(){
+		try {
+			updateServer.commit(true, false, true);
 		}catch (Exception e) {
 			logEntry.incErrors("Error committing changes ", e);
 		}
