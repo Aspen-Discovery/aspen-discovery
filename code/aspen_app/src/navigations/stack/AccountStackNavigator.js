@@ -13,7 +13,7 @@ import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckout
 import { MyEvents } from '../../screens/MyAccount/Events/Events';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
-import { MyMessage } from '../../screens/MyAccount/NotificationHistory/Message';
+import { MyNotificationHistoryMessage } from '../../screens/MyAccount/NotificationHistory/NotificationHistoryMessage';
 import { MyNotificationHistory } from '../../screens/MyAccount/NotificationHistory/NotificationHistory';
 import { MyProfile } from '../../screens/MyAccount/Profile/MyProfile';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
@@ -197,8 +197,8 @@ const AccountStackNavigator = () => {
                     }}
                />
                <Stack.Screen
-                    name="MyMessageModal"
-                    component={MyMessageModal}
+                    name="MyNotificationHistoryMessageModal"
+                    component={MyNotificationHistoryMessageModal}
                     options={{
                          headerShown: false,
                          presentation: 'modal',
@@ -282,35 +282,27 @@ export const PalaceProjectInstructionsModal = () => {
      );
 };
 
-const MyMessageStack = createNativeStackNavigator();
-export const MyMessageModal = () => {
+const MyNotificationHistoryMessageStack = createNativeStackNavigator();
+export const MyNotificationHistoryMessageModal = () => {
      const { language } = React.useContext(LanguageContext);
      return (
-          <MyMessageStack.Navigator
-               id="MyMessageStack"
+          <MyNotificationHistoryMessageStack.Navigator
+               id="MyNotificationHistoryMessageStack"
                screenOptions={({ navigation, route }) => ({
                     headerShown: false,
                     animationTypeForReplace: 'push',
                     gestureEnabled: false,
-                    headerLeft: () => {
-                         return null;
-                    },
-                    headerRight: () => (
-                         <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon size={5} color="primary.baseContrast" />
-                         </Pressable>
-                    ),
                })}>
-               <MyMessageStack.Screen
-                    name="MyMessage"
-                    component={MyMessage}
+               <MyNotificationHistoryMessageStack.Screen
+                    name="MyNotificationHistoryMessage"
+                    component={MyNotificationHistoryMessage}
                     options={{
                          title: getTermFromDictionary(language, 'my_message'),
                          headerShown: true,
                          presentation: 'card',
                     }}
                />
-          </MyMessageStack.Navigator>
+          </MyNotificationHistoryMessageStack.Navigator>
      );
 };
 
