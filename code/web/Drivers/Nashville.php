@@ -613,7 +613,7 @@ EOT;
 					and patronbranch.branchcode = '$location'
 					and p.street2 is not null
 				order by
-					1, 3, 5, 7
+					1, 3, 7, 8, 9
 EOT;
 		}
 		// If homeroom is ALL_*, then we are looking for all students in a grade level
@@ -623,7 +623,7 @@ EOT;
 				select
 					patronbranch.branchcode
 					, patronbranch.branchname
-					, p.bty.btynumber as bty
+					, p.bty as bty
 					, case
 						when p.bty < 21 or p.bty > 34
 							then null
@@ -653,9 +653,7 @@ EOT;
 					and patronbranch.branchcode = '$location'
 					and p.street2 is not null
 				order by
-					patronbranch.branchcode
-				    , p.sponsor
-					, p.name
+					p.name
 EOT;
 // If homeroom is a specific homeroom, then we are looking for students -- and staff -- in that homeroom
 		} else {
