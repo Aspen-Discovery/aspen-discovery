@@ -119,7 +119,7 @@ export const MyNotificationHistory = () => {
      };
 
      const handleOpenMyMessage = (item) => {
-          navigate('MyMessageModal', {
+          navigate('MyNotificationHistoryMessageModal', {
                message: item,
           });
      };
