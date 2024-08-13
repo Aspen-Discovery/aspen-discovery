@@ -1232,13 +1232,21 @@ abstract class ObjectEditor extends Admin_Admin {
 			if ($property['type'] == 'section') {
 				$property['properties'] = $this->applyFieldLocksToObjectStructure($property['properties'], $fieldLocks, $userCanChangeFieldLocks);
 			} else {
-				if (in_array($property['property'], $fieldLocks)) {
-					$property['locked'] = true;
-					if (!$userCanChangeFieldLocks) {
-						$property['readOnly'] = true;
+				//Any field can be locked by default, but
+				if (array_key_exists('canLock', $property) && $property['canLock'] == false) {
+					$canLockField = true;
+				}else{
+					$canLockField = true;
+				}
+				if ($canLockField) {
+					if (in_array($property['property'], $fieldLocks)) {
+						$property['locked'] = true;
+						if (!$userCanChangeFieldLocks) {
+							$property['readOnly'] = true;
+						}
+					} else {
+						$property['locked'] = false;
 					}
-				} else {
-					$property['locked'] = false;
 				}
 			}
 		}
