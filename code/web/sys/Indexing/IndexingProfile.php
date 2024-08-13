@@ -1286,7 +1286,6 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 10,
 						'description' => 'A order record status from Sierra to treat as Under Consideration within Aspen.',
 						'default' => '',
-						'required' => true,
 					],
 					'hideOrderRecordsForBibsWithPhysicalItems' => [
 						'property' => 'hideOrderRecordsForBibsWithPhysicalItems',
