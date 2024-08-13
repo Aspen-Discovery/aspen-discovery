@@ -19,6 +19,7 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
 		$interface->assign('stat', $stat);
+		$interface->assign('propName', 'exportToCSV');
 		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
