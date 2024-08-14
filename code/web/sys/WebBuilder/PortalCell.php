@@ -115,6 +115,7 @@ class PortalCell extends DataObject {
 				'type' => 'text',
 				'label' => 'Title',
 				'description' => 'An optional title for the cell',
+				'canLock' => false,
 			],
 			'layoutSettingsSection' => [
 				'property' => 'layoutSettingsSection',
