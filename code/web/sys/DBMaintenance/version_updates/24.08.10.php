@@ -29,7 +29,7 @@ function getUpdates24_08_10(): array {
 			'title' => 'ILS Self Reg Field Names',
 			'description' => 'Rename column in self_reg_values to be ilsName instead of symphonyName as it applies to multiple ILSes',
 			'sql' => [
-				"ALTER TABLE self_reg_form_values CHANGE COLUMN symphonyName TO ilsName",
+				"ALTER TABLE self_reg_form_values CHANGE COLUMN symphonyName ilsName VARCHAR(50) NOT NULL",
 			],
 		], //self_reg_values_column_name
 		'carlx_tos' => [
