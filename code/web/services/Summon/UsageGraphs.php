@@ -6,10 +6,8 @@ require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
 require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
 
 class Summon_UsageGraphs extends Admin_Admin {
-
 	function launch() {
 		global $interface;
-
 		$title = 'Summon Usage Graph';
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
@@ -17,11 +15,38 @@ class Summon_UsageGraphs extends Admin_Admin {
 		} else {
 			$instanceName = '';
 		}
-		
-		$dataSeries = [];
-		$columnLabels = [];
+
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
+		$this->display('usage-graph.tpl', $title);
+	}
+
+	function getActiveAdminSection(): string {
+		return 'summon';
+	}
+
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
+
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#summon', 'Summon');
+		$breadcrumbs[] = new Breadcrumb('/Summon/SummonDashboard', 'Summon Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
+
+	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+		global $interface;
+		$dataSeries = [];
+		$columnLabels = [];
 
 		// gets data from from user_summon_usage
 		if ($stat == 'activeUsers') {
@@ -116,27 +141,6 @@ class Summon_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
-		$this->display('usage-graph.tpl', $title);
-	}
-
-	function getActiveAdminSection(): string {
-		return 'summon';
-	}
-
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
-
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#summon', 'Summon');
-		$breadcrumbs[] = new Breadcrumb('/Summon/SummonDashboard', 'Summon Usage Dashboard');
-		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
-		return $breadcrumbs;
 	}
 
 	private function assignGraphSpecificTitle($stat) {
