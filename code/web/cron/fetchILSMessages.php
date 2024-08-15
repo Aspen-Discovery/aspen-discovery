@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/CatalogFactory.php';
 global $library;
 $accountProfile = $library->getAccountProfile();
 
-if ($accountProfile) {
+/*if ($accountProfile) {
 	$catalogDriver = trim($accountProfile->driver);
 	if (!empty($catalogDriver)) {
 		$catalog = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
@@ -17,7 +17,7 @@ if ($accountProfile) {
 			echo("Could not update message queue for library $library->libraryId.");
 		}
 	}
-}
+}*/
 
 global $aspen_db;
 $aspen_db = null;
