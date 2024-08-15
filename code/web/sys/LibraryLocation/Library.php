@@ -5070,6 +5070,7 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5188,6 +5189,17 @@ class Library extends DataObject {
 					$apiInfo['palaceProjectInstructions'] = $instructions;
 				}
 			}
+		}
+
+		if($this->showAlternateLibraryCard) {
+			$apiInfo['alternateLibraryCardConfig'] =
+				[
+					'alternateLibraryCardLabel' => $this->alternateLibraryCardLabel,
+					'alternateLibraryCardFormMessage' => $this->alternateLibraryCardFormMessage,
+					'alternateLibraryCardStyle' => $this->alternateLibraryCardStyle,
+					'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
+					'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel
+				];
 		}
 
 		return $apiInfo;
