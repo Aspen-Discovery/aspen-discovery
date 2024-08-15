@@ -5799,9 +5799,9 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 		$forceUpdate = $_REQUEST['forceUpdate'] ?? false;
 		if ($user && !($user instanceof AspenError)) {
-			if($forceUpdate) {
+			/*if($forceUpdate) {
 				$user->getCatalogDriver()->updateUserMessageQueue($user);
-			}
+			}*/
 			$allMessages = [];
 			$messagesPerPage = $_REQUEST['pageSize'] ?? 20;
 			$page = $_REQUEST['page'] ?? 1;
