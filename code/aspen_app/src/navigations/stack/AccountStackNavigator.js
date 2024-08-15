@@ -13,6 +13,7 @@ import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckout
 import { MyEvents } from '../../screens/MyAccount/Events/Events';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
+import { MyNotificationHistoryMessage } from '../../screens/MyAccount/NotificationHistory/NotificationHistoryMessage';
 import { MyNotificationHistory } from '../../screens/MyAccount/NotificationHistory/NotificationHistory';
 import { MyProfile } from '../../screens/MyAccount/Profile/MyProfile';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
@@ -188,15 +189,21 @@ const AccountStackNavigator = () => {
                          })}
                     />
                </Stack.Group>
-               <Stack.Group>
-                    <Stack.Screen
-                         name="MyNotificationHistory"
-                         component={MyNotificationHistory}
-                         options={{
-                              title: getTermFromDictionary(language, 'my_notification_history'),
-                         }}
-                    />
-               </Stack.Group>
+               <Stack.Screen
+                    name="MyNotificationHistory"
+                    component={MyNotificationHistory}
+                    options={{
+                         title: getTermFromDictionary(language, 'my_notification_history'),
+                    }}
+               />
+               <Stack.Screen
+                    name="MyNotificationHistoryMessageModal"
+                    component={MyNotificationHistoryMessageModal}
+                    options={{
+                         headerShown: false,
+                         presentation: 'modal',
+                    }}
+               />
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />
                <Stack.Screen
                     name="CopyDetails"
@@ -272,6 +279,30 @@ export const PalaceProjectInstructionsModal = () => {
                     }}
                />
           </PalaceProjectStack.Navigator>
+     );
+};
+
+const MyNotificationHistoryMessageStack = createNativeStackNavigator();
+export const MyNotificationHistoryMessageModal = () => {
+     const { language } = React.useContext(LanguageContext);
+     return (
+          <MyNotificationHistoryMessageStack.Navigator
+               id="MyNotificationHistoryMessageStack"
+               screenOptions={({ navigation, route }) => ({
+                    headerShown: false,
+                    animationTypeForReplace: 'push',
+                    gestureEnabled: false,
+               })}>
+               <MyNotificationHistoryMessageStack.Screen
+                    name="MyNotificationHistoryMessage"
+                    component={MyNotificationHistoryMessage}
+                    options={{
+                         title: getTermFromDictionary(language, 'my_message'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+          </MyNotificationHistoryMessageStack.Navigator>
      );
 };
 
