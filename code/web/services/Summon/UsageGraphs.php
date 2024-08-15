@@ -20,21 +20,8 @@ class Summon_UsageGraphs extends Admin_Admin {
 		
 		$dataSeries = [];
 		$columnLabels = [];
-
-		switch ($stat) {
-			case 'activeUsers':
-				$title .= ' - Active Users';
-			break;
-			case 'numRecordsViewed':
-				$title .= ' - Number of Records Viewed';
-			break;
-			case 'numRecordsClicked':
-				$title .= ' - Number of Records Clicked';
-			break;
-			case 'totalClicks':
-				$title .= ' - Total Clicks';
-			break;
-		}
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
 
 		// gets data from from user_summon_usage
 		if ($stat == 'activeUsers') {
@@ -129,8 +116,6 @@ class Summon_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
-
-		$interface->assign('graphTitle', $title);
 		$this->display('usage-graph.tpl', $title);
 	}
 
@@ -152,5 +137,25 @@ class Summon_UsageGraphs extends Admin_Admin {
 		$breadcrumbs[] = new Breadcrumb('/Summon/SummonDashboard', 'Summon Usage Dashboard');
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
 		return $breadcrumbs;
+	}
+
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle'); 
+		switch ($stat) {
+			case 'activeUsers':
+				$title .= ' - Active Users';
+			break;
+			case 'numRecordsViewed':
+				$title .= ' - Number of Records Viewed';
+			break;
+			case 'numRecordsClicked':
+				$title .= ' - Number of Records Clicked';
+			break;
+			case 'totalClicks':
+				$title .= ' - Total Clicks';
+			break;
+		}
+		$interface->assign('graphTitle', $title);
 	}
 }

@@ -20,42 +20,8 @@ class ILS_UsageGraphs extends Admin_Admin {
 
 		$dataSeries = [];
 		$columnLabels = [];
-				
-		switch ($stat) {
-			case 'userLogins':
-				$title .= ' - User Logins';
-				break;
-			case 'selfRegistrations':
-				$title .= ' - Self Registrations';
-				break;
-			case 'usersWithHolds':
-				$title .= ' - Users Who Placed At Least One Hold';
-				break;
-			case 'recordsHeld':
-				$title .= ' - Records Held';
-				break;
-			case 'totalHolds':
-				$title .= ' - Total Holds';
-				break;
-			case 'usersWithPdfDownloads': 
-				$title .= ' - Users Who Downloaded At Least One PDF';
-				break;
-			case 'usersWithPdfViews':
-				$title .= ' - Users Who Viewed At Least One PDF';
-				break;
-			case 'pdfsDownloaded':
-				$title .= ' - PDFs Downloaded';
-				break;
-			case 'pdfsViewed':
-				$title .= ' - PDFs Viewed';
-				break;
-			case 'usersWithSupplementalFileDownloads':
-				$title .= ' - Users Who Downloaded At Least One Supplemental File';
-				break;
-			case 'supplementalFilesDownloaded':
-				$title .= ' - Supplemental Files Downloaded';
-				break;
-		}
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
 		
 		// for graphs displaying data retrieved from the user_ils_usage table
 		if (
@@ -249,8 +215,6 @@ class ILS_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
-
-		$interface->assign('graphTitle', $title);
 		$this->display('usage-graph.tpl', $title);
 	}
 
@@ -272,5 +236,46 @@ class ILS_UsageGraphs extends Admin_Admin {
 			'View Dashboards',
 			'View System Reports',
 		]);
+	}
+
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle'); 
+		switch ($stat) {
+			case 'userLogins':
+				$title .= ' - User Logins';
+				break;
+			case 'selfRegistrations':
+				$title .= ' - Self Registrations';
+				break;
+			case 'usersWithHolds':
+				$title .= ' - Users Who Placed At Least One Hold';
+				break;
+			case 'recordsHeld':
+				$title .= ' - Records Held';
+				break;
+			case 'totalHolds':
+				$title .= ' - Total Holds';
+				break;
+			case 'usersWithPdfDownloads': 
+				$title .= ' - Users Who Downloaded At Least One PDF';
+				break;
+			case 'usersWithPdfViews':
+				$title .= ' - Users Who Viewed At Least One PDF';
+				break;
+			case 'pdfsDownloaded':
+				$title .= ' - PDFs Downloaded';
+				break;
+			case 'pdfsViewed':
+				$title .= ' - PDFs Viewed';
+				break;
+			case 'usersWithSupplementalFileDownloads':
+				$title .= ' - Users Who Downloaded At Least One Supplemental File';
+				break;
+			case 'supplementalFilesDownloaded':
+				$title .= ' - Supplemental Files Downloaded';
+				break;
+		}
+		$interface->assign('graphTitle', $title);
 	}
 }
