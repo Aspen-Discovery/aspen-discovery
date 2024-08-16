@@ -1624,6 +1624,7 @@ class Admin_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
 			$aspenUsageGraph = new Admin_UsageGraphs();
+		}
 		$aspenUsageGraph->buildCSV();
 	}
 }
