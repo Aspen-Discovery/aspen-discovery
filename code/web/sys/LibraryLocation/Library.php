@@ -4380,6 +4380,7 @@ class Library extends DataObject {
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
+			error_log("UPDATE CALLED");
 			$this->saveHolidays();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
@@ -4391,6 +4392,7 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->updateLocalAnalyticsPreferences();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4448,6 +4450,7 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->updateLocalAnalyticsPreferences();
 		}
 		return $ret;
 	}
@@ -4752,6 +4755,39 @@ class Library extends DataObject {
 			unset($this->_holidays);
 		}
 	}
+
+	public function updateLocalAnalyticsPreferences(){
+		error_log("CALLED UPDATE LOCAL ANALYTICS");
+		if (empty($this->libraryId)) {
+			error_log("Library ID is not set.");
+			return;
+		}
+
+		$locations = [];
+		$location = new Location();
+		$location->libraryId = $this->libraryId;
+		$location->find();
+
+		while ($location->fetch()) {
+			$locations[] = clone $location;
+		}
+		error_log("Fetched Locations: " . print_r($locations, true));
+		
+		foreach ($locations as $location) {
+			$user = new User();
+			$user->homeLocationId = $location->locationId;
+			$user->find();
+
+			while ($user->fetch()) {
+				error_log("User ID: " . $user->id . "current LA PREF: " . $user->userCookiePreferenceLocalAnalytics);
+				$user->userCookiePreferenceLocalAnalytics = $this->cookieStorageConsent ==1 ? 0 : 1;
+				$user->update();
+
+				error_log("UPDATED LOCAL ANALYTICS PREFS");
+			}
+		}
+	}
+	
 
 	public function getILLItemTypes() {
 		if (!isset($this->_interLibraryLoanItemTypes)) {
