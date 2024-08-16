@@ -26,7 +26,7 @@ class Translation_ImportTranslations extends Admin_Admin {
 
 			$languagesToImport = [];
 			$validLanguage = new Language();
-			$validLanguage->orderBy("weight");
+			$validLanguage->orderBy(["weight", "displayName"]);
 			$validLanguage->find();
 			$codeToLanguageId = [];
 			while ($validLanguage->fetch()) {

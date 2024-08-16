@@ -123,6 +123,7 @@ public class PalaceProjectExportMain {
 			boolean updatesRun;
 			if (singleWorkId == null) {
 				updatesRun = exportPalaceProjectData();
+				//updatesRun = false;
 			} else {
 				//exportSinglePalaceProjectTitle(singleWorkId);
 				System.out.println("Palace Project does not currently support extracting individual records.");
@@ -530,6 +531,9 @@ public class PalaceProjectExportMain {
 				title.collectionId = titlesForCollectionRS.getLong("collectionId");
 				title.lastSeen = titlesForCollectionRS.getLong("lastSeen");
 				title.deleted = titlesForCollectionRS.getBoolean("deleted");
+				title.borrowLink = titlesForCollectionRS.getString("borrowLink");
+				title.needsHold = titlesForCollectionRS.getBoolean("needsHold");
+				title.previewLink = titlesForCollectionRS.getString("previewLink");
 				titlesForCollection.put(title.titleId, title);
 			}
 		}catch (SQLException e) {
@@ -603,7 +607,7 @@ public class PalaceProjectExportMain {
 
 						//Update availability
 						titleId = palaceProjectAspenId;
-						updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, palaceProjectAspenId);
+						updatePalaceProjectTitleAvailability(curTitle, collectionId, titlesForCollection, indexTime, palaceProjectAspenId);
 
 						regroupAndIndexRecord = true;
 					}catch (DataTruncation e) {
@@ -620,7 +624,7 @@ public class PalaceProjectExportMain {
 					titleId = existingTitle.getId();
 					try {
 						updatePalaceProjectTitleInDbStmt.executeUpdate();
-						updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, titleId);
+						updatePalaceProjectTitleAvailability(curTitle, collectionId, titlesForCollection, indexTime, titleId);
 					}catch (DataTruncation e) {
 						logEntry.addNote("Record " + palaceProjectId + " " + title + " contained invalid data " + e);
 					}catch (SQLException e){
@@ -629,7 +633,7 @@ public class PalaceProjectExportMain {
 				} else {
 					//Update availability
 					titleId = existingTitle.getId();
-					regroupAndIndexRecord = updatePalaceProjectTitleAvailability(collectionId, titlesForCollection, indexTime, titleId);
+					regroupAndIndexRecord = updatePalaceProjectTitleAvailability(curTitle, collectionId, titlesForCollection, indexTime, titleId);
 				}
 
 				if (regroupAndIndexRecord && titleId > 0) {
@@ -643,9 +647,33 @@ public class PalaceProjectExportMain {
 		getGroupedWorkIndexer().commitChanges();
 	}
 
-	private static boolean updatePalaceProjectTitleAvailability(long collectionId, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, long indexTime, long titleId) throws SQLException {
+	private static boolean updatePalaceProjectTitleAvailability(JSONObject curTitle, long collectionId, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, long indexTime, long titleId) throws SQLException {
 		boolean availabilityChanged = false;
 		//We might not have availability already if this title exists in another collection or settings and is new to this collection
+		String borrowLink = "";
+		String previewLink = "";
+		boolean needsHold = false;
+
+		JSONArray links = curTitle.getJSONArray("links");
+		for (int i = 0; i < links.length(); i++) {
+			JSONObject curLink = links.getJSONObject(i);
+			String rel = curLink.getString("rel");
+			if (rel.equals("http://opds-spec.org/acquisition/borrow")){
+				borrowLink = curLink.getString("href");
+				if (curLink.has("properties")) {
+					JSONObject properties = curLink.getJSONObject("properties");
+					if (properties.has("availability")) {
+						String state = properties.getJSONObject("availability").getString("state");
+						if (!state.equals("available")) {
+							needsHold = true;
+						}
+					}
+				}
+			}else if (rel.equals("preview") && curLink.getString("type").equals("text/html")) {
+				previewLink = curLink.getString("href");
+			}
+		}
+
 		if (titlesForCollection.containsKey(titleId)){
 			PalaceProjectTitleAvailability existingAvailability = titlesForCollection.get(titleId);
 			//availability was deleted, need to restore and reindex
@@ -653,14 +681,20 @@ public class PalaceProjectExportMain {
 				availabilityChanged = true;
 			}
 			updatePalaceProjectAvailabilityStmt.setLong(1, indexTime);
-			updatePalaceProjectAvailabilityStmt.setLong(2, titleId);
-			updatePalaceProjectAvailabilityStmt.setLong(3, collectionId);
+			updatePalaceProjectAvailabilityStmt.setString(2, borrowLink);
+			updatePalaceProjectAvailabilityStmt.setBoolean(3, needsHold);
+			updatePalaceProjectAvailabilityStmt.setString(4, previewLink);
+			updatePalaceProjectAvailabilityStmt.setLong(5, titleId);
+			updatePalaceProjectAvailabilityStmt.setLong(6, collectionId);
 			updatePalaceProjectAvailabilityStmt.executeUpdate();
 		}else{
 			//Add availability for the title within the collection
 			addPalaceProjectAvailabilityStmt.setLong(1, titleId);
 			addPalaceProjectAvailabilityStmt.setLong(2, collectionId);
 			addPalaceProjectAvailabilityStmt.setLong(3, indexTime);
+			addPalaceProjectAvailabilityStmt.setString(4, borrowLink);
+			addPalaceProjectAvailabilityStmt.setBoolean(5, needsHold);
+			addPalaceProjectAvailabilityStmt.setString(6, previewLink);
 			addPalaceProjectAvailabilityStmt.executeUpdate();
 			availabilityChanged = true;
 		}
@@ -688,8 +722,8 @@ public class PalaceProjectExportMain {
 				getExistingPalaceProjectTitleStmt = aspenConn.prepareStatement("SELECT id, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
-				addPalaceProjectAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title_availability (titleId, collectionId, lastSeen, deleted) VALUES (?, ?, ?, 0)");
-				updatePalaceProjectAvailabilityStmt = aspenConn.prepareStatement("UPDATE palace_project_title_availability SET lastSeen = ?, deleted = 0 WHERE titleId = ? AND collectionId = ?");
+				addPalaceProjectAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title_availability (titleId, collectionId, lastSeen, borrowLink, needsHold, previewLink, deleted) VALUES (?, ?, ?, ?, ?, ?, 0)");
+				updatePalaceProjectAvailabilityStmt = aspenConn.prepareStatement("UPDATE palace_project_title_availability SET lastSeen = ?, borrowLink = ?, needsHold = ?, previewLink = ?, deleted = 0 WHERE titleId = ? AND collectionId = ?");
 				deletePalaceProjectAvailabilityStmt = aspenConn.prepareStatement("UPDATE palace_project_title_availability SET deleted = 1 WHERE id = ?");
 				updateCollectionLastIndexedStmt = aspenConn.prepareStatement("UPDATE palace_project_collections SET lastIndexed = ? where id =?");
 				getAvailabilityForTitleStmt = aspenConn.prepareStatement("SELECT COUNT(*) as availabilityCount from palace_project_title_availability WHERE titleId = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -739,58 +773,66 @@ public class PalaceProjectExportMain {
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='palace_project'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getIdForPalaceProjectIdStmt = aspenConn.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String rawPalaceProjectId = getRecordsToReloadRS.getString("identifier");
 				long palaceProjectId;
+				logEntry.incRecordsRegrouped();
 				if (AspenStringUtils.isNumeric(rawPalaceProjectId)) {
 					palaceProjectId = Long.parseLong(rawPalaceProjectId);
-				}else{
-					getIdForPalaceProjectIdStmt.setString(1, rawPalaceProjectId);
-					ResultSet getIdForPalaceProjectIdRS = getIdForPalaceProjectIdStmt.executeQuery();
-					if (getIdForPalaceProjectIdRS.next()) {
-						palaceProjectId = getIdForPalaceProjectIdRS.getLong("id");
-						getIdForPalaceProjectIdRS.close();
-					}else{
-						logEntry.addNote("Could not get details for record to reload " + rawPalaceProjectId + " it has been deleted");
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-						getIdForPalaceProjectIdRS.close();
-						continue;
-					}
-				}
-				//Regroup the record
-				getItemDetailsForRecordStmt.setLong(1, palaceProjectId);
-				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
-				if (getItemDetailsForRecordRS.next()){
-					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
-					try {
-						JSONObject itemDetails = new JSONObject(rawResponse);
-						String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(itemDetails, palaceProjectId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 
+					//Regroup the record
+					getItemDetailsForRecordStmt.setLong(1, palaceProjectId);
+					ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
+					if (getItemDetailsForRecordRS.next()){
+						String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+						try {
+							JSONObject itemDetails = new JSONObject(rawResponse);
+							String groupedWorkId =  getRecordGroupingProcessor().groupPalaceProjectRecord(itemDetails, palaceProjectId);
+							//Reindex the record
+							getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+							markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+							markRecordToReloadAsProcessedStmt.executeUpdate();
+							numRecordsToReloadProcessed++;
+							logEntry.incChangedAfterGrouping();
+						}catch (JSONException e){
+							logEntry.incErrors("Could not parse item details for record to reload " + palaceProjectId, e);
+						}
+					}else{
+						//The record has likely been deleted
+						logEntry.addNote("Could not get details for record to reload " + palaceProjectId + " it has been deleted");
 						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 						markRecordToReloadAsProcessedStmt.executeUpdate();
+						logEntry.incDeleted();
 						numRecordsToReloadProcessed++;
-					}catch (JSONException e){
-						logEntry.incErrors("Could not parse item details for record to reload " + palaceProjectId, e);
 					}
+					getItemDetailsForRecordRS.close();
+
 				}else{
-					//The record has likely been deleted
-					logEntry.addNote("Could not get details for record to reload " + palaceProjectId + " it has been deleted");
+					//Just delete this record
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("palace_project", rawPalaceProjectId);
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					}
 					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 					markRecordToReloadAsProcessedStmt.executeUpdate();
 					numRecordsToReloadProcessed++;
+					logEntry.incDeleted();
 				}
-				getItemDetailsForRecordRS.close();
+				if (numRecordsToReloadProcessed % 250 == 0) {
+					getGroupedWorkIndexer().commitChanges();
+					logEntry.saveResults();
+				}
 			}
 			if (numRecordsToReloadProcessed > 0){
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				getGroupedWorkIndexer().commitChanges();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){

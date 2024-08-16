@@ -12,7 +12,7 @@ import { createGlueTheme } from '../../themes/theme';
 import { getLanguageDisplayName, getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
 import { getCatalogStatus, getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
-import { getAppPreferencesForUser, getLinkedAccounts, refreshProfile } from '../../util/api/user';
+import { fetchNotificationHistory, getAppPreferencesForUser, getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
@@ -43,7 +43,7 @@ export const LoadingScreen = () => {
      const [incomingUrl, setIncomingUrl] = React.useState('');
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
 
-     const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards, updateAppPreferences } = React.useContext(UserContext);
+     const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards, updateAppPreferences, notificationHistory, updateNotificationHistory, updateInbox } = React.useContext(UserContext);
      const { library, updateLibrary, updateMenu, updateCatalogStatus, catalogStatus, catalogStatusMessage } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -243,6 +243,15 @@ export const LoadingScreen = () => {
           },
      });
 
+     const { status: notificationHistoryQueryStatus, data: notificationHistoryQuery } = useQuery(['notification_history'], () => fetchNotificationHistory(1, 20, true, library.baseUrl, 'en'), {
+          enabled: hasError === false && !!appPreferencesQuery,
+          onSuccess: (data) => {
+               updateNotificationHistory(data);
+               updateInbox(data?.inbox ?? []);
+               setIsReloading(false);
+          },
+     });
+
      if (hasError) {
           return <ForceLogout />;
      }
@@ -252,7 +261,20 @@ export const LoadingScreen = () => {
           return <CatalogOffline />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || catalogStatusQueryStatus === 'loading' || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || libraryCardsQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading' || appPreferencesQueryStatus === 'loading') {
+     if (
+          (isReloading && librarySystemQueryStatus === 'loading') ||
+          catalogStatusQueryStatus === 'loading' ||
+          userQueryStatus === 'loading' ||
+          browseCategoryQueryStatus === 'loading' ||
+          browseCategoryListQueryStatus === 'loading' ||
+          languagesQueryStatus === 'loading' ||
+          libraryBranchQueryStatus === 'loading' ||
+          linkedAccountQueryStatus === 'loading' ||
+          libraryCardsQueryStatus === 'loading' ||
+          systemMessagesQueryStatus === 'loading' ||
+          appPreferencesQueryStatus === 'loading' ||
+          notificationHistoryQueryStatus === 'loading'
+     ) {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -267,7 +289,20 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || catalogStatusQueryStatus === 'success' || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || libraryCardsQueryStatus === 'success' || systemMessagesQueryStatus === 'success' || appPreferencesQueryStatus === 'success') {
+     if (
+          (!isReloading && librarySystemQueryStatus === 'success') ||
+          catalogStatusQueryStatus === 'success' ||
+          userQueryStatus === 'success' ||
+          browseCategoryQueryStatus === 'success' ||
+          browseCategoryListQueryStatus === 'success' ||
+          languagesQueryStatus === 'success' ||
+          libraryBranchQueryStatus === 'success' ||
+          linkedAccountQueryStatus === 'success' ||
+          libraryCardsQueryStatus === 'success' ||
+          systemMessagesQueryStatus === 'success' ||
+          appPreferencesQueryStatus === 'success' ||
+          notificationHistoryQueryStatus === 'success'
+     ) {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);

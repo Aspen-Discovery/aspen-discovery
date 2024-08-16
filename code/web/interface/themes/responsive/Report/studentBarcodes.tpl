@@ -25,6 +25,12 @@ var patron = [];
 		pagediv.appendChild(labeldiv);
 		if (!patron[i][7]) {
 		} else {
+			var gradehomeroomdiv = document.createElement("div");
+			gradehomeroomdiv.setAttribute("id", "gradehomeroom"+i);
+			gradehomeroomdiv.setAttribute("class", "gradehomeroom");
+			labeldiv.appendChild(gradehomeroomdiv);
+			var gradehomeroomtext = document.createTextNode(patron[i][3] + ' ' + patron[i][4]);
+			gradehomeroomdiv.appendChild(gradehomeroomtext);
 			var namediv = document.createElement("div");
 			namediv.setAttribute("id", "name"+i);
 			namediv.setAttribute("class", "name");
@@ -63,12 +69,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	width: 2.625in !important; 
 	height: 1in !important; 
 	margin: 0in .125in 0in 0in !important;
-	padding: .425in 0 0 .475in !important;
+	padding: .212in 0 0 .475in !important;
 	float: left;
 	display: inline-block;
 	text-align: left;
 	overflow: hidden;
 	outline: 1px dotted;  /*outline doesn't occupy space like border does */
+}
+.gradehomeroom {
+	font-size: 80%;
+	height: 16px;
+	overflow: hidden;
+	text-align: left;
 }
 .name {
 	height: 20px;

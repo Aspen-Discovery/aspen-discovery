@@ -124,7 +124,7 @@ class Translation_Translations extends Admin_Admin {
 		header("Content-Disposition: attachment; filename=aspen_translations_$now.csv");
 
 		$validLanguage = new Language();
-		$validLanguage->orderBy("weight");
+		$validLanguage->orderBy(["weight", "displayName"]);
 		$validLanguage->find();
 		$validLanguages = [];
 		echo('"Term"');

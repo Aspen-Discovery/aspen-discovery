@@ -7,8 +7,11 @@ class PalaceProjectTitleAvailability extends DataObject {
 	public $collectionId;
 	public $lastSeen;
 	public $deleted;
+	public $borrowLink;
+	public $needsHold;
+	public $previewLink;
 
 	public function getNumericColumnNames(): array {
-		return ['deleted'];
+		return ['deleted', 'needsHold'];
 	}
 }

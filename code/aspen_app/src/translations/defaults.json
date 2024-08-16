@@ -561,5 +561,14 @@
   "access_instructions": "Access Instructions",
   "using_palace_project": "Using Palace Project",
   "last_used": "Last Used",
-  "in_use": "In Use"
+  "in_use": "In Use",
+  "my_notification_history": "My Notification History",
+  "my_message": "My Message",
+  "notification_history": "Notification History",
+  "notification_history_empty": "You do not have any notifications at this time.",
+  "mark_as_read": "Mark As Read",
+  "mark_as_unread": "Mark As Unread",
+  "date_sent": "Date Sent",
+  "sent_on": "Sent on %1%",
+  "open": "Open"
 }

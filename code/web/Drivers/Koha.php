@@ -43,10 +43,9 @@ class Koha extends AbstractIlsDriver {
 		$address = '';
 		$city = '';
 		if ($results !== false) {
-			while ($curRow = $results->fetch_assoc()) {
-				$address = $curRow['address'];
-				$city = $curRow['city'];
-			}
+			$curRow = $results->fetch_assoc();
+			$address = $curRow['address'];
+			$city = $curRow['city'];
 		}
 
 		$postVariables = [
@@ -8453,8 +8452,9 @@ class Koha extends AbstractIlsDriver {
 								$userMessage->status = 'pending';
 								$userMessage->type = $curRow['letter_code'];
 								$userMessage->dateQueued = $timeQueued;
-								$userMessage->content = '';
-								$userMessage->title = '';
+								$userMessage->content = $content;
+								$userMessage->defaultContent = $curRow['content'];
+								$userMessage->title = $title;
 								$userMessage->insert();
 								$numAdded++;
 							}
@@ -8491,7 +8491,7 @@ class Koha extends AbstractIlsDriver {
 					$timeQueued = strtotime($curRow['time_queued']);
 					$now = time();
 					$diff = ($now - $timeQueued);
-					if($diff > 0) {
+					if($diff > 86400) {
 						// skip messages older than 24 hours
 						$existingMessage = new UserILSMessage();
 						$existingMessage->userId = $patron->id;
@@ -8514,8 +8514,9 @@ class Koha extends AbstractIlsDriver {
 							$userMessage->status = 'pending';
 							$userMessage->type = $curRow['letter_code'];
 							$userMessage->dateQueued = strtotime($curRow['time_queued']);
-							$userMessage->content = '';
-							$userMessage->title = '';
+							$userMessage->content = $content;
+							$userMessage->title = $title;
+							$userMessage->defaultContent = $curRow['content'];
 							$userMessage->insert();
 						}
 					}

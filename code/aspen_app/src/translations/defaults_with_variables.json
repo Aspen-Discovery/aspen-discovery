@@ -25,5 +25,6 @@
   "num_items_on_list": "%1% items",
   "num_by_years": "%1% years",
   "num_search_result": "%1% result",
-  "num_search_results": "%1% results"
+  "num_search_results": "%1% results",
+  "sent_on": "Sent on %1%"
 }
