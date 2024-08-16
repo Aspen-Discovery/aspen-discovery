@@ -48,10 +48,10 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		]);
 	}
 
-	public function buildCSV()
-	{
+	// note that this will only handle tables with one stat (as is needed for Summon usage data)
+	// to see a version that handle multpile stats, see the Admin/UsageGraphs.php implementation
+	public function buildCSV() {
 		global $interface;
-
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
@@ -69,21 +69,19 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		header('Content-Type: text/csv; charset=utf-8');
 		header("Content-Disposition: attachment;filename={$filename}");
 		$fp = fopen('php://output', 'w');
-		$graphTitles = array_keys($dataSeries);
-		$numGraphTitles = count($dataSeries);
 
-		// builds the header for each section of the table in the CSV - column headers: Dates, and the title of the graph
-		for ($i = 0; $i < $numGraphTitles; $i++) {
-			$dataSerie = $dataSeries[$graphTitles[$i]];
-			$numRows = count($dataSerie['data']);
-			$dates = array_keys($dataSerie['data']);
-			$header = ['Dates', $graphTitles[$i]];
-			fputcsv($fp, $header);
+		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
+		fputcsv($fp, ['Dates', $stat]);
 
-			// builds each subsequent data row - aka the column value
-			for ($j = 0; $j < $numRows; $j++) {
-				$date = $dates[$j];
-				$value = $dataSerie['data'][$date];
+		// builds each subsequent data row - aka the column value
+		foreach ($dataSeries as $dataSerie) {
+			$data = $dataSerie['data'];
+			$numRows = count($data);
+			$dates = array_keys($data);
+
+			for($i = 0; $i < $numRows; $i++) {
+				$date = $dates[$i];
+				$value = $data[$date];
 				$row = [$date, $value];
 				fputcsv($fp, $row);
 			}
