@@ -70,6 +70,7 @@ class MyAccount_MyCookiePreferences extends MyAccount {
 	}
 
 	function updateUserCookiePreferences($patron) {
+		require_once ROOT_DIR . '/sys/LibraryLocation/UserLocalAnalyticsPreference.php';
 		$success = true;
 		$message = ' ';
 		$patron->userCookiePreferenceEssential = 1;

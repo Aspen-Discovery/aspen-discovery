@@ -55,6 +55,21 @@
 					</div>
 
 					<div class="form-group #propertyRow">
+					<strong class="control-label">{translate text="Local Tracking" isPublicFacing=true}:</strong>&nbsp;
+					<div style='padding:0.5em 1em;'>
+
+						{*Local Analytics*}
+						<div class="form-group propertyRow row">
+							<div class="col-xs-6 col-sm-4">
+								<label for='userCookieLocalAnalytics' class="control-label">{translate text="Local Analytics" isPublicFacing=true}</label>&nbsp;
+							</div>
+							<div class="col-xs-6 col-sm-8">
+								<input type="checkbox" class="form-control" name="userCookieLocalAnalytics" id="userCookieLocalAnalytics" {if $userCookieLocalAnalytics==1}checked='checked'{/if} data-switch="">
+							</div>
+						</div>
+				</div>
+
+					<div class="form-group #propertyRow">
 						<strong class="control-label">{translate text="Analytics Tracking to allow" isPublicFacing=true}:</strong>&nbsp;
 											{*Analytics Cookies*}
 						<div style='padding:0.5em 1em;'>
@@ -71,7 +86,7 @@
 
 							{*Show External Search Preferences if any relevant modules are enabled*}
 
-							{if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
+							{*{if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
 							|| array_key_exists('Palace Project', $enabledModules) || array_key_exists('Side Loads', $enabledModules) || array_key_exists('Side Loads', $enabledModules)}
 							<div style='padding:0.5em 1em;'>
 
@@ -116,7 +131,7 @@
 									</div>
 								</div>
 							</div>
-							{/if}
+							{/if}*}
 
 							{*Show Events toggle if Events module is enabled*}
 							{if array_key_exists('Events', $enabledModules)}
