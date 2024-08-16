@@ -10,7 +10,7 @@ class MyAccount_MyCookiePreferences extends MyAccount {
 		if ($user) {
 			//Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
-			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['partonId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var $patron */
 			$patron = $user->getUserReferredTo($patronId);
 
