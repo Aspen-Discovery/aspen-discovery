@@ -132,7 +132,7 @@ class Location extends DataObject {
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
-	private $_cloudLibraryScopes;
+	private $_cloudLibraryScope;
 	/**
 	 * @var array|LocationHours[]|mixed|null
 	 */
@@ -204,8 +204,15 @@ class Location extends DataObject {
 		// get the structure for the location's hours
 		$hoursStructure = LocationHours::getObjectStructure($context);
 
-		$cloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure($context);
-		unset($cloudLibraryScopeStructure['locationId']);
+		$cloudLibraryScopes = [];
+		$cloudLibraryScopes[-1] = 'none';
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->orderBy('name');
+		$cloudLibraryScope->find();
+		while ($cloudLibraryScope->fetch()) {
+			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
+		}
 
 		// we don't want to make the locationId property editable
 		// because it is associated with this location only
@@ -1127,19 +1134,15 @@ class Location extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Location Records included in Catalog'],
 				'properties' => [
-					'cloudLibraryScopes' => [
-						'property' => 'cloudLibraryScopes',
-						'type' => 'oneToMany',
-						'keyThis' => 'locationId',
-						'keyOther' => 'locationId',
-						'subObjectType' => 'LocationCloudLibraryScope',
-						'structure' => $cloudLibraryScopeStructure,
-						'label' => 'cloudLibrary Scopes',
-						'description' => 'The scopes that apply to this location',
-						'sortable' => false,
-						'storeDb' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
+					'cloudLibraryScope' => [
+						'property' => 'cloudLibraryScope',
+						'type' => 'enum',
+						'values' => $cloudLibraryScopes,
+						'label' => 'cloudLibrary Scope',
+						'description' => 'The cloudLibrary scope to use',
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => true,
 					],
 				],
 			],
@@ -1855,8 +1858,8 @@ class Location extends DataObject {
 			return $this->getSideLoadScopes();
 		} elseif ($name == 'combinedResultSections') {
 			return $this->getCombinedResultSections();
-		} elseif ($name == 'cloudLibraryScopes') {
-			return $this->getCloudLibraryScopes();
+		} elseif ($name == 'cloudLibraryScope') {
+			return $this->getCloudLibraryScope();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
 		} else {
@@ -1875,8 +1878,8 @@ class Location extends DataObject {
 			$this->_sideLoadScopes = $value;
 		} elseif ($name == 'combinedResultSections') {
 			$this->_combinedResultSections = $value;
-		} elseif ($name == 'cloudLibraryScopes') {
-			$this->_cloudLibraryScopes = $value;
+		} elseif ($name == 'cloudLibraryScope') {
+			$this->_cloudLibraryScope = $value;
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
 		} else {
@@ -1994,28 +1997,55 @@ class Location extends DataObject {
 	}
 
 	/**
-	 * @return LocationCloudLibraryScope[];
+	 * @var CloudLibraryScope;
 	 */
-	public function getCloudLibraryScopes() : array {
-		if (!isset($this->_cloudLibraryScopes)) {
-			$this->_cloudLibraryScopes = [];
-			if (!empty($this->locationId)) {
-				$cloudLibraryScope = new LocationCloudLibraryScope();
-				$cloudLibraryScope->locationId = $this->locationId;
-				if ($cloudLibraryScope->find()) {
-					while ($cloudLibraryScope->fetch()) {
-						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
-					}
+	public function getCloudLibraryScope() {
+		if ($this->_cloudLibraryScope == null && $this->locationId) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
+			$locationCloudLibraryScope = new LocationCloudLibraryScope();
+			$locationCloudLibraryScope->locationId = $this->locationId;
+			if($locationCloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+				$cloudLibraryScope = new CloudLibraryScope();
+				$cloudLibraryScope->id = $locationCloudLibraryScope->scopeId;
+				if($cloudLibraryScope->find(true)) {
+					$this->_cloudLibraryScope = $cloudLibraryScope->id;
 				}
 			}
 		}
-		return $this->_cloudLibraryScopes;
+		return $this->_cloudLibraryScope;
 	}
 
 	public function saveCloudLibraryScopes() {
-		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
-			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'locationId');
-			unset($this->_cloudLibraryScopes);
+		if (isset ($this->_cloudLibraryScope)) {
+			$locationCloudLibraryScope = new LocationCloudLibraryScope();
+			$locationCloudLibraryScope->locationId = $this->locationId;
+			$locationCloudLibraryScope->find(true);
+
+			$obj = $this->_cloudLibraryScope;
+			/** @var DataObject $obj */
+			if($obj->_deleteOnSave) {
+				if ($obj->getPrimaryKeyValue() > 0) {
+					$obj->delete();
+				}
+			} else {
+				if($locationCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$locationCloudLibraryScope->scopeId = $this->_cloudLibraryScope;
+					$locationCloudLibraryScope->update();
+				}
+			}
+
+			// cleanup other scopes location is assigned to
+			$unassignedLocationCloudLibraryScope = new LocationCloudLibraryScope();
+			$unassignedLocationCloudLibraryScope->locationId = $this->locationId;
+			$unassignedLocationCloudLibraryScope->find();
+			while($unassignedLocationCloudLibraryScope->fetch()) {
+				if($unassignedLocationCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$unassignedLocationCloudLibraryScope->delete();
+				}
+			}
+
+			unset($this->_cloudLibraryScope);
 		}
 	}
 
