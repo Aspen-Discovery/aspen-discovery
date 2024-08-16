@@ -8,8 +8,6 @@ require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 class ILS_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
-		global $enabledModules;
-		global $library;
 		$title = 'ILS Usage Graph';
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
@@ -18,45 +16,79 @@ class ILS_UsageGraphs extends Admin_Admin {
 			$instanceName = '';
 		}
 
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
+		$this->display('usage-graph.tpl', $title);
+	}
+
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/Dashboard', 'Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection(): string {
+		return 'ils_integration';
+	}
+
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
+
+	// note that this will only handle tables with one stat (as is needed for Summon usage data)
+	// to see a version that handle multpile stats, see the Admin/UsageGraphs.php implementation
+	public function buildCSV() {
+		global $interface;
+		$stat = $_REQUEST['stat'];
+		if (!empty($_REQUEST['instance'])) {
+			$instanceName = $_REQUEST['instance'];
+		} else {
+			$instanceName = '';
+		}
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$dataSeries = $interface->getVariable('dataSeries');
+
+		$filename = "ILSUsageData_{$stat}.csv";
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+		header('Content-Type: text/csv; charset=utf-8');
+		header("Content-Disposition: attachment;filename={$filename}");
+		$fp = fopen('php://output', 'w');
+		
+		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
+		fputcsv($fp, ['Dates', $stat]);
+
+		// builds each subsequent data row - aka the column value
+		foreach ($dataSeries as $dataSerie) {
+			$data = $dataSerie['data'];
+			$numRows = count($data);
+			$dates = array_keys($data);
+
+			for($i = 0; $i < $numRows; $i++) {
+				$date = $dates[$i];
+				$value = $data[$date];
+				$row = [$date, $value];
+				fputcsv($fp, $row);
+			}
+		}
+		exit();
+	}
+
+	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
-				
-		switch ($stat) {
-			case 'userLogins':
-				$title .= ' - User Logins';
-				break;
-			case 'selfRegistrations':
-				$title .= ' - Self Registrations';
-				break;
-			case 'usersWithHolds':
-				$title .= ' - Users Who Placed At Least One Hold';
-				break;
-			case 'recordsHeld':
-				$title .= ' - Records Held';
-				break;
-			case 'totalHolds':
-				$title .= ' - Total Holds';
-				break;
-			case 'usersWithPdfDownloads': 
-				$title .= ' - Users Who Downloaded At Least One PDF';
-				break;
-			case 'usersWithPdfViews':
-				$title .= ' - Users Who Viewed At Least One PDF';
-				break;
-			case 'pdfsDownloaded':
-				$title .= ' - PDFs Downloaded';
-				break;
-			case 'pdfsViewed':
-				$title .= ' - PDFs Viewed';
-				break;
-			case 'usersWithSupplementalFileDownloads':
-				$title .= ' - Users Who Downloaded At Least One Supplemental File';
-				break;
-			case 'supplementalFilesDownloaded':
-				$title .= ' - Supplemental Files Downloaded';
-				break;
-		}
-		
+
 		// for graphs displaying data retrieved from the user_ils_usage table
 		if (
 			$stat == 'userLogins' ||
@@ -249,28 +281,46 @@ class ILS_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
+	}
 
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle'); 
+		switch ($stat) {
+			case 'userLogins':
+				$title .= ' - User Logins';
+				break;
+			case 'selfRegistrations':
+				$title .= ' - Self Registrations';
+				break;
+			case 'usersWithHolds':
+				$title .= ' - Users Who Placed At Least One Hold';
+				break;
+			case 'recordsHeld':
+				$title .= ' - Records Held';
+				break;
+			case 'totalHolds':
+				$title .= ' - Total Holds';
+				break;
+			case 'usersWithPdfDownloads': 
+				$title .= ' - Users Who Downloaded At Least One PDF';
+				break;
+			case 'usersWithPdfViews':
+				$title .= ' - Users Who Viewed At Least One PDF';
+				break;
+			case 'pdfsDownloaded':
+				$title .= ' - PDFs Downloaded';
+				break;
+			case 'pdfsViewed':
+				$title .= ' - PDFs Viewed';
+				break;
+			case 'usersWithSupplementalFileDownloads':
+				$title .= ' - Users Who Downloaded At Least One Supplemental File';
+				break;
+			case 'supplementalFilesDownloaded':
+				$title .= ' - Supplemental Files Downloaded';
+				break;
+		}
 		$interface->assign('graphTitle', $title);
-		$this->display('usage-graph.tpl', $title);
-	}
-
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
-		$breadcrumbs[] = new Breadcrumb('/ILS/Dashboard', 'Usage Dashboard');
-		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
-		return $breadcrumbs;
-	}
-
-	function getActiveAdminSection(): string {
-		return 'ils_integration';
-	}
-
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
 	}
 }
