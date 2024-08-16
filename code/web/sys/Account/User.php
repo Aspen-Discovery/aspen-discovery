@@ -53,6 +53,7 @@ class User extends DataObject {
 	public $userCookiePreferenceOpenArchives;
 	public $userCookiePreferenceWebsite;
 	public $userCookiePreferenceExternalSearchServices;
+	public $userCookiePreferenceLocalAnalytics;
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 
@@ -1168,6 +1169,7 @@ class User extends DataObject {
 			$this->__set('userCookiePreferenceOpenArchives', (isset($_POST['userCookieUserOpenArchives']) && $_POST['userCookieUserOpenArchives'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceWebsite', (isset($_POST['userCookieUserWebsite']) && $_POST['userCookieUserWebsite'] == 'on') ? 1 : 0);
 			$this->__set('userCookiePreferenceExternalSearchServices', (isset($_POST['userCookieUserExternalSearchServices']) && $_POST['userCookieUserExternalSearchServices'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceLocalAnalytics', (isset($_POST['userCookieUserLocalAnalytics']) && $_POST['userCookieUserLocalAnalytics']) ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
