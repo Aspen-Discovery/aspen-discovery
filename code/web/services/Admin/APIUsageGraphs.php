@@ -17,6 +17,9 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		}
 
 		$title = 'Aspen Discovery API Usage Graph';
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
+		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
 	
@@ -43,4 +46,11 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		]);
 	}
 
+	private function assignGraphSpecificTitle()
+	{
+		global $interface;
+		$title = 'Aspen Discovery API Usage Graph';
+		$title .= ' - runPendingDatabaseUpdates';
+		$interface->assign('graphTitle', $title);
+	}
 }
