@@ -464,6 +464,8 @@ class Library extends DataObject {
 
 	public $allowUpdatingHolidaysFromILS;
 
+	private $_cloudLibraryScope;
+
 	/** @var MaterialsRequestFormFields[] */
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
@@ -4562,7 +4564,6 @@ class Library extends DataObject {
 	}
 
 	/** @var CloudLibraryScope */
-	private $_cloudLibraryScope = null;
 	public function getCloudLibraryScope() {
 		if ($this->_cloudLibraryScope == null && $this->libraryId) {
 			require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
@@ -5223,6 +5224,24 @@ class Library extends DataObject {
 					'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
 					'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel
 				];
+		}
+
+		$apiInfo['useAlternateLibraryCardForCloudLibrary'] = 0;
+		require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+		$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+		$libraryCloudLibraryScope->libraryId = $this->libraryId;
+		if($libraryCloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+			$cloudLibraryScope = new CloudLibraryScope();
+			$cloudLibraryScope->id = $libraryCloudLibraryScope->scopeId;
+			if($cloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+				$cloudLibrarySetting = new CloudLibrarySetting();
+				$cloudLibrarySetting->id = $cloudLibraryScope->settingId;
+				if($cloudLibrarySetting->find(true)) {
+					$apiInfo['useAlternateCardForCloudLibrary'] = $cloudLibrarySetting->useAlternateLibraryCard;
+				}
+			}
 		}
 
 		return $apiInfo;

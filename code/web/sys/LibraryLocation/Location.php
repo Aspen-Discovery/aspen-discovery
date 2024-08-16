@@ -2815,6 +2815,24 @@ class Location extends DataObject {
 		}
 		$apiInfo['baseUrl'] = $baseUrl;
 
+		$apiInfo['useAlternateLibraryCardForCloudLibrary'] = 0;
+		require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
+		$locationCloudLibraryScope = new LocationCloudLibraryScope();
+		$locationCloudLibraryScope->locationId = $this->locationId;
+		if($locationCloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+			$cloudLibraryScope = new CloudLibraryScope();
+			$cloudLibraryScope->id = $locationCloudLibraryScope->scopeId;
+			if($cloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+				$cloudLibrarySetting = new CloudLibrarySetting();
+				$cloudLibrarySetting->id = $cloudLibraryScope->settingId;
+				if($cloudLibrarySetting->find(true)) {
+					$apiInfo['useAlternateCardForCloudLibrary'] = $cloudLibrarySetting->useAlternateLibraryCard;
+				}
+			}
+		}
+
 		return $apiInfo;
 	}
 
@@ -2838,7 +2856,7 @@ class Location extends DataObject {
 			$this->overDriveScopeId = -1;
 			$this->palaceProjectScopeId = -1;
 		}else{
-			$this->getCloudLibraryScopes();
+			$this->getCloudLibraryScope();
 			$index = -1;
 			foreach ($this->_cloudLibraryScopes as $subObject) {
 				$subObject->id = $index;
