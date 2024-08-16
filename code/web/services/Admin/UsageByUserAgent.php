@@ -19,7 +19,7 @@ class Admin_UsageByUserAgent extends Admin_Dashboard {
 		$this->loadDates();
 
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 5; // to adjust number of items listed on a page
+		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 30; // to adjust number of items listed on a page
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 
@@ -28,7 +28,9 @@ class Admin_UsageByUserAgent extends Admin_Dashboard {
 		$total = $userAgent->count();
 		$userAgent->limit(($page - 1) * $pageSize, $pageSize);
 		$userAgent->find();
-		$allUserAgents = $userAgent->fetchAll('id', 'userAgent');
+		while ($userAgent->fetch()) {
+			$allUserAgents[$userAgent->id] = $userAgent->userAgent;
+		}
 		$interface->assign('allUserAgents', $allUserAgents);
 
 		$activeUsersThisMonth = $this->getUsageStats($instanceName, $this->thisMonth, $this->thisYear, $allUserAgents);
