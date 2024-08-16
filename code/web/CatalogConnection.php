@@ -1799,7 +1799,7 @@ class CatalogConnection {
 	}
 
 	public function hasIlsInbox(): bool {
-		return $this->driver->hasIlsInbox();
+		return false;
 	}
 
 	public function getMessageTypes(): array {
