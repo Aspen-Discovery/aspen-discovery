@@ -18,6 +18,8 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
+		$interface->assign('propName', 'exportToCSV');
 		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
@@ -40,6 +42,46 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 			'View Dashboards',
 			'View System Reports',
 		]);
+	}
+
+	// note that this will only handle tables with one stat (as is needed for Summon usage data)
+	// to see a version that handle multpile stats, see the Admin/UsageGraphs.php implementation
+	public function buildCSV() {
+		global $interface;
+		$stat = $_REQUEST['stat'];
+		if (!empty($_REQUEST['instance'])) {
+			$instanceName = $_REQUEST['instance'];
+		} else {
+			$instanceName = '';
+		}
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$dataSeries = $interface->getVariable('dataSeries');
+
+		$filename = "SideLoadsUsageData_{$stat}.csv";
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+		header('Content-Type: text/csv; charset=utf-8');
+		header("Content-Disposition: attachment;filename={$filename}");
+		$fp = fopen('php://output', 'w');
+
+		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
+		fputcsv($fp, ['Dates', $stat]);
+
+		// builds each subsequent data row - aka the column value
+		foreach ($dataSeries as $dataSerie) {
+			$data = $dataSerie['data'];
+			$numRows = count($data);
+			$dates = array_keys($data);
+			for($i = 0; $i < $numRows; $i++) {
+				$date = $dates[$i];
+				$value = $data[$date];
+				$row = [$date, $value];
+				fputcsv($fp, $row);
+			}
+		}
+		exit();
 	}
 
 	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
