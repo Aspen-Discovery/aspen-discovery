@@ -1610,4 +1610,11 @@ class Admin_AJAX extends JSON_Action {
 
 		return $result;
 	}
+
+	public function exportUsageData() {
+		require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
+		$aspenUsageGraph = new Admin_UsageGraphs(); 
+		$aspenUsageGraph->buildCSV();
+		// TODO: trigger page refresh
+	}
 }
