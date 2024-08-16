@@ -14,6 +14,10 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 			$instanceName = '';
 		}
 		$title = 'Side Loading Usage Graph';
+
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
+		$title = $interface->getVariable('graphTitle');
 		$this->display('usage-graph.tpl', $title);
 	}
 
@@ -35,5 +39,17 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 			'View Dashboards',
 			'View System Reports',
 		]);
+	}
+
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle');
+		if ($stat == 'activeUsers') {
+			$title .= ' - Active Users';
+		}
+		if ($stat == 'recordsAccessedOnline') {
+			$title .= ' - Records Accessed Online';
+		}
+		$interface->assign('graphTitle', $title);
 	}
 }
