@@ -18,7 +18,7 @@ jobs:
       - name: Add placeholder if this is not a tag
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         id: extract_tag_dummy
-        run: echo "GIT_TAG=NOTHING" >> $GITHUB_ENV
+        run: echo "GIT_TAG=NOTHING" >> $GITHUB_ENV; echo "GITHUB ENV IS NOW: $GITHUB_ENV";
 
       - name: Extract branch name
         shell: bash
