@@ -48,7 +48,7 @@ jobs:
           file: docker/Dockerfile
           push: ${{ startsWith(github.ref, 'refs/tags/v') }}
           tags: |
-            aspendiscovery/aspen:${{ env.GIT_TAG }}
+            ${{ github.event.repository.name }/aspen:${{ env.GIT_TAG }}
 
       - name: Tag image for GHCR
         run: |
