@@ -32,6 +32,13 @@ function getUpdates24_08_10(): array {
 				"ALTER TABLE self_reg_form_values CHANGE COLUMN symphonyName ilsName VARCHAR(50) NOT NULL",
 			],
 		], //self_reg_values_column_name
+		'self_reg_note_field_length' => [
+			'title' => 'Self Reg Note Field Length',
+			'description' => 'Increase the length for the note field in custom self registration forms (carlx, symphony, sierra only)',
+			'sql' => [
+				"ALTER TABLE self_reg_form_values CHANGE COLUMN note note VARCHAR(255)",
+			],
+		], //self_reg_note_field_length
 		'carlx_tos' => [
 			'title' => 'Terms of Service for CarlX Self Registration',
 			'description' => 'Add terms of service functionality to CarlX self registration.',
