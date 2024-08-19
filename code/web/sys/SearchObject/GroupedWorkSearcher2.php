@@ -806,14 +806,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				// if populating the array of facet options for 'available at'
 				// then filter out any branch (location) for which showInSearchFacet has been set to "0"
 				// thus preventing these branches from being displayed as search by options
-
-				// Commenting out 8/14/24 post 24.08 release due to unexpected bugs and disappearing facets - KK
-				/*if ($field == 'available_at' || $field == 'owning_location') {
-					$branchName = substr($facetValue, 5);
+				if ($field == 'available_at' || $field == 'owning_location') {
+					$scopeCodeLength = strlen($solrScope); // get the length of the scope
+					$branchName = substr($facetValue,  $scopeCodeLength + 1); // extract the branch's name by removing the scope code and hash that precede it
 					if (empty($branchList[$branchName]->showInSearchFacet)) {
 						continue;
 					}
-				}*/
+				}
 			
 				if ($isScopedField && strpos($facetValue, '#') !== false) {
 					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
