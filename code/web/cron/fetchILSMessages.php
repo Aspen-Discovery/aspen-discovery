@@ -7,6 +7,7 @@ require_once ROOT_DIR . '/CatalogFactory.php';
 global $library;
 $accountProfile = $library->getAccountProfile();
 
+// Temporary disabling to re-evaluate how to handle large server queries
 /*if ($accountProfile) {
 	$catalogDriver = trim($accountProfile->driver);
 	if (!empty($catalogDriver)) {

@@ -6,7 +6,7 @@ class SelfRegistrationFormValues extends DataObject {
 	public $id;
 	public $selfRegistrationFormId;
 	public $weight;
-	public $symphonyName;
+	public $ilsName;
 	public $displayName;
 	public $fieldType;
 	public $section;
@@ -23,42 +23,53 @@ class SelfRegistrationFormValues extends DataObject {
 	}
 
 	public static function getFieldValues() {
-		$fieldValues = [
-			"firstName" => "firstName",
-			"middleName" => "middleName",
-			"lastName" => "lastName",
-			"preferredName" => 'preferredName',
-			"usePreferredName" => 'usePreferredName',
-			"library" => "Home Library",
-			"suffix" => "suffix",
-			"title" => "title",
-			"dob" => "birthDate",
-			"birthdate" => "BIRTHDATE",
-			"care_of" => "CARE/OF",
-			"careof" => "CARE_OF",
-			"guardian" => "GUARDIAN",
-			"po_box" => "PO_BOX",
-			"street" => "STREET",
-			"mailingaddr" => "MAILINGADDR",
-			"apt_suite" => "APT/SUITE",
-			"city" => "CITY",
-			"state" => "STATE",
+		//Determine ILS profile to return correct values
+		$ils = '';
+		$fieldValues = [];
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils != 'na') {
+				$ils = $accountProfiles->ils;
+			}
+		}
+		if ($ils == 'symphony') {
+			$fieldValues = [
+				"firstName" => "firstName",
+				"middleName" => "middleName",
+				"lastName" => "lastName",
+				"preferredName" => 'preferredName',
+				"usePreferredName" => 'usePreferredName',
+				"library" => "Home Library",
+				"suffix" => "suffix",
+				"title" => "title",
+				"dob" => "birthDate",
+				"birthdate" => "BIRTHDATE",
+				"care_of" => "CARE/OF",
+				"careof" => "CARE_OF",
+				"guardian" => "GUARDIAN",
+				"po_box" => "PO_BOX",
+				"street" => "STREET",
+				"mailingaddr" => "MAILINGADDR",
+				"apt_suite" => "APT/SUITE",
+				"city" => "CITY",
+				"state" => "STATE",
 //			"city_state" => "CITY/STATE",
-			"zip" => "ZIP",
-			"email" => "EMAIL",
-			"phone" => "PHONE",
-			"dayphone" => "DAYPHONE",
-			"cellPhone" => "CELLPHONE",
-			"workphone" => "WORKPHONE",
-			"homephone" => "HOMEPHONE",
-			"ext" => "EXT",
-			"fax" => "FAX",
-			"employer" => "EMPLOYER",
-			"parentname" => "PARENTNAME",
-			"location" => "LOCATION",
-			"type" => "TYPE",
-			"not_type" => "NOT TYPE",
-			"usefor" => "USEFOR",
+				"zip" => "ZIP",
+				"email" => "EMAIL",
+				"phone" => "PHONE",
+				"dayphone" => "DAYPHONE",
+				"cellPhone" => "CELLPHONE",
+				"workphone" => "WORKPHONE",
+				"homephone" => "HOMEPHONE",
+				"ext" => "EXT",
+				"fax" => "FAX",
+				"employer" => "EMPLOYER",
+				"parentname" => "PARENTNAME",
+				"location" => "LOCATION",
+				"type" => "TYPE",
+				"not_type" => "NOT TYPE",
+				"usefor" => "USEFOR",
 //			"category01" => "category01",
 //			"category02" => "category02",
 //			"category03" => "category03",
@@ -71,10 +82,27 @@ class SelfRegistrationFormValues extends DataObject {
 //			"category10" => "category10",
 //			"category11" => "category11",
 //			"category12" => "category12",
-			"customInformation" => "customInformation",
-			"primaryAddress" => "primaryAddress",
-			"primaryPhone" => "primaryPhone",
-		];
+				"customInformation" => "customInformation",
+				"primaryAddress" => "primaryAddress",
+				"primaryPhone" => "primaryPhone",
+			];
+		} else if ($ils == 'sierra') {
+			$fieldValues = [
+				"firstName" => "names (First)",
+				"middleName" => "names (Middle)",
+				"lastName" => "names (Last)",
+				"library" => "homeLibraryCode",
+				"birthDate" => "birthDate",
+				"street" => "addresses (Street)",
+				"city" => "addresses (City)",
+				"state" => "addresses (State)",
+				"zip" => "addresses (ZIP)",
+				"email" => "emails",
+				"phone" => "phones",
+				"pin" => "pin",
+				"barcode" => "barcodes",
+			];
+		}
 
 		return $fieldValues;
 	}
@@ -94,12 +122,12 @@ class SelfRegistrationFormValues extends DataObject {
 				'description' => 'The sort order',
 				'default' => 0,
 			],
-			'symphonyName' => [
-				'property' => 'symphonyName',
+			'ilsName' => [
+				'property' => 'ilsName',
 				'type' => 'enum',
-				'label' => 'Symphony Name',
+				'label' => 'ILS Name',
 				'values' => self::getFieldValues(),
-				'description' => 'The name of the field in Symphony',
+				'description' => 'The name of the field in the ILS',
 			],
 			'displayName' => [
 				'property' => 'displayName',
@@ -130,7 +158,7 @@ class SelfRegistrationFormValues extends DataObject {
 					'contactInformationSection' => 'Contact Information',
 				],
 				'description' => 'The field type for the field',
-				'default' => '0',
+				'default' => 'identitySection',
 			],
 			'required' => [
 				'property' => 'required',
@@ -168,7 +196,7 @@ class SelfRegistrationFormValues extends DataObject {
 		$fields->find();
 		$fieldNames = [];
 		while ($fields->fetch()) {
-			$fieldNames[] = $fields->symphonyName;
+			$fieldNames[] = $fields->ilsName;
 		}
 
 		return $fieldNames;
