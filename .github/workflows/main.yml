@@ -47,7 +47,8 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          tags: '${{ github.event.repository.name }}/aspen:${{ env.GIT_TAG }}'
+          tags: |
+            aspendiscovery/aspen:${{ env.GIT_TAG }}
 
       - name: Tag image for GHCR
         run: |
@@ -57,7 +58,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          tags: 'ghcr.io/${{ github.event.repository.name }}/aspen:${{ env.GIT_TAG }}'
+          tags: |
+            ghcr.io/aspen-discovery/aspen:${{ env.GIT_TAG }}
 
       - name: Tag image for GHCR
         run: |
@@ -67,7 +69,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          tags: 'quay.io/${{ github.event.repository.name }}/aspen:${{ env.GIT_TAG }}'
+          tags: |
+            quay.io/aspen-discovery/aspen:${{ env.GIT_TAG }}
 
   push_solr_to_ghcr:
     name: Push Solr image to GitHub Container Registry
