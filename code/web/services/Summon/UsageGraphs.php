@@ -6,10 +6,8 @@ require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
 require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
 
 class Summon_UsageGraphs extends Admin_Admin {
-
 	function launch() {
 		global $interface;
-
 		$title = 'Summon Usage Graph';
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
@@ -17,24 +15,79 @@ class Summon_UsageGraphs extends Admin_Admin {
 		} else {
 			$instanceName = '';
 		}
+
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
+		$this->display('usage-graph.tpl', $title);
+	}
+
+	function getActiveAdminSection(): string {
+		return 'summon';
+	}
+
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
+
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#summon', 'Summon');
+		$breadcrumbs[] = new Breadcrumb('/Summon/SummonDashboard', 'Summon Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
+
+	// note that this will only handle tables with one stat (as is needed for Summon usage data)
+	// to see a version that handle multpile stats, see the Admin/UsageGraphs.php implementation
+	public function buildCSV() {
+		global $interface;
+		$stat = $_REQUEST['stat'];
+		if (!empty($_REQUEST['instance'])) {
+			$instanceName = $_REQUEST['instance'];
+		} else {
+			$instanceName = '';
+		}
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$dataSeries = $interface->getVariable('dataSeries');
+
+		$filename = "SummonUsageData_{$stat}.csv";
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+		header('Content-Type: text/csv; charset=utf-8');
+		header("Content-Disposition: attachment;filename={$filename}");
+		$fp = fopen('php://output', 'w');
 		
+		// builds the first row of the table in the CSV - column headers: Dates, and the title of the graph
+		fputcsv($fp, ['Dates', $stat]);
+
+		// builds each subsequent data row - aka the column value
+		foreach ($dataSeries as $dataSerie) {
+			$data = $dataSerie['data'];
+			$numRows = count($data);
+			$dates = array_keys($data);
+
+			for($i = 0; $i < $numRows; $i++) {
+				$date = $dates[$i];
+				$value = $data[$date];
+				$row = [$date, $value];
+				fputcsv($fp, $row);
+			}
+		}
+		exit();
+	}
+
+	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
-
-		switch ($stat) {
-			case 'activeUsers':
-				$title .= ' - Active Users';
-			break;
-			case 'numRecordsViewed':
-				$title .= ' - Number of Records Viewed';
-			break;
-			case 'numRecordsClicked':
-				$title .= ' - Number of Records Clicked';
-			break;
-			case 'totalClicks':
-				$title .= ' - Total Clicks';
-			break;
-		}
 
 		// gets data from from user_summon_usage
 		if ($stat == 'activeUsers') {
@@ -129,28 +182,25 @@ class Summon_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);	
 		$interface->assign('translateColumnLabels', false);
+	}
 
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle'); 
+		switch ($stat) {
+			case 'activeUsers':
+				$title .= ' - Active Users';
+			break;
+			case 'numRecordsViewed':
+				$title .= ' - Number of Records Viewed';
+			break;
+			case 'numRecordsClicked':
+				$title .= ' - Number of Records Clicked';
+			break;
+			case 'totalClicks':
+				$title .= ' - Total Clicks';
+			break;
+		}
 		$interface->assign('graphTitle', $title);
-		$this->display('usage-graph.tpl', $title);
-	}
-
-	function getActiveAdminSection(): string {
-		return 'summon';
-	}
-
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
-
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#summon', 'Summon');
-		$breadcrumbs[] = new Breadcrumb('/Summon/SummonDashboard', 'Summon Usage Dashboard');
-		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
-		return $breadcrumbs;
 	}
 }
