@@ -30,14 +30,14 @@ class SelfRegistrationTerms extends DataObject {
 				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 				'hideInLists' => true,
 			],
-			'redirect' => [
+/*			'redirect' => [
 				'property' => 'redirect',
 				'type' => 'html',
 				'label' => 'TOS Redirect',
 				'description' => 'The body of the page a patron is redirected to if they do not agree to the Terms of Service.',
 				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 				'hideInLists' => true,
-			],
+			],*/
 		];
 	}
 

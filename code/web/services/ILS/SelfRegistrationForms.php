@@ -3,6 +3,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/CarlXSelfRegistrationForm.php';
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php';
 
 class ILS_SelfRegistrationForms extends ObjectEditor {
 	function getObjectType(): string {
@@ -17,6 +18,8 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 
 		if ($ils == 'carlx') {
 			return 'CarlXSelfRegistrationForm';
+		} else if ($ils == 'sierra') {
+			return 'SierraSelfRegistrationForm';
 		} else {
 			return 'SelfRegistrationForm';
 		}
@@ -49,6 +52,8 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 			$object = new CarlXSelfRegistrationForm();
 		} elseif ($ils == 'symphony') {
 			$object = new SelfRegistrationForm();
+		} else if ($ils == 'sierra') {
+			$object = new SierraSelfRegistrationForm();
 		}
 
 		$list = [];
@@ -80,6 +85,8 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 
 		if ($ils == 'carlx') {
 			return CarlXSelfRegistrationForm::getObjectStructure($context);
+		} else if ($ils == 'sierra') {
+			return SierraSelfRegistrationForm::getObjectStructure($context);
 		} else {
 			return SelfRegistrationForm::getObjectStructure($context);
 		}
