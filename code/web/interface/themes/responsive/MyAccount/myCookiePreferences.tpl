@@ -102,7 +102,7 @@
 									<li>{translate text="Web Indexer" isPublicFacing=true}</li>
 								{/if}
                     		</ul>
-                    		{translate text="For more information, please see our "}<a onclick="AspenDiscovery.CookieConsent.ViewCookieConsentPolicy()">{translate text=" Cookie Consent Privacy Policy"}</a>
+                    		{translate text="For more information, please see our "}<a onclick="AspenDiscovery.CookieConsent.viewCookieConsentPolicy()">{translate text=" Cookie Consent Privacy Policy"}</a>
 					</div>
 				</div>
 				{/if}
