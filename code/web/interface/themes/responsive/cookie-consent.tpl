@@ -1,4 +1,4 @@
-{if $loggedIn && $profile->userCookiePreferenceEssential == 1}
+{* {if $loggedIn && $profile->userCookiePreferenceEssential == 1}
     <script>
         cookieValues = {
             Essential: {$profile->userCookiePreferenceEssential},
@@ -11,7 +11,7 @@
         };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
-{elseif $loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))} 
+{elseif $loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConsent,'Essential'))}  *}
     <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
@@ -25,7 +25,7 @@
             </div>
         </div>
     </div>
-{elseif !$loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConset, 'Essential'))}
+{* {elseif !$loggedIn && (empty($smarty.cookies.cookieConsent) || !strstr($smarty.cookies.cookieConset, 'Essential'))}
     <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
@@ -38,4 +38,4 @@
             </div>
         </div>
     </div>
-{/if}
+{/if} *}

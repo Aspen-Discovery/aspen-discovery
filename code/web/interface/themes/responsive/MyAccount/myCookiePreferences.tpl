@@ -102,7 +102,8 @@
 									<li>{translate text="Web Indexer" isPublicFacing=true}</li>
 								{/if}
                     		</ul>
-                    		{translate text="For more information, please see our "}<a onclick="AspenDiscovery.CookieConsent.ViewCookieConsentPolicy()">{translate text=" Cookie Consent Privacy Policy"}</a>
+							{translate text="For more information, please see our "}<a  style="cursor:pointer;" onclick="return viewCookieConsentPolicy()">{translate text=" Cookie Consent Privacy Policy"}</a>
+                    		{* {translate text="For more information, please see our "}<a  style="cursor:pointer;" onclick="AspenDiscovery.CookieConsent.viewCookieConsentPolicy()">{translate text=" Cookie Consent Privacy Policy"}</a> *}
 					</div>
 				</div>
 				{/if}
@@ -122,6 +123,9 @@
 				} else {
 					explanationDiv.style.display = "none";
 				}
+			}
+			function viewCookieConsentPolicy() {
+				console.log('View consent');
 			}
 			$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
 			$("#usernameHelpButton").click(function() {
