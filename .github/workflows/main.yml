@@ -62,6 +62,36 @@ jobs:
             quay.io/aspen-discovery/aspen:latest
             quay.io/aspen-discovery/aspen:${{ steps.extract_branch.outputs.branch }}
 
+  push_aspen_to_ghcr:
+    name: Push Aspen image to GitHub Container Registry
+    if: github.repository == 'Aspen-Discovery/aspen-discovery'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
+            quay.io/aspen-discovery/aspen:latest
+            quay.io/aspen-discovery/aspen:${{ steps.extract_branch.outputs.branch }}
+
   push_solr_to_dockerhub:
     name: Push Solr image to Docker Hub
     if: github.repository == 'Aspen-Discovery/aspen-discovery'
@@ -105,6 +135,36 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: docker/files/solr/Dockerfile
+          push: true
+          tags: |
+            quay.io/aspen-discovery/solr:latest
+            quay.io/aspen-discovery/solr:${{ steps.extract_branch.outputs.branch }}
+
+  push_solr_to_ghcr:
+    name: Push Solr image to GitHub Container Registry
+    if: github.repository == 'Aspen-Discovery/aspen-discovery'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract branch name
         shell: bash
@@ -179,3 +239,33 @@ jobs:
           tags: |
             quay.io/aspen-discovery/tunnel:latest
             quay.io/aspen-discovery/tunnel:${{ steps.extract_branch.outputs.branch }}
+
+  push_tunnel_to_ghcr:
+    name: Push Tunnel image to GitHub Container Registry
+    if: github.repository == 'Aspen-Discovery/aspen-discovery'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: docker/files/tunnel/Dockerfile
+          push: true
+          tags: |
+            aspendiscovery/tunnel:latest
+            aspendiscovery/tunnel:${{ steps.extract_branch.outputs.branch }}
