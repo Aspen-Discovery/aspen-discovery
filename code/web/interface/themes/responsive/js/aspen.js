@@ -15991,6 +15991,7 @@ AspenDiscovery.CookieConsent = (function() {
                     UserOpenArchives:1,
                     UserWebsite:1,
                     UserExternalSearchServices:1,
+                    UserLocalAnalytics:1,
                 };
             } else if (props == 'essential') {
                 var cookieString = {
@@ -16000,6 +16001,7 @@ AspenDiscovery.CookieConsent = (function() {
                     UserOpenArchives:0,
                     UserWebsite:0,
                     UserExternalSearchServices:0,
+                    UserLocalAnalytics:0,
                 };
             }
             $('.stripPopup').hide();
@@ -16042,6 +16044,7 @@ AspenDiscovery.CookieConsent = (function() {
                 UserOpenArchives:0,
                 UserWebsite:0,
                 UserExternalSearchServices:0,
+                UserLocalAnalytics:0,
             };
             var params =  {
                 cookieEssential: cookieString['Essential'],
@@ -16050,6 +16053,7 @@ AspenDiscovery.CookieConsent = (function() {
                 cookieUserOpenArchives: cookieString['UserOpenArchives'],
                 cookieUserWebsite: cookieString['UserWebsite'],
                 cookieUserExternalSearchServices: cookieString['UserExternalSearchServices'],
+                cookieUserLocalAnalytics: cookieString['UserLocalAnalytics'],
 			};
             $.getJSON(url, params,
                 function(data) {
@@ -16071,6 +16075,7 @@ AspenDiscovery.CookieConsent = (function() {
             var cookieUserOpenArchives = $('#cookieUserOpenArchives').is(':checked') ? 1 : 0;
             var cookieUserWebsite = $('#cookieUserWebsite').is(':checked') ? 1 : 0;
             var cookieUserExternalSearchServices = $('#cookieUserExternalSearchServices').is(':checked') ? 1 : 0;
+            var cookieUserLocalAnalytics = $('#cookieUserLocalAnalytics').is(':checked') ? 1 : 0;
 
             formData.push({name: 'cookieEssential', value: cookieEssential});
             formData.push({name: 'cookieAnalytics', value: cookieAnalytics});
@@ -16078,6 +16083,7 @@ AspenDiscovery.CookieConsent = (function() {
             formData.push({name: 'cookieUserOpenArchives', value: cookieUserOpenArchives});
             formData.push({name: 'cookieUserWebsite', value: cookieUserWebsite});
             formData.push({name: 'cookieUserExternalSearchServices', value: cookieUserExternalSearchServices});
+            formData.push({name: 'cookieUserLocalAnalytics', value: cookieUserLocalAnalytics});
              var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 
        $.getJSON(url, formData,
