@@ -56,10 +56,10 @@
 					<strong class="control-label" style="margin-bottom:10px;">{translate text="Local Analytics" isPublicFacing=true}:</strong>&nbsp;
 					<div class="padding:0.5em 1em;">
 						<div class="col-xs-6 col-sm-4">
-							<label for="userCookieAnalytics" class="control-label">{translate text="Local Analytics" isPublicFacing=true}</label>&nbsp;
+							<label for="userCookieUserLocalAnalytics" class="control-label">{translate text="Local Analytics" isPublicFacing=true}</label>&nbsp;
 						</div>
 						<div class="col-xs-6 col-sm-8">
-							<input type="checkbox" class="form-control" name="userCookieLocalAnalytics" id="userCookieLocalAnalytics" {if $profile->userCookiePreferenceLocalAnalytics==1}checked="checked"{/if} data-switch="">
+							<input type="checkbox" class="form-control" name="userCookieUserLocalAnalytics" id="userCookieLocalAnalytics" {if $profile->userCookiePreferenceLocalAnalytics==1}checked="checked"{/if} data-switch="">
 						</div>
 					</div>
 				</div>
