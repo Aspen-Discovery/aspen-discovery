@@ -7,6 +7,7 @@
         UserOpenArchives: {$profile->userCookiePreferenceOpenArchives},
         UserWebsite: {$profile->userCookiePreferenceWebsite},
         UserExternalSearchServices: {$profile->userCookiePreferenceExternalSearchServices},
+        UserLocalAnalytics: {$profile->userCookiePreferenceLocalAnalytics},
     };
     AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script> 

@@ -285,6 +285,7 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$userOpenArchivesPref = $cookie['UserOpenArchives'];
 				$userWebsitePref = $cookie['UserWebsite'];
 				$userExternalSearchServicesPref = $cookie['UserExternalSearchServices'];
+				$userLocalAnalyticsPref = $cookie['UserLocalAnalytics'];
 				$userObj->update();
 			}
 		}

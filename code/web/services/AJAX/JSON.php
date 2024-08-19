@@ -656,6 +656,7 @@ class AJAX_JSON extends Action {
 			$userObj->userCookiePreferenceOpenArchives = $_REQUEST['cookieUserOpenArchives'] == "1" || $_REQUEST['cookieUserOpenArchives'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceWebsite = $_REQUEST['cookieUserWebsite'] == "1" || $_REQUEST['cookieUserWebsite'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceExternalSearchServices = $_REQUEST['cookieUserExternalSearchServices'] == "1" || $_REQUEST['cookieUserExternalSearchServices'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'] == "1" || $_REQUEST['cookieUserLocalAnalytics'] == 1 ? 1 : 0;
 			$userObj->update();
 			return[
 				'success' => true,
@@ -669,6 +670,7 @@ class AJAX_JSON extends Action {
 				'UserOpenArchives' => isset($_POST['cookieUserOpenArchives']) ? 1 : 0,
 				'UserWebsite' => isset($_POST['cookieUserWebsite']) ? 1 : 0,
 				'UserExternalSearchServices' => isset($_POST['cookieUserExternalSearchServices']) ? 1 : 0,
+				'UserLocalAnalytics' =>  isset($_POST['cookieUserLocalAnalytics']) ? 1 : 0,
 			];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
 			return [
