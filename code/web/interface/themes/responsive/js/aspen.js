@@ -15695,10 +15695,7 @@ AspenDiscovery.WebBuilder = function () {
 
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
-					if(Globals.loggedIn || data.inLibrary) {
-						if(data.canView === false) {
-							return AspenDiscovery.showMessage(data.userNoAccessTitle, data.userNoAccessMessage);
-						}
+					if(Globals.loggedIn || data.canView) {
 						var params = {
 							method: "trackWebResourceUsage",
 							id: id,
@@ -15718,6 +15715,8 @@ AspenDiscovery.WebBuilder = function () {
 								location.assign(data.url);
 							}
 						});
+					} else if (Globals.loggedIn && !data.canView) {
+						return AspenDiscovery.showMessage(data.userNoAccessTitle, data.userNoAccessMessage);
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
 							return AspenDiscovery.WebBuilder.getWebResource(id);
