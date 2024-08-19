@@ -1,3 +1,11 @@
+{if $loggedIn}
+<script>
+    cookieValues = {
+        Essential: {$profile->userCookiePreferenceEssential},
+        Analytics: {$profile->userCookiePreferenceAnalytics},
+        UserLocalAnalytics: {$profile->userCookiePreferenceLocalAnalytics},
+    }
+</script>
 <div>
     <form method="post" name="cookieManagementPreferencesForm" id="cookieManagementPreferencesForm" class="form">
         <div>
@@ -21,3 +29,14 @@
         {/if}
     </form>
 </div>
+{/if}
+
+<script type="text/javascript">
+{literal}
+    $("#cookieManagementPreferencesForm").validate({
+        submitHandler: function(){
+            AspenDiscovery.CookieConsent.cookieManagementPreferences();
+        }
+    });
+{/literal}
+</script>
