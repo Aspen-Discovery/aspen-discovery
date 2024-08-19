@@ -17,7 +17,12 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		
+		$profileName= $_REQUEST['profileName'];
+		$sideloadId = $this->getSideloadIdBySideLoadName($profileName);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $sideloadId);
+		$interface->assign('profileName', $profileName);
+
 		$interface->assign('stat', $stat);
 		$interface->assign('propName', 'exportToCSV');
 		$interface->assign('showCSVExportButton', true);
@@ -57,7 +62,10 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 		} else {
 			$instanceName = '';
 		}
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		
+		$profileName= $_REQUEST['profileName'];
+		$sideloadId = $this->getSideloadIdBySideLoadName($profileName);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $sideloadId);
 		$dataSeries = $interface->getVariable('dataSeries');
 
 		$filename = "SideLoadsUsageData_{$stat}.csv";
@@ -87,7 +95,21 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 		exit();
 	}
 
-	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+	/*
+		The only unique identifier available to determine for which
+		sideload to fetch data is the sideload's name as $profileName. It is used
+		here to find the sideloads' id as only this exists on the sideload
+		usage tables
+	*/
+	private function getSideloadIdBySideLoadName($name) {
+		$sideload = new SideLoad();
+		$sideload->whereAdd('name = "' . $name .'"');
+		$sideload->selectAdd();
+		$sideload->find();
+		return $sideload->fetch()->id;
+	}
+
+	private function getAndSetInterfaceDataSeries($stat, $instanceName, $sideloadId) {
 		global $interface;
 
 		$dataSeries = [];
@@ -101,6 +123,7 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 			if (!empty($instanceName)) {
 				$usage->instance = $instanceName;
 			}
+			$usage->whereAdd("sideloadId = $sideloadId");
 			$usage->selectAdd();
 			$usage->selectAdd('year');
 			$usage->selectAdd('month');

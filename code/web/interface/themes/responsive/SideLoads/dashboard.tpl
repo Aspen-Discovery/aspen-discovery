@@ -11,7 +11,7 @@
 						<div class="col-sm-10 col-sm-offset-1">
 							<h3 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}
 								{' '}
-								<a href="/SideLoads/UsageGraphs?stat=activeUsers&instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
+								<a href="/SideLoads/UsageGraphs?stat=activeUsers{if !empty($profileName)}&profileName={$profileName}{/if}&instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
 							</h3>
 						</div>
 					</div>
@@ -40,7 +40,7 @@
 						<div class="col-sm-10 col-sm-offset-1">
 							<h3 class="dashboardCategoryLabel">{translate text="Records Accessed Online" isAdminFacing=true}
 								{' '}
-								<a href="/SideLoads/UsageGraphs?stat=recordsAccessedOnline&instance={$selectedInstance}" title="{translate text="Show Records Accessed Online Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
+								<a href="/SideLoads/UsageGraphs?stat=recordsAccessedOnline{if !empty($profileName)}&profileName={$profileName}{/if}&instance={$selectedInstance}" title="{translate text="Show Records Accessed Online Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
 							</h3>
 						</div>
 					</div>
