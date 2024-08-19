@@ -281,18 +281,12 @@ class UserPayment extends DataObject {
 										]);
 									}
 								} else {
-									$userPayment->completed = true;
-									if ($jsonResponse == null) {
+									if ($jsonResponse == null || !$jsonResponse->approvalStatus) {
 										$userPayment->error = true;
 										$userPayment->message = 'Could not receive transaction response from NCR.  Please visit the library with your receipt to have the fine removed from your account.';
 									} else {
 										if ($jsonResponse->approvalStatus == 2) {
 											$success = true;
-											$amountPaid = $jsonResponse->amount;
-											if ($amountPaid != (int)round($userPayment->totalPaid * 100)) {
-												$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
-												$userPayment->totalPaid = $amountPaid;
-											}
 											$user = new User();
 											$user->id = $userPayment->userId;
 											if ($user->find(true)) {
@@ -306,6 +300,7 @@ class UserPayment extends DataObject {
 													$netAmt = $jsonResponse->totalRemitted;
 													$transactionId = $jsonResponse->transactionidentifier;
 
+													$userPayment->completed = true;
 													$userPayment->message .= "Payment completed, TransactionId = $transactionId, Net Amount = $netAmt. ";
 												} else {
 													$success = false;
@@ -320,7 +315,6 @@ class UserPayment extends DataObject {
 											$userPayment->error = true;
 											$userPayment->message .= 'Payment processing failed. ' . $jsonResponse->errors;
 										}
-										$userPayment->completed = true;
 									}
 								}
 							} else {
