@@ -3,6 +3,39 @@ on:
   push
 
 jobs:
+  push_aspen_to_ghcr:
+    name: Push Aspen image to GitHub Container Registry
+    if: github.repository == 'Aspen-Discovery/aspen-discovery'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Extract GitHub Tag
+        id: extract_tag
+        run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
+            quay.io/aspen-discovery/aspen:${{ env.GIT_TAG }}
+
   push_aspen_to_dockerhub:
     name: Push Aspen image to Docker Hub
     if: github.repository == 'Aspen-Discovery/aspen-discovery'
@@ -68,17 +101,18 @@ jobs:
           tags: |
             quay.io/aspen-discovery/aspen:${{ env.GIT_TAG }}
 
-  push_aspen_to_ghcr:
-    name: Push Aspen image to GitHub Container Registry
+
+  push_solr_to_ghcr:
+    name: Push Solr image to GitHub Container Registry
     if: github.repository == 'Aspen-Discovery/aspen-discovery'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
       - name: Extract GitHub Tag
         id: extract_tag
         run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Check out the repo
+        uses: actions/checkout@v4
 
       - name: Log in to GHCR
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
@@ -96,10 +130,11 @@ jobs:
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/files/solr/Dockerfile
           push: true
           tags: |
-            quay.io/aspen-discovery/aspen:${{ env.GIT_TAG }}
+            quay.io/aspen-discovery/solr:${{ env.GIT_TAG }}
+
 
   push_solr_to_dockerhub:
     name: Push Solr image to Docker Hub
@@ -166,8 +201,9 @@ jobs:
           tags: |
             quay.io/aspen-discovery/solr:${{ env.GIT_TAG }}
 
-  push_solr_to_ghcr:
-    name: Push Solr image to GitHub Container Registry
+
+  push_tunnel_to_ghcr:
+    name: Push Tunnel image to GitHub Container Registry
     if: github.repository == 'Aspen-Discovery/aspen-discovery'
     runs-on: ubuntu-latest
     steps:
@@ -194,10 +230,10 @@ jobs:
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
-          file: docker/files/solr/Dockerfile
+          file: docker/files/tunnel/Dockerfile
           push: true
           tags: |
-            quay.io/aspen-discovery/solr:${{ env.GIT_TAG }}
+            aspendiscovery/tunnel:${{ env.GIT_TAG }}
 
   push_tunnel_to_dockerhub:
     name: Push Tunnel image to Docker Hub
@@ -263,36 +299,3 @@ jobs:
           push: true
           tags: |
             quay.io/aspen-discovery/tunnel:${{ env.GIT_TAG }}
-
-  push_tunnel_to_ghcr:
-    name: Push Tunnel image to GitHub Container Registry
-    if: github.repository == 'Aspen-Discovery/aspen-discovery'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract GitHub Tag
-        id: extract_tag
-        run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          context: .
-          file: docker/files/tunnel/Dockerfile
-          push: true
-          tags: |
-            aspendiscovery/tunnel:${{ env.GIT_TAG }}
