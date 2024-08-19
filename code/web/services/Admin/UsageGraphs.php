@@ -15,6 +15,8 @@ class Admin_UsageGraphs extends Admin_Admin {
 		}
 
 		$title = 'Aspen Usage Graph';
+		$interface->assign('section', 'Admin');
+		$interface->assign('showCSVExportButton', true);
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);

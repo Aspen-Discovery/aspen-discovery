@@ -20,8 +20,11 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
 		$interface->assign('stat', $stat);
 		$interface->assign('propName', 'exportToCSV');
+		$interface->assign('showCSVExportButton', true);
+		$interface->assign('section', 'SideLoads');
+
 		$title = $interface->getVariable('graphTitle');
-		$this->display('usage-graph.tpl', $title);
+		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
 	function getBreadcrumbs(): array {
