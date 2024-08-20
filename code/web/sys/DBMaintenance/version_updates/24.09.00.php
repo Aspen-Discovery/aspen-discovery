@@ -195,6 +195,17 @@ function getUpdates24_09_00(): array {
 					END"
 			],
 		],
+		'drop_columns_from_user_table' => [
+			'title' => 'Drop Columns From User Table',
+			'description' => 'Remove unneeded columns from user table',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceEvents",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceOpenArchives",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceWebsite",
+				"ALTER TABLE user DROP COLUMN userCookiePreferenceExternalSearchServices",
+			],
+		],
 
 		//chloe - PTFS-Europe
 		'sourceId_allow_255_char' => [
