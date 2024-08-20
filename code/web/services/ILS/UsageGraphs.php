@@ -17,10 +17,12 @@ class ILS_UsageGraphs extends Admin_Admin {
 		}
 
 		$interface->assign('graphTitle', $title);
+		$interface->assign('section', 'ILS');
+		$interface->assign('showCSVExportButton', true);
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
 		$interface->assign('stat', $stat);
-		$this->display('usage-graph.tpl', $title);
+		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
 	function getBreadcrumbs(): array {
