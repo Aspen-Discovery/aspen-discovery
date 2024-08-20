@@ -38,11 +38,14 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 			}
 
+			$isAssociatedWithILS = !empty($user->ils_username) && !empty($user->ils_barcode);
+
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowPickupLocationUpdates', $allowPickupLocationUpdates);
 			$interface->assign('allowRememberPickupLocation', $allowRememberPickupLocation);
 			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
+			$interface->assign('isAssociatedWithILS', $isAssociatedWithILS);
 
 			// Determine Pickup Locations
 			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);
