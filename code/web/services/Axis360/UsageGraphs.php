@@ -278,31 +278,31 @@ class Axis360_UsageGraphs extends Admin_Admin {
 				$title .= ' - Records With Usage';
 				break;
 			case 'loans':
-				$title .= ' - Total Checkouts';
+				$title .= ' - Loans';
 				break;
 			case 'holds':
-				$title .= ' - Total Holds';
+				$title .= ' - Holds';
 				break;
 			case 'renewals':
-				$title .= ' - Total Renewals';
+				$title .= ' - Renewals';
 				break;
 			case 'earlyReturns':
-				$title .= ' - Total Early Returns';
+				$title .= ' - Early Returns';
 				break;
 			case 'holdsCancelled':
-				$title .= ' - Total Holds Cancelled';
+				$title .= ' - Holds Cancelled';
 				break;
 			case 'holdsFrozen':
-				$title .= ' - Total Holds Frozen';
+				$title .= ' - Holds Frozen';
 				break;
 			case 'holdsThawed':
-				$title .= ' - Total Holds Thawed';
+				$title .= ' - Holds Thawed';
 				break;
 			case 'apiErrors':
-				$title .= ' - Total API Errors';
+				$title .= ' - API Errors';
 				break;
 			case 'connectionFailures':
-				$title .= ' - Total Connection Failures';
+				$title .= ' - Connection Failures';
 				break;
 			case 'general':
 				$title .= ' - General';
