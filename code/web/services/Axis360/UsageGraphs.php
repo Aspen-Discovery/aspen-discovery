@@ -110,6 +110,10 @@ class Axis360_UsageGraphs extends Admin_Admin {
 				$dataSeries['Unique Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 				$userUsage->selectAdd('COUNT(*) as numUsers');
 			}
+			if ($stat == 'general') { 
+				$dataSeries['Total Usage'] = GraphingUtils::getDataSeriesArray(count($dataSeries)); // does not appear on the dashboard, but was present on the earlier iteration fo the general graph
+				$userUsage->selectAdd('SUM(usageCount) as sumUsage');
+			}
 			$userUsage->orderBy('year, month');
 			$userUsage->find();
 			while ($userUsage->fetch()) {
