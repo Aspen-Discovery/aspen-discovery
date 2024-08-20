@@ -85,6 +85,10 @@ class SideLoads_UsageGraphs extends Admin_Admin {
 			$data = $dataSerie['data'];
 			$numRows = count($data);
 			$dates = array_keys($data);
+
+			if( empty($numRows)) {
+				fputcsv($fp, ['no data found!']);
+			}
 			for($i = 0; $i < $numRows; $i++) {
 				$date = $dates[$i];
 				$value = $data[$date];

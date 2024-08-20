@@ -79,6 +79,9 @@ class Axis360_UsageGraphs extends Admin_Admin {
 			$header = ['Dates', $graphTitles[$i]];
 			fputcsv($fp, $header);
 
+				if( empty($numRows)) {
+					fputcsv($fp, ['no data found!']);
+				}
 				// builds each subsequent data row - aka the column value
 				for($j = 0; $j < $numRows; $j++) {
 					$date = $dates[$j];

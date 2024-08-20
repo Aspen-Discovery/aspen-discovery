@@ -81,6 +81,9 @@ class Admin_APIUsageGraphs extends Admin_Admin
 			$numRows = count($data);
 			$dates = array_keys($data);
 
+			if( empty($numRows)) {
+				fputcsv($fp, ['no data found!']);
+			}
 			for($i = 0; $i < $numRows; $i++) {
 				$date = $dates[$i];
 				$value = $data[$date];
