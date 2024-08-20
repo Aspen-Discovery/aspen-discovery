@@ -28,7 +28,7 @@ class OpenArchives_JSON extends JSON_Action {
 		global $aspenUsage;
 		global $library;
 		$userObj = UserAccount::getActiveUserObj();
-		$userOpenArchivesTracking = $userObj->userCookiePreferenceOpenArchives;
+		$userOpenArchivesTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		$openArchivesUsage->instance = $aspenUsage->getInstance();
 		$openArchivesUsage->openArchivesRecordId = $id;
 		$openArchivesUsage->year = date('Y');
@@ -45,7 +45,7 @@ class OpenArchives_JSON extends JSON_Action {
 			$openArchivesUsage->insert();
 		}
 
-		if ($userOpenArchivesTracking && $library->cookieStorageConsent) {
+		if ($userOpenArchivesTracking) {
 			$userId = UserAccount::getActiveUserId();
 			if ($userId) {
 				//Track usage for the user

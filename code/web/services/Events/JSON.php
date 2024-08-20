@@ -34,8 +34,8 @@ class Events_JSON extends JSON_Action {
 //			$webPageUsage->insert();
 //		}
 //		$userObj = UserAccount::getActiveUserObj();
-// 		$userEventsTracking = $userObj->userCookiePreferenceEvents;
-//		if ($userEventsTracking && $library->cookieStorageConsent) {
+// 		$userEventsTracking = $userObj->userCookiePreferenceLocalAnalytics;
+//		if ($userEventsTracking) {
 		//		$userId = UserAccount::getActiveUserId();
 //		if ($userId) {
 //			//Track usage for the user

@@ -746,7 +746,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		$userUsage = new UserPalaceProjectUsage();
 		$userObj = UserAccount::getActiveUserObj();
 
-		$userPalaceProjectTracking = $userObj->userCookiePreferenceExternalSearchServices;
+		$userPalaceProjectTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -754,7 +754,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
 
-		if ($userPalaceProjectTracking && $library->cookieStorageConsent) {
+		if ($userPalaceProjectTracking) {
 			if ($userUsage->find(true)) {
 				$userUsage->usageCount++;
 				$userUsage->update();

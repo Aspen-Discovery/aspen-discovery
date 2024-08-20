@@ -93,7 +93,7 @@ class Record_AccessOnline extends Action {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
 		$userObj = UserAccount::getActiveUserObj();
-		$userSideLoadTracking = $userObj->userCookiePreferenceExternalSearchServices;
+		$userSideLoadTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		global $aspenUsage;
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
@@ -107,7 +107,7 @@ class Record_AccessOnline extends Action {
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 
-		if ($userSideLoadTracking && $library->cookieStorageConsent) {
+		if ($userSideLoadTracking) {
 			if ($userUsage->find(true)) {
 				$userUsage->usageCount++;
 				$userUsage->update();
