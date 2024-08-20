@@ -43,9 +43,9 @@ class Websites_JSON extends JSON_Action {
 		}
 
 		$userObj = UserAccount::getActiveUserObj();
-		$userWebsiteTracking = $userObj->userCookiePreferenceWebsite;
+		$userWebsiteTracking = $userObj->userCookiePreferenceLocalAnalytics;
 
-		if ($userWebsiteTracking && $library->cookieStorageConsent) {
+		if ($userWebsiteTracking) {
 			$userId = UserAccount::getActiveUserId();
 			if ($userId) {
 				//Track usage for the user

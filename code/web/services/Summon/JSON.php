@@ -35,9 +35,9 @@ class Summon_JSON extends JSON_Action {
         }
 
 		$userObj = UserAccount::getActiveUserObj();
-		$userSummonTracking = $userObj->userCookiePreferenceExternalSearchServices;
+		$userSummonTracking = $userObj->userCookiePreferenceLocalAnalytics;
        
-		if ($userSummonTracking && $library->cookieStorageConsent) {
+		if ($userSummonTracking) {
 			$userId = UserAccount::getActiveUserId();
 			if ($userId) {
 				//Track usage for the user

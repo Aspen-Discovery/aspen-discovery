@@ -652,10 +652,6 @@ class AJAX_JSON extends Action {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
-			$userObj->userCookiePreferenceEvents = $_REQUEST['cookieUserEvents'] == "1" || $_REQUEST['cookieUserEvents'] == 1 ? 1 : 0;
-			$userObj->userCookiePreferenceOpenArchives = $_REQUEST['cookieUserOpenArchives'] == "1" || $_REQUEST['cookieUserOpenArchives'] == 1 ? 1 : 0;
-			$userObj->userCookiePreferenceWebsite = $_REQUEST['cookieUserWebsite'] == "1" || $_REQUEST['cookieUserWebsite'] == 1 ? 1 : 0;
-			$userObj->userCookiePreferenceExternalSearchServices = $_REQUEST['cookieUserExternalSearchServices'] == "1" || $_REQUEST['cookieUserExternalSearchServices'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'] == "1" || $_REQUEST['cookieUserLocalAnalytics'] == 1 ? 1 : 0;
 			$userObj->update();
 			return[
@@ -666,10 +662,6 @@ class AJAX_JSON extends Action {
 			$userCookiePost = [
 				'Essential' => 1,
 				'Analytics' => $_REQUEST['cookieAnalytics'],
-				'UserEvents' => isset($_POST['cookieUserEvents']) ? 1 : 0,
-				'UserOpenArchives' => isset($_POST['cookieUserOpenArchives']) ? 1 : 0,
-				'UserWebsite' => isset($_POST['cookieUserWebsite']) ? 1 : 0,
-				'UserExternalSearchServices' => isset($_POST['cookieUserExternalSearchServices']) ? 1 : 0,
 				'UserLocalAnalytics' =>  isset($_POST['cookieUserLocalAnalytics']) ? 1 : 0,
 			];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');

@@ -73,9 +73,9 @@ class EBSCO_JSON extends JSON_Action {
 		}
 
 		$userObj = UserAccount::getActiveUserObj();
-		$userEbscoTracking = $userObj->userCookiePreferenceExternalSearchServices;
+		$userEbscoTracking = $userObj->userCookiePreferenceLocalAnalytics;
 
-		if ($userEbscoTracking && $library->cookieStorageConsent) {
+		if ($userEbscoTracking) {
 			$userId = UserAccount::getActiveUserId();
 			if ($userId) {
 				//Track usage for the user

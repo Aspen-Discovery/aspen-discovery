@@ -685,14 +685,14 @@ class HooplaDriver extends AbstractEContentDriver {
 		$userUsage = new UserHooplaUsage();
 		$userObj = UserAccount::getActiveUserObj();
 
-		$userHooplaTracking = $userObj->userCookiePreferenceExternalSearchServices;
+		$userHooplaTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		global $aspenUsage;
 		$userUsage->instance = $aspenUsage->getInstance();
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 
-		if ($userHooplaTracking && $library->cookieStorageConsent) {
+		if ($userHooplaTracking) {
 			if ($userUsage->find(true)) {
 				$userUsage->usageCount++;
 				$userUsage->update();

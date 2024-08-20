@@ -74,10 +74,6 @@ class MyAccount_MyCookiePreferences extends MyAccount {
 		$message = ' ';
 		$patron->userCookiePreferenceEssential = 1;
 		$patron->userCookiePreferenceAnalytics = isset($_POST['userCookieAnalytics']) ? 1 : 0;
-        $patron->userCookiePreferenceEvents = isset($_POST['userCookieUserEvents']) ? 1 : 0;
-        $patron->userCookiePreferenceOpenArchives = isset($_POST['userCookieUserOpenArchives']) ? 1 : 0;
-		$patron->userCookiePreferenceWebsite = isset($_POST['userCookieUserWebsite']) ? 1 : 0;
-		$patron->userCookiePreferenceExternalSearchServices = isset($_POST['userCookieUserExternalSearchServices']) ? 1 : 0;
 		$patron->userCookiePreferenceLocalAnalytics = isset($_POST['userCookieUserLocalAnalytics']) ? 1 : 0;
 
 		if (!$patron->update()) {
