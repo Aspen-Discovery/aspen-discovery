@@ -4709,7 +4709,6 @@ class Library extends DataObject {
 	}
 
 	public function updateLocalAnalyticsPreferences(){
-		error_log("CALLED UPDATE LOCAL ANALYTICS");
 		if (empty($this->libraryId)) {
 			error_log("Library ID is not set.");
 			return;
@@ -4723,7 +4722,6 @@ class Library extends DataObject {
 		while ($location->fetch()) {
 			$locations[] = clone $location;
 		}
-		error_log("Fetched Locations: " . print_r($locations, true));
 		
 		foreach ($locations as $location) {
 			$user = new User();
@@ -4731,11 +4729,9 @@ class Library extends DataObject {
 			$user->find();
 
 			while ($user->fetch()) {
-				error_log("User ID: " . $user->id . "current LA PREF: " . $user->userCookiePreferenceLocalAnalytics);
 				$user->userCookiePreferenceLocalAnalytics = $this->cookieStorageConsent ==1 ? 0 : 1;
 				$user->update();
 
-				error_log("UPDATED LOCAL ANALYTICS PREFS");
 			}
 		}
 	}
