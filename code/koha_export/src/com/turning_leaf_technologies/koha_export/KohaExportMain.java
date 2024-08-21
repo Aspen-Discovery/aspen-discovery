@@ -529,15 +529,9 @@ public class KohaExportMain {
 			float kohaVersion = getKohaVersion(kohaConn);
 			PreparedStatement getVolumeInfoStmt;
 			PreparedStatement getItemsForVolumeStmt;
-			if (kohaVersion < 22.11) {
-				//Arlington's code for volumes
-				getVolumeInfoStmt = kohaConn.prepareStatement("SELECT * from volumes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from volume_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			}else {
-				//community code for
-				getVolumeInfoStmt = kohaConn.prepareStatement("SELECT * from item_groups", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from item_group_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			}
+			// Filter out any item groups that do not currently contain items
+			getVolumeInfoStmt = kohaConn.prepareStatement("SELECT item_groups.* FROM item_groups LEFT JOIN item_group_items USING (item_group_id) GROUP BY item_group_id HAVING COUNT(item_id) > 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from item_group_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
 			PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
 
