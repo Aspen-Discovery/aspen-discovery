@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResourceCategory.php';
+require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAccessLibrary.php';
 
 class WebResource extends DB_LibraryLinkedObject {
 	public $__table = 'web_builder_resource';
@@ -23,6 +24,8 @@ class WebResource extends DB_LibraryLinkedObject {
 		$teaser;
 	public $description;
 	public $lastUpdate;
+
+	private $_allowAccessByLibrary;
 
 	protected $_audiences;
 	protected $_categories;
@@ -91,6 +94,21 @@ class WebResource extends DB_LibraryLinkedObject {
 				'description' => 'Whether or not the resource is a featured resource',
 				'default' => 0,
 			],
+			'teaser' => [
+				'property' => 'teaser',
+				'type' => 'markdown',
+				'label' => 'Teaser',
+				'description' => 'A short description of the resource to show in lists',
+				'hideInLists' => true,
+				'maxLength' => 512
+			],
+			'description' => [
+				'property' => 'description',
+				'type' => 'markdown',
+				'label' => 'Description',
+				'description' => 'A description of the resource',
+				'hideInLists' => true,
+			],
 			'inLibraryUseOnly' => [
 				'property' => 'inLibraryUseOnly',
 				'type' => 'checkbox',
@@ -114,21 +132,16 @@ class WebResource extends DB_LibraryLinkedObject {
 				'description' => 'Whether or not the resource requires patron to be logged in to use it unless they are in the library',
 				'default' => 0,
 				'hideInLists' => true,
+				'onchange' => 'return AspenDiscovery.WebBuilder.updateWebResourcesFields();',
 			],
-			'teaser' => [
-				'property' => 'teaser',
-				'type' => 'markdown',
-				'label' => 'Teaser',
-				'description' => 'A short description of the resource to show in lists',
-				'hideInLists' => true,
-				'maxLength' => 512
-			],
-			'description' => [
-				'property' => 'description',
-				'type' => 'markdown',
-				'label' => 'Description',
-				'description' => 'A description of the resource',
-				'hideInLists' => true,
+			'allowAccessByLibrary' => [
+				'property' => 'allowAccessByLibrary',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Allow Access to patrons of these home libraries',
+				'description' => 'Define what libraries should have access to the web resource',
+				'values' => $libraryList,
+				'hideInLists' => false,
 			],
 			'audiences' => [
 				'property' => 'audiences',
@@ -164,6 +177,14 @@ class WebResource extends DB_LibraryLinkedObject {
 				'values' => $libraryList,
 				'hideInLists' => true,
 			],
+			'limitAccessToLibraries' => [
+				'property' => 'limitAccessToLibraries',
+				'type' => 'checkbox',
+				'label' => 'Limit access to patrons libraries',
+				'description' => 'Require login to access page',
+				'onchange' => 'return AspenDiscovery.WebBuilder.updateWebResourceFields();',
+				'default' => 0,
+			]
 		];
 	}
 
@@ -183,6 +204,7 @@ class WebResource extends DB_LibraryLinkedObject {
 			$this->saveLibraries();
 			$this->saveAudiences();
 			$this->saveCategories();
+			$this->saveAllowableLibraries();
 		}
 		return $ret;
 	}
@@ -194,6 +216,7 @@ class WebResource extends DB_LibraryLinkedObject {
 			$this->saveLibraries();
 			$this->saveAudiences();
 			$this->saveCategories();
+			$this->saveAllowableLibraries();
 		}
 		return $ret;
 	}
@@ -205,6 +228,8 @@ class WebResource extends DB_LibraryLinkedObject {
 			return $this->getAudiences();
 		} elseif ($name == "categories") {
 			return $this->getCategories();
+		} elseif ($name == 'allowAccessByLibrary') {
+			return $this->getAllowableLibraries();
 		} else {
 			return parent::__get($name);
 		}
@@ -217,6 +242,8 @@ class WebResource extends DB_LibraryLinkedObject {
 			$this->_audiences = $value;
 		} elseif ($name == "categories") {
 			$this->_categories = $value;
+		} elseif ($name == 'allowAccessByLibrary') {
+			$this->_allowAccessByLibrary = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -228,6 +255,7 @@ class WebResource extends DB_LibraryLinkedObject {
 			$this->clearLibraries();
 			$this->clearAudiences();
 			$this->clearCategories();
+			$this->clearAllowableLibraries();
 		}
 		return $ret;
 	}
@@ -415,6 +443,71 @@ class WebResource extends DB_LibraryLinkedObject {
 		foreach ($this->_audiences as $subObject) {
 			$subObject->id = $index;
 			$index--;
+		}
+	}
+
+	public function canView(): bool {
+		global $locationSingleton;
+		$requireLoginUnlessInLibrary = $this->requireLoginUnlessInLibrary;
+		$librariesWithAccess = $this->getAllowableLibraries();
+		if($requireLoginUnlessInLibrary) {
+			$activeLibrary = $locationSingleton->getActiveLocation();
+			$user = UserAccount::getLoggedInUser();
+			if($user) {
+				if($activeLibrary != null) {
+					$activeLibraryId = $activeLibrary->libraryId;
+					if (in_array($activeLibraryId, $librariesWithAccess)) {
+						return true;
+					}
+				}
+				$userHomeLibrary = $user->getHomeLibrary();
+				if($userHomeLibrary) {
+					$userHomeLibraryId = $userHomeLibrary->libraryId;
+					if (in_array($userHomeLibraryId, $librariesWithAccess)) {
+						return true;
+					}
+				}
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+		return false;
+	}
+
+	public function getAllowableLibraries() {
+		if (!isset($this->_allowAccessByLibrary) && $this->id) {
+			$this->_allowAccessByLibrary = [];
+			$libraryAccess = new WebResourceAccessLibrary();
+			$libraryAccess->webResourceId = $this->id;
+			$libraryAccess->find();
+			while ($libraryAccess->fetch()) {
+				$this->_allowAccessByLibrary[$libraryAccess->libraryId] = $libraryAccess->libraryId;
+			}
+		}
+		return $this->_allowAccessByLibrary;
+	}
+
+	private function clearAllowableLibraries() {
+		$link = new WebResourceAccessLibrary();
+		$link->webResourceId = $this->id;
+		return $link->delete(true);
+	}
+
+
+	public function saveAllowableLibraries() {
+		if (isset($this->_allowAccessByLibrary) && is_array($this->_allowAccessByLibrary)) {
+			$this->clearAllowableLibraries();
+
+			foreach ($this->_allowAccessByLibrary as $libraryId) {
+				$link = new WebResourceAccessLibrary();
+
+				$link->webResourceId = $this->id;
+				$link->libraryId = $libraryId;
+				$link->insert();
+			}
+			unset($this->_allowAccessByLibrary);
 		}
 	}
 }

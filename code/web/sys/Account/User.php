@@ -596,7 +596,7 @@ class User extends DataObject {
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'cloud_library') {
-					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
+					return array_key_exists('Cloud Library', $enabledModules) && ($userHomeLibrary->cloudLibraryScope > 0);
 				} elseif ($source == 'axis360') {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				} elseif ($source == 'palace_project') {
@@ -3570,7 +3570,7 @@ class User extends DataObject {
 				$hasCurbside = true;
 				$allowILSMessaging = true;
 			}
-			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx') {
+			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx' || $accountProfile->ils == 'sierra') {
 				$customSelfRegForms = true;
 			}
             if ($accountProfile->driver == 'Nashville') {
@@ -3589,6 +3589,7 @@ class User extends DataObject {
 			'View Dashboards',
 			'View System Reports',
 		]);
+		$sections['ils_integration']->addAction(new AdminAction('Test Self Check', 'Test Self Check functionality within Aspen and Aspen / LiDA.', '/ILS/SelfCheckTester'), 'Test Self Check');
 
 		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
 		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/VDX/VDXSettings'), ['Administer VDX Settings']);
@@ -4610,11 +4611,29 @@ class User extends DataObject {
 		return false;
 	}
 
-	function checkoutItem($barcode, $locationId): array {
-		$result = $this->getCatalogDriver()->checkoutByAPI($this, $barcode, $locationId);
+	function checkoutItem($barcode, Location $currentLocation): array {
+		if ($this->getCatalogDriver()->hasAPICheckout()) {
+			$result = $this->getCatalogDriver()->checkoutByAPI($this, $barcode, $currentLocation);
+		}else{
+			$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $currentLocation->code);
+		}
 
-		if(!$result['success'] && $result['message'] == 'This functionality has not been implemented for this ILS') {
-			$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $locationId);
+		if ($result['success']) {
+			$this->forceReloadOfCheckouts();
+		}
+		$this->clearCache();
+		return $result;
+	}
+
+	public function hasAPICheckIn() : bool {
+		return $this->driver->hasAPICheckIin();
+	}
+
+	function checkInItem($barcode, Location $currentLocation): array {
+		if ($this->getCatalogDriver()->hasAPICheckin()) {
+			$result = $this->getCatalogDriver()->checkInByAPI($this, $barcode, $currentLocation);
+		}else{
+			$result = $this->getCatalogDriver()->checkInBySip($this, $barcode, $currentLocation->code);
 		}
 
 		if ($result['success']) {

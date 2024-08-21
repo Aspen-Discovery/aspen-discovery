@@ -129,7 +129,7 @@ class SelfReg extends Action {
 			}
 
 			$interface->assign('tos', false);
-			if ($catalog->accountProfile != null && $catalog->accountProfile->ils == "symphony"){
+			if ($catalog->accountProfile != null && ($catalog->accountProfile->ils == "symphony" || $catalog->accountProfile->ils == "carlx" || $catalog->accountProfile->ils == "sierra")){
 				$selfRegTerms = $catalog->getSelfRegistrationTerms();
 				if ($selfRegTerms != null){
 					$interface->assign('tos', true);

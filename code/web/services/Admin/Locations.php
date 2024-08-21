@@ -178,7 +178,7 @@ class Admin_Locations extends ObjectEditor {
 			if (!$activeObject->useLibraryCombinedResultsSettings || !$activeObject->enableCombinedResults || empty($activeObject->getCombinedResultSections())) {
 				unset($settings['combinedResults']);
 			}
-			if ($activeObject->axis360ScopeId <= -1 && empty($activeObject->getCloudLibraryScopes()) && $activeObject->hooplaScopeId <= -1 && $activeObject->overDriveScopeId <= -1 && $activeObject->palaceProjectScopeId <= -1 && empty($activeObject->getSideLoadScopes())) {
+			if ($activeObject->axis360ScopeId <= -1 && empty($activeObject->getCloudLibraryScope()) && $activeObject->hooplaScopeId <= -1 && $activeObject->overDriveScopeId <= -1 && $activeObject->palaceProjectScopeId <= -1 && empty($activeObject->getSideLoadScopes())) {
 				unset($settings['eContent']);
 			}
 			if (empty($activeObject->getMoreDetailsOptions())) {

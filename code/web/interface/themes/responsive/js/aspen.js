@@ -15649,18 +15649,39 @@ AspenDiscovery.WebBuilder = function () {
 			if(requireLogin.is(":checked")) {
 				$("#propertyRowallowAccess").show();
 				$("#propertyRowrequireLoginUnlessInLibrary").show();
+				$("#propertyRowallowableHomeLocations").show();
 			} else {
 				$("#propertyRowallowAccess").hide();
 				$("#propertyRowrequireLoginUnlessInLibrary").hide();
+				$("#propertyRowallowableHomeLocations").hide();
 			}
 
 			$(requireLogin).click(function() {
 				if(requireLogin.is(":checked")){
 					$("#propertyRowallowAccess").show();
 					$("#propertyRowrequireLoginUnlessInLibrary").show();
+					$("#propertyRowallowableHomeLocations").show();
 				}else{
 					$("#propertyRowallowAccess").hide();
 					$("#propertyRowrequireLoginUnlessInLibrary").hide();
+					$("#propertyRowallowableHomeLocations").hide();
+				}
+			});
+		},
+
+		updateWebResourcesFields: function () {
+			var requireLogin = $('#requireLoginUnlessInLibrary');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccessByLibrary").show();
+			} else {
+				$("#propertyRowallowAccessByLibrary").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccessByLibrary").show();
+				}else{
+					$("#propertyRowallowAccessByLibrary").hide();
 				}
 			});
 		},
@@ -15674,7 +15695,7 @@ AspenDiscovery.WebBuilder = function () {
 
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
-					if(Globals.loggedIn || data.inLibrary) {
+					if(Globals.loggedIn || data.canView) {
 						var params = {
 							method: "trackWebResourceUsage",
 							id: id,
@@ -15694,6 +15715,8 @@ AspenDiscovery.WebBuilder = function () {
 								location.assign(data.url);
 							}
 						});
+					} else if (Globals.loggedIn && !data.canView) {
+						return AspenDiscovery.showMessage(data.userNoAccessTitle, data.userNoAccessMessage);
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
 							return AspenDiscovery.WebBuilder.getWebResource(id);

@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
 
 class SelfRegistrationForm extends DataObject {
 	public $__table = 'self_registration_form';
-	public $__displayNameColumn = 'symphonyName';
+	public $__displayNameColumn = 'ilsName';
 	public $id;
 	public $name;
 	public $selfRegistrationBarcodePrefix;
