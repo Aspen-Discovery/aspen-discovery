@@ -15987,20 +15987,12 @@ AspenDiscovery.CookieConsent = (function() {
                 var cookieString = {
                     Essential:1,
                     Analytics:1,
-                    UserEvents:1,
-                    UserOpenArchives:1,
-                    UserWebsite:1,
-                    UserExternalSearchServices:1,
                     UserLocalAnalytics:1,
                 };
             } else if (props == 'essential') {
                 var cookieString = {
                     Essential:1,
                     Analytics:0,
-                    UserEvents:0,
-                    UserOpenArchives:0,
-                    UserWebsite:0,
-                    UserExternalSearchServices:0,
                     UserLocalAnalytics:0,
                 };
             }
@@ -16011,7 +16003,8 @@ AspenDiscovery.CookieConsent = (function() {
 			var params =  {
 				method : 'saveCookiePreference',
                 cookieEssential: cookieString['Essential'],
-                cookieAnalytics: cookieString['Analytics']
+                cookieAnalytics: cookieString['Analytics'],
+                cookieUserLocalAnalytics: cookieString['UserLocalAnalytics'],
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -16040,19 +16033,11 @@ AspenDiscovery.CookieConsent = (function() {
             var cookieString = {
                 Essential:1,
                 Analytics:0,
-                UserEvents:0,
-                UserOpenArchives:0,
-                UserWebsite:0,
-                UserExternalSearchServices:0,
                 UserLocalAnalytics:0,
             };
             var params =  {
                 cookieEssential: cookieString['Essential'],
                 cookieAnalytics: cookieString['Analytics'],
-                cookieUserEvents: cookieString['UserEvents'],
-                cookieUserOpenArchives: cookieString['UserOpenArchives'],
-                cookieUserWebsite: cookieString['UserWebsite'],
-                cookieUserExternalSearchServices: cookieString['UserExternalSearchServices'],
                 cookieUserLocalAnalytics: cookieString['UserLocalAnalytics'],
 			};
             $.getJSON(url, params,
@@ -16071,18 +16056,10 @@ AspenDiscovery.CookieConsent = (function() {
             var formData = $('#cookieManagementPreferencesForm').serializeArray();
             var cookieEssential = $('#cookieEssential').is(':checked') ? 1 : 0;
             var cookieAnalytics = $('#cookieAnalytics').is(':checked') ? 1 : 0;
-            var cookieUserEvents = $('#cookieUserEvents').is(':checked') ? 1 : 0;
-            var cookieUserOpenArchives = $('#cookieUserOpenArchives').is(':checked') ? 1 : 0;
-            var cookieUserWebsite = $('#cookieUserWebsite').is(':checked') ? 1 : 0;
-            var cookieUserExternalSearchServices = $('#cookieUserExternalSearchServices').is(':checked') ? 1 : 0;
             var cookieUserLocalAnalytics = $('#cookieUserLocalAnalytics').is(':checked') ? 1 : 0;
 
             formData.push({name: 'cookieEssential', value: cookieEssential});
             formData.push({name: 'cookieAnalytics', value: cookieAnalytics});
-            formData.push({name: 'cookieUserEvents', value: cookieUserEvents});
-            formData.push({name: 'cookieUserOpenArchives', value: cookieUserOpenArchives});
-            formData.push({name: 'cookieUserWebsite', value: cookieUserWebsite});
-            formData.push({name: 'cookieUserExternalSearchServices', value: cookieUserExternalSearchServices});
             formData.push({name: 'cookieUserLocalAnalytics', value: cookieUserLocalAnalytics});
              var url = Globals.path + "/AJAX/JSON?method=saveCookieManagementPreferences";
 

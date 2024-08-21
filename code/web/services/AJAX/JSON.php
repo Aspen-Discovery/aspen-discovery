@@ -101,6 +101,7 @@ class AJAX_JSON extends Action {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'];
 			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'];
+			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'];
 			$userObj->update(); //update user object to DB
 			return[
 				'success' => true,
@@ -111,6 +112,7 @@ class AJAX_JSON extends Action {
 			$userCookiePost = [
 				'Essential' => 1, //Essential cookies cannot be disabled
 				'Analytics' => $_REQUEST['cookieAnalytics'],
+				'UserLocalAnalytics' => $_REQUEST['cookieUserLocalAnalytics'],
 				];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
 			return [
