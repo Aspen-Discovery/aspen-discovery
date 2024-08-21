@@ -2,6 +2,17 @@
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text="Aspen Discovery Usage By User Agent" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
+		<form class="form-inline row">
+			<div class="form-group col-tn-12">
+				<label for="pageSize" class="control-label">{translate text="Entries Per Page" isAdminFacing=true}</label>&nbsp;
+				<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="AspenDiscovery.changePageSize()">
+					<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
+					<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
+					<option value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>
+					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+				</select>
+			</div>
+		</form>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="{translate text="Statistics by IP Address" isAdminFacing=true inAttribute=true}">
 			<thead>
 				<tr>
@@ -61,6 +72,7 @@
 				{/foreach}
 			</tbody>
 		</table>
+		{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 	</div>
 {/strip}
 <script type="text/javascript">
