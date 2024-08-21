@@ -8199,7 +8199,15 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
+	public function hasAPICheckout() : bool {
+		if($this->getKohaVersion() >= 23.11) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
 		if($this->getKohaVersion() >= 23.11) {
 			$item = [];
 			$result = [
@@ -8238,7 +8246,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 				$scoSettings = new AspenLiDASelfCheckSetting();
-				$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocationId);
+				$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
 
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
@@ -8254,7 +8262,7 @@ class Koha extends AbstractIlsDriver {
 					];
 					$postParams = json_encode($checkoutParams);
 
-					$checkoutLocation = $currentLocationId; // assign checkout to current location logged into (default)
+					$checkoutLocation = $currentLocation->code; // assign checkout to current location logged into (default)
 					if($checkoutLocationSetting == 1) {
 						// assign checkout to user home location
 						$checkoutLocation = $patron->getHomeLocationCode();
@@ -8265,7 +8273,7 @@ class Koha extends AbstractIlsDriver {
 
 					$this->apiCurlWrapper->addCustomHeaders([
 						'Authorization: Bearer ' . $oAuthToken,
-						'x-koha-library: ' . $checkoutLocation,
+						'x-koha-library: ' . $checkoutLocation->code,
 						'User-Agent: Aspen Discovery',
 						'Accept: */*',
 						'Cache-Control: no-cache',
@@ -8415,7 +8423,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM message_queue where message_transport_type like 'email'";
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and time_queue < DATE_SUB(NOW(), INTERVAL 24 HOUR)";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if($results) {
 			$numAdded = 0;
@@ -8481,7 +8489,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
+		$sql = "SELECT * FROM message_queue where message_transport_type like 'email' and time_queue < DATE_SUB(NOW(), INTERVAL 24 HOUR) and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if($results) {
 			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';

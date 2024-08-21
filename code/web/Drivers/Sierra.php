@@ -1,11 +1,9 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 require_once ROOT_DIR . '/Drivers/Millennium.php';
 
 class Sierra extends Millennium {
 	protected $urlIdRegExp = "/.*\/([\d]*)$/";
-	protected $urlInnReachIdRegExp = "/.*\/(\d*)@.*$/";
-
 	private $sierraToken = null;
 	private $lastResponseCode;
 	private /** @noinspection PhpPropertyOnlyWrittenInspection */
@@ -144,7 +142,7 @@ class Sierra extends Millennium {
 		return null;
 	}
 
-	public function _sendPage($requestType, $httpMethod, $url, $postParams) {
+	public function _sendPage($requestType, $httpMethod, $url, $postParams = null) {
 
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData) {
@@ -454,11 +452,11 @@ class Sierra extends Millennium {
 				// for item level holds we need to grab the bib id.
 				$id = $recordId; //$m[1];
 				if ($recordType == 'i') {
-					$itemId = ".i{$id}" . $this->getCheckDigit($id);
+					$itemId = ".i$id" . $this->getCheckDigit($id);
 					$id = $this->getBibIdForItem($itemId, $id);
 				} else {
 					$recordXD = $this->getCheckDigit($id);
-					$id = ".b{$id}{$recordXD}";
+					$id = ".b$id$recordXD";
 				}
 
 				if ($id != false) {
@@ -767,11 +765,48 @@ class Sierra extends Millennium {
 		return $return;
 	}
 
+	private function getTitleFromItemLink(string $itemLink) {
+		$bibId = $this->getBibIdFromItemLink($itemLink);
+		$title = '';
+		if ($bibId != false) {
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver((string)$bibId);
+			if ($recordDriver->isValid()) {
+				$title = $recordDriver->getTitle();
+			} else {
+				$bibIdShort = substr(str_replace('.b', '', $bibId), 0, -1);
+				$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+				if ($getBibResponse) {
+					$title = $getBibResponse->title;
+				}
+			}
+		}
+		return $title;
+	}
+	private function getTitleByItemId(string $itemId, string $itemShortId){
+		$bibId = $this->getBibIdForItem($itemId, $itemShortId);
+		$title = '';
+		if ($bibId != false) {
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver((string)$bibId);
+			if ($recordDriver->isValid()) {
+				$title = $recordDriver->getTitle();
+			} else {
+				$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
+				$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+				if ($getBibResponse) {
+					$title = $getBibResponse->title;
+				}
+			}
+		}
+		return $title;
+	}
+
 	/**
 	 * @param string $itemId
 	 * @return string|false
 	 */
-	private function getBibIdForItem(string $itemId, $shortId) {
+	private function getBibIdForItem(string $itemId, ?string $shortId) {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
 		$groupedWorkItem = new GroupedWorkItem();
@@ -784,26 +819,31 @@ class Sierra extends Millennium {
 				$id = $groupedWorkRecord->recordIdentifier;
 			}
 		}
-		if ($id == false) {
+		if ($id == false && !empty($shortId)) {
 			//Lookup the bib id from the Sierra APIs
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
-			$itemInfo = $this->_callUrl('sierra.getItemInfo', $sierraUrl);
-			if (!empty($itemInfo)) {
-				if (empty($itemInfo->bibIds)) {
-					$id = false;
-				}else if (is_array($itemInfo->bibIds)) {
-					$id = reset($itemInfo->bibIds);
-					$id = '.b' . $id . $this->getCheckDigit($id);
-				}else if (is_string($itemInfo->bibIds)) {
-					$id = $itemInfo->bibIds;
-					$id = '.b' . $id . $this->getCheckDigit($id);
-				}else{
-					$id = false;
-				}
-			} else {
+			$id = $this->getBibIdFromItemLink($sierraUrl);
+		}
+		return $id;
+	}
+
+	private function getBibIdFromItemLink(string $itemLink) {
+		$itemInfo = $this->_callUrl('sierra.getItemInfo', $itemLink);
+		if (!empty($itemInfo)) {
+			if (empty($itemInfo->bibIds)) {
+				$id = false;
+			}else if (is_array($itemInfo->bibIds)) {
+				$id = reset($itemInfo->bibIds);
+				$id = '.b' . $id . $this->getCheckDigit($id);
+			}else if (is_string($itemInfo->bibIds)) {
+				$id = $itemInfo->bibIds;
+				$id = '.b' . $id . $this->getCheckDigit($id);
+			}else{
 				$id = false;
 			}
+		} else {
+			$id = false;
 		}
 		return $id;
 	}
@@ -1519,14 +1559,282 @@ class Sierra extends Millennium {
 		return $result;
 	}
 
+	public function getSelfRegistrationTerms() {
+		global $library;
+
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php';
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$tosId = $selfRegistrationForm->termsOfServiceSetting;
+				require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
+				$tos = new SelfRegistrationTerms();
+				$tos->id = $tosId;
+				if ($tosId != -1){
+					if ($tos->find(true)) {
+						return $tos;
+					}
+				}
+			}
+			return null;
+		}
+		return null;
+	}
+
 	public function getSelfRegistrationFields() {
-		return parent::getSelfRegistrationFields();
-		// TODO: Use Sierra APIs to get Self Registration fields
+		global $library;
+
+		$pickupLocations = [];
+		$location = new Location();
+		//0 = no restrictions (ignore location setting)
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			//All Library Locations (ignore location setting)
+			$location->libraryId = $library->libraryId;
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			//Valid pickup locations
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		}
+		if ($location->find()) {
+			while ($location->fetch()) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+			if (count($pickupLocations) > 1) {
+				array_unshift($pickupLocations, translate([
+					'text' => 'Please select a location',
+					'isPublicFacing' => true,
+				]));
+			}
+		}
+
+		global $library;
+		$hasCustomSelfRegistrationFrom = false;
+
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php';
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$customFields = $selfRegistrationForm->getFields();
+				if ($customFields != null && count($customFields) > 0) {
+					$hasCustomSelfRegistrationFrom = true;
+				}
+			}
+		}
+
+		$pickupLocationField = [
+			'property' => 'pickupLocation',
+			'type' => 'enum',
+			'label' => 'Home Library',
+			'description' => 'Please choose the Library location you would prefer to use',
+			'values' => $pickupLocations,
+			'required' => true,
+		];
+
+		$fields = [];
+		if ($hasCustomSelfRegistrationFrom) {
+			$hiddenDefault = false;
+			$fields['librarySection'] = [
+				'property' => 'librarySection',
+				'type' => 'section',
+				'label' => 'Library',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['identitySection'] = [
+				'property' => 'identitySection',
+				'type' => 'section',
+				'label' => 'Identity',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['mainAddressSection'] = [
+				'property' => 'mainAddressSection',
+				'type' => 'section',
+				'label' => 'Main Address',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['contactInformationSection'] = [
+				'property' => 'contactInformationSection',
+				'type' => 'section',
+				'label' => 'Contact Information',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			//Use self registration fields
+			/** @var SelfRegistrationFormValues $customField */
+			foreach ($customFields as $customField) {
+				if ($customField->ilsName == 'library') {
+					if (count($pickupLocations) == 1) {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->ilsName => $pickupLocationField,
+							],
+							'hiddenByDefault' => true,
+						];
+					} else {
+						$fields['librarySection'] = [
+							'property' => 'librarySection',
+							'type' => 'section',
+							'label' => 'Library',
+							'hideInLists' => true,
+							'expandByDefault' => true,
+							'properties' => [
+								$customField->ilsName => $pickupLocationField,
+							],
+						];
+					}
+				} elseif ($customField->ilsName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
+					$fields[$customField->section]['properties'][] = [
+						'property' => $customField->ilsName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note,
+						'validationPattern' => $library->validSelfRegistrationZipCodes,
+						'validationMessage' => translate([
+							'text' => 'Please enter a valid zip code',
+							'isPublicFacing' => true,
+						]),
+					];
+				} elseif ($customField->ilsName == 'state') {
+					if (!empty($library->validSelfRegistrationStates)){
+						$validStates = explode('|', $library->validSelfRegistrationStates);
+						$validStates = array_combine($validStates, $validStates);
+						$fields[$customField->section]['properties'][] = [
+							'property' => $customField->ilsName,
+							'type' => 'enum',
+							'values' => $validStates,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+						];
+					} else {
+						$fields[$customField->section]['properties'][] = [
+							'property' => $customField->ilsName,
+							'type' => $customField->fieldType,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+							'maxLength' => 2,
+						];
+					}
+				} else {
+					$fields[$customField->section]['properties'][] = [
+						'property' => $customField->ilsName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+				}
+			}
+			foreach ($fields as $section) {
+				if ($section['type'] == 'section') {
+					if (empty($section['properties'])) {
+						unset ($fields[$section['property']]);
+					}
+				}
+			}
+		}
+		return $fields;
 	}
 
 	public function selfRegister(): array {
-		return parent::selfRegister();
-		// TODO: Use Sierra APIs to self register
+		global $library;
+		$selfRegResult = [
+			'success' => false,
+			'message' => 'Unknown Error while registering your account'
+		];
+
+		$selfRegistrationForm = null;
+		$formFields = null;
+		if ($library->selfRegistrationFormId > 0){
+			$selfRegistrationForm = new SierraSelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$formFields = $selfRegistrationForm->getFields();
+			}else {
+				$selfRegistrationForm = null;
+			}
+		}
+
+		$params = [];
+
+		if ($formFields != null) {
+			foreach ($formFields as $fieldObj){
+				$field = $fieldObj->ilsName;
+				if ($field == 'firstName') {
+					if (isset($_REQUEST['middleName'])) {
+						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['middleName'] . ' ' . $_REQUEST['lastName'];
+					} else {
+						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['lastName'];
+					}
+					$params['names'] = [$fullName];
+				}
+				elseif ($field == 'birthDate') {
+					$params['birthDate'] = $_REQUEST['birthDate'];
+				}
+				elseif ($field == 'email') {
+					$params['emails'] = [$_REQUEST['email']];
+					if ($selfRegistrationForm->selfRegEmailBarcode) {
+						$params['barcodes'] = [$_REQUEST['email']];
+					}
+				}
+				elseif ($field == 'phone') {
+					$tmpPhone = new stdClass();
+					$tmpPhone->type = 'p';
+					$tmpPhone->number = $_REQUEST['phone'];
+					$params['phones'][] = $tmpPhone;
+				}
+				elseif ($field == 'street') {
+					$params['addresses'] = [];
+					$address = new stdClass();
+					$address->lines = [];
+					$address->type = 'a';
+					$address->lines[] = $_REQUEST['street'];
+					$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+					$address->lines[] = $cityStateZip;
+
+					$params['addresses'][] = $address;
+				}
+				elseif ($field == 'barcode') {
+					$params['barcodes'] = [$_REQUEST['barcode']];
+				}
+				elseif ($field == 'pin') {
+					$params['pin'] = $_REQUEST['pin'];
+				}
+			}
+		}
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/";
+		$this->_postPage('sierra.createPatron', $sierraUrl, json_encode($params));
+
+		if ($this->lastResponseCode == 200) {
+			$selfRegResult = [
+				'success' => true,
+				'barcode' => $params['barcodes'][0],
+				'password' => $params['pin']
+			];
+		}
+
+		return $selfRegResult;
 	}
 
 	public function getFines($patron = null, $includeMessages = false): array {
@@ -1555,20 +1863,7 @@ class Sierra extends Millennium {
 						preg_match($this->urlIdRegExp, $fineEntry->item, $m);
 						$itemIdShort = $m[1];
 						$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
-						$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
-						if ($bibId != false) {
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$recordDriver = new MarcRecordDriver((string)$bibId);
-							if ($recordDriver->isValid()) {
-								$message = $recordDriver->getTitle();
-							} else {
-								$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
-								$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
-								if ($getBibResponse) {
-									$message = $getBibResponse->title;
-								}
-							}
-						}
+						$message = $this->getTitleByItemId($itemId, $itemIdShort);
 					}
 				}
 				$fines[] = [
@@ -1985,6 +2280,7 @@ class Sierra extends Millennium {
 
 	public function updateEditableUsername(User $patron, string $username): array {
 		global $library;
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error updating username',
@@ -1999,6 +2295,7 @@ class Sierra extends Millennium {
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id;
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		$updatePatronResponse = $this->_sendPage('sierra.updateEditableUsername', 'PUT', $sierraUrl, json_encode($params));
 
 		if ($this->lastResponseCode == 204) {
@@ -2011,5 +2308,382 @@ class Sierra extends Millennium {
 		}
 
 		return $result;
+	}
+
+	public function hasAPICheckout() : bool {
+		return true;
+	}
+
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'There was an error checking out this title.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Unable to checkout title',
+				'isPublicFacing' => true,
+			]),
+			'api' => [
+				'title' => translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error checking out this title.',
+					'isPublicFacing' => true,
+				]),
+			],
+			'itemData' => []
+		];
+
+		//Find the correct stat group to use
+		$doCheckout = false;
+		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+		$scoSettings = new AspenLiDASelfCheckSetting();
+		$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+		if ($checkoutLocationSetting == 0) {
+			//Use the active location, no change needed
+			$doCheckout = true;
+		}elseif ($checkoutLocationSetting == 1) {
+			//Use home location for the user
+			$currentLocation = $patron->getHomeLocation();
+			$doCheckout = true;
+		}else {
+			//Use the current location for the item
+			//To get the current location, we need to determine if the item is already on hold.
+			//If it is, make sure it is on hold for the active user and use the pickup_location
+			//If it is not on hold, use the current location for the item
+			$sierraDnaConnection = $this->connectToSierraDNA();
+
+			$getItemIdByBarcodeStmt = "SELECT * from sierra_view.item_view where barcode = $1";
+
+			//Lookup the item by barcode
+			$getItemRS = pg_query_params($sierraDnaConnection, $getItemIdByBarcodeStmt, [$barcode]);
+			if ($getItemRS === false || pg_num_rows($getItemRS) === 0) {
+				$result['message'] = translate([
+					'text' => 'Unable to checkout this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Unable to checkout this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+			}else{
+				if (pg_num_rows($getItemRS) > 1) {
+					$result['message'] = translate([
+						'text' => 'Unable to complete checkout because more than one item was found for barcode %1%.',
+						1 => $barcode,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Unable to complete checkout because more than one item was found for barcode %1%.',
+						1 => $barcode,
+						'isPublicFacing' => true,
+					]);
+				}else{
+					$itemInfo = pg_fetch_array($getItemRS, 0);
+					$itemRecordIdentifier = $itemInfo['id'];
+					$itemHomeLocation = $itemInfo['location_code'];
+
+					//Check to see if the record has a hold
+					$getItemHoldStmt = "SELECT * from sierra_view.hold where record_id = $1 and status IN ('b', 'j', 'i')";
+					$getHoldRS = pg_query_params($sierraDnaConnection, $getItemHoldStmt, [$itemRecordIdentifier]);
+					if ($getHoldRS !== false && pg_num_rows($getHoldRS) == 1) {
+						$holdInfo = pg_fetch_array($getHoldRS, 0);
+
+						//Get the patron_record_id
+						$getPatronIdStmt = "SELECT id from sierra_view.record_metadata where record_type_code = 'p' and record_num = $1";
+						$getPatronIdRS = pg_query_params($sierraDnaConnection, $getPatronIdStmt, [$patron->unique_ils_id]);
+						if ($getPatronIdRS !== false && pg_num_rows($getPatronIdRS) == 1) {
+							$patronInfo = pg_fetch_array($getPatronIdRS, 0);
+							$patronRecordId = $patronInfo['id'];
+							if ($holdInfo['patron_record_id'] == $patronRecordId) {
+								$checkoutLocationCode = $holdInfo['pickup_location_code'];
+								$doCheckout = true;
+							}else{
+								$result['message'] = translate([
+									'text' => 'Unable to complete checkout, this title is on hold for another patron.',
+									'isPublicFacing' => true,
+								]);
+								$result['api']['message'] = translate([
+									'text' => 'Unable to complete checkout, this title is on hold for another patron.',
+									'isPublicFacing' => true,
+								]);
+							}
+						}else{
+							$result['message'] = translate([
+								'text' => 'Unable to complete checkout, could not find the patron id.',
+								'isPublicFacing' => true,
+							]);
+							$result['api']['message'] = translate([
+								'text' => 'Unable to complete checkout, could not find the patron id.',
+								'isPublicFacing' => true,
+							]);
+						}
+					}else{
+						//Use the home location for the item
+						$checkoutLocationCode = $itemHomeLocation;
+						$doCheckout = true;
+					}
+
+					if ($doCheckout && !empty($checkoutLocationCode)) {
+						//Find the appropriate branch in the branches table. This requires a bit of finesse since the
+						//Sierra code in Aspen may not match the code in the home location exactly
+						$tmpCurrentLocation = $this->getAspenLocationForSierraLocationCode($checkoutLocationCode);
+						if ($tmpCurrentLocation != null) {
+							$currentLocation = $tmpCurrentLocation;
+						}
+					}
+				}
+			}
+
+			$this->closeSierraDNAConnection();
+		}
+
+		if ($doCheckout) {
+			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkout";
+
+			$params = [];
+			$params['patronBarcode'] = $patron->ils_barcode;
+			$params['itemBarcode'] = $barcode;
+			if (!empty($patron->ils_password)) {
+				$params['patronPin'] = $patron->ils_password;
+			}
+			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
+				$params['statgroup'] = $currentLocation->statGroup;
+			}
+
+			$checkoutResult = $this->_postPage('sierra.checkout', $sierraUrl, json_encode($params));
+			if ($this->lastResponseCode == 200) {
+				$checkoutLink = $checkoutResult->id;
+
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'You have successfully checked out this title.',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['title'] = translate([
+					'text' => 'Checkout successful',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'You have successfully checked out this title.',
+					'isPublicFacing' => true,
+				]);
+
+				//Get information about the checkout
+				$checkout = $this->getCheckoutDataFromLink($checkoutLink);
+				if ($checkout != null) {
+					$itemUrl = $checkout->item;
+					$title = $this->getTitleFromItemLink($itemUrl);
+
+					$result['itemData'] = [
+						'title' => $title,
+						'due' => $checkout->dueDate ?? null,
+						'barcode' => $barcode,
+					];
+				}
+			} elseif ($this->lastResponseCode == 405) {
+				$result['message'] = translate([
+					'text' => 'Checkouts cannot be performed by the provided API user.',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['title'] = translate([
+					'text' => 'Checkouts cannot be performed by the provided API user.',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Checkouts cannot be performed by the provided API user.',
+					'isPublicFacing' => true,
+				]);
+			} elseif ($this->lastResponseCode == 500) {
+				$result['message'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+			} elseif (!empty($checkoutResult)) {
+				$result['title'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+				$result['message'] = translate([
+					'text' => $checkoutResult->description,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['title'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => $checkoutResult->description,
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+
+		return $result;
+	}
+
+	public function hasAPICheckIn() {
+		return true;
+	}
+
+	public function checkInByAPI(User $patron, $barcode, Location $currentLocation): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'There was an error checking in this title.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Unable to check in title',
+				'isPublicFacing' => true,
+			]),
+			'api' => [
+				'title' => translate([
+					'text' => 'Unable to check in title',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error checking in this title.',
+					'isPublicFacing' => true,
+				]),
+			],
+			'itemData' => []
+		];
+
+		//Find the correct stat group to use
+		$doCheckout = false;
+		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+		$scoSettings = new AspenLiDASelfCheckSetting();
+		$checkInLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+		if ($checkInLocationSetting == 0) {
+			//Use the active location, no change needed
+			$doCheckIn = true;
+		}elseif ($checkInLocationSetting == 1) {
+			//Use home location for the user
+			$currentLocation = $patron->getHomeLocation();
+			$doCheckIn = true;
+		}else {
+			//Use the current location for the item
+			//To get the current location, we need to determine if the item is already on hold.
+			//If it is, make sure it is on hold for the active user and use the pickup_location
+			//If it is not on hold, use the current location for the item
+			$sierraDnaConnection = $this->connectToSierraDNA();
+
+			$getItemIdByBarcodeStmt = "SELECT * from sierra_view.item_view where barcode = $1";
+
+			//Lookup the item by barcode
+			$getItemRS = pg_query_params($sierraDnaConnection, $getItemIdByBarcodeStmt, [$barcode]);
+			if ($getItemRS === false || pg_num_rows($getItemRS) === 0) {
+				$result['message'] = translate([
+					'text' => 'Unable to check in this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Unable to check in this item. Cannot find item for barcode %1%.',
+					1 => $barcode,
+					'isPublicFacing' => true,
+				]);
+			}else{
+				if (pg_num_rows($getItemRS) > 1) {
+					$result['message'] = translate([
+						'text' => 'Unable to complete check in because more than one item was found for barcode %1%.',
+						1 => $barcode,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Unable to complete check in because more than one item was found for barcode %1%.',
+						1 => $barcode,
+						'isPublicFacing' => true,
+					]);
+				}else{
+					//For check in, we don't need to check holds since it is already in possession of the patron
+					$itemInfo = pg_fetch_array($getItemRS, 0);
+					$itemHomeLocation = $itemInfo['location_code'];
+
+					$tmpCurrentLocation = $this->getAspenLocationForSierraLocationCode($itemHomeLocation);
+					if ($tmpCurrentLocation != null) {
+						$currentLocation = $tmpCurrentLocation;
+					}
+					$doCheckIn = true;
+				}
+			}
+
+			$this->closeSierraDNAConnection();
+		}
+
+		if ($doCheckIn) {
+			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/checkouts/{$barcode}";
+			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
+				$sierraUrl .= '?statgroup=' . $currentLocation->statGroup;
+			}
+
+			$checkoutResult = $this->_sendPage( 'sierra.checkin', 'DELETE', $sierraUrl);
+			if ($this->lastResponseCode >= 200 && $this->lastResponseCode < 300) {
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'You have successfully checked in this title.',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['title'] = translate([
+					'text' => 'Check in successful',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'You have successfully checked in this title.',
+					'isPublicFacing' => true,
+				]);
+			} elseif (!empty($checkoutResult)) {
+				$result['message'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => $checkoutResult->name,
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+
+		return $result;
+	}
+
+	public function getCheckoutDataFromLink($checkoutLink) {
+		$checkout = $this->_callUrl('sierra.getCheckouts', $checkoutLink);
+
+		if ($this->lastResponseCode == 200) {
+			return $checkout;
+		}else{
+			return null;
+		}
+	}
+
+	public function getCheckoutDataById($checkoutId) {
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/$checkoutId";
+		return $this->getCheckoutDataFromLink($sierraUrl);
+	}
+
+	private function getAspenLocationForSierraLocationCode(string $locationCode) : ?Location {
+		$locationFound = false;
+		$tmpLocationCode = $locationCode;
+		while (!$locationFound && !empty($tmpLocationCode)) {
+			$location = new Location();
+			$location->whereAdd("code LIKE " . $location->escape($tmpLocationCode . '%'));
+			if ($location->find(true)) {
+				return $location;
+			}
+			$tmpLocationCode = substr($tmpLocationCode, 0, strlen($tmpLocationCode) -1);
+		}
+		return null;
 	}
 }

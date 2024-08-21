@@ -863,12 +863,16 @@ class WebBuilder_AJAX extends JSON_Action {
 		if ($webResource->find(true)) {
 			/** @var Location $locationSingleton */ global $locationSingleton;
 			$activeLibrary = $locationSingleton->getActiveLocation();
+			$canView = $webResource->canView();
 			$result = [
 				'success' => true,
 				'url' => $webResource->url,
 				'requireLogin' => $webResource->requireLoginUnlessInLibrary == "1" ? true : false,
 				'inLibrary' => $activeLibrary != null ? true : false,
 				'openInNewTab' => $webResource->openInNewTab == "1" ? true : false,
+				'canView' => $canView,
+				'userNoAccessTitle' => translate(['text' => 'Access Not Allowed', 'isPublicFacing' => true]),
+				'userNoAccessMessage' => translate(['text' => 'Your library does not provide access to this resource.', 'isPublicFacing' => true]),
 			];
 		} else {
 			$result = [

@@ -225,6 +225,9 @@
 						</div>
 					</div>
 				{/if}
+                {if !empty($pageLinks.all)}
+					<div class="text-center">{$pageLinks.all}</div>
+                {/if}
 			</form>
 		{else}
 			<div class="alert alert-info">{translate text="There are no materials requests that meet your criteria." isAdminFacing=true}</div>
