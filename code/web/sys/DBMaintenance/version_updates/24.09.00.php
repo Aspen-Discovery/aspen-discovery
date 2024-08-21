@@ -48,6 +48,24 @@ function getUpdates24_09_00(): array {
 				'UPDATE palace_project_settings SET runFullUpdate = 1',
 			]
 		], //run_full_update_for_palace_project_24_09
+		//Mark - Grove
+		'add_location_stat_group' => [
+			'title' => 'Add Location Stat Group',
+			'description' => 'Add Location Stat Group',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location add statGroup INT(11) DEFAULT -1',
+			]
+		], //add_location_stat_group
+		'add_permission_for_testing_checkouts' => [
+			'title' => 'Add permission for testing checkouts',
+			'description' => 'Add permission for testing checkouts',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Circulation', 'Test Self Check', '', 20, 'Allows users to test checking titles out within Aspen Discovey.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Test Self Check'))",
+			]
+		], //add_permission_for_testing_checkouts
 
 		//katherine - ByWater
 

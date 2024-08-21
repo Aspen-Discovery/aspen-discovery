@@ -113,7 +113,7 @@ class UserAPI extends AbstractAPI {
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
+			if (!in_array($method, ['getUserForApiCall', 'checkInILSItem']) && method_exists($this, $method)) {
 				$result = [
 					'result' => $this->$method(),
 				];
@@ -4639,9 +4639,13 @@ class UserAPI extends AbstractAPI {
 	/**
 	 * @return bool|User
 	 */
-	function getUserForApiCall() {
+	function getUserForApiCall($patronBarcode = null, $patronPassword = null) {
 		if ($this->context == 'internal') {
-			return UserAccount::getActiveUserObj();
+			if ($patronBarcode == null && $patronPassword == null) {
+				return UserAccount::getActiveUserObj();
+			}else{
+				return UserAccount::validateAccount($patronBarcode, $patronPassword);
+			}
 		} else {
 			$user = false;
 			if ($this->getLiDAVersion() === "v22.04.00") {
@@ -5739,10 +5743,41 @@ class UserAPI extends AbstractAPI {
 		return ['success' => false];
 	}
 
-	function checkoutILSItem(): array {
-		$user = $this->getUserForApiCall();
+
+	function checkoutILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
+		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
+			//For self check we don't require the pin, use find new user
+			//Call find new user just to be sure that all patron information is up to date.
+			$user = UserAccount::findNewUser($patronBarcode, null);
+			if (!$user) {
+				//This user no longer exists? return an error?
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error checking out title',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find the specified user',
+						'isAdminFacing' => true,
+					]),
+				];
+			}
+		}else{
+			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
+		}
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationId']))) {
+			if ($itemBarcode == null) {
+				if (!empty($_REQUEST['barcode'])) {
+					$itemBarcode = $_REQUEST['barcode'];
+				}
+			}
+			if ($activeLocationId == null) {
+				if (!empty($_REQUEST['locationId'])) {
+					$activeLocationId = $_REQUEST['locationId'];
+				}
+			}
+			if (empty($itemBarcode) || empty($activeLocationId)) {
 				return [
 					'success' => false,
 					'title' => 'Error',
@@ -5750,14 +5785,14 @@ class UserAPI extends AbstractAPI {
 				];
 			} else {
 				$location = new Location();
-				$location->locationId = $_REQUEST['locationId'];
+				$location->locationId = $activeLocationId;
 				if($location->find(true)) {
 					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 					$scoSettings = new AspenLiDASelfCheckSetting();
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
-							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
+							$result = $user->checkoutItem($itemBarcode, $location);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
@@ -5776,6 +5811,94 @@ class UserAPI extends AbstractAPI {
 							'success' => false,
 							'title' => 'Error',
 							'message' => 'Self-checkout settings not found for this location',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Location not found with given id',
+					];
+				}
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function checkinILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
+		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
+			//For self check we don't require the pin, use find new user
+			//Call find new user just to be sure that all patron information is up to date.
+			$user = UserAccount::findNewUser($patronBarcode, null);
+			if (!$user) {
+				//This user no longer exists? return an error?
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error checking in title',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find the specified user',
+						'isAdminFacing' => true,
+					]),
+				];
+			}
+		}else{
+			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
+		}
+		if ($user && !($user instanceof AspenError)) {
+			if ($itemBarcode == null) {
+				if (!empty($_REQUEST['barcode'])) {
+					$itemBarcode = $_REQUEST['barcode'];
+				}
+			}
+			if ($activeLocationId == null) {
+				if (!empty($_REQUEST['locationId'])) {
+					$activeLocationId = $_REQUEST['locationId'];
+				}
+			}
+			if (empty($itemBarcode) || empty($activeLocationId)) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Barcode and location id must be provided',
+				];
+			} else {
+				$location = new Location();
+				$location->locationId = $activeLocationId;
+				if($location->find(true)) {
+					//We still want the self check settings to give an extra check that the functionality should be enabled
+					// and to allow control over where the title should be returned.
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+					$scoSettings = new AspenLiDASelfCheckSetting();
+					$scoSettings->id = $location->lidaSelfCheckSettingId;
+					if($scoSettings->find(true)) {
+						if($scoSettings->isEnabled) {
+							$result = $user->checkInItem($itemBarcode, $location);
+							return [
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'itemData' => $result['itemData']
+							];
+						} else {
+							return [
+								'success' => false,
+								'title' => 'Error',
+								'message' => 'Self-check not enabled for this location',
+							];
+						}
+					} else {
+						return [
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Self-check settings not found for this location',
 						];
 					}
 				} else {

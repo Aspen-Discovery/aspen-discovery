@@ -75,6 +75,7 @@ class Location extends DataObject {
 	public $nearbyLocation2;        //int(11)
 	public $scope;
 	public $useScope;
+	public $statGroup;
 	public $facetLabel;
 	public $groupedWorkDisplaySettingId;
 	public $browseCategoryGroupId;
@@ -151,6 +152,7 @@ class Location extends DataObject {
 	function getNumericColumnNames(): array {
 		return [
 			'scope',
+			'statGroup',
 			'isMainBranch',
 			'showInLocationsAndHoursList',
 			'validHoldPickupBranch',
@@ -693,6 +695,15 @@ class Location extends DataObject {
 						'hideInLists' => true,
 						'forcesReindex' => true,
 						'permissions' => ['Location ILS Connection'],
+					],
+					'statGroup' => [
+						'property' => 'statGroup',
+						'type' => 'integer',
+						'label' => 'Stat Group',
+						'description' => 'The statistical group to use for reporting checkouts',
+						'default' => -1,
+						'permissions' => ['Location ILS Connection'],
+						'note' => 'Sierra only, set to -1 to ignore',
 					],
 					[
 						'property' => 'validHoldPickupBranch',
