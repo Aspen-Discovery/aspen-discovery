@@ -240,6 +240,7 @@ class SAMLAuthentication{
 			if(is_string($user)) {
 				global $logger;
 				$logger->log($user, Logger::LOG_ERROR);
+				AspenError::raiseError(new AspenError('More than one user found in the ILS for '.$this->ilsUniqueAttribute.' of '.$this->uid.'.'));
 				return false;
 			}
 		} elseif($this->uidAsEmail) {
@@ -248,6 +249,7 @@ class SAMLAuthentication{
 			if(is_string($user)) {
 				global $logger;
 				$logger->log($user, Logger::LOG_ERROR);
+				AspenError::raiseError(new AspenError('More than one user found in the ILS for email of '.$this->uid.'.'));
 				return false;
 			}
 		} else {

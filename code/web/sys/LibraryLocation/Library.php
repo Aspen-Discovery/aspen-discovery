@@ -464,6 +464,8 @@ class Library extends DataObject {
 
 	public $allowUpdatingHolidaysFromILS;
 
+	private $_cloudLibraryScope;
+
 	/** @var MaterialsRequestFormFields[] */
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
@@ -476,8 +478,6 @@ class Library extends DataObject {
 	private $_holidays;
 	/** @var LibrarySideLoadScope[] */
 	private $_sideLoadScopes;
-	/** @var LibraryCloudLibraryScope[] */
-	private $_cloudLibraryScopes;
 	/** @var ILLItemType[] */
 	private $_interLibraryLoanItemTypes;
 	/** @var LibraryLink[] */
@@ -862,8 +862,15 @@ class Library extends DataObject {
 			$twilioSettings[$twilioSetting->id] = $twilioSetting->name;
 		}
 
-		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
-		unset($cloudLibraryScopeStructure['libraryId']);
+		$cloudLibraryScopes = [];
+		$cloudLibraryScopes[-1] = 'none';
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->orderBy('name');
+		$cloudLibraryScope->find();
+		while ($cloudLibraryScope->fetch()) {
+			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
+		}
 
 		$readerName = new OverDriveDriver();
 		$readerName = $readerName->getReaderName();
@@ -3615,22 +3622,15 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Library Records included in Catalog'],
 				'properties' => [
-					'cloudLibraryScopes' => [
-						'property' => 'cloudLibraryScopes',
-						'type' => 'oneToMany',
-						'keyThis' => 'libraryId',
-						'keyOther' => 'libraryId',
-						'subObjectType' => 'LibraryCloudLibraryScope',
-						'structure' => $cloudLibraryScopeStructure,
-						'label' => 'cloudLibrary Scopes',
-						'description' => 'The scopes that apply to this library',
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => true,
+					'cloudLibraryScope' => [
+						'property' => 'cloudLibraryScope',
+						'type' => 'enum',
+						'values' => $cloudLibraryScopes,
+						'label' => 'cloudLibrary Scope',
+						'description' => 'The cloudLibrary scope to use',
+						'hideInLists' => true,
+						'default' => -1,
 						'forcesReindex' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
 					],
 				],
 			],
@@ -4294,8 +4294,8 @@ class Library extends DataObject {
 			return $this->getCombinedResultSections();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
-		} elseif ($name == 'cloudLibraryScopes') {
-			return $this->getCloudLibraryScopes();
+		} elseif ($name == 'cloudLibraryScope') {
+			return $this->getCloudLibraryScope();
 		} elseif ($name == 'interLibraryLoanItemTypes') {
 			return $this->getILLItemTypes();
 		} else {
@@ -4322,8 +4322,8 @@ class Library extends DataObject {
 			$this->_combinedResultSections = $value;
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
-		} elseif ($name == 'cloudLibraryScopes') {
-			$this->_cloudLibraryScopes = $value;
+		} elseif ($name == 'cloudLibraryScope') {
+			$this->_cloudLibraryScope = $value;
 		}  elseif ($name == 'interLibraryLoanItemTypes') {
 			$this->_interLibraryLoanItemTypes = $value;
 		} else {
@@ -4563,29 +4563,53 @@ class Library extends DataObject {
 		return $this->_libraryLinks;
 	}
 
-	/**
-	 * @return LibraryCloudLibraryScope[]|null
-	 */
-	public function getCloudLibraryScopes(): ?array {
-		if (!isset($this->_cloudLibraryScopes)) {
-			$this->_cloudLibraryScopes = [];
-			if (!empty($this->libraryId)) {
-				$cloudLibraryScope = new LibraryCloudLibraryScope();
-				$cloudLibraryScope->libraryId = $this->libraryId;
-				if ($cloudLibraryScope->find()) {
-					while ($cloudLibraryScope->fetch()) {
-						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
-					}
+	/** @var CloudLibraryScope */
+	public function getCloudLibraryScope() {
+		if ($this->_cloudLibraryScope == null && $this->libraryId) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+			$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$libraryCloudLibraryScope->libraryId = $this->libraryId;
+			if($libraryCloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+				$cloudLibraryScope = new CloudLibraryScope();
+				$cloudLibraryScope->id = $libraryCloudLibraryScope->scopeId;
+				if($cloudLibraryScope->find(true)) {
+					$this->_cloudLibraryScope = $cloudLibraryScope->id;
 				}
 			}
 		}
-		return $this->_cloudLibraryScopes;
+		return $this->_cloudLibraryScope;
 	}
 
 	public function saveCloudLibraryScopes() {
-		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
-			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'libraryId');
-			unset($this->_cloudLibraryScopes);
+		if (isset ($this->_cloudLibraryScope)) {
+			$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$libraryCloudLibraryScope->libraryId = $this->libraryId;
+			$libraryCloudLibraryScope->find(true);
+
+			$obj = $this->_cloudLibraryScope;
+			/** @var DataObject $obj */
+			if($obj->_deleteOnSave) {
+				if ($obj->getPrimaryKeyValue() > 0) {
+					$obj->delete();
+				}
+			} else {
+				if($libraryCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$libraryCloudLibraryScope->scopeId = $this->_cloudLibraryScope;
+					$libraryCloudLibraryScope->update();
+				}
+			}
+
+			// cleanup other scopes libraries is assigned to
+			$unassignedLibraryCloudLibraryScope = new LibraryCloudLibraryScope();
+			$unassignedLibraryCloudLibraryScope->libraryId = $this->libraryId;
+			$unassignedLibraryCloudLibraryScope->find();
+			while($unassignedLibraryCloudLibraryScope->fetch()) {
+				if($unassignedLibraryCloudLibraryScope->scopeId != $this->_cloudLibraryScope) {
+					$unassignedLibraryCloudLibraryScope->delete();
+				}
+			}
+			unset($this->_cloudLibraryScope);
 		}
 	}
 
@@ -5070,6 +5094,7 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5190,6 +5215,35 @@ class Library extends DataObject {
 			}
 		}
 
+		if($this->showAlternateLibraryCard) {
+			$apiInfo['alternateLibraryCardConfig'] =
+				[
+					'alternateLibraryCardLabel' => $this->alternateLibraryCardLabel,
+					'alternateLibraryCardFormMessage' => $this->alternateLibraryCardFormMessage,
+					'alternateLibraryCardStyle' => $this->alternateLibraryCardStyle,
+					'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
+					'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel
+				];
+		}
+
+		$apiInfo['useAlternateLibraryCardForCloudLibrary'] = 0;
+		require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+		$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+		$libraryCloudLibraryScope->libraryId = $this->libraryId;
+		if($libraryCloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+			$cloudLibraryScope = new CloudLibraryScope();
+			$cloudLibraryScope->id = $libraryCloudLibraryScope->scopeId;
+			if($cloudLibraryScope->find(true)) {
+				require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+				$cloudLibrarySetting = new CloudLibrarySetting();
+				$cloudLibrarySetting->id = $cloudLibraryScope->settingId;
+				if($cloudLibrarySetting->find(true)) {
+					$apiInfo['useAlternateCardForCloudLibrary'] = $cloudLibrarySetting->useAlternateLibraryCard;
+				}
+			}
+		}
+
 		return $apiInfo;
 	}
 
@@ -5227,13 +5281,7 @@ class Library extends DataObject {
 			$this->overDriveScopeId = -1;
 			$this->palaceProjectScopeId = -1;
 		}else{
-			$this->getCloudLibraryScopes();
-			$index = -1;
-			foreach ($this->_cloudLibraryScopes as $subObject) {
-				$subObject->id = $index;
-				unset($subObject->libraryId);
-				$index--;
-			}
+			$this->getCloudLibraryScope();
 			$this->getSideLoadScopes();
 			$index = -1;
 			foreach ($this->_sideLoadScopes as $subObject) {

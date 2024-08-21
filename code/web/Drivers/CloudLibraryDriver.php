@@ -722,14 +722,12 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			global $library;
 			$activeLibrary = $library;
 		}
-		$scopes = $activeLibrary->getCloudLibraryScopes();
-		if (count($scopes) > 0) {
-			foreach ($scopes as $libraryScope) {
-				$scope = new CloudLibraryScope();
-				$scope->id = $libraryScope->scopeId;
-				if ($scope->find(true)) {
-					return $scope->getSetting();
-				}
+		$scopeId = $activeLibrary->getCloudLibraryScope();
+		if($scopeId > 0) {
+			$scope = new CloudLibraryScope();
+			$scope->id = $scopeId;
+			if ($scope->find(true)) {
+				return $scope->getSetting();
 			}
 		}
 		return false;

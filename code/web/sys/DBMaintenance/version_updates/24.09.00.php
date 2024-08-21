@@ -78,6 +78,28 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE user_ils_messages ADD COLUMN defaultContent mediumtext',
 			]
 		], //add_defaultContent_field
+		'web_builder_resource_access_library' => [
+			'title' => 'Add Web Resource Limit Access to Library',
+			'description' => 'Add table to store settings for web resources that have limited access by library',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_resource_access_library (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					webResourceId INT(11) NOT NULL, 
+					libraryId INT(11) NOT NULL,
+					UNIQUE INDEX (webResourceId, libraryId)
+				) ENGINE INNODB',
+			],
+		],
+		//web_builder_resource_access_library
+		'migrate_web_resource_library_access_rules' => [
+			'title' => 'Create web resource limit access rules for existing web resources with required login',
+			'description' => 'Create web resource limit access rules for existing web resources with required login',
+			'continueOnError' => true,
+			'sql' => [
+				'migrateWebResourceLibraryAccessRules',
+			],
+		],
+		//migrate_web_resource_library_access_rules
 
 		//kodi - ByWater
 
@@ -93,4 +115,34 @@ function getUpdates24_09_00(): array {
 		//other
 
 	];
+}
+
+function migrateWebResourceLibraryAccessRules(&$update) {
+	$libraries = [];
+	$library = new Library();
+	$library->find();
+	while ($library->fetch()) {
+		$libraries[] = $library->libraryId;
+	}
+
+	require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+	$webResources = [];
+	$webResource = new WebResource();
+	$webResource->requireLoginUnlessInLibrary = 1;
+	$webResource->find();
+	while ($webResource->fetch()) {
+		$webResources[] = $webResource->id;
+	}
+
+	foreach($webResources as $resource) {
+		foreach ($libraries as $libraryId) {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAccessLibrary.php';
+			$webResourceAccessLibrary = new WebResourceAccessLibrary();
+			$webResourceAccessLibrary->webResourceId = $resource;
+			$webResourceAccessLibrary->libraryId = $libraryId;
+			if(!$webResourceAccessLibrary->find(true)) {
+				$webResourceAccessLibrary->insert();
+			}
+		}
+	}
 }

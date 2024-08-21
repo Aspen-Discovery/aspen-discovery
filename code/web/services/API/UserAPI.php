@@ -94,7 +94,8 @@ class UserAPI extends AbstractAPI {
 					'getAppPreferencesForUser',
 					'getInbox',
 					'markMessageAsRead',
-					'markMessageAsUnread'
+					'markMessageAsUnread',
+					'updateAlternateLibraryCard'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -993,6 +994,8 @@ class UserAPI extends AbstractAPI {
 				1 => $userData->fines,
 				'isPublicFacing' => true,
 			]);
+
+			$userData->alternateLibraryCard = $user->alternateLibraryCard;
 
 			return [
 				'success' => true,
@@ -6041,6 +6044,48 @@ class UserAPI extends AbstractAPI {
 					'message' => translate(['text' => 'Message id not provided', 'isPublicFacing' => true]),
 				];
 			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	function updateAlternateLibraryCard(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$alternateLibraryCard = $_REQUEST['alternateLibraryCard'] ?? null;
+			$alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'] ?? null;
+			$deleteAlternateLibraryCard = $_REQUEST['deleteAlternateLibraryCard'] ?? false;
+			if(!$deleteAlternateLibraryCard) {
+				if ($alternateLibraryCard) {
+					$user->alternateLibraryCard = $alternateLibraryCard;
+				}
+
+				if ($alternateLibraryCardPassword) {
+					$user->alternateLibraryCardPassword = $alternateLibraryCardPassword;
+				}
+			} else {
+				$user->alternateLibraryCard = null;
+				$user->alternateLibraryCardPassword = '';
+			}
+
+			if($user->update()) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Updated', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Your alternate library card has been updated.', 'isPublicFacing' => true]),
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Unable to update alternate library card at this time.', 'isPublicFacing' => true]),
+				];
+			}
+
 		} else {
 			return [
 				'success' => false,
