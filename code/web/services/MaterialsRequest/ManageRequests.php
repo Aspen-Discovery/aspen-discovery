@@ -217,7 +217,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$interface->assign('idsToShow', $idsToShow);
 			}
 
-			$materialsRequestsPerPage = $_REQUEST['pageSize'] ?? 2;
+			$materialsRequestsPerPage = $_REQUEST['pageSize'] ?? 30;
 			$page = $_REQUEST['page'] ?? 1;
 			$materialsRequests->limit(($page - 1) * $materialsRequestsPerPage, $materialsRequestsPerPage);
 			$materialsRequestCount = $materialsRequests->count();
