@@ -30,7 +30,7 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		$checkout_location_options = [
 			'0' => 'Current Location User is Logged Into',
 			'1' => 'User Home Location',
-			'2' => 'Item Location (Koha 23.11+ Only)'
+			'2' => 'Item Location (Koha 23.11+ and Sierra Only)'
 		];
 
 		$structure = [
@@ -202,6 +202,10 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		}
 	}
 
+	/**
+	 * @param string $locationId The location code for the active location
+	 * @return false|int
+	 */
 	public function getCheckoutLocationSetting($locationId) {
 		$location = new Location();
 		$location->code = $locationId;

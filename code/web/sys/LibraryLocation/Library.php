@@ -5337,4 +5337,19 @@ class Library extends DataObject {
 		}
 		return $this->_accountProfile;
 	}
+
+	private $_mainLocation = false;
+	public function getMainLocation() {
+		if ($this->_mainLocation === false) {
+			$location = new Location();
+			$location->libraryId = $this->libraryId;
+			$location->orderBy('isMainBranch desc');
+			if ($location->find(true)) {
+				$this->_mainLocation = $location;
+			}else{
+				$this->_mainLocation = null;
+			}
+		}
+		return $this->_mainLocation;
+	}
 }
