@@ -184,38 +184,64 @@ class CloudLibraryScope extends DataObject {
 
 	public function saveLibraries() {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
-			$libraryScope = new LibraryCloudLibraryScope();
-			$libraryScope->scopeId = $this->id;
-			$libraryScope->find();
-			while ($libraryScope->fetch()){
-				$libraryScope->delete();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+			foreach ($libraryList as $libraryId => $displayName) {
+				if (in_array($libraryId, $this->_libraries)) {
+					$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+					$libraryCloudLibraryScope->libraryId = $libraryId;
+					if ($libraryCloudLibraryScope->find(true)) {
+						if ($libraryCloudLibraryScope->scopeId != $this->id) {
+							$libraryCloudLibraryScope->scopeId = $this->id;
+							$libraryCloudLibraryScope->update();
+						}
+					} else {
+						$libraryCloudLibraryScope->scopeId = $this->id;
+						$libraryCloudLibraryScope->update();
+					}
+				} else {
+					$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
+					$libraryCloudLibraryScope->libraryId = $libraryId;
+					$libraryCloudLibraryScope->scopeId = $this->id;
+					if ($libraryCloudLibraryScope->find(true)) {
+						$libraryCloudLibraryScope->delete();
+					}
+				}
 			}
-			foreach ($this->_libraries as $library){
-				$libraryScope = new LibraryCloudLibraryScope();
-				$libraryScope->scopeId = $this->id;
-				$libraryScope->libraryId = $library;
-				$libraryScope->insert();
-			}
+			unset($this->_libraries);
 		}
-		unset ($this->_libraries);
 	}
 
 	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationScope = new LocationCloudLibraryScope();
-			$locationScope->scopeId = $this->id;
-			$locationScope->find();
-			while ($locationScope->fetch()){
-				$locationScope->delete();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+			/**
+			 * @var int $locationId
+			 * @var Location $location
+			 */
+			foreach ($locationList as $locationId => $displayName) {
+				if (in_array($locationId, $this->_locations)) {
+					$locationCloudLibraryScope = new LocationCloudLibraryScope();
+					$locationCloudLibraryScope->locationId = $locationId;
+					if ($locationCloudLibraryScope->find(true)) {
+						if ($locationCloudLibraryScope->scopeId != $this->id) {
+							$locationCloudLibraryScope->scopeId = $this->id;
+							$locationCloudLibraryScope->update();
+						}
+					} else {
+						$locationCloudLibraryScope->scopeId = $this->id;
+						$locationCloudLibraryScope->update();
+					}
+				} else {
+					$locationCloudLibraryScope = new LocationCloudLibraryScope();
+					$locationCloudLibraryScope->locationId = $locationId;
+					$locationCloudLibraryScope->scopeId = $this->id;
+					if ($locationCloudLibraryScope->find(true)) {
+						$locationCloudLibraryScope->delete();
+					}
+				}
 			}
-			foreach ($this->_locations as $location){
-				$locationScope = new LocationCloudLibraryScope();
-				$locationScope->scopeId = $this->id;
-				$locationScope->locationId = $location;
-				$locationScope->insert();
-			}
+			unset($this->_locations);
 		}
-		unset ($this->_libraries);
 	}
 
 	/** @return Library[]

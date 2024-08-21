@@ -721,6 +721,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function hasAPICheckout() : bool {
+		return false;
+	}
+
 	public function checkoutBySip(User $patron, $barcode, $currentLocationId) {
 		$checkout_result = [];
 		$success = false;
@@ -753,54 +757,60 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
-		if ($mySip->connect($this->accountProfile->sipUser, $this->accountProfile->sipPassword)) {
-			//send self check status message
-			$in = $mySip->msgSCStatus();
-			$msg_result = $mySip->get_message($in);
-			// Make sure the response is 98 as expected
-			if (preg_match('/^98/', $msg_result)) {
-				$result = $mySip->parseACSStatusResponse($msg_result);
-
-				//  Use result to populate SIP2 settings
-				$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-				if (!empty($result['variable']['AN'])) {
-					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-				}
-
-				$mySip->patron = $patron->getBarcode();
-				$mySip->patronpwd = $patron->getPasswordOrPin();
-
-				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $checkoutLocation);
+		if (empty($mySip->hostname) || empty($mySip->sipPort)){
+			$success = false;
+			$message = 'The SIP server is not properly configured for this account profile.';
+			$title = 'An Error Occurred';
+		} else{
+			if ($mySip->connect($this->accountProfile->sipUser, $this->accountProfile->sipPassword)) {
+				//send self check status message
+				$in = $mySip->msgSCStatus();
 				$msg_result = $mySip->get_message($in);
+				// Make sure the response is 98 as expected
+				if (preg_match('/^98/', $msg_result)) {
+					$result = $mySip->parseACSStatusResponse($msg_result);
 
-				$checkoutResponse = null;
-				$item = [];
-				if (str_starts_with($msg_result, '64') || str_starts_with($msg_result, '12')) {
-					$checkoutResponse = $mySip->parseCheckoutResponse($msg_result);
-					if($checkoutResponse['fixed']['Ok'][0]) {
-						$success = true;
-						$title = translate(['text' => 'Checkout successful', 'isPublicFacing' => true]);
-						$message = translate(['text' => 'You have successfully checked out this title.', 'isPublicFacing' => true]);
-						if(isset($checkoutResponse['variable']['AF'][0])) {
-							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
-						}
-						$dueDate = explode(" ", $checkoutResponse['variable']['AH'][0]);
-						if($this->accountProfile->ils == 'sierra') {
-							$dueDate = str_replace('-', '/', $dueDate[0]);
-							$dueDate = date_create($dueDate);
-						} else {
-							$dueDate = date_create($dueDate[0]);
-						}
-						$dueDate = date_format($dueDate, 'm/d/Y');
-						$item['due'] = $dueDate;
-					} else {
-						$message .= ' ' . $checkoutResponse['variable']['AF'][0];
-						$item['due'] = null;
+					//  Use result to populate SIP2 settings
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+					if (!empty($result['variable']['AN'])) {
+						$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 					}
-					$item['title'] = $checkoutResponse['variable']['AJ'][0] ?? 'Unknown title';
-					$item['barcode'] = $barcode;
-				} else {
-					$message = $checkoutResponse;
+
+					$mySip->patron = $patron->getBarcode();
+					$mySip->patronpwd = $patron->getPasswordOrPin();
+
+					$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $checkoutLocation);
+					$msg_result = $mySip->get_message($in);
+
+					$checkoutResponse = null;
+					$item = [];
+					if (str_starts_with($msg_result, '64') || str_starts_with($msg_result, '12')) {
+						$checkoutResponse = $mySip->parseCheckoutResponse($msg_result);
+						if($checkoutResponse['fixed']['Ok'][0]) {
+							$success = true;
+							$title = translate(['text' => 'Checkout successful', 'isPublicFacing' => true]);
+							$message = translate(['text' => 'You have successfully checked out this title.', 'isPublicFacing' => true]);
+							if(isset($checkoutResponse['variable']['AF'][0])) {
+								$message .= ' ' . $checkoutResponse['variable']['AF'][0];
+							}
+							$dueDate = explode(" ", $checkoutResponse['variable']['AH'][0]);
+							if($this->accountProfile->ils == 'sierra') {
+								$dueDate = str_replace('-', '/', $dueDate[0]);
+								$dueDate = date_create($dueDate);
+							} else {
+								$dueDate = date_create($dueDate[0]);
+							}
+							$dueDate = date_format($dueDate, 'm/d/Y');
+							$item['due'] = $dueDate;
+						} else {
+							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
+							$item['due'] = null;
+						}
+						$item['title'] = $checkoutResponse['variable']['AJ'][0] ?? 'Unknown title';
+						$item['barcode'] = $barcode;
+					} else {
+						$message = $checkoutResponse;
+					}
 				}
 			}
 		}
@@ -816,7 +826,25 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function hasAPICheckIn() {
+		return false;
+	}
+
+	public function checkInByAPI(User $patron, $barcode, Location $currentLocation): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function checkInBySIP(User $patron, $barcode, Location $currentLocation): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',

@@ -52,7 +52,7 @@ chown -R apache:aspen_apache /usr/local/aspen-discovery/tmp
 ## /var/log directory
 chmod -R 755 /var/log/aspen-discovery/$1
 chmod -R 755 /var/log/aspen-discovery/$1/logs
-chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 chown apache:aspen_apache /var/log/aspen-discovery/$1/*
+chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 
 php /usr/local/aspen-discovery/install/updateAllSideloadPermissions.php $1 centos

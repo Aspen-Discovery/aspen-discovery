@@ -48,6 +48,24 @@ function getUpdates24_09_00(): array {
 				'UPDATE palace_project_settings SET runFullUpdate = 1',
 			]
 		], //run_full_update_for_palace_project_24_09
+		//Mark - Grove
+		'add_location_stat_group' => [
+			'title' => 'Add Location Stat Group',
+			'description' => 'Add Location Stat Group',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location add statGroup INT(11) DEFAULT -1',
+			]
+		], //add_location_stat_group
+		'add_permission_for_testing_checkouts' => [
+			'title' => 'Add permission for testing checkouts',
+			'description' => 'Add permission for testing checkouts',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Circulation', 'Test Self Check', '', 20, 'Allows users to test checking titles out within Aspen Discovey.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Test Self Check'))",
+			]
+		], //add_permission_for_testing_checkouts
 
 		//katherine - ByWater
 
@@ -60,6 +78,28 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE user_ils_messages ADD COLUMN defaultContent mediumtext',
 			]
 		], //add_defaultContent_field
+		'web_builder_resource_access_library' => [
+			'title' => 'Add Web Resource Limit Access to Library',
+			'description' => 'Add table to store settings for web resources that have limited access by library',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_resource_access_library (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					webResourceId INT(11) NOT NULL, 
+					libraryId INT(11) NOT NULL,
+					UNIQUE INDEX (webResourceId, libraryId)
+				) ENGINE INNODB',
+			],
+		],
+		//web_builder_resource_access_library
+		'migrate_web_resource_library_access_rules' => [
+			'title' => 'Create web resource limit access rules for existing web resources with required login',
+			'description' => 'Create web resource limit access rules for existing web resources with required login',
+			'continueOnError' => true,
+			'sql' => [
+				'migrateWebResourceLibraryAccessRules',
+			],
+		],
+		//migrate_web_resource_library_access_rules
 
 		//kodi - ByWater
 
@@ -75,4 +115,34 @@ function getUpdates24_09_00(): array {
 		//other
 
 	];
+}
+
+function migrateWebResourceLibraryAccessRules(&$update) {
+	$libraries = [];
+	$library = new Library();
+	$library->find();
+	while ($library->fetch()) {
+		$libraries[] = $library->libraryId;
+	}
+
+	require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+	$webResources = [];
+	$webResource = new WebResource();
+	$webResource->requireLoginUnlessInLibrary = 1;
+	$webResource->find();
+	while ($webResource->fetch()) {
+		$webResources[] = $webResource->id;
+	}
+
+	foreach($webResources as $resource) {
+		foreach ($libraries as $libraryId) {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAccessLibrary.php';
+			$webResourceAccessLibrary = new WebResourceAccessLibrary();
+			$webResourceAccessLibrary->webResourceId = $resource;
+			$webResourceAccessLibrary->libraryId = $libraryId;
+			if(!$webResourceAccessLibrary->find(true)) {
+				$webResourceAccessLibrary->insert();
+			}
+		}
+	}
 }
