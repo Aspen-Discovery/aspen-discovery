@@ -55,8 +55,8 @@ chown -R www-data:aspen_apache /usr/local/aspen-discovery/tmp
 echo "Updating /var/log directory"
 chmod -R 755 /var/log/aspen-discovery/$1
 chmod -R 755 /var/log/aspen-discovery/$1/logs
-chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 chown www-data:aspen_apache /var/log/aspen-discovery/$1/*
+chown -R aspen:aspen /var/log/aspen-discovery/$1/logs
 
 echo "Updating sideload permissions"
 php /usr/local/aspen-discovery/install/updateAllSideloadPermissions.php $1 debian
