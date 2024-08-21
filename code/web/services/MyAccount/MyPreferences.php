@@ -38,7 +38,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 			}
 
-			$isAssociatedWithILS = !empty($user->ils_username) && !empty($user->ils_barcode);
+			$isAssociatedWithILS = $user->hasIlsConnection();
 
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
