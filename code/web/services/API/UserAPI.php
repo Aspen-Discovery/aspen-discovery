@@ -4710,6 +4710,9 @@ class UserAPI extends AbstractAPI {
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
 					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
 					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
+					$account[$linkedAccount->id]['alternateLibraryCard'] = $linkedAccount->getAlternateLibraryCardBarcode();
+					$account[$linkedAccount->id]['alternateLibraryCardPassword'] = $linkedAccount->getAlternateLibraryCardPasswordOrPin();
+					$account[$linkedAccount->id]['alternateLibraryCardOptions'] = $linkedAccount->getHomeLibrary()->getAlternateLibraryCardOptions();
 				}
 				return [
 					'success' => true,
