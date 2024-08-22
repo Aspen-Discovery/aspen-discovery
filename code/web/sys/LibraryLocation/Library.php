@@ -5226,7 +5226,7 @@ class Library extends DataObject {
 				];
 		}
 
-		$apiInfo['useAlternateLibraryCardForCloudLibrary'] = 0;
+		$apiInfo['useAlternateCardForCloudLibrary'] = 0;
 		require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 		$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
 		$libraryCloudLibraryScope->libraryId = $this->libraryId;
@@ -5399,5 +5399,30 @@ class Library extends DataObject {
 			}
 		}
 		return $this->_mainLocation;
+	}
+
+	public function getAlternateLibraryCardOptions() {
+		$useAlternateLibraryCardForCloudLibrary = false;
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $this->getCloudLibraryScope();
+		if($cloudLibraryScope->find(true)) {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+			$cloudLibrarySettings = new CloudLibrarySetting();
+			$cloudLibrarySettings->id = $cloudLibraryScope->settingId;
+			if($cloudLibrarySettings->find(true)) {
+				$useAlternateLibraryCardForCloudLibrary = $cloudLibrarySettings->useAlternateLibraryCard;
+			}
+		}
+
+		return [
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
+			'alternateLibraryCardFormMessage' => $this->alternateLibraryCardFormMessage,
+			'alternateLibraryCardLabel' => $this->alternateLibraryCardLabel,
+			'alternateLibraryCardStyle' => $this->alternateLibraryCardStyle,
+			'alternateLibraryCardPasswordLabel' => $this->alternateLibraryCardPasswordLabel,
+			'showAlternateLibraryCardPassword' => $this->showAlternateLibraryCardPassword,
+			'useAlternateLibraryCardForCloudLibrary' => $useAlternateLibraryCardForCloudLibrary,
+		];
 	}
 }
