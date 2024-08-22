@@ -2,7 +2,7 @@
 	<h1>{translate text="Collection Report" isAdminFacing=true}</h1>
 	{foreach from=$allLibraries item="tmpLibrary"}
 		<h2>{$tmpLibrary.displayName}</h2>
-		<table>
+		<table class="table table-striped">
 			<thead>
 				<tr>
 					<th>Palace Project Name</th>
@@ -17,7 +17,7 @@
 						<td>{$collection.palaceProjectName}</td>
 						<td>{$collection.displayName}</td>
 						<td style="text-align: right">{$collection.numTitles|number_format}</td>
-						<td>{$collection.numDeletedTitles|number_format}</td>
+						<td style="text-align: right">{$collection.numDeletedTitles|number_format}</td>
 					</tr>
 				{/foreach}
 			</tbody>
