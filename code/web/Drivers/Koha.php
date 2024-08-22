@@ -540,11 +540,12 @@ class Koha extends AbstractIlsDriver {
 				/** @noinspection SqlResolve */
 				/** @noinspection SqlDialectInspection */
 				$circulationRulesSql = "
-				SELECT * FROM circulation_rules
-				WHERE (categorycode IN ('$patronType', '*') OR categorycode IS NULL)
-				  AND (itemtype IN('$itemType', '*') OR itemtype is null)
-				  AND (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL)
-				ORDER BY branchcode desc, categorycode desc, itemtype desc LIMIT 1";
+					SELECT * FROM circulation_rules
+					WHERE (categorycode IN ('$patronType', '*') OR categorycode IS NULL)
+					  AND (itemtype IN('$itemType', '*') OR itemtype is null)
+					  AND (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL)
+					ORDER BY branchcode desc, categorycode desc, itemtype desc LIMIT 1
+				";
 				$circulationRulesRS = mysqli_query($this->dbConnection, $circulationRulesSql);
 				if ($circulationRulesRS !== false) {
 					$circulationRulesRow = $circulationRulesRS->fetch_assoc();
