@@ -31,3 +31,43 @@ jobs:
             echo "No changes detected in the release notes."
             exit 1
           fi
+
+  check_tabs_vs_spaces:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+
+      - name: Add official Aspen Discovery repo as another remote
+        run: git remote add official https://github.com/Aspen-Discovery/aspen-discovery.git && git fetch official
+
+      - name: Get default branch
+        id: get_default_branch
+        run: |
+          default_branch=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/Aspen-Discovery/aspen-discovery | jq -r .default_branch)
+          echo "Default branch is $default_branch"
+          echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for spaces instead of tabs
+        run: |
+          # Find files that are modified in the pull request
+          MODIFIED_FILES=$(git diff --name-only official/$DEFAULT_BRANCH HEAD)
+
+          # Loop through each file and check for spaces used instead of tabs
+          EXIT_CODE=0
+          for file in $MODIFIED_FILES; do
+            echo "Found modified file: $file";
+            if [[ $file == *.php || $file == *.js || $file == *.java ]]; then 
+              #echo "Checking $file for whitespace issues"
+              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file)
+              #echo "DIFF: $DIFF"
+              if [[ $DIFF =~ "  " ]]; then
+                echo "Detected spaces instead of tabs in $file"
+                EXIT_CODE=1
+              fi
+            fi
+          done
+          exit $EXIT_CODE
