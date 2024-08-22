@@ -2010,12 +2010,20 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			if ($this->getKohaVersion() >= 22.11) {
-				$postParams = [
-					'patron_id' => $patron->unique_ils_id,
-					'pickup_library_id' => $pickupBranch,
-					'item_group_id' => (int)$volumeId,
-					'biblio_id' => $recordId,
-				];
+				if ($volumeId != 0){
+					$postParams = [
+						'patron_id' => $patron->unique_ils_id,
+						'pickup_library_id' => $pickupBranch,
+						'item_group_id' => (int)$volumeId,
+						'biblio_id' => $recordId,
+					];
+				} else { //if there is no item group id
+					$postParams = [
+						'patron_id' => $patron->unique_ils_id,
+						'pickup_library_id' => $pickupBranch,
+						'biblio_id' => $recordId,
+					];
+				}
 			} else {
 				$postParams = [
 					'patron_id' => $patron->unique_ils_id,
