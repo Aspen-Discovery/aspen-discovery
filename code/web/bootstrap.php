@@ -408,32 +408,22 @@ function getValidServerNames(): array {
 
 function getGitBranch() {
 	global $interface;
-	global $configArray;
 
-	$gitName = $configArray['System']['gitVersionFile'];
-	$branchName = 'Unknown';
-	$branchNameWithCommit = 'Unknown';
-	if ($gitName == 'HEAD') {
-		$stringFromFile = file(ROOT_DIR . '/../../.git/HEAD');
-		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
-		$branchName = trim($explodedString[2]); //get the one that is always the branch name
-		$branchNameWithCommit = $branchName;
-	} else {
-		if (file_exists(ROOT_DIR . '/../../.git/FETCH_HEAD')) {
-			$stringFromFile = file(ROOT_DIR . '/../../.git/FETCH_HEAD');
-			if (!empty($stringFromFile)) {
-				$stringFromFile = $stringFromFile[0]; //get the string from the array
-				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					$branchName = $matches[2]; //get the branch name
-					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0, 7) . ')'; //get the branch name
-				}
-			}
-		} else {
-			$branchName = 'Unknown';
-			$branchNameWithCommit = 'Unknown';
+	$branchName = '';
+	$branchNameWithCommit = '';
+
+	$files = [];
+	foreach (glob('release_notes/*.MD') as $filename) {
+		if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $filename)) {
+			$tmp = str_replace('.MD', '', $filename);
+			$tmp = str_replace('release_notes/', '', $tmp);
+			$files[] = $tmp;
 		}
 	}
+	asort($files);
+
+	$branchName = end($files);
+	$branchNameWithCommit = end($files);
 
 	if (!empty($interface)) {
 		$interface->assign('gitBranch', $branchName);
