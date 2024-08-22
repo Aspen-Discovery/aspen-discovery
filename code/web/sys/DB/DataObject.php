@@ -965,7 +965,7 @@ abstract class DataObject implements JsonSerializable {
 		if ($propertyChanged) {
 			$this->_changedFields[] = $propertyName;
 			$oldValue = $this->$propertyName;
-			if ($propertyStructure['type'] == 'checkbox') {
+			if ($propertyStructure != null && $propertyStructure['type'] == 'checkbox') {
 				if ($newValue == 'off' || $newValue == false) {
 					$newValue = 0;
 				} elseif ($newValue == 'on' || $newValue == true) {
@@ -980,7 +980,7 @@ abstract class DataObject implements JsonSerializable {
 				$logger->log("Forcing Nightly Index because $propertyName on " . get_class($this) . ' - ' . $this->getPrimaryKeyValue() . " was changed to $newValue by user " . UserAccount::getActiveUserId(), Logger::LOG_ALERT);
 			}
 			//Add the change to the history unless tracking the history is off (passwords)
-			if ($propertyStructure['type'] != 'password' && $propertyStructure['type'] != 'storedPassword') {
+			if ($propertyStructure != null && $propertyStructure['type'] != 'password' && $propertyStructure['type'] != 'storedPassword') {
 				if ($this->objectHistoryEnabled()) {
 					require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 					$history = new DataObjectHistory();

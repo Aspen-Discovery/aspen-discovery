@@ -47,6 +47,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $includeAllRecordsInDateAddedFacets;
 	public $facetCountsToShow;
 	public $facetGroupId;
+	public $formatSortingGroupId;
 
 	//Enrichment
 	public $showStandardReviews;

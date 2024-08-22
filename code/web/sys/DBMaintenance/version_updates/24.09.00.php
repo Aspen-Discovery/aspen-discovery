@@ -66,6 +66,40 @@ function getUpdates24_09_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Test Self Check'))",
 			]
 		], //add_permission_for_testing_checkouts
+		'add_permission_for_format_sorting' => [
+			'title' => 'Add permissions for format sorting',
+			'description' => 'Add permissions for format sorting',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Grouped Work Display', 'Administer All Format Sorting', '', 40, 'Allows users to change how formats are sorted within a grouped work for all libraries.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Grouped Work Display', 'Administer Library Format Sorting', '', 50, 'Allows users to change how formats are sorted within a grouped work for their library.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Format Sorting'))",
+			]
+		], //add_permission_for_format_sorting
+		'create_format_sorting_tables' => [
+			'title' => 'Create format sorting tables',
+			'description' => 'Create format sorting tables',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort_group (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    name VARCHAR(255) NOT NULL UNIQUE,
+    				bookSortMethod TINYINT(1) DEFAULT 1,
+    				comicSortMethod TINYINT(1) DEFAULT 1,
+					movieSortMethod TINYINT(1) DEFAULT 1,
+    				musicSortMethod TINYINT(1) DEFAULT 1,
+    				otherSortMethod TINYINT(1) DEFAULT 1
+				)',
+				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    formatSortingGroupId INT(11) NOT NULL,
+    				groupingCategory VARCHAR(6) NOT NULL,
+					format VARCHAR(255) NOT NULL,
+    				weight INT(11) NOT NULL,
+    				UNIQUE(formatSortingGroupId, groupingCategory, format)
+				)',
+			]
+		], //create_format_sorting_tables
 
 		//katherine - ByWater
 
