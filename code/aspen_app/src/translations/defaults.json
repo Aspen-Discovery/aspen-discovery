@@ -570,5 +570,8 @@
   "mark_as_unread": "Mark As Unread",
   "date_sent": "Date Sent",
   "sent_on": "Sent on %1%",
-  "open": "Open"
+  "open": "Open",
+  "alternate_library_card": "Alternate Library Card",
+  "manage_alternate_library_card": "Manage Alternate Library Card",
+  "add_alternate_library_card": "Add Alternate Library Card"
 }

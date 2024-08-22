@@ -1,9 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { CheckIcon, CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormControlLabel, FormControlLabelText, Heading, Select, Button, ButtonGroup, ButtonText, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, ButtonSpinner, SelectScrollView } from '@gluestack-ui/themed';
+import { CloseIcon, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, FormControl, FormControlLabel, FormControlLabelText, Heading, Select, Button, ButtonGroup, ButtonText, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, Icon, ChevronDownIcon, ButtonSpinner, SelectScrollView, Input, InputField, InputSlot, InputIcon } from '@gluestack-ui/themed';
 import React from 'react';
-import { Platform } from 'react-native';
+import { EyeOff, Eye } from 'lucide-react-native';
+import { useWindowDimensions } from 'react-native';
+import RenderHtml from 'react-native-render-html';
 import { HoldsContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
+import { refreshProfile, updateAlternateLibraryCard } from '../../../util/api/user';
+import { decodeHTML } from '../../../util/apiAuth';
 import { completeAction } from '../../../util/recordActions';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { getCopies } from '../../../util/api/item';
@@ -41,9 +45,14 @@ export const HoldPrompt = (props) => {
           setHoldItemSelectIsOpen,
           onHoldItemSelectClose,
           cancelHoldItemSelectRef,
+          recordSource,
      } = props;
+
+     const [userHasAlternateLibraryCard, setUserHasAlternateLibraryCard] = React.useState(props.userHasAlternateLibraryCard ?? false);
+     const [promptAlternateLibraryCard, setPromptAlternateLibraryCard] = React.useState(props.shouldPromptAlternateLibraryCard ?? false);
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
+     const [showAddAlternateLibraryCardModal, setShowAddAlternateLibraryCardModal] = React.useState(false);
 
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -117,7 +126,114 @@ export const HoldPrompt = (props) => {
      const [volume, setVolume] = React.useState('');
      const [item, setItem] = React.useState('');
 
+     let cardLabel = getTermFromDictionary(language, 'alternate_library_card');
+     let passwordLabel = getTermFromDictionary(language, 'password');
+     let formMessage = '';
+     let showAlternateLibraryCardPassword = false;
+
+     if (library?.alternateLibraryCardConfig?.alternateLibraryCardLabel) {
+          cardLabel = library.alternateLibraryCardConfig.alternateLibraryCardLabel;
+     }
+
+     if (library?.alternateLibraryCardConfig?.alternateLibraryCardPasswordLabel) {
+          passwordLabel = library.alternateLibraryCardConfig.alternateLibraryCardPasswordLabel;
+     }
+
+     if (library?.alternateLibraryCardConfig?.alternateLibraryCardFormMessage) {
+          formMessage = decodeHTML(library.alternateLibraryCardConfig.alternateLibraryCardFormMessage);
+     }
+
+     if (library?.alternateLibraryCardConfig?.showAlternateLibraryCardPassword) {
+          if (library.alternateLibraryCardConfig.showAlternateLibraryCardPassword === '1' || library.alternateLibraryCardConfig.showAlternateLibraryCardPassword === 1) {
+               showAlternateLibraryCardPassword = true;
+          }
+     }
+
      const [activeAccount, setActiveAccount] = React.useState(user.id ?? '');
+
+     const updateActiveAccount = (newId) => {
+          setActiveAccount(newId);
+          if (newId !== user.id) {
+               let newAccount = _.filter(accounts, ['id', newId]);
+               if (newAccount[0]) {
+                    newAccount = newAccount[0];
+
+                    // we need to recalculate if the linked account is eligible for using alternate library cards
+                    if (newAccount) {
+                         if (typeof newAccount.alternateLibraryCard !== 'undefined') {
+                              const alternateLibraryCardOptions = newAccount?.alternateLibraryCardOptions ?? [];
+                              if (alternateLibraryCardOptions) {
+                                   if (alternateLibraryCardOptions.showAlternateLibraryCard === '1' || alternateLibraryCardOptions.showAlternateLibraryCard === 1) {
+                                        if (recordSource === 'cloud_library' && (alternateLibraryCardOptions.useAlternateLibraryCardForCloudLibrary === '1' || alternateLibraryCardOptions.useAlternateLibraryCardForCloudLibrary === 1)) {
+                                             setPromptAlternateLibraryCard(true);
+                                        }
+                                   }
+
+                                   if (newAccount.alternateLibraryCard && newAccount.alternateLibraryCard !== '') {
+                                        if (alternateLibraryCardOptions?.showAlternateLibraryCardPassword === '1') {
+                                             if (newAccount.alternateLibraryCardPassword !== '') {
+                                                  setUserHasAlternateLibraryCard(true);
+                                             } else {
+                                                  setUserHasAlternateLibraryCard(false);
+                                             }
+                                        } else {
+                                             setUserHasAlternateLibraryCard(true);
+                                        }
+                                   } else {
+                                        setUserHasAlternateLibraryCard(false);
+                                   }
+
+                                   if (alternateLibraryCardOptions?.alternateLibraryCardLabel) {
+                                        cardLabel = alternateLibraryCardOptions.alternateLibraryCardLabel;
+                                   }
+
+                                   if (alternateLibraryCardOptions?.alternateLibraryCardPasswordLabel) {
+                                        passwordLabel = alternateLibraryCardOptions.alternateLibraryCardPasswordLabel;
+                                   }
+
+                                   if (alternateLibraryCardOptions?.alternateLibraryCardFormMessage) {
+                                        formMessage = decodeHTML(alternateLibraryCardOptions.alternateLibraryCardFormMessage);
+                                   }
+
+                                   if (alternateLibraryCardOptions?.showAlternateLibraryCardPassword) {
+                                        if (alternateLibraryCardOptions.showAlternateLibraryCardPassword === '1' || alternateLibraryCardOptions.showAlternateLibraryCardPassword === 1) {
+                                             showAlternateLibraryCardPassword = true;
+                                        }
+                                   }
+                              } else {
+                                   setUserHasAlternateLibraryCard(false);
+                                   setPromptAlternateLibraryCard(false);
+                              }
+                         } else {
+                              setUserHasAlternateLibraryCard(false);
+                              setPromptAlternateLibraryCard(false);
+                         }
+                    }
+               }
+          } else {
+               //revert back to primary user id
+               setUserHasAlternateLibraryCard(props.userHasAlternateLibraryCard);
+               setPromptAlternateLibraryCard(props.shouldPromptAlternateLibraryCard);
+
+               if (library?.alternateLibraryCardConfig?.alternateLibraryCardLabel) {
+                    cardLabel = library.alternateLibraryCardConfig.alternateLibraryCardLabel;
+               }
+
+               if (library?.alternateLibraryCardConfig?.alternateLibraryCardPasswordLabel) {
+                    passwordLabel = library.alternateLibraryCardConfig.alternateLibraryCardPasswordLabel;
+               }
+
+               if (library?.alternateLibraryCardConfig?.alternateLibraryCardFormMessage) {
+                    formMessage = decodeHTML(library.alternateLibraryCardConfig.alternateLibraryCardFormMessage);
+               }
+
+               if (library?.alternateLibraryCardConfig?.showAlternateLibraryCardPassword) {
+                    if (library.alternateLibraryCardConfig.showAlternateLibraryCardPassword === '1' || library.alternateLibraryCardConfig.showAlternateLibraryCardPassword === 1) {
+                         showAlternateLibraryCardPassword = true;
+                    }
+               }
+          }
+     };
 
      let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
      if (_.isNumber(user.pickupLocationId)) {
@@ -143,6 +259,154 @@ export const HoldPrompt = (props) => {
      // console.log(pickupLocation);
 
      const [location, setLocation] = React.useState(pickupLocation);
+
+     const { width } = useWindowDimensions();
+     const [card, setCard] = React.useState(user?.alternateLibraryCard ?? '');
+     const [password, setPassword] = React.useState(user?.alternateLibraryCardPassword ?? '');
+     const [showPassword, setShowPassword] = React.useState(false);
+     const toggleShowPassword = () => setShowPassword(!showPassword);
+
+     const source = {
+          baseUrl: library.baseUrl,
+          html: formMessage,
+     };
+
+     const tagsStyles = {
+          body: {
+               color: textColor,
+          },
+          a: {
+               color: textColor,
+               textDecorationColor: textColor,
+          },
+     };
+
+     const updateCard = async () => {
+          await updateAlternateLibraryCard(card, password, false, library.baseUrl, language);
+          await refreshProfile(library.baseUrl).then(async (result) => {
+               updateUser(result);
+          });
+          setCard('');
+          setPassword('');
+     };
+
+     if (showAddAlternateLibraryCardModal) {
+          return (
+               <Modal isOpen={showAddAlternateLibraryCardModal} onClose={() => setShowAddAlternateLibraryCardModal(false)} closeOnOverlayClick={false} size="lg">
+                    <ModalBackdrop />
+                    <ModalContent maxWidth="90%" bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                         <ModalHeader borderBottomWidth="$1" borderBottomColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}>
+                              <Heading size="md" color={textColor}>
+                                   {getTermFromDictionary(language, 'add_alternate_library_card')}
+                              </Heading>
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody mt="$3">
+                              {formMessage ? <RenderHtml contentWidth={width} source={source} tagsStyles={tagsStyles} /> : null}
+                              <FormControl mb="$2">
+                                   <FormControlLabel>
+                                        <FormControlLabelText color={textColor} size="sm">
+                                             {cardLabel}
+                                        </FormControlLabelText>
+                                   </FormControlLabel>
+                                   <Input>
+                                        <InputField textContentType="none" color={textColor} name="card" defaultValue={card} accessibilityLabel={cardLabel} onChangeText={(value) => setCard(value)} />
+                                   </Input>
+                              </FormControl>
+                              {showAlternateLibraryCardPassword ? (
+                                   <FormControl mb="$2">
+                                        <FormControlLabel>
+                                             <FormControlLabelText color={textColor} size="sm">
+                                                  {passwordLabel}
+                                             </FormControlLabelText>
+                                        </FormControlLabel>
+                                        <Input>
+                                             <InputField textContentType="none" type={showPassword ? 'text' : 'password'} color={textColor} name="password" defaultValue={password} accessibilityLabel={passwordLabel} onChangeText={(value) => setPassword(value)} />
+                                             <InputSlot onPress={toggleShowPassword}>
+                                                  <InputIcon as={showPassword ? Eye : EyeOff} mr="$2" color={textColor} />
+                                             </InputSlot>
+                                        </Input>
+                                   </FormControl>
+                              ) : null}
+                         </ModalBody>
+                         <ModalFooter borderTopWidth="$1" borderTopColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}>
+                              <ButtonGroup space="sm">
+                                   <Button
+                                        variant="outline"
+                                        borderColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}
+                                        onPress={() => {
+                                             setShowAddAlternateLibraryCardModal(false);
+                                             setLoading(false);
+                                        }}>
+                                        <ButtonText color={colorMode === 'light' ? theme['colors']['warmGray']['500'] : theme['colors']['coolGray']['300']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
+                                   </Button>
+                                   <Button
+                                        bgColor={theme['colors']['primary']['500']}
+                                        isDisabled={loading}
+                                        onPress={async () => {
+                                             setLoading(true);
+                                             await updateCard();
+                                             await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
+                                                  setResponse(result);
+                                                  if (result) {
+                                                       if (result.success === true || result.success === 'true') {
+                                                            queryClient.invalidateQueries({ queryKey: ['holds', activeAccount, library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            /*await refreshProfile(library.baseUrl).then((profile) => {
+                                                           updateUser(profile);
+                                                           });*/
+                                                       }
+
+                                                       if (result?.confirmationNeeded && result.confirmationNeeded === true) {
+                                                            let tmp = holdConfirmationResponse;
+                                                            const obj = {
+                                                                 message: result.message,
+                                                                 title: result.title,
+                                                                 confirmationNeeded: result.confirmationNeeded ?? false,
+                                                                 confirmationId: result.confirmationId ?? null,
+                                                                 recordId: id ?? null,
+                                                            };
+                                                            tmp = _.merge(obj, tmp);
+                                                            setHoldConfirmationResponse(tmp);
+                                                       }
+
+                                                       if (result?.shouldBeItemHold && result.shouldBeItemHold === true) {
+                                                            let tmp = holdSelectItemResponse;
+                                                            const obj = {
+                                                                 message: result.message,
+                                                                 title: 'Select an Item',
+                                                                 patronId: activeAccount,
+                                                                 pickupLocation: location,
+                                                                 bibId: id ?? null,
+                                                                 items: result.items ?? [],
+                                                            };
+
+                                                            tmp = _.merge(obj, tmp);
+                                                            setHoldSelectItemResponse(tmp);
+                                                       }
+
+                                                       setLoading(false);
+                                                       setShowAddAlternateLibraryCardModal(false);
+                                                       if (result?.confirmationNeeded && result.confirmationNeeded) {
+                                                            setHoldConfirmationIsOpen(true);
+                                                       } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                                            setHoldItemSelectIsOpen(true);
+                                                       } else {
+                                                            setResponseIsOpen(true);
+                                                       }
+                                                  }
+                                             });
+                                        }}>
+                                        {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
+                                   </Button>
+                              </ButtonGroup>
+                         </ModalFooter>
+                    </ModalContent>
+               </Modal>
+          );
+     }
 
      return (
           <>
@@ -224,7 +488,7 @@ export const HoldPrompt = (props) => {
                                         <FormControlLabel>
                                              <FormControlLabelText color={textColor}>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControlLabelText>
                                         </FormControlLabel>
-                                        <Select name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => setActiveAccount(itemValue)}>
+                                        <Select name="linkedAccount" selectedValue={activeAccount} minWidth={200} mt="$1" mb="$3" onValueChange={(itemValue) => updateActiveAccount(itemValue)}>
                                              <SelectTrigger variant="outline" size="md">
                                                   {accounts.map((item, index) => {
                                                        if (item.id === activeAccount) {
@@ -264,64 +528,75 @@ export const HoldPrompt = (props) => {
                                         }}>
                                         <ButtonText color={colorMode === 'light' ? theme['colors']['warmGray']['500'] : theme['colors']['coolGray']['300']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
                                    </Button>
-                                   <Button
-                                        bgColor={theme['colors']['primary']['500']}
-                                        isDisabled={loading}
-                                        onPress={async () => {
-                                             setLoading(true);
-                                             await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
-                                                  setResponse(result);
-                                                  if (result) {
-                                                       if (result.success === true || result.success === 'true') {
-                                                            queryClient.invalidateQueries({ queryKey: ['holds', activeAccount, library.baseUrl, language] });
-                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-                                                            /*await refreshProfile(library.baseUrl).then((profile) => {
-												 updateUser(profile);
-												 });*/
-                                                       }
+                                   {promptAlternateLibraryCard && !userHasAlternateLibraryCard ? (
+                                        <Button
+                                             bgColor={theme['colors']['primary']['500']}
+                                             onPress={() => {
+                                                  setShowModal(false);
+                                                  setShowAddAlternateLibraryCardModal(true);
+                                             }}>
+                                             <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'next')}</ButtonText>
+                                        </Button>
+                                   ) : (
+                                        <Button
+                                             bgColor={theme['colors']['primary']['500']}
+                                             isDisabled={loading}
+                                             onPress={async () => {
+                                                  setLoading(true);
+                                                  await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
+                                                       setResponse(result);
+                                                       if (result) {
+                                                            if (result.success === true || result.success === 'true') {
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', activeAccount, library.baseUrl, language] });
+                                                                 queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                                 /*await refreshProfile(library.baseUrl).then((profile) => {
+                                                        updateUser(profile);
+                                                        });*/
+                                                            }
 
-                                                       if (result?.confirmationNeeded && result.confirmationNeeded === true) {
-                                                            let tmp = holdConfirmationResponse;
-                                                            const obj = {
-                                                                 message: result.message,
-                                                                 title: result.title,
-                                                                 confirmationNeeded: result.confirmationNeeded ?? false,
-                                                                 confirmationId: result.confirmationId ?? null,
-                                                                 recordId: id ?? null,
-                                                            };
-                                                            tmp = _.merge(obj, tmp);
-                                                            setHoldConfirmationResponse(tmp);
-                                                       }
+                                                            if (result?.confirmationNeeded && result.confirmationNeeded === true) {
+                                                                 let tmp = holdConfirmationResponse;
+                                                                 const obj = {
+                                                                      message: result.message,
+                                                                      title: result.title,
+                                                                      confirmationNeeded: result.confirmationNeeded ?? false,
+                                                                      confirmationId: result.confirmationId ?? null,
+                                                                      recordId: id ?? null,
+                                                                 };
+                                                                 tmp = _.merge(obj, tmp);
+                                                                 setHoldConfirmationResponse(tmp);
+                                                            }
 
-                                                       if (result?.shouldBeItemHold && result.shouldBeItemHold === true) {
-                                                            let tmp = holdSelectItemResponse;
-                                                            const obj = {
-                                                                 message: result.message,
-                                                                 title: 'Select an Item',
-                                                                 patronId: activeAccount,
-                                                                 pickupLocation: location,
-                                                                 bibId: id ?? null,
-                                                                 items: result.items ?? [],
-                                                            };
+                                                            if (result?.shouldBeItemHold && result.shouldBeItemHold === true) {
+                                                                 let tmp = holdSelectItemResponse;
+                                                                 const obj = {
+                                                                      message: result.message,
+                                                                      title: 'Select an Item',
+                                                                      patronId: activeAccount,
+                                                                      pickupLocation: location,
+                                                                      bibId: id ?? null,
+                                                                      items: result.items ?? [],
+                                                                 };
 
-                                                            tmp = _.merge(obj, tmp);
-                                                            setHoldSelectItemResponse(tmp);
-                                                       }
+                                                                 tmp = _.merge(obj, tmp);
+                                                                 setHoldSelectItemResponse(tmp);
+                                                            }
 
-                                                       setLoading(false);
-                                                       setShowModal(false);
-                                                       if (result?.confirmationNeeded && result.confirmationNeeded) {
-                                                            setHoldConfirmationIsOpen(true);
-                                                       } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
-                                                            setHoldItemSelectIsOpen(true);
-                                                       } else {
-                                                            setResponseIsOpen(true);
+                                                            setLoading(false);
+                                                            setShowModal(false);
+                                                            if (result?.confirmationNeeded && result.confirmationNeeded) {
+                                                                 setHoldConfirmationIsOpen(true);
+                                                            } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                                                 setHoldItemSelectIsOpen(true);
+                                                            } else {
+                                                                 setResponseIsOpen(true);
+                                                            }
                                                        }
-                                                  }
-                                             });
-                                        }}>
-                                        {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
-                                   </Button>
+                                                  });
+                                             }}>
+                                             {loading ? <ButtonSpinner color={theme['colors']['primary']['500-text']} /> : <ButtonText color={theme['colors']['primary']['500-text']}>{title}</ButtonText>}
+                                        </Button>
+                                   )}
                               </ButtonGroup>
                          </ModalFooter>
                     </ModalContent>

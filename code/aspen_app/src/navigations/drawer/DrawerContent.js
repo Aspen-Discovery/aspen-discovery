@@ -415,6 +415,7 @@ export const DrawerContent = () => {
                               <VStack>
                                    <UserProfile />
                                    <LinkedAccounts />
+                                   <AlternateLibraryCard />
                               </VStack>
                          </VStack>
                     </VStack>
@@ -809,6 +810,39 @@ const UserPreferences = () => {
                </HStack>
           </Pressable>
      );
+};
+
+const AlternateLibraryCard = () => {
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+
+     let shouldShowAlternateLibraryCard = false;
+     if (typeof library.showAlternateLibraryCard !== 'undefined') {
+          shouldShowAlternateLibraryCard = library.showAlternateLibraryCard;
+     }
+
+     if (version >= '24.09.00' && (shouldShowAlternateLibraryCard === '1' || shouldShowAlternateLibraryCard === 1)) {
+          return (
+               <Pressable
+                    px="2"
+                    py="3"
+                    rounded="md"
+                    onPress={() => {
+                         navigateStack('LibraryCardTab', 'MyAlternateLibraryCard', {
+                              prevRoute: 'AccountDrawer',
+                              hasPendingChanges: false,
+                         });
+                    }}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <Text fontWeight="500">{getTermFromDictionary(language, 'alternate_library_card')}</Text>
+                    </HStack>
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
 const Fines = () => {
