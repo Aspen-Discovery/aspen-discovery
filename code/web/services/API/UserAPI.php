@@ -6068,7 +6068,7 @@ class UserAPI extends AbstractAPI {
 					$user->alternateLibraryCardPassword = $alternateLibraryCardPassword;
 				}
 			} else {
-				$user->alternateLibraryCard = null;
+				$user->alternateLibraryCard = '';
 				$user->alternateLibraryCardPassword = '';
 			}
 
