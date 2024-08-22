@@ -5226,7 +5226,7 @@ class Library extends DataObject {
 				];
 		}
 
-		$apiInfo['useAlternateLibraryCardForCloudLibrary'] = 0;
+		$apiInfo['useAlternateCardForCloudLibrary'] = 0;
 		require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 		$libraryCloudLibraryScope = new LibraryCloudLibraryScope();
 		$libraryCloudLibraryScope->libraryId = $this->libraryId;
