@@ -9,30 +9,30 @@ cd "/usr/local/aspen-discovery/docker/files/scripts" || exit
 # Check if site configuration exists
 confSiteFile="$CONFIG_DIRECTORY/conf/config.ini"
 if [ ! -f "$confSiteFile" ] ; then
-  mkdir -p "$CONFIG_DIRECTORY"
-  if ! php createConfig.php "$CONFIG_DIRECTORY" ; then
-    echo "ERROR : FAILED TO CREATE ASPEN SETTINGS"
-    exit 1
-  fi
+	mkdir -p "$CONFIG_DIRECTORY"
+	if ! php createConfig.php "$CONFIG_DIRECTORY" ; then
+		echo "ERROR : FAILED TO CREATE ASPEN SETTINGS"
+		exit 1
+	fi
 
 fi
 
 # Initialize Aspen database
 if ! php initDatabase.php ; then
-  echo "ERROR : FAILED TO INITIALIZE DATABASE"
-  exit 1
+	echo "ERROR : FAILED TO INITIALIZE DATABASE"
+	exit 1
 fi
 
 # Initialize Koha Connection
 if ! php initKohaLink.php ; then
-  echo "ERROR : FAILED TO ESTABLISH A CONNECTION WITH KOHA"
-  exit 1
+	echo "ERROR : FAILED TO ESTABLISH A CONNECTION WITH KOHA"
+	exit 1
 fi
 
 # Create missing dirs and fix ownership and permissions if needed
 if ! php createDirs.php ; then
-  echo "ERROR : FAILED TO CREATE DIRECTORIES OR TRY TO FIX OWNERSHIP AND PERMISSIONS"
-  exit 1
+	echo "ERROR : FAILED TO CREATE DIRECTORIES OR TRY TO FIX OWNERSHIP AND PERMISSIONS"
+	exit 1
 fi
 
 # Move and create temporarily sym-links to etc/cron directory
@@ -62,9 +62,9 @@ curl -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
 
 # Start Cron
 if [ "$ASPEN_CRON" == "yes" ]; then
-	service cron start
 	php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php "$SITE_NAME" &
+	cron -f -L 2
+else
+/bin/bash -c "trap : TERM INT; sleep infinity & wait"
 fi
 
-# Infinite loop
-/bin/bash -c "trap : TERM INT; sleep infinity & wait"
