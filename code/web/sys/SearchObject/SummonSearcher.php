@@ -6,38 +6,38 @@ require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 
 class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
-    static $instance;
+	static $instance;
 	/** @var SummonSettings */
-    private $summonBaseApi ='http://api.summon.serialssolutions.com';
+	private $summonBaseApi ='http://api.summon.serialssolutions.com';
 
 	/**Build URL */
-    private $sessionId;
-    private $version = '2.0.0';
-    private $service = 'search';
-    private $responseType = "json";
+	private $sessionId;
+	private $version = '2.0.0';
+	private $service = 'search';
+	private $responseType = "json";
 
-    private static $searchOptions;
-    private $curl_connection;
+	private static $searchOptions;
+	private $curl_connection;
 
 	/**Track query time info */
-    protected $queryStartTime = null;
+	protected $queryStartTime = null;
 	protected $queryEndTime = null;
 	protected $queryTime = null;
 
-    // STATS
+	// STATS
 	protected $resultsTotal = 0;
 
 	protected $searchTerms;
 
 	protected $lastSearchResults;
 
-    // Module and Action for building search results 
+	// Module and Action for building search results 
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
 
-    	/** @var string */
+		/** @var string */
 	protected $searchSource = 'local';
-    protected $searchType = 'basic';
+	protected $searchType = 'basic';
 
 /** Values for the options array*/
 	protected $holdings = true;
@@ -105,15 +105,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	protected $facetFields;
 
-    public function __construct() {
-        //Initialize properties with default values
-        $this->searchSource = 'summon';
-        $this->searchType = 'summon';
-        $this->resultsModule = 'Summon';
-        $this->resultsAction = 'Results';
+	public function __construct() {
+		//Initialize properties with default values
+		$this->searchSource = 'summon';
+		$this->searchType = 'summon';
+		$this->resultsModule = 'Summon';
+		$this->resultsAction = 'Results';
 	}
-     
-    /**
+	 
+	/**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.
 	 * @access  public
@@ -182,9 +182,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		AspenError::raiseError(new AspenError('There are no Summon Settings set for this library system.'));
 	}
 
-    public function getCurlConnection() {
+	public function getCurlConnection() {
 		if ($this->curl_connection == null) {
-            $this->curl_connection = curl_init();
+			$this->curl_connection = curl_init();
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
 			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
@@ -208,16 +208,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	/**
 	 * Use Institution's Summon API credentials to authenticate and allow connection with the Summon API
 	*/
-    public function authenticate($settings, $queryString) {
+	public function authenticate($settings, $queryString) {
 		$headers = $this->getHeaders();
 		$data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
 				$hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
 				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
-                if (!is_null($this->sessionId)){
-                    $headers['x-summon-session-id'] = $this->sessionId;
-                } 
+				if (!is_null($this->sessionId)){
+					$headers['x-summon-session-id'] = $this->sessionId;
+				} 
 		return $headers;
-    }
+	}
 
 	public function getSort() {
 		$this->sortOptions = array(
@@ -312,7 +312,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $splitFacets;
 	}
 
-    /**
+	/**
 	 * Return an array of data summarising the results of a search.
 	 *
 	 * @access  public
@@ -357,7 +357,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $url;
 	}
 
-    /**
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results. Called by results.php.
 	 *
@@ -388,7 +388,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $html;
 	}
 
-    /**
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results.
 	 *
@@ -582,7 +582,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 * @param string $key  Hash key
 	 * @param string $data Data to hash
 	 *
-	 * @return string      Generated hash
+	 * @return string	  Generated hash
  	*/
 	protected function hmacsha1($key, $data) {
 		$blocksize=64;
@@ -639,67 +639,67 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $recordData;
 	}
 
-    public function process($input, $textQuery = null) {
+	public function process($input, $textQuery = null) {
 		// if no search options are found, assing them
 		// alternatively, if the search options do not match the current search, update them
-        if (SearchObject_SummonSearcher::$searchOptions == null ||
+		if (SearchObject_SummonSearcher::$searchOptions == null ||
 			SearchObject_SummonSearcher::$searchOptions['textQuery'] != $textQuery ) {
-            if ($this->responseType != 'json') {
-                return $input;
-            }
-            SearchObject_SummonSearcher::$searchOptions = json_decode($input, true);
-            if (!SearchObject_SummonSearcher::$searchOptions) {
-                SearchObject_SummonSearcher::$searchOptions = array(
-                    'recordCount' => 0,
-                    'documents' => array(),
-                    'errors' => array(
-                        array(
-                            'code' => 'PHP-Internal',
-                            'message' => 'Cannot decode JSON response: ' . $input
-                        )
-                    )
-                );
-            }
-               // Detect errors
-            if (isset(SearchObject_SummonSearcher::$searchOptions['errors']) && is_array(SearchObject_SummonSearcher::$searchOptions['errors'])) {
-                foreach (SearchObject_SummonSearcher::$searchOptions['errors'] as $current) {
-                    $errors[] = "{$current['code']}: {$current['message']}";
-                }
-                $msg = 'Unable to process query<br />Summon returned: ' .
-                    implode('<br />', $errors);
-                throw new Exception($msg);
-            }
-            if (SearchObject_SummonSearcher::$searchOptions) {
-                return SearchObject_SummonSearcher::$searchOptions;
-            } else {
-                return null;
-            }
-        } else {
-            return SearchObject_SummonSearcher::$searchOptions;
-        }
-    }
+			if ($this->responseType != 'json') {
+				return $input;
+			}
+			SearchObject_SummonSearcher::$searchOptions = json_decode($input, true);
+			if (!SearchObject_SummonSearcher::$searchOptions) {
+				SearchObject_SummonSearcher::$searchOptions = array(
+					'recordCount' => 0,
+					'documents' => array(),
+					'errors' => array(
+						array(
+							'code' => 'PHP-Internal',
+							'message' => 'Cannot decode JSON response: ' . $input
+						)
+					)
+				);
+			}
+			   // Detect errors
+			if (isset(SearchObject_SummonSearcher::$searchOptions['errors']) && is_array(SearchObject_SummonSearcher::$searchOptions['errors'])) {
+				foreach (SearchObject_SummonSearcher::$searchOptions['errors'] as $current) {
+					$errors[] = "{$current['code']}: {$current['message']}";
+				}
+				$msg = 'Unable to process query<br />Summon returned: ' .
+					implode('<br />', $errors);
+				throw new Exception($msg);
+			}
+			if (SearchObject_SummonSearcher::$searchOptions) {
+				return SearchObject_SummonSearcher::$searchOptions;
+			} else {
+				return null;
+			}
+		} else {
+			return SearchObject_SummonSearcher::$searchOptions;
+		}
+	}
 
-    /**
+	/**
 	 * Send HTTP request with headers modified to meet Summon API requirements
 	 */
-    protected function httpRequest($baseUrl, $queryString, $headers) {
+	protected function httpRequest($baseUrl, $queryString, $headers) {
 		foreach ($headers as $key =>$value) {
 			$modified_headers[] = $key.": ".$value;
 		}
-        $curlConnection = $this->getCurlConnection();
-        $curlOptions = array(
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => "{$baseUrl}?{$queryString}",
-            CURLOPT_HTTPHEADER => $modified_headers
-        );
-        curl_setopt_array($curlConnection, $curlOptions);
-        $result = curl_exec($curlConnection);
-        if ($result === false) {
-            throw new Exception("Error in HTTP Request.");
-        }
-        // curl_close($curlConnection);
-        return $result;
-    }
+		$curlConnection = $this->getCurlConnection();
+		$curlOptions = array(
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_URL => "{$baseUrl}?{$queryString}",
+			CURLOPT_HTTPHEADER => $modified_headers
+		);
+		curl_setopt_array($curlConnection, $curlOptions);
+		$result = curl_exec($curlConnection);
+		if ($result === false) {
+			throw new Exception("Error in HTTP Request.");
+		}
+		// curl_close($curlConnection);
+		return $result;
+	}
 
 	/**
 	 * Start the timer to work out how long a query takes.  Complements
@@ -735,32 +735,32 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 /**
 	  * Search indexes
 	  */
-     public function getSearchIndexes() {
+	 public function getSearchIndexes() {
 		return [
 			"Title" => translate([
 				'text' => "Title",
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-            'All Text' => translate([
-                'text' => "All Text",
+			'All Text' => translate([
+				'text' => "All Text",
 				'isPublicFacing' => true,
 				'inAttribute' => true,
-            ]),
-            'Keyword' => translate([
-                'text' => "Keyword",
-                'isPublicFacing' => true,
-                'inAttribute' => true,
-            ])
+			]),
+			'Keyword' => translate([
+				'text' => "Keyword",
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			])
 		];
-     }
+	 }
 
 	 //Default search index
-    public function getDefaultIndex() {
+	public function getDefaultIndex() {
 		return $this->searchIndex;
 	}
 
-    public function setSearchTerm() {
+	public function setSearchTerm() {
 		if (strpos($this->searchTerms, ':') !== false) {
 			[
 				$searchIndex,
@@ -778,7 +778,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		}
 	}
 
-    public function getIndexError() {
+	public function getIndexError() {
 		// TODO: Implement getIndexError() method.
 	}
 
@@ -806,7 +806,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		// TODO: Implement loadDynamicFields() method.
 	}
 
-    public function getEngineName() {
+	public function getEngineName() {
 		return 'summon';
 	}
 
@@ -823,7 +823,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) { 
-    }
+	}
 
 	public function __destruct() {
 		if ($this->curl_connection) {
