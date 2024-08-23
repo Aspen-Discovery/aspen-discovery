@@ -215,7 +215,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
 				if (!is_null($this->sessionId)){
 					$headers['x-summon-session-id'] = $this->sessionId;
-				} 
+				}
 		return $headers;
 	}
 
@@ -429,7 +429,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					'desc' => $label,
 					'selected' => ($sort == $this->sort),
 				];
-			 }
+			}
 		}
 		return $list;
 	}
@@ -565,11 +565,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			if (is_array($value)) {
 				foreach ($value as $val) {
 					$encodedValue = urlencode($val); 
-					$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
+					$this->filters[] = urlencode($key) . ',' . $encodedValue . ',';
 				}
 			} else {
 				$encodedValue = urlencode($value); 
-				$this->filters[] = urlencode($key) . ',' . $encodedValue . ','; 
+				$this->filters[] = urlencode($key) . ',' . $encodedValue . ',';
 			}
 		}
 		return $this->filters;
@@ -633,7 +633,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$headers = $this->authenticate($settings, $queryString);
 		$recordData = $this->httpRequest($baseUrl, $queryString, $headers);
 		if (!empty($recordData)){
-			$recordData = $this->processData($recordData); 
+			$recordData = $this->processData($recordData);
 			$this->stopQueryTimer();
 		}
 		return $recordData;
@@ -660,7 +660,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					)
 				);
 			}
-			   // Detect errors
+			// Detect errors
 			if (isset(SearchObject_SummonSearcher::$searchOptions['errors']) && is_array(SearchObject_SummonSearcher::$searchOptions['errors'])) {
 				foreach (SearchObject_SummonSearcher::$searchOptions['errors'] as $current) {
 					$errors[] = "{$current['code']}: {$current['message']}";
@@ -753,9 +753,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				'inAttribute' => true,
 			])
 		];
-	 }
+	}
 
-	 //Default search index
+	//Default search index
 	public function getDefaultIndex() {
 		return $this->searchIndex;
 	}
@@ -822,7 +822,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->resultsTotal;
 	}
 
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) { 
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 	}
 
 	public function __destruct() {
