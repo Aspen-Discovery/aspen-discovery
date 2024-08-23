@@ -188,6 +188,42 @@ export async function logoutUser(url) {
      }
 }
 
+/**
+ * Updates the users alternate library card
+ * @param {string} cardNumber
+ * @param {string} cardPassword
+ * @param {boolean} deleteCard
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function updateAlternateLibraryCard(cardNumber = '', cardPassword = '', deleteCard = false, url, language = 'en') {
+     const postBody = await postData();
+     postBody.append('alternateLibraryCard', cardNumber);
+     postBody.append('alternateLibraryCardPassword', cardPassword);
+
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               deleteAlternateLibraryCard: deleteCard,
+               language,
+          },
+     });
+
+     const response = await api.post('/UserAPI?method=updateAlternateLibraryCard', postBody);
+     let data = [];
+     if (response.ok) {
+          data = response.data;
+     }
+
+     return {
+          success: data?.success ?? false,
+          title: data?.title ?? null,
+          message: data?.message ?? null,
+     };
+}
+
 /** *******************************************************************
  * Checkouts and Holds
  ******************************************************************* **/

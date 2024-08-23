@@ -15,8 +15,10 @@ import Carousel from 'react-native-reanimated-carousel';
 // custom components and helper files
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getLinkedAccounts, updateScreenBrightnessStatus } from '../../../util/api/user';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyLibraryCard = () => {
      const queryClient = useQueryClient();
@@ -165,6 +167,15 @@ export const MyLibraryCard = () => {
           return <PermissionsPrompt promptTitle="permissions_screen_brightness_title" promptBody="permissions_screen_brightness_body" setShouldRequestPermissions={setShouldRequestPermissions} updateStatus={updateStatus} />;
      }
 
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+     let shouldShowAlternateLibraryCard = false;
+     if (typeof library.showAlternateLibraryCard !== 'undefined') {
+          shouldShowAlternateLibraryCard = library.showAlternateLibraryCard;
+     }
+     if (version >= '24.09.00' && (shouldShowAlternateLibraryCard === '1' || shouldShowAlternateLibraryCard === 1)) {
+          shouldShowAlternateLibraryCard = true;
+     }
+
      /* useFocusEffect(
 	 React.useCallback(() => {
 	 console.log("numCards listener > " + numCards);
@@ -193,6 +204,21 @@ export const MyLibraryCard = () => {
      return (
           <>
                <CardCarousel cards={cards} orientation={isLandscape} />
+               {shouldShowAlternateLibraryCard ? (
+                    <Center>
+                         <Button
+                              size="md"
+                              colorScheme="secondary"
+                              onPress={() => {
+                                   navigateStack('LibraryCardTab', 'MyAlternateLibraryCard', {
+                                        prevRoute: 'MyLibraryCard',
+                                        hasPendingChanges: false,
+                                   });
+                              }}>
+                              {getTermFromDictionary(language, 'manage_alternate_library_card')}
+                         </Button>
+                    </Center>
+               ) : null}
           </>
      );
 };
