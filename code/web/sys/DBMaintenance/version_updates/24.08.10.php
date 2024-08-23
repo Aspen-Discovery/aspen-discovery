@@ -53,8 +53,7 @@ function getUpdates24_08_10(): array {
                     sandboxMode TINYINT NOT NULL DEFAULT 0,
                     accountId BIGINT(10) NOT NULL,
                     merchantId VARCHAR(20) NOT NULL,
-    				apiAuthenticationCode VARCHAR(255) NOT NULL,
-    				snapPayHMACSignature VARCHAR(255) NOT NULL
+    				apiAuthenticationCode VARCHAR(255) NOT NULL
                 ) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN snapPaySettingId INT(11) DEFAULT -1',
 			],

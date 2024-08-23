@@ -1092,7 +1092,12 @@ class UserPayment extends DataObject {
 		];
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+	public static function completeNCRPayment($queryParams) {
+	// TODO: Implement this
+		$success = false;
+	}
+
+		public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
 		return $return;

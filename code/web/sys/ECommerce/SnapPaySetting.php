@@ -8,7 +8,7 @@ class SnapPaySetting extends DataObject
     public $sandboxMode;
     public $accountId;
     public $merchantId;
-
+	public $apiAuthenticationCode;
     private $_libraries;
 
     static function getObjectStructure($context = ''): array
@@ -55,6 +55,15 @@ class SnapPaySetting extends DataObject
                 'default' => '',
                 'size' => 20,
             ],
+			'apiAuthenticationCode' => [
+				'property' => 'apiAuthenticationCode',
+				'type' => 'password',
+				'label' => 'API Authentication Code',
+				'description' => 'The API Authentication Code to use when paying fines with SnapPay.',
+				'hideInLists' => true,
+				'default' => '',
+				'size' => 255,
+			],
             'libraries' => [
                 'property' => 'libraries',
                 'type' => 'multiSelect',
@@ -128,14 +137,14 @@ class SnapPaySetting extends DataObject
                 if (in_array($libraryId, $this->_libraries)) {
                     //We want to apply the scope to this library
                     if ($library->snapPaySettingId != $this->id) {
-                        $library->finePaymentType = 14;
+                        $library->finePaymentType = 15;
                         $library->snapPaySettingId = $this->id;
                         $library->update();
                     }
                 } else {
                     //It should not be applied to this scope. Only change if it was applied to the scope
                     if ($library->snapPaySettingId == $this->id) {
-                        if ($library->finePaymentType == 14) {
+                        if ($library->finePaymentType == 15) {
                             $library->finePaymentType = 0;
                         }
                         $library->snapPaySettingId = -1;

@@ -2604,7 +2604,7 @@ class Library extends DataObject {
 							11 => 'PayPal Payflow',
 							12 => 'Square',
 							13 => 'Stripe',
-							14 => 'NCR'
+							14 => 'NCR',
                             15 => 'SnapPay'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
