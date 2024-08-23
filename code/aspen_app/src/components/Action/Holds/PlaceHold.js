@@ -38,6 +38,8 @@ export const PlaceHold = (props) => {
           setHoldItemSelectIsOpen,
           onHoldItemSelectClose,
           cancelHoldItemSelectRef,
+          userHasAlternateLibraryCard,
+          shouldPromptAlternateLibraryCard,
      } = props;
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -73,7 +75,7 @@ export const PlaceHold = (props) => {
      let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
 
      let loadHoldPrompt = false;
-     if (volumeInfo.numItemsWithVolumes >= 1 || _.size(accounts) > 0 || _.size(locations) > 1 || promptForHoldNotifications || holdTypeForFormat === 'item' || holdTypeForFormat === 'either') {
+     if (volumeInfo.numItemsWithVolumes >= 1 || _.size(accounts) > 0 || _.size(locations) > 1 || promptForHoldNotifications || holdTypeForFormat === 'item' || holdTypeForFormat === 'either' || (shouldPromptAlternateLibraryCard && !userHasAlternateLibraryCard)) {
           loadHoldPrompt = true;
      }
 

@@ -4710,6 +4710,9 @@ class UserAPI extends AbstractAPI {
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
 					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
 					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
+					$account[$linkedAccount->id]['alternateLibraryCard'] = $linkedAccount->getAlternateLibraryCardBarcode();
+					$account[$linkedAccount->id]['alternateLibraryCardPassword'] = $linkedAccount->getAlternateLibraryCardPasswordOrPin();
+					$account[$linkedAccount->id]['alternateLibraryCardOptions'] = $linkedAccount->getHomeLibrary()->getAlternateLibraryCardOptions();
 				}
 				return [
 					'success' => true,
@@ -6059,7 +6062,7 @@ class UserAPI extends AbstractAPI {
 			$alternateLibraryCard = $_REQUEST['alternateLibraryCard'] ?? null;
 			$alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'] ?? null;
 			$deleteAlternateLibraryCard = $_REQUEST['deleteAlternateLibraryCard'] ?? false;
-			if(!$deleteAlternateLibraryCard) {
+			if(!$deleteAlternateLibraryCard || $deleteAlternateLibraryCard === "false") {
 				if ($alternateLibraryCard) {
 					$user->alternateLibraryCard = $alternateLibraryCard;
 				}
@@ -6068,7 +6071,7 @@ class UserAPI extends AbstractAPI {
 					$user->alternateLibraryCardPassword = $alternateLibraryCardPassword;
 				}
 			} else {
-				$user->alternateLibraryCard = null;
+				$user->alternateLibraryCard = '';
 				$user->alternateLibraryCardPassword = '';
 			}
 

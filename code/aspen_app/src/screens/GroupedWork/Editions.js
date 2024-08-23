@@ -17,7 +17,7 @@ import { stripHTML } from '../../util/apiAuth';
 import { placeHold } from '../../util/recordActions';
 import { getStatusIndicator } from './StatusIndicator';
 import { ActionButton } from '../../components/Action/ActionButton';
-import { LanguageContext, LibrarySystemContext, ThemeContext } from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const Editions = () => {
@@ -28,6 +28,7 @@ export const Editions = () => {
      const params = route[0].params;
      const { id, recordId, format, source, volumeInfo, prevRoute } = params;
      const { library } = React.useContext(LibrarySystemContext);
+     const { user } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const { colorMode, theme, textColor } = React.useContext(ThemeContext);
      const [isLoading, setLoading] = React.useState(false);
@@ -53,6 +54,39 @@ export const Editions = () => {
      const cancelHoldItemSelectRef = React.useRef(null);
      const [holdSelectItemResponse, setHoldSelectItemResponse] = React.useState('');
      const [placingItemHold, setPlacingItemHold] = React.useState(false);
+
+     let shouldPromptAlternateLibraryCard = false;
+     let shouldShowAlternateLibraryCard = false;
+     let useAlternateCardForCloudLibrary = false;
+     let userHasAlternateLibraryCard = false;
+
+     if (typeof library.showAlternateLibraryCard !== 'undefined') {
+          if (library.showAlternateLibraryCard === '1' || library.showAlternateLibraryCard === 1) {
+               shouldShowAlternateLibraryCard = true;
+          }
+     }
+
+     if (typeof library.useAlternateCardForCloudLibrary !== 'undefined') {
+          if (library.useAlternateCardForCloudLibrary === '1' || library.useAlternateCardForCloudLibrary === 1) {
+               useAlternateCardForCloudLibrary = true;
+          }
+     }
+
+     if (shouldShowAlternateLibraryCard && useAlternateCardForCloudLibrary && source === 'cloud_library') {
+          shouldPromptAlternateLibraryCard = true;
+     }
+
+     if (typeof user.alternateLibraryCard !== 'undefined') {
+          if (user.alternateLibraryCard && user.alternateLibraryCard !== '') {
+               if (library.alternateLibraryCardConfig?.showAlternateLibraryCardPassword === '1') {
+                    if (user.alternateLibraryCardPassword !== '') {
+                         userHasAlternateLibraryCard = true;
+                    }
+               } else {
+                    userHasAlternateLibraryCard = true;
+               }
+          }
+     }
 
      const handleNavigation = (action) => {
           if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults' || prevRoute === 'HomeScreen') {
@@ -117,6 +151,8 @@ export const Editions = () => {
                                         cancelHoldItemSelectRef={cancelHoldItemSelectRef}
                                         holdSelectItemResponse={holdSelectItemResponse}
                                         setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                        userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                                        shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
                                    />
                               )}
                          />
@@ -256,7 +292,7 @@ export const Editions = () => {
 const Edition = (payload) => {
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor } = React.useContext(ThemeContext);
-     const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, holdSelectItemResponse, setHoldSelectItemResponse, holdItemSelectIsOpen, setHoldItemSelectIsOpen, onHoldItemSelectClose, cancelHoldItemSelectRef } = payload;
+     const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, holdSelectItemResponse, setHoldSelectItemResponse, holdItemSelectIsOpen, setHoldItemSelectIsOpen, onHoldItemSelectClose, cancelHoldItemSelectRef, userHasAlternateLibraryCard, shouldPromptAlternateLibraryCard } = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
      const id = payload.id;
@@ -343,6 +379,8 @@ const Edition = (payload) => {
                                         cancelHoldItemSelectRef={cancelHoldItemSelectRef}
                                         holdSelectItemResponse={holdSelectItemResponse}
                                         setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                        userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                                        shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
                                    />
                               )}
                          />

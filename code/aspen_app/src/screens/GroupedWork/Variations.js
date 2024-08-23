@@ -257,6 +257,7 @@ export const Variations = (props) => {
 };
 
 const Variation = (payload) => {
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { textColor, colorMode, theme } = React.useContext(ThemeContext);
@@ -272,6 +273,39 @@ const Variation = (payload) => {
      const publisher = variation.publisher ?? null;
      const isbn = variation.isbn ?? null;
      const oclcNumber = variation.oclcNumber ?? null;
+
+     let shouldPromptAlternateLibraryCard = false;
+     let shouldShowAlternateLibraryCard = false;
+     let useAlternateCardForCloudLibrary = false;
+     let userHasAlternateLibraryCard = false;
+
+     if (typeof library.showAlternateLibraryCard !== 'undefined') {
+          if (library.showAlternateLibraryCard === '1' || library.showAlternateLibraryCard === 1) {
+               shouldShowAlternateLibraryCard = true;
+          }
+     }
+
+     if (typeof library.useAlternateCardForCloudLibrary !== 'undefined') {
+          if (library.useAlternateCardForCloudLibrary === '1' || library.useAlternateCardForCloudLibrary === 1) {
+               useAlternateCardForCloudLibrary = true;
+          }
+     }
+
+     if (shouldShowAlternateLibraryCard && useAlternateCardForCloudLibrary && source === 'cloud_library') {
+          shouldPromptAlternateLibraryCard = true;
+     }
+
+     if (typeof user.alternateLibraryCard !== 'undefined') {
+          if (user.alternateLibraryCard && user.alternateLibraryCard !== '') {
+               if (library.alternateLibraryCardConfig?.showAlternateLibraryCardPassword === '1') {
+                    if (user.alternateLibraryCardPassword !== '') {
+                         userHasAlternateLibraryCard = true;
+                    }
+               } else {
+                    userHasAlternateLibraryCard = true;
+               }
+          }
+     }
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
@@ -357,6 +391,8 @@ const Variation = (payload) => {
                                         cancelHoldItemSelectRef={cancelHoldItemSelectRef}
                                         holdSelectItemResponse={holdSelectItemResponse}
                                         setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                        userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                                        shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
                                    />
                               )}
                          />

@@ -41,6 +41,8 @@ export const ActionButton = (data) => {
           setHoldItemSelectIsOpen,
           onHoldItemSelectClose,
           cancelHoldItemSelectRef,
+          userHasAlternateLibraryCard,
+          shouldPromptAlternateLibraryCard,
      } = data;
      if (_.isObject(action)) {
           if (action.type === 'overdrive_sample') {
@@ -81,6 +83,9 @@ export const ActionButton = (data) => {
                          cancelHoldItemSelectRef={cancelHoldItemSelectRef}
                          holdSelectItemResponse={holdSelectItemResponse}
                          setHoldSelectItemResponse={setHoldSelectItemResponse}
+                         userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                         shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
+                         recordSource={recordSource}
                     />
                );
           } else if (action.type === 'vdx_request') {
@@ -136,6 +141,9 @@ export const ActionButton = (data) => {
                          cancelHoldConfirmationRef={cancelHoldConfirmationRef}
                          holdConfirmationResponse={holdConfirmationResponse}
                          setHoldConfirmationResponse={setHoldConfirmationResponse}
+                         userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                         shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
+                         recordSource={recordSource}
                     />
                );
           }
