@@ -75,6 +75,7 @@
 
         @media print {
             .avery5160 {
+                break-inside: avoid-page !important;
                 outline: 0px;
             }
             #footer-container, #header-wrapper,#horizontal-menu-bar-wrapper,#side-bar,#system-message-header,.breadcrumbs {
@@ -96,6 +97,7 @@
             }
             .page {
                 page-break-after: always !important;
+                break-inside: avoid-page !important;
             }
         }
 
