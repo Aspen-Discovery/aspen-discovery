@@ -3605,7 +3605,15 @@ class User extends DataObject {
 
         if ($circulationReports) {
             $sections['circulation_reports'] = new AdminSection('Circulation Reports');
-            $sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), [
+			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator', 'Create Code39 barcodes on Avery 5160 labels from a list of numbers.', '/Report/BarcodeGenerator'), [
+				'View Location Student Reports',
+				'View All Student Reports',
+			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
+				'View Location Collection Reports',
+				'View All Collection Reports',
+			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), [
                 'View Location Holds Reports',
                 'View All Holds Reports',
             ]);
@@ -3616,10 +3624,6 @@ class User extends DataObject {
             $sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
                 'View Location Student Reports',
                 'View All Student Reports',
-            ]);
-            $sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
-                'View Location Collection Reports',
-                'View All Collection Reports',
             ]);
             $sections['circulation_reports']->addAction(new AdminAction('Weeding Report', 'View a collection weeding report for all items for a branch.', '/Report/WeedingReport'), [
                 'View Location Collection Reports',
