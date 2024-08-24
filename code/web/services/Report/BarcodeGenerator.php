@@ -4,8 +4,7 @@ require_once(ROOT_DIR . '/services/Admin/Admin.php');
 
 class Report_BarcodeGenerator extends Admin_Admin {
 	function launch() {
-		global $interface;
-		$this->display('barcodeGenerator.tpl', 'Barcode Generator', '');
+		$this->display('barcodeGenerator.tpl', 'Barcode Generator');
 	}
 
 	function getBreadcrumbs(): array {
