@@ -78,7 +78,12 @@
                 break-inside: avoid-page !important;
                 outline: 0px;
             }
-            #footer-container, #header-wrapper,#horizontal-menu-bar-wrapper,#side-bar,#system-message-header,.breadcrumbs {
+            #footer-container
+            , #header-wrapper
+            , #horizontal-menu-bar-wrapper
+            , #side-bar
+            , #system-message-header
+            , .breadcrumbs {
                 display: none;
             }
             #formish {
@@ -92,23 +97,23 @@
                 left: 0px !important;
                 margin: 0 !important;;
                 padding: 0 !important;
-                height: 10.625in !important;
-                width: 8.25in !important;
             }
             .page {
-                page-break-after: always !important;
+                break-after: page !important;
                 break-inside: avoid-page !important;
+                height: 10.6in !important;
+                width: 8.25in !important;
+                margin-left: .2in !important;
+                margin-top: .4in !important;
             }
         }
 
         @page {
-            size: 8.5in 11in !important;
-            /*	margin: .375in .125in .375in !important; */
-            margin: .375in .125in 0in !important;
+            size: letter !important;
         }
     </style>
     <div id="formish">
-        <h1>Barcode generator</h1>
+        <h1>Barcode Generator</h1>
         <p>Print barcodes for each number supplied on Avery 5160 labels</p>
         <p>Before printing labels, use your browser’s print preview options to </p>
         <ul>
@@ -122,7 +127,7 @@
             Numbers to print as barcodes (each number on a new line):<br>
             <textarea rows="10" cols="20" name="barcodeNumbers" id="barcodeNumbers"></textarea>
             &nbsp;<input type="button" name="submitNumbers" value="Submit Numbers" class="btn btn-sm btn-primary" onclick="makeBarcodes(); return false;">
-            &nbsp;<input type="button" name="printLabels" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.avery5160'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
+            &nbsp;<input type="button" name="printLabels" value="Print Labels" class="btn btn-sm btn-primary" onclick="window.print();" />
         </form>
     </div>
     <div id="printish">
