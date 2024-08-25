@@ -1,5 +1,3 @@
-{debug}
-
 {strip}
     <input type="hidden" name="patronId" value="{$profile->id}"/>
     <div class="row">
