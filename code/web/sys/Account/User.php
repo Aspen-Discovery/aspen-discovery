@@ -3609,6 +3609,10 @@ class User extends DataObject {
 				'View Location Student Reports',
 				'View All Student Reports',
 			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator - Disc', 'Create hub EAN-8 barcodes for CDs and DVDs.', '/Report/DiscBarcodeGenerator'), [
+				'View Location Collection Reports',
+				'View All Collection Reports',
+			]);
 			$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
 				'View Location Collection Reports',
 				'View All Collection Reports',
