@@ -344,7 +344,7 @@ class User extends DataObject {
 	/**
 	 * @return Role[]
 	 */
-	public function getRolesAssignedByPType() : array {
+	public function getRolesAssignedByPType(): array {
 		$rolesAssignedByPType = [];
 		if ($this->id) {
 			//Get role based on patron type
@@ -468,8 +468,8 @@ class User extends DataObject {
 								/** @var User $userData */
 								//$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
 								//if ($userData === false || isset($_REQUEST['reload'])) {
-									//Load full information from the catalog
-									$linkedUser = UserAccount::validateAccount($linkedUser->ils_barcode, $linkedUser->ils_password, $linkedUser->source, $this);
+								//Load full information from the catalog
+								$linkedUser = UserAccount::validateAccount($linkedUser->ils_barcode, $linkedUser->ils_password, $linkedUser->source, $this);
 								//} else {
 								//	$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
 								//	$linkedUser = $userData;
@@ -729,11 +729,11 @@ class User extends DataObject {
 		$userLink = new UserLink();
 		$userLink->primaryAccountId = $managingAccount;
 		$userLink->linkedAccountId = $this->id;
-		if($userLink->delete(true)) {
+		if ($userLink->delete(true)) {
 
 			$managingUser = new User();
 			$managingUser->id = $managingAccount;
-			if($managingUser->find(true)) {
+			if ($managingUser->find(true)) {
 				/* Send all the things to the managing account that the user removed the link from */
 				$managingUser->removeManagingAccountMessage($this); // Display alert in Aspen Discovery
 				$managingUser->sendRemoveManagingLinkNotification($this); // Send Aspen LiDA notification
@@ -1006,10 +1006,10 @@ class User extends DataObject {
 		}
 	}
 
-	public function allowUpdatesOfPreferredName() : bool {
+	public function allowUpdatesOfPreferredName(): bool {
 		if ($this->getCatalogDriver()) {
 			return $this->getCatalogDriver()->allowUpdatesOfPreferredName($this);
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -1388,7 +1388,7 @@ class User extends DataObject {
 				}
 			}
 
-			$this->__set('checkoutInfoLastLoaded',time());
+			$this->__set('checkoutInfoLastLoaded', time());
 			$this->update();
 		} else {
 			if ($source == 'all' || $source == 'overdrive') {
@@ -1442,9 +1442,9 @@ class User extends DataObject {
 
 	public function isBlockedFromIllRequests() {
 		if ($this->_isBlockedFromIllRequests === null) {
-			if ($this->hasIlsConnection()){
+			if ($this->hasIlsConnection()) {
 				$this->_isBlockedFromIllRequests = $this->getCatalogDriver()->isBlockedFromIllRequests($this);
-			}else{
+			} else {
 				return true;
 			}
 		}
@@ -1703,7 +1703,7 @@ class User extends DataObject {
 		$event = new UserEventsEntry();
 		$event->sourceId = $id;
 		$event->userId = $this->id;
-		if ($event->find()){
+		if ($event->find()) {
 			return true;
 		}
 		return false;
@@ -1715,7 +1715,7 @@ class User extends DataObject {
 		$registration = new UserEventsRegistrations();
 		$registration->sourceId = $eventId;
 		$registration->userId = $this->id;
-		if ($registration->find()){
+		if ($registration->find()) {
 			return true;
 		}
 		return false;
@@ -1731,13 +1731,13 @@ class User extends DataObject {
 		$eventsSetting = new LibraryEventsSetting();
 		$eventsSetting->libraryId = $activeLibrary->libraryId;
 		$eventsSetting->settingSource = $vendor;
-		if($eventsSetting->find(true)) {
-			if($vendor == 'communico') {
+		if ($eventsSetting->find(true)) {
+			if ($vendor == 'communico') {
 				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
 				$settings = new CommunicoSetting();
 				$settings->id = $eventsSetting->settingId;
-				if ($settings->find(true)){
-					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+				if ($settings->find(true)) {
+					if ($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
 						return true;
 					}
 				}
@@ -1745,8 +1745,8 @@ class User extends DataObject {
 				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
 				$settings = new SpringshareLibCalSetting;
 				$settings->id = $eventsSetting->settingId;
-				if ($settings->find(true)){
-					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+				if ($settings->find(true)) {
+					if ($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
 						return true;
 					}
 				}
@@ -1754,8 +1754,8 @@ class User extends DataObject {
 				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
 				$settings = new LMLibraryCalendarSetting();
 				$settings->id = $eventsSetting->settingId;
-				if ($settings->find(true)){
-					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+				if ($settings->find(true)) {
+					if ($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
 						return true;
 					}
 				}
@@ -1763,8 +1763,8 @@ class User extends DataObject {
 				require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
 				$settings = new AssabetSetting();
 				$settings->id = $eventsSetting->settingId;
-				if ($settings->find(true)){
-					if($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
+				if ($settings->find(true)) {
+					if ($settings->eventsInLists == 2 || ($settings->eventsInLists == 1 && $this->isStaff())) {
 						return true;
 					}
 				}
@@ -1788,8 +1788,8 @@ class User extends DataObject {
 		}
 	}
 
-	public function areCirculationActionsDisabled(){
-		if (!$this->hasIlsConnection()){
+	public function areCirculationActionsDisabled() {
+		if (!$this->hasIlsConnection()) {
 			return true;
 		} else {
 			if ($this->disableCirculationActions) {
@@ -1924,7 +1924,7 @@ class User extends DataObject {
 			$accountProfileForSource = UserAccount::getAccountProfileByRecordSource($recordSource);
 			if ($accountProfileForSource != null) {
 				$accountProfileSource = $accountProfileForSource->name;
-			}else{
+			} else {
 				$accountProfileSource = '';
 			}
 //			$accountProfileForSource = new AccountProfile();
@@ -1995,7 +1995,7 @@ class User extends DataObject {
 			'text' => 'You',
 			'isPublicFacing' => true,
 		]);
-		if (!empty($this->parentUser)){
+		if (!empty($this->parentUser)) {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
@@ -2007,7 +2007,7 @@ class User extends DataObject {
 			]);
 
 			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
-			
+
 			$this->clearCache();
 
 			$this->forceReloadOfHolds();
@@ -2022,7 +2022,7 @@ class User extends DataObject {
 			'text' => 'You',
 			'isPublicFacing' => true,
 		]);
-		if (!empty($this->parentUser)){
+		if (!empty($this->parentUser)) {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
@@ -2091,7 +2091,7 @@ class User extends DataObject {
 			'text' => 'You',
 			'isPublicFacing' => true,
 		]);
-		if (!empty($this->parentUser)){
+		if (!empty($this->parentUser)) {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
@@ -2209,7 +2209,7 @@ class User extends DataObject {
 						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
-						}else{
+						} else {
 							$failed++;
 						}
 					} elseif ($holdType == 'axis360') {
@@ -2218,7 +2218,7 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
-						}else{
+						} else {
 							$failed++;
 						}
 					} elseif ($holdType == 'overdrive') {
@@ -2227,7 +2227,7 @@ class User extends DataObject {
 						$tmpResult = $driver->freezeHold($user, $recordId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
-						}else{
+						} else {
 							$failed++;
 						}
 					} else {
@@ -2281,7 +2281,7 @@ class User extends DataObject {
 							'isPublicFacing' => true,
 							'inAttribute' => true,
 						]) . '</div>';
-				}else{
+				} else {
 					$result['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => '%1% hold(s) could not be frozen',
 							1 => $failed,
@@ -2409,25 +2409,25 @@ class User extends DataObject {
 		return $result;
 	}
 
-	function freezeOverDriveHold($overDriveId, $reactivationDate) : array {
+	function freezeOverDriveHold($overDriveId, $reactivationDate): array {
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->freezeHold($this, $overDriveId, $reactivationDate);
 	}
 
-	function thawOverDriveHold($overDriveId) : array {
+	function thawOverDriveHold($overDriveId): array {
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->thawHold($this, $overDriveId);
 	}
 
-	function freezeAxis360Hold($recordId) : array {
+	function freezeAxis360Hold($recordId): array {
 		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 		$axis360Driver = new Axis360Driver();
 		return $axis360Driver->freezeHold($this, $recordId);
 	}
 
-	function thawAxis360Hold($recordId) : array {
+	function thawAxis360Hold($recordId): array {
 		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 		$axis360Driver = new Axis360Driver();
 		return $axis360Driver->thawHold($this, $recordId);
@@ -2481,7 +2481,7 @@ class User extends DataObject {
 		$catalogDriver = $this->getCatalogDriver();
 		if ($catalogDriver != null) {
 			//Check to see if it's enabled by home library
-			$homeLibrary =  $this->getHomeLibrary();
+			$homeLibrary = $this->getHomeLibrary();
 			if (!empty($homeLibrary)) {
 				if ($homeLibrary->enableReadingHistory) {
 					//Check to see if it's enabled by PType
@@ -2504,7 +2504,7 @@ class User extends DataObject {
 
 	public function isPaymentHistoryEnabled() {
 		//Check to see if it's enabled by home library
-		$homeLibrary =  $this->getHomeLibrary();
+		$homeLibrary = $this->getHomeLibrary();
 		if (!empty($homeLibrary)) {
 			return $homeLibrary->showPaymentHistory && $homeLibrary->finePaymentType > 1;
 		} else {
@@ -2531,14 +2531,14 @@ class User extends DataObject {
 		while ($userPayment->fetch()) {
 			if ($userPayment->completed) {
 				$completed = 'Yes';
-			}else {
+			} else {
 				$completed = 'No';
 			}
 			$payments[] = [
 				'id' => $userPayment->id,
 				'date' => $userPayment->transactionDate,
-				'type' => translate(['text'=> ucfirst($userPayment->transactionType), 'isPublicFacing' => true, 'inAttribute' => true]),
-				'completed' => translate(['text'=> $completed, 'isPublicFacing' => true, 'inAttribute' => true]),
+				'type' => translate(['text' => ucfirst($userPayment->transactionType), 'isPublicFacing' => true, 'inAttribute' => true]),
+				'completed' => translate(['text' => $completed, 'isPublicFacing' => true, 'inAttribute' => true]),
 				'totalPaid' => StringUtils::formatCurrency($userPayment->totalPaid),
 			];
 		}
@@ -2600,7 +2600,7 @@ class User extends DataObject {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
 			return $catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
-		}else{
+		} else {
 			return [
 				'message' => 'Reading history is not enabled',
 				'skipped' => true
@@ -2624,16 +2624,17 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function getPType() : ?string {
+	public function getPType(): ?string {
 		return $this->patronType;
 	}
 
 	private $_pTypeObj = false;
-	public function getPTypeObj() : ?PType {
+
+	public function getPTypeObj(): ?PType {
 		if ($this->_pTypeObj === false) {
 			if (empty($this->patronType)) {
 				$this->_pTypeObj = null;
-			}else {
+			} else {
 				require_once ROOT_DIR . '/sys/Account/PType.php';
 				$patronType = new PType();
 				$patronType->pType = $this->patronType;
@@ -2737,7 +2738,7 @@ class User extends DataObject {
 	public function canClientIpUseMasquerade(): bool {
 		global $library;
 		$masqueradeStatus = $library->getMasqueradeStatus();
-		if ($masqueradeStatus == 1){
+		if ($masqueradeStatus == 1) {
 			return true;
 		} else if ($masqueradeStatus == 2) {
 			$clientIP = IPAddress::getClientIP();
@@ -2750,7 +2751,7 @@ class User extends DataObject {
 	}
 
 	public function canMasquerade() {
-		if(self::canClientIpUseMasquerade()){
+		if (self::canClientIpUseMasquerade()) {
 			return $this->hasPermission([
 				'Masquerade as any user',
 				'Masquerade as unrestricted patron types',
@@ -2800,10 +2801,10 @@ class User extends DataObject {
 		$curTime = time();
 
 		$event = new UserEventsEntry();
-		if ($eventsFilter == 'past'){
+		if ($eventsFilter == 'past') {
 			$event->whereAdd("eventDate < $curTime");
 		}
-		if ($eventsFilter == 'upcoming'){
+		if ($eventsFilter == 'upcoming') {
 			$event->whereAdd("eventDate >= $curTime");
 		}
 		$event->whereAdd("userId = {$this->id}");
@@ -3389,7 +3390,7 @@ class User extends DataObject {
 		$sections['primary_configuration']->addAction(new AdminAction('User Agents', 'Configure User Agents and block access to Aspen Discovery by User Agent.', '/Admin/UserAgents'), 'Administer User Agents');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
 
-		if(array_key_exists('Single sign-on', $enabledModules)) {
+		if (array_key_exists('Single sign-on', $enabledModules)) {
 			$sections['primary_configuration']->addAction(new AdminAction('Single Sign-on (SSO)', 'Administer single sign-on settings', '/Admin/SSOSettings'), 'Administer Single Sign-on');
 		}
 
@@ -3466,7 +3467,7 @@ class User extends DataObject {
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
-        $sections['cataloging']->addAction(new AdminAction('Hidden Series', 'Edit series to be excluded from the Series facet and Series Display Information', '/Admin/HideSeriess'), 'Hide Metadata');
+		$sections['cataloging']->addAction(new AdminAction('Hidden Series', 'Edit series to be excluded from the Series facet and Series Display Information', '/Admin/HideSeriess'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
 
@@ -3527,13 +3528,13 @@ class User extends DataObject {
 
 		$sections['ecommerce'] = new AdminSection('eCommerce');
 		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View payments initiated and completed within the system', '/Admin/eCommerceReport'), [
-            'View eCommerce Reports for All Libraries',
-            'View eCommerce Reports for Home Library'
-        ]);
+			'View eCommerce Reports for All Libraries',
+			'View eCommerce Reports for Home Library'
+		]);
 		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View donations initiated and completed within the system', '/Admin/DonationsReport'), [
-            'View Donations Reports for All Libraries',
-            'View Donations Reports for Home Library'
-        ]);
+			'View Donations Reports for All Libraries',
+			'View Donations Reports for Home Library'
+		]);
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
@@ -3577,9 +3578,9 @@ class User extends DataObject {
 			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx' || $accountProfile->ils == 'sierra') {
 				$customSelfRegForms = true;
 			}
-            if ($accountProfile->driver == 'Nashville') {
-                $circulationReports = true;
-            }
+			if ($accountProfile->driver == 'Nashville') {
+				$circulationReports = true;
+			}
 		}
 		if ($hasCurbside) {
 			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
@@ -3603,37 +3604,35 @@ class User extends DataObject {
 			'Administer Library VDX Forms',
 		]);
 
-        if ($circulationReports) {
-            $sections['circulation_reports'] = new AdminSection('Circulation Reports');
+		if ($circulationReports) {
+			$sections['circulation_reports'] = new AdminSection('Circulation Reports');
 			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator', 'Create Code39 barcodes on Avery 5160 labels from a list of numbers.', '/Report/BarcodeGenerator'), [
-				'View Location Student Reports',
-				'View All Student Reports',
+				'Barcode Generators',
 			]);
 			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator - Disc', 'Create hub EAN-8 barcodes for CDs and DVDs.', '/Report/DiscBarcodeGenerator'), [
-				'View Location Collection Reports',
-				'View All Collection Reports',
+				'Barcode Generators',
 			]);
 			$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
 				'View Location Collection Reports',
 				'View All Collection Reports',
 			]);
 			$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), [
-                'View Location Holds Reports',
-                'View All Holds Reports',
-            ]);
-            $sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), [
-                'View Location Student Reports',
-                'View All Student Reports',
-            ]);
-            $sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
-                'View Location Student Reports',
-                'View All Student Reports',
-            ]);
-            $sections['circulation_reports']->addAction(new AdminAction('Weeding Report', 'View a collection weeding report for all items for a branch.', '/Report/WeedingReport'), [
-                'View Location Collection Reports',
-                'View All Collection Reports',
-            ]);
-        }
+				'View Location Holds Reports',
+				'View All Holds Reports',
+			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), [
+				'View Location Student Reports',
+				'View All Student Reports',
+			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
+				'View Location Student Reports',
+				'View All Student Reports',
+			]);
+			$sections['circulation_reports']->addAction(new AdminAction('Weeding Report', 'View a collection weeding report for all items for a branch.', '/Report/WeedingReport'), [
+				'View Location Collection Reports',
+				'View All Collection Reports',
+			]);
+		}
 
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['boundless'] = new AdminSection('Boundless');
@@ -3693,7 +3692,7 @@ class User extends DataObject {
 
 		if (array_key_exists('Summon', $enabledModules)) {
 			$sections['summon'] = new AdminSection('Summon');
-			$sections['summon']->addAction(new AdminAction('Settings', 'Define connection information between Summon and Aspen Discovery.', '/Summon/SummonSettings'),['View Dashboards']);
+			$sections['summon']->addAction(new AdminAction('Settings', 'Define connection information between Summon and Aspen Discovery.', '/Summon/SummonSettings'), ['View Dashboards']);
 			$sections['summon']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Summon integration.', '/Summon/SummonDashboard'), [
 				'View Dashboards',
 				'View System Reports',
@@ -3798,11 +3797,11 @@ class User extends DataObject {
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$sections['open_archives'] = new AdminSection('Open Archives');
 			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');
-            $sections['open_archives']->addAction(new AdminAction('Open Archives Facet Settings', 'Define facets for open archives searches.', '/OpenArchives/OpenArchivesFacets'),  [
-                'Administer All Open Archives Facet Settings',
-                'Administer Library Open Archives Facet Settings',
-            ]);
-            $sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
+			$sections['open_archives']->addAction(new AdminAction('Open Archives Facet Settings', 'Define facets for open archives searches.', '/OpenArchives/OpenArchivesFacets'), [
+				'Administer All Open Archives Facet Settings',
+				'Administer Library Open Archives Facet Settings',
+			]);
+			$sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
@@ -3828,11 +3827,11 @@ class User extends DataObject {
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$sections['web_indexer'] = new AdminSection('Website Indexing');
 			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
-            $sections['web_indexer']->addAction(new AdminAction('Website Facet Settings', 'Define facets for website searches.', '/Websites/WebsiteFacets'), [
-                'Administer All Website Facet Settings',
-                'Administer Library Website Facet Settings',
-            ]);
-            $sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
+			$sections['web_indexer']->addAction(new AdminAction('Website Facet Settings', 'Define facets for website searches.', '/Websites/WebsiteFacets'), [
+				'Administer All Website Facet Settings',
+				'Administer Library Website Facet Settings',
+			]);
+			$sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
 			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
@@ -3866,7 +3865,7 @@ class User extends DataObject {
 			]);
 		}
 
-		if(array_key_exists('Aspen LiDA', $enabledModules)) {
+		if (array_key_exists('Aspen LiDA', $enabledModules)) {
 			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
 			$sections['aspen_lida']->addAction(new AdminAction('General Settings', 'Define general settings for Aspen LiDA.', '/AspenLiDA/GeneralSettings'), 'Administer Aspen LiDA Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Location Settings', 'Define location settings for Aspen LiDA.', '/AspenLiDA/LocationSettings'), 'Administer Aspen LiDA Settings');
@@ -3877,7 +3876,7 @@ class User extends DataObject {
 			} else {
 				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 			}
-			if(false && $allowILSMessaging) {
+			if (false && $allowILSMessaging) {
 				$sections['aspen_lida']->addAction(new AdminAction('ILS Notification Settings', 'Define settings for ILS notifications in Aspen LiDA.', '/AspenLiDA/ILSNotificationSettings'), 'Administer Aspen LiDA Settings');
 			}
 			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
@@ -4286,9 +4285,9 @@ class User extends DataObject {
 		$userHomeLocation = $this->homeLocationId;
 		$userLocation = new Location();
 		$userLocation->locationId = $this->homeLocationId;
-		if($userLocation->find(true)) {
+		if ($userLocation->find(true)) {
 			$userLibrary = $userLocation->getParentLibrary();
-			if($userLibrary) {
+			if ($userLibrary) {
 				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 				$settings = new NotificationSetting();
 				$settings->id = $userLibrary->lidaNotificationSettingId;
@@ -4314,11 +4313,11 @@ class User extends DataObject {
 	}
 
 	public function canReceiveILSNotification($code): bool {
-		if($this->isNotificationHistoryEnabled()) { // check if ils notifications are enabled for the ils
+		if ($this->isNotificationHistoryEnabled()) { // check if ils notifications are enabled for the ils
 			$userHomeLocation = $this->homeLocationId;
 			$userLocation = new Location();
 			$userLocation->locationId = $this->homeLocationId;
-			if($userLocation->find(true)) {
+			if ($userLocation->find(true)) {
 				$userLibrary = $userLocation->getParentLibrary();
 				if ($userLibrary) {
 					require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
@@ -4330,7 +4329,7 @@ class User extends DataObject {
 						$ilsMessageTypes->ilsNotificationSettingId = $settings->ilsNotificationSettingId;
 						$ilsMessageTypes->code = $code;
 						$ilsMessageTypes->isEnabled = 1;
-						if($ilsMessageTypes->find(true)) {
+						if ($ilsMessageTypes->find(true)) {
 							return true;
 						}
 					}
@@ -4399,7 +4398,7 @@ class User extends DataObject {
 			$preferences[] = $preference;
 		}
 
-		if(empty($preferences)) {
+		if (empty($preferences)) {
 			$preference['device'] = 'Unknown';
 			$preference['token'] = 'Unknown';
 			$preference['notifySavedSearch'] = 0;
@@ -4433,7 +4432,7 @@ class User extends DataObject {
 		$obj->pushToken = $token;
 		if ($obj->find(true)) {
 			$obj->$option = $newValue;
-			if($obj->update()) {
+			if ($obj->update()) {
 				return true;
 			}
 		}
@@ -4446,7 +4445,7 @@ class User extends DataObject {
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
 		if ($pushToken->find(true)) {
-			if($pushToken->delete()) {
+			if ($pushToken->delete()) {
 				return true;
 			}
 		}
@@ -4478,7 +4477,7 @@ class User extends DataObject {
 		foreach ($jsonData as $property => $value) {
 			if ($property != $this->getPrimaryKey() && $property != 'links') {
 				if (in_array($property, $encryptedFields)) {
-					if (!empty($sourceEncryptionKey)){
+					if (!empty($sourceEncryptionKey)) {
 						$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
 					} else {
 						//Source key was not provided, decrypt using our encryption key (assuming the source and destination match.
@@ -4616,7 +4615,7 @@ class User extends DataObject {
 	public function canSuggestMaterials(): bool {
 		$patronType = $this->getPTypeObj();
 		if (!empty($patronType)) {
-			if($patronType->canSuggestMaterials) {
+			if ($patronType->canSuggestMaterials) {
 				return true;
 			}
 		}
@@ -4626,7 +4625,7 @@ class User extends DataObject {
 	function checkoutItem($barcode, Location $currentLocation): array {
 		if ($this->getCatalogDriver()->hasAPICheckout()) {
 			$result = $this->getCatalogDriver()->checkoutByAPI($this, $barcode, $currentLocation);
-		}else{
+		} else {
 			$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $currentLocation->code);
 		}
 
@@ -4637,14 +4636,14 @@ class User extends DataObject {
 		return $result;
 	}
 
-	public function hasAPICheckIn() : bool {
+	public function hasAPICheckIn(): bool {
 		return $this->driver->hasAPICheckIin();
 	}
 
 	function checkInItem($barcode, Location $currentLocation): array {
 		if ($this->getCatalogDriver()->hasAPICheckin()) {
 			$result = $this->getCatalogDriver()->checkInByAPI($this, $barcode, $currentLocation);
-		}else{
+		} else {
 			$result = $this->getCatalogDriver()->checkInBySip($this, $barcode, $currentLocation->code);
 		}
 
@@ -4659,11 +4658,11 @@ class User extends DataObject {
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}
 
-	public function isAspenAdminUser() : bool {
+	public function isAspenAdminUser(): bool {
 		return $this->source == 'admin' && $this->username == 'aspen_admin';
 	}
 
-	public function showRenewalLink(AccountSummary $ilsAccountSummary) : bool {
+	public function showRenewalLink(AccountSummary $ilsAccountSummary): bool {
 		$showRenewalLink = false;
 		if ($ilsAccountSummary->isExpirationClose()) {
 			$pType = $this->getPTypeObj();
@@ -4690,7 +4689,7 @@ class User extends DataObject {
 
 	public function isNotificationHistoryEnabled() {
 		$catalogDriver = $this->getCatalogDriver();
-		if($catalogDriver) {
+		if ($catalogDriver) {
 			return $catalogDriver->hasIlsInbox();
 		}
 		return false;
