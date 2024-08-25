@@ -71,7 +71,7 @@
                 //Get the number to be encoded on the left side of the EAN code
                 var leftSide = number.substring(0,4);
                 //Get the number to be encoded on the right side of the EAN code
-                var rightSide = number.substring(4,4);
+                var rightSide = number.substring(4);
                 //Add the start bits
                 result += startBin;
                 //Add the left side
