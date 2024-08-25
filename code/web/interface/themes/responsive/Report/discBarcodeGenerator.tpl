@@ -222,6 +222,28 @@
     </script>
     <script>
 {literal}
+        $(document).ready(function() {
+            $("#barcodeGenerator").validate({
+                rules: {
+                    start: {
+                        required: true,
+                        number: true,
+                        min: 1000000,
+                        max: 9999999
+                    },
+                    count: {
+                        required: true,
+                        number: true,
+                        min: 1
+                    }
+                },
+                submitHandler: function(form) {
+                    makeBarcodes();
+                    return false; // Prevent actual form submission
+                }
+            });
+        });
+
         function makeBarcodes() {
             var libraryName = document.getElementById("libraryName").value;
             var start = document.getElementById("start").value;
@@ -254,11 +276,11 @@
     <div id="formish">
         <h1>{translate text="Disc Barcode Generator" isAdminFacing=true}</h1>
         <p>Print disc hub circular EAN-8 barcodes for each number supplied</p>
-        <form id="args">
-            <label for="libraryName">Library Name: </label><input type="text" name="libraryName" id="libraryName" value="{$librarySystemName|escape}">
-            <label for="start">Start barcode: </label><input type="number" name="start" id="start" min="1000000" max="9999999">
-            <label for="count">How many: </label><input type="number" name="count" id="count" min="1" max="123" value="10">
-            &nbsp;<input type="button" name="submit" value="Submit" class="btn btn-sm btn-primary" onclick="makeBarcodes(); return false;">
+        <form id="barcodeGenerator">
+            <label for="libraryName">Library Name: </label> <input type="text" name="libraryName" id="libraryName" value="{$librarySystemName|escape}">
+            <br><label for="start">Start barcode: </label> <input type="number" name="start" id="start" min="1000000" max="9999999">
+            <br><label for="count">How many: </label> <input type="number" name="count" id="count" min="1" value="10">
+            <br><input type="submit" name="submit" value="Submit" class="btn btn-sm btn-primary">
             &nbsp;<input type="button" name="printLabels" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} window.print(); {/literal}" />
         </form>
     </div>
