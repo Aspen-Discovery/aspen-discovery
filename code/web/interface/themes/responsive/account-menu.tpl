@@ -26,10 +26,15 @@
 					</div>
 				{/if}
 				{if !empty($enablePaymentHistory)}
-					<div class="header-menu-option" >
+					<div class="header-menu-option">
 						<a href="/MyAccount/PaymentHistory">{translate text='Payment History' isPublicFacing=true}</a>
 					</div>
 				{/if}
+                {if !empty($enableNotificationHistory)}
+					<div class="header-menu-option">
+						<a href="/MyAccount/NotificationHistory">{translate text='Notification History' isPublicFacing=true}</a>
+					</div>
+                {/if}
 			{/if}
 			{if $user->canSuggestMaterials()}
 				{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}

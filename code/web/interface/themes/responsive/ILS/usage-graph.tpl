@@ -28,6 +28,11 @@
 				</tbody>
 			</table>
 		</div>
+		<div>
+			<a id="UsageGraphExport" class="btn btn-sm btn-default" href="/ILS/AJAX?method=exportUsageData&stat={$stat}&instance={if !empty($instance)}{$instance}{/if}">{translate text='Export To CSV' isAdminFacing=true}</a>
+			<div id="exportToCSVHelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Exporting will retrieve the latest data. To see it on screen, refresh this page." isAdminFacing=true}</small></div>
+		</div>
+	</div>
 	</div>
 {/strip}
 {literal}

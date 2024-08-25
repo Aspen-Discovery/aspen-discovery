@@ -188,6 +188,42 @@ export async function logoutUser(url) {
      }
 }
 
+/**
+ * Updates the users alternate library card
+ * @param {string} cardNumber
+ * @param {string} cardPassword
+ * @param {boolean} deleteCard
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function updateAlternateLibraryCard(cardNumber = '', cardPassword = '', deleteCard = false, url, language = 'en') {
+     const postBody = await postData();
+     postBody.append('alternateLibraryCard', cardNumber);
+     postBody.append('alternateLibraryCardPassword', cardPassword);
+
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               deleteAlternateLibraryCard: deleteCard,
+               language,
+          },
+     });
+
+     const response = await api.post('/UserAPI?method=updateAlternateLibraryCard', postBody);
+     let data = [];
+     if (response.ok) {
+          data = response.data;
+     }
+
+     return {
+          success: data?.success ?? false,
+          title: data?.title ?? null,
+          message: data?.message ?? null,
+     };
+}
+
 /** *******************************************************************
  * Checkouts and Holds
  ******************************************************************* **/
@@ -973,6 +1009,110 @@ export async function getAppPreferencesForUser(url, language) {
                     onboardStatus: 0,
                },
           ],
+     };
+}
+
+/**
+ * Return the user's notification history
+ * @param {number} page
+ * @param {number} pageSize
+ * @param {boolean} forceUpdate
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function fetchNotificationHistory(page = 1, pageSize = 20, forceUpdate = false, url, language = 'en') {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               page: page,
+               pageSize: pageSize,
+               forceUpdate,
+               language,
+          },
+     });
+
+     const response = await api.post('/UserAPI?method=getInbox', postBody);
+     let data = [];
+     let morePages = false;
+     if (response.ok) {
+          data = response.data.result;
+          if (data.page_current !== data.page_total) {
+               morePages = true;
+          }
+     }
+
+     return {
+          inbox: data.inbox ?? [],
+          totalResults: data.totalResults ?? 0,
+          curPage: data.page_current ?? 0,
+          totalPages: data.page_total ?? 0,
+          hasMore: morePages,
+          message: data?.message ?? null,
+     };
+}
+
+/**
+ * Update the status of a message to being read
+ * @param {string} id
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function markMessageAsRead(id, url, language = 'en') {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               id,
+               language,
+          },
+     });
+
+     const response = await api.post('/UserAPI?method=markMessageAsRead', postBody);
+     let data = [];
+     if (response.ok) {
+          data = response.data;
+     }
+
+     return {
+          success: data?.success ?? false,
+          title: data?.title ?? null,
+          message: data?.message ?? null,
+     };
+}
+
+/**
+ * Update the status of a message to being unread
+ * @param {string} id
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function markMessageAsUnread(id, url, language = 'en') {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               id,
+               language,
+          },
+     });
+
+     const response = await api.post('/UserAPI?method=markMessageAsUnread', postBody);
+     let data = [];
+     if (response.ok) {
+          data = response.data;
+     }
+
+     return {
+          success: data?.success ?? false,
+          title: data?.title ?? null,
+          message: data?.message ?? null,
      };
 }
 

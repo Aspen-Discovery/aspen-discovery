@@ -234,12 +234,14 @@ class IndexingProfile extends DataObject {
 		$showLastUpdateOfAuthorities = false;
 		$showItemFieldFormatInfo = false;
 		$showMatTypeFormatInfo = false;
+		$showSierraCheckoutGrid = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
 			if ($accountProfile->ils == 'sierra') {
 				$showSierraFieldMappings = true;
 				$showMatTypeFormatInfo = true;
+				$showSierraCheckoutGrid = true;
 			}elseif ($accountProfile->ils == 'koha') {
 				$showTimeToReshelve = false;
 				$showLastUpdateOfAuthorities = true;
@@ -258,7 +260,6 @@ class IndexingProfile extends DataObject {
 
 		$formatMapStructure = FormatMapValue::getObjectStructure($context);
 		unset($formatMapStructure['indexingProfileId']);
-
 		if (!$showItemFieldFormatInfo) {
 			unset($formatMapStructure['appliesToItemShelvingLocation']);
 			unset($formatMapStructure['appliesToItemSublocation']);
@@ -267,6 +268,9 @@ class IndexingProfile extends DataObject {
 		}
 		if (!$showMatTypeFormatInfo){
 			unset($formatMapStructure['appliesToMatType']);
+		}
+		if (!$showSierraCheckoutGrid) {
+			unset($formatMapStructure['displaySierraCheckoutGrid']);
 		}
 
 		$structure = [
@@ -1282,7 +1286,6 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 10,
 						'description' => 'A order record status from Sierra to treat as Under Consideration within Aspen.',
 						'default' => '',
-						'required' => true,
 					],
 					'hideOrderRecordsForBibsWithPhysicalItems' => [
 						'property' => 'hideOrderRecordsForBibsWithPhysicalItems',

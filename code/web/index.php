@@ -96,7 +96,7 @@ $validLanguages = [];
 try {
 	require_once ROOT_DIR . '/sys/Translation/Language.php';
 	$validLanguage = new Language();
-	$validLanguage->orderBy("weight");
+	$validLanguage->orderBy(["weight", "displayName"]);
 	$validLanguage->find();
 	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
 	while ($validLanguage->fetch()) {
@@ -494,6 +494,7 @@ if ($isLoggedIn) {
 	$interface->assign('activeUserId', $user->id);
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
+	$interface->assign('enableNotificationHistory', $user->isNotificationHistoryEnabled());
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
 	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
@@ -653,6 +654,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$user = UserAccount::getActiveUserObj();
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
+	$interface->assign('enableNotificationHistory', $user->isNotificationHistoryEnabled());
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)) {
@@ -670,6 +672,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('disableCoverArt', false);
 	$interface->assign('enableReadingHistory', false);
 	$interface->assign('enablePaymentHistory', false);
+	$interface->assign('enableNotificationHistory', false);
 }
 
 //Find a reasonable default location to go to

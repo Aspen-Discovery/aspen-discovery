@@ -525,22 +525,27 @@ abstract class ObjectEditor extends Admin_Admin {
 			$objectType = $this->getObjectType();
 			$existingObject = new $objectType;
 			$this->setDefaultValues($existingObject, $structure);
+			$isNewObject = true;
 		} else {
 			$structure = $existingObject->updateStructureForEditingObject($structure);
 			$interface->assign('structure', $structure);
+			$isNewObject = false;
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
 		$contentType = DataObjectUtil::getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
 
-		$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
-		$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
-		$fieldLocks = $this->getFieldLocks();
-		$interface->assign('fieldLocks', $fieldLocks);
-		if (!empty($fieldLocks)) {
-			$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
-			$interface->assign('structure', $structure);
+		//ADM-7 Do not apply field locks to new records.
+		if (!$isNewObject) {
+			$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
+			$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
+			$fieldLocks = $this->getFieldLocks();
+			$interface->assign('fieldLocks', $fieldLocks);
+			if (!empty($fieldLocks)) {
+				$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
+				$interface->assign('structure', $structure);
+			}
 		}
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
@@ -1227,13 +1232,21 @@ abstract class ObjectEditor extends Admin_Admin {
 			if ($property['type'] == 'section') {
 				$property['properties'] = $this->applyFieldLocksToObjectStructure($property['properties'], $fieldLocks, $userCanChangeFieldLocks);
 			} else {
-				if (in_array($property['property'], $fieldLocks)) {
-					$property['locked'] = true;
-					if (!$userCanChangeFieldLocks) {
-						$property['readOnly'] = true;
+				//Any field can be locked by default, but
+				if (array_key_exists('canLock', $property) && $property['canLock'] == false) {
+					$canLockField = true;
+				}else{
+					$canLockField = true;
+				}
+				if ($canLockField) {
+					if (in_array($property['property'], $fieldLocks)) {
+						$property['locked'] = true;
+						if (!$userCanChangeFieldLocks) {
+							$property['readOnly'] = true;
+						}
+					} else {
+						$property['locked'] = false;
 					}
-				} else {
-					$property['locked'] = false;
 				}
 			}
 		}

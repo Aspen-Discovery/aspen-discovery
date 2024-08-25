@@ -165,6 +165,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (targetAudience.isEmpty()) {
 				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
+			if (this.isDebugEnabled()) {this.addDebugMessage("Final target audience is " + targetAudience, 4);}
+			if (this.isDebugEnabled()) {this.addDebugMessage("Final full target audience is " + targetAudienceFull, 4);}
 			doc.addField("target_audience", targetAudience);
 			doc.addField("system_list", systemLists);
 			//Date added to catalog

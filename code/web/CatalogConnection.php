@@ -1790,8 +1790,12 @@ class CatalogConnection {
 		return $this->driver->checkoutBySip($patron, $barcode, $currentLocationId);
 	}
 
-	public function checkoutByAPI(User $patron, $barcode, $currentLocationId): array {
-		return $this->driver->checkoutByAPI($patron, $barcode, $currentLocationId);
+	public function hasAPICheckout() : bool {
+		return $this->driver->hasAPICheckout();
+	}
+
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
+		return $this->driver->checkoutByAPI($patron, $barcode, $currentLocation);
 	}
 
 	public function allowUpdatesOfPreferredName(User $patron) : bool {
@@ -1799,7 +1803,7 @@ class CatalogConnection {
 	}
 
 	public function hasIlsInbox(): bool {
-		return $this->driver->hasIlsInbox();
+		return false;
 	}
 
 	public function getMessageTypes(): array {

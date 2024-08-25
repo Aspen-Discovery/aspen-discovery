@@ -12,7 +12,7 @@
 						<div class="listResultImage img-thumbnail {$coverStyle}">
 							<a href="{$summUrl}" tabindex="-1">
 								{if !empty($isNew)}<span class="list-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
-								<img src="{$bookCoverUrlMedium}" alt="{$summTitle|removeTrailingPunctuation|escapeCSS}">
+								<img src="{$bookCoverUrlMedium}" alt="{$summTitle|removeTrailingPunctuation|escapeCSS}" title="{$summTitle|removeTrailingPunctuation|escapeCSS}">
 							</a>
 						</div>
 					{/if}

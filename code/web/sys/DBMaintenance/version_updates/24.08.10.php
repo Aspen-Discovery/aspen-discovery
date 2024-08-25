@@ -29,9 +29,16 @@ function getUpdates24_08_10(): array {
 			'title' => 'ILS Self Reg Field Names',
 			'description' => 'Rename column in self_reg_values to be ilsName instead of symphonyName as it applies to multiple ILSes',
 			'sql' => [
-				"ALTER TABLE self_reg_form_values RENAME COLUMN symphonyName TO ilsName",
+				"ALTER TABLE self_reg_form_values CHANGE COLUMN symphonyName ilsName VARCHAR(50) NOT NULL",
 			],
 		], //self_reg_values_column_name
+		'self_reg_note_field_length' => [
+			'title' => 'Self Reg Note Field Length',
+			'description' => 'Increase the length for the note field in custom self registration forms (carlx, symphony, sierra only)',
+			'sql' => [
+				"ALTER TABLE self_reg_form_values CHANGE COLUMN note note VARCHAR(255)",
+			],
+		], //self_reg_note_field_length
 		'carlx_tos' => [
 			'title' => 'Terms of Service for CarlX Self Registration',
 			'description' => 'Add terms of service functionality to CarlX self registration.',

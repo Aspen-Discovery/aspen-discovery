@@ -9,12 +9,12 @@
 
 	{/if}
 	<div class="row">
+		{if !empty($logo)}
 		<div class="col-sm-2">
-
-				<img class="img-responsive img-thumbnail" src="{$logo}" alt="{$title|escape}" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$webResource->id}');">
-
+			<img class="img-responsive img-thumbnail" src="{$logo}" alt="{$title|escape}" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$webResource->id}');">
 		</div>
-		<div class="col-sm-10 col-md-7">
+        {/if}
+		<div class="{if empty($logo)}col-sm-12 col-md-9{else}col-sm-10 col-md-7{/if}">
 			{$description}
 
 			{if $webResource->requiresLibraryCard}

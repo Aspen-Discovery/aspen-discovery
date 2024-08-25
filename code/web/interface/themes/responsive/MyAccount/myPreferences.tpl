@@ -102,7 +102,7 @@
 						</div>
 					{/if}
 
-					{if !empty($allowHomeLibraryUpdates)}
+					{if !empty($allowHomeLibraryUpdates)  && !empty($isAssociatedWithILS)}
 						{* Allow editing home library *}
 						<div class="form-group  propertyRow">
 							<label for="homeLocation" class="control-label">{translate text='Home Library' isPublicFacing=true}</label>
@@ -130,7 +130,7 @@
 						</div>
 					{/if}
 
-					{if !empty($allowRememberPickupLocation) && count($pickupLocations) > 1}
+					{if !empty($allowRememberPickupLocation) && count($pickupLocations) > 1 && !empty($isAssociatedWithILS)}
 						{* Allow editing the pickup location *}
 						<div class="form-group propertyRow">
 							<label for="pickupLocation" class="control-label">{translate text='Preferred Pickup Location' isPublicFacing=true}</label>
@@ -154,7 +154,7 @@
 						</div>
 					{/if}
 
-					{if !empty($showAlternateLibraryOptions)}
+					{if !empty($showAlternateLibraryOptions)  && !empty($isAssociatedWithILS)}
 						{if count($locationList) > 2} {* First option is none *}
 							<div class="form-group propertyRow">
 								<label for="myLocation1" class="control-label">{translate text='Alternate Pickup Location 1' isPublicFacing=true}</label>
@@ -165,7 +165,7 @@
 								{/if}
 							</div>
 						{/if}
-						{if count($locationList) > 3} {* First option is none *}
+						{if count($locationList) > 3  && !empty($isAssociatedWithILS)} {* First option is none *}
 							<div class="form-group propertyRow">
 								<label for="myLocation2" class="control-label">{translate text='Alternate Pickup Location 2' isPublicFacing=true}</label>
 								&nbsp;{if $edit == true}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->_myLocation2|escape}{/if}
@@ -173,7 +173,7 @@
 						{/if}
 					{/if}
 
-					{if !empty($allowRememberPickupLocation)}
+					{if !empty($allowRememberPickupLocation)  && !empty($isAssociatedWithILS)}
 						<div class="form-group propertyRow">
 							<label for="rememberHoldPickupLocation" class="control-label">{translate text='Bypass pickup location prompt when placing holds' isPublicFacing=true}</label>&nbsp;
 							{if $edit == true}

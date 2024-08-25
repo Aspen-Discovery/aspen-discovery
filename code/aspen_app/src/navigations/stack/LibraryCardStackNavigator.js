@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { MyAlternateLibraryCard } from '../../screens/MyAccount/MyLibraryCard/MyAlternateLibraryCard';
 
 import { MyLibraryCard } from '../../screens/MyAccount/MyLibraryCard/MyLibraryCard';
 import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
@@ -22,6 +23,13 @@ const LibraryCardStackNavigator = () => {
                     options={{ title: getTermFromDictionary(language, 'library_card') }}
                     initialParams={{
                          libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
+                    }}
+               />
+               <Stack.Screen
+                    name="MyAlternateLibraryCard"
+                    component={MyAlternateLibraryCard}
+                    options={{
+                         title: getTermFromDictionary(language, 'alternate_library_card'),
                     }}
                />
           </Stack.Navigator>

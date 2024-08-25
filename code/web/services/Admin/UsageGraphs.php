@@ -6,15 +6,88 @@ require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 class Admin_UsageGraphs extends Admin_Admin {
 	function launch() {
 		global $interface;
-		global $enabledModules;
-		global $library;
-		$title = 'Aspen Usage Graph';
+
 		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
+
+		$title = 'Aspen Usage Graph';
+		$interface->assign('graphTitle', $title);
+		$this->assignGraphSpecificTitle($stat);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$interface->assign('stat', $stat);
+		$interface->assign('propName', 'exportToCSV');
+		$title = $interface->getVariable('graphTitle');
+		$this->display('usage-graph.tpl', $title);
+	}
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('/Admin/UsageDashboard', 'Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection(): string {
+		return 'system_reports';
+	}
+
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
+	}
+
+	public function buildCSV() {
+		global $interface;
+
+		$stat = $_REQUEST['stat'];
+		if (!empty($_REQUEST['instance'])) {
+			$instanceName = $_REQUEST['instance'];
+		} else {
+			$instanceName = '';
+		}
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$dataSeries = $interface->getVariable('dataSeries');
+
+		$filename = "AspenUsageData_{$stat}.csv";
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+		header('Content-Type: text/csv; charset=utf-8');
+		header("Content-Disposition: attachment;filename={$filename}");
+		$fp = fopen('php://output', 'w');
+		$graphTitles = array_keys($dataSeries);
+		$numGraphTitles = count($dataSeries);
+
+		// builds the header for each section of the table in the CSV - column headers: Dates, and the title of the graph
+		for($i = 0; $i < $numGraphTitles; $i++) {
+			$dataSerie = $dataSeries[$graphTitles[$i]];
+			$numRows = count($dataSerie['data']);
+			$dates = array_keys($dataSerie['data']);
+			$header = ['Dates', $graphTitles[$i]];
+			fputcsv($fp, $header);
+
+				// builds each subsequent data row - aka the column value
+				for($j = 0; $j < $numRows; $j++) {
+					$date = $dates[$j];
+					$value = $dataSerie['data'][$date];
+					$row = [$date, $value];
+					fputcsv($fp, $row);
+				}
+		}
+		exit();
+	}
+	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+		global $interface;
+		global $enabledModules;
+		global $library;
 
 		$dataSeries = [];
 		$columnLabels = [];
@@ -27,72 +100,6 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$userUsage->selectAdd('year');
 		$userUsage->selectAdd('month');
 		$userUsage->orderBy('year, month');
-
-		switch ($stat) {
-			case 'generalUsage':
-				$title .= ' - General Usage';
-				break;
-			case 'pageViews':
-				$title .= ' - Pages Viewed';
-				break;
-			case 'authenticatedPageViews':
-				$title .= ' - Authenticated Page Views';
-				break;
-			case 'sessionsStarted':
-				$title = ' - Sessions Started';
-				break;
-			case 'pageViewsByBots':
-				$title .= ' - Pages Viewed By Bots';
-				break;
-			case 'asyncRequests':
-				$title .= ' - Asynchronous Requests';
-				break;
-			case 'coversRequested':
-				$title .= ' - Covers Requested';
-				break;
-			case 'searches':
-				$title .= ' - Searches';
-				break;
-			case 'groupedWorksSearches':
-				$title .= ' - Grouped Work Searches';
-				break;
-			case 'listSearches':
-				$title .= ' - List Searches';
-				break;
-			case 'edsSearches':
-				$title .= ' - EBSCO EDS Searches';
-				break;
-			case 'eventSearches':
-				$title .= ' - Event Searches';
-				break;
-			case 'openArchivesSearches':
-				$title .= ' - Open Archives Searches';
-				break;
-			case 'genealogySearches':
-				$title .= ' - Genealogy Searches';
-				break;
-			case 'exceptionsReport':
-				$title .= ' - Exceptions';
-				break;
-			case 'blockedPages':
-				$title .= ' - Blocked Pages';
-				break;
-			case 'blockedApiRequests':
-				$title .= ' - Blocked API Requests';
-				break;
-			case 'errors':
-				$title .= ' - Errors';
-				break;
-			case 'emailSending':
-				$title .= ' - Email Sending';
-				break;
-			case 'emailsSent':
-				$title .= ' - Emails Sent';
-				break;
-			case 'failedEmails':
-				$title .= ' - Failed Emails';
-				break;
-		}
 
 		//General Usage Stats
 		if ($stat == 'pageViews' || $stat == 'generalUsage') {
@@ -276,8 +283,6 @@ class Admin_UsageGraphs extends Admin_Admin {
 			$userUsage->selectAdd('SUM(emailsFailed) as sumFailedEmails');
 		}
 
-
-
 		//Collect results
 		$userUsage->find();
 
@@ -378,28 +383,77 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
 		$interface->assign('translateColumnLabels', false);
+	}
 
+	private function assignGraphSpecificTitle($stat) {
+		global $interface;
+		$title = $interface->getVariable('graphTitle');
+		switch ($stat) {
+			case 'generalUsage':
+				$title .= ' - General Usage';
+				break;
+			case 'pageViews':
+				$title .= ' - Pages Viewed';
+				break;
+			case 'authenticatedPageViews':
+				$title .= ' - Authenticated Page Views';
+				break;
+			case 'sessionsStarted':
+				$title = ' - Sessions Started';
+				break;
+			case 'pageViewsByBots':
+				$title .= ' - Pages Viewed By Bots';
+				break;
+			case 'asyncRequests':
+				$title .= ' - Asynchronous Requests';
+				break;
+			case 'coversRequested':
+				$title .= ' - Covers Requested';
+				break;
+			case 'searches':
+				$title .= ' - Searches';
+				break;
+			case 'groupedWorksSearches':
+				$title .= ' - Grouped Work Searches';
+				break;
+			case 'listSearches':
+				$title .= ' - List Searches';
+				break;
+			case 'edsSearches':
+				$title .= ' - EBSCO EDS Searches';
+				break;
+			case 'eventSearches':
+				$title .= ' - Event Searches';
+				break;
+			case 'openArchivesSearches':
+				$title .= ' - Open Archives Searches';
+				break;
+			case 'genealogySearches':
+				$title .= ' - Genealogy Searches';
+				break;
+			case 'exceptionsReport':
+				$title .= ' - Exceptions';
+				break;
+			case 'blockedPages':
+				$title .= ' - Blocked Pages';
+				break;
+			case 'blockedApiRequests':
+				$title .= ' - Blocked API Requests';
+				break;
+			case 'errors':
+				$title .= ' - Errors';
+				break;
+			case 'emailSending':
+				$title .= ' - Email Sending';
+				break;
+			case 'emailsSent':
+				$title .= ' - Emails Sent';
+				break;
+			case 'failedEmails':
+				$title .= ' - Failed Emails';
+				break;
+		}
 		$interface->assign('graphTitle', $title);
-		$this->display('usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
-		$breadcrumbs[] = new Breadcrumb('/Admin/UsageDashboard', 'Usage Dashboard');
-		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
-		return $breadcrumbs;
-	}
-
-	function getActiveAdminSection(): string {
-		return 'system_reports';
-	}
-
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
 }

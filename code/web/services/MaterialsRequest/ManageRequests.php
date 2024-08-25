@@ -217,9 +217,23 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$interface->assign('idsToShow', $idsToShow);
 			}
 
+			$materialsRequestsPerPage = $_REQUEST['pageSize'] ?? 30;
+			$page = $_REQUEST['page'] ?? 1;
+			$materialsRequests->limit(($page - 1) * $materialsRequestsPerPage, $materialsRequestsPerPage);
+			$materialsRequestCount = $materialsRequests->count();
+
 			if ($materialsRequests->find()) {
 				$allRequests = $materialsRequests->fetchAll();
 			}
+
+			$options = [
+				'totalItems' => $materialsRequestCount,
+				'perPage' => $materialsRequestsPerPage,
+			];
+
+			$pager = new Pager($options);
+
+			$interface->assign('pageLinks', $pager->getLinks());
 
 			//Get a list of other users that are materials request users for this library
 			$permission = new Permission();

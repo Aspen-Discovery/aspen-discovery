@@ -38,11 +38,14 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 			}
 
+			$isAssociatedWithILS = $user->hasIlsConnection();
+
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowPickupLocationUpdates', $allowPickupLocationUpdates);
 			$interface->assign('allowRememberPickupLocation', $allowRememberPickupLocation);
 			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
+			$interface->assign('isAssociatedWithILS', $isAssociatedWithILS);
 
 			// Determine Pickup Locations
 			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);
@@ -82,8 +85,10 @@ class MyAccount_MyPreferences extends MyAccount {
 						if (!empty($user->updateMessage)) {
 							$user->updateMessage .= '<br/>';
 						}
-						$user->updateMessage .= implode('<br/>', $result2['messages']);
-						$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+						if(!empty($result2)){ // $result2 may be null, guard clause required
+							$user->updateMessage .= implode('<br/>', $result2['messages']);
+							$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+						}
 					}
 				}else{
 					$user->updateMessage = translate([
