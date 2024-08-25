@@ -252,10 +252,9 @@
         }
     </style>
     <div id="formish">
-        <h1>Disc Barcode Generator</h1>
+        <h1>{translate text="Disc Barcode Generator" isAdminFacing=true}</h1>
         <p>Print disc hub circular EAN-8 barcodes for each number supplied</p>
         <form id="args">
-            Numbers to print as barcodes (each number on a new line):<br>
             <label for="libraryName">Library Name: </label><input type="text" name="libraryName" id="libraryName" value="{$librarySystemName|escape}">
             <label for="start">Start barcode: </label><input type="number" name="start" id="start" min="1000000" max="9999999">
             <label for="count">How many: </label><input type="number" name="count" id="count" min="1" max="123" value="10">
