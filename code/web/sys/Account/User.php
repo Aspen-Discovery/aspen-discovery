@@ -3,14 +3,14 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class User extends DataObject {
-	public $__table = 'user';                            // table name
+	public $__table = 'user'; // table name
 	public $id;
 	public $source;
 	public $username;
 	public $unique_ils_id;
 	public $cat_username; //Old field for barcode/username from the ILS deprecated
-	public $cat_password;  //Old field barcode/username from the ILS deprecated
-	public $ils_barcode;  //The barcode for the user as stored within the ILS. Will be null for admin users and users not stored in the ils
+	public $cat_password; //Old field barcode/username from the ILS deprecated
+	public $ils_barcode; //The barcode for the user as stored within the ILS. Will be null for admin users and users not stored in the ils
 	public $ils_username; //A custom username for the user as stored within the ILS that can be used for login rather than using the barcode.
 	public $ils_password; //The password to use when logging in
 	public $displayName;
@@ -20,16 +20,16 @@ class User extends DataObject {
 	public $email;
 	public $phone;
 	public $patronType;
-	public $created;                         // datetime(19)  not_null binary
-	public $homeLocationId;                     // int(11)
-	public $myLocation1Id;                     // int(11)
-	public $myLocation2Id;                     // int(11)
-	public $trackReadingHistory;             // tinyint
+	public $created; // datetime(19) not_null binary
+	public $homeLocationId; // int(11)
+	public $myLocation1Id; // int(11)
+	public $myLocation2Id; // int(11)
+	public $trackReadingHistory; // tinyint
 	public $initialReadingHistoryLoaded;
 	public $lastReadingHistoryUpdate;
-	public $bypassAutoLogout;        //tinyint
-	public $disableRecommendations;     //tinyint
-	public $disableCoverArt;     //tinyint
+	public $bypassAutoLogout; //tinyint
+	public $disableRecommendations; //tinyint
+	public $disableCoverArt; //tinyint
 	public $overdriveEmail;
 	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
 	public $hooplaCheckOutConfirmation;
@@ -531,8 +531,8 @@ class User extends DataObject {
 	/**
 	 * Checks if there is any settings disallowing the account $accountIdToCheck to be linked to this user.
 	 *
-	 * @param  $accountIdToCheck string   linked account Id to check for blocking
-	 * @return bool                       true for blocking, false for no blocking
+	 * @param $accountIdToCheck string linked account Id to check for blocking
+	 * @return bool true for blocking, false for no blocking
 	 */
 	public function isBlockedAccount($accountIdToCheck) {
 		if (is_null($this->blockAll)) {
@@ -1211,8 +1211,8 @@ class User extends DataObject {
 	}
 
 	/**
-	 * @param $list UserList           object of the user list to check permission for
-	 * @return  bool       true if this user can edit passed list
+	 * @param $list UserList object of the user list to check permission for
+	 * @return bool true if this user can edit passed list
 	 */
 	function canEditList($list) {
 		if (($this->id == $list->user_id) || $this->hasPermission('Edit All Lists')) {
@@ -1903,10 +1903,10 @@ class User extends DataObject {
 	}
 
 	/**
-	 * Get a list of locations where a record can be picked up.  Handles liked accounts
+	 * Get a list of locations where a record can be picked up. Handles liked accounts
 	 * and filtering to make sure that the user is able to
 	 *
-	 * @param $recordSource string   The source of the record that we are placing a hold on
+	 * @param $recordSource string The source of the record that we are placing a hold on
 	 *
 	 * @return Location[]
 	 */
@@ -1983,10 +1983,10 @@ class User extends DataObject {
 	 * @param string $recordId The id of the bib record
 	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
 	 * @param null|string $cancelDate When the hold should be automatically cancelled if desired
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display
-	 * @access  public
+	 * @return array An array with the following keys
+	 * result - true/false
+	 * message - the message to display
+	 * @access public
 	 */
 	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
@@ -2080,9 +2080,9 @@ class User extends DataObject {
 	 * @param string $itemId The id of the item to hold
 	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
 	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
-	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a AspenError
-	 * @access  public
+	 * @return mixed True if successful, false if unsuccessful
+	 * If an error occurs, return a AspenError
+	 * @access public
 	 */
 	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
@@ -2110,10 +2110,10 @@ class User extends DataObject {
 	}
 
 	/**
-	 * Get the user referred to by id.  Will return false if the specified patron id is not
+	 * Get the user referred to by id. Will return false if the specified patron id is not
 	 * the id of this user or one of the users that is linked to this user.
 	 *
-	 * @param $patronId     int  The patron to check
+	 * @param $patronId int The patron to check
 	 * @return User|false
 	 */
 	function getUserReferredTo($patronId) {
@@ -2135,11 +2135,11 @@ class User extends DataObject {
 	/**
 	 * Cancels a hold for the user in their ILS
 	 *
-	 * @param $recordId string  The Id of the record being cancelled
-	 * @param $cancelId string  The Id of the hold to be cancelled.  Structure varies by ILS
-	 * @param $isIll boolean    If the hold is from the ILL system
+	 * @param $recordId string The Id of the record being cancelled
+	 * @param $cancelId string The Id of the hold to be cancelled. Structure varies by ILS
+	 * @param $isIll boolean If the hold is from the ILL system
 	 *
-	 * @return array            Information about the result of the cancellation process
+	 * @return array Information about the result of the cancellation process
 	 */
 	function cancelHold($recordId, $cancelId, $isIll): array {
 		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
@@ -2932,7 +2932,7 @@ class User extends DataObject {
 				$userMessage->userId = $this->id;
 				$userMessage->messageType = 'confirm_linked_accts';
 				$userMessage->message = translate([
-					'text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?",
+					'text' => "Other accounts have linked to your account. Do you want to continue allowing them to link to you?",
 					'isPublicFacing' => true,
 				]);
 				$userMessage->action1Title = translate([
@@ -3172,7 +3172,7 @@ class User extends DataObject {
 	}
 
 	function getPickupLocationCode() {
-		//Always check if a preferred pickup location has been selected.  If not, use the home location
+		//Always check if a preferred pickup location has been selected. If not, use the home location
 		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
 			$pickupBranch = $this->pickupLocationId;
 			$locationLookup = new Location();
@@ -3191,7 +3191,7 @@ class User extends DataObject {
 	}
 
 	function getPickupLocationName() {
-		//Always check if a preferred pickup location has been selected.  If not, use the home location
+		//Always check if a preferred pickup location has been selected. If not, use the home location
 		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
 			$pickupBranch = $this->pickupLocationId;
 			$locationLookup = new Location();
@@ -3339,7 +3339,7 @@ class User extends DataObject {
 		]);
 		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage By User Agent', 'Reports which User Agents have used Aspen Discovery.', '/Admin/UsageByUserAgent'), 'View System Reports');
-		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), [
+		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery. The nightly index updates all records if needed.', '/Admin/ReindexLog'), [
 			'View System Reports',
 			'View Indexing Logs',
 		]);
