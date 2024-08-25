@@ -20,8 +20,7 @@ class Report_BarcodeGenerator extends Admin_Admin {
 	}
 	function canView(): bool {
 		return UserAccount::userHasPermission([
-			'View All Student Reports',
-			'View Location Student Reports',
+			'Barcode Generators',
 		]);
 	}
 }

@@ -20,8 +20,7 @@ class Report_DiscBarcodeGenerator extends Admin_Admin {
 	}
 	function canView(): bool {
 		return UserAccount::userHasPermission([
-			'View All Collection Reports',
-			'View Location Collection Reports',
+			'Barcode Generators',
 		]);
 	}
 }
