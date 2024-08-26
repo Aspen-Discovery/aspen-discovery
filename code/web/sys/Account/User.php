@@ -3608,14 +3608,14 @@ class User extends DataObject {
 			'Administer Library VDX Forms',
 		]);
 
+		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
+		$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator', 'Create Code39 barcodes on Avery 5160 labels from a list of numbers.', '/Report/BarcodeGenerator'), [
+			'Barcode Generators',
+		]);
+		$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator - Disc', 'Create hub EAN-8 barcodes for CDs and DVDs.', '/Report/DiscBarcodeGenerator'), [
+			'Barcode Generators',
+		]);
 		if ($circulationReports) {
-			$sections['circulation_reports'] = new AdminSection('Circulation Reports');
-			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator', 'Create Code39 barcodes on Avery 5160 labels from a list of numbers.', '/Report/BarcodeGenerator'), [
-				'Barcode Generators',
-			]);
-			$sections['circulation_reports']->addAction(new AdminAction('Barcode Generator - Disc', 'Create hub EAN-8 barcodes for CDs and DVDs.', '/Report/DiscBarcodeGenerator'), [
-				'Barcode Generators',
-			]);
 			$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
 				'View Location Collection Reports',
 				'View All Collection Reports',
