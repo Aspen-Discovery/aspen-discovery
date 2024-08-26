@@ -160,7 +160,17 @@ function getUpdates24_09_00(): array {
 		//pedro - PTFS-Europe
 
 		//James Staub - Nashville Public Library
-
+		'barcode_generator_report_permissions' => [
+			'title' => 'Barcode Generator report permissions',
+			'description' => 'Create permissions for Barcode Generator reports',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Circulation Reports', 'Barcode Generators', '', 60, 'Allows the user to run the Barcode Generators')
+				",
+//				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='Barcode Generators'))",
+			],
+		],
 
 		//other
 
