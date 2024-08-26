@@ -312,9 +312,24 @@ function getGroupedWorkForRecordId($bibNumber, &$validRecords, &$invalidRecords)
 	} elseif (array_key_exists($bibNumber, $invalidRecords)) {
 		return null;
 	} else {
+		$ils = '';
 		$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 		$groupedWorkPrimaryIdentifier->type = 'ils';
-		$groupedWorkPrimaryIdentifier->identifier = $bibNumber;
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils != 'na') {
+				$ils = $accountProfiles->ils;
+			}
+		}
+		if ($ils == 'sierra') {
+			$escapedFilter = $groupedWorkPrimaryIdentifier->escape('.b' . $bibNumber . '%');
+			$groupedWorkPrimaryIdentifier->whereAdd("identifier LIKE $escapedFilter");
+
+		} else {
+			$groupedWorkPrimaryIdentifier->identifier = $bibNumber;
+		}
+
 		if ($groupedWorkPrimaryIdentifier->find(true)) {
 			$groupedWork = new GroupedWork();
 			$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
