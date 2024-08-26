@@ -3459,6 +3459,10 @@ class User extends DataObject {
 			'Administer All Grouped Work Facets',
 			'Administer Library Grouped Work Facets',
 		]);
+		$groupedWorkAction->addSubAction(new AdminAction('Format Sorting', 'Define how formats are sorted within a Grouped Work.', '/Admin/GroupedWorkFormatSorting'), [
+			'Administer All Format Sorting',
+			'Administer Library Format Sorting',
+		]);
 		$sections['cataloging']->addAction($groupedWorkAction, [
 			'Administer All Grouped Work Display Settings',
 			'Administer Library Grouped Work Display Settings',
