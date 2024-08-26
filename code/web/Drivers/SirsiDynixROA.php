@@ -1314,6 +1314,13 @@ class SirsiDynixROA extends HorizonAPI {
 				],
 			];
 
+			//Check whether we need to look up the volume key because we are no longer getting it from a txt file
+			if (str_starts_with($volume, "LOOKUP")) {
+				$idParts = explode(":", $volume);
+				$displayVolume = $idParts[2] ?? '';
+				$volume = $this->getMissingVolumeKey($webServiceURL, $shortId, $sessionToken, $displayVolume);
+			}
+
 			if (!empty($volume)) {
 				$holdData['call'] = [
 					'resource' => '/catalog/call',
@@ -1484,6 +1491,23 @@ class SirsiDynixROA extends HorizonAPI {
 				];
 			}
 		}
+	}
+
+	private function getMissingVolumeKey($webServiceURL, $shortId, $sessionToken, $volume) {
+		// We need a call number key (formatted bibId:itemId) to place a volume hold, but the itemId isn't in the MARC record
+		// First get all the keys for the record
+		$numericId = str_replace('a', '', $shortId);
+		$getKeysForBib = $this->getWebServiceResponse('catalogBib', $webServiceURL . "/catalog/bib/key/" . $numericId . "?includeFields=callList", null, $sessionToken);
+		foreach ($getKeysForBib->fields->callList as $call) {
+			// Get the item that matches that key
+			$item = $this->getWebServiceResponse('catalogCall', $webServiceURL . "/catalog/call/key/" . $call->key, null, $sessionToken);
+			// Create a lookup array that returns the first key that matches the volume number
+			if ($item->fields->volumetric == $volume) {
+				return $item->key;
+			}
+		}
+		// Return a blank string if there was no matching volume key
+		return "";
 	}
 
 
