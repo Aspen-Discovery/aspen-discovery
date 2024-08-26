@@ -7,8 +7,7 @@
 		</div>
 		<form id='adminSearchBox' role="form" class="form-horizontal" style='display:none'>
 			<div class="form-group">
-				<label class='searchSettings'
-					   for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
+				<label class='searchSettings' for="searchAdminBar">{translate text="Search for a Setting" isAdminFacing=true}</label>
 				<div class="input-group input-group-sm">
 					<input type="text" name="searchAdminBar" id="searchAdminBar"
 						   onkeyup="return AspenDiscovery.Admin.searchAdminBar();" class="form-control"/>
