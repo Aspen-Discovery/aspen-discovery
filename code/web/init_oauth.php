@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuthAuthentication.php';
 
 global $logger;
+/** @var Library $library */
 global $library;
 
 $auth = new OAuthAuthentication();

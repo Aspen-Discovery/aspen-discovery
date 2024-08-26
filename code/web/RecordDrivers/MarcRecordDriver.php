@@ -1598,6 +1598,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	public function getMoreDetailsOptions() {
 		global $interface;
+		/** @var Library $library */
 		global $library;
 
 		$isbn = $this->getCleanISBN();

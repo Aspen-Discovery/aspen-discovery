@@ -1,11 +1,13 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection - can't do field types for DataObjects because we access fields before initialization */
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkMoreDetails.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFormatSortingGroup.php';
 
 /**
  * Class GroupedWorkDisplaySetting
- * Stores information about display settings for Grouped Work searches and full records
+ * Stores information about display settings for Grouped Work searches and full records,
  * so they can be configured once and applied to different libraries and locations
  */
 class GroupedWorkDisplaySetting extends DataObject {
@@ -47,6 +49,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $includeAllRecordsInDateAddedFacets;
 	public $facetCountsToShow;
 	public $facetGroupId;
+	public $formatSortingGroupId;
 
 	//Enrichment
 	public $showStandardReviews;
@@ -83,7 +86,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	private $_moreDetailsOptions;
 
-	// Use this to set which details will be shown in the the Main Details section of the record in the search results.
+	// Use this to set which details will be shown in the Main Details section of the record in the search results.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
 	static $searchResultsMainDetailsOptions = [
@@ -99,7 +102,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		'showFountasPinnell' => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',
 	];
 
-	// Use this to set which details will be shown in the the Main Details section of the record view.
+	// Use this to set which details will be shown in the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
 	static $showInMainDetailsOptions = [
@@ -127,6 +130,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 		$facetGroup->find();
 		while ($facetGroup->fetch()) {
 			$facetGroups[$facetGroup->id] = $facetGroup->name;
+		}
+
+		$formatSortGroups = [];
+		$formatSort = new GroupedWorkFormatSortingGroup();
+		$formatSort->orderBy('name');
+		$formatSort->find();
+		while ($formatSort->fetch()) {
+			$formatSortGroups[$formatSort->id] = $formatSort->name;
 		}
 
 		$moreDetailsStructure = GroupedWorkMoreDetails::getObjectStructure($context);
@@ -358,6 +369,12 @@ class GroupedWorkDisplaySetting extends DataObject {
 							],
 						],
 					],
+					'formatSortingGroupId' => [
+						'property' => 'formatSortingGroupId',
+						'type' => 'enum',
+						'values' => $formatSortGroups,
+						'label' => 'Format Sorting',
+					],
 					'searchAlgorithm' => [
 						'property' => 'searchAlgorithm',
 						'type' => 'section',
@@ -494,7 +511,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'default' => 1,
 						'hideInLists' => true,
 					],
-					//'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether or not additional content enrichment like Table of Contents, Excerpts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,),
+					//'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether additional content enrichment like Table of Contents, Excerpts, etc. are shown to the user', 'default' => 1, 'hideInLists' => true,),
 					'showRatings' => [
 						'property' => 'showRatings',
 						'type' => 'checkbox',
@@ -542,7 +559,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 //						'property' => 'show856LinksAsAccessOnlineButtons',
 //						'type' => 'checkbox',
 //						'label' => 'Show 856 Links as Access Online Buttons',
-//						'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
+//						'description' => 'Whether 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
 //						'hideInLists' => true,
 //						'default' => 0,
 //					],
@@ -692,10 +709,10 @@ class GroupedWorkDisplaySetting extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::fetch()
 	 */
-	public function fetch() {
+	public function fetch(): bool|DataObject|null {
 		$return = parent::fetch();
 		if ($return) {
-			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {
+			if (!empty($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) ) {
 				// convert to array retrieving from database
 				$unSerialized = @unserialize($this->showInSearchResultsMainDetails);
 				if (!empty($unSerialized)) {
@@ -708,7 +725,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 				}
 			}
 
-			if (isset($this->showInMainDetails) && is_string($this->showInMainDetails) && !empty($this->showInMainDetails)) {
+			if (!empty($this->showInMainDetails) && is_string($this->showInMainDetails)) {
 				// convert to array retrieving from database
 				try {
 					$unSerialized = unserialize($this->showInMainDetails);
@@ -725,7 +742,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 					$logger->log("Error loading GroupedWorkDisplaySetting $this->id $e", Logger::LOG_DEBUG);
 				}
 			} elseif (empty($this->showInMainDetails)) {
-				// when a value is not set, assume set to show all options, eg null = all
+				// when a value is not set, assume set to show all options, e.g. null = all
 				$default = self::$showInMainDetailsOptions;
 				// remove options below that aren't to be part of the default
 				unset($default['showISBNs']);
@@ -787,13 +804,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 		return $ret;
 	}
 
-	private $_facetGroup = false;
+	private GroupedWorkFacetGroup|false|null $_facetGroup = false;
 
 	/** @return GroupedWorkFacet[] */
-	public function getFacets() {
+	public function getFacets() : array {
 		try {
 			return $this->getFacetGroup()->getFacets();
-		} catch (Exception $e) {
+		} /** @noinspection PhpUnusedLocalVariableInspection */
+		catch (Exception $e) {
 			return [];
 		}
 	}
@@ -808,7 +826,8 @@ class GroupedWorkDisplaySetting extends DataObject {
 				}
 			}
 			return $this->_facetGroup;
-		} catch (Exception $e) {
+		} /** @noinspection PhpUnusedLocalVariableInspection */
+		catch (Exception $e) {
 			return null;
 		}
 	}
@@ -855,7 +874,10 @@ class GroupedWorkDisplaySetting extends DataObject {
 		}
 	}
 
-	public function getMoreDetailsOptions() {
+	/**
+	 * @return GroupedWorkMoreDetails[]|null
+	 */
+	public function getMoreDetailsOptions() : ?array {
 		if (!isset($this->_moreDetailsOptions) && $this->id) {
 			$this->_moreDetailsOptions = [];
 			$moreDetailsOptions = new GroupedWorkMoreDetails();
@@ -869,23 +891,23 @@ class GroupedWorkDisplaySetting extends DataObject {
 		return $this->_moreDetailsOptions;
 	}
 
-	public function setMoreDetailsOptions($value) {
+	public function setMoreDetailsOptions($value) : void {
 		$this->_moreDetailsOptions = $value;
 	}
 
-	public function saveMoreDetailsOptions() {
-		if (isset ($this->_moreDetailsOptions) && is_array($this->_moreDetailsOptions)) {
+	public function saveMoreDetailsOptions() : void {
+		if (isset ($this->_moreDetailsOptions)) {
 			$this->saveOneToManyOptions($this->_moreDetailsOptions, 'groupedWorkSettingsId');
 			unset($this->_moreDetailsOptions);
 		}
 	}
 
-	public function clearMoreDetailsOptions() {
+	public function clearMoreDetailsOptions() : void {
 		$this->clearOneToManyOptions('GroupedWorkMoreDetails', 'groupedWorkSettingsId');
 		$this->_moreDetailsOptions = [];
 	}
 
-	public static function getDefaultDisplaySettings() {
+	public static function getDefaultDisplaySettings() : GroupedWorkDisplaySetting {
 		$defaultDisplaySettings = new GroupedWorkDisplaySetting();
 		$defaultDisplaySettings->name = 'default';
 		$defaultDisplaySettings->sortOwnedEditionsFirst = true;
@@ -912,8 +934,8 @@ class GroupedWorkDisplaySetting extends DataObject {
 		return $defaultDisplaySettings;
 	}
 
-	public function saveLibraries() {
-		if (isset ($this->_libraries) && is_array($this->_libraries)) {
+	public function saveLibraries() : void {
+		if (isset ($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
@@ -937,8 +959,8 @@ class GroupedWorkDisplaySetting extends DataObject {
 		}
 	}
 
-	public function saveLocations() {
-		if (isset ($this->_locations) && is_array($this->_locations)) {
+	public function saveLocations() : void {
+		if (isset ($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			/**
 			 * @var int $locationId
@@ -972,35 +994,35 @@ class GroupedWorkDisplaySetting extends DataObject {
 	/** @return Library[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLibraries() {
+	public function getLibraries() : array {
 		return $this->_libraries;
 	}
 
 	/** @return Location[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLocations() {
+	public function getLocations() : array {
 		return $this->_locations;
 	}
 
 	/** @noinspection PhpUnused */
-	public function setLibraries($val) {
+	public function setLibraries($val) : void {
 		$this->_libraries = $val;
 	}
 
 	/** @noinspection PhpUnused */
-	public function setLocations($val) {
+	public function setLocations($val) : void {
 		$this->_libraries = $val;
 	}
 
 	/** @noinspection PhpUnused */
-	public function clearLibraries() {
+	public function clearLibraries() : void {
 		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
-	public function clearLocations() {
+	public function clearLocations() : void {
 		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
 		unset($this->_locations);
 	}
@@ -1022,13 +1044,27 @@ class GroupedWorkDisplaySetting extends DataObject {
 				'class' => ROOT_DIR . '/sys/LibraryLocation/Location.php',
 				'linkingProperty' => 'groupedWorkDisplaySettingId',
 				'objectName' => 'Location',
+				'objectNamePlural' => 'Locations',
 			],
 			[
 				'object' => 'Library',
 				'class' => ROOT_DIR . '/sys/LibraryLocation/Library.php',
 				'linkingProperty' => 'groupedWorkDisplaySettingId',
 				'objectName' => 'Library',
+				'objectNamePlural' => 'Libraries',
 			],
 		];
+	}
+
+	private GroupedWorkFormatSortingGroup|false|null $_formatSortingGroup = false;
+	public function getFormatSortingGroup() {
+		if ($this->_formatSortingGroup === false) {
+			$this->_formatSortingGroup = new GroupedWorkFormatSortingGroup();
+			$this->_formatSortingGroup->id = $this->formatSortingGroupId;
+			if (!$this->_formatSortingGroup->find(true)) {
+				$this->_formatSortingGroup = null;
+			}
+		}
+		return $this->_formatSortingGroup;
 	}
 }

@@ -90,9 +90,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 @media print {
 	.avery5160 {
+		break-inside: avoid-page !important;
 		outline: 0px; 
 	}
-	#footer-container, #header-wrapper,#horizontal-menu-bar-wrapper,#side-bar,#system-message-header,.breadcrumbs {
+	#footer-container
+	, #header-wrapper
+	, #horizontal-menu-bar-wrapper
+	, #side-bar
+	, #system-message-header
+	, .breadcrumbs {
 		display: none;
 	}
 	.container
@@ -100,14 +106,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	, #main-content
 	, #printish {
 		clear: both !important;
-		left: 0px !important;
+		left: 0 !important;
 		margin: 0 !important;;
 		padding: 0 !important;
-		height: 10.625in !important;
-		width: 8.25in !important;
 	}
 	.page {
-		page-break-after: always !important;
+		break-after: page !important;
+		break-inside: avoid-page !important;
+		height: 10.6in !important;
+		width: 8.25in !important;
+		margin-left: .2in !important;
+		margin-top: .4in !important;
 	}
 	#reportFrontMatter {
 		display: none;
@@ -115,9 +124,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 }
 
 @page {
-	size: 8.5in 11in !important;
-/*	margin: .375in .125in .375in !important; */
-	margin: .375in .125in 0in !important;
+	size: letter !important;
 }
 </style>
 {/literal}
@@ -142,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				{else}
 					{html_options name=homeroom options=$homeroomLookupList class="form-control input-sm" onchange="this.form.submit()"}
 				{/if}
-				<input type="button" name="printSlips" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.avery5160'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
+				<input type="button" name="printSlips" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal}window.print();{/literal}" />
 				&nbsp;
 			</form>
 			{if !empty($reportData)}
