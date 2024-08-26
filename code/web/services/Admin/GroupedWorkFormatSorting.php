@@ -84,4 +84,29 @@ class Admin_GroupedWorkFormatSorting extends ObjectEditor {
 	function getInitializationJs(): string {
 		return 'AspenDiscovery.Admin.initializeFormatSort();';
 	}
+
+	function getAdditionalObjectActions($existingObject): array {
+		$objectActions = [];
+		if (isset($existingObject) && $existingObject != null) {
+			$objectActions[] = [
+				'text' => 'Update Active Formats',
+				'url' => '/Admin/GroupedWorkFormatSorting?objectAction=loadActiveFormats&id=' . $existingObject->id,
+			];
+		}
+		return $objectActions;
+	}
+
+	function loadActiveFormats(){
+		$id = $_REQUEST['id'];
+		if (!empty($id) && is_numeric($id)) {
+			$formatSortingGroup = new GroupedWorkFormatSortingGroup();
+			$formatSortingGroup->id = $id;
+			if ($formatSortingGroup->find(true)) {
+				$formatSortingGroup->loadDefaultFormats();
+			}
+		}
+		$structure = $this->getObjectStructure();
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		$this->viewIndividualObject($structure);
+	}
 }

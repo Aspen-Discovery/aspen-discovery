@@ -332,32 +332,68 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		return $this->$internalArrayName;
 	}
 
-	private function loadDefaultFormats() {
+	public function loadDefaultFormats() {
 		//Automatically generate based on the data in the database.
 		global $aspen_db;
 		$loadDefaultFormatsStmt = "SELECT grouping_category, format FROM grouped_work_variation inner join indexed_format on indexed_format.id = formatId inner join grouped_work on grouped_work.id = grouped_work_variation.groupedWorkId group by format, grouping_category order by grouping_category, lower(format);";
 		$results = $aspen_db->query($loadDefaultFormatsStmt, PDO::FETCH_ASSOC);
-		$weight = 1;
-		$lastGroupingCategory = null;
+
+		$bookSort = $this->getSortedFormats('book');
+		$comicSort = $this->getSortedFormats('comic');
+		$movieSort = $this->getSortedFormats('movie');
+		$musicSort = $this->getSortedFormats('music');
+		$otherSort = $this->getSortedFormats('other');
+
 		foreach ($results as $result) {
-			if ($lastGroupingCategory != $result['grouping_category']) {
-				$lastGroupingCategory = $result['grouping_category'];
-				$weight = 1;
+			//Check to see if we already have this category
+			if ($result['grouping_category'] == 'book') {
+				$activeFormats = $bookSort;
+			}elseif ($result['grouping_category'] == 'comic') {
+				$activeFormats = $comicSort;
+			}elseif ($result['grouping_category'] == 'movie') {
+				$activeFormats = $movieSort;
+			}elseif ($result['grouping_category'] == 'music') {
+				$activeFormats = $musicSort;
+			}elseif ($result['grouping_category'] == 'other') {
+				$activeFormats = $otherSort;
 			}
-			$groupedWorkFormatSort = new GroupedWorkFormatSort();
-			$groupedWorkFormatSort->formatSortingGroupId = $this->id;
-			$groupedWorkFormatSort->groupingCategory = $result['grouping_category'];
-			$groupedWorkFormatSort->format = $result['format'];
-			$groupedWorkFormatSort->weight = $weight++;
-			$groupedWorkFormatSort->insert();
+			$formatExists = false;
+			foreach ($activeFormats as $activeFormat) {
+				if ($activeFormat->format == $result['format']) {
+					$formatExists = true;
+					break;
+				}
+			}
+			if (!$formatExists) {
+				$groupedWorkFormatSort = new GroupedWorkFormatSort();
+				$groupedWorkFormatSort->formatSortingGroupId = $this->id;
+				$groupedWorkFormatSort->groupingCategory = $result['grouping_category'];
+				$groupedWorkFormatSort->format = $result['format'];
+				$groupedWorkFormatSort->weight = count($activeFormats) + 1;
+				$groupedWorkFormatSort->insert();
+				$activeFormats[$groupedWorkFormatSort->id] = $groupedWorkFormatSort;
+			}
 		}
 	}
 
-	private function setSortedFormats(string $groupingCategory, ?array $value) {
+	private function setSortedFormats(string $groupingCategory, ?array $value) : void {
 		$internalArrayName = $this->getArrayNameForGroupingCategory($groupingCategory);
 		if (!empty($internalArrayName)) {
 			$this->$internalArrayName = $value;
 		}
 	}
+
+	public function getLinkedObjectStructure() : array {
+		return [
+			[
+				'object' => 'GroupedWorkDisplaySetting',
+				'class' => ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php',
+				'linkingProperty' => 'formatSortingGroupId',
+				'objectName' => 'Grouped Work Display Setting',
+				'objectNamePlural' => 'Grouped Work Display Settings',
+			],
+		];
+	}
+
 
 }

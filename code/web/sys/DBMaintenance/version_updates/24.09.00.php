@@ -98,8 +98,24 @@ function getUpdates24_09_00(): array {
     				weight INT(11) NOT NULL,
     				UNIQUE(formatSortingGroupId, groupingCategory, format)
 				)',
-			]
+			],
 		], //create_format_sorting_tables
+		'create_default_format_sorting' => [
+			'title' => 'Create default format sorting',
+			'description' => 'Create default format sorting',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO grouped_work_format_sort_group (id, name, bookSortMethod, comicSortMethod, movieSortMethod, musicSortMethod, otherSortMethod) VALUES (1, 'Default', 1, 1, 1, 1, 1)"
+			]
+		],
+		'link_format_sorting_to_display_settings' => [
+			'title' => 'Link format sorting to display settings',
+			'description' => 'Link format sorting to display settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN formatSortingGroupId INT(11) DEFAULT 1'
+			]
+		], //link_format_sorting_to_display_settings
 
 		//katherine - ByWater
 
