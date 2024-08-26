@@ -57,7 +57,7 @@ class SnapPaySetting extends DataObject
             ],
 			'apiAuthenticationCode' => [
 				'property' => 'apiAuthenticationCode',
-				'type' => 'password',
+				'type' => 'storedPassword',
 				'label' => 'API Authentication Code',
 				'description' => 'The API Authentication Code to use when paying fines with SnapPay.',
 				'hideInLists' => true,
