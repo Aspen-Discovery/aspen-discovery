@@ -12,6 +12,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @return string
 	 */
 	function getSearchSpecsFile() {
+		/** @var Library $library */
 		global $library;
 		$searchSpecsVersion = $library->getGroupedWorkDisplaySettings()->searchSpecVersion;
 		if ($searchSpecsVersion == 2) {

@@ -335,4 +335,16 @@ class GroupedWorkFacetGroup extends DataObject {
 
 		return $objectActions;
 	}
+
+	public function getLinkedObjectStructure() : array {
+		return [
+			[
+				'object' => 'GroupedWorkDisplaySetting',
+				'class' => ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php',
+				'linkingProperty' => 'facetGroupId',
+				'objectName' => 'Grouped Work Display Setting',
+				'objectNamePlural' => 'Grouped Work Display Settings',
+			],
+		];
+	}
 }
