@@ -650,12 +650,19 @@ class AJAX_JSON extends Action {
 	}
 
 	function saveCookieManagementPreferences() {
+		require_once ROOT_DIR . '/services/MyAccount/MyCookiePreferences.php';
+		error_log("CALLED SAVE MANAGE PREFS IN JSON");
 		if (UserAccount::isLoggedIn()) {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
 			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'] == "1" || $_REQUEST['cookieUserLocalAnalytics'] == 1 ? 1 : 0;
+
 			$userObj->update();
+			
+			if ($userObj->userCookiePreferenceLocalAnalytics == 0) {
+				$this->removeLocalAnalyticsTrackingForUser($userObj->id);
+			}
 			return[
 				'success' => true,
 				'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
@@ -671,6 +678,109 @@ class AJAX_JSON extends Action {
 				'success' => true,
 				'message' => '',
 			];
+		}
+	}
+
+	public function removeLocalAnalyticsTrackingForUser($userId) {
+		require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
+		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
+		require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
+		require_once ROOT_DIR . '/sys/Ebsco/UserEbscohostUsage.php';
+		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
+		require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
+		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
+		require_once ROOT_DIR . '/sys/PalaceProject/UserPalaceProjectUsage.php';
+		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
+		require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
+		require_once ROOT_DIR . '/sys/Events/UserEventsUsage.php';
+
+		$userId = UserAccount::getActiveUserId();
+
+		if ($userId) {
+			$userSummonUsage = new UserSummonUsage();
+			$userSummonUsage->userId = $userId;
+			$userSummonUsage->find();
+			while ($userSummonUsage->fetch()) {
+				$userSummonUsage->delete();
+			}
+
+			$userAxis360Usage = new UserAxis360Usage();
+			$userAxis360Usage->userId = $userId;
+			$userAxis360Usage->find();
+			while ($userAxis360Usage->fetch()) {
+				$userAxis360Usage->delete();
+			}
+
+			$userCloudLibraryUsage = new UserCloudLibraryUsage();
+			$userCloudLibraryUsage->userId = $userId;
+			$userCloudLibraryUsage->find();
+			while ($userCloudLibraryUsage->fetch()) {
+				$userCloudLibraryUsage->delete();
+			}
+
+			$userEbscoEdsUsage = new UserEbscoEdsUsage();
+			$userEbscoEdsUsage->userId = $userId;
+			$userEbscoEdsUsage->find();
+			while ($userEbscoEdsUsage->fetch()) {
+				$userEbscoEdsUsage->delete();
+			}
+
+			$userEbscoHostUsage = new UserEbscohostUsage();
+			$userEbscoHostUsage->userId = $userId;
+			$userEbscoHostUsage->find();
+			while ($userEbscoHostUsage->fetch()) {
+				$userEbscoHostUsage->delete();
+			}
+
+			$userHooplaUsage = new UserHooplaUsage();
+			$userHooplaUsage->userId = $userId;
+			$userHooplaUsage->find();
+			while ($userHooplaUsage->fetch()) {
+				$userHooplaUsage->delete();
+			}
+
+			$userOpenArchivesUsage = new UserOpenArchivesUsage();
+			$userOpenArchivesUsage->userId = $userId;
+			$userOpenArchivesUsage->find();
+			while ($userOpenArchivesUsage->fetch()) {
+				$userOpenArchivesUsage->delete();
+			}
+
+			$userOverDriveUsage = new UserOverDriveUsage();
+			$userOverDriveUsage->userId = $userId;
+			$userOverDriveUsage->find();
+			while ($userOverDriveUsage->fetch()) {
+				$userOverDriveUsage->delete();
+			}
+
+			$userPalaceProjectUsage = new UserPalaceProjectUsage();
+			$userPalaceProjectUsage->userId = $userId;
+			$userPalaceProjectUsage->find();
+			while ($userPalaceProjectUsage->fetch()) {
+				$userPalaceProjectUsage->delete();
+			}
+
+			$userSideLoadUsage = new UserSideLoadUsage();
+			$userSideLoadUsage->userId = $userId;
+			$userSideLoadUsage->find();
+			while ($userSideLoadUsage->fetch()) {
+				$userSideLoadUsage->delete();
+			}
+
+			$userWebsiteUsage = new UserWebsiteUsage();
+			$userWebsiteUsage->userId = $userId;
+			$userWebsiteUsage->find();
+			while ($userWebsiteUsage->fetch()) {
+				$userWebsiteUsage->delete();
+			}
+
+			$userEventsUsage = new UserEventsUsage();
+			$userEventsUsage->userId = $userId;
+			$userEventsUsage->find();
+			while ($userEventsUsage->fetch()) {
+				$userEventsUsage->delete();
+			}
 		}
 	}
 
