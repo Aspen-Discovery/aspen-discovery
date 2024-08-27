@@ -62,7 +62,7 @@ jobs:
             echo "Found modified file: $file";
             if [[ $file == *.php || $file == *.js || $file == *.java ]]; then 
               #echo "Checking $file for whitespace issues"
-              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file | grep "^+\s*  +")
+              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file | grep "^\+\s* {2,}")
               #echo "DIFF: $DIFF"
               if [[ $DIFF =~ "  " ]]; then
                 echo "Detected spaces instead of tabs in $file"
