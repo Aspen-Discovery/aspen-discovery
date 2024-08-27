@@ -9,6 +9,7 @@ class SierraSelfRegistrationForm extends DataObject {
 	public $selfRegistrationTemplate;
 	public $termsOfServiceSetting;
 	public $selfRegEmailBarcode;
+	public $selfRegPatronCode;
 
 	private $_fields;
 	private $_libraries;
@@ -73,6 +74,13 @@ class SierraSelfRegistrationForm extends DataObject {
 				'description' => 'The ILS template to use during self registration',
 				'hideInLists' => true,
 				'default' => 'default',
+			],
+			'selfRegPatronCode' => [
+				'property' => 'selfRegPatronCode',
+				'type' => 'text',
+				'label' => 'Patron Code',
+				'description' => 'Patron code to use for self registered patrons',
+				'maxLength' => 75,
 			],
 			'selfRegEmailBarcode' => [
 				'property' => 'selfRegEmailBarcode',

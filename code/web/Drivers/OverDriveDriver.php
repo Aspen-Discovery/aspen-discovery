@@ -132,7 +132,11 @@ class OverDriveDriver extends AbstractEContentDriver {
 			if (substr($baseUrl, -1) != '/') {
 				$baseUrl .= '/';
 			}
-			$baseUrl .= 'media/' . $crossRefId;
+			if (str_contains($baseUrl, 'lexisdl')) {
+				$baseUrl .= 'title/' . $crossRefId;
+			} else{
+				$baseUrl .= 'media/' . $crossRefId;
+			}
 		}else{
 			$baseUrl = '';
 		}
