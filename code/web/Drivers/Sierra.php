@@ -1780,6 +1780,7 @@ class Sierra extends Millennium {
 		$params = [];
 
 		if ($formFields != null) {
+			$params['patronType'] = $selfRegistrationForm->selfRegPatronCode;
 			foreach ($formFields as $fieldObj){
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {

@@ -9604,6 +9604,51 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowshowSearchToolsAtTop").hide();
 			}
 		},
+		initializeFormatSort: function () {
+			this.updateGroupedWorkSortFields('book');
+			this.updateGroupedWorkSortFields('comic');
+			this.updateGroupedWorkSortFields('movie');
+			this.updateGroupedWorkSortFields('music');
+			this.updateGroupedWorkSortFields('other');
+		},
+		updateGroupedWorkSortFields: function(groupingCategory) {
+			if (groupingCategory == 'book') {
+				var selectedOption = $("#bookSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedBookFormats").hide();
+				}else{
+					$("#propertyRowsortedBookFormats").show();
+				}
+			}else if (groupingCategory == 'comic') {
+				var selectedOption = $("#comicSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedComicFormats").hide();
+				}else{
+					$("#propertyRowsortedComicFormats").show();
+				}
+			}else if (groupingCategory == 'movie') {
+				var selectedOption = $("#movieSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedMovieFormats").hide();
+				}else{
+					$("#propertyRowsortedMovieFormats").show();
+				}
+			}else if (groupingCategory == 'music') {
+				var selectedOption = $("#musicSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedMusicFormats").hide();
+				}else{
+					$("#propertyRowsortedMusicFormats").show();
+				}
+			}else if (groupingCategory == 'other') {
+				var selectedOption = $("#otherSortMethodSelect").find(":selected").val();
+				if (selectedOption == 1) {
+					$("#propertyRowsortedOtherFormats").hide();
+				}else{
+					$("#propertyRowsortedOtherFormats").show();
+				}
+			}
+		},
 		updateIndexingProfileFields: function () {
 			var audienceType = $('#determineAudienceBySelect').val();
 			if (audienceType === '3') {
