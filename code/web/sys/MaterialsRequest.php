@@ -275,7 +275,7 @@ class MaterialsRequest extends DataObject {
 	function sendStaffNewMaterialsRequestEmail() {
 		global $configArray;
 		global $interface;
-		if ($this->getCreatedByUser() != false) {
+		if ($this->getCreatedByUser() != false && $this->createdEmailSent == 0) {
 			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
 			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
 				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
