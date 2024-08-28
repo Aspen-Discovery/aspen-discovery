@@ -107,6 +107,7 @@ class UserListEntry extends DataObject {
 	}
 
 	public function getNotes() {
+		/** @var Library $library */
 		global $library;
 		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 		$badWords = new BadWord();

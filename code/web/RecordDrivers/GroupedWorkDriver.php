@@ -2,16 +2,14 @@
 
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/File/MARC.php';
-// require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-// require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 
 
 class GroupedWorkDriver extends IndexRecordDriver {
-	private $permanentId = null;
-	public $isValid = true;
+	private ?string $permanentId = null;
+	public bool $isValid = true;
 
 	/** @var SearchObject_AbstractGroupedWorkSearcher */
-	private static $recordLookupSearcher = null;
+	private static ?SearchObject_AbstractGroupedWorkSearcher $recordLookupSearcher = null;
 
 	// private $marcRecordDriver;
 
@@ -407,24 +405,75 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 	}
 
+	private ?GroupedWorkFormatSortingGroup $_formatSorting = null;
 	/**
 	 * @param Grouping_Record $a
 	 * @param Grouping_Record $b
 	 * @return int
 	 */
 	function compareRelatedManifestations($a, $b) {
-		//First sort by format
-		$format1 = $a->format;
-		$format2 = $b->format;
-		$formatComparison = strcasecmp($format1, $format2);
-		//Make sure that book is the very first format always
-		if ($formatComparison != 0) {
-			if ($format1 == 'Book') {
-				return -1;
-			} elseif ($format2 == 'Book') {
-				return 1;
+		if ($this->_formatSorting == null) {
+			global $library;
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			$this->_formatSorting = $groupedWorkDisplaySettings->getFormatSortingGroup();
+		}
+		$groupedWork = $this->getGroupedWorkObject();
+		if ($groupedWork->grouping_category == 'book') {
+			$sortMethod = $this->_formatSorting->bookSortMethod;
+		}elseif ($groupedWork->grouping_category == 'comic') {
+			$sortMethod = $this->_formatSorting->comicSortMethod;
+		}elseif ($groupedWork->grouping_category == 'movie') {
+			$sortMethod = $this->_formatSorting->movieSortMethod;
+		}elseif ($groupedWork->grouping_category == 'music') {
+			$sortMethod = $this->_formatSorting->musicSortMethod;
+		}else{
+			$sortMethod = $this->_formatSorting->otherSortMethod;
+		}
+
+		if ($sortMethod === 1) {
+			//First sort by format
+			$format1 = $a->format;
+			$format2 = $b->format;
+			$formatComparison = strcasecmp($format1, $format2);
+			//Make sure that book is the very first format always
+			if ($formatComparison != 0) {
+				if ($format1 == 'Book') {
+					return -1;
+				} elseif ($format2 == 'Book') {
+					return 1;
+				}
+			}
+		}else{
+			$weight1 = 999;
+			$weight2 = 999;
+			$sortFormats = $this->_formatSorting->getSortedFormats($groupedWork->grouping_category);
+			foreach ($sortFormats as $format) {
+				if ($format->format == $a->format) {
+					$weight1 = $format->weight;
+				}elseif ($format->format == $b->format) {
+					$weight2 = $format->weight;
+				}
+			}
+
+			if ($weight1 < $weight2){
+				$formatComparison = -1;
+			}elseif ($weight1 == $weight2){
+				$format1 = $a->format;
+				$format2 = $b->format;
+				$formatComparison = strcasecmp($format1, $format2);
+				//Make sure that book is the very first format always
+				if ($formatComparison != 0) {
+					if ($format1 == 'Book') {
+						$formatComparison = -1;
+					} elseif ($format2 == 'Book') {
+						$formatComparison = 1;
+					}
+				}
+			}elseif ($weight1 > $weight2){
+				$formatComparison = 1;
 			}
 		}
+
 		return $formatComparison;
 	}
 
@@ -893,6 +942,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	function getDescription() {
 		$description = null;
 		$cleanIsbn = $this->getCleanISBN();
+		/** @var Library $library */
 		global $library;
 		if ($description == null) {
 			$description = $this->getDescriptionFast();
@@ -1742,9 +1792,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $this->_relatedManifestations;
 	}
 
-	private $relatedRecords = null;
-	private $childRecords = null;
-	private $relatedItemsByRecordId = null;
+	private ?array $relatedRecords = null;
+
+	/** @noinspection PhpPropertyOnlyWrittenInspection */
+	private ?array $childRecords = null;
+	private ?array $relatedItemsByRecordId = null;
 
 	/**
 	 * @param bool $forCovers
@@ -2160,6 +2212,25 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 	}
 
+	private GroupedWork|null|false $_groupedWork = false;
+	public function getGroupedWorkObject() : ?GroupedWork {
+		if ($this->_groupedWork === false) {
+			if (empty($this->getUniqueID())) {
+				$this->_groupedWork = null;
+			}else{
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$this->_groupedWork = new GroupedWork();
+				$this->_groupedWork->permanent_id = $this->getUniqueID();
+				if (!$this->_groupedWork->find(true)) {
+					$this->_groupedWork = null;
+				}
+			}
+
+		}
+		return $this->_groupedWork;
+
+	}
+
 	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display the full record information on the Staff
@@ -2179,9 +2250,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		if (IPAddress::showDebuggingInformation()) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $this->getUniqueID();
-			if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
+			$groupedWork = $this->getGroupedWorkObject();
+			if ( $groupedWork != null) {
 				global $aspen_db;
 				//Get the scopeId for the active scope
 				global $solrScope;
@@ -2290,6 +2360,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	public function loadSubjects() {
+		/** @var Library $library */
 		global $library;
 		global $interface;
 
@@ -3139,7 +3210,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$i = 0;
 		foreach ($this->relatedItemsByRecordId[$relatedRecord->id] as $curItem) {
 			require_once ROOT_DIR . '/sys/Grouping/Item.php';
-			$item = new Grouping_Item($curItem, $scopingInfo, $searchLocation, $library, false, false, false, false, false, false);
+			$item = new Grouping_Item($curItem, $scopingInfo, $searchLocation, $library, false, false, false, false, false, false, false);
 			$relatedRecord->addItem($item);
 
 			$description = $item->shelfLocation . ':' . $item->callNumber;
@@ -3461,104 +3532,104 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if(is_array($format) && count($format) > 0) {
 				$format = implode(', ', $format);
 
-			switch ($format) {
-				case 'book': 
-					$format = 'BOOK';
-					break;
-				case 'BOOK':
-					$format = 'BOOK';
-					break;
-				case 'BOOKS':
-					$format = 'BOOK';
-					break;
-				case 'Book':
-					$format = 'BOOK';
-					break;
-				case 'books':
-					$format = 'BOOK';
-					break;
-				case 'BK':
-					$format = 'BOOK';
-					break;
-				case 'Books':
-					$format = 'BOOK';
-					break;
-				case 'JOURNAL':
-					$format = 'BOOK';
-					break;
-				case 'Journal Article':
-					$format = 'JOUR';
-					break;
-				case 'JOURNAL ARTICLE':
-					$format = 'JOUR';
-					break;
-				case 'Journal':
-					$format = 'BOOK';
-					break;
-				case 'Audio-Visual':
-					$format = 'SOUND';
-					break;
-				case 'AudioBook':
-					$format = 'SOUND';
-					break;
-				case 'Catalog':
-					$format = 'CTLG';
-					break;
-				case 'Dictionary':
-					$format = 'DICT';
-					break;
-				case 'Electronic Article':
-					$format = 'EJOUR';
-					break;
-				case 'Electronic Book':
-					$format = 'EBOOK';
-					break;
-				case 'E-Book':
-					$format = 'EBOOK';
-					break;
-				case 'Magazine':
-					$format = 'MGZN';
-					break;
-				case 'Magazine Article':
-					$format = 'MGZN';
-					break;
-				case 'Music':
-					$format = 'MUSIC';
-					break;
-				case 'MUSIC':
-					$format = 'MUSIC';
-					break;
-				case 'Newspaper':
-					$format = 'NEWS';
-					break;
-				case 'Newspaper Article':
-					$format = 'NEWS';
-					break;
-				case 'Web Page':
-					$format = 'ELEC';
-					break;
-				case 'Visual Materials':
-					$format = 'VIDEO';
-					break;
-				case 'Movie':
-					$format = 'VIDEO';
-					break;
-				case 'Movie -- DVD':
-					$format = 'VIDEO';
-					break;
-				case 'Movie -- VHS':
-					$format = 'VIDEO';
-					break;
-				case 'Electronic Database':
-					$format = 'EBOOK';
+				switch ($format) {
+					case 'book':
+						$format = 'BOOK';
 						break;
-				case 'Reference':
-					$format = 'BOOK';
-					break;
-			}
+					case 'BOOK':
+						$format = 'BOOK';
+						break;
+					case 'BOOKS':
+						$format = 'BOOK';
+						break;
+					case 'Book':
+						$format = 'BOOK';
+						break;
+					case 'books':
+						$format = 'BOOK';
+						break;
+					case 'BK':
+						$format = 'BOOK';
+						break;
+					case 'Books':
+						$format = 'BOOK';
+						break;
+					case 'JOURNAL':
+						$format = 'BOOK';
+						break;
+					case 'Journal Article':
+						$format = 'JOUR';
+						break;
+					case 'JOURNAL ARTICLE':
+						$format = 'JOUR';
+						break;
+					case 'Journal':
+						$format = 'BOOK';
+						break;
+					case 'Audio-Visual':
+						$format = 'SOUND';
+						break;
+					case 'AudioBook':
+						$format = 'SOUND';
+						break;
+					case 'Catalog':
+						$format = 'CTLG';
+						break;
+					case 'Dictionary':
+						$format = 'DICT';
+						break;
+					case 'Electronic Article':
+						$format = 'EJOUR';
+						break;
+					case 'Electronic Book':
+						$format = 'EBOOK';
+						break;
+					case 'E-Book':
+						$format = 'EBOOK';
+						break;
+					case 'Magazine':
+						$format = 'MGZN';
+						break;
+					case 'Magazine Article':
+						$format = 'MGZN';
+						break;
+					case 'Music':
+						$format = 'MUSIC';
+						break;
+					case 'MUSIC':
+						$format = 'MUSIC';
+						break;
+					case 'Newspaper':
+						$format = 'NEWS';
+						break;
+					case 'Newspaper Article':
+						$format = 'NEWS';
+						break;
+					case 'Web Page':
+						$format = 'ELEC';
+						break;
+					case 'Visual Materials':
+						$format = 'VIDEO';
+						break;
+					case 'Movie':
+						$format = 'VIDEO';
+						break;
+					case 'Movie -- DVD':
+						$format = 'VIDEO';
+						break;
+					case 'Movie -- VHS':
+						$format = 'VIDEO';
+						break;
+					case 'Electronic Database':
+						$format = 'EBOOK';
+							break;
+					case 'Reference':
+						$format = 'BOOK';
+						break;
+				}
 
-		 $risFields[] = "TY  - ".$format;
-		}	
+				$risFields[] = "TY  - ".$format;
+			}
 			//RIS Tag: AU - Author
 			$authors = array();
 			$primaryAuthor = $this->getPrimaryAuthor();
@@ -3573,9 +3644,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 			if (!empty($authors)) {
 				foreach ($authors as $author){
-				$risFields[] = "AU - " . $author;
+					$risFields[] = "AU - " . $author;
 				}
-		}
+			}
 
 			// RIS Tag: TI - Title
 			$title = $this->getTitle();
@@ -3613,23 +3684,23 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 			}
 
-		// //RIS Tag: ET - Editions
-				$editions = $this->getEdition();
-				if(is_array($editions) && count($editions) > 0) {
-					$editions = implode(', ', $editions);
+			// //RIS Tag: ET - Editions
+			$editions = $this->getEdition();
+			if(is_array($editions) && count($editions) > 0) {
+				$editions = implode(', ', $editions);
+				$risFields[] = "ET  - ".$editions;
+			} else {
+				if(!empty($editions)) {
 					$risFields[] = "ET  - ".$editions;
-				} else {
-					if(!empty($editions)) {
-						$risFields[] = "ET  - ".$editions;
-					}
 				}
+			}
 
-				//RIS UR - URL
-				$url = $this->getRecordUrl();
-				if(is_array($url) && count($url) > 0) {
-					$url = implode(', ', $url);
-					$risFields[] = "UR  - ".$url;
-				}
+			//RIS UR - URL
+			$url = $this->getRecordUrl();
+			if(is_array($url) && count($url) > 0) {
+				$url = implode(', ', $url);
+				$risFields[] = "UR  - ".$url;
+			}
 
 			//RIS Tag: N1 - Info
 			$notes = $this->getTableOfContentsNotes();
@@ -3637,8 +3708,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				$notes = implode(', ', $notes);
 				$risFields[] = "N1  - ".$notes;
 			}else{
-			if(!empty($notes)) {
-				$risFields[] = "N1  - ".$notes;
+				if(!empty($notes)) {
+					$risFields[] = "N1  - ".$notes;
 				}
 			}
 

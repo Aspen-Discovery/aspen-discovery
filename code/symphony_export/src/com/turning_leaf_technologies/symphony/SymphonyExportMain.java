@@ -40,6 +40,8 @@ public class SymphonyExportMain {
 
 	private static boolean hadErrors = false;
 
+	private static boolean volumesInTextFile = true;
+
 	public static void main(String[] args){
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
@@ -534,18 +536,9 @@ public class SymphonyExportMain {
 				try {
 					VolumeUpdateInfo volumeUpdateInfo = new VolumeUpdateInfo();
 					logEntry.addNote("Updating Volumes, loading existing volumes from database");
-					PreparedStatement allRecordsWithVolumesStmt = dbConn.prepareStatement("SELECT DISTINCT(recordId) from ils_volume_info where recordId like '" + profileToLoad + ":%'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
 					PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
-
-					//Get the existing records with volumes from the database, we will use this to figure out which records no longer have volumes
-					HashSet<String> allRecordsWithVolumes = new HashSet<>();
-					ResultSet allRecordsWithVolumesRS = allRecordsWithVolumesStmt.executeQuery();
-					while (allRecordsWithVolumesRS.next()){
-						allRecordsWithVolumes.add(allRecordsWithVolumesRS.getString("recordId") );
-					}
-					allRecordsWithVolumesRS.close();
-					allRecordsWithVolumesStmt.close();
+					HashSet<String> allRecordsWithVolumes = getAllRecordsWithVolumes(dbConn, profileToLoad);
 
 					//Load all volumes in the export
 					logEntry.addNote("Updating Volumes, loading volumes from the export");
@@ -666,9 +659,23 @@ public class SymphonyExportMain {
 				logEntry.saveResults();
 			}
 		}else{
+			volumesInTextFile = false;
 			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
 			logEntry.saveResults();
 		}
+	}
+
+	private static HashSet<String> getAllRecordsWithVolumes(Connection dbConn, String profileToLoad) throws SQLException {
+		PreparedStatement allRecordsWithVolumesStmt = dbConn.prepareStatement("SELECT DISTINCT(recordId) from ils_volume_info where recordId like '" + profileToLoad + ":%'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		//Get the existing records with volumes from the database, we will use this to figure out which records no longer have volumes
+		HashSet<String> allRecordsWithVolumes = new HashSet<>();
+		ResultSet allRecordsWithVolumesRS = allRecordsWithVolumesStmt.executeQuery();
+		while (allRecordsWithVolumesRS.next()){
+			allRecordsWithVolumes.add(allRecordsWithVolumesRS.getString("recordId") );
+		}
+		allRecordsWithVolumesRS.close();
+		allRecordsWithVolumesStmt.close();
+		return allRecordsWithVolumes;
 	}
 
 	private static void saveVolumes(String recordId, HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo, PreparedStatement deleteVolumeStmt) {
@@ -706,6 +713,35 @@ public class SymphonyExportMain {
 				}
 			}
 		}
+	}
+
+	private static HashMap<String, VolumeInfo> generateVolumesForRecord(org.marc4j.marc.Record bibRecord, RecordIdentifier recordIdentifier) {
+		HashMap<String, VolumeInfo> volumesForRecord = new HashMap<>();
+		List<DataField> items = bibRecord.getDataFields(indexingProfile.getItemTag());
+		for (int i = 0; i < items.size(); i++) {
+			Subfield volumeSubfield = items.get(i).getSubfield(indexingProfile.getVolume());
+			if (volumeSubfield != null) {
+				String volume = volumeSubfield.getData();
+				VolumeInfo curVolume;
+
+				if (volumesForRecord.containsKey(volume)) {
+					curVolume = volumesForRecord.get(volume);
+				} else {
+					curVolume = new VolumeInfo();
+					curVolume.bibNumber = recordIdentifier.toString();
+					curVolume.volume = volume;
+					// Symphony doesn't have volume identifiers - just keys for each call number (format shortID:key, all numbers)
+					// But the key isn't in the MARC record - we will look it up later while placing the hold
+					// However we still need a unique volume ID, so use LOOKUP:recordId:displayVolume
+					curVolume.volumeIdentifier = "LOOKUP:" + recordIdentifier.getIdentifier() + ":" + volume;
+					curVolume.displayOrder = i + 1;
+					volumesForRecord.put(volume, curVolume);
+				}
+				curVolume.relatedItems.add(items.get(i).getSubfield('i').getData());
+			}
+		}
+
+		return volumesForRecord;
 	}
 
 	private static int updateRecords(Connection dbConn){
@@ -943,6 +979,17 @@ public class SymphonyExportMain {
 			}
 		}
 
+		//Set up for adding volumes by item
+		String profileToLoad = "ils";
+		VolumeUpdateInfo volumeUpdateInfo = new VolumeUpdateInfo();
+		HashSet<String> allRecordsWithVolumes = new HashSet<String>();
+		try {
+			logEntry.addNote("Updating Volumes, loading existing volumes from database");
+			allRecordsWithVolumes = getAllRecordsWithVolumes(dbConn, profileToLoad);
+		} catch (Exception e){
+			logEntry.incErrors("Error checking database for existing volumes: " + e);
+		}
+
 		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
@@ -992,6 +1039,16 @@ public class SymphonyExportMain {
 									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+								}
+
+								// If volumes weren't provided in a text file, check for volumes in MARC data
+								if (!volumesInTextFile) {
+									HashMap<String, VolumeInfo> volumesForRecord = generateVolumesForRecord(curBib, recordIdentifier);
+									if (!volumesForRecord.isEmpty() || allRecordsWithVolumes.contains(recordIdentifier.toString())) {
+										PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+										PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
+										saveVolumes(recordIdentifier.toString(), volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
+									}
 								}
 
 								marc245 = curBib.getDataField(245);
