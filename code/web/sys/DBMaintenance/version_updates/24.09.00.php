@@ -152,6 +152,13 @@ function getUpdates24_09_00(): array {
 		//migrate_web_resource_library_access_rules
 
 		//kodi - ByWater
+		'sierra_self_reg_patron_type' => [
+			'title' => 'Sierra Self Reg Patron Code',
+			'description' => 'Add Patron Code to variables for Sierra self registration forms to define the patron type.',
+			'sql' => [
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronCode VARCHAR(75)',
+			],
+		],
 
 		//alexander - PTFS-Europe
 

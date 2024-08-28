@@ -2632,9 +2632,7 @@ class User extends DataObject {
 
 	public function getPTypeObj(): ?PType {
 		if ($this->_pTypeObj === false) {
-			if (empty($this->patronType)) {
-				$this->_pTypeObj = null;
-			} else {
+			if (!empty($this->patronType) || $this->patronType == 0) {
 				require_once ROOT_DIR . '/sys/Account/PType.php';
 				$patronType = new PType();
 				$patronType->pType = $this->patronType;
@@ -2643,6 +2641,8 @@ class User extends DataObject {
 				} else {
 					$this->_pTypeObj = null;
 				}
+			}else {
+				$this->_pTypeObj = null;
 			}
 		}
 		return $this->_pTypeObj;
