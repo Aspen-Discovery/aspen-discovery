@@ -469,6 +469,15 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeLocalAnalyticsTracking(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		try {
+			//Check if this function has already been run for user
+			PreparedStatement checkAnalyticsDataClearedStmt = dbConn.prepareStatement("SELECT analyticsDataCleared FROM user WHERE libraryCookieStorageConsent = 1");
+			ResultSet analyticsDataClearedRS = checkAnalyticsDataClearedStmt.executeQuery();
+
+			if (analyticsDataClearedRS.next() && analyticsDataClearedRS.getBoolean("analyticsDataCleared")) {
+				processLog.addNote("Analytics data has already been cleared. Exiting.");
+				processLog.saveResults();
+				return;
+			}
 			//Get userIDs that have cookie consent for external search sources set to 0
 			PreparedStatement getNoLocalAnalyticsTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id FROM user WHERE userCookiePreferenceLocalAnalytics = 0");
 			ResultSet userIdsRS = getNoLocalAnalyticsTrackingUserIdsStmt.executeQuery();
