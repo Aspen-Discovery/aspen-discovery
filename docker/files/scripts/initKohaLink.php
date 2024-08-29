@@ -3,13 +3,11 @@
 $enableKoha = strtolower(getenv('ENABLE_KOHA'));
 
 if ($enableKoha !== 'yes') {
-    echo "--> Koha was not enabled\n";
+    echo "%    --> Koha was not enabled\n";
     die(0);
 }
 
 //Load Koha's Database
-
-echo "--> Initializing connection with Koha...\n";
 
 $variables = [
     'sitename' => getenv('SITE_NAME'),
@@ -37,17 +35,17 @@ set_error_handler("customErrorHandler");
 try {
 // Attempt to get the system's temp directory
     $tmp_dir = rtrim(sys_get_temp_dir(), "/");
-    echo("--> Loading Koha information to database...\r\n");
+    echo("%    --> Loading Koha information to database...\r\n");
     copy("$aspenDir/install/koha_connection.sql", "$tmp_dir/koha_connection_{$variables['sitename']}.sql");
     replaceVariables("$tmp_dir/koha_connection_{$variables['sitename']}.sql", $variables);
     exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h{$variables['databaseHost']} -P{$variables['databasePort']} {$variables['databaseName']} < $tmp_dir/koha_connection_{$variables['sitename']}.sql");
 } catch (Exception $e) {
-    echo "ERROR MESSAGE : " . $e->getMessage() . "\n";
-    echo "IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
+    echo "%   ERROR MESSAGE : " . $e->getMessage() . "\n";
+    echo "%   IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
     die(1);
 }
 
-echo "--> Connection has been established successfully\n";
+echo "%    --> Koha link established successfully\n";
 
 function customErrorHandler(int $errno, string $errstr, string $errfile, int $errline): void {
     if (!(error_reporting() & $errno)) {
