@@ -1,16 +1,16 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import CachedImage from 'expo-cached-image';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import { Actionsheet, Box, Button, Center, Checkbox, HStack, Icon, Pressable, Text, useDisclose, VStack } from 'native-base';
+import { Actionsheet, Box, Button, Center, Checkbox, HStack, Icon, Pressable, Text, useDisclose, VStack, useToken, useColorModeValue } from 'native-base';
 import React from 'react';
 import { popAlert } from '../../../components/loadError';
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { cancelHold, cancelHolds, cancelVdxRequest, freezeHold, freezeHolds, thawHold, thawHolds } from '../../../util/accountActions';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { checkoutItem } from '../../../util/recordActions';
 import { SelectPickupLocation } from './SelectPickupLocation';
@@ -88,6 +88,9 @@ export const MyHold = (props) => {
                allowLinkedAccountAction = false;
           }
      }
+
+     const freezingHoldLabel = getTermFromDictionary(language, 'freezing_hold');
+     const freezeHoldLabel = getTermFromDictionary(language, 'freeze_hold');
 
      const openGroupedWork = (item, title) => {
           navigateStack('AccountScreenTab', 'MyHold', {
@@ -251,7 +254,7 @@ export const MyHold = (props) => {
                          </Actionsheet.Item>
                     );
                } else {
-                    return <SelectThawDate isOpen={isOpen} label={null} language={language} libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
+                    return <SelectThawDate isOpen={isOpen} label={null} freezeLabel={freezeHoldLabel} freezingLabel={freezingHoldLabel} language={language} libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
                }
           } else {
                return null;
@@ -371,6 +374,8 @@ export const ManageSelectedHolds = (props) => {
      const numToFreezeLabel = getTermFromDictionary(language, 'freeze_selected_holds') + ' (' + numToFreeze + ')';
      const numToThawLabel = getTermFromDictionary(language, 'thaw_selected_holds') + ' (' + numToThaw + ')';
      const numSelectedLabel = getTermFromDictionary(language, 'manage_selected') + ' (' + numSelected + ')';
+     const freezingHoldLabel = getTermFromDictionary(language, 'freezing_hold');
+     const freezeHoldLabel = getTermFromDictionary(language, 'freeze_hold');
 
      const cancelActionItem = () => {
           if (numToCancel > 0) {
@@ -424,7 +429,7 @@ export const ManageSelectedHolds = (props) => {
                <Actionsheet isOpen={isOpen} onClose={onClose}>
                     <Actionsheet.Content>
                          {cancelActionItem()}
-                         <SelectThawDate isOpen={isOpen} label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
+                         <SelectThawDate isOpen={isOpen} label={numToFreezeLabel} freezeLabel={freezeHoldLabel} freezingLabel={freezingHoldLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
                          {thawActionItem()}
                     </Actionsheet.Content>
                </Actionsheet>
@@ -489,6 +494,8 @@ export const ManageAllHolds = (props) => {
      const numToCancelLabel = getTermFromDictionary(language, 'cancel_all_holds') + ' (' + numToCancel + ')';
      const numToFreezeLabel = getTermFromDictionary(language, 'freeze_all_holds') + ' (' + numToFreeze + ')';
      const numToThawLabel = getTermFromDictionary(language, 'thaw_all_holds') + ' (' + numToThaw + ')';
+     const freezingHoldLabel = getTermFromDictionary(language, 'freezing_hold');
+     const freezeHoldLabel = getTermFromDictionary(language, 'freeze_hold');
 
      if (numToManage >= 1) {
           return (
@@ -511,7 +518,7 @@ export const ManageAllHolds = (props) => {
                                    }}>
                                    {numToCancelLabel}
                               </Actionsheet.Item>
-                              <SelectThawDate label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
+                              <SelectThawDate label={numToFreezeLabel} freezeLabel={freezeHoldLabel} freezingLabel={freezingHoldLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
                               <Actionsheet.Item
                                    isLoading={thawing}
                                    isLoadingText={getTermFromDictionary(language, 'thaw_hold', true)}
