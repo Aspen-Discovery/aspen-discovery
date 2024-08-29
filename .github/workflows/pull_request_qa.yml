@@ -2,6 +2,7 @@ name: Check Pull Request for QA Issues
 
 on:
   pull_request:
+  push:
 
 jobs:
   check_release_notes:
@@ -58,16 +59,32 @@ jobs:
 
           # Loop through each file and check for spaces used instead of tabs
           EXIT_CODE=0
+          declare -A RESULTS
           for file in $MODIFIED_FILES; do
             echo "Found modified file: $file";
-            if [[ $file == *.php || $file == *.js || $file == *.java ]]; then 
-              #echo "Checking $file for whitespace issues"
-              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file | grep "^\+\s* {2,}")
+            if [[ $file == *.php || $file == *.js || $file == *.java ]]; then
+              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file)
               #echo "DIFF: $DIFF"
-              if [[ $DIFF =~ "  " ]]; then
-                echo "Detected spaces instead of tabs in $file"
-                EXIT_CODE=1
-              fi
+              while IFS= read -r RAW_LINE; do
+                if [[ $RAW_LINE =~ ^\+ ]]; then
+                    LINE=$(echo -e "$RAW_LINE" | sed 's/\t/_TAB_/g')
+                    if [[ $LINE =~ ^\+(_TAB_)*[[:space:]][[:space:]]+ ]]; then
+                      echo "Bad Line: $RAW_LINE"
+                      RESULTS[$file]=1
+                      EXIT_CODE=1
+                    fi
+                fi
+              done <<< "$DIFF"
             fi
           done
+
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "FILES CONTAINING SPACES INSTEAD OF TABS:"
+            for key in "${!RESULTS[@]}"; do
+                echo "$key"
+            done
+          else
+            echo "NO SPACES FOUND!";
+          fi
+
           exit $EXIT_CODE
