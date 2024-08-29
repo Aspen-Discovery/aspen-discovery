@@ -206,6 +206,14 @@ function getUpdates24_09_00(): array {
 				"ALTER TABLE user DROP COLUMN userCookiePreferenceExternalSearchServices",
 			],
 		],
+		'add_analytics_data_cleared_flag' => [
+			'title' => 'Add Analytics Data Cleared Flag',
+			'description' => 'Add a flag to ensure analytics data clearing fucntion runs only once',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN analyticsDataCleared TINYINT DEFAULT 0",
+			],
+		],
 
 		//chloe - PTFS-Europe
 		'sourceId_allow_255_char' => [
