@@ -1614,7 +1614,7 @@ class Admin_AJAX extends JSON_Action {
 	public function exportUsageData() {
 		require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
 		$aspenUsageGraph = new Admin_UsageGraphs(); 
-		$aspenUsageGraph->buildCSV();
+		$aspenUsageGraph->buildCSV('Admin');
 		// TODO: trigger page refresh
 	}
 }
