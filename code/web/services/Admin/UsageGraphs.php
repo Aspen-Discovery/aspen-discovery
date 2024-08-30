@@ -21,12 +21,6 @@ class Admin_UsageGraphs extends UsageGraphs_UsageGraphs {
 		return 'system_reports';
 	}
 
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
 
 	public function buildCSV() {
 		global $interface;
