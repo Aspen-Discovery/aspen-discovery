@@ -1,28 +1,13 @@
 <?php
 
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/AbstractUsageGraphs.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-class Admin_UsageGraphs extends Admin_Admin {
-	function launch() {
-		global $interface;
-
-		$stat = $_REQUEST['stat'];
-		if (!empty($_REQUEST['instance'])) {
-			$instanceName = $_REQUEST['instance'];
-		} else {
-			$instanceName = '';
-		}
-
-		$title = 'Aspen Usage Graph';
-		$interface->assign('graphTitle', $title);
-		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
-		$interface->assign('stat', $stat);
-		$interface->assign('propName', 'exportToCSV');
-		$title = $interface->getVariable('graphTitle');
-		$this->display('usage-graph.tpl', $title);
+class Admin_UsageGraphs extends UsageGraphs_UsageGraphs {
+	function launch(): void {
+		$this->launchGraph('Admin'); // could refactor to extract the section name ('Admin') from the URL within UsageGraphs_UsageGraphs::launch() itself
 	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
