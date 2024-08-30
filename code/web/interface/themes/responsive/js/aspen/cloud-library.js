@@ -169,7 +169,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=checkOutTitle&patronId=" + patronId;
@@ -198,7 +198,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doHold(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=placeHold&patronId=" + patronId;
