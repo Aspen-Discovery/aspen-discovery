@@ -41,7 +41,9 @@ export default class Facet_RadioGroup extends Component {
 
      componentDidUpdate(prevProps, prevState) {
           if (prevState.value !== this.state.applied) {
-               this.renderValue();
+               console.log('prevState.value', prevState.value);
+               console.log('this.state.applied', this.state.applied);
+               //this.renderValue();
           }
      }
 
@@ -59,17 +61,22 @@ export default class Facet_RadioGroup extends Component {
           const { category, value } = this.state;
           if (category !== 'sort_by') {
                console.log('payload > ', payload);
+               console.log('value > ', value);
                if (payload === value) {
+                    console.log('new is same as old. removing.');
                     removeAppliedFilter(category, payload);
                     this.setState({
                          value: '',
                     });
                } else {
+                    console.log('new value. adding.');
                     addAppliedFilter(category, payload, false);
                     this.setState({
                          value: payload,
                     });
                }
+
+               console.log('current state value: ' + this.state.value);
           } else {
                console.log('payload > ', payload);
                console.log('value > ', value);
@@ -93,6 +100,8 @@ export default class Facet_RadioGroup extends Component {
      render() {
           const { items, category, title, updater, applied } = this.state;
           const name = category + '_group';
+
+          console.log(items);
 
           if (category === 'sort_by') {
                return (

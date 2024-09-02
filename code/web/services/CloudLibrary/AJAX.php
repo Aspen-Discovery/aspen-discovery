@@ -97,11 +97,10 @@ class CloudLibrary_AJAX extends JSON_Action {
 			$promptTitle = 'cloudLibrary Hold Options';
 			$interface->assign('useAlternateLibraryCard', $settings->useAlternateLibraryCard);
 			$validCards = [];
-			if ($settings->useAlternateLibraryCard) {
-				foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
-					if (!empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
-						$validCards[] = $userWithAccess;
-					}
+			foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
+				$userAltCardOptions = $userWithAccess->getHomeLibrary()->getAlternateLibraryCardOptions();
+				if ($userAltCardOptions['useAlternateLibraryCardForCloudLibrary'] && !empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
+					$validCards[] = $userWithAccess;
 				}
 			}
 			$interface->assign('validCards', $validCards);
@@ -172,11 +171,10 @@ class CloudLibrary_AJAX extends JSON_Action {
 			$promptTitle = 'cloudLibrary Checkout Options';
 			$interface->assign('useAlternateLibraryCard', $settings->useAlternateLibraryCard);
 			$validCards = [];
-			if ($settings->useAlternateLibraryCard) {
-				foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
-					if (!empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
-						$validCards[] = $userWithAccess;
-					}
+			foreach ($usersWithCloudLibraryAccess as $userWithAccess) {
+				$userAltCardOptions = $userWithAccess->getHomeLibrary()->getAlternateLibraryCardOptions();
+				if ($userAltCardOptions['useAlternateLibraryCardForCloudLibrary'] && !empty($userWithAccess->alternateLibraryCard) && $driver->checkAuthentication($userWithAccess)) {
+					$validCards[] = $userWithAccess;
 				}
 			}
 			$interface->assign('validCards', $validCards);

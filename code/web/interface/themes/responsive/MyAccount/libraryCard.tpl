@@ -47,7 +47,7 @@
 		<h1>{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}</h1>
 		{if !empty($alternateLibraryCardFormMessage)}
 			<div class="row">
-				<div class="col-xs-12">{$alternateLibraryCardFormMessage}<div>
+				<div class="col-xs-12">{$alternateLibraryCardFormMessage}</div>
 			</div>
 		{/if}
 		{if $alternateLibraryCardStyle != 'none'}
@@ -58,29 +58,29 @@
 				</div>
 			</div>
 		{/if}
-		<form name="alternateLibraryCard" method="post" class="form-horizontal">
-			<div class="form-group">
-				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">
+		<form name="alternateLibraryCard" method="post" class="form col-xs-12">
+			<div class="form-group propertyRow">
+				<label for="alternateLibraryCard" class="control-label propertyRow">
 					{if !empty($alternateLibraryCardLabel)}
 						{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}
 					{else}
 						{translate text="Alternate Library Card" isPublicFacing=true isAdminEnteredData=false}
 					{/if}
 				</label>
-				<div class="col-md-6 col-md-offset-3">
+				<div>
 					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$profile->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
 				</div>
 			</div>
 			{if !empty($showAlternateLibraryCardPassword)}
-				<div class="form-group">
-					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">
+				<div class="form-group propertyRow">
+					<label for="alternateLibraryCardPassword" class="control-label">
 						{if !empty($alternateLibraryCardPasswordLabel)}
 							{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true}
 						{else}
 							{translate text="Password/PIN" isPublicFacing=true isAdminEnteredData=false}
 						{/if}
 					</label>
-					<div class="col-md-6 col-md-offset-3">
+					<div>
 						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$profile->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
 					</div>
 				</div>
