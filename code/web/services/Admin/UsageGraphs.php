@@ -1,28 +1,13 @@
 <?php
 
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/AbstractUsageGraphs.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-class Admin_UsageGraphs extends Admin_Admin {
-	function launch() {
-		global $interface;
-
-		$stat = $_REQUEST['stat'];
-		if (!empty($_REQUEST['instance'])) {
-			$instanceName = $_REQUEST['instance'];
-		} else {
-			$instanceName = '';
-		}
-
-		$title = 'Aspen Usage Graph';
-		$interface->assign('graphTitle', $title);
-		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
-		$interface->assign('stat', $stat);
-		$interface->assign('propName', 'exportToCSV');
-		$title = $interface->getVariable('graphTitle');
-		$this->display('usage-graph.tpl', $title);
+class Admin_UsageGraphs extends UsageGraphs_UsageGraphs {
+	function launch(): void {
+		$this->launchGraph('Admin'); // could refactor to extract the section name ('Admin') from the URL within UsageGraphs_UsageGraphs::launch() itself
 	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -36,55 +21,7 @@ class Admin_UsageGraphs extends Admin_Admin {
 		return 'system_reports';
 	}
 
-	function canView(): bool {
-		return UserAccount::userHasPermission([
-			'View Dashboards',
-			'View System Reports',
-		]);
-	}
-
-	public function buildCSV() {
-		global $interface;
-
-		$stat = $_REQUEST['stat'];
-		if (!empty($_REQUEST['instance'])) {
-			$instanceName = $_REQUEST['instance'];
-		} else {
-			$instanceName = '';
-		}
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
-		$dataSeries = $interface->getVariable('dataSeries');
-
-		$filename = "AspenUsageData_{$stat}.csv";
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-		header("Cache-Control: no-store, no-cache, must-revalidate");
-		header("Cache-Control: post-check=0, pre-check=0", false);
-		header("Pragma: no-cache");
-		header('Content-Type: text/csv; charset=utf-8');
-		header("Content-Disposition: attachment;filename={$filename}");
-		$fp = fopen('php://output', 'w');
-		$graphTitles = array_keys($dataSeries);
-		$numGraphTitles = count($dataSeries);
-
-		// builds the header for each section of the table in the CSV - column headers: Dates, and the title of the graph
-		for($i = 0; $i < $numGraphTitles; $i++) {
-			$dataSerie = $dataSeries[$graphTitles[$i]];
-			$numRows = count($dataSerie['data']);
-			$dates = array_keys($dataSerie['data']);
-			$header = ['Dates', $graphTitles[$i]];
-			fputcsv($fp, $header);
-
-				// builds each subsequent data row - aka the column value
-				for($j = 0; $j < $numRows; $j++) {
-					$date = $dates[$j];
-					$value = $dataSerie['data'][$date];
-					$row = [$date, $value];
-					fputcsv($fp, $row);
-				}
-		}
-		exit();
-	}
-	private function getAndSetInterfaceDataSeries($stat, $instanceName) {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
 		global $interface;
 		global $enabledModules;
 		global $library;
@@ -385,7 +322,7 @@ class Admin_UsageGraphs extends Admin_Admin {
 		$interface->assign('translateColumnLabels', false);
 	}
 
-	private function assignGraphSpecificTitle($stat) {
+	protected function assignGraphSpecificTitle(string $stat): void {
 		global $interface;
 		$title = $interface->getVariable('graphTitle');
 		switch ($stat) {
