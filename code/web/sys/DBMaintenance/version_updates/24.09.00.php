@@ -57,6 +57,14 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE location add statGroup INT(11) DEFAULT -1',
 			]
 		], //add_location_stat_group
+		'add_location_circulation_username' => [
+			'title' => 'Add Location Circulation Username',
+			'description' => 'Add Location Circulation Username',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location add circulationUsername VARCHAR(20)',
+			]
+		], //add_location_circulation_username
 		'add_permission_for_testing_checkouts' => [
 			'title' => 'Add permission for testing checkouts',
 			'description' => 'Add permission for testing checkouts',
