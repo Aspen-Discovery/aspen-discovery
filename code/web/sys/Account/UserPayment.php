@@ -18,6 +18,7 @@ class UserPayment extends DataObject {
 	public $totalPaid;
 	public $transactionDate;
 	public $transactionType;
+	public $snappayToken;
 	public $squareToken;
 	public $stripeToken;
 	public $aciToken;
@@ -1085,12 +1086,6 @@ class UserPayment extends DataObject {
 			'message' => $success ? $message : $error,
 		];
 	}
-
-	public static function completeNCRPayment($queryParams) {
-	// TODO: Implement this
-		$success = false;
-	}
-
 		public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);

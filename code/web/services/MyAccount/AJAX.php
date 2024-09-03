@@ -5946,7 +5946,10 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
 
-			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */ /** @var User $patron */
+			/** @var Library $paymentLibrary */
+			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
+			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
 			if ($transactionType == 'donation') {
 				[
@@ -5977,14 +5980,6 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($snapPaySetting->sandboxMode == 1 || $snapPaySetting->sandboxMode == '1') {
 					$paymentRequestUrl = "https://stage.snappayglobal.com/Interop/HostedPaymentPage";
 				}
-
-//				$transactionIdentifier = "AspenPayment" .$userLibrary->libraryId . $userLibrary->ilsCode . $transactionIDNumber;
-//				$newRedirectRequest = new CurlWrapper();
-//				$newRedirectRequest->addCustomHeaders([
-//					"Content-Type: application/json",
-//					"Accept: application/json",
-//					"Accept-Charset: utf-8",
-//				], true);
 
 				$lineItem = new stdClass(); //line items need to be objects not arrays
 				$lineItem->identifiers[0] = "SnapPay Invoice";
@@ -6019,6 +6014,9 @@ class MyAccount_AJAX extends JSON_Action {
 				$signatureData = sprintf("%s:%s:%s", $requestSignatureBase64String, $nonce, $requestTimeStamp);
 // Encode signatureData to byte array using UTF-8 and convert to base64-encoded string
 				$HmacValue = base64_encode(utf8_encode($signatureData));
+// Add the HmacValue to the db payment record
+				$payment->snappayToken = $HmacValue;
+				$payment->update();
 
 				$postParams = [
 					'accountid' => $snapPaySetting->accountId,
@@ -6030,7 +6028,6 @@ class MyAccount_AJAX extends JSON_Action {
 					'cvvrequired' => 'Y', // TO DO: allow N too
 					'enableemailreceipt' => 'Y', // TO DO: allow N too
 					'redirectionurl' => $configArray['Site']['url'] . "/MyAccount/SnapPayComplete", // TO DO: documentation: FISERV pdf has 'redirectionurl'; error has 'redirecturl'; the former appears to be what is needed
-					'signatureraw' => $signatureRawData, // TO DO: documentation: FISERV pdf has 'signature'; error has 'Signature'
 					'signature' => $HmacValue, // TO DO: documentation: FISERV pdf has 'signature'; error has 'Signature'
 					'firstname' => $patron->firstName,
 					'lastname' => $patron->lastName,
@@ -6042,13 +6039,6 @@ class MyAccount_AJAX extends JSON_Action {
 					'email' => $patron->email,
 					'phone' => $patron->phone,
 				];
-//				$result = $newRedirectRequest->curlPostBodyData($paymentRequestUrl, $postParams, true);
-//				if ($result->status != "ok"){
-//					return [
-//						'success' => false,
-//						'message' => $result->returnmessage,
-//					];
-//				}
 				return [
 					'success' => true,
 					'message' => 'Redirecting to payment processor',
