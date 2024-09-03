@@ -10205,6 +10205,7 @@ AspenDiscovery.Admin = (function () {
 		showSearch: function () {
 			$('#adminSearchBox').css('display', 'block');
 			$('#showSearchButton').css('display', 'none');
+			document.getElementById('searchAdminBar').focus();
 		},
 
 		showFindCommunityContentForm: function (toolModule, toolName, objectType) {
