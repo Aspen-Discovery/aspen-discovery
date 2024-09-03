@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ini4j-0.5.5-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../code/java_shared_libraries/ini4j-0.5.5-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="sideload_processing">
+    <output-path>$PROJECT_DIR$/../code/sideload_processing</output-path>
+    <root id="archive" name="sideload_processing.jar">
+      <element id="module-output" name="java_shared_libraries" />
+      <element id="module-output" name="sideload_processing" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../code/sideload_processing/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
