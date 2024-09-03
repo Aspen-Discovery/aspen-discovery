@@ -1598,6 +1598,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	public function getMoreDetailsOptions() {
 		global $interface;
+		/** @var Library $library */
 		global $library;
 
 		$isbn = $this->getCleanISBN();
@@ -2431,7 +2432,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 				foreach ($issueSummaries as $key => $issueSummary) {
 					if (isset($issueSummary['holdings']) && is_array($issueSummary['holdings'])) {
-						krsort($issueSummary['holdings']);
+						krsort($issueSummary['holdings'], SORT_NATURAL);
 						$issueSummaries[$key] = $issueSummary;
 					}
 				}

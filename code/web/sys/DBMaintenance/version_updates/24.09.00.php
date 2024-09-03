@@ -57,6 +57,14 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE location add statGroup INT(11) DEFAULT -1',
 			]
 		], //add_location_stat_group
+		'add_location_circulation_username' => [
+			'title' => 'Add Location Circulation Username',
+			'description' => 'Add Location Circulation Username',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location add circulationUsername VARCHAR(20)',
+			]
+		], //add_location_circulation_username
 		'add_permission_for_testing_checkouts' => [
 			'title' => 'Add permission for testing checkouts',
 			'description' => 'Add permission for testing checkouts',
@@ -66,6 +74,56 @@ function getUpdates24_09_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Test Self Check'))",
 			]
 		], //add_permission_for_testing_checkouts
+		'add_permission_for_format_sorting' => [
+			'title' => 'Add permissions for format sorting',
+			'description' => 'Add permissions for format sorting',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Grouped Work Display', 'Administer All Format Sorting', '', 40, 'Allows users to change how formats are sorted within a grouped work for all libraries.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Grouped Work Display', 'Administer Library Format Sorting', '', 50, 'Allows users to change how formats are sorted within a grouped work for their library.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Format Sorting'))",
+			]
+		], //add_permission_for_format_sorting
+		'create_format_sorting_tables' => [
+			'title' => 'Create format sorting tables',
+			'description' => 'Create format sorting tables',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort_group (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    name VARCHAR(255) NOT NULL UNIQUE,
+    				bookSortMethod TINYINT(1) DEFAULT 1,
+    				comicSortMethod TINYINT(1) DEFAULT 1,
+					movieSortMethod TINYINT(1) DEFAULT 1,
+    				musicSortMethod TINYINT(1) DEFAULT 1,
+    				otherSortMethod TINYINT(1) DEFAULT 1
+				)',
+				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    formatSortingGroupId INT(11) NOT NULL,
+    				groupingCategory VARCHAR(6) NOT NULL,
+					format VARCHAR(255) NOT NULL,
+    				weight INT(11) NOT NULL,
+    				UNIQUE(formatSortingGroupId, groupingCategory, format)
+				)',
+			],
+		], //create_format_sorting_tables
+		'create_default_format_sorting' => [
+			'title' => 'Create default format sorting',
+			'description' => 'Create default format sorting',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO grouped_work_format_sort_group (id, name, bookSortMethod, comicSortMethod, movieSortMethod, musicSortMethod, otherSortMethod) VALUES (1, 'Default', 1, 1, 1, 1, 1)"
+			]
+		],
+		'link_format_sorting_to_display_settings' => [
+			'title' => 'Link format sorting to display settings',
+			'description' => 'Link format sorting to display settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN formatSortingGroupId INT(11) DEFAULT 1'
+			]
+		], //link_format_sorting_to_display_settings
 
 		//katherine - ByWater
 
@@ -102,15 +160,39 @@ function getUpdates24_09_00(): array {
 		//migrate_web_resource_library_access_rules
 
 		//kodi - ByWater
+		'sierra_self_reg_patron_type' => [
+			'title' => 'Sierra Self Reg Patron Code',
+			'description' => 'Add Patron Code to variables for Sierra self registration forms to define the patron type.',
+			'sql' => [
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronCode VARCHAR(75)',
+			],
+		],
 
 		//alexander - PTFS-Europe
 
 		//chloe - PTFS-Europe
+		'sourceId_allow_255_char' => [
+			'title'=> 'SourceId Allow 255 char',
+			'description' => 'Allow for longer source ids so that summon and ebsco records can be included without clashing with the length constraint',
+			'continueOnError' => false,
+			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
+
+		], //
 
 		//pedro - PTFS-Europe
 
 		//James Staub - Nashville Public Library
-
+		'barcode_generator_report_permissions' => [
+			'title' => 'Barcode Generator report permissions',
+			'description' => 'Create permissions for Barcode Generator reports',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Circulation Reports', 'Barcode Generators', '', 60, 'Allows the user to run the Barcode Generators')
+				",
+//				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='Barcode Generators'))",
+			],
+		],
 
 		//other
 

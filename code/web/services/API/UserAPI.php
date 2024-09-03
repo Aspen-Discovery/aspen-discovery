@@ -6062,7 +6062,7 @@ class UserAPI extends AbstractAPI {
 			$alternateLibraryCard = $_REQUEST['alternateLibraryCard'] ?? null;
 			$alternateLibraryCardPassword = $_REQUEST['alternateLibraryCardPassword'] ?? null;
 			$deleteAlternateLibraryCard = $_REQUEST['deleteAlternateLibraryCard'] ?? false;
-			if(!$deleteAlternateLibraryCard) {
+			if(!$deleteAlternateLibraryCard || $deleteAlternateLibraryCard === "false") {
 				if ($alternateLibraryCard) {
 					$user->alternateLibraryCard = $alternateLibraryCard;
 				}

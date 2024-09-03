@@ -524,8 +524,8 @@ EOT;
             ),
             item_level_holds as (
                 select
-                    pb.branchname as PICKUP_BRANCH
-                    , p.name as PATRON_NAME
+                    p.name as PATRON_NAME
+                    , pb.branchname as PICKUP_BRANCH
                     , p.sponsor as HOME_ROOM
                     , bb.btyname as GRD_LVL
                     , p.patronid as P_BARCODE
