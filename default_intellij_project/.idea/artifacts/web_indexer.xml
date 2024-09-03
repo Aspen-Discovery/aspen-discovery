@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="web_indexer">
+    <output-path>$PROJECT_DIR$/../code/web_indexer</output-path>
+    <root id="archive" name="web_indexer.jar">
+      <element id="module-output" name="web_indexer" />
+      <element id="module-output" name="java_shared_libraries" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../code/web_indexer/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

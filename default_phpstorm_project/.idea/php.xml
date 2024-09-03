@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MessDetectorOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCSFixerOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PHPCodeSnifferOptionsConfiguration">
+    <option name="highlightLevel" value="WARNING" />
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/../../../xampp/php" />
+    </include_path>
+  </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.0">
+    <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
+  <component name="PhpRuntimeConfiguration">
+    <extensions>
+      <extension name="memcache" enabled="false" />
+      <extension name="memcached" enabled="false" />
+    </extensions>
+  </component>
+  <component name="PhpStanOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings load_method="PHPUNIT_PHAR" bootstrap_file_path="$PROJECT_DIR$/../tests/phpunit/phpUnitBootstrap.php" configuration_file_path="$PROJECT_DIR$/../tests/phpunit/phpunit.xml" custom_loader_path="" phpunit_phar_path="$PROJECT_DIR$/../tests/phpunit/phpunit.phar" use_bootstrap_file="true" use_configuration_file="true" />
+    </phpunit_settings>
+  </component>
+  <component name="PsalmOptionsConfiguration">
+    <option name="transferred" value="true" />
+  </component>
+</project>

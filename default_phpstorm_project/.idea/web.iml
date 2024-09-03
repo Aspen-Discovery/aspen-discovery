@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$../code/web/">
+      <sourceFolder url="file://$MODULE_DIR$../code/web/" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="tests" />
+  </component>
+</module>
