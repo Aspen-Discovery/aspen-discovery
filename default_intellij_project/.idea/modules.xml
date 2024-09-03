@@ -14,7 +14,7 @@
       <module fileurl="file://$PROJECT_DIR$/../code/folio_export/folio_export.iml" filepath="$PROJECT_DIR$/../code/folio_export/folio_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/hoopla_export/hoopla_export.iml" filepath="$PROJECT_DIR$/../code/hoopla_export/hoopla_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../install/install.iml" filepath="$PROJECT_DIR$/../install/install.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../code/koha_export/koha_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" filepath="$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" filepath="$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" />
