@@ -118,8 +118,10 @@ class SMTPSetting extends DataObject {
 			$mail->addAddress($toAddress);
 		}
 
-		for($i = 0; $i < sizeof($attachments['name']); $i++){
-			$mail->addAttachment($attachments['tmp_name'][$i], $attachments['name'][0]);
+		if(!empty($attachments)) {
+			for ($i = 0; $i < sizeof($attachments['name']); $i++) {
+				$mail->addAttachment($attachments['tmp_name'][$i], $attachments['name'][0]);
+			}
 		}
 
 		$mail->Subject = $subject;
