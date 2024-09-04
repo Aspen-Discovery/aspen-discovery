@@ -18,6 +18,7 @@ class UserPayment extends DataObject {
 	public $totalPaid;
 	public $transactionDate;
 	public $transactionType;
+	public $snappayToken;
 	public $squareToken;
 	public $stripeToken;
 	public $aciToken;
@@ -1085,8 +1086,7 @@ class UserPayment extends DataObject {
 			'message' => $success ? $message : $error,
 		];
 	}
-
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
 		return $return;

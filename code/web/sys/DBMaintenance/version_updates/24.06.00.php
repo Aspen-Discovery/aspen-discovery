@@ -172,10 +172,5 @@ function getUpdates24_06_00(): array {
 				"ALTER TABLE library ADD COLUMN ncrSettingId INT(11) DEFAULT -1;",
 			],
 		], //ncr_library_setting
-
-		//other
-
-
-
 	];
 }

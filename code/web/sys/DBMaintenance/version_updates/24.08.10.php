@@ -46,5 +46,6 @@ function getUpdates24_08_10(): array {
 				"ALTER TABLE self_registration_form_carlx ADD COLUMN termsOfServiceSetting int NOT NULL default -1"
 			]
 		], //carlx_tos
+
 	];
 }
