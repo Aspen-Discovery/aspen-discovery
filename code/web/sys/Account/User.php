@@ -4699,6 +4699,102 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function getNumMaterialsRequestsMaxActive() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		return isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
+	}
+
+	public function getNumMaterialsRequestsMaxPerYear() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		return isset($homeLibrary) ? $homeLibrary->maxRequestsPerYear : 60;
+	}
+
+	public function getNumMaterialsRequestsRequestsForYear() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = $this->id;
+		$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
+
+		$statusQueryNotCancelled = new MaterialsRequestStatus();
+		$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
+		$statusQueryNotCancelled->isPatronCancel = 0;
+		$materialsRequests->joinAdd($statusQueryNotCancelled, 'INNER', 'status', 'status', 'id');
+
+		return $materialsRequests->count();
+	}
+
+	public function getNumOpenMaterialsRequests() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		$statusQuery = new MaterialsRequestStatus();
+		$statusQuery->libraryId = $homeLibrary->libraryId;
+		$statusQuery->isOpen = 1;
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = UserAccount::getActiveUserId();
+		$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+		return $materialsRequests->count();
+	}
+
+	public function getMaterialsRequests() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+		$allRequests = [];
+		$showOpen = true;
+		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {
+			$showOpen = false;
+		}
+
+		$formats = MaterialsRequest::getFormats(true);
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = $this->id;
+		$materialsRequests->orderBy('title, dateCreated');
+
+		$statusQuery = new MaterialsRequestStatus();
+		if ($showOpen) {
+			$statusQuery->libraryId = $homeLibrary->libraryId;
+			$statusQuery->isOpen = 1;
+		}
+		$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+		$materialsRequests->selectAdd();
+		$materialsRequests->selectAdd('materials_request.*, description as statusLabel');
+		$materialsRequests->find();
+		while ($materialsRequests->fetch()) {
+			if (array_key_exists($materialsRequests->format, $formats)) {
+				$materialsRequests->format = $formats[$materialsRequests->format];
+			}
+			$allRequests[] = clone $materialsRequests;
+		}
+
+		return $allRequests;
+	}
+
 }
 
 function modifiedEmpty($var) {
