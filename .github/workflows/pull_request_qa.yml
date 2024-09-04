@@ -2,6 +2,7 @@ name: Check Pull Request for QA Issues
 
 on:
   pull_request:
+  push:
 
 jobs:
   check_release_notes:
@@ -58,16 +59,67 @@ jobs:
 
           # Loop through each file and check for spaces used instead of tabs
           EXIT_CODE=0
+          declare -A RESULTS
           for file in $MODIFIED_FILES; do
             echo "Found modified file: $file";
-            if [[ $file == *.php || $file == *.js || $file == *.java ]]; then 
-              #echo "Checking $file for whitespace issues"
-              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file | grep "^\+\s* {2,}")
+            if [[ $file == *.php || $file == *.js || $file == *.java ]]; then
+              DIFF=$(git diff official/$DEFAULT_BRANCH HEAD -- $file)
               #echo "DIFF: $DIFF"
-              if [[ $DIFF =~ "  " ]]; then
-                echo "Detected spaces instead of tabs in $file"
-                EXIT_CODE=1
-              fi
+              while IFS= read -r RAW_LINE; do
+                if [[ $RAW_LINE =~ ^\+ ]]; then
+                    LINE=$(echo -e "$RAW_LINE" | sed 's/\t/_TAB_/g')
+                    if [[ $LINE =~ ^\+(_TAB_)*[[:space:]][[:space:]]+ ]]; then
+                      echo "Bad Line: $RAW_LINE"
+                      RESULTS[$file]=1
+                      EXIT_CODE=1
+                    fi
+                fi
+              done <<< "$DIFF"
             fi
           done
+
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "FILES CONTAINING SPACES INSTEAD OF TABS:"
+            for key in "${!RESULTS[@]}"; do
+                echo "$key"
+            done
+          else
+            echo "NO SPACES FOUND!";
+          fi
+
           exit $EXIT_CODE
+
+  check_create_site_for_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v4
+
+      - name: Add official Aspen Discovery repo as another remote
+        run: git remote add official https://github.com/Aspen-Discovery/aspen-discovery.git && git fetch official
+
+      - name: Get default branch
+        id: get_default_branch
+        run: |
+          default_branch=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/Aspen-Discovery/aspen-discovery | jq -r .default_branch)
+          echo "Default branch is $default_branch"
+          echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for changes in site creation that may necessitate a change to the Docker file
+        run: |
+          LINES_CHANGED=$(git diff official/$DEFAULT_BRANCH HEAD -- install/createSiteTemplate.ini | wc -l)
+          echo "LINES CHANGED: $LINES_CHANGED"
+          if [[ $LINES_CHANGED -gt 0 ]]; then
+            echo "Changes to createSiteTemplate.ini have been detected"
+            if git diff --name-only official/$DEFAULT_BRANCH HEAD | grep docker; then
+              echo "Changes to docker files has also been detected"
+            else
+              echo "No changes to docker files have been detected"
+              exit 1
+            fi
+          else
+            echo "No changes to Aspen or Koha keys have been detected";
+          fi

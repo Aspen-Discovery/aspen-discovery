@@ -7107,6 +7107,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'NCR') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'SnapPay') {
+							orderInfo = response;
 						}
 					}
 				}
@@ -7146,6 +7148,21 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+			}
+		},
+
+		createSnapPayOrder: function (finesFormId, transactionType) {
+			var response = this.createGenericOrder(finesFormId, 'SnapPay', transactionType, null);
+			if (response === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				var url = response.paymentRequestUrl;
+				var formData = response.postParams;
+				var form = '';
+				$.each( formData, function( key, value ) {
+					form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+				});
+				$('<form action="' + url + '" method="POST">' + form + '</form>').appendTo($(document.body)).submit();
 			}
 		},
 
@@ -10205,6 +10222,7 @@ AspenDiscovery.Admin = (function () {
 		showSearch: function () {
 			$('#adminSearchBox').css('display', 'block');
 			$('#showSearchButton').css('display', 'none');
+			document.getElementById('searchAdminBar').focus();
 		},
 
 		showFindCommunityContentForm: function (toolModule, toolName, objectType) {
@@ -11589,7 +11607,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=checkOutTitle&patronId=" + patronId;
@@ -11618,7 +11636,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var patronId = $("#patronId option:selected").val();
 			var useAlternateCard = $("#useAlternateLibraryCard").val();
 			var validCard = $("#patronId option:selected").attr("data-valid-card");
-			if (useAlternateCard === 0 || validCard === "1") {
+			if (useAlternateCard == 0 || validCard === "1") {
 				return AspenDiscovery.CloudLibrary.doHold(patronId, id);
 			} else {
 				var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=prepareAlternateLibraryCardPrompts&type=placeHold&patronId=" + patronId;

@@ -2641,7 +2641,7 @@ class User extends DataObject {
 				} else {
 					$this->_pTypeObj = null;
 				}
-			}else {
+			} else {
 				$this->_pTypeObj = null;
 			}
 		}
@@ -3548,6 +3548,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');
 		$sections['ecommerce']->addAction(new AdminAction('Certified Payments by Deluxe Settings', 'Define Settings for Certified Payments by Deluxe.', '/Admin/CertifiedPaymentsByDeluxeSettings'), 'Administer Certified Payments by Deluxe');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
+		$sections['ecommerce']->addAction(new AdminAction('SnapPay Settings', 'Define Settings for SnapPay.', '/Admin/SnapPaySettings'), 'Administer SnapPay');
 		$sections['ecommerce']->addAction(new AdminAction('Square Settings', 'Define Settings for Square.', '/Admin/SquareSettings'), 'Administer Square');
 		$sections['ecommerce']->addAction(new AdminAction('Stripe Settings', 'Define Settings for Stripe.', '/Admin/StripeSettings'), 'Administer Stripe');
 		$sections['ecommerce']->addAction(new AdminAction('NCR Payments Settings', 'Define Settings for NCR Payments.', '/Admin/NCRPaymentsSettings'), 'Administer NCR');
@@ -4697,6 +4698,102 @@ class User extends DataObject {
 			return $catalogDriver->hasIlsInbox();
 		}
 		return false;
+	}
+
+	public function getNumMaterialsRequestsMaxActive() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		return isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
+	}
+
+	public function getNumMaterialsRequestsMaxPerYear() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		return isset($homeLibrary) ? $homeLibrary->maxRequestsPerYear : 60;
+	}
+
+	public function getNumMaterialsRequestsRequestsForYear() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = $this->id;
+		$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
+
+		$statusQueryNotCancelled = new MaterialsRequestStatus();
+		$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
+		$statusQueryNotCancelled->isPatronCancel = 0;
+		$materialsRequests->joinAdd($statusQueryNotCancelled, 'INNER', 'status', 'status', 'id');
+
+		return $materialsRequests->count();
+	}
+
+	public function getNumOpenMaterialsRequests() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		$statusQuery = new MaterialsRequestStatus();
+		$statusQuery->libraryId = $homeLibrary->libraryId;
+		$statusQuery->isOpen = 1;
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = UserAccount::getActiveUserId();
+		$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+		return $materialsRequests->count();
+	}
+
+	public function getMaterialsRequests() {
+		$homeLibrary = $this->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+		$allRequests = [];
+		$showOpen = true;
+		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {
+			$showOpen = false;
+		}
+
+		$formats = MaterialsRequest::getFormats(true);
+
+		$materialsRequests = new MaterialsRequest();
+		$materialsRequests->createdBy = $this->id;
+		$materialsRequests->orderBy('title, dateCreated');
+
+		$statusQuery = new MaterialsRequestStatus();
+		if ($showOpen) {
+			$statusQuery->libraryId = $homeLibrary->libraryId;
+			$statusQuery->isOpen = 1;
+		}
+		$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+		$materialsRequests->selectAdd();
+		$materialsRequests->selectAdd('materials_request.*, description as statusLabel');
+		$materialsRequests->find();
+		while ($materialsRequests->fetch()) {
+			if (array_key_exists($materialsRequests->format, $formats)) {
+				$materialsRequests->format = $formats[$materialsRequests->format];
+			}
+			$allRequests[] = clone $materialsRequests;
+		}
+
+		return $allRequests;
 	}
 
 }

@@ -76,6 +76,7 @@ class Location extends DataObject {
 	public $scope;
 	public $useScope;
 	public $statGroup;
+	public $circulationUsername;
 	public $facetLabel;
 	public $groupedWorkDisplaySettingId;
 	public $browseCategoryGroupId;
@@ -711,6 +712,15 @@ class Location extends DataObject {
 						'default' => -1,
 						'permissions' => ['Location ILS Connection'],
 						'note' => 'Sierra only, set to -1 to ignore',
+					],
+					'circulationUsername' => [
+						'property' => 'circulationUsername',
+						'type' => 'text',
+						'label' => 'Circulation Username',
+						'description' => 'The username to use when checking titles in and out for Sierra',
+						'default' => '',
+						'permissions' => ['Location ILS Connection'],
+						'note' => 'Sierra only',
 					],
 					[
 						'property' => 'validHoldPickupBranch',

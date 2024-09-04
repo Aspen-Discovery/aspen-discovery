@@ -246,6 +246,21 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// SnapPay
+				if($userLibrary->finePaymentType == 15) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
+					$snapPaySetting = new SnapPaySetting();
+					$snapPaySetting->id = $library->snapPaySettingId;
+					if($snapPaySetting->find(true)) {
+						$paymentRequestUrl = "https://www.snappayglobal.com/Interop/HostedPaymentPage";
+						if ($snapPaySetting->sandboxMode == 1 || $snapPaySetting->sandboxMode == '1') {
+							$paymentRequestUrl = "https://stage.snappayglobal.com/Interop/HostedPaymentPage";
+						}
+						$interface->assign('paymentRequestUrl', $paymentRequestUrl);
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 

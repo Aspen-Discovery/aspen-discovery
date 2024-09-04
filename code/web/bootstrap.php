@@ -81,6 +81,11 @@ try {
 	if (strlen($userAgentString) > 512) {
 		$userAgentString = substr($userAgentString, 0, 512);
 	}
+	if (isSpammyUserAgent($userAgentString)) {
+		http_response_code(404);
+		echo("<html><head><title>Page Not Found</title></head><body><h1>404</h1> <p>We're sorry, but the page you are looking for can't be found.</p></body></html>");
+		die();
+	}
 	$userAgent->userAgent = $userAgentString;
 	if ($userAgent->find(true)) {
 		$userAgentId = $userAgent->id;
@@ -431,4 +436,52 @@ function getGitBranch() {
 	}
 
 	return $branchName;
+}
+
+//Look for spammy user agents and kill them
+function isSpammyUserAgent($userAgentString): bool {
+	if (stripos($userAgentString, 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'PG_SLEEP') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'SELECT') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'SLEEP') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'ORDER BY') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'WAITFOR') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'nvOpzp') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'window.location') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'window.top') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'nslookup') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'if(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'now(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'sysdate()') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'sleep(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'cast(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'current_database') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'response.write') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'CONVERT(') !== false) {
+		return true;
+	} elseif (stripos($userAgentString, 'EXTRACTVALUE(') !== false) {
+		return true;
+	}
+	$termWithoutTags = strip_tags($userAgentString);
+	if ($termWithoutTags != $userAgentString) {
+		return true;
+	}
+	return false;
 }

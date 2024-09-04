@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="dc6990f6-e63e-410d-a65d-724fc46879e3" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="JavaScript File" />
+        <option value="CSS File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="JsBowerSettings">
+    <node-interpreter value="project" />
+    <bower-package value="" />
+    <bower.json value="" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="NamedScopeManager">
+    <scope name="Local Javascript" pattern="file[web]:interface/themes/responsive/js/aspen//*" />
+    <order>
+      <scope name=".less files" />
+    </order>
+  </component>
+  <component name="PhpDebugGeneral" ignore_connections_through_unregistered_servers="false" listening_started="true" local_pass_configuration_options="false" notify_if_session_was_finished_without_being_paused="false" />
+  <component name="PhpServers">
+    <servers>
+      <server host="dev.localhost" id="9b5d4baa-b762-492d-93a2-9f55897c5b28" name="dev.localhost" />
+      <server host="minlib.localhost" id="ead15cb1-5367-49cd-8053-a85f070e5978" name="minlib.localhost" />
+      <server host="wa.minlib.localhost" id="4d21fa72-77a4-4d3d-9644-ffe75bcc628b" name="wa.minlib.localhost" />
+      <server host="ar.minlib.localhost" id="dbb30249-fde6-4d07-aa51-cc7b916cb34b" name="ar.minlib.localhost" />
+    </servers>
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="C:\xampp\php\php.exe">
+    <include_path>
+      <path value="$PROJECT_DIR$/../../../xampp/php" />
+      <path value="$PROJECT_DIR$/../../xampp/php" />
+    </include_path>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="1OW1o0nR89VagBknOyBYfpbOOIz" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "PHP Script.createDefaultDatabaseScript.executor": "Run",
+    "PHP Script.importAspenBackup.executor": "Run",
+    "PHP Script.mergeJavascript.executor": "Run",
+    "PHPUnit.phpunit.xml.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "pr/2028",
+    "last_opened_file_path": "C:/web/aspen-discovery/code/web/services/Admin",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "php.override.implement.member.chooser.php.doc": "NONE",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
+      <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
+      <recent name="C:\web\aspen-discovery\install\templates" />
+    </key>
+  </component>
+  <component name="RunManager" selected="PHP Script.mergeJavascript">
+    <configuration name="phpunit.xml" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" temporary="true">
+      <TestRunner configuration_file="$PROJECT_DIR$/../tests/phpunit/phpunit.xml" scope="XML" use_alternative_configuration_file="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../cron/updateNYTLists.sh" scriptParameters="basinlibraries.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="checkBackgroundProcesses" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/checkBackgroundProcesses.php" scriptParameters="model.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="cleanupPikaReadingHistory" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/cleanupPikaReadingHistory.php" scriptParameters="nashville.aspenlocal">
+      <method v="2" />
+    </configuration>
+    <configuration name="createDefaultDatabaseScript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/createDefaultDatabaseScript.php" scriptParameters="unit_tests.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="createSite" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../install/createSite.php">
+      <method v="2" />
+    </configuration>
+    <configuration name="createSitemaps" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/createSitemaps.php" scriptParameters="aspencat.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="fetchUploadedMarcs" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/fetchUploadedMarcs.php">
+      <method v="2" />
+    </configuration>
+    <configuration name="importAspenBackup" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/importAspenBackup.php" scriptParameters="dev.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="importBiblioCommonsData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/importBiblioCommonsData.php" scriptParameters="jacksoncounty.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/importPikaData.php" scriptParameters="nashville.aspenlocal N">
+      <method v="2" />
+    </configuration>
+    <configuration name="importSymphonyLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/importSymphonyLists.php" scriptParameters="wyld.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="mapSierraBibIdsToKoha" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/mapSierraBibIdsToKoha.php" scriptParameters="santafe.koha.local">
+      <method v="2" />
+    </configuration>
+    <configuration name="mapSierraPatronIdsToKoha" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/mapSierraPatronIdsToKoha.php" scriptParameters="santafe.koha.local">
+      <method v="2" />
+    </configuration>
+    <configuration name="mergeJavascript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/interface/themes/responsive/js/merge_javascript.php">
+      <CommandLine workingDirectory="$PROJECT_DIR$/../code/web/interface/themes/responsive/js/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="updateNYTLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/updateNYTLists.php" scriptParameters="model.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="updateSavedSearches" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/updateSavedSearches.php" scriptParameters="demo.localhost">
+      <method v="2" />
+    </configuration>
+    <configuration name="updateSuggesters" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/updateSuggesters.php" scriptParameters="ajax.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="updateTickets" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/cron/updateTickets.php" scriptParameters="model.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="updateWidgetsWithSavedSearches" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../code/web/migrations/updateWidgetsWithSavedSearches.php" scriptParameters="nashville.aspenlocal">
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="PHP Script.checkBackgroundProcesses" />
+      <item itemvalue="PHP Script.cleanupPikaReadingHistory" />
+      <item itemvalue="PHP Script.createDefaultDatabaseScript" />
+      <item itemvalue="PHP Script.createSite" />
+      <item itemvalue="PHP Script.createSitemaps" />
+      <item itemvalue="PHP Script.fetchUploadedMarcs" />
+      <item itemvalue="PHP Script.importAspenBackup" />
+      <item itemvalue="PHP Script.importBiblioCommonsData" />
+      <item itemvalue="PHP Script.importPikaData" />
+      <item itemvalue="PHP Script.importSymphonyLists" />
+      <item itemvalue="PHP Script.mapSierraBibIdsToKoha" />
+      <item itemvalue="PHP Script.mapSierraPatronIdsToKoha" />
+      <item itemvalue="PHP Script.mergeJavascript" />
+      <item itemvalue="PHP Script.updateNYTLists" />
+      <item itemvalue="PHP Script.updateSavedSearches" />
+      <item itemvalue="PHP Script.updateSuggesters" />
+      <item itemvalue="PHP Script.updateTickets" />
+      <item itemvalue="PHP Script.updateWidgetsWithSavedSearches" />
+      <item itemvalue="PHPUnit.phpunit.xml" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="PHPUnit.phpunit.xml" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PS-241.18034.69" />
+        <option value="bundled-php-predefined-ba97393d7c68-48a1a656d44e-com.jetbrains.php.sharedIndexes-PS-241.18034.69" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,Show Fields" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dc6990f6-e63e-410d-a65d-724fc46879e3" name="Changes" comment="" />
+      <created>1723734744029</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1723734744029</updated>
+      <workItem from="1723734745350" duration="9000" />
+      <workItem from="1723735191523" duration="113080000" />
+      <workItem from="1724362308953" duration="58000" />
+      <workItem from="1724362424831" duration="428000" />
+      <workItem from="1724420437346" duration="27837000" />
+      <workItem from="1724769639765" duration="7297000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/../code/web/Drivers/Sierra.php</url>
+          <line>2690</line>
+          <option name="timeStamp" value="48" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

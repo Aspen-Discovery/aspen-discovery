@@ -199,6 +199,47 @@ class MaterialsRequest extends DataObject {
 		return $requestFormFields;
 	}
 
+	static function getRequestFormFieldsForApi($libraryId) {
+		require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+		$formFields = new MaterialsRequestFormFields();
+		$formFields->libraryId = $libraryId;
+		$formFields->orderBy('weight');
+		/** @var MaterialsRequestFormFields[] $fieldsToSortByCategory */
+		$fieldsToSortByCategory = $formFields->fetchAll();
+
+		// If no values set get the defaults.
+		if (empty($fieldsToSortByCategory)) {
+			$fieldsToSortByCategory = $formFields::getDefaultFormFields($libraryId);
+		}
+
+		foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails) {
+			//Remove any fields that are available to staff only
+			if (in_array($fieldDetails->fieldType, [
+				'assignedTo',
+				'createdBy',
+				'libraryCardNumber',
+				'id',
+				'status',
+				'staffComments',
+			])) {
+				unset($fieldsToSortByCategory[$fieldKey]);
+			}
+		}
+
+		$requestFormFields = [];
+		if ($fieldsToSortByCategory) {
+			foreach ($fieldsToSortByCategory as $formField) {
+				if (!array_key_exists($formField->formCategory, $requestFormFields)) {
+					$requestFormFields[$formField->formCategory] = [];
+				}
+				$requestFormFields[$formField->formCategory][] = $formField;
+			}
+		}
+
+		return $requestFormFields;
+
+	}
+
 	function getAuthorLabelsAndSpecialFields($libraryId) {
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
@@ -275,7 +316,7 @@ class MaterialsRequest extends DataObject {
 	function sendStaffNewMaterialsRequestEmail() {
 		global $configArray;
 		global $interface;
-		if ($this->getCreatedByUser() != false) {
+		if ($this->getCreatedByUser() != false && $this->createdEmailSent == 0) {
 			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
 			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
 				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
@@ -443,6 +484,58 @@ class MaterialsRequest extends DataObject {
 		}
 		$body .= '</tbody></table>';
 		return $body;
+	}
+
+	public function getDetails(User $user) {
+		$homeLibrary = $user->getHomeLibrary();
+		if(is_null($homeLibrary)) {
+			global $library;
+			$homeLibrary = $library;
+		}
+
+		$materialsRequest = new MaterialsRequest();
+		$materialsRequest->id = $this->id;
+
+		$statusQuery = new MaterialsRequestStatus();
+		$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+
+		// Pick-up Locations
+		$locationQuery = new Location();
+		$materialsRequest->joinAdd($locationQuery, 'LEFT', 'location', 'holdPickupLocation', 'locationId');
+
+		// Format Labels
+		$formats = new MaterialsRequestFormats();
+		$formats->libraryId = $homeLibrary->libraryId;
+		$usingDefaultFormats = $formats->count() == 0;
+
+		$materialsRequest->selectAdd();
+		$materialsRequest->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
+		if (!$usingDefaultFormats) {
+			$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
+			$materialsRequest->selectAdd('materials_request_formats.formatLabel,materials_request_formats.authorLabel, materials_request_formats.specialFields');
+		}
+
+		if($materialsRequest->find(true)) {
+			if ($usingDefaultFormats) {
+				$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
+				/** @var MaterialsRequestFormats $format */
+				foreach ($defaultFormats as $format) {
+					if ($materialsRequest->format == $format->format) {
+						/** @noinspection PhpUndefinedFieldInspection */
+						$materialsRequest->formatLabel = $format->formatLabel;
+						/** @noinspection PhpUndefinedFieldInspection */
+						$materialsRequest->authorLabel = $format->authorLabel;
+						/** @noinspection PhpUndefinedFieldInspection */
+						$materialsRequest->specialFields = $format->specialFields;
+						break;
+					}
+				}
+			}
+		}
+
+
+		return $materialsRequest;
+
 	}
 
 	/** @noinspection PhpUnused */

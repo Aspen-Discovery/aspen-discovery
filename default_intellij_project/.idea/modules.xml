@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" filepath="$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" filepath="$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" filepath="$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/cron/cron.iml" filepath="$PROJECT_DIR$/../code/cron/cron.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../data_dir_setup/data_dir_setup.iml" filepath="$PROJECT_DIR$/../data_dir_setup/data_dir_setup.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/events_indexer/events_indexer.iml" filepath="$PROJECT_DIR$/../code/events_indexer/events_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/evergreen_export/evergreen_export.iml" filepath="$PROJECT_DIR$/../code/evergreen_export/evergreen_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/evolve_export/evolve_export.iml" filepath="$PROJECT_DIR$/../code/evolve_export/evolve_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/folio_export/folio_export.iml" filepath="$PROJECT_DIR$/../code/folio_export/folio_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/hoopla_export/hoopla_export.iml" filepath="$PROJECT_DIR$/../code/hoopla_export/hoopla_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../install/install.iml" filepath="$PROJECT_DIR$/../install/install.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../code/koha_export/koha_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" filepath="$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" filepath="$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/palace_project_export/palace_project_export.iml" filepath="$PROJECT_DIR$/../code/palace_project_export/palace_project_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/polaris_export/polaris_export.iml" filepath="$PROJECT_DIR$/../code/polaris_export/polaris_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/reindexer/reindexer.iml" filepath="$PROJECT_DIR$/../code/reindexer/reindexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/sideload_processing/sideload_processing.iml" filepath="$PROJECT_DIR$/../code/sideload_processing/sideload_processing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/sierra_export_api/sierra_export_api.iml" filepath="$PROJECT_DIR$/../code/sierra_export_api/sierra_export_api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sites/sites.iml" filepath="$PROJECT_DIR$/../sites/sites.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sites/default/solr-7.6.0/solr-7.6.0.iml" filepath="$PROJECT_DIR$/../sites/default/solr-7.6.0/solr-7.6.0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/symphony_export/symphony_export.iml" filepath="$PROJECT_DIR$/../code/symphony_export/symphony_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../tests/tests.iml" filepath="$PROJECT_DIR$/../tests/tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/user_list_indexer/user_list_indexer.iml" filepath="$PROJECT_DIR$/../code/user_list_indexer/user_list_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/web_indexer/web_indexer.iml" filepath="$PROJECT_DIR$/../code/web_indexer/web_indexer.iml" />
+    </modules>
+  </component>
+</project>
