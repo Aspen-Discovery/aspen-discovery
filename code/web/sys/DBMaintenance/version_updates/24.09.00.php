@@ -90,21 +90,21 @@ function getUpdates24_09_00(): array {
 			'continueOnError' => true,
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort_group (
-				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				    name VARCHAR(255) NOT NULL UNIQUE,
-    				bookSortMethod TINYINT(1) DEFAULT 1,
-    				comicSortMethod TINYINT(1) DEFAULT 1,
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE,
+					bookSortMethod TINYINT(1) DEFAULT 1,
+					comicSortMethod TINYINT(1) DEFAULT 1,
 					movieSortMethod TINYINT(1) DEFAULT 1,
-    				musicSortMethod TINYINT(1) DEFAULT 1,
-    				otherSortMethod TINYINT(1) DEFAULT 1
+					musicSortMethod TINYINT(1) DEFAULT 1,
+					otherSortMethod TINYINT(1) DEFAULT 1
 				)',
 				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort (
-				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				    formatSortingGroupId INT(11) NOT NULL,
-    				groupingCategory VARCHAR(6) NOT NULL,
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					formatSortingGroupId INT(11) NOT NULL,
+					groupingCategory VARCHAR(6) NOT NULL,
 					format VARCHAR(255) NOT NULL,
-    				weight INT(11) NOT NULL,
-    				UNIQUE(formatSortingGroupId, groupingCategory, format)
+					weight INT(11) NOT NULL,
+					UNIQUE(formatSortingGroupId, groupingCategory, format)
 				)',
 			],
 		], //create_format_sorting_tables
@@ -199,13 +199,13 @@ function getUpdates24_09_00(): array {
 			'continueOnError' => true,
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS snappay_settings (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(50) NOT NULL UNIQUE,
-                    sandboxMode TINYINT NOT NULL DEFAULT 0,
-                    accountId BIGINT(10) NOT NULL,
-                    merchantId VARCHAR(20) NOT NULL,
-    				apiAuthenticationCode VARCHAR(255) NOT NULL
-                ) ENGINE = InnoDB',
+				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(50) NOT NULL UNIQUE,
+					sandboxMode TINYINT NOT NULL DEFAULT 0,
+					accountId BIGINT(10) NOT NULL,
+					merchantId VARCHAR(20) NOT NULL,
+					apiAuthenticationCode VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN snapPaySettingId INT(11) DEFAULT -1',
 				'ALTER TABLE user_payments ADD COLUMN snappayToken VARCHAR(255) DEFAULT NULL',
 			],
