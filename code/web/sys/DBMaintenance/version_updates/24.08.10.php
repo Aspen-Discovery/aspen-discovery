@@ -47,34 +47,5 @@ function getUpdates24_08_10(): array {
 			]
 		], //carlx_tos
 
-		//James Staub - Nashville Public Library
-
-		'snappay_settings' => [
-			'title' => 'SnapPay Settings',
-			'description' => 'Add eCommerce vendor SnapPay.',
-			'continueOnError' => true,
-			'sql' => [
-				'CREATE TABLE IF NOT EXISTS snappay_settings (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(50) NOT NULL UNIQUE,
-                    sandboxMode TINYINT NOT NULL DEFAULT 0,
-                    accountId BIGINT(10) NOT NULL,
-                    merchantId VARCHAR(20) NOT NULL,
-    				apiAuthenticationCode VARCHAR(255) NOT NULL
-                ) ENGINE = InnoDB',
-				'ALTER TABLE library ADD COLUMN snapPaySettingId INT(11) DEFAULT -1',
-				'ALTER TABLE user_payments ADD COLUMN snappayToken VARCHAR(255) DEFAULT NULL',
-			],
-		], //snappay_settings
-
-		'permissions_ecommerce_snappay' => [
-			'title' => 'Add permissions for SnapPay',
-			'description' => 'Create permissions for administration of SnapPay',
-			'continueOnError' => true,
-			'sql' => [
-				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer SnapPay', '', 10, 'Controls if the user can change SnapPay settings. <em>This has potential security and cost implications.</em>')",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer SnapPay'))",
-			],
-		], //permissions_ecommerce_snappay
 	];
 }
