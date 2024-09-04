@@ -7152,7 +7152,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		createSnapPayOrder: function (finesFormId, transactionType) {
-			let response = this.createGenericOrder(finesFormId, 'SnapPay', transactionType, null);
+			var response = this.createGenericOrder(finesFormId, 'SnapPay', transactionType, null);
 			if (response === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
