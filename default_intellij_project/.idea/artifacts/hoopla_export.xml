@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="hoopla_export">
+    <output-path>$PROJECT_DIR$/../code/hoopla_export</output-path>
+    <root id="archive" name="hoopla_export.jar">
+      <element id="module-output" name="hoopla_export" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../code/hoopla_export/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="java_shared_libraries" />
+    </root>
+  </artifact>
+</component>

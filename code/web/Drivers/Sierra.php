@@ -1780,6 +1780,7 @@ class Sierra extends Millennium {
 		$params = [];
 
 		if ($formFields != null) {
+			$params['patronType'] = $selfRegistrationForm->selfRegPatronCode;
 			foreach ($formFields as $fieldObj){
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {
@@ -2455,6 +2456,9 @@ class Sierra extends Millennium {
 			if (!empty($patron->ils_password)) {
 				$params['patronPin'] = $patron->ils_password;
 			}
+			if (!empty($currentLocation->circulationUsername)) {
+				$params['username'] = $currentLocation->circulationUsername;
+			}
 			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
 				$params['statgroup'] = $currentLocation->statGroup;
 			}
@@ -2628,6 +2632,14 @@ class Sierra extends Millennium {
 			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/checkouts/{$barcode}";
 			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
 				$sierraUrl .= '?statgroup=' . $currentLocation->statGroup;
+			}
+			if (!empty($currentLocation->circulationUsername)) {
+				if (strpos($sierraUrl, '?') === false) {
+					$sierraUrl .= '?';
+				}else{
+					$sierraUrl .= '&';
+				}
+				$sierraUrl .= 'username=' . $currentLocation->circulationUsername;
 			}
 
 			$checkoutResult = $this->_sendPage( 'sierra.checkin', 'DELETE', $sierraUrl);

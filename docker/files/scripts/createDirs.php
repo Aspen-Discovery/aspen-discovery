@@ -3,33 +3,25 @@
 //Capture any error as ErrorException
 set_error_handler("customErrorHandler");
 
+$newOwner = "www-data"; // default user
 //Check how many arguments has been passed to the script
-if (count($argv) == 1) {
-    $newOwner = "www-data";
-    echo "Owner : $newOwner\n";
-} elseif (count($argv) == 2) {
+if (count($argv) == 2) {
     $newOwner = $argv[1];
-    echo "Owner : $newOwner\n";
-} else {
-    echo "Too many arguments have been passed. The script needs exactly one argument : \n";
-    echo "A user, who will be assigned owner of the created directories.\n";
-    echo "If no arguments are passed, by default the owner of the directories will be www-data.\n";
-    die();
 }
 
+echo "%    --> Owner: $newOwner\n";
+
 $siteName = getenv('SITE_NAME');
-echo "Site name = $siteName\n";
+echo "%    --> Site name: $siteName\n";
 $configDir = getenv('CONFIG_DIRECTORY');
-echo "Config directory = $configDir\n";
+echo "%    --> Config directory: $configDir\n";
 
 //Check if passed user is valid
 exec("id $newOwner", $output, $exitCode);
 if ($exitCode !== 0) {
-    echo "The user doesn't exist\n ";
+    echo "%   ERROR: The requested user was not found.\n ";
     die();
 }
-
-echo "Setting up data and log directories...\n";
 
 $aspenDir = '/usr/local/aspen-discovery';
 
@@ -81,9 +73,9 @@ try {
         }
     }
 } catch (ErrorException $e) {
-    echo "ERROR CREATING DIRECTORIES: $dataDir\n";
-    echo "ERROR MESSAGE : " . $e->getMessage() . "\n";
-    echo "IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
+    echo "%   ERROR CREATING DIRECTORIES: $dataDir\n";
+    echo "%   ERROR MESSAGE : " . $e->getMessage() . "\n";
+    echo "%   IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
     die(1);
 }
 
@@ -91,7 +83,6 @@ try {
     //Assign owners and permissions
 
     //Aspen directory
-    exec("chown -R $newOwner $aspenDir");
     exec("chown -R www-data $aspenDir/tmp");
     exec("chown -R www-data $aspenDir/code/web");
     exec("chown -R www-data $aspenDir/sites");
@@ -157,13 +148,11 @@ try {
     $apacheDir = "/etc/apache2";
     copy("$configDir/httpd-$siteName.conf", "$apacheDir/sites-enabled/httpd-$siteName.conf");
 } catch (ErrorException $e) {
-    echo "ERROR ASSIGNING PERMISSIONS AND OWNERSHIPS\n";
-    echo "ERROR MESSAGE : " . $e->getMessage() . "\n";
-    echo "IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
+    echo "%   ERROR ASSIGNING PERMISSIONS AND OWNERSHIPS\n";
+    echo "%   ERROR MESSAGE : " . $e->getMessage() . "\n";
+    echo "%   IN : " . $e->getFile() . ":" . $e->getLine() . "\n";
     die(1);
 }
-
-echo "------------->Aspen is ready to use<-------------!\n\n";
 
 function recursive_copy($src, $dst): void {
     $dir = opendir($src);

@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="events_indexer">
+    <output-path>$PROJECT_DIR$/../code/events_indexer</output-path>
+    <root id="archive" name="events_indexer.jar">
+      <element id="module-output" name="events_indexer" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../events_indexer/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="java_shared_libraries" />
+    </root>
+  </artifact>
+</component>

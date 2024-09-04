@@ -57,6 +57,14 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE location add statGroup INT(11) DEFAULT -1',
 			]
 		], //add_location_stat_group
+		'add_location_circulation_username' => [
+			'title' => 'Add Location Circulation Username',
+			'description' => 'Add Location Circulation Username',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location add circulationUsername VARCHAR(20)',
+			]
+		], //add_location_circulation_username
 		'add_permission_for_testing_checkouts' => [
 			'title' => 'Add permission for testing checkouts',
 			'description' => 'Add permission for testing checkouts',
@@ -152,10 +160,24 @@ function getUpdates24_09_00(): array {
 		//migrate_web_resource_library_access_rules
 
 		//kodi - ByWater
+		'sierra_self_reg_patron_type' => [
+			'title' => 'Sierra Self Reg Patron Code',
+			'description' => 'Add Patron Code to variables for Sierra self registration forms to define the patron type.',
+			'sql' => [
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronCode VARCHAR(75)',
+			],
+		],
 
 		//alexander - PTFS-Europe
 
 		//chloe - PTFS-Europe
+		'sourceId_allow_255_char' => [
+			'title'=> 'SourceId Allow 255 char',
+			'description' => 'Allow for longer source ids so that summon and ebsco records can be included without clashing with the length constraint',
+			'continueOnError' => false,
+			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
+
+		], //
 
 		//pedro - PTFS-Europe
 

@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="overdrive_extract">
+    <output-path>$PROJECT_DIR$/../code/overdrive_extract</output-path>
+    <root id="archive" name="overdrive_extract.jar">
+      <element id="module-output" name="overdrive_extract" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../code/overdrive_extract/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="java_shared_libraries" />
+    </root>
+  </artifact>
+</component>

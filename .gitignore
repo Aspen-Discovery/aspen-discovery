@@ -104,7 +104,6 @@ org.eclipse.*.prefs
 *.css.map
 .settings/
 out/
-workspace.xml
 
 # OS generated files #
 ######################
