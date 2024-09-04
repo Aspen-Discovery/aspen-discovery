@@ -42,7 +42,8 @@ class SystemAPI extends AbstractAPI {
 					'dismissSystemMessage',
 					'getLibraryLinks',
 					'getCatalogStatus',
-					'getLocations'
+					'getLocations',
+					'getMaterialsRequestForm'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -1160,6 +1161,25 @@ class SystemAPI extends AbstractAPI {
 				'message' => 'Login unsuccessful',
 			];
 		}
+	}
+
+	function getMaterialsRequestForm() {
+		if(!isset($_REQUEST['libraryId'])) {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to locate materials request form. A library id was not given',
+			];
+		}
+
+		$materialsRequest = MaterialsRequest::getRequestFormFieldsForApi($_REQUEST['libraryId']);
+
+		return 	[
+			'success' => true,
+			'title' => 'Success',
+			'message' => 'Loaded materials request form',
+			'form' => $materialsRequest,
+		];
 	}
 
 	function getBreadcrumbs(): array {
