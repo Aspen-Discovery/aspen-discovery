@@ -40,7 +40,7 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE palace_project_title_availability ADD COLUMN previewLink TINYTEXT',
 			]
 		], //add_additional_info_to_palace_project_availability
-		'run_full_update_for_palace_project_24_09' =>[
+		'run_full_update_for_palace_project_24_09' => [
 			'title' => 'Run full update for Palace Project',
 			'description' => 'Run full update for Palace Project',
 			'continueOnError' => false,
@@ -172,7 +172,7 @@ function getUpdates24_09_00(): array {
 
 		//chloe - PTFS-Europe
 		'sourceId_allow_255_char' => [
-			'title'=> 'SourceId Allow 255 char',
+			'title' => 'SourceId Allow 255 char',
 			'description' => 'Allow for longer source ids so that summon and ebsco records can be included without clashing with the length constraint',
 			'continueOnError' => false,
 			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
@@ -242,13 +242,13 @@ function migrateWebResourceLibraryAccessRules(&$update) {
 		$webResources[] = $webResource->id;
 	}
 
-	foreach($webResources as $resource) {
+	foreach ($webResources as $resource) {
 		foreach ($libraries as $libraryId) {
 			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAccessLibrary.php';
 			$webResourceAccessLibrary = new WebResourceAccessLibrary();
 			$webResourceAccessLibrary->webResourceId = $resource;
 			$webResourceAccessLibrary->libraryId = $libraryId;
-			if(!$webResourceAccessLibrary->find(true)) {
+			if (!$webResourceAccessLibrary->find(true)) {
 				$webResourceAccessLibrary->insert();
 			}
 		}
