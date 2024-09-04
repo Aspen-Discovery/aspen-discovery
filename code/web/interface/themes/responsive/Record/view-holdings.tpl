@@ -19,14 +19,17 @@
 				<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
 					<div class="accordion-inner ">
 						<table class="table table-striped">
+							{assign var=counter value=1}
                             {assign var=hiddenCopy value=false}
 							{include file="Record/copiesTableHeader.tpl"}
 							{foreach from=$section.holdings item=holding name=tableLoop}
-								{if $smarty.foreach.tableLoop.iteration > 5}
-									{assign var=hiddenCopy value=true}
+								{if !$holding.isEContent}
+									{if $counter > 5}
+										{assign var=hiddenCopy value=true}
+									{/if}
+									{include file="Record/copiesTableRow.tpl"}
+									{assign var=counter value=$counter+1}
 								{/if}
-
-								{include file="Record/copiesTableRow.tpl"}
 							{/foreach}
 						</table>
 					</div>
