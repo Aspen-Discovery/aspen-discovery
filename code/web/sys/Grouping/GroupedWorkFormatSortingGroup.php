@@ -17,6 +17,15 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 	public $otherSortMethod;
 	public $_sortedOtherFormats;
 
+	public function getNumericColumnNames() : array {
+		return [
+			'bookSortMethod',
+			'comicSortMethod',
+			'movieSortMethod',
+			'musicSortMethod',
+			'otherSortMethod',
+		];
+	}
 	static function getObjectStructure($context = ''): array {
 		$formatSortStructure = GroupedWorkFormatSort::getObjectStructure($context);
 		unset($formatSortStructure['weight']);
@@ -233,6 +242,11 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 	}
 
 	public function insert($context = '') {
+		$this->bookSortMethod = 1;
+		$this->comicSortMethod = 1;
+		$this->movieSortMethod = 1;
+		$this->musicSortMethod = 1;
+		$this->otherSortMethod = 1;
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->loadDefaultFormats();
