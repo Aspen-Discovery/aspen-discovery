@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFormatSort.php';
 
@@ -7,14 +7,19 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 	public $id;
 	public $name;
 	public $bookSortMethod;
+	/** @noinspection PhpUnused */
 	public $_sortedBookFormats;
 	public $comicSortMethod;
+	/** @noinspection PhpUnused */
 	public $_sortedComicFormats;
 	public $movieSortMethod;
+	/** @noinspection PhpUnused */
 	public $_sortedMovieFormats;
 	public $musicSortMethod;
+	/** @noinspection PhpUnused */
 	public $_sortedMusicFormats;
 	public $otherSortMethod;
+	/** @noinspection PhpUnused */
 	public $_sortedOtherFormats;
 
 	public function getNumericColumnNames() : array {
@@ -256,6 +261,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 
 	public function delete($useWhere = false): int {
 		$ret = parent::delete($useWhere);
+		/** @noinspection PhpStrictComparisonWithOperandsOfDifferentTypesInspection */
 		if ($ret !== false) {
 			$sortedFormat = new GroupedWorkFormatSort();
 			$sortedFormat->formatSortingGroupId = $this->id;
@@ -264,7 +270,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		return $ret;
 	}
 
-	private function getArrayNameForGroupingCategory($groupingCategory) {
+	private function getArrayNameForGroupingCategory($groupingCategory) : string {
 		$internalArrayName = null;
 		switch ($groupingCategory) {
 			case 'book':
@@ -286,9 +292,10 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		return $internalArrayName;
 	}
 
-	public function saveSortedFormats($groupingCategory) {
+	public function saveSortedFormats($groupingCategory) : void {
 		$internalArrayName = $this->getArrayNameForGroupingCategory($groupingCategory);
 		if (!empty($internalArrayName) && isset ($this->$internalArrayName) && is_array($this->$internalArrayName)) {
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			foreach ($this->$internalArrayName as $id => $formatSort) {
 				$formatSort->groupingCategory = $groupingCategory;
 			}
@@ -329,13 +336,13 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		}
 	}
 
-	/** @return GroupedWorkFormatSort[] */
+	/** @return GroupedWorkFormatSort[]|null */
 	public function getSortedFormats($groupingCategory): ?array {
 		$internalArrayName = $this->getArrayNameForGroupingCategory($groupingCategory);
 		if (!empty($internalArrayName) && !isset($this->$internalArrayName) && $this->id) {
 			$this->$internalArrayName = [];
 			$sortedFormat = new GroupedWorkFormatSort();
-			$sortedFormat->facetGroupId = $this->id;
+			$sortedFormat->formatSortingGroupId = $this->id;
 			$sortedFormat->groupingCategory = $groupingCategory;
 			$sortedFormat->orderBy('weight');
 			$sortedFormat->find();
@@ -346,7 +353,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		return $this->$internalArrayName;
 	}
 
-	public function loadDefaultFormats() {
+	public function loadDefaultFormats() : void {
 		//Automatically generate based on the data in the database.
 		global $aspen_db;
 		$loadDefaultFormatsStmt = "SELECT grouping_category, format FROM grouped_work_variation inner join indexed_format on indexed_format.id = formatId inner join grouped_work on grouped_work.id = grouped_work_variation.groupedWorkId group by format, grouping_category order by grouping_category, lower(format);";
@@ -370,6 +377,8 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 				$activeFormats = $musicSort;
 			}elseif ($result['grouping_category'] == 'other') {
 				$activeFormats = $otherSort;
+			}else{
+				continue;
 			}
 			$formatExists = false;
 			foreach ($activeFormats as $activeFormat) {
