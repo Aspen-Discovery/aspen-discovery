@@ -1,0 +1,1 @@
+To use this project with IntelliJ, copy the default_intellij_project directory to intellij_project and then open the intellij_project within IntelliJ IDEA (https://www.jetbrains.com/idea/). 

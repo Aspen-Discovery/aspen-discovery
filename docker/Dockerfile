@@ -58,8 +58,10 @@ RUN apt -y update \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Adding entrypoint file
-COPY docker/files/scripts/start.sh /start.sh
+# Adding entrypoint and init scripts
+COPY docker/files/scripts/entrypoint.sh  /entrypoint.sh
+COPY docker/files/scripts/start.sh       /start.sh
+COPY docker/files/scripts/cron.sh        /cron.sh
 
 # Load apache modules
 RUN a2enmod rewrite
@@ -75,4 +77,4 @@ RUN cd /usr/local/aspen-discovery/sites \
 	&& rm -rf *dev*   \
 	&& rm -rf template.windows
 
-CMD ["/start.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="sierra_export_api">
+    <output-path>$PROJECT_DIR$/../code/sierra_export_api</output-path>
+    <root id="archive" name="sierra_export_api.jar">
+      <element id="module-output" name="java_shared_libraries" />
+      <element id="module-output" name="sierra_export_api" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../code/sierra_export_api/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
