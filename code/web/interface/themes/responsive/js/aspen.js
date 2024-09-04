@@ -7107,6 +7107,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'NCR') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'SnapPay') {
+							orderInfo = response;
 						}
 					}
 				}
@@ -7146,6 +7148,21 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+			}
+		},
+
+		createSnapPayOrder: function (finesFormId, transactionType) {
+			var response = this.createGenericOrder(finesFormId, 'SnapPay', transactionType, null);
+			if (response === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				var url = response.paymentRequestUrl;
+				var formData = response.postParams;
+				var form = '';
+				$.each( formData, function( key, value ) {
+					form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+				});
+				$('<form action="' + url + '" method="POST">' + form + '</form>').appendTo($(document.body)).submit();
 			}
 		},
 

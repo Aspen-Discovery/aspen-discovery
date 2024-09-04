@@ -40,7 +40,7 @@ function getUpdates24_09_00(): array {
 				'ALTER TABLE palace_project_title_availability ADD COLUMN previewLink TINYTEXT',
 			]
 		], //add_additional_info_to_palace_project_availability
-		'run_full_update_for_palace_project_24_09' =>[
+		'run_full_update_for_palace_project_24_09' => [
 			'title' => 'Run full update for Palace Project',
 			'description' => 'Run full update for Palace Project',
 			'continueOnError' => false,
@@ -90,21 +90,21 @@ function getUpdates24_09_00(): array {
 			'continueOnError' => true,
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort_group (
-				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				    name VARCHAR(255) NOT NULL UNIQUE,
-    				bookSortMethod TINYINT(1) DEFAULT 1,
-    				comicSortMethod TINYINT(1) DEFAULT 1,
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE,
+					bookSortMethod TINYINT(1) DEFAULT 1,
+					comicSortMethod TINYINT(1) DEFAULT 1,
 					movieSortMethod TINYINT(1) DEFAULT 1,
-    				musicSortMethod TINYINT(1) DEFAULT 1,
-    				otherSortMethod TINYINT(1) DEFAULT 1
+					musicSortMethod TINYINT(1) DEFAULT 1,
+					otherSortMethod TINYINT(1) DEFAULT 1
 				)',
 				'CREATE TABLE IF NOT EXISTS grouped_work_format_sort (
-				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				    formatSortingGroupId INT(11) NOT NULL,
-    				groupingCategory VARCHAR(6) NOT NULL,
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					formatSortingGroupId INT(11) NOT NULL,
+					groupingCategory VARCHAR(6) NOT NULL,
 					format VARCHAR(255) NOT NULL,
-    				weight INT(11) NOT NULL,
-    				UNIQUE(formatSortingGroupId, groupingCategory, format)
+					weight INT(11) NOT NULL,
+					UNIQUE(formatSortingGroupId, groupingCategory, format)
 				)',
 			],
 		], //create_format_sorting_tables
@@ -172,7 +172,7 @@ function getUpdates24_09_00(): array {
 
 		//chloe - PTFS-Europe
 		'sourceId_allow_255_char' => [
-			'title'=> 'SourceId Allow 255 char',
+			'title' => 'SourceId Allow 255 char',
 			'description' => 'Allow for longer source ids so that summon and ebsco records can be included without clashing with the length constraint',
 			'continueOnError' => false,
 			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
@@ -192,7 +192,33 @@ function getUpdates24_09_00(): array {
 				",
 //				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='Barcode Generators'))",
 			],
-		],
+		], //barcode_generator_report_permissions
+		'snappay_settings' => [
+			'title' => 'SnapPay Settings',
+			'description' => 'Add eCommerce vendor SnapPay.',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS snappay_settings (
+				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(50) NOT NULL UNIQUE,
+					sandboxMode TINYINT NOT NULL DEFAULT 0,
+					accountId BIGINT(10) NOT NULL,
+					merchantId VARCHAR(20) NOT NULL,
+					apiAuthenticationCode VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB',
+				'ALTER TABLE library ADD COLUMN snapPaySettingId INT(11) DEFAULT -1',
+				'ALTER TABLE user_payments ADD COLUMN snappayToken VARCHAR(255) DEFAULT NULL',
+			],
+		], //snappay_settings
+		'permissions_ecommerce_snappay' => [
+			'title' => 'Add permissions for SnapPay',
+			'description' => 'Create permissions for administration of SnapPay',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer SnapPay', '', 10, 'Controls if the user can change SnapPay settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer SnapPay'))",
+			],
+		], //permissions_ecommerce_snappay
 
 		//other
 
@@ -216,13 +242,13 @@ function migrateWebResourceLibraryAccessRules(&$update) {
 		$webResources[] = $webResource->id;
 	}
 
-	foreach($webResources as $resource) {
+	foreach ($webResources as $resource) {
 		foreach ($libraries as $libraryId) {
 			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAccessLibrary.php';
 			$webResourceAccessLibrary = new WebResourceAccessLibrary();
 			$webResourceAccessLibrary->webResourceId = $resource;
 			$webResourceAccessLibrary->libraryId = $libraryId;
-			if(!$webResourceAccessLibrary->find(true)) {
+			if (!$webResourceAccessLibrary->find(true)) {
 				$webResourceAccessLibrary->insert();
 			}
 		}

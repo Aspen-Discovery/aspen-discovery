@@ -5924,6 +5924,135 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	function createSnapPayOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('SnapPay');
+		} else {
+			$result = $this->createGenericOrder('SnapPay');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)) {
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $paymentLibrary */
+			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
+			/** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
+			$snapPaySetting = new SnapPaySetting();
+			$snapPaySetting->id = $userLibrary->snapSettingId;
+			if ($snapPaySetting->find(true)) {
+				$patron->loadContactInformation();
+				// hard coded SnapPay hosted payment page URL
+				$paymentRequestUrl = "https://www.snappayglobal.com/Interop/HostedPaymentPage";
+				if ($snapPaySetting->sandboxMode == 1 || $snapPaySetting->sandboxMode == '1') {
+					$paymentRequestUrl = "https://stage.snappayglobal.com/Interop/HostedPaymentPage";
+				}
+
+				$lineItem = new stdClass(); //line items need to be objects not arrays
+				$lineItem->identifiers[0] = "SnapPay Invoice";
+				$lineItem->amount = $payment->totalPaid;
+				$lineItem->paymentType = $snapPaySetting->paymentTypeId;
+
+// create the HMAC signature
+				$apiAuthCode = $snapPaySetting->apiAuthenticationCode;
+				$accountid = $snapPaySetting->accountId;
+				$customerid = $patron->id;
+				$merchantid = $snapPaySetting->merchantId;
+				$transactionamount = number_format($payment->totalPaid, 2);
+				$currencycode = 'USD'; // TO DO: fix this hardcode
+				$paymentmode = 'CC'; // TO DO: allow ACH too
+				$email = $patron->email;
+				$nonce = bin2hex(random_bytes(16));
+
+				$epochStart = new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC"));
+				$timeSpan = (new DateTime("now", new DateTimeZone("UTC")))->getTimestamp() - $epochStart->getTimestamp();
+				$requestTimeStamp = (string)$timeSpan;
+
+				$signatureRawData = $accountid . $customerid . $merchantid . $transactionamount . $currencycode . $paymentmode . $email . $nonce . $requestTimeStamp;
+// Convert base64-encoded apiAuthCode to byte array
+				$secretKeyByteArray = base64_decode($apiAuthCode);
+// Encode signatureRawData to byte array using UTF-8
+				$signature = utf8_encode($signatureRawData);
+// Compute HMAC SHA-256 hash
+				$signatureBytes = hash_hmac('sha256', $signature, $secretKeyByteArray, true);
+// Convert hash to base64-encoded string
+				$requestSignatureBase64String = base64_encode($signatureBytes);
+// Format signatureData string
+				$signatureData = sprintf("%s:%s:%s", $requestSignatureBase64String, $nonce, $requestTimeStamp);
+// Encode signatureData to byte array using UTF-8 and convert to base64-encoded string
+				$HmacValue = base64_encode(utf8_encode($signatureData));
+// Add the HmacValue to the db payment record
+				$payment->snappayToken = $HmacValue;
+				$payment->update();
+
+				$postParams = [
+					'accountid' => $snapPaySetting->accountId,
+					'customerid' => $patron->id, // TO DO: ensure correct ID
+					'currencycode' => 'USD', // TO DO: fix this hardcode
+					'transactionamount' => number_format($payment->totalPaid, 2),
+					'merchantid' => $snapPaySetting->merchantId,
+					'paymentmode' => 'CC', // TO DO: allow ACH too
+					'cvvrequired' => 'Y', // TO DO: allow N too
+					'enableemailreceipt' => 'Y', // TO DO: allow N too
+					'redirectionurl' => $configArray['Site']['url'] . "/MyAccount/SnapPayComplete", // TO DO: documentation: FISERV pdf has 'redirectionurl'; error has 'redirecturl'; the former appears to be what is needed
+					'signature' => $HmacValue, // TO DO: documentation: FISERV pdf has 'signature'; error has 'Signature'
+					'firstname' => $patron->firstName,
+					'lastname' => $patron->lastName,
+					'addressline1' => $patron->address1,
+					'city' => $patron->city,
+					'state' => $patron->state,
+					'zip' => $patron->zip,
+					'country' => $patron->country,
+					'email' => $patron->email,
+					'phone' => $patron->phone,
+				];
+				return [
+					'success' => true,
+					'message' => 'Redirecting to payment processor',
+					'postParams' => $postParams,
+					'paymentRequestUrl' => $paymentRequestUrl,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'SnapPay was not properly configured for the library.',
+				];
+			}
+		}
+	}
 	function createPayPalPayflowOrder() {
 		global $configArray;
 		global $interface;

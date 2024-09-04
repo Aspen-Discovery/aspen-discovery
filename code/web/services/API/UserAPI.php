@@ -3970,6 +3970,7 @@ class UserAPI extends AbstractAPI {
 					unset($paymentArray['deluxeSecurityId']);
 					unset($paymentArray['deluxeRemittanceId']);
 					unset($paymentArray['aciToken']);
+					unset($paymentArray['snappayToken']);
 					unset($paymentArray['stripeToken']);
 					unset($paymentArray['squareToken']);
 					$result['payment'] = $paymentArray;
