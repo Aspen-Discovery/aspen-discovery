@@ -105,87 +105,51 @@ class MyAccount_MyCookiePreferences extends MyAccount {
 		if ($userId) {
 			$userSummonUsage = new UserSummonUsage();
 			$userSummonUsage->userId = $userId;
-			$userSummonUsage->find();
-			while ($userSummonUsage->fetch()) {
-				$userSummonUsage->delete();
-			}
+			$userSummonUsage->delete(true);
 
 			$userAxis360Usage = new UserAxis360Usage();
 			$userAxis360Usage->userId = $userId;
-			$userAxis360Usage->find();
-			while ($userAxis360Usage->fetch()) {
-				$userAxis360Usage->delete();
-			}
+			$userAxis360Usage->delete(true);
 
 			$userCloudLibraryUsage = new UserCloudLibraryUsage();
 			$userCloudLibraryUsage->userId = $userId;
-			$userCloudLibraryUsage->find();
-			while ($userCloudLibraryUsage->fetch()) {
-				$userCloudLibraryUsage->delete();
-			}
+			$userCloudLibraryUsage->delete(true);
 
 			$userEbscoEdsUsage = new UserEbscoEdsUsage();
 			$userEbscoEdsUsage->userId = $userId;
-			$userEbscoEdsUsage->find();
-			while ($userEbscoEdsUsage->fetch()) {
-				$userEbscoEdsUsage->delete();
-			}
+			$userEbscoEdsUsage->delete(true);
 
 			$userEbscoHostUsage = new UserEbscohostUsage();
 			$userEbscoHostUsage->userId = $userId;
-			$userEbscoHostUsage->find();
-			while ($userEbscoHostUsage->fetch()) {
-				$userEbscoHostUsage->delete();
-			}
+			$userEbscoEdsUsage->delete(true);
 
 			$userHooplaUsage = new UserHooplaUsage();
 			$userHooplaUsage->userId = $userId;
-			$userHooplaUsage->find();
-			while ($userHooplaUsage->fetch()) {
-				$userHooplaUsage->delete();
-			}
+			$userHooplaUsage->delete(true);
 
 			$userOpenArchivesUsage = new UserOpenArchivesUsage();
 			$userOpenArchivesUsage->userId = $userId;
-			$userOpenArchivesUsage->find();
-			while ($userOpenArchivesUsage->fetch()) {
-				$userOpenArchivesUsage->delete();
-			}
-
+			$userOpenArchivesUsage->delete(true);
+			
 			$userOverDriveUsage = new UserOverDriveUsage();
 			$userOverDriveUsage->userId = $userId;
-			$userOverDriveUsage->find();
-			while ($userOverDriveUsage->fetch()) {
-				$userOverDriveUsage->delete();
-			}
+			$userOverDriveUsage->delete(true);
 
 			$userPalaceProjectUsage = new UserPalaceProjectUsage();
 			$userPalaceProjectUsage->userId = $userId;
-			$userPalaceProjectUsage->find();
-			while ($userPalaceProjectUsage->fetch()) {
-				$userPalaceProjectUsage->delete();
-			}
+			$userPalaceProjectUsage->delete(true);
 
 			$userSideLoadUsage = new UserSideLoadUsage();
 			$userSideLoadUsage->userId = $userId;
-			$userSideLoadUsage->find();
-			while ($userSideLoadUsage->fetch()) {
-				$userSideLoadUsage->delete();
-			}
+			$userSideLoadUsage->delete(true);
 
 			$userWebsiteUsage = new UserWebsiteUsage();
 			$userWebsiteUsage->userId = $userId;
-			$userWebsiteUsage->find();
-			while ($userWebsiteUsage->fetch()) {
-				$userWebsiteUsage->delete();
-			}
+			$userWebsiteUsage->delete(true);
 
 			$userEventsUsage = new UserEventsUsage();
 			$userEventsUsage->userId = $userId;
-			$userEventsUsage->find();
-			while ($userEventsUsage->fetch()) {
-				$userEventsUsage->delete();
-			}
+			$userEventsUsage->delete(true);
 		}
 	}
 
