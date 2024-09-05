@@ -34,7 +34,7 @@ function getUpdates24_09_00(): array {
 		], 
 		'add_local_analytics_column_to_user' => [
 			'title' => 'Add Local Analytics Column To User',
-			'descritpion' => 'Add a column to hold local analytics tracking choices',
+			'description' => 'Add a column to hold local analytics tracking choices',
 			'continueOnError' => false,
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN userCookiePreferenceLocalAnalytics TINYINT(1) DEFAULT 0",
