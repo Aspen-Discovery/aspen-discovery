@@ -651,7 +651,6 @@ class AJAX_JSON extends Action {
 
 	function saveCookieManagementPreferences() {
 		require_once ROOT_DIR . '/services/MyAccount/MyCookiePreferences.php';
-		error_log("CALLED SAVE MANAGE PREFS IN JSON");
 		if (UserAccount::isLoggedIn()) {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
