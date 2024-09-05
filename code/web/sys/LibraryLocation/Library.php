@@ -4367,7 +4367,9 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
-			$this->updateLocalAnalyticsPreferences();
+			if (in_array('cookieStorageConsent', $this->_changedFields)) {
+				$this->updateLocalAnalyticsPreferences();
+			}
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4385,7 +4387,6 @@ class Library extends DataObject {
 			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
-
 		return $ret;
 	}
 
@@ -4425,7 +4426,6 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
-			$this->updateLocalAnalyticsPreferences();
 		}
 		return $ret;
 	}
