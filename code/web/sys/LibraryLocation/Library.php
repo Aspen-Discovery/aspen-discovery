@@ -4380,7 +4380,6 @@ class Library extends DataObject {
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
-			error_log("UPDATE CALLED");
 			$this->saveHolidays();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
