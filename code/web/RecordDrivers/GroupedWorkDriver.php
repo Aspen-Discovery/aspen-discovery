@@ -432,8 +432,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		if ($sortMethod === 1) {
 			//First sort by format
-			$format1 = $a->format;
-			$format2 = $b->format;
+			$format1 = trim($a->format);
+			$format2 = trim($b->format);
 			$formatComparison = strcasecmp($format1, $format2);
 			//Make sure that book is the very first format always
 			if ($formatComparison != 0) {
@@ -446,11 +446,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}else{
 			$weight1 = 999;
 			$weight2 = 999;
+			$format1 = trim($a->format);
+			$format2 = trim($b->format);
+
 			$sortFormats = $this->_formatSorting->getSortedFormats($groupedWork->grouping_category);
 			foreach ($sortFormats as $format) {
-				if ($format->format == $a->format) {
+				if ($format->format == $format1) {
 					$weight1 = $format->weight;
-				}elseif ($format->format == $b->format) {
+				}elseif ($format->format == $format2) {
 					$weight2 = $format->weight;
 				}
 			}
@@ -458,8 +461,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if ($weight1 < $weight2){
 				$formatComparison = -1;
 			}elseif ($weight1 == $weight2){
-				$format1 = $a->format;
-				$format2 = $b->format;
+				$format1 = trim($a->format);
+				$format2 = trim($b->format);
 				$formatComparison = strcasecmp($format1, $format2);
 				//Make sure that book is the very first format always
 				if ($formatComparison != 0) {

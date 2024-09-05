@@ -382,7 +382,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 			}
 			$formatExists = false;
 			foreach ($activeFormats as $activeFormat) {
-				if ($activeFormat->format == $result['format']) {
+				if ($activeFormat->format == trim($result['format'])) {
 					$formatExists = true;
 					break;
 				}
@@ -391,7 +391,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 				$groupedWorkFormatSort = new GroupedWorkFormatSort();
 				$groupedWorkFormatSort->formatSortingGroupId = $this->id;
 				$groupedWorkFormatSort->groupingCategory = $result['grouping_category'];
-				$groupedWorkFormatSort->format = $result['format'];
+				$groupedWorkFormatSort->format = trim($result['format']);
 				$groupedWorkFormatSort->weight = count($activeFormats) + 1;
 				$groupedWorkFormatSort->insert();
 				$activeFormats[$groupedWorkFormatSort->id] = $groupedWorkFormatSort;
