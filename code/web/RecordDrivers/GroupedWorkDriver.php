@@ -430,7 +430,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$sortMethod = $this->_formatSorting->otherSortMethod;
 		}
 
-		if ($sortMethod === 1) {
+		if ($sortMethod == 1) {
 			//First sort by format
 			$format1 = trim($a->format);
 			$format2 = trim($b->format);
