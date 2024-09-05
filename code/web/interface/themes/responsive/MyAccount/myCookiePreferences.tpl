@@ -41,7 +41,7 @@
 					</div>
 					{*Third Party Analytics*}
 					<div class="form-group #propertyRow" style="margin-bottom:10px;">
-						<strong class="control-label" style="margin-bottom:10px;">{translate text="Thrid Party Analytics" isPublicFacing=true}:</strong>&nbsp;
+						<strong class="control-label" style="margin-bottom:10px;">{translate text="Third Party Analytics" isPublicFacing=true}:</strong>&nbsp;
 						<div class="padding:0.5em 1em;">
 							<div class="col-xs-6 col-sm-4">
 								<label for="userCookieAnalytics" class="control-label">{translate text="Google Analytics" isPublicFacing=true}</label>&nbsp;
