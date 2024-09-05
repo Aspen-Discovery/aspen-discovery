@@ -4710,28 +4710,26 @@ class Library extends DataObject {
 
 	public function updateLocalAnalyticsPreferences(){
 		if (empty($this->libraryId)) {
-			error_log("Library ID is not set.");
 			return;
 		}
-
+		//Find all locations with given library Id
 		$locations = [];
 		$location = new Location();
 		$location->libraryId = $this->libraryId;
 		$location->find();
-
+		//Clone each matching location and add to array
 		while ($location->fetch()) {
 			$locations[] = clone $location;
 		}
-		
+		//For each location, find all users with a amtching homelocationId
 		foreach ($locations as $location) {
 			$user = new User();
 			$user->homeLocationId = $location->locationId;
 			$user->find();
-
+			//For these user, update userCookiePreferenceLocalAnalytics based on cookieStorageConsent value
 			while ($user->fetch()) {
 				$user->userCookiePreferenceLocalAnalytics = $this->cookieStorageConsent ==1 ? 0 : 1;
 				$user->update();
-
 			}
 		}
 	}
