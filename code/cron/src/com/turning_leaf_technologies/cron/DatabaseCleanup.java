@@ -469,17 +469,8 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeLocalAnalyticsTracking(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		try {
-			//Check if this function has already been run for user
-			PreparedStatement checkAnalyticsDataClearedStmt = dbConn.prepareStatement("SELECT analyticsDataCleared FROM user WHERE libraryCookieStorageConsent = 1");
-			ResultSet analyticsDataClearedRS = checkAnalyticsDataClearedStmt.executeQuery();
-
-			if (analyticsDataClearedRS.next() && analyticsDataClearedRS.getBoolean("analyticsDataCleared")) {
-				processLog.addNote("Analytics data has already been cleared. Exiting.");
-				processLog.saveResults();
-				return;
-			}
 			//Get userIDs that have cookie consent for external search sources set to 0
-			PreparedStatement getNoLocalAnalyticsTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id FROM user WHERE userCookiePreferenceLocalAnalytics = 0");
+			PreparedStatement getNoLocalAnalyticsTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id, analyticsDataCleared FROM user WHERE userCookiePreferenceLocalAnalytics = 0");
 			ResultSet userIdsRS = getNoLocalAnalyticsTrackingUserIdsStmt.executeQuery();
 
 			PreparedStatement removeAxis360UsageStmt = dbConn.prepareStatement("DELETE FROM user_axis360_usage WHERE userId = ?");
@@ -495,6 +486,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			PreparedStatement removeEventsUsageStmt = dbConn.prepareStatement("DELETE FROM user_events_usage WHERE userId = ?");
 			PreparedStatement removeOpenArchivesUsageStmt = dbConn.prepareStatement("DELETE FROM user_open_archives_usage WHERE userId = ?");
 
+			PreparedStatement updateAnalyticsDataClearedStmt = dbConn.prepareStatement("UPDATE user SET analyticsDataCleared = 1 WHERE id = ?");
 
 			int totalRowsRemovedAXIS360 = 0;
 			int totalRowsRemovedCloudLibrary = 0;
@@ -511,42 +503,51 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			while (userIdsRS.next()) {
 				int userId = userIdsRS.getInt("id");
+				boolean analyticsDataCleared = userIdsRS.getBoolean("analyticsDataCleared");
+				//If analytics data has not been cleared for current user, proceed
+				if (!analyticsDataCleared) {
+					removeAxis360UsageStmt.setInt(1, userId);
+					totalRowsRemovedAXIS360 += removeAxis360UsageStmt.executeUpdate();
+	
+					removeCloudLibraryUsageStmt.setInt(1, userId);
+					totalRowsRemovedCloudLibrary += removeCloudLibraryUsageStmt.executeUpdate();
+	
+					removeEbscoHostUsageStmt.setInt(1, userId);
+					totalRowsRemovedEbscoHost += removeEbscoHostUsageStmt.executeUpdate();
+	
+					removeEbscoEdsUsageStmt.setInt(1, userId);
+					totalRowsRemovedEbscoEds += removeEbscoEdsUsageStmt.executeUpdate();
+	
+					removeHooplaUsageStmt.setInt(1, userId);
+					totalRowsRemovedHoopla += removeHooplaUsageStmt.executeUpdate();
+	
+					removeOverdriveUsageStmt.setInt(1, userId);
+					totalRowsRemovedOverdrive += removeOverdriveUsageStmt.executeUpdate();
+	
+					removePalaceProjectUsageStmt.setInt(1, userId);
+					totalRowsRemovedPalaceProject += removePalaceProjectUsageStmt.executeUpdate();
+	
+					removeSideloadUsageStmt.setInt(1, userId);
+					totalRowsRemovedSideload += removeSideloadUsageStmt.executeUpdate();
+	
+					removeSummonUsageStmt.setInt(1, userId);
+					totalRowsRemovedSummon += removeSummonUsageStmt.executeUpdate();
+	
+					removeWebIndexerUsageStmt.setInt(1, userId);
+					totalRowsRemovedWebIndexer += removeWebIndexerUsageStmt.executeUpdate();
+	
+					removeEventsUsageStmt.setInt(1, userId);
+					totalRowsRemovedEvents += removeEventsUsageStmt.executeUpdate();
+	
+					removeOpenArchivesUsageStmt.setInt(1, userId);
+					totalRowsRemovedOpenArchives += removeOpenArchivesUsageStmt.executeUpdate();
 
-				removeAxis360UsageStmt.setInt(1, userId);
-				totalRowsRemovedAXIS360 += removeAxis360UsageStmt.executeUpdate();
-
-				removeCloudLibraryUsageStmt.setInt(1, userId);
-				totalRowsRemovedCloudLibrary += removeCloudLibraryUsageStmt.executeUpdate();
-
-				removeEbscoHostUsageStmt.setInt(1, userId);
-				totalRowsRemovedEbscoHost += removeEbscoHostUsageStmt.executeUpdate();
-
-				removeEbscoEdsUsageStmt.setInt(1, userId);
-				totalRowsRemovedEbscoEds += removeEbscoEdsUsageStmt.executeUpdate();
-
-				removeHooplaUsageStmt.setInt(1, userId);
-				totalRowsRemovedHoopla += removeHooplaUsageStmt.executeUpdate();
-
-				removeOverdriveUsageStmt.setInt(1, userId);
-				totalRowsRemovedOverdrive += removeOverdriveUsageStmt.executeUpdate();
-
-				removePalaceProjectUsageStmt.setInt(1, userId);
-				totalRowsRemovedPalaceProject += removePalaceProjectUsageStmt.executeUpdate();
-
-				removeSideloadUsageStmt.setInt(1, userId);
-				totalRowsRemovedSideload += removeSideloadUsageStmt.executeUpdate();
-
-				removeSummonUsageStmt.setInt(1, userId);
-				totalRowsRemovedSummon += removeSummonUsageStmt.executeUpdate();
-
-				removeWebIndexerUsageStmt.setInt(1, userId);
-				totalRowsRemovedWebIndexer += removeWebIndexerUsageStmt.executeUpdate();
-
-				removeEventsUsageStmt.setInt(1, userId);
-				totalRowsRemovedEvents += removeEventsUsageStmt.executeUpdate();
-
-				removeOpenArchivesUsageStmt.setInt(1, userId);
-				totalRowsRemovedOpenArchives += removeOpenArchivesUsageStmt.executeUpdate();
+					//Update analyticsDataCleared to true for this user
+					updateAnalyticsDataClearedStmt.setInt(1, userId);
+					updateAnalyticsDataClearedStmt.executeUpdate();
+				} else {
+					processLog.addNote("Analytics data already cleared for user ID: " + userId);
+				}
 			}
 
 
@@ -563,9 +564,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + totalRowsRemovedWebIndexer + " Web Indexer usage records for users with localAnalytics set to 0");
 			processLog.addNote("Removed " + totalRowsRemovedEvents + " Events usage records for users with localAnalytics set to 0");
 			processLog.addNote("Removed " + totalRowsRemovedOpenArchives + " Open Archives usage records for users with localAnalytics set to 0");
-
-
-
+			processLog.addNote("Analytics data clearing completed.");
 			processLog.incUpdated();
 			processLog.saveResults();
 
@@ -584,6 +583,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			removeWebIndexerUsageStmt.close();
 			removeEventsUsageStmt.close();
 			removeOpenArchivesUsageStmt.close();
+			updateAnalyticsDataClearedStmt.close();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to remove external search tracking. ", e);
 		}
