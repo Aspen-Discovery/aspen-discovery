@@ -3394,8 +3394,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	public function getBookcoverInfo() {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookCoverInfo = new BookCoverInfo();
-		$bookCoverInfo->recordId = $this->getPermanentId();
-		$bookCoverInfo->recordType = 'grouped_work';
+		$bookCoverInfo->setRecordId($this->getPermanentId());
+		$bookCoverInfo->setRecordType('grouped_work');
 		if ($bookCoverInfo->find(true)) {
 			return $bookCoverInfo;
 		} else {

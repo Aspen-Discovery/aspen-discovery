@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -52,5 +52,26 @@ class BookCoverInfo extends DataObject {
 	 */
 	public function getRecordId() : string {
 		return $this->recordId;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getRecordType() {
+		return $this->recordType;
+	}
+
+	/**
+	 * @param mixed $recordType
+	 */
+	public function setRecordType($recordType): void {
+		$this->__set('recordType', $recordType);
+	}
+
+	/**
+	 * @param mixed $recordId
+	 */
+	public function setRecordId($recordId): void {
+		$this->__set('recordId', $recordId);
 	}
 }
