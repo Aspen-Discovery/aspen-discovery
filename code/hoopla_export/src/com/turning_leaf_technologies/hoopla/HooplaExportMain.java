@@ -280,7 +280,7 @@ public class HooplaExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					}else if (result.deleteWork){
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					numDeleted++;
 					logEntry.incDeleted();
@@ -603,7 +603,7 @@ public class HooplaExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					logEntry.incDeleted();
 					deleteHooplaItemStmt.setLong(1, existingTitle.getId());

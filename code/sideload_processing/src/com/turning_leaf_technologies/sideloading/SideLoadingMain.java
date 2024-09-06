@@ -310,7 +310,7 @@ public class SideLoadingMain {
 								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 							} else if (result.deleteWork) {
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 							}
 
 							logEntry.incDeleted();
@@ -421,7 +421,7 @@ public class SideLoadingMain {
 								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 							} else if (result.deleteWork) {
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 							}
 							getGroupedWorkIndexer().markIlsRecordAsDeleted(settings.getName(), recordIdentifier.getIdentifier());
 							logEntry.incDeleted();

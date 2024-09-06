@@ -356,7 +356,7 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 	public function loadDefaultFormats() : void {
 		//Automatically generate based on the data in the database.
 		global $aspen_db;
-		$loadDefaultFormatsStmt = "SELECT grouping_category, format FROM grouped_work_variation inner join indexed_format on indexed_format.id = formatId inner join grouped_work on grouped_work.id = grouped_work_variation.groupedWorkId group by format, grouping_category order by grouping_category, lower(format);";
+		$loadDefaultFormatsStmt = "select grouped_work.grouping_category, trim(indexed_format.format) as format, MIN(permanent_id), count(grouped_work.id) as numWorks FROM grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id join grouped_work_variation on grouped_work_variation.id = grouped_work_record_items.groupedWorkVariationId join indexed_format on grouped_work_variation.formatId = indexed_format.id join grouped_work on grouped_work_variation.groupedWorkId = grouped_work.id group by grouping_category, lower(trim(format));";
 		$results = $aspen_db->query($loadDefaultFormatsStmt, PDO::FETCH_ASSOC);
 
 		$bookSort = $this->getSortedFormats('book');
@@ -365,24 +365,36 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		$musicSort = $this->getSortedFormats('music');
 		$otherSort = $this->getSortedFormats('other');
 
+		//Store the original formats, so we can remove anything that no longer exists at the end
+		$originalBookSort = array_merge([], $bookSort);
+		$originalComicSort = array_merge([], $comicSort);
+		$originalMovieSort = array_merge([], $movieSort);
+		$originalMusicSort = array_merge([], $musicSort);
+		$originalOtherSort = array_merge([], $otherSort);
+
 		foreach ($results as $result) {
 			//Check to see if we already have this category
 			if ($result['grouping_category'] == 'book') {
 				$activeFormats = $bookSort;
+				$originalFormats = $originalBookSort;
 			}elseif ($result['grouping_category'] == 'comic') {
 				$activeFormats = $comicSort;
+				$originalFormats = $originalComicSort;
 			}elseif ($result['grouping_category'] == 'movie') {
 				$activeFormats = $movieSort;
+				$originalFormats = $originalMovieSort;
 			}elseif ($result['grouping_category'] == 'music') {
 				$activeFormats = $musicSort;
+				$originalFormats = $originalMusicSort;
 			}elseif ($result['grouping_category'] == 'other') {
 				$activeFormats = $otherSort;
+				$originalFormats = $originalOtherSort;
 			}else{
 				continue;
 			}
 			$formatExists = false;
 			foreach ($activeFormats as $activeFormat) {
-				if ($activeFormat->format == $result['format']) {
+				if ($activeFormat->format == trim($result['format'])) {
 					$formatExists = true;
 					break;
 				}
@@ -391,11 +403,44 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 				$groupedWorkFormatSort = new GroupedWorkFormatSort();
 				$groupedWorkFormatSort->formatSortingGroupId = $this->id;
 				$groupedWorkFormatSort->groupingCategory = $result['grouping_category'];
-				$groupedWorkFormatSort->format = $result['format'];
+				$groupedWorkFormatSort->format = trim($result['format']);
 				$groupedWorkFormatSort->weight = count($activeFormats) + 1;
 				$groupedWorkFormatSort->insert();
 				$activeFormats[$groupedWorkFormatSort->id] = $groupedWorkFormatSort;
+			}else{
+				foreach ($originalFormats as $key => $originalFormat) {
+					if ($originalFormat->format == trim($result['format'])) {
+						if ($result['grouping_category'] == 'book') {
+							unset($originalBookSort[$key]);
+						}elseif ($result['grouping_category'] == 'comic') {
+							unset($originalComicSort[$key]);
+						}elseif ($result['grouping_category'] == 'movie') {
+							unset($originalMovieSort[$key]);
+						}elseif ($result['grouping_category'] == 'music') {
+							unset($originalMusicSort[$key]);
+						}elseif ($result['grouping_category'] == 'other') {
+							unset($originalOtherSort[$key]);
+						}
+
+						break;
+					}
+				}
 			}
+		}
+		foreach ($originalBookSort as $originalFormatSort) {
+			$originalFormatSort->delete();
+		}
+		foreach ($originalComicSort as $originalFormatSort) {
+			$originalFormatSort->delete();
+		}
+		foreach ($originalMovieSort as $originalFormatSort) {
+			$originalFormatSort->delete();
+		}
+		foreach ($originalMusicSort as $originalFormatSort) {
+			$originalFormatSort->delete();
+		}
+		foreach ($originalOtherSort as $originalFormatSort) {
+			$originalFormatSort->delete();
 		}
 	}
 

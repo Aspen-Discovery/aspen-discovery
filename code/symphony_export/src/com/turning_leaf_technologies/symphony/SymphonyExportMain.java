@@ -1089,7 +1089,7 @@ public class SymphonyExportMain {
 									getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 								} else if (result.deleteWork) {
 									//Delete the work from solr and the database
-									getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+									getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
 								}
 								logEntry.incDeleted();
 								totalChanges++;
@@ -1135,7 +1135,7 @@ public class SymphonyExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

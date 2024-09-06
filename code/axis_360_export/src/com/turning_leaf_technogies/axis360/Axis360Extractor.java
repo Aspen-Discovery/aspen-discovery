@@ -438,7 +438,7 @@ public class Axis360Extractor {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 					}else{
 						//Reindex the work

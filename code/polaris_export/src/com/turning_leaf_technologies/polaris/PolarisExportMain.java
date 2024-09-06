@@ -743,7 +743,7 @@ public class PolarisExportMain {
 									groupedWorkIndexer.processGroupedWork(result.permanentId);
 								} else if (result.deleteWork) {
 									//Delete the work from solr and the database
-									groupedWorkIndexer.deleteRecord(result.permanentId);
+									groupedWorkIndexer.deleteRecord(result.permanentId, result.groupedWorkId);
 								}
 								logEntry.incDeleted();
 								if (logEntry.getNumDeleted() % 250 == 0) {
@@ -808,7 +808,7 @@ public class PolarisExportMain {
 								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 							}
 							logEntry.incDeleted();
 							lastId = bibliographicRecordId;
@@ -940,7 +940,7 @@ public class PolarisExportMain {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						}else if (result.deleteWork){
 							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 						logEntry.incDeleted();
 						bibsToUpdate.add(newId);
@@ -1349,7 +1349,7 @@ public class PolarisExportMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			}else if (result.deleteWork){
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 			}
 			logEntry.incDeleted();
 		}
@@ -1536,7 +1536,7 @@ public class PolarisExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					logEntry.incDeleted();
 				}
@@ -1791,7 +1791,7 @@ public class PolarisExportMain {
 					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 			}
