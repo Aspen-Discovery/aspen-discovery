@@ -6019,6 +6019,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$payment->update();
 
 				$postParams = [
+					'udf1' => $payment->id,
 					'accountid' => $snapPaySetting->accountId,
 					'customerid' => $patron->id, // TO DO: ensure correct ID
 					'currencycode' => 'USD', // TO DO: fix this hardcode
@@ -6052,6 +6053,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 	}
+
 	function createPayPalPayflowOrder() {
 		global $configArray;
 		global $interface;
