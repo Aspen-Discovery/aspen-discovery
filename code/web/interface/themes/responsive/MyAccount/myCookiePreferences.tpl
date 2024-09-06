@@ -87,7 +87,7 @@
 									<li>{translate text="Open Archives" isPublicFacing=true}</li>
 								{/if}
 								{if array_key_exists('OverDrive', $enabledModules)}
-									<li>{translate text="Overdrive" isPublicFacing=true}</li>
+									<li>{translate text="Libby" isPublicFacing=true}</li>
 								{/if}
 								{if array_key_exists('Palace Project', $enabledModules)}
 									<li>{translate text="Palace Project" isPublicFacing=true}</li>
