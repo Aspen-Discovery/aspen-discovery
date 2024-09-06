@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-
+require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
 class CookieConsentPrivacyPolicy extends MyAccount {
 
     function launch() {
