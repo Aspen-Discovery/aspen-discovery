@@ -334,7 +334,7 @@ public class SierraExportAPIMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					logEntry.incDeleted();
 				}
@@ -648,7 +648,7 @@ public class SierraExportAPIMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			} else if (result.deleteWork) {
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 			}
 			logEntry.incDeleted();
 		} catch (Exception e) {
@@ -990,7 +990,7 @@ public class SierraExportAPIMain {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 						logEntry.incDeleted();
 						return true;
