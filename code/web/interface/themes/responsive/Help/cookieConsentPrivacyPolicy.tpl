@@ -1,5 +1,5 @@
 {strip}
     <div>
-        Policy
+        {$cookieConsentPolicyHTML}
     </div>
 {/strip}
