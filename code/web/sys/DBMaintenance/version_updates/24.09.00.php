@@ -207,7 +207,6 @@ function getUpdates24_09_00(): array {
 					apiAuthenticationCode VARCHAR(255) NOT NULL
 				) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN snapPaySettingId INT(11) DEFAULT -1',
-				'ALTER TABLE user_payments ADD COLUMN snappayToken VARCHAR(255) DEFAULT NULL',
 			],
 		], //snappay_settings
 		'permissions_ecommerce_snappay' => [
