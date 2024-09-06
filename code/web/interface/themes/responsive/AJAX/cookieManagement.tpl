@@ -28,7 +28,7 @@
         </div>
         {/if}
         <div id="cookieExplanation" style="display:none; margin-top:10px;">
-                    {translate text="By checking this box you are giving consent to local analytics tracking. Aspen will collect information about your usage of the folllwing services: "}
+                    {translate text="By checking this box you are giving consent to local analytics tracking. Aspen will collect information about your usage of the following services: "}
                     <ul>
                         {if array_key_exists('Axis 360', $enabledModules)}
                         <li>{translate text="Axis 360" isPublicFacing=true}</li>
