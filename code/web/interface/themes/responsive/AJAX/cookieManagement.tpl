@@ -31,10 +31,10 @@
                     {translate text="By checking this box you are giving consent to local analytics tracking. Aspen will collect information about your usage of the following services: "}
                     <ul>
                         {if array_key_exists('Axis 360', $enabledModules)}
-                        <li>{translate text="Axis 360" isPublicFacing=true}</li>
+                        <li>{translate text="Boundless" isPublicFacing=true}</li>
                         {/if}
                         {if array_key_exists('Cloud Library', $enabledModules)}
-                            <li>{translate text="Cloud Library" isPublicFacing=true}</li>
+                            <li>{translate text="cloudLibrary" isPublicFacing=true}</li>
                         {/if}
                         {if array_key_exists('EBSCO EDS', $enabledModules)}
                             <li>{translate text="Ebsco Eds" isPublicFacing=true}</li>
@@ -58,13 +58,13 @@
                             <li>{translate text="Palace Project" isPublicFacing=true}</li>
                         {/if}
                         {if array_key_exists('Side Loads', $enabledModules)}
-                            <li>{translate text="Side Loaded eContent" isPublicFacing=true}</li>
+                            <li>{translate text="External eContent" isPublicFacing=true}</li>
                         {/if}
                         {if array_key_exists('Summon', $enabledModules)}
                             <li>{translate text="Summon" isPublicFacing=true}</li>
                         {/if}
                         {if array_key_exists('Web Indexer', $enabledModules)}
-                            <li>{translate text="Web Indexer" isPublicFacing=true}</li>
+                            <li>{translate text="Library Website" isPublicFacing=true}</li>
                         {/if}
                     </ul>
                     {translate text="For more information, please see our "}<a style="cursor:pointer;" onclick="window.location = '/Admin/CookieConsentPrivacyPolicy';">{translate text=" Cookie Consent Privacy Policy"}</a>
