@@ -1518,7 +1518,7 @@ public class KohaExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					numRecordsDeleted++;
 					logEntry.incDeleted();
@@ -1622,7 +1622,7 @@ public class KohaExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					}else if (result.deleteWork){
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					logEntry.incDeleted();
 				}else {
@@ -1697,7 +1697,7 @@ public class KohaExportMain {
 					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 			}
