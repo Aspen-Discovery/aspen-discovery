@@ -16160,9 +16160,6 @@ AspenDiscovery.CookieConsent = (function() {
 		).fail(AspenDiscovery.ajaxFail);
 		return false;
 		},
-		viewCookieConsentPolicy: function() {
-		 	console.log("Print Cookie Policy");
-		},
 		fetchUserCookie: function(Values) {
 			document.cookie = 'cookieConsent' + '=' + encodeURIComponent(Values) + '; path=/';
 			return;
