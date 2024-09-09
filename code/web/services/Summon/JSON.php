@@ -3,40 +3,40 @@
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class Summon_JSON extends JSON_Action {
-    /**@noinspection PhpUnused */
-    
-    public function trackSummonUsage(): array {
+	/**@noinspection PhpUnused */
+	
+	public function trackSummonUsage(): array {
 		global $library;
-        if (!isset($_REQUEST['id'])) {
-            return [
-                'success' => false,
-                'message' => 'ID was not provided',
-            ];
-        }
-        $id = $_REQUEST['id'];
+		if (!isset($_REQUEST['id'])) {
+			return [
+				'success' => false,
+				'message' => 'ID was not provided',
+			];
+		}
+		$id = $_REQUEST['id'];
 
-        require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
-        $summonRecordUsage = new SummonRecordUsage();
-        global $aspenUsage;
-        $summonRecordUsage->instance = $aspenUsage->getInstance();
-        $summonRecordUsage->summonId = $id;
-        $summonRecordUsage->year = date('Y');
-        $summonRecordUsage->month =  date('n');
-        if ($summonRecordUsage->find(true)) {
-            $summonRecordUsage->timesUsed++;
-            $ret = $summonRecordUsage->update();
-            if ($ret == 0) {
-                echo ("Unable to update times used");
-            }
-        } else {
-            $summonRecordUsage->timesViewedInSearch = 0;
-            $summonRecordUsage->timesUsed = 1;
-            $summonRecordUsage->insert();
-        }
+		require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
+		$summonRecordUsage = new SummonRecordUsage();
+		global $aspenUsage;
+		$summonRecordUsage->instance = $aspenUsage->getInstance();
+		$summonRecordUsage->summonId = $id;
+		$summonRecordUsage->year = date('Y');
+		$summonRecordUsage->month = date('n');
+		if ($summonRecordUsage->find(true)) {
+			$summonRecordUsage->timesUsed++;
+			$ret = $summonRecordUsage->update();
+			if ($ret == 0) {
+				echo ("Unable to update times used");
+			}
+		} else {
+			$summonRecordUsage->timesViewedInSearch = 0;
+			$summonRecordUsage->timesUsed = 1;
+			$summonRecordUsage->insert();
+		}
 
 		$userObj = UserAccount::getActiveUserObj();
 		$userSummonTracking = $userObj->userCookiePreferenceLocalAnalytics;
-       
+	 
 		if ($userSummonTracking) {
 			$userId = UserAccount::getActiveUserId();
 			if ($userId) {
@@ -63,7 +63,7 @@ class Summon_JSON extends JSON_Action {
 			'success' => true,
 			'message' => 'Updated usage for Summon record ' . $id,
 		];
-    }
+	}
 
 	function getTitleAuthor(): array {
 		$result = [
