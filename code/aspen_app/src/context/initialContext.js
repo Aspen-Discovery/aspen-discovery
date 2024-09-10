@@ -88,6 +88,8 @@ export const CheckoutsContext = React.createContext({
      updateCheckouts: () => {},
      checkouts: [],
      resetCheckouts: () => {},
+     sortMethod: 'dueAsc',
+     updateSortMethod: () => {},
 });
 export const HoldsContext = React.createContext({
      updateHolds: () => {},
@@ -686,10 +688,16 @@ export const BrowseCategoryProvider = ({ children }) => {
 
 export const CheckoutsProvider = ({ children }) => {
      const [checkouts, setCheckouts] = useState();
+     const [sortMethod, setSortMethod] = useState('dueAsc');
 
      const updateCheckouts = (data) => {
           setCheckouts(data);
           console.log('updated CheckoutsContext');
+     };
+
+     const updateSortMethod = (data) => {
+          setSortMethod(data);
+          console.log('updated sortMethod');
      };
 
      const resetCheckouts = () => {
@@ -701,8 +709,10 @@ export const CheckoutsProvider = ({ children }) => {
           <CheckoutsContext.Provider
                value={{
                     checkouts,
+                    sortMethod,
                     updateCheckouts,
                     resetCheckouts,
+                    updateSortMethod,
                }}>
                {children}
           </CheckoutsContext.Provider>
