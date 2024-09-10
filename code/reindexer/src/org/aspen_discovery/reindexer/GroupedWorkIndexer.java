@@ -149,6 +149,10 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getDebugInfoStmt;
 	private PreparedStatement updateDebuggingInfoStmt;
 
+	private PreparedStatement removeItemsForWorkStmt;
+	private PreparedStatement removeVariationsForWorkStmt;
+	private PreparedStatement removeRecordsForWorkStmt;
+
 	private final CRC32 checksumCalculator = new CRC32();
 
 	private boolean storeRecordDetailsInSolr = false;
@@ -305,6 +309,10 @@ public class GroupedWorkIndexer {
 			getHideSeriesStmt = dbConn.prepareStatement("SELECT seriesNormalized from hide_series", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getDebugInfoStmt = dbConn.prepareStatement("SELECT id from grouped_work_debug_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			updateDebuggingInfoStmt = dbConn.prepareStatement("UPDATE grouped_work_debug_info set processed = 1, debugInfo = ?, debugTime = ? where id =?");
+
+			removeItemsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items where groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = ?)");
+			removeVariationsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation where groupedWorkId = ?");
+			removeRecordsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where groupedWorkId = ?");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -588,7 +596,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public synchronized void deleteRecord(String permanentId) {
+	public synchronized void deleteRecord(String permanentId, Long groupedWorkId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		//noinspection CommentedOutCode
 		try {
@@ -629,6 +637,16 @@ public class GroupedWorkIndexer {
 			deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 			deleteGroupedWorkStmt.executeUpdate();
 			*/
+
+			//Delete all grouped_work items, records, and variations, but leave the grouped work
+			removeItemsForWorkStmt.setLong(1, groupedWorkId);
+			removeItemsForWorkStmt.executeUpdate();
+
+			removeVariationsForWorkStmt.setLong(1, groupedWorkId);
+			removeVariationsForWorkStmt.executeUpdate();
+
+			removeRecordsForWorkStmt.setLong(1, groupedWorkId);
+			removeRecordsForWorkStmt.executeUpdate();
 
 		}catch (SolrServerException sse) {
 			logEntry.incErrors("Solr Exception deleting work from index, quitting to be safe", sse);
@@ -939,7 +957,7 @@ public class GroupedWorkIndexer {
 			if (hasIdentifiersAttached) {
 				processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
 			}else {
-				deleteRecord(permanentId);
+				deleteRecord(permanentId, groupedWorkId);
 				numDeleted++;
 				if (numDeleted % 10000 == 0) {
 					try {
@@ -1038,7 +1056,7 @@ public class GroupedWorkIndexer {
 							regroupedIdsToProcess.add(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
+							deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 						regroupedIdentifiers.add(recordIdentifier);
 					} else {
@@ -1053,7 +1071,7 @@ public class GroupedWorkIndexer {
 							regroupedIdsToProcess.add(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
+							deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 						regroupedIdentifiers.add(recordIdentifier);
 					} else {
@@ -1071,7 +1089,7 @@ public class GroupedWorkIndexer {
 							regroupedIdsToProcess.add(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
+							deleteRecord(result.permanentId, result.groupedWorkId);
 						}
 					} else {
 						newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
@@ -1088,7 +1106,7 @@ public class GroupedWorkIndexer {
 						regroupedIdsToProcess.add(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						deleteRecord(result.permanentId);
+						deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					regroupedIdentifiers.add(recordIdentifier);
 				} else if (!newId.equals(permanentId)) {
@@ -1201,7 +1219,7 @@ public class GroupedWorkIndexer {
 			//Log that this record did not have primary identifiers after
 			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing", 1);}
 			if (!this.clearIndex){
-				this.deleteRecord(permanentId);
+				this.deleteRecord(permanentId, id);
 			}
 		}
 

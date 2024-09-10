@@ -2509,7 +2509,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @return  string              Unique identifier.
 	 */
 	public function getUniqueID() {
-		return $this->fields['id'];
+		if (is_null($this->fields)) {
+			return $this->permanentId;
+		}else {
+			return $this->fields['id'];
+		}
 	}
 
 	/**
@@ -3390,8 +3394,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	public function getBookcoverInfo() {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookCoverInfo = new BookCoverInfo();
-		$bookCoverInfo->recordId = $this->getPermanentId();
-		$bookCoverInfo->recordType = 'grouped_work';
+		$bookCoverInfo->setRecordId($this->getPermanentId());
+		$bookCoverInfo->setRecordType('grouped_work');
 		if ($bookCoverInfo->find(true)) {
 			return $bookCoverInfo;
 		} else {
