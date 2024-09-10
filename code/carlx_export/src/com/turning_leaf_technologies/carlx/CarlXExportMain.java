@@ -451,7 +451,7 @@ public class CarlXExportMain {
 								indexer.processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								indexer.deleteRecord(result.permanentId);
+								indexer.deleteRecord(result.permanentId, result.groupedWorkId);
 							}
 							logEntry.incDeleted();
 							totalChanges++;
@@ -481,7 +481,7 @@ public class CarlXExportMain {
 					indexer.processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					indexer.deleteRecord(result.permanentId);
+					indexer.deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 				if (logEntry.getNumDeleted() % 250 == 0) {
@@ -691,7 +691,7 @@ public class CarlXExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

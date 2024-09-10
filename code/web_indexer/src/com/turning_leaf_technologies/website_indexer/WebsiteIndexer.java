@@ -148,6 +148,7 @@ class WebsiteIndexer {
 					String pageToProcess = String.valueOf(urlToProcess);
 					pageToProcess = pageToProcess.replaceAll("<loc>", "");
 					pageToProcess = pageToProcess.replaceAll("</loc>", "");
+					boolean includePath = true;
 
 					if (pageToProcess.matches(".*\\.xml.*")) { //if sitemap is xml index, walk through each xml file
 						Document doc2 = Jsoup.connect(pageToProcess).get();
@@ -159,12 +160,11 @@ class WebsiteIndexer {
 
 							//check if path is to be excluded
 							for (Pattern curPattern : pathsToExcludePatterns){
-								if (!curPattern.matcher(pageToProcess2).matches()){ //if url is not in paths to exclude, process page
-									processPage(pageToProcess2);
-									allLinks.put(pageToProcess2, true);
+								if (curPattern.matcher(pageToProcess2).matches()){ //if url is not in paths to exclude, process page
+									includePath = false;
 								}
 							}
-							if (pathsToExcludePatterns.isEmpty()){
+							if (pathsToExcludePatterns.isEmpty() || includePath){
 								processPage(pageToProcess2);
 								allLinks.put(pageToProcess2, true);
 							}
@@ -172,12 +172,11 @@ class WebsiteIndexer {
 					}else {
 						//check if path is to be excluded
 						for (Pattern curPattern : pathsToExcludePatterns){
-							if (!curPattern.matcher(pageToProcess).matches()){ //if url is not in paths to exclude, process page
-								processPage(pageToProcess);
-								allLinks.put(pageToProcess, true);
+							if (curPattern.matcher(pageToProcess).matches()) {
+								includePath = false;
 							}
 						}
-						if (pathsToExcludePatterns.isEmpty()){
+						if ((pathsToExcludePatterns.isEmpty() || includePath)){
 							processPage(pageToProcess);
 							allLinks.put(pageToProcess, true);
 						}
