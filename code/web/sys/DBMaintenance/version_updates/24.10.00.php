@@ -13,6 +13,19 @@ function getUpdates24_10_00(): array {
 		 ], //name*/
 
 		//mark - Grove
+		'additional_administration_locations' => [
+			'title' => 'Additional Administration Locations',
+			'description' => 'Add a table to store additional locations that a user can administer',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS `user_administration_locations` (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11) NOT NULL,
+					locationId INT(11) NOT NULL,
+					UNIQUE INDEX (userId,locationId)
+				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci;'
+			]
+		], //additional_administration_locations
 
 		//katherine - ByWater
 

@@ -32,20 +32,29 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingSnippets = true;
 		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')) {
-			$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null) {
-				$libraryJavaScriptSnippet->libraryId = $library->libraryId;
-				$snippetsForLibrary = [];
+			$validLibraries = Library::getLibraryList(true);
+			$snippetsForLibrary = [];
+			foreach ($validLibraries as $libraryId => $displayName) {
+				$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();
+				$libraryJavaScriptSnippet->libraryId = $libraryId;
 				$libraryJavaScriptSnippet->find();
 				while ($libraryJavaScriptSnippet->fetch()) {
 					$snippetsForLibrary[] = $libraryJavaScriptSnippet->javascriptSnippetId;
 				}
-				if (count($snippetsForLibrary) > 0) {
-					$object->whereAddIn('id', $snippetsForLibrary, false);
-				} else {
-					$userHasExistingSnippets = false;
+			}
+			$validLocations = Location::getLocationList(true);
+			foreach ($validLocations as $locationId => $displayName) {
+				$locationJavaScriptSnippet = new JavaScriptSnippetLocation();
+				$locationJavaScriptSnippet->locationId = $locationId;
+				$locationJavaScriptSnippet->find();
+				while ($locationJavaScriptSnippet->fetch()) {
+					$snippetsForLibrary[] = $locationJavaScriptSnippet->javascriptSnippetId;
 				}
+			}
+			if (count($snippetsForLibrary) > 0) {
+				$object->whereAddIn('id', $snippetsForLibrary, false);
+			} else {
+				$userHasExistingSnippets = false;
 			}
 		}
 		$object->find();

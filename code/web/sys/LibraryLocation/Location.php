@@ -2598,8 +2598,8 @@ class Location extends DataObject {
 	}
 
 	/**
-	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
-	 * @param boolean $valueIsCode whether or not the value returned is the location code or location id (default)
+	 * @param boolean $restrictByHomeLibrary whether only locations for the patron's home library should be returned
+	 * @param boolean $valueIsCode whether the value returned is the location code or location id (default)
 	 * @return array
 	 */
 	static function getLocationList(bool $restrictByHomeLibrary, bool $valueIsCode = false): array {
@@ -2607,8 +2607,13 @@ class Location extends DataObject {
 		$location->orderBy('displayName');
 		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
+			$user = UserAccount::getActiveUserObj();
 			if ($homeLibrary != null) {
-				$location->libraryId = $homeLibrary->libraryId;
+				$location->whereAdd("libraryId = $homeLibrary->libraryId");
+			}
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
 			}
 		}
 		$selectValue = 'locationId';
@@ -2635,8 +2640,13 @@ class Location extends DataObject {
 			$location->orderBy('displayName');
 			if ($restrictByHomeLibrary) {
 				$homeLibrary = Library::getPatronHomeLibrary();
+				$user = UserAccount::getActiveUserObj();
 				if ($homeLibrary != null) {
-					$location->libraryId = $homeLibrary->libraryId;
+					$location->whereAdd("libraryId = $homeLibrary->libraryId");
+				}
+				$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+				if (!empty($additionalAdministrationLocations)) {
+					$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
 				}
 			}
 			$location->find();

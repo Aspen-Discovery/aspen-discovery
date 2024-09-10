@@ -3236,9 +3236,10 @@ class Theme extends DataObject {
 			return true;
 		} elseif (UserAccount::userHasPermission('Administer Library Themes')) {
 			$libraries = $this->getLibraries();
-			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
+			$validLibraries = Library::getLibraryList(true);
+			$validLibraryIds = array_keys($validLibraries);
 			foreach ($libraries as $libraryTheme) {
-				if ($libraryTheme->libraryId == $homeLibrary->libraryId) {
+				if (in_array($libraryTheme->libraryId, $validLibraryIds)) {
 					return true;
 				}
 			}

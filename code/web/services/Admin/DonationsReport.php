@@ -29,7 +29,8 @@ class Admin_DonationsReport extends ObjectEditor {
                 $objectList[$object->id] = clone $object;
             }
         } elseif (UserAccount::userHasPermission('View Donations Reports for Home Library')) {
-			$adminHomeLibraryId = Library::getPatronHomeLibrary()->libraryId;
+			$adminHomeLibraryList = Library::getLibraryList(true);
+			$adminHomeLibraryListIds = array_keys($adminHomeLibraryList);
 			$adminHomeLibraryLocationList = Location::getLocationList(true);
 			$adminHomeLibraryLocationListIds = array_keys($adminHomeLibraryLocationList);
 			// Donations report should be visible to Library System admins when
@@ -43,7 +44,7 @@ class Admin_DonationsReport extends ObjectEditor {
 
 			// 3. the donation donateToLocation is a location within the admin's Library System
 			$object->joinAdd(new Location(), 'LEFT', 'donateToLocation', 'donateToLocationId', 'locationId');
-			$object->whereAdd('donateToLocation.locationId IN (' . implode(', ', $adminHomeLibraryLocationListIds) . ') OR donor.homeLocationId IN (' . implode(', ', $adminHomeLibraryLocationListIds) . ') OR paidFromInstance.libraryId = ' . $adminHomeLibraryId);
+			$object->whereAdd('donateToLocation.locationId IN (' . implode(', ', $adminHomeLibraryLocationListIds) . ') OR donor.homeLocationId IN (' . implode(', ', $adminHomeLibraryLocationListIds) . ') OR paidFromInstance.libraryId in (' . implode(', ', $adminHomeLibraryListIds) . ')');
 
 
 			$object->find();
