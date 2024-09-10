@@ -15758,7 +15758,7 @@ AspenDiscovery.WebBuilder = function () {
 
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
-					if(Globals.loggedIn || data.canView) {
+					if(Globals.loggedIn && data.canView) {
 						var params = {
 							method: "trackWebResourceUsage",
 							id: id,
