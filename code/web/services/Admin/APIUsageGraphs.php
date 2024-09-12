@@ -103,13 +103,12 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
+		$usage->whereAdd("method = '$stat'");
 		$usage->selectAdd();
 		$usage->selectAdd('year');
 		$usage->selectAdd('month');
 		$usage->orderBy('year, month');
-
-		// get runPendingDatabaseUpdates stats
-		$dataSeries['runPendingDatabaseUpdates'] = [
+		$dataSeries[$stat] = [
 			'borderColor' => 'rgba(255, 99, 132, 1)',
 			'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
 			'data' => [],
@@ -123,7 +122,7 @@ class Admin_APIUsageGraphs extends Admin_Admin
 			$curPeriod = "{$usage->month}-{$usage->year}";
 			$columnLabels[] = $curPeriod;
 			/** @noinspection PhpUndefinedFieldInspection */
-			$dataSeries['runPendingDatabaseUpdates']['data'][$curPeriod] = $usage->numCalls;
+			$dataSeries[$stat]['data'][$curPeriod] = $usage->numCalls;
 		}
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
@@ -131,11 +130,11 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		$interface->assign('translateColumnLabels', false);
 	}
 
-	private function assignGraphSpecificTitle()
+	private function assignGraphSpecificTitle($stat)
 	{
 		global $interface;
 		$title = 'Aspen Discovery API Usage Graph';
-		$title .= ' - runPendingDatabaseUpdates';
+		$title .= " - $stat";
 		$interface->assign('graphTitle', $title);
 	}
 }
