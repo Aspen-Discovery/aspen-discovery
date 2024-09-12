@@ -1823,6 +1823,7 @@ class Sierra extends Millennium {
 					$params['pin'] = $_REQUEST['pin'];
 				}
 			}
+			$params['homeLibraryCode'] = $_REQUEST['pickupLocation'];
 			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronCode;
 		}
 
