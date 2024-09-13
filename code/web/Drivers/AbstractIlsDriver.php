@@ -45,7 +45,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	 */
 	abstract function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
-	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): void;
+	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array;
 
 	abstract function thawHold(User $patron, $recordId, $itemToThawId): array;
 
