@@ -3303,62 +3303,31 @@ class Koha extends AbstractIlsDriver {
 			'isPublicFacing' => true,
 		]);
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
+		$endpoint = "/api/v1/holds/$itemToThawId/suspension";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->delete($endpoint,'koha.thawHold',[],$extraHeaders);
+		if ($response['code'] != 204) {
+			$result['message'] = $response['content'];
+			$result['success'] = false;
+			$result['api']['message'] = $response['content'];
+		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Your hold was thawed successfully.',
 				'isPublicFacing' => true,
 			]);
-
+			$result['success'] = true;
 			$result['api']['title'] = translate([
-				'text' => 'Error',
+				'text' => 'Hold thawed',
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Your hold was thawed successfully.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-
-
-
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', null);
-			ExternalRequestLogEntry::logRequest('koha.thawHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if (strlen($response) > 0) {
-				$result['message'] = $response;
-				$result['success'] = true;
-				$result['api']['message'] = $response;
-			} else {
-				$result['message'] = translate([
-					'text' => 'Your hold was thawed successfully.',
-					'isPublicFacing' => true,
-				]);
-				$result['success'] = true;
-
-				$result['api']['title'] = translate([
-					'text' => 'Hold thawed',
-					'isPublicFacing' => true,
-				]);
-				$result['api']['message'] = translate([
-					'text' => 'Your hold was thawed successfully.',
-					'isPublicFacing' => true,
-				]);
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfHolds();
-			}
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		}
+	
 
 		return $result;
 	}
