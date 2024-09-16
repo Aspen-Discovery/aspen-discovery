@@ -188,6 +188,7 @@ public class OaiIndexerMain {
 						String setName = collectionsRS.getString("setName");
 						boolean indexAllSets = collectionsRS.getBoolean("indexAllSets");
 						String metadataFormat = collectionsRS.getString("metadataFormat");
+						long dateFormatting = collectionsRS.getLong("dateFormatting");
 						String subjectFilterString = collectionsRS.getString("subjectFilters");
 						boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
 						boolean deleted = collectionsRS.getBoolean("deleted");
@@ -224,7 +225,7 @@ public class OaiIndexerMain {
 							}
 						}
 
-						extractAndIndexOaiCollection(collectionName, collectionId, metadataFormat, deleted, subjectFilters, baseUrl, indexAllSets, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
+						extractAndIndexOaiCollection(collectionName, collectionId, metadataFormat, dateFormatting, deleted, subjectFilters, baseUrl, indexAllSets, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
 					}
 				}
 			}
@@ -241,7 +242,7 @@ public class OaiIndexerMain {
 		}
 	}
 
-	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String metadataFormat, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, boolean indexAllSets, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
+	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String metadataFormat, long dateFormatting, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, boolean indexAllSets, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		if (!deleted) {
 			long startTime = new Date().getTime() / 1000;
 			//Get the existing records for the collection
@@ -371,7 +372,7 @@ public class OaiIndexerMain {
 												if (curRecordNode instanceof Element) {
 													logEntry.incNumRecords();
 													Element curRecordElement = (Element) curRecordNode;
-													if (indexElement(curRecordElement, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude, startTime)) {
+													if (indexElement(curRecordElement, collectionId, collectionName, subjectFilters, dateFormatting, allExistingCollectionSubjects, logEntry, scopesToInclude, startTime)) {
 														numRecordsLoaded++;
 													} else {
 														numRecordsSkipped++;
@@ -531,7 +532,7 @@ public class OaiIndexerMain {
 		}
 	}
 
-	private static boolean indexElement(Element curRecordElement, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude, Long startTime) {
+	private static boolean indexElement(Element curRecordElement, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, long dateFormatting, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude, Long startTime) {
 		OAISolrRecord solrRecord = new OAISolrRecord();
 		solrRecord.setCollectionId(collectionId);
 		solrRecord.setCollectionName(collectionName);
@@ -639,7 +640,7 @@ public class OaiIndexerMain {
 										solrRecord.setRights(textContent);
 										break;
 									case "dc:date":
-										addDatesToRecord(solrRecord, textContent, logEntry);
+										addDatesToRecord(solrRecord, textContent, logEntry, dateFormatting);
 										break;
 									case "mods:originInfo":
 										NodeList originInfoFields = metadataFieldElement.getChildNodes();
@@ -653,7 +654,7 @@ public class OaiIndexerMain {
 												if (originInfoTag.equals("mods:publisher")) {
 													solrRecord.addPublisher(originInfoTextContent);
 												} else if (originInfoTag.equals("mods:dateCreated") || originInfoTag.equals("mods:dateIssued")) {
-													addDatesToRecord(solrRecord, originInfoTextContent, logEntry);
+													addDatesToRecord(solrRecord, originInfoTextContent, logEntry, dateFormatting);
 												} else {
 													logger.warn("Unhandled origin info tag " + originInfoTag + " value = " + originInfoTextContent);
 												}
@@ -823,31 +824,36 @@ public class OaiIndexerMain {
 		return addedToIndex;
 	}
 
-	private static void addDatesToRecord(OAISolrRecord solrRecord, String textContent, OpenArchivesExtractLogEntry logEntry) {
+	private static void addDatesToRecord(OAISolrRecord solrRecord, String textContent, OpenArchivesExtractLogEntry logEntry, long dateFormatting) {
 		String[] dateRange;
-		if (textContent.contains(";")) {
-			dateRange = textContent.split(";");
-		} else if (textContent.contains(" -- ")) {
-			dateRange = textContent.split(" -- ");
-		} else {
-			textContent = textContent.trim();
-			textContent = textContent.replaceAll("ca.\\s+", "");
-			textContent = textContent.replaceAll("[\\[/]\"]", "-");
-			//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
-			if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
-				dateRange = new String[]{textContent};
-			} else if (textContent.matches("(\\d{1,2}/)?(\\d{1,2}/)?\\d{2,4}")) {
-				dateRange = new String[]{textContent};
-			}else{
-				logEntry.addNote("Unhandled date format " + textContent + " not loading date");
-				dateRange = new String[0];
+
+		if(dateFormatting==1) {
+			if (textContent.contains(";")) {
+				dateRange = textContent.split(";");
+			} else if (textContent.contains(" -- ")) {
+				dateRange = textContent.split(" -- ");
+			} else {
+				textContent = textContent.trim();
+				textContent = textContent.replaceAll("ca.\\s+", "");
+				textContent = textContent.replaceAll("[\\[/]\"]", "-");
+				//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
+				if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
+					dateRange = new String[]{textContent};
+				} else if (textContent.matches("(\\d{1,2}/)?(\\d{1,2}/)?\\d{2,4}")) {
+					dateRange = new String[]{textContent};
+				}else{
+					logEntry.addNote("Unhandled date format " + textContent + " not loading date");
+					dateRange = new String[0];
+				}
 			}
+			for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++) {
+				dateRange[tmpIndex] = dateRange[tmpIndex].trim();
+				dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("[\\[/]\"]", "-");
+				dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("ca.\\s+", "");
+			}
+		}else{
+			dateRange = new String[]{textContent}; //no extra format just take as is from Open Archive item
 		}
-		for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++) {
-			dateRange[tmpIndex] = dateRange[tmpIndex].trim();
-			dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("[\\[/]\"]", "-");
-			dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("ca.\\s+", "");
-		}
-		solrRecord.addDates(dateRange, logger);
+		solrRecord.addDates(dateRange, logger, dateFormatting);
 	}
 }
