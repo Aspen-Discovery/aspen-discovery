@@ -1408,7 +1408,7 @@ abstract class DataObject implements JsonSerializable {
 				if (!empty($objectLinkingInfo['message'])) {
 					$objectLinkingInfo['message'] .= '<br/>';
 				}
-				$objectLinkingInfo['message'] .= translate(['text' => 'This object is linked to %1% %2% that should be unlinked or deleted before deleting this.', 'isAdminFacing'=>true, 1=>$numLinkedObjects, 2=>($numLinkedObjects == 1 ? $objectInfo['objectName'] : $objectInfo['objectNamePlural'])]);
+				$objectLinkingInfo['message'] .= translate(['text' => $this . ' is linked to %1% %2% that should be unlinked or deleted before deleting this.', 'isAdminFacing'=>true, 1=>$numLinkedObjects, 2=>($numLinkedObjects == 1 ? $objectInfo['objectName'] : $objectInfo['objectNamePlural'])]);
 			}
 		}
 

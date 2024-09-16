@@ -264,7 +264,7 @@ class Grouping_StatusInformation {
 		$numberOfCopiesMessage = '';
 		global $library;
 		//If we don't have holds or on order copies, we don't need to show anything.
-		if (($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) && $this->getOnOrderCopies() == 0 && $library->showGroupedHoldCopiesCount != 2) {
+		if (($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) && $this->getOnOrderCopies() == 0 && $library->showGroupedHoldCopiesCount != 3) {
 			$numberOfCopiesMessage = '';
 		} else {
 			if ($this->getAvailableCopies() > 9999) {
@@ -278,7 +278,7 @@ class Grouping_StatusInformation {
 					}
 				}
 
-				if ($library->showGroupedHoldCopiesCount == 2) {
+				if ($library->showGroupedHoldCopiesCount == 2 || $library->showGroupedHoldCopiesCount == 3) {
 					$showWaitList = true;
 				}else if ($library->showGroupedHoldCopiesCount == 1) {
 					$showWaitList = $this->getAvailableCopies() == 0 && !$this->isAvailableOnline();

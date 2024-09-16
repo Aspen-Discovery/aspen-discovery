@@ -2370,7 +2370,7 @@ public class GroupedWorkIndexer {
 					updateItemForRecordStmt.setLong(20, itemId);
 					updateItemForRecordStmt.executeUpdate();
 				}catch (SQLException e){
-					logEntry.incErrors("Error updating item " + itemId + " record " + recordId);
+					logEntry.incErrors("Error updating item " + itemId + " record " + recordId, e);
 					errorsSavingItem = true;
 				}
 			}
