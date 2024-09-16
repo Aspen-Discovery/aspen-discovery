@@ -181,19 +181,23 @@ class AccountProfile extends DataObject {
 				'properties' => [
 					'vendorOpacUrl' => [
 						'property' => 'vendorOpacUrl',
-						'type' => 'url',
+						'type' => 'text',
 						'label' => 'Vendor OPAC Url',
 						'maxLength' => 100,
 						'description' => 'A link to the url for the vendor opac',
 						'required' => false,
+						'validationPattern' => "^https?:\/\/[-a-zA-Z0-9_.]*(:[0-9]{1,4})?([-\/a-zA-Z0-9_?&=.]*)$",
+						'validationMessage' => 'Please enter a valid URL. The URL may include port number.'
 					],
 					'patronApiUrl' => [
 						'property' => 'patronApiUrl',
-						'type' => 'url',
+						'type' => 'text',
 						'label' => 'Webservice/Patron API Url',
 						'maxLength' => 100,
 						'description' => 'A link to the patron api for the vendor opac if any',
 						'required' => false,
+						'validationPattern' => "^https?:\/\/[-a-zA-Z0-9_.]*(:[0-9]{1,4})?([-\/a-zA-Z0-9_?&=.]*)$",
+						'validationMessage' => 'Please enter a valid URL. The URL may include port number.'
 					],
 					'databaseSection' => [
 						'property' => 'databaseSection',
