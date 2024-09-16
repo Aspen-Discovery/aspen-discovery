@@ -683,7 +683,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	}
 
 	private $_activeSettings = false;
-	public function getActiveSettings() : ?PalaceProjectSetting {
+	public function getActiveSettings() : PalaceProjectSetting|false {
 		if ($this->_activeSettings !== null && !is_object($this->_activeSettings)) {
 			if (UserAccount::isLoggedIn()) {
 				$this->_activeSettings = $this->getSettings(UserAccount::getActiveUserObj());
@@ -698,8 +698,12 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	function getActiveCollectionIds() : array {
 		if ($this->_activeCollections === null) {
 			$settings = $this->getActiveSettings();
-			$collectionsForSettings = $settings->collections;
-			$this->_activeCollections = array_keys($collectionsForSettings);
+			if ($settings != false) {
+				$collectionsForSettings = $settings->collections;
+				$this->_activeCollections = array_keys($collectionsForSettings);
+			}else{
+				$this->_activeCollections = [];
+			}
 		}
 		return $this->_activeCollections;
 	}
