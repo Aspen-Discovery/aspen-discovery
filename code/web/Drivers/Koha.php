@@ -2555,53 +2555,33 @@ class Koha extends AbstractIlsDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['isPending'] = false;
-					$oauthToken = $this->getOAuthToken();
-					if ($oauthToken == false) {
-						$result['message'] = translate([
-							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-							'isPublicFacing' => true,
-						]);
 
-						// Result for API or app use
-						$result['api']['message'] = translate([
-							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-							'isPublicFacing' => true,
-						]);
-					} else {
-						$this->apiCurlWrapper->addCustomHeaders([
-							'Authorization: Bearer ' . $oauthToken,
-							'User-Agent: Aspen Discovery',
-							'Accept: */*',
-							'Cache-Control: no-cache',
-							'Content-Type: application/json',
-							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-							'Accept-Encoding: gzip, deflate',
-							'x-koha-override: cancellation-request-flow' // fix to allow for approvals in koha 22.11.07 for patrons canceling waiting holds
-						], true);
-						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
-						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
-						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-						if ($this->apiCurlWrapper->getResponseCode() !== 204 && $this->apiCurlWrapper->getResponseCode() !== 202) {
-							$cancel_response = json_decode($response);
+					$endpoint = "/api/v1/holds/$holdKey";
+					$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-override: cancellation-request-flow'];
+					$response = $this->kohaApiUserAgent->delete($endpoint,'koha.cancelHold',[],$extraHeaders);
+					if ($response) {
+						if ($response['code'] !== 204 && $response['code'] !== 202) {
+							$cancel_response = $response['content'];
 							$allCancelsSucceed = false;
-							if (isset($cancel_response->error)) {
+							if (isset($cancel_response['error'])) {
 								$result['message'] = translate([
-									'text' => $cancel_response->error,
+									'text' => $cancel_response['error'],
 									'isPublicFacing' => true,
 								]);
 								$result['success'] = false;
 								$result['api']['message'] = translate([
-									'text' => $cancel_response->error,
+									'text' => $cancel_response['error'],
 									'isPublicFacing' => true,
 								]);
 							}
 						}
-
-						if($this->apiCurlWrapper->getResponseCode() === 202) {
+						if($response['code'] === 202) {
 							$result['isPending'] = true;
 							$result['api']['isPending'] = true;
 						}
-					}
+					} else {
+						$allCancelsSucceed = false;
+					}	
 				} else {
 					$holdParams = [
 						'service' => 'CancelHold',
