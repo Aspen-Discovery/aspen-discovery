@@ -270,7 +270,7 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 		if (!empty($collections)){
 			$titleAvailability = new PalaceProjectTitleAvailability();
 			$titleAvailability->titleId = $this->id;
-			$titleAvailability->whereAddIn('collectionId', $this->getActiveCollectionIds(), false);
+			$titleAvailability->whereAddIn('collectionId', $collections, false);
 			$titleAvailability->deleted = 0;
 			if ($titleAvailability->find(true)){
 				return $titleAvailability;
