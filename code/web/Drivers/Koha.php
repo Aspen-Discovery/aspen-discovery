@@ -1721,153 +1721,108 @@ class Koha extends AbstractIlsDriver {
 			],
 		];
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$hold_result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-
+		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
+		if (!$patronEligibleForHolds['isEligible']) {
+			$hold_result['message'] = $patronEligibleForHolds['message'];
+			// Result for API or app use
+			$hold_result['api']['message'] = $patronEligibleForHolds['message'];
+			return $hold_result;
+		}
+		//Get a specific item number to place a hold on even though we are placing a title level hold.
+		//because.... Koha
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$recordDriver = new MarcRecordDriver($recordId);
+		if (!$recordDriver->isValid()) {
+			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			// Result for API or app use
 			$hold_result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Unable to find a valid record for this title.  Please try your search again.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-
-			$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
-			if (!$patronEligibleForHolds['isEligible']) {
-				$hold_result['message'] = $patronEligibleForHolds['message'];
-
-				// Result for API or app use
-				$hold_result['api']['message'] = $patronEligibleForHolds['message'];
-
-				return $hold_result;
-			}
-
-			//Get a specific item number to place a hold on even though we are placing a title level hold.
-			//because.... Koha
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$recordDriver = new MarcRecordDriver($recordId);
-			if (!$recordDriver->isValid()) {
-				$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
-
-				// Result for API or app use
-				$hold_result['api']['message'] = translate([
-					'text' => 'Unable to find a valid record for this title.  Please try your search again.',
-					'isPublicFacing' => true,
-				]);
-
-				return $hold_result;
-			}
-
-			//Check to see if the patron already has that record checked out
-			$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
-			if ($allowHoldsOnCheckedOutTitles == 0) {
-				$existingCheckouts = $this->getCheckouts($patron);
-				foreach ($existingCheckouts as $checkout) {
-					if ($checkout->recordId == $recordId) {
-						$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
-
-						// Result for API or app use
-						$hold_result['api']['message'] = translate([
-							'text' => 'You already have that title checked out, you cannot place a hold on it until you check it in.',
-							'isPublicFacing' => true,
-						]);
-
-						return $hold_result;
-					}
+			return $hold_result;
+		}
+		//Check to see if the patron already has that record checked out
+		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
+		if ($allowHoldsOnCheckedOutTitles == 0) {
+			$existingCheckouts = $this->getCheckouts($patron);
+			foreach ($existingCheckouts as $checkout) {
+				if ($checkout->recordId == $recordId) {
+					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
+					// Result for API or app use
+					$hold_result['api']['message'] = translate([
+						'text' => 'You already have that title checked out, you cannot place a hold on it until you check it in.',
+						'isPublicFacing' => true,
+					]);
+					return $hold_result;
 				}
 			}
-
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			if (strpos($recordId, ':') !== false) {
-				[
-					$source,
-					$recordId,
-				] = explode(':', $recordId);
-			}
-
-			$holdParams = [
-				'patron_id' => (int)$patron->unique_ils_id,
-				'pickup_library_id' => $pickupBranch,
-				'biblio_id' => (int)$recordId,
-			];
-
-			if ($cancelDate != null) {
-				$holdParams['expiration_date'] = $cancelDate;
-			}
-
-			//Check to see if we need to place holds on a specific variation.
-			/** @var Grouping_Record[] $recordVariations */
-			$recordVariations = $recordDriver->getRecordVariations();
-			$activeRecordVariation = null;
-			if (count($recordVariations) > 1 && !empty($_REQUEST['variationId'])) {
-				foreach ($recordVariations as $recordVariation) {
-					if ($recordVariation->variationId == $_REQUEST['variationId']) {
-						$activeRecordVariation = $recordVariation;
-						break;
-					}
+		}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
+		if (strpos($recordId, ':') !== false) {
+			[
+				$source,
+				$recordId,
+			] = explode(':', $recordId);
+		}
+		$holdParams = [
+			'patron_id' => (int)$patron->unique_ils_id,
+			'pickup_library_id' => $pickupBranch,
+			'biblio_id' => (int)$recordId,
+		];
+		if ($cancelDate != null) {
+			$holdParams['expiration_date'] = $cancelDate;
+		}
+		//Check to see if we need to place holds on a specific variation.
+		/** @var Grouping_Record[] $recordVariations */
+		$recordVariations = $recordDriver->getRecordVariations();
+		$activeRecordVariation = null;
+		if (count($recordVariations) > 1 && !empty($_REQUEST['variationId'])) {
+			foreach ($recordVariations as $recordVariation) {
+				if ($recordVariation->variationId == $_REQUEST['variationId']) {
+					$activeRecordVariation = $recordVariation;
+					break;
 				}
 			}
-			if ($activeRecordVariation != null) {
-				$allowHoldItemTypeSelectionPref = $this->getKohaSystemPreference('AllowHoldItemTypeSelection', 0);
-				if ($allowHoldItemTypeSelectionPref == 1) {
-					//Check to see if item type
-					$items = $activeRecordVariation->getItems();
-					$allItemTypes = [];
-
-					$marcRecord = $recordDriver->getMarcRecord();
-					$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-					foreach ($items as $recordItem) {
-						foreach ($marcItems as $marcItem) {
-							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-							if ($itemSubField->getData() == $recordItem->itemId) {
-								$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
-								if ($iTypeSubfield != null) {
-									$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
-								}
-								break;
+		}
+		if ($activeRecordVariation != null) {
+			$allowHoldItemTypeSelectionPref = $this->getKohaSystemPreference('AllowHoldItemTypeSelection', 0);
+			if ($allowHoldItemTypeSelectionPref == 1) {
+				//Check to see if item type
+				$items = $activeRecordVariation->getItems();
+				$allItemTypes = [];
+				$marcRecord = $recordDriver->getMarcRecord();
+				$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+				foreach ($items as $recordItem) {
+					foreach ($marcItems as $marcItem) {
+						$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+						if ($itemSubField->getData() == $recordItem->itemId) {
+							$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
+							if ($iTypeSubfield != null) {
+								$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
 							}
+							break;
 						}
 					}
-					//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
-					//If there is just one, we can do an item type hold
-					if (count($allItemTypes) == 1) {
-						$holdParams['item_type'] = reset($allItemTypes);
-					}
+				}
+				//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
+				//If there is just one, we can do an item type hold
+				if (count($allItemTypes) == 1) {
+					$holdParams['item_type'] = reset($allItemTypes);
 				}
 			}
-
-			$postParams = json_encode($holdParams);
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('koha.placeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($responseCode == 201) {
+		}
+		$endpoint = "/api/v1/holds";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->post($endpoint,$holdParams,'koha.placeHold',[],$extraHeaders);
+		$hold_result['id'] = $recordId;
+		if ($response) {
+			if ($response['code'] == 201) {
 				$hold_result['message'] = translate([
 					'text' => "Your hold was placed successfully.",
 					'isPublicFacing' => true,
 				]);
 				$hold_result['success'] = true;
-
 				// Result for API or app use
 				$hold_result['api']['title'] = translate([
 					'text' => 'Hold placed successfully',
@@ -1881,12 +1836,10 @@ class Koha extends AbstractIlsDriver {
 					'text' => 'Go to Holds',
 					'isPublicFacing' => true,
 				]);
-
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			} else {
-				if ($responseCode == 403) {
-					$foundMessage = false;
+				if ($response['code'] == 403) {
 					$hold_result = [
 						'success' => false,
 						'api' => [
@@ -1896,78 +1849,41 @@ class Koha extends AbstractIlsDriver {
 							]),
 						],
 					];
-
-					if (!empty($response)) {
-						$jsonResponse = json_decode($response);
-
-						if (!empty($jsonResponse->error)) {
-							$hold_result['message'] = translate([
-								'text' => $jsonResponse->error,
-								'isPublicFacing' => true,
-							]);
-							$hold_result['api']['message'] = translate([
-								'text' => $jsonResponse->error,
-								'isPublicFacing' => true,
-							]);
-							$foundMessage = true;
-						}
-					}
-
-					if (!$foundMessage) {
-						$hold_result['message'] = translate([
-							'text' => "Error placing a hold on this title, the hold was not allowed.",
-							1 => $responseCode,
-							'isPublicFacing' => true,
-						]);
-						// Result for API or app use
-						$hold_result['api']['message'] = translate([
-							'text' => "Error placing a hold on this title, the hold was not allowed.",
-							1 => $responseCode,
-							'isPublicFacing' => true,
-						]);
-					}
+					$hold_result['message'] = translate([
+						'text' => $response['error'],
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = translate([
+						'text' => $response['error'],
+						'isPublicFacing' => true,
+					]);
+					
 				} else {
 					$hold_result = [
 						'success' => false,
 						'message' => translate([
 							'text' => "Error (%1%) placing a hold on this title.",
-							1 => $responseCode,
+							1 => $response['code'],
 							'isPublicFacing' => true,
 						]),
 						'api' => [
 							'message' => translate([
 								'text' => "Error (%1%) placing a hold on this title.",
-								1 => $responseCode,
+								1 => $response['code'],
 								'isPublicFacing' => true,
 							])
 						]
 					];
 
-					if ($response) {
-						$response = json_decode($response);
-						if (isset($response->error)) {
-							$hold_result['message'] .= '<br/>' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-							$hold_result['api']['message'] .= ' ' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-						} elseif (isset($response->errors)) {
-							foreach ($response->errors as $error) {
-								$hold_result['message'] .= '<br/>' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-								$hold_result['api']['message'] .= ' ' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-							}
-						}
-					}
-
+					$hold_result['message'] .= '<br/>' . translate([
+							'text' => $response['error'],
+							'isPublicFacing' => true,
+						]);
+					$hold_result['api']['message'] .= ' ' . translate([
+							'text' => $response['error'],
+							'isPublicFacing' => true,
+						]);
+						
 					// Result for API or app use
 					$hold_result['api']['title'] = translate([
 						'text' => 'Unable to place hold',
@@ -1975,7 +1891,7 @@ class Koha extends AbstractIlsDriver {
 					]);
 					$hold_result['api']['message'] = translate([
 						'text' => "Error (%1%) placing a hold on this title.",
-						1 => $responseCode,
+						1 => $response['code'],
 						'isPublicFacing' => true,
 					]);
 				}
