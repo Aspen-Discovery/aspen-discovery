@@ -72,18 +72,22 @@ class OAISolrRecord {
 
 	Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
 
-	void addDates(String[] dates, Logger logger) {
-		for (String date : dates) {
-			if (AspenStringUtils.isNumeric(date)) {
-				this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
-			} else {
-				DateInfo dateInfo = new DateInfo(date);
-				if (!dateInfo.isNotSet()) {
-					this.date.add(dateInfo.getSolrDate());
+	void addDates(String[] dates, Logger logger, long dateFormatting) {
+		if(dateFormatting==1) {
+			for (String date : dates) {
+				if (AspenStringUtils.isNumeric(date)) {
+					this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
 				} else {
-					logger.debug("Could not parse date " + date);
+					DateInfo dateInfo = new DateInfo(date);
+					if (!dateInfo.isNotSet()) {
+						this.date.add(dateInfo.getSolrDate());
+					} else {
+						logger.debug("Could not parse date " + date);
+					}
 				}
 			}
+		}else{
+			this.date.add(dates[0]);
 		}
 	}
 
