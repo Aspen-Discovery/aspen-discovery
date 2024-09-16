@@ -266,13 +266,17 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getTitleAvailability() : ?PalaceProjectTitleAvailability{
-		$titleAvailability = new PalaceProjectTitleAvailability();
-		$titleAvailability->titleId = $this->id;
-		$titleAvailability->whereAddIn('collectionId', $this->getActiveCollectionIds(), false);
-		$titleAvailability->deleted = 0;
-		if ($titleAvailability->find(true)){
-			return $titleAvailability;
+		$collections = $this->getActiveCollectionIds();
+		if (!empty($collections)){
+			$titleAvailability = new PalaceProjectTitleAvailability();
+			$titleAvailability->titleId = $this->id;
+			$titleAvailability->whereAddIn('collectionId', $this->getActiveCollectionIds(), false);
+			$titleAvailability->deleted = 0;
+			if ($titleAvailability->find(true)){
+				return $titleAvailability;
+			}
 		}
+
 		return null;
 	}
 
