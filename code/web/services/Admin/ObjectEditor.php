@@ -1095,7 +1095,8 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		} else {
 			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
-			if ($canBatchUpdate && in_array($field['type'], [
+			$readOnly = isset($field['readOnly']) && ($field['readOnly'] == true);
+			if ($canBatchUpdate && !$readOnly && in_array($field['type'], [
 					'checkbox',
 					'enum',
 					'currency',
