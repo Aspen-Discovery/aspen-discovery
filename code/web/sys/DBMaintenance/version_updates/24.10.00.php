@@ -47,7 +47,7 @@ function getUpdates24_10_00(): array {
 			'description' => 'Add Open Archives date formatting setting',
 			'continueOnError' => false,
 			'sql' => [
-				'ALTER TABLE open_archives_collection ADD COLUMN dateFormatting tinyint default 0',
+				'ALTER TABLE open_archives_collection ADD COLUMN dateFormatting tinyint default 1',
 			]
 		], //add_defaultContent_field
 
