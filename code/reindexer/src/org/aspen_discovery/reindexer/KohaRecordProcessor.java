@@ -139,7 +139,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 			if (!valid) {
 				try {
-					Thread.sleep(60000);
+					Thread.sleep(5000);
 				} catch (InterruptedException e) {
 					logger.error("Pausing to wait for koha database to be reestablished");
 				}

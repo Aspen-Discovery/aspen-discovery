@@ -5109,7 +5109,8 @@ class Library extends DataObject {
 			'code' => $this->ilsCode,
 			'finePaymentType' => (int)$this->finePaymentType,
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
-			'showAlternateLibraryCard' => $this->showAlternateLibraryCard
+			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
+			'enableAspenMaterialsRequest' => false,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5258,6 +5259,15 @@ class Library extends DataObject {
 				}
 			}
 		}
+
+		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$apiInfo['enableAspenMaterialsRequest'] = MaterialsRequest::enableAspenMaterialsRequest();
+		}
+
+		$apiInfo['materialRequestType'] = $this->enableMaterialsRequest;
+		$apiInfo['displayMaterialsRequest'] = $this->displayMaterialsRequestToPublic;
+		$apiInfo['materialsRequestLinkUrl'] = $this->externalMaterialsRequestUrl;
 
 		return $apiInfo;
 	}
