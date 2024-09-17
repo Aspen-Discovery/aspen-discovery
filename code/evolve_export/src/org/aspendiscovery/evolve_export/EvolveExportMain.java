@@ -805,7 +805,7 @@ public class EvolveExportMain {
 						indexer.processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						indexer.deleteRecord(result.permanentId);
+						indexer.deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					logEntry.incDeleted();
 					recordsDeleted++;
@@ -996,7 +996,7 @@ public class EvolveExportMain {
 									indexer.processGroupedWork(result.permanentId);
 								} else if (result.deleteWork) {
 									//Delete the work from solr and the database
-									indexer.deleteRecord(result.permanentId);
+									indexer.deleteRecord(result.permanentId, result.groupedWorkId);
 								}
 								logEntry.incDeleted();
 								totalChanges++;
@@ -1042,7 +1042,7 @@ public class EvolveExportMain {
 					indexer.processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					indexer.deleteRecord(result.permanentId);
+					indexer.deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

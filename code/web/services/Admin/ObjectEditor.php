@@ -1095,7 +1095,8 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		} else {
 			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
-			if ($canBatchUpdate && in_array($field['type'], [
+			$readOnly = isset($field['readOnly']) && ($field['readOnly'] == true);
+			if ($canBatchUpdate && !$readOnly && in_array($field['type'], [
 					'checkbox',
 					'enum',
 					'currency',
@@ -1124,20 +1125,20 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	protected function limitToObjectsForLibrary(&$object, $linkObjectType, $linkProperty) {
 		$userHasExistingObjects = true;
-		$linkObject = new $linkObjectType();
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		if ($library != null) {
-			$linkObject->libraryId = $library->libraryId;
-			$objectsForLibrary = [];
+		$libraries = Library::getLibraryList(true);
+		$objectsForLibrary = [];
+		foreach ($libraries as $libraryId => $displayName) {
+			$linkObject = new $linkObjectType();
+			$linkObject->libraryId = $libraryId;
 			$linkObject->find();
 			while ($linkObject->fetch()) {
 				$objectsForLibrary[] = $linkObject->$linkProperty;
 			}
-			if (count($objectsForLibrary) > 0) {
-				$object->whereAddIn('id', $objectsForLibrary, false);
-			} else {
-				$userHasExistingObjects = false;
-			}
+		}
+		if (count($objectsForLibrary) > 0) {
+			$object->whereAddIn('id', $objectsForLibrary, false);
+		} else {
+			$userHasExistingObjects = false;
 		}
 		return $userHasExistingObjects;
 	}

@@ -17,16 +17,8 @@ class LibraryTheme extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$libraryList = $library->fetchAll('libraryId', 'displayName');
-		$library = new Library();
-		$library->orderBy('displayName');
-		$allLibraryList = $library->fetchAll('libraryId', 'displayName');
+		$allLibraryList = Library::getLibraryList(false);
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();

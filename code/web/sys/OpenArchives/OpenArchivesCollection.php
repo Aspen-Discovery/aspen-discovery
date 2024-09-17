@@ -17,6 +17,7 @@ class OpenArchivesCollection extends DataObject {
 		$subjectFilters;
 	public $imageRegex;
 	public $metadataFormat;
+	public $dateFormatting;
 	public /** @noinspection PhpUnused */
 		$fetchFrequency;
 	public /** @noinspection PhpUnused */
@@ -85,6 +86,16 @@ class OpenArchivesCollection extends DataObject {
 				],
 				'label' => 'Metadata Format',
 				'description' => 'The format of the metadata provided by the OAI collection',
+			],
+			'dateFormatting' => [
+				'property' => 'dateFormatting',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Do no date formatting',
+					1 => 'Convert to Date Format',
+				],
+				'label' => 'Date Formatting',
+				'description' => 'Either take date exactly how metadata is formatted in the collection or attempt to change to a date format (this is how it worked before)',
 			],
 			'subjects' => [
 				'property' => 'subjects',

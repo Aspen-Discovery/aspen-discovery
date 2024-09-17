@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
@@ -3227,7 +3227,8 @@ class Library extends DataObject {
 						'values' => [
 							0 => 'Never',
 							1 => 'Only for unavailable titles',
-							2 => 'Always'
+							2 => 'For available and unavailable titles with holds',
+							3 => 'For available and unavailable titles with and without holds',
 						],
 						'label' => 'Show Hold and Copy Counts',
 						'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.',
@@ -4921,16 +4922,27 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
+	 * @param boolean $restrictByHomeLibrary whether only the patron's home library should be returned
 	 * @return array
 	 */
-	static function getLibraryList($restrictByHomeLibrary): array {
+	static function getLibraryList(bool $restrictByHomeLibrary): array {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			if ($homeLibrary != null) {
-				$library->libraryId = $homeLibrary->libraryId;
+				$library->whereAdd("libraryId = $homeLibrary->libraryId");
+			}
+			$user = UserAccount::getActiveUserObj();
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$locationsForUser = Location::getLocationListAsObjects(true);
+				$additionalAdministrationLibraries = [];
+				foreach ($locationsForUser as $location) {
+					$additionalAdministrationLibraries[$location->libraryId] = $location->libraryId;
+				}
+
+				$library->whereAddIn('libraryId', $additionalAdministrationLibraries, false, 'OR');
 			}
 		}
 		$library->find();
@@ -4944,7 +4956,7 @@ class Library extends DataObject {
 	static $libraryListAsObjects = null;
 
 	/**
-	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
+	 * @param boolean $restrictByHomeLibrary whether only the patron's home library should be returned
 	 * @return Library[]
 	 */
 	static function getLibraryListAsObjects($restrictByHomeLibrary): array {
@@ -4952,9 +4964,21 @@ class Library extends DataObject {
 			$library = new Library();
 			$library->orderBy('displayName');
 			if ($restrictByHomeLibrary) {
+
 				$homeLibrary = Library::getPatronHomeLibrary();
 				if ($homeLibrary != null) {
-					$library->libraryId = $homeLibrary->libraryId;
+					$library->whereAdd("libraryId = $homeLibrary->libraryId");
+				}
+				$user = UserAccount::getActiveUserObj();
+				$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+				if (!empty($additionalAdministrationLocations)) {
+					$locationsForUser = Location::getLocationListAsObjects(true);
+					$additionalAdministrationLibraries = [];
+					foreach ($locationsForUser as $location) {
+						$additionalAdministrationLibraries[$location->libraryId] = $location->libraryId;
+					}
+
+					$library->whereAddIn('libraryId', $additionalAdministrationLibraries, false, 'OR');
 				}
 			}
 			$library->find();

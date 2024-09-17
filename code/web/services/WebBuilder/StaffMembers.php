@@ -25,8 +25,8 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Staff Members')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->libraryId = $library->libraryId;
+			$libraries = Library::getLibraryList(true);
+			$object->whereAddIn('libraryId', array_keys($libraries), 'OR');
 		}
 		$objectList = [];
 		$object->find();

@@ -3,7 +3,7 @@
   "info" : {
     "title": "Aspen Discovery API",
     "description": "The API provided by Aspen Discovery for use in other applications, mobile apps, etc",
-    "version": "1.0.0",
+    "version": "1.0.0"
   },
   "basePath": "/API",
   "paths": {
@@ -11,13 +11,43 @@
       "get": {
         "description": "Determines if a user is logged in or out in the active browser. Typically not useful since the calling application will not be on the same browser as the patron.",
         "produces": [
-          "application/json",
+          "application/json"
         ],
         "responses" : {
           "200" : {
             "description": "successful response",
             "schema": {
               "$ref": "#/definitions/BasicResult"
+            }
+          }
+        }
+      }
+    },
+    "/API/UserAPI?method=login": {
+      "post" : {
+        "description": "Logs in the user and sets a cookie indicating that the user is logged in. Also returns the session_id for the new session. Must be called by POSTing data to the API. In general, this method is only useful when called from Aspen itself or from files which can share cookies with the Aspen server.",
+        "parameters": [
+          {
+            "in" : "query",
+            "name": "username",
+            "type": "string",
+            "description": "The username or barcode for the patron"
+          },
+          {
+            "in" : "query",
+            "name": "password",
+            "type": "string",
+            "description": "The password or pin for the patron"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful response",
+            "schema": {
+              "$ref": "#/definitions/LoginResult"
             }
           }
         }
@@ -30,6 +60,28 @@
       "properties": {
         "result" : {
           "type": "boolean"
+        }
+      }
+    },
+    "LoginResult": {
+      "type": "object",
+      "properties": {
+        "result" : {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "description": "Whether the login was successful or not"
+            },
+            "message": {
+              "type": "string",
+              "description": "Additional information about why the login passed or failed for display to the end user"
+            },
+            "name": {
+              "type": "string",
+              "description": "The first and last name of the user if login was successful"
+            }
+          }
         }
       }
     }

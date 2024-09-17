@@ -60,6 +60,7 @@ class User extends DataObject {
 	private $_roles;
 	private $_permissions;
 	private $_masqueradingRoles;
+	private $_additionalAdministrationLocations;
 
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
@@ -243,6 +244,12 @@ class User extends DataObject {
 			return $this->getRoles();
 		} elseif ($name == 'linkedUsers') {
 			return $this->getLinkedUsers();
+		} elseif ($name == 'additionalAdministrationLocations') {
+			return $this->getAdditionalAdministrationLocations();
+		} elseif ($name == 'homeLibraryName') {
+			return $this->getHomeLibrarySystemName();
+		} elseif ($name == 'homeLocation') {
+			return $this->getHomeLocationName();
 		} else {
 			return parent::__get($name);
 		}
@@ -251,6 +258,8 @@ class User extends DataObject {
 	function __set($name, $value) {
 		if ($name == 'roles') {
 			$this->setRoles($value);
+		}elseif($name == 'additionalAdministrationLocations') {
+			$this->setAdditionalAdministrationLocations($value);
 		} else {
 			parent::__set($name, $value);
 		}
@@ -274,7 +283,7 @@ class User extends DataObject {
 		$this->saveRoles();
 	}
 
-	function getRoles() {
+	function getRoles() : array {
 		if (is_null($this->_roles)) {
 			$this->_roles = [];
 			//Load roles for the user from the user
@@ -310,7 +319,7 @@ class User extends DataObject {
 				}
 			}
 
-			//Setup a test role if provided
+			//Set up a test role if provided
 			$testRole = '';
 			if (isset($_REQUEST['test_role'])) {
 				$testRole = $_REQUEST['test_role'];
@@ -339,6 +348,64 @@ class User extends DataObject {
 		}
 
 		return $this->_roles;
+	}
+
+	function setAdditionalAdministrationLocations($values) : void {
+		$this->_additionalAdministrationLocations = $values;
+
+		//Update the database, first remove existing values
+		$this->saveAdditionalAdministrationLocations();
+	}
+
+	function getAdditionalAdministrationLocations() : array {
+		if (is_null($this->_additionalAdministrationLocations)) {
+			$this->_additionalAdministrationLocations = [];
+			require_once ROOT_DIR . '/sys/Administration/AdministrationLocation.php';
+
+			$locationsList = Location::getLocationList(false);
+			$administrationLocation = new AdministrationLocation();
+			$administrationLocation->userId = $this->id;
+			$administrationLocation->find();
+			while ($administrationLocation->fetch()) {
+				$this->_additionalAdministrationLocations[$administrationLocation->locationId] = $locationsList[$administrationLocation->locationId];
+			}
+		}
+
+		return $this->_additionalAdministrationLocations;
+	}
+
+	function saveAdditionalAdministrationLocations() : void {
+		if (isset($this->id) && isset($this->_additionalAdministrationLocations) && is_array($this->_additionalAdministrationLocations)) {
+			require_once ROOT_DIR . '/sys/Administration/AdministrationLocation.php';
+			$userAdministrationLocations = new AdministrationLocation();
+			$userAdministrationLocations->userId = $this->id;
+			$existingLocations = [];
+			$userAdministrationLocations->find();
+			while ($userAdministrationLocations->fetch()) {
+				$existingLocations[$userAdministrationLocations->locationId] = $userAdministrationLocations->locationId;
+			}
+
+			if (count($this->_additionalAdministrationLocations) > 0) {
+				foreach ($this->_additionalAdministrationLocations as $locationId) {
+					if (!array_key_exists($locationId, $existingLocations)) {
+						$administrationLocation = new AdministrationLocation();
+						$administrationLocation->userId = $this->id;
+						$administrationLocation->locationId = $locationId;
+						$administrationLocation->insert();
+					} else {
+						unset($existingLocations[$locationId]);
+					}
+				}
+			}
+
+			//delete any roles that no longer exist.
+			foreach ($existingLocations as $existingLocation) {
+				$administrationLocation = new AdministrationLocation();
+				$administrationLocation->userId = $this->id;
+				$administrationLocation->locationId = $existingLocation;
+				$administrationLocation->delete(true);
+			}
+		}
 	}
 
 	/**
@@ -861,6 +928,8 @@ class User extends DataObject {
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();
 
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -913,6 +982,15 @@ class User extends DataObject {
 			],
 		];
 
+		$structure['additionalAdministrationLocations'] = [
+			'property' => 'additionalAdministrationLocations',
+			'type' => 'multiSelect',
+			'listStyle' => 'checkbox',
+			'values' => $locationList,
+			'label' => 'Additional Administration Locations',
+			'description' => 'A list of locations the user can administer in addition to their home location.',
+		];
+
 		$structure['barcode'] = [
 			'property' => 'ils_barcode',
 			'type' => 'label',
@@ -936,6 +1014,7 @@ class User extends DataObject {
 			unset($structure['homeLocation']);
 			unset($structure['barcode']);
 			unset($structure['roles']);
+			unset($structure['additionalAdministrationLocations']);
 		} else {
 			unset($structure['username']);
 			unset($structure['password']);
@@ -1628,10 +1707,10 @@ class User extends DataObject {
 
 			if ($indexToSortBy == 'format') {
 				if (is_array($a)) {
-					$a = implode($a, ',');
+					$a = implode(',', $a);
 				}
 				if (is_array($b)) {
-					$b = implode($b, ',');
+					$b = implode(',', $b);
 				}
 			}
 

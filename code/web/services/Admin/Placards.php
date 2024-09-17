@@ -32,20 +32,21 @@ class Admin_Placards extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingPlacards = true;
 		if (!UserAccount::userHasPermission('Administer All Placards')) {
-			$libraryPlacard = new PlacardLibrary();
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null) {
-				$libraryPlacard->libraryId = $library->libraryId;
-				$placardsForLibrary = [];
+			$libraries = Library::getLibraryList(true);
+			$placardsForLibrary = [];
+			foreach ($libraries as $libraryId => $displayName) {
+				$libraryPlacard = new PlacardLibrary();
+				$libraryPlacard->libraryId = $libraryId;
 				$libraryPlacard->find();
 				while ($libraryPlacard->fetch()) {
 					$placardsForLibrary[] = $libraryPlacard->placardId;
 				}
-				if (count($placardsForLibrary) > 0) {
-					$object->whereAddIn('id', $placardsForLibrary, false);
-				} else {
-					$userHasExistingPlacards = false;
-				}
+
+			}
+			if (count($placardsForLibrary) > 0) {
+				$object->whereAddIn('id', $placardsForLibrary, false);
+			} else {
+				$userHasExistingPlacards = false;
 			}
 		}
 		$object->find();

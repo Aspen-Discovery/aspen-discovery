@@ -25,11 +25,16 @@ class Admin_Locations extends ObjectEditor {
 		$object->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
 			if (!UserAccount::userHasPermission('Administer Home Library Locations')) {
-				$object->locationId = $user->homeLocationId;
+				//Need to use where add here so the where add in below works properly
+				$object->whereAdd("locationId = $user->homeLocationId");
 			} else {
 				//Scope to just locations for the user based on home library
 				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-				$object->libraryId = $patronLibrary->libraryId;
+				$object->whereAdd("libraryId = $patronLibrary->libraryId");
+			}
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$object->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
 			}
 		}
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);

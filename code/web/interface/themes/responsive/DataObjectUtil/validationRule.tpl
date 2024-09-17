@@ -1,5 +1,6 @@
 {assign var=propName value=$property.property}
 {if $property.type != 'section'}
+    {strip}
 	{if !empty($property.validationPattern)}
 		$("#{$propName}").rules("add", {ldelim}
 			regex: "{$property.validationPattern}"
@@ -10,6 +11,7 @@
 {*		return this.optional(element) || /{$property.validationPattern}/i.test(value);*}
 {*		{rdelim}, "{$property.label} is invalid: Please enter a valid email address.");*}
 	{/if}
+	{/strip}
 {elseif $propName == 'ssoSection'}
 	objectEditorObject.rules("add",
 		{ldelim}

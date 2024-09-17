@@ -792,6 +792,14 @@ class Polaris extends AbstractIlsDriver {
 		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
 		ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
 		$hold_result = $this->processHoldRequestResponse($response, $patron);
+		if ($hold_result['success']) {
+			//Force the title to be re-indexed when a hold is placed to ensure the
+			require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+			$recordIdentifierToReload = new RecordIdentifiersToReload();
+			$recordIdentifierToReload->type = $this->getIndexingProfile()->name;
+			$recordIdentifierToReload->identifier = $shortId;
+			$recordIdentifierToReload->insert();
+		}
 
 		$hold_result['title'] = $title;
 		$hold_result['bid'] = $shortId;

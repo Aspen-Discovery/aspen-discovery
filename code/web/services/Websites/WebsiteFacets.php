@@ -26,10 +26,13 @@ class Websites_WebsiteFacets extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Website Facet Settings')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraries = Library::getLibraryListAsObjects(true);
+			$facetGroupIds = [];
+			foreach ($libraries as $library) {
+				$facetGroupIds[] = $library->websiteIndexingFacetSettingId;
+			}
 
-            $websiteFacetSettingId = $library->websiteIndexingFacetSettingId;
-			$object->id = $websiteFacetSettingId->facetGroupId;
+			$object->whereAddIn('id', $facetGroupIds, 'OR');
 		}
 		$object->find();
 		$list = [];
@@ -62,8 +65,8 @@ class Websites_WebsiteFacets extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-        $breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
-        $breadcrumbs[] = new Breadcrumb('/Websites/WebsiteFacets', 'Website Facets');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
+		$breadcrumbs[] = new Breadcrumb('/Websites/WebsiteFacets', 'Website Facets');
 		return $breadcrumbs;
 	}
 
@@ -80,7 +83,7 @@ class Websites_WebsiteFacets extends ObjectEditor {
 
 	function canBatchEdit(): bool {
 		return UserAccount::userHasPermission([
-            'Administer All Website Facet Settings',
+			'Administer All Website Facet Settings',
 		]);
 	}
 }

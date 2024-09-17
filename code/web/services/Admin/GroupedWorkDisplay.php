@@ -27,8 +27,12 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->id = $library->groupedWorkDisplaySettingId;
+			$libraryList = Library::getLibraryListAsObjects(true);
+			$validIds = [];
+			foreach ($libraryList as $tmpLibrary) {
+				$validIds[] = $tmpLibrary->groupedWorkDisplaySettingId;
+			}
+			$object->whereAddIn('id', $validIds, false);
 		}
 		$object->find();
 		$list = [];
