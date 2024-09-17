@@ -1031,29 +1031,82 @@ class Admin_AJAX extends JSON_Action {
 				$numObjects = $tool->getNumObjects();
 				$recordsPerPage = 100;
 				$numBatches = ceil($numObjects / $recordsPerPage);
+				$errorOccurred = false;
+				$structure = $tool->getObjectStructure('batchDelete');
+				$allErrors = [];
 				for ($i = 0; $i < $numBatches; $i++) {
 					$objectsForBatch = $tool->getAllObjects($i + 1, 1000);
 					foreach ($objectsForBatch as $dataObject) {
-						$dataObject->delete();
+						$deletionBlockInfo = $dataObject->getDeletionBlockInformation($structure);
+						if (!$deletionBlockInfo['preventDeletion']) {
+							$ret = $dataObject->delete();
+							if ($ret == 0) {
+								$allErrors[] = "Unable to delete {$tool->getObjectType()} with id of {$dataObject->getPrimaryKeyValue()}";
+							}
+						}else{
+							$allErrors[] = $deletionBlockInfo['message'];
+						}
 					}
 				}
-				return [
-					'success' => true,
-					'title' => 'Success',
-					'message' => "Deleted all {$tool->getPageTitle()} objects",
-				];
+				if (!empty($allErrors)) {
+					$user = UserAccount::getActiveUserObj();
+					$user->updateMessage = implode(',', $allErrors);
+					$user->updateMessageIsError = true;
+					$user->update();
+					$errorOccurred = true;
+				}
+				if ($errorOccurred) {
+					return [
+						'success' => true,
+						'title' => 'Error',
+						'message' => "One or more {$tool->getPageTitle()} objects could not be deleted",
+					];
+				}else{
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Deleted all {$tool->getPageTitle()} objects",
+					];
+				}
+
 			} else {
+				$structure = $tool->getObjectStructure('batchDelete');
+				$allErrors = [];
+				$errorOccurred = false;
 				foreach ($_REQUEST['selectedObject'] as $id => $value) {
 					$dataObject = $tool->getExistingObjectById($id);
 					if ($dataObject != null) {
-						$dataObject->delete();
+						$deletionBlockInfo = $dataObject->getDeletionBlockInformation($structure);
+						if (!$deletionBlockInfo['preventDeletion']) {
+							$ret = $dataObject->delete();
+							if ($ret == 0) {
+								$allErrors[] = "Unable to delete {$tool->getObjectType()} with id of {$dataObject->getPrimaryKeyValue()}";
+							}
+						}else{
+							$allErrors[] = $deletionBlockInfo['message'];
+						}
 					}
 				}
-				return [
-					'success' => true,
-					'title' => 'Success',
-					'message' => "Deleted selected {$tool->getPageTitle()} objects.",
-				];
+				if (!empty($allErrors)) {
+					$user = UserAccount::getActiveUserObj();
+					$user->updateMessage = implode(',', $allErrors);
+					$user->updateMessageIsError = true;
+					$user->update();
+					$errorOccurred = true;
+				}
+				if ($errorOccurred) {
+					return [
+						'success' => true,
+						'title' => 'Error',
+						'message' => "One or more {$tool->getPageTitle()} objects could not be deleted",
+					];
+				}else{
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Deleted selected {$tool->getPageTitle()} objects",
+					];
+				}
 			}
 
 		} else {

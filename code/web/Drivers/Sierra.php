@@ -1780,7 +1780,6 @@ class Sierra extends Millennium {
 		$params = [];
 
 		if ($formFields != null) {
-			$params['patronType'] = $selfRegistrationForm->selfRegPatronCode;
 			foreach ($formFields as $fieldObj){
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {
@@ -1824,6 +1823,8 @@ class Sierra extends Millennium {
 					$params['pin'] = $_REQUEST['pin'];
 				}
 			}
+			$params['homeLibraryCode'] = $_REQUEST['pickupLocation'];
+			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronCode;
 		}
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/";
