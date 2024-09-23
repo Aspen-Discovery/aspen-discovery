@@ -49,16 +49,23 @@
 					</a>
 
 					<div id="filtersPanelBody" class="panel-collapse collapse {if count($appliedFilters) > 0}in{/if}">
-						<div class="panel-body">
+						<div class="panel-body" style="padding-bottom: 10px; padding-top: 10px;">
 							<div id="activeFilters">
 								{foreach from=$appliedFilters key=filterName item=appliedFilter}
 									{include file='DataObjectUtil/filterField.tpl' filterField=$appliedFilter.field}
 								{/foreach}
 							</div>
+						</div>
+						<div class="panel-body-tools" style="padding-bottom: 10px; padding-top: 10px;">
 							<div id="filterActions">
 								<div class="row">
-									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');"><i class="fas fa-plus"></i> {translate text="Add Filter" isAdminFacing=true}</button></div>
-									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();"><i class="fas fa-filter"></i> {translate text="Apply Filters" isAdminFacing=true}</button></div>
+									<div class="col-tn-6 col-xs-6 text-left" style="padding-bottom: 10px; padding-top: 10px; left: 10px;">
+										<button class="btn btn-default btn-sm" type="button" id="addFilterButton" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');" style="padding-top: 5px; padding-bottom: 5px;"><i class="fas fa-plus"></i> {translate text="Add Filter" isAdminFacing=true}</button>
+									</div>
+
+									<div class="col-tn-6 col-xs-6" style="padding-top: 10+; padding-top: 10px; padding-bottom: 10px;">
+										<button class="btn btn-default btn-sm" type="submit" id="applyFilterButton" onkeydown="checkEnter(event)" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();"><i class="fas fa-filter"></i> {translate text="Apply Filters" isAdminFacing=true}</button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -66,6 +73,15 @@
 				</div>
 			</div>
 		</div>
+
+	<script>
+    function checkEnter(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('applyFilterButton').click();
+        }
+    }
+	</script>	
 	{/if}
 
 	<div class='adminTableRegion fixed-height-table'>
