@@ -1,85 +1,202 @@
 {
-  "swagger" : "2.0",
+  "openapi" : "3.1.0",
   "info" : {
     "title": "Aspen Discovery API",
-    "description": "The API provided by Aspen Discovery for use in other applications, mobile apps, etc",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "license": {
+      "name": "GPL v2",
+      "url": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt"
+    },
+    "description": "The API provided by Aspen Discovery for use in other applications, mobile apps, etc"
   },
-  "basePath": "/API",
+  "servers": [
+    {
+      "url": "https://{aspenDomain}/{basePath}",
+      "variables": {
+        "aspenDomain": {
+          "default": "example.aspendiscovery.org",
+          "description": "The URL of the Aspen instance"
+        },
+        "basePath": {
+          "default": "API"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "AbstractAPI"
+    },
+    {
+      "name": "AnodeAPI"
+    },
+    {
+      "name": "CommunityAPI"
+    },
+    {
+      "name": "EventAPI"
+    },
+    {
+      "name": "FineAPI"
+    },
+    {
+      "name": "GreenhouseAPI"
+    },
+    {
+      "name": "ItemAPI"
+    },
+    {
+      "name": "ListAPI"
+    },
+    {
+      "name": "RegistrationAPI"
+    },
+    {
+      "name": "SearchAPI"
+    },
+    {
+      "name": "SystemAPI"
+    },
+    {
+      "name": "UserAPI"
+    },
+    {
+      "name": "WorkAPI"
+    }
+  ],
   "paths": {
-    "/API/UserAPI?method=isLoggedIn": {
+    "/UserAPI?method=isLoggedIn": {
       "get": {
-        "description": "Determines if a user is logged in or out in the active browser. Typically not useful since the calling application will not be on the same browser as the patron.",
-        "produces": [
-          "application/json"
-        ],
+        "tags": ["UserAPI"],
+        "summary": "Login status",
+        "description": "Determines if a user is logged in based on session information in the active browser. Typically not useful because the calling application will not be using the same browser as the patron.",
         "responses" : {
           "200" : {
-            "description": "successful response",
-            "schema": {
-              "$ref": "#/definitions/BasicResult"
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
     },
-    "/API/UserAPI?method=login": {
+    "/UserAPI?method=login": {
       "post" : {
-        "description": "Logs in the user and sets a cookie indicating that the user is logged in. Also returns the session_id for the new session. Must be called by POSTing data to the API. In general, this method is only useful when called from Aspen itself or from files which can share cookies with the Aspen server.",
+        "tags": ["UserAPI"],
+        "summary": "Login user",
+        "description": "Logs in the user, sets a cookie indicating that the user is logged in, and returns the session_id for the new session. In general, this method is only useful when called from Aspen itself or from files that share cookies with the Aspen server.",
         "parameters": [
           {
             "in" : "query",
             "name": "username",
-            "type": "string",
-            "description": "The username or barcode for the patron"
+            "schema": {
+              "type": "string"
+            },
+            "description": "The username or barcode for the patron",
+            "example": "23025003575917"
           },
           {
             "in" : "query",
             "name": "password",
-            "type": "string",
-            "description": "The password or pin for the patron"
+            "schema": {
+              "type": "string"
+            },
+            "description": "The password or pin for the patron",
+            "example": "7604"
           }
-        ],
-        "produces": [
-          "application/json"
         ],
         "responses": {
           "200": {
-            "description": "successful response",
-            "schema": {
-              "$ref": "#/definitions/LoginResult"
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
     }
   },
-  "definitions": {
-    "BasicResult": {
-      "type": "object",
-      "properties": {
-        "result" : {
-          "type": "boolean"
-        }
-      }
-    },
-    "LoginResult": {
-      "type": "object",
-      "properties": {
-        "result" : {
+  "components": {
+      "responses": {
+        "BadRequest": {
+          "description": "Bad Request - Invalid method or parameters",
           "type": "object",
           "properties": {
-            "success": {
-              "type": "boolean",
-              "description": "Whether the login was successful or not"
-            },
-            "message": {
+            "error": {
               "type": "string",
-              "description": "Additional information about why the login passed or failed for display to the end user"
-            },
-            "name": {
+              "example": "invalid_method"
+            }
+          }
+        },
+        "Unauthorized": {
+          "description": "Unauthorized - Request requires authentication",
+          "type": "object",
+          "properties": {
+            "error": {
               "type": "string",
-              "description": "The first and last name of the user if login was successful"
+              "example": "unauthorized_access"
+            }
+          }
+        },
+        "NotFound": {
+          "description": "The specified resource was not found.",
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "schemas": {
+        "BasicResult": {
+        "type": "object",
+        "properties": {
+          "result" : {
+            "type": "boolean"
+          }
+        }
+      },
+      "LoginResult": {
+        "type": "object",
+        "properties": {
+          "result" : {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "description": "Whether the user login was successful or not",
+                "example": "true"
+              },
+              "message": {
+                "type": "string",
+                "description": "Additional information about why the login passed or failed for display to the end user"
+              },
+              "name": {
+                "type": "string",
+                "nullable": "true",
+                "description": "The first and last name of the user if login was successful"
+              }
             }
           }
         }
