@@ -58,8 +58,9 @@ class Greenhouse_TicketsCreatedByMonth extends Admin_Admin {
 		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
-
-
+		$interface->assign('showCSVExportButton', false);
+		$interface->assign('section', 'Greenhouse');
+		
 		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
