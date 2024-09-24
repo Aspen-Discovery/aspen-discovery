@@ -99,7 +99,8 @@ class UserAPI extends AbstractAPI {
 					'getMaterialsRequests',
 					'getMaterialsRequestDetails',
 					'createMaterialsRequest',
-					'cancelMaterialsRequest'
+					'cancelMaterialsRequest',
+					'deleteAspenUser'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -6367,6 +6368,31 @@ class UserAPI extends AbstractAPI {
 						'message' => translate(['text' => 'Could not cancel the request, error during update.', 'isPublicFacing' => true]),
 					];
 				}
+			}
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
+	}
+
+	function deleteAspenUser() : array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if($user->delete()) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'User successfully deleted from Aspen.', 'isPublicFacing' => true]),
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Unable to delete the user from Aspen at this time.', 'isPublicFacing' => true]),
+				];
 			}
 		}
 

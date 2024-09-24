@@ -265,6 +265,180 @@ class User extends DataObject {
 		}
 	}
 
+	public function delete($useWhere = false) : int {
+		$ret = parent::delete($useWhere);
+		if ($ret) {
+			// delete browse_category_dismissal
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $this->id;
+			$browseCategoryDismissals->find();
+			while ($browseCategoryDismissals->fetch()) {
+				$browseCategoryDismissals->delete();
+			}
+
+			// delete placard_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+			$placardDismissals = new PlacardDismissal();
+			$placardDismissals->userId = $this->id;
+			$placardDismissals->find();
+			while ($placardDismissals->fetch()) {
+				$placardDismissals->delete();
+			}
+
+			// delete system_message_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+			$systemMessageDismissals = new SystemMessageDismissal();
+			$systemMessageDismissals->userId = $this->id;
+			$systemMessageDismissals->find();
+			while ($systemMessageDismissals->fetch()) {
+				$systemMessageDismissals->delete();
+			}
+
+			// delete user_checkout
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			$userCheckouts = new Checkout();
+			$userCheckouts->userId = $this->id;
+			$userCheckouts->find();
+			while ($userCheckouts->fetch()) {
+				$userCheckouts->delete();
+			}
+
+			// delete user_events_entry
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->userId = $this->id;
+			$userEventsEntry->find();
+			while ($userEventsEntry->fetch()) {
+				$userEventsEntry->delete();
+			}
+
+			// delete user_events_registration
+			require_once ROOT_DIR . '/sys/Events/UserEventsRegistrations.php';
+			$userEventsRegistration = new UserEventsRegistrations();
+			$userEventsRegistration->userId = $this->id;
+			$userEventsRegistration->find();
+			while ($userEventsRegistration->fetch()) {
+				$userEventsRegistration->delete();
+			}
+
+			// delete user_hold
+			require_once ROOT_DIR . '/sys/User/Hold.php';
+			$userHolds = new Hold();
+			$userHolds->userId = $this->id;
+			$userHolds->find();
+			while ($userHolds->fetch()) {
+				$userHolds->delete();
+			}
+
+			// delete user_ils_message
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$userILSMessage = new UserILSMessage();
+			$userILSMessage->userId = $this->id;
+			$userILSMessage->find();
+			while ($userILSMessage->fetch()) {
+				$userILSMessage->delete();
+			}
+
+			// delete user_link
+			require_once ROOT_DIR . '/sys/Account/UserLink.php';
+			$userLink = new UserLink();
+			$userLink->primaryAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			$userLink = new UserLink();
+			$userLink->linkedAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			// delete user_list
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$userList = new UserList();
+			$userList->user_id = $this->id;
+			$userList->find();
+			while ($userList->fetch()) {
+				// delete user_list_entry
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+				$userListEntry->find();
+				while ($userListEntry->fetch()) {
+					$userListEntry->delete();
+				}
+				$userList->delete();
+			}
+
+			// delete user_messages
+			require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+			$userMessage = new UserMessage();
+			$userMessage->userId = $this->id;
+			$userMessage->find();
+			while ($userMessage->fetch()) {
+				$userMessage->delete();
+			}
+
+			// delete user_not_interested
+			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+			$userNotInterested = new NotInterested();
+			$userNotInterested->userId = $this->id;
+			$userNotInterested->find();
+			while ($userNotInterested->fetch()) {
+				$userNotInterested->delete();
+			}
+
+			// delete user_notification_tokens
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$userNotificationToken = new UserNotificationToken();
+			$userNotificationToken->userId = $this->id;
+			$userNotificationToken->find();
+			while ($userNotificationToken->fetch()) {
+				$userNotificationToken->delete();
+			}
+
+			// delete user_notifications
+			require_once ROOT_DIR . '/sys/Account/UserNotification.php';
+			$userNotification = new UserNotification();
+			$userNotification->userId = $this->id;
+			$userNotification->find();
+			while ($userNotification->fetch()) {
+				$userNotification->delete();
+			}
+
+			// delete user_reading_history_work
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$userReadingHistory = new ReadingHistoryEntry();
+			$userReadingHistory->userId = $this->id;
+			$userReadingHistory->find();
+			while ($userReadingHistory->fetch()) {
+				$userReadingHistory->delete();
+			}
+
+			// delete user_roles
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRoles = new UserRoles();
+			$userRoles->userId = $this->id;
+			$userRoles->find();
+			while ($userRoles->fetch()) {
+				$userRoles->delete();
+			}
+
+			// delete materials_request (createdBy)
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$userMaterialsRequests = new MaterialsRequest();
+			$userMaterialsRequests->createdBy = $this->id;
+			$userMaterialsRequests->find();
+			while ($userMaterialsRequests->fetch()) {
+				$userMaterialsRequests->delete();
+			}
+
+		}
+		return $ret;
+	}
+
 	function setRoles($values) {
 		$rolesToAssign = [];
 		foreach ($values as $index => $value) {
