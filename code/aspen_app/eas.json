@@ -11,23 +11,35 @@
 		"APP_ENV": "{{APP_ENV}}",
 		"GOOGLE_SERVICES_JSON": "/"
 	  },
+	  "android": {
+		"resourceClass": "large"
+	  },
 	  "ios": {
-		"image": "latest"
+		"image": "latest",
+		"resourceClass": "medium"
 	  }
 	},
 	"beta": {
 	  "extends": "production",
-	  "channel": "beta"
+	  "channel": "beta",
+	  "android": {
+		"resourceClass": "large"
+	  },
+	  "ios": {
+		"resourceClass": "medium"
+	  }
 	},
 	"alpha": {
 	  "extends": "production",
 	  "distribution": "internal",
 	  "channel": "alpha",
 	  "ios": {
-		"simulator": true
+		"simulator": true,
+		"resourceClass": "medium"
 	  },
 	  "android": {
-		"buildType": "apk"
+		"buildType": "apk",
+		"resourceClass": "large"
 	  }
 	},
 	"development": {
@@ -36,7 +48,8 @@
 	  "developmentClient": true,
 	  "distribution": "internal",
 	  "ios": {
-		"simulator": true
+		"simulator": true,
+		"resourceClass": "medium"
 	  }
 	},
 	"internal": {
