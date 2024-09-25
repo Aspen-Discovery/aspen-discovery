@@ -2461,7 +2461,7 @@ class Sierra extends Millennium {
 				$params['username'] = $currentLocation->circulationUsername;
 			}
 			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
-				$params['statgroup'] = $currentLocation->statGroup;
+				$params['statgroup'] = (int)$currentLocation->statGroup;
 			}
 
 			$checkoutResult = $this->_postPage('sierra.checkout', $sierraUrl, json_encode($params));
