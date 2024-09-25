@@ -639,14 +639,14 @@ public class GroupedWorkIndexer {
 			*/
 
 			//Delete all grouped_work items, records, and variations, but leave the grouped work
-			removeItemsForWorkStmt.setLong(1, groupedWorkId);
+/*			removeItemsForWorkStmt.setLong(1, groupedWorkId);
 			removeItemsForWorkStmt.executeUpdate();
 
 			removeVariationsForWorkStmt.setLong(1, groupedWorkId);
 			removeVariationsForWorkStmt.executeUpdate();
 
 			removeRecordsForWorkStmt.setLong(1, groupedWorkId);
-			removeRecordsForWorkStmt.executeUpdate();
+			removeRecordsForWorkStmt.executeUpdate();*/
 
 		}catch (SolrServerException sse) {
 			logEntry.incErrors("Solr Exception deleting work from index, quitting to be safe", sse);
