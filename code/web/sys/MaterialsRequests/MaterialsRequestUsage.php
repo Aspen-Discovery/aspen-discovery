@@ -1,5 +1,4 @@
-<?php
-
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class MaterialsRequestUsage extends DataObject {
 	public $__table = 'materials_request_usage';
@@ -19,8 +18,9 @@ class MaterialsRequestUsage extends DataObject {
 		];
 	}
 
-	static function incrementStat($status, $homeLocation) {
+	static function incrementStat($status, $homeLocation) : void {
 		try {
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 			$materialsRequestUsage = new MaterialsRequestUsage();
 			$materialsRequestUsage->year = date('Y');
 			$materialsRequestUsage->month = date('n');
@@ -33,7 +33,7 @@ class MaterialsRequestUsage extends DataObject {
 				$materialsRequestUsage->numUsed = 1;
 				$materialsRequestUsage->insert();
 			}
-		} catch (PDOException $e) {
+		} /** @noinspection PhpUnusedLocalVariableInspection */ catch (PDOException $e) {
 			//This happens if the table has not been created, ignore it
 		}
 	}

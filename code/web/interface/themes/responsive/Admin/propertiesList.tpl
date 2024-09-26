@@ -172,7 +172,7 @@
 								{/if}
 								{if $dataItem->getAdditionalListActions()}
 									{foreach from=$dataItem->getAdditionalListActions() item=action}
-										<a href='{$action.url}' class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" {if !empty($action.target) && $action.target == "_blank"}target="_blank" {/if}>{if !empty($action.target) && $action.target == "_blank"}<i class="fas fa-external-link-alt" role="presentation"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
+										<a href='{$action.url}' {if !empty($action.onclick)}onclick="{$action.onclick}"{/if} class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" {if !empty($action.target) && $action.target == "_blank"}target="_blank" {/if}>{if !empty($action.target) && $action.target == "_blank"}<i class="fas fa-external-link-alt" role="presentation"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
 									{/foreach}
 								{/if}
 								{if $dataItem->getAdditionalListJavascriptActions()}
@@ -223,11 +223,19 @@
 			<button type='submit' value='findGreenhouseContent' class="btn btn-default" onclick="return AspenDiscovery.Admin.showFindCommunityContentForm('{$module}', '{$toolName}', '{$objectType}')"><i class="fas fa-file-download"></i> {translate text='Import Community Content' isAdminFacing=true}</button>
 		</div>
 	{/if}
-	<div class="btn-group">
-		{foreach from=$customListActions item=customAction}
-			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{translate text=$customAction.label isAdminFacing=true}</button>
-		{/foreach}
-	</div>
+	{if !empty($customListActions)}
+		<div class="row" style="padding-top: 1em">
+			<div class="btn-group col-sm-12">
+				{foreach from=$customListActions item=customAction}
+					<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}'){if !empty($customAction.onclick)};{$customAction.onclick}{/if}">{translate text=$customAction.label isAdminFacing=true}</button>
+				{/foreach}
+			</div>
+		</div>
+	{/if}
+
+	{if !empty($customListPanel)}
+		{include file=$customListPanel}
+	{/if}
 
 	{if !empty($canDelete) && $canBatchDelete}
 	<div class="row" style="padding-top: 1em">

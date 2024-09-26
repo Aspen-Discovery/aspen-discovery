@@ -1968,7 +1968,7 @@ class UserAPI extends AbstractAPI {
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
 							'shouldBeItemHold' => false,
-							];
+						];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
 						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
 						$action = $result['api']['action'] ?? null;
@@ -1984,39 +1984,39 @@ class UserAPI extends AbstractAPI {
 							'shouldBeItemHold' => false,
 						];
 					} else {
-							//Make sure that there are not volumes available
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$recordDriver = new MarcRecordDriver($bibId);
-							if ($recordDriver->isValid()) {
-								require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-								$volumeDataDB = new IlsVolumeInfo();
-								$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-								if ($volumeDataDB->find(true)) {
-									return [
-										'success' => false,
-										'message' => translate(['text' => 'You must place a volume hold on this title.']),
-									];
-								}
+						//Make sure that there are not volumes available
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver($bibId);
+						if ($recordDriver->isValid()) {
+							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+							$volumeDataDB = new IlsVolumeInfo();
+							$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+							if ($volumeDataDB->find(true)) {
+								return [
+									'success' => false,
+									'message' => translate(['text' => 'You must place a volume hold on this title.']),
+								];
 							}
-							$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
-							$action = $result['api']['action'] ?? null;
-							$responseMessage = strip_tags($result['api']['message']);
-							$responseMessage = trim($responseMessage);
-							$hasItems = false;
-							if(isset($result['items'])) {
-								$hasItems = (bool)$result['items'];
-							}
-							return [
-								'success' => $result['success'],
-								'title' => $result['api']['title'],
-								'message' => $responseMessage,
-								'action' => $action,
-								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
-								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => $hasItems,
-								'items' => $result['items'] ?? null,
-							];
 						}
+						$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
+						$action = $result['api']['action'] ?? null;
+						$responseMessage = strip_tags($result['api']['message']);
+						$responseMessage = trim($responseMessage);
+						$hasItems = false;
+						if(isset($result['items'])) {
+							$hasItems = (bool)$result['items'];
+						}
+						return [
+							'success' => $result['success'],
+							'title' => $result['api']['title'],
+							'message' => $responseMessage,
+							'action' => $action,
+							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => $hasItems,
+							'items' => $result['items'] ?? null,
+						];
+					}
 				} elseif ($source == 'overdrive') {
 					return $this->placeOverDriveHold();
 				} elseif ($source == 'cloud_library') {
@@ -6142,7 +6142,7 @@ class UserAPI extends AbstractAPI {
 				];
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MMaterialsRequest/aterialsRequest.php';
 
 			$id = $_REQUEST['id'];
 			$materialsRequest = new MaterialsRequest();
@@ -6180,6 +6180,8 @@ class UserAPI extends AbstractAPI {
 			$openRequests = $user->getNumOpenMaterialsRequests();
 			$maxActiveRequests = $user->getNumMaterialsRequestsMaxActive();
 			$maxRequestsPerYear = $user->getNumMaterialsRequestsMaxPerYear();
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->createdBy = $user->id;
 			$statusQuery = new MaterialsRequestStatus();
@@ -6332,7 +6334,8 @@ class UserAPI extends AbstractAPI {
 				];
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 
 			$id = $_REQUEST['id'];
 			$materialsRequest = new MaterialsRequest();
@@ -6345,7 +6348,6 @@ class UserAPI extends AbstractAPI {
 					$homeLibrary = $library;
 				}
 
-				require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 				$cancelledStatus = new MaterialsRequestStatus();
 				$cancelledStatus->isPatronCancel = 1;
 				$cancelledStatus->libraryId = $homeLibrary->libraryId;
@@ -6354,7 +6356,7 @@ class UserAPI extends AbstractAPI {
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
 				if ($materialsRequest->update()) {
-					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 					return [
 						'success' => true,

@@ -11,6 +11,7 @@ class MaterialsRequestFieldsToDisplay extends DataObject {
 	public $weight;
 
 	static function getObjectStructure($context = ''): array {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		$materialsRequest = new MaterialsRequest();
 		$columnNames = array_keys($materialsRequest->table());
 		$columnToChooseFrom = array_combine($columnNames, $columnNames);

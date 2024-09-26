@@ -55,7 +55,7 @@ class LocationTheme extends DataObject {
 		];
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			foreach ($homeLibrary->getLocations() as $location) {

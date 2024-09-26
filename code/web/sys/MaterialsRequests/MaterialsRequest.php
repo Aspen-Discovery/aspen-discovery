@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -38,6 +38,8 @@ class MaterialsRequest extends DataObject {
 	public $dateUpdated;
 	public $emailSent;
 	public $createdEmailSent;
+	public $readyForHolds;
+	public $selectedHoldCandidateId;
 	public $holdsCreated;
 	public $placeHoldWhenAvailable;
 	public $illItem;
@@ -45,6 +47,70 @@ class MaterialsRequest extends DataObject {
 	public $bookmobileStop;
 	public $assignedTo;
 	public $staffComments;
+
+	public $holdFailureMessage;
+
+	protected $_holdCandidateRecords;
+	protected $_selectedHoldCandidate;
+
+	public static function getObjectStructure(string $context) : array {
+		if ($context == 'requestsNeedingHolds') {
+			return [
+				'id' => [
+					'property' => 'id',
+					'type' => 'label',
+					'label' => 'Request Id',
+					'description' => 'The unique id of the request within the database',
+					'uniqueProperty' => true,
+				],
+				'patronBarcode' => [
+					'property' => 'patronBarcode',
+					'type' => 'label',
+					'label' => 'Patron Barcode',
+					'description' => 'The requesting patron\'s barcode',
+				],
+				'title' => [
+					'property' => 'title',
+					'type' => 'label',
+					'label' => 'Title',
+					'description' => 'The title of the request',
+				],
+				'author' => [
+					'property' => 'author',
+					'type' => 'label',
+					'label' => 'Author',
+					'description' => 'The author of the request',
+				],
+				'displayFormat' => [
+					'property' => 'displayFormat',
+					'type' => 'label',
+					'label' => 'Format',
+					'description' => 'The format of the request',
+				],
+				'numHoldCandidates' => [
+					'property' => 'numHoldCandidates',
+					'type' => 'label',
+					'label' => 'Num Hold Candidates',
+					'description' => 'The number of hold candidates',
+				],
+				'selectedHoldCandidate' => [
+					'property' => 'selectedHoldCandidate',
+					'type' => 'label',
+					'label' => 'Selected Hold Candidate',
+					'description' => 'The hold candidate that will be used',
+				],
+				'holdFailureMessage' => [
+					'property' => 'holdFailureMessage',
+					'type' => 'label',
+					'label' => 'Hold Failure Message',
+					'description' => 'The error if any that occurred when placing the hold',
+				]
+			];
+		}else{
+			//This needs to be implemented and needs to be responsive to fields the library has setup
+			return [];
+		}
+	}
 
 	public function getUniquenessFields(): array {
 		return ['id'];
@@ -59,9 +125,32 @@ class MaterialsRequest extends DataObject {
 		];
 	}
 
+	public function __get($name) {
+		if ($name == 'patronBarcode') {
+			return $this->getCreatedByUserBarcode();
+		}elseif ($name == 'displayFormat') {
+			return $this->getDisplayFormat();
+		}elseif ($name == 'numHoldCandidates') {
+			return count($this->getHoldCandidates());
+		}elseif ($name == 'selectedHoldCandidate') {
+			if ($this->selectedHoldCandidateId == 0) {
+				return 'None';
+			}else{
+				$selectedHoldCandidate = $this->getSelectedHoldCandidate();
+				if ($selectedHoldCandidate != null) {
+					return $this->getSelectedHoldCandidate()->__toString();
+				}else{
+					return 'Invalid selection';
+				}
+			}
+		}else{
+			return parent::__get($name);
+		}
+	}
+
 	static function getFormats(bool $activeFormatsOnly): array {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
-		$customFormats = new MaterialsRequestFormats();
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
+		$customFormats = new MaterialsRequestFormat();
 		global $library;
 		$requestLibrary = $library;
 		if (UserAccount::isLoggedIn()) {
@@ -80,14 +169,14 @@ class MaterialsRequest extends DataObject {
 		if ($customFormats->count() == 0) {
 			// Default Formats to use when no custom formats are created.
 
-			/** @var MaterialsRequestFormats[] $defaultFormats */
-			$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($requestLibrary->libraryId);
+			/** @var MaterialsRequestFormat[] $defaultFormats */
+			$defaultFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats($requestLibrary->libraryId);
 			$availableFormats = [];
 
 			global $configArray;
-			foreach ($defaultFormats as $index => $materialRequestFormat) {
+			foreach ($defaultFormats as $materialRequestFormat) {
 				$format = $materialRequestFormat->format;
-				if (!isset($configArray['MaterialsRequestFormats'][$format]) || $configArray['MaterialsRequestFormats'][$format] != false) {
+				if (!isset($configArray['MaterialsRequestFormats'][$format]) || $configArray['MaterialsRequestFormats'][$format]) {
 					$availableFormats[$format] = $materialRequestFormat->formatLabel;
 				}
 			}
@@ -100,16 +189,24 @@ class MaterialsRequest extends DataObject {
 		return $availableFormats;
 	}
 
+	public function getDisplayFormat() : string {
+		$formatObject = $this->getFormatObject();
+		if ($formatObject !== false) {
+			return $formatObject->formatLabel;
+		}else{
+			return 'Unknown';
+		}
+	}
 	public function getFormatObject() {
 		if (!empty($this->libraryId) && !empty($this->format)) {
-			require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
-			$format = new MaterialsRequestFormats();
-			$format->format = $this->format;
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
+			$format = new MaterialsRequestFormat();
+			$format->id = $this->formatId;
 			$format->libraryId = $this->libraryId;
-			if ($format->find(1)) {
+			if ($format->find(true)) {
 				return $format;
 			} else {
-				foreach (MaterialsRequestFormats::getDefaultMaterialRequestFormats($this->libraryId) as $defaultFormat) {
+				foreach (MaterialsRequestFormat::getDefaultMaterialRequestFormats($this->libraryId) as $defaultFormat) {
 					if ($this->format == $defaultFormat->format) {
 						return $defaultFormat;
 					}
@@ -122,8 +219,8 @@ class MaterialsRequest extends DataObject {
 
 	static $materialsRequestEnabled = null;
 
-	static function enableAspenMaterialsRequest($forceReload = false) {
-		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false) {
+	static function enableAspenMaterialsRequest($forceReload = false) : bool {
+		if (MaterialsRequest::$materialsRequestEnabled != null && !$forceReload) {
 			return MaterialsRequest::$materialsRequestEnabled;
 		}
 		global $library;
@@ -148,8 +245,7 @@ class MaterialsRequest extends DataObject {
 		return $enableAspenMaterialsRequest;
 	}
 
-	/** @noinspection PhpUnused */
-	function getHoldLocationName($locationId) {
+	function getHoldLocationName($locationId) : string|bool {
 		$holdLocation = new Location();
 		if ($holdLocation->get($locationId)) {
 			return $holdLocation->displayName;
@@ -157,8 +253,11 @@ class MaterialsRequest extends DataObject {
 		return false;
 	}
 
-	function getRequestFormFields($libraryId, $isStaffRequest = false) {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+	/**
+	 * @return MaterialsRequestFormFields[]
+	 */
+	function getRequestFormFields($libraryId, $isStaffRequest = false) : array {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php';
 		$formFields = new MaterialsRequestFormFields();
 		$formFields->libraryId = $libraryId;
 		$formFields->orderBy('weight');
@@ -199,8 +298,11 @@ class MaterialsRequest extends DataObject {
 		return $requestFormFields;
 	}
 
-	static function getRequestFormFieldsForApi($libraryId) {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+	/**
+	 * @return MaterialsRequestFormFields[]
+	 */
+	static function getRequestFormFieldsForApi($libraryId) : array {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php';
 		$formFields = new MaterialsRequestFormFields();
 		$formFields->libraryId = $libraryId;
 		$formFields->orderBy('weight');
@@ -240,24 +342,13 @@ class MaterialsRequest extends DataObject {
 
 	}
 
-	function getAuthorLabelsAndSpecialFields($libraryId) {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
-		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
+	function getAuthorLabelsAndSpecialFields($libraryId) : array {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
+		return MaterialsRequestFormat::getAuthorLabelsAndSpecialFields($libraryId);
 	}
 
-	/** @noinspection PhpUnused */
-	function updateUsageTable() {
-		$materialsRequestStatus = new MaterialsRequestStatus();
-		$materialsRequestStatus->id = $this->status;
-		if ($materialsRequestStatus->find(true)) {
-			if ($materialsRequestStatus->isPurchased == 1) {
-				require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
-				MaterialsRequestUsage::incrementStat($this->status, $this->libraryId);
-			}
-		}
-	}
-
-	function sendStatusChangeEmail() {
+	function sendStatusChangeEmail() : void {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->id = $this->status;
 		if ($materialsRequestStatus->find(true)) {
@@ -305,7 +396,7 @@ class MaterialsRequest extends DataObject {
 					'text' => "Your Materials Request Update",
 					'isPublicFacing' => true,
 				]), $body, $replyToAddress);
-				if (($error instanceof AspenError)) {
+				if ($error instanceof AspenError) {
 					global $interface;
 					$interface->assign('error', $error->getMessage());
 				}
@@ -313,10 +404,10 @@ class MaterialsRequest extends DataObject {
 		}
 	}
 
-	function sendStaffNewMaterialsRequestEmail() {
+	function sendStaffNewMaterialsRequestEmail() : void {
 		global $configArray;
 		global $interface;
-		if ($this->getCreatedByUser() != false && $this->createdEmailSent == 0) {
+		if ($this->getCreatedByUser() !== false && $this->createdEmailSent == 0) {
 			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
 			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
 				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
@@ -365,7 +456,7 @@ class MaterialsRequest extends DataObject {
 		}
 	}
 
-	function sendStaffNewMaterialsRequestAssignedEmail() {
+	function sendStaffNewMaterialsRequestAssignedEmail() : void {
 		global $library;
 		global $configArray;
 		if($library->materialsRequestSendStaffEmailOnAssign) {
@@ -412,7 +503,7 @@ class MaterialsRequest extends DataObject {
 		}
 	}
 
-	static function sendStaffNewMaterialsRequestAssignedEmailBulk($numRequests, $user) {
+	static function sendStaffNewMaterialsRequestAssignedEmailBulk($numRequests, $user) : void {
 		global $library;
 		global $configArray;
 		if($library->materialsRequestSendStaffEmailOnAssign) {
@@ -461,7 +552,7 @@ class MaterialsRequest extends DataObject {
 	function getEmailBody($libraryId): string {
 		$requestFormFields = $this->getRequestFormFields($libraryId, true);
 		$body = '<table style="border: 1px solid black; border-collapse: collapse; margin-top: 5px; margin-bottom: 5px; width: 100%"><tbody>';
-		foreach($requestFormFields as $key => $formFields) {
+		foreach($requestFormFields as $formFields) {
 			foreach($formFields as $formField) {
 				$value = $formField->fieldType;
 				if($this->$value) {
@@ -486,7 +577,7 @@ class MaterialsRequest extends DataObject {
 		return $body;
 	}
 
-	public function getDetails(User $user) {
+	public function getDetails(User $user) : MaterialsRequest{
 		$homeLibrary = $user->getHomeLibrary();
 		if(is_null($homeLibrary)) {
 			global $library;
@@ -496,6 +587,7 @@ class MaterialsRequest extends DataObject {
 		$materialsRequest = new MaterialsRequest();
 		$materialsRequest->id = $this->id;
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$statusQuery = new MaterialsRequestStatus();
 		$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
@@ -504,7 +596,7 @@ class MaterialsRequest extends DataObject {
 		$materialsRequest->joinAdd($locationQuery, 'LEFT', 'location', 'holdPickupLocation', 'locationId');
 
 		// Format Labels
-		$formats = new MaterialsRequestFormats();
+		$formats = new MaterialsRequestFormat();
 		$formats->libraryId = $homeLibrary->libraryId;
 		$usingDefaultFormats = $formats->count() == 0;
 
@@ -517,8 +609,8 @@ class MaterialsRequest extends DataObject {
 
 		if($materialsRequest->find(true)) {
 			if ($usingDefaultFormats) {
-				$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
-				/** @var MaterialsRequestFormats $format */
+				$defaultFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats();
+				/** @var MaterialsRequestFormat $format */
 				foreach ($defaultFormats as $format) {
 					if ($materialsRequest->format == $format->format) {
 						/** @noinspection PhpUndefinedFieldInspection */
@@ -533,14 +625,12 @@ class MaterialsRequest extends DataObject {
 			}
 		}
 
-
 		return $materialsRequest;
-
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByFirstName() {
-		if ($this->getCreatedByUser() != false) {
+	function getCreatedByFirstName() : string {
+		if ($this->getCreatedByUser()) {
 			return $this->_createdByUser->firstname;
 		} else {
 			return '';
@@ -548,8 +638,8 @@ class MaterialsRequest extends DataObject {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByLastName() {
-		if ($this->getCreatedByUser() != false) {
+	function getCreatedByLastName() : string {
+		if ($this->getCreatedByUser()) {
 			return $this->_createdByUser->lastname;
 		} else {
 			return '';
@@ -557,8 +647,8 @@ class MaterialsRequest extends DataObject {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByUserBarcode() {
-		if ($this->getCreatedByUser() != false) {
+	function getCreatedByUserBarcode() : string {
+		if ($this->getCreatedByUser()) {
 			return $this->_createdByUser->getBarcode();
 		} else {
 			return '';
@@ -568,7 +658,7 @@ class MaterialsRequest extends DataObject {
 	/** @var User */
 	protected $_createdByUser = null;
 
-	function getCreatedByUser() {
+	function getCreatedByUser() : User|false {
 		if ($this->_createdByUser == null) {
 			$this->_createdByUser = new User();
 			$this->_createdByUser->id = $this->createdBy;
@@ -582,7 +672,7 @@ class MaterialsRequest extends DataObject {
 	/** @var User */
 	protected $_assigneeUser = null;
 
-	function getAssigneeUser() {
+	function getAssigneeUser() : User|false {
 		if ($this->_assigneeUser == null) {
 			if (empty($this->assignedTo)) {
 				$this->_assigneeUser = false;
@@ -598,8 +688,8 @@ class MaterialsRequest extends DataObject {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAssigneeName() {
-		if ($this->getAssigneeUser() != false) {
+	function getAssigneeName() : string {
+		if ($this->getAssigneeUser() !== false) {
 			return $this->_assigneeUser->displayName;
 		} else {
 			return '';
@@ -644,6 +734,7 @@ class MaterialsRequest extends DataObject {
 			$links['assignedTo'] = $user->ils_barcode;
 		}
 		//Status
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->libraryId = $this->libraryId;
 		$materialsRequestStatus->id = $this->status;
@@ -654,7 +745,7 @@ class MaterialsRequest extends DataObject {
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : void {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
 
 		if (isset($jsonData['library'])) {
@@ -688,6 +779,7 @@ class MaterialsRequest extends DataObject {
 		}
 		if (isset($jsonData['status'])) {
 			$status = $jsonData['status'];
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 			$requestStatus = new MaterialsRequestStatus();
 			$requestStatus->libraryId = $this->libraryId;
 			$requestStatus->description = $status;
@@ -697,8 +789,67 @@ class MaterialsRequest extends DataObject {
 		}
 	}
 
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
-		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		return $result;
+	/**
+	 * @return MaterialsRequestHoldCandidate[]
+	 */
+	public function getHoldCandidates() : array {
+		if ($this->_holdCandidateRecords == null) {
+			if (!empty($this->id)) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php';
+				$holdCandidate = new MaterialsRequestHoldCandidate();
+				$holdCandidate->requestId = $this->id;
+				$this->_holdCandidateRecords = $holdCandidate->fetchAll();
+			}else{
+				$this->_holdCandidateRecords = [];
+			}
+		}
+		return $this->_holdCandidateRecords;
 	}
+
+	public function canActiveUserEdit(): bool {
+		global $action;
+		if (!empty($action) && $action == 'RequestsNeedingHolds'){
+			return false;
+		}else{
+			return parent::canActiveUserEdit();
+		}
+	}
+
+	function getAdditionalListActions(): array {
+		$objectActions = [];
+
+		$objectActions[] = [
+			'text' => 'Select Hold Candidate',
+			'onclick' => "return AspenDiscovery.MaterialsRequest.showSelectHoldCandidateForm('$this->id')",
+			'url' => '',
+		];
+		if ($this->selectedHoldCandidateId > 0) {
+			$objectActions[] = [
+				'text' => 'Place Hold',
+				'url' => "/MaterialsRequest/RequestsNeedingHolds?objectAction=placeSelectedHolds&selectedObject[$this->id]=on",
+				'onclick' => "AspenDiscovery.showMessage('" . translate(['text'=>'Placing Holds', 'isAdminFacing'=>true]) . ", ". translate(['text'=>'Placing holds on the selected title(s)', 'isAdminFacing'=>true]) . ")"
+			];
+		}
+
+		return $objectActions;
+	}
+
+	public function getSelectedHoldCandidate() : MaterialsRequestHoldCandidate|bool{
+		if ($this->_selectedHoldCandidate === null) {
+			if ($this->selectedHoldCandidateId > 0) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php';
+				$holdCandidate = new MaterialsRequestHoldCandidate();
+				$holdCandidate->id = $this->selectedHoldCandidateId;
+				if ($holdCandidate->find(true)) {
+					$this->_selectedHoldCandidate = $holdCandidate;
+				}else{
+					$this->_selectedHoldCandidate = false;
+				}
+			}else{
+				$this->_selectedHoldCandidate = false;
+			}
+		}
+		return $this->_selectedHoldCandidate;
+	}
+
 }

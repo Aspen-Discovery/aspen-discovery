@@ -3231,7 +3231,7 @@ class Theme extends DataObject {
 		unset($this->_locations);
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if (UserAccount::userHasPermission('Administer All Themes')) {
 			return true;
 		} elseif (UserAccount::userHasPermission('Administer Library Themes')) {

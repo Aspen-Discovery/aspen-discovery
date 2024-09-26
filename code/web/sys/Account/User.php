@@ -3648,13 +3648,16 @@ class User extends DataObject {
 		}
 
 		//Materials Request if enabled
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		if (MaterialsRequest::enableAspenMaterialsRequest()) {
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Requests Needing Holds', 'Review and generate holds for requests that have hold candidates.', '/MaterialsRequest/RequestsNeedingHolds'), 'Manage Library Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Format Mapping', 'Define format mapping between Aspen formats and Materials Request Formats for use when placing holds.', '/MaterialsRequest/FormatMapping'), 'Administer Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
 			}
 		}
@@ -4435,6 +4438,108 @@ class User extends DataObject {
 		}
 	}
 
+	public function placeHoldForRequest(MaterialsRequest $materialsRequest) : array {
+		$selectedRequestCandidate = $materialsRequest->getSelectedHoldCandidate();
+		$source = $selectedRequestCandidate->source;
+		if ($source == 'ils' || $source == null) {
+			//Materials request stores the id of the pickup location
+			$pickupBranchId = $materialsRequest->holdPickupLocation;
+			if (empty($pickupBranchId)) {
+				$pickupBranchId = $this->homeLocationId;
+			}
+			$location = new Location();
+			$location->locationId = $pickupBranchId;
+			if ($location->find(true)) {
+				$pickupBranch = $location->code;
+				$locationValid = $this->validatePickupBranch($pickupBranch);
+			}else{
+				$locationValid = false;
+			}
+
+			if (!$locationValid) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'This location is no longer available, please select a different pickup location',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$homeLibrary = $this->getHomeLibrary();
+
+			if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+				$cancelDate = null;
+			} else {
+				//Default to a date based on the default not needed after days in the library configuration.
+				$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+				$cancelDate = date('Y-m-d', $nnaDate);
+			}
+
+			//We will always try to place bib level holds from materials requests
+
+			//Make sure that there are not volumes available
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($selectedRequestCandidate->sourceId);
+			if ($recordDriver->isValid()) {
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeDataDB = new IlsVolumeInfo();
+				$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+				if ($volumeDataDB->find(true)) {
+					return [
+						'success' => false,
+						'message' => translate(['text' => 'You must place a volume hold on this title.']),
+					];
+				}
+			}
+			$result = $this->placeHold($selectedRequestCandidate->sourceId, $pickupBranch, $cancelDate);
+			$responseMessage = strip_tags($result['api']['message']);
+			$responseMessage = trim($responseMessage);
+			return [
+				'success' => $result['success'],
+				'message' => $responseMessage,
+			];
+		} elseif ($source == 'overdrive') {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'cloud_library') {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'axis360') {
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'palace_project') {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Invalid source',
+			];
+		}
+	}
+
 	protected function clearRuntimeDataVariables() {
 		if ($this->_accountProfile != null) {
 			$this->_accountProfile->__destruct();
@@ -4980,10 +5085,12 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		$materialsRequests = new MaterialsRequest();
 		$materialsRequests->createdBy = $this->id;
 		$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$statusQueryNotCancelled = new MaterialsRequestStatus();
 		$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
 		$statusQueryNotCancelled->isPatronCancel = 0;
@@ -4993,6 +5100,8 @@ class User extends DataObject {
 	}
 
 	public function getNumOpenMaterialsRequests() {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$homeLibrary = $this->getHomeLibrary();
 		if(is_null($homeLibrary)) {
 			global $library;
@@ -5016,8 +5125,8 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$allRequests = [];
 		$showOpen = true;
 		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {

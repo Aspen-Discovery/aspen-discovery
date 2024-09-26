@@ -2,12 +2,12 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormatMapping.php';
 
-class MaterialsRequest_ManageStatuses extends ObjectEditor {
+class MaterialsRequest_FormatMapping extends ObjectEditor {
 
 	function getObjectType(): string {
-		return 'MaterialsRequestStatus';
+		return 'MaterialsRequestFormatMapping';
 	}
 
 	function getModule(): string {
@@ -15,15 +15,15 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 	}
 
 	function getToolName(): string {
-		return 'ManageStatuses';
+		return 'FormatMapping';
 	}
 
 	function getPageTitle(): string {
-		return 'Materials Request Statuses';
+		return 'Materials Request Format Mapping';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$object = new MaterialsRequestStatus();
+		$object = new MaterialsRequestFormatMapping();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($homeLibrary)) {
@@ -35,10 +35,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 		$object->libraryId = $homeLibrary->libraryId;
 		$this->applyFilters($object);
 
-		$object->orderBy('isDefault DESC');
-		$object->orderBy('isPatronCancel DESC');
-		$object->orderBy('isOpen DESC');
-		$object->orderBy('description ASC');
+		$object->orderBy('catalogFormat ASC');
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = [];
@@ -49,7 +46,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'isDefault desc';
+		return 'catalogFormat desc';
 	}
 
 	function canSort(): bool {
@@ -57,11 +54,13 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return MaterialsRequestStatus::getObjectStructure($context);
+		$structure = MaterialsRequestFormatMapping::getObjectStructure($context);
+		unset($structure['libraryId']);
+		return $structure;
 	}
 
 	function getPrimaryKeyColumn(): string {
-		return 'description';
+		return 'id';
 	}
 
 	function getIdKeyColumn(): string {
@@ -72,40 +71,30 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 		$objectActions = [];
 
 		$objectActions[] = [
-			'label' => 'Reset to Default',
-			'action' => 'resetToDefault',
+			'label' => 'Update Active Formats',
+			'action' => 'loadActiveFormats',
 		];
 
 		return $objectActions;
 	}
 
 	/** @noinspection PhpUnused */
-	function resetToDefault() {
+	function loadActiveFormats() : void {
 		$homeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($homeLibrary)) {
 			//User does not have a home library, this is likely an admin account.  Use the active library
 			global $library;
 			$homeLibrary = $library;
 		}
-		$materialRequestStatus = new MaterialsRequestStatus();
-		$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-		$materialRequestStatus->delete(true);
+		MaterialsRequestFormatMapping::loadActiveFormats($homeLibrary->libraryId);
 
-		$materialRequestStatus = new MaterialsRequestStatus();
-		$materialRequestStatus->libraryId = -1;
-		$materialRequestStatus->find();
-		while ($materialRequestStatus->fetch()) {
-			$materialRequestStatus->id = null;
-			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-			$materialRequestStatus->insert();
-		}
-		header("Location: /MaterialsRequest/ManageStatuses");
+		header("Location: /MaterialsRequest/FormatMapping");
 	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
-		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageStatuses', 'Manage Materials Requests Statuses');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/FormatMapping', 'Materials Request Format Mapping');
 		return $breadcrumbs;
 	}
 
@@ -115,5 +104,21 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 
 	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Materials Requests');
+	}
+
+	function canAddNew() : bool {
+		return false;
+	}
+
+	function canCompare() : bool {
+		return false;
+	}
+
+	function canDelete() : bool {
+		return false;
+	}
+
+	protected function getDefaultRecordsPerPage() : int {
+		return 100;
 	}
 }

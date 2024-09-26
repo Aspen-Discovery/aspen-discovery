@@ -13017,6 +13017,9 @@ AspenDiscovery.CollectionSpotlights = (function(){
 }(AspenDiscovery.CollectionSpotlights || {}));
 AspenDiscovery.MaterialsRequest = (function(){
 	return {
+		specialFields: undefined,
+		authorLabels: undefined,
+
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;
@@ -13047,48 +13050,21 @@ AspenDiscovery.MaterialsRequest = (function(){
 
 		exportSelectedRequests: function(){
 			var selectedRequests = this.getSelectedRequests(true);
-			if (selectedRequests.length == 0){
+			if (selectedRequests.length === 0){
 				return false;
 			}
 			$("#updateRequests").submit();
 			return true;
 		},
 
-		showImportRequestForm: function(){
-			var url = Globals.path + '/MaterialsRequest/AJAX?method=getImportRequestForm';
-			$.getJSON(url, function (data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}
-			);
-			return false;
-		},
-
-		importRequests: function(){
-			var url = Globals.path + '/MaterialsRequest/AJAX?method=importRequests';
-			var importRequestsData = new FormData($("#importRequestsForm")[0]);
-			$.ajax({
-				url: url,
-				type: 'POST',
-				data: importRequestsData,
-				dataType: 'json',
-				success: function(data) {
-					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
-				},
-				async: false,
-				contentType: false,
-				processData: false
-			});
-			return false;
-		},
-
 		updateSelectedRequests: function(){
 			var newStatus = $("#newStatus").val();
-			if (newStatus == "unselected"){
+			if (newStatus === "unselected"){
 				alert("Please select a status to update the requests to.");
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false);
-			if (selectedRequests.length != 0){
+			if (selectedRequests.length !== 0){
 				$("#updateRequests").submit();
 			}
 			return false;
@@ -13096,12 +13072,12 @@ AspenDiscovery.MaterialsRequest = (function(){
 
 		assignSelectedRequests: function(){
 			var newAssignee = $("#newAssignee").val();
-			if (newAssignee == "unselected"){
+			if (newAssignee === "unselected"){
 				alert("Please select a user to assign the requests to.");
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false);
-			if (selectedRequests.length != 0){
+			if (selectedRequests.length !== 0){
 				$("#updateRequests").submit();
 			}
 			return false;
@@ -13111,10 +13087,10 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var selectedRequests = $("input.select:checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
-			if (selectedRequests.length == 0){
+			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
 					var ret = confirm('You have not selected any requests, process all requests?');
-					if (ret == true){
+					if (ret === true){
 						selectedRequests = $("input.select").map(function() {
 							return $(this).attr('name') + "=on";
 						}).get().join("&");
@@ -13200,11 +13176,11 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		updateHoldOptions: function(){
-			var placeHold = $("input[name=placeHoldWhenAvailable]:checked").val() == 1 || $("input[name=illItem]:checked").val() == 1;
+			var placeHold = $("input[name=placeHoldWhenAvailable]:checked").val() === 1 || $("input[name=illItem]:checked").val() === 1;
 			// comparison needed to change placeHold to a boolean
 			if (placeHold){
 				$("#pickupLocationField").show();
-				if ($("#pickupLocation").find("option:selected").val() == 'bookmobile'){
+				if ($("#pickupLocation").find("option:selected").val() === 'bookmobile'){
 					$("#bookmobileStopField").show();
 				}else{
 					$("#bookmobileStopField").hide();
@@ -13213,12 +13189,32 @@ AspenDiscovery.MaterialsRequest = (function(){
 				$("#bookmobileStopField").hide();
 				$("#pickupLocationField").hide();
 			}
-		}
+		},
 
-		// no uses for this found. plb 12-29-2017
-		// printRequestBody: function(){
-		// 	$("#request_details_body").printElement();
-		// }
+		showSelectHoldCandidateForm: function(id){
+			var url = Globals.path + '/MaterialsRequest/AJAX?method=showSelectHoldCandidateForm&id=' + id;
+			$.getJSON(url, function (data){
+					// noinspection JSUnresolvedReference
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		'selectHoldCandidate': function () {
+			var params = {
+				'method': 'selectHoldCandidate',
+				requestId: document.querySelector('input[name="requestId"]').value,
+				holdCandidateId: document.querySelector('input[name="holdCandidateId"]:checked').value,
+			};
+			var url = Globals.path + '/MaterialsRequest/AJAX';
+			$.getJSON(url, params, function (data){
+					// noinspection JSUnresolvedReference
+					AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success);
+				}
+			);
+			return false;
+		}
 	};
 }(AspenDiscovery.MaterialsRequest || {}));
 AspenDiscovery.OverDrive = (function(){
