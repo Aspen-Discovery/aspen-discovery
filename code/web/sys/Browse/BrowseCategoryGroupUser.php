@@ -86,7 +86,7 @@ class BrowseCategoryGroupUser extends DataObject {
 		return  UserAccount::userHasPermission('Administer All Browse Categories');
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		return UserAccount::userHasPermission('Administer All Browse Categories');
 	}
 

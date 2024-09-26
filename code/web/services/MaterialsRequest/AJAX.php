@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . "/Action.php";
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 
 /**
  * MaterialsRequest AJAX Page, handles returing asynchronous information about Materials Requests.
@@ -38,6 +38,8 @@ class MaterialsRequest_AJAX extends Action {
 			];
 		} else {
 			$id = $_REQUEST['id'];
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->id = $id;
 			$materialsRequest->createdBy = UserAccount::getActiveUserId();
@@ -56,7 +58,7 @@ class MaterialsRequest_AJAX extends Action {
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
 				if ($materialsRequest->update()) {
-					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 
 					return ['success' => true];
@@ -97,6 +99,8 @@ class MaterialsRequest_AJAX extends Action {
 
 					if (!empty($staffLibrary)) {
 						// Material Request
+						require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+						require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 						$materialsRequest = new MaterialsRequest();
 						$materialsRequest->id = $id;
 
@@ -109,7 +113,7 @@ class MaterialsRequest_AJAX extends Action {
 						$materialsRequest->joinAdd($locationQuery, "LEFT", 'location', 'holdPickupLocation', 'locationId');
 
 						// Format Labels
-						$formats = new MaterialsRequestFormats();
+						$formats = new MaterialsRequestFormat();
 						$formats->libraryId = $staffLibrary->libraryId;
 						$usingDefaultFormats = $formats->count() == 0;
 
@@ -160,8 +164,8 @@ class MaterialsRequest_AJAX extends Action {
 										$specialFieldFormats,
 									] = $materialsRequest->getAuthorLabelsAndSpecialFields($staffLibrary->libraryId);
 									if ($usingDefaultFormats) {
-										$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
-										/** @var MaterialsRequestFormats $format */
+										$defaultFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats();
+										/** @var MaterialsRequestFormat $format */
 										foreach ($defaultFormats as $format) {
 											// Get the default values for this request
 											if ($materialsRequest->format == $format->format) {
@@ -314,7 +318,7 @@ class MaterialsRequest_AJAX extends Action {
 					$materialsRequest->joinAdd($locationQuery, "LEFT", 'location', 'holdPickupLocation', 'locationId');
 
 					// Format Labels
-					$formats = new MaterialsRequestFormats();
+					$formats = new MaterialsRequestFormat();
 					$formats->libraryId = $requestLibrary->libraryId;
 					$usingDefaultFormats = $formats->count() == 0;
 
@@ -327,8 +331,8 @@ class MaterialsRequest_AJAX extends Action {
 
 					if ($materialsRequest->find(true)) {
 						if ($usingDefaultFormats) {
-							$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
-							/** @var MaterialsRequestFormats $format */
+							$defaultFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats();
+							/** @var MaterialsRequestFormat $format */
 							foreach ($defaultFormats as $format) {
 								if ($materialsRequest->format == $format->format) {
 									/** @noinspection PhpUndefinedFieldInspection */
@@ -389,288 +393,100 @@ class MaterialsRequest_AJAX extends Action {
 		];
 	}
 
-	function GetWorldCatTitles() {
-		global $configArray;
-		if (!isset($_REQUEST['title']) && !isset($_REQUEST['author'])) {
-			return [
-				'success' => false,
-				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
-			];
-		} elseif (isset($configArray['WorldCat']['apiKey']) & strlen($configArray['WorldCat']['apiKey']) > 0) {
-			$worldCatUrl = "http://www.worldcat.org/webservices/catalog/search/opensearch?q=";
-			if (isset($_REQUEST['title'])) {
-				$worldCatUrl .= urlencode($_REQUEST['title']);
-			}
-			if (isset($_REQUEST['author'])) {
-				$worldCatUrl .= '+' . urlencode($_REQUEST['author']);
-			}
-			if (isset($_REQUEST['format'])) {
-				if (in_array($_REQUEST['format'], [
-					'dvd',
-					'cassette',
-					'vhs',
-					'playaway',
-				])) {
-					$worldCatUrl .= '+' . urlencode($_REQUEST['format']);
-				} elseif (in_array($_REQUEST['format'], [
-					'cdAudio',
-					'cdMusic',
-				])) {
-					$worldCatUrl .= '+' . urlencode('cd');
-				}
-			}
-			$worldCatUrl .= "&wskey=" . $configArray['WorldCat']['apiKey'];
-			$worldCatUrl .= "&format=rss&cformat=mla";
-			//echo($worldCatUrl);
-			/** @var stdClass $worldCatData */
-			$worldCatData = simplexml_load_file($worldCatUrl);
-			//print_r($worldCatData);
-			$worldCatResults = [];
-			foreach ($worldCatData->channel->item as $item) {
-				/** @var SimpleXMLElement $item */
-				/** @noinspection PhpUndefinedFieldInspection */
-				$curTitle = [
-					'title' => (string)$item->title,
-					'author' => (string)$item->author->name,
-					'description' => (string)$item->description,
-					'link' => (string)$item->link,
-				];
-
-				$oclcChildren = $item->children('oclcterms', TRUE);
-				foreach ($oclcChildren as $child) {
-					/** @var SimpleXMLElement $child */
-					if ($child->getName() == 'recordIdentifier') {
-						$curTitle['oclcNumber'] = (string)$child;
-					}
-
-				}
-				$dcChildren = $item->children('dc', TRUE);
-				foreach ($dcChildren as $child) {
-					if ($child->getName() == 'identifier') {
-						$identifierFields = explode(":", (string)$child);
-						$curTitle[$identifierFields[1]][] = $identifierFields[2];
-					}
-				}
-
-				$contentChildren = $item->children('content', TRUE);
-				foreach ($contentChildren as $child) {
-					if ($child->getName() == 'encoded') {
-						$curTitle['citation'] = (string)$child;
-					}
-				}
-
-				if (strlen($curTitle['description']) == 0 && isset($curTitle["ISBN"]) && is_array($curTitle["ISBN"]) && count($curTitle["ISBN"]) > 0) {
-					//Get the description from syndetics
-					require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-					$summaryInfo = GoDeeperData::getSummary(null, $curTitle["ISBN"][0], null);
-					if (isset($summaryInfo['summary'])) {
-						$curTitle['description'] = $summaryInfo['summary'];
-					}
-				}
-				$worldCatResults[] = $curTitle;
-			}
-			return [
-				'success' => true,
-				'titles' => $worldCatResults,
-			];
-		} else {
-			return [
-				'success' => false,
-				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
-			];
-		}
-	}
-
 	/** @noinspection PhpUnused */
-	function getImportRequestForm() {
+	function showSelectHoldCandidateForm() : array {
 		global $interface;
 
-		return [
-			'title' => 'Import Materials Requests',
-			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>" . translate([
-					'text' => 'Import Requests',
-					'isAdminFacing' => true,
-					'inAttribute' => true,
-				]) . "</button>",
-		];
+		if (empty($_REQUEST['id']) || !is_numeric($_REQUEST['id'])) {
+			return [
+				'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+				'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'No ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+				'modalButtons' => '',
+			];
+		}else{
+			$id = $_REQUEST['id'];
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php';
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->id = $id;
+			if ($materialsRequest->find(true)) {
+				$holdCandidates = $materialsRequest->getHoldCandidates();
+				$interface->assign('requestId', $id);
+				$interface->assign('holdCandidates', $holdCandidates);
+				return [
+					'title' => 'Select Hold Candidate',
+					'modalBody' => $interface->fetch("MaterialsRequest/select-hold-candidate.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.MaterialsRequest.selectHoldCandidate()'>" . translate([
+							'text' => 'Use Selected',
+							'isAdminFacing' => true,
+							'inAttribute' => true,
+						]) . "</button>",
+				];
+			}else{
+				return [
+					'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+					'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'Incorrect ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+					'modalButtons' => '',
+				];
+			}
+		}
 	}
 
 	/** @noinspection PhpUnused */
-	function importRequests() {
-		$result = [
-			'success' => false,
-			'title' => 'Importing Requests',
-			'message' => 'Sorry your requests could not be imported',
-		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Import Materials Requests'))) {
-			if (isset($_FILES['exportFile'])) {
-				$uploadedFile = $_FILES['exportFile'];
-				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-					$result['message'] = "No file was uploaded";
-				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] = "Error in file upload " . $uploadedFile["error"];
-				} else {
-					try {
-						$inputFileType = PHPExcel_IOFactory::identify($uploadedFile['tmp_name']);
-						$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-						/** @var PHPExcel $objPHPExcel */
-						$objPHPExcel = $objReader->load($uploadedFile['tmp_name']);
+	function selectHoldCandidate() : array {
+		if (empty($_REQUEST['requestId']) || !is_numeric($_REQUEST['requestId'])) {
+			return [
+				'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+				'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'No ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+				'modalButtons' => '',
+			];
+		}else{
+			$requestId = $_REQUEST['requestId'];
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php';
+			$materialsRequest = new MaterialsRequest();
+			$materialsRequest->id = $requestId;
+			if ($materialsRequest->find(true)) {
+				if (empty($_REQUEST['holdCandidateId']) || !is_numeric($_REQUEST['holdCandidateId'])) {
+					return [
+						'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+						'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'No Hold Candidate was selected.', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+						'modalButtons' => '',
+					];
+				}else{
+					$selectedHoldCandidateId = $_REQUEST['holdCandidateId'];
+					$holdCandidate = new MaterialsRequestHoldCandidate();
+					$holdCandidate->requestId = $requestId;
+					$holdCandidate->id = $selectedHoldCandidateId;
+					if ($holdCandidate->find(true)) {
+						$materialsRequest->selectedHoldCandidateId = $selectedHoldCandidateId;
+						$materialsRequest->update();
 
-						global $library;
-						global $configArray;
-						$libraryId = $library->libraryId;
-
-						$allStatuses = [];
-						$materialRequestStatus = new MaterialsRequestStatus();
-						$materialRequestStatus->libraryId = $libraryId;
-						$materialRequestStatus->find();
-						while ($materialRequestStatus->fetch()) {
-							$allStatuses[$materialRequestStatus->id] = $materialRequestStatus->description;
-						}
-
-						/** @var  $sheet */
-						$sheet = $objPHPExcel->getSheet(0);
-						if ($sheet->getCellByColumnAndRow(0, 1)->getValue() == 'Materials Requests') {
-							//Get the request data
-							$highestRow = $sheet->getHighestRow();
-							$headers = $rowData = $sheet->rangeToArray('A3:' . $sheet->getHighestColumn() . '3', NULL, TRUE, FALSE)[2];
-							$showEBookFormatField = in_array('Sub Format', $headers);
-							$showBookTypeField = in_array('Type', $headers);
-							$showAgeField = in_array('Age Level', $headers);
-							$showPlaceHoldField = in_array('Hold', $headers);
-							$showIllField = in_array('ILL', $headers);
-							$numImported = 0;
-							$numSkippedCouldNotFindUser = 0;
-							$numSkippedCouldNotFindStatus = 0;
-							$numSkippedFailedInsert = 0;
-							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++) {
-								$materialRequest = new MaterialsRequest();
-								$curCol = 1;
-								$materialRequest->libraryId = $libraryId;
-								$materialRequest->title = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->season = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$magazineInfo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$magazineTitle = $magazineInfo;
-								//TODO: Split up magazine information?
-								$materialRequest->magazineTitle = $magazineTitle; //This isn't quite right, date will append to title
-								$materialRequest->author = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->format = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								if ($showEBookFormatField) {
-									$materialRequest->subFormat = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								}
-								if ($showBookTypeField) {
-									$materialRequest->bookType = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								}
-								if ($showAgeField) {
-									$materialRequest->ageLevel = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								}
-								$materialRequest->isbn = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->upc = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->issn = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->oclcNumber = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->publisher = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->publicationYear = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->abridged = ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Unabridged' ? 0 : ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Abridged' ? 1 : 2));
-								$materialRequest->about = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$materialRequest->comments = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
-								$email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
-								if (is_numeric($barcode)) {
-									$barcode = (int)$barcode;
-								}
-								$requestUser = new User();
-
-								$requestUser->ils_barcode = $barcode;
-								$requestUser->find();
-								if ($requestUser->getNumResults() == 0) {
-									//Try looking by last name, first
-									$requestUser = new User();
-									$requestUser->ils_barcode = $username;
-									$requestUser->find();
-									if ($requestUser->getNumResults() == 0) {
-										$requestUser = new User();
-										$requestUser->email = $email;
-										$requestUser->find();
-										if (empty($email) || $requestUser->getNumResults() == 0) {
-											//See if we can fetch the user from the ils
-											$requestUser = UserAccount::findNewUser($barcode, '');
-											if ($requestUser == false) {
-												//We didn't get a user, skip this one.
-												$numSkippedCouldNotFindUser++;
-												continue;
-											}
-										} else {
-											$requestUser->fetch();
-										}
-									} else {
-										$requestUser->fetch();
-									}
-								} else {
-									$requestUser->fetch();
-								}
-								$materialRequest->createdBy = $requestUser->id;
-								$materialRequest->email = $email;
-								if ($showPlaceHoldField) {
-									$placeHold = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-									if ($placeHold == 'No') {
-										$materialRequest->placeHoldWhenAvailable = 0;
-									} else {
-										$materialRequest->placeHoldWhenAvailable = 1;
-									}
-								}
-								if ($showIllField) {
-									$materialRequest->illItem = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Yes' ? 1 : 0;
-								}
-								$materialRequest->status = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								if (is_numeric($materialRequest->status)) {
-									$materialRequest->status = (int)$materialRequest->status;
-								}
-								if (!array_key_exists($materialRequest->status, $allStatuses)) {
-									$numSkippedCouldNotFindStatus++;
-									continue;
-								}
-								$dateCreated = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								$dateTimeCreated = date_create_from_format('m/d/Y', $dateCreated);
-								$materialRequest->dateCreated = $dateTimeCreated->getTimestamp();
-								$materialRequest->dateUpdated = $dateTimeCreated->getTimestamp();
-								/** @noinspection PhpUnusedLocalVariableInspection */
-								$assignedTo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-
-								if ($materialRequest->insert() == 1) {
-									$numImported++;
-								} else {
-									$numSkippedFailedInsert++;
-								}
-							}
-							$result['success'] = true;
-							$result['message'] = "Imported file, $numImported entries were imported successfully.";
-							if ($numSkippedFailedInsert > 0) {
-								$result['message'] .= "<br/>$numSkippedFailedInsert could not be inserted in the database.";
-								$result['success'] = false;
-							}
-							if ($numSkippedCouldNotFindStatus > 0) {
-								$result['message'] .= "<br/>$numSkippedCouldNotFindStatus did not have a proper status.";
-								$result['success'] = false;
-							}
-							if ($numSkippedCouldNotFindUser > 0) {
-								$result['message'] .= "<br/>$numSkippedCouldNotFindUser could not find a user.";
-								$result['success'] = false;
-							}
-						} else {
-							$result['message'] = "This does not look like a valid export of Material Request data";
-						}
-					} catch (Exception $e) {
-						$result['message'] = "Error reading file : " . $e->getMessage();
+						return [
+							'title' => 'Hold Candidate Selected',
+							'modalBody' => translate([
+								'text' => 'The selected materials request has been updated.',
+								'isAdminFacing' => true,
+								'inAttribute' => true,
+							]),
+							'modalButtons' => '',
+						];
+					}else{
+						return [
+							'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+							'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'Invalid hold candidate selected', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+							'modalButtons' => '',
+						];
 					}
-
 				}
-			} else {
-				$result['message'] = 'No file was selected, please try again.';
+			}else{
+				return [
+					'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
+					'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'Incorrect ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
+					'modalButtons' => '',
+				];
 			}
 		}
-		return $result;
 	}
 
 	function getBreadcrumbs(): array {

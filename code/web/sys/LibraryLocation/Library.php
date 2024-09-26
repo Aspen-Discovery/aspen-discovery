@@ -15,14 +15,14 @@ if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFieldsToDisplay.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFieldsToDisplay.php';
 }
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormats.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
 }
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php';
 }
 if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
@@ -470,7 +470,7 @@ class Library extends DataObject {
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
 	private $_materialsRequestFieldsToDisplay;
-	/** @var MaterialsRequestFormats[] */
+	/** @var MaterialsRequestFormat[] */
 	private $_materialsRequestFormats;
 
 
@@ -539,7 +539,7 @@ class Library extends DataObject {
 		unset($manageMaterialsRequestFieldsToDisplayStructure['libraryId']); //needed?
 		unset($manageMaterialsRequestFieldsToDisplayStructure['weight']);
 
-		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure($context);
+		$materialsRequestFormatsStructure = MaterialsRequestFormat::getObjectStructure($context);
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);
 
@@ -3371,7 +3371,7 @@ class Library extends DataObject {
 						'description' => 'Determine which material formats are available to patrons for request',
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
-						'subObjectType' => 'MaterialsRequestFormats',
+						'subObjectType' => 'MaterialsRequestFormat/s',
 						'structure' => $materialsRequestFormatsStructure,
 						'sortable' => true,
 						'storeDb' => true,
@@ -4531,7 +4531,7 @@ class Library extends DataObject {
 
 	public function saveMaterialsRequestFormats() {
 		if (isset ($this->_materialsRequestFormats) && is_array($this->_materialsRequestFormats)) {
-			/** @var MaterialsRequestFormats $object */
+			/** @var MaterialsRequestFormat $object */
 			foreach ($this->_materialsRequestFormats as $object) {
 				if ($object->_deleteOnSave == true) {
 					$deleteCheck = $object->delete();
@@ -4700,7 +4700,7 @@ class Library extends DataObject {
 	}
 
 	public function clearMaterialsRequestFormats() {
-		$this->clearOneToManyOptions('MaterialsRequestFormats', 'libraryId');
+		$this->clearOneToManyOptions('MaterialsRequestFormat', 'libraryId');
 		$this->_materialsRequestFormats = [];
 	}
 
@@ -5030,12 +5030,12 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @return array|null
+	 * @return MaterialsRequestFormat[]|null
 	 */
-	public function getMaterialsRequestFormats() {
+	public function getMaterialsRequestFormats() : ?array{
 		if (!isset($this->_materialsRequestFormats) && $this->libraryId) {
 			$this->_materialsRequestFormats = [];
-			$materialsRequestFormats = new MaterialsRequestFormats();
+			$materialsRequestFormats = new MaterialsRequestFormat();
 			$materialsRequestFormats->libraryId = $this->libraryId;
 			$materialsRequestFormats->orderBy('weight');
 			if ($materialsRequestFormats->find()) {
@@ -5189,6 +5189,7 @@ class Library extends DataObject {
 		$forgotPasswordType = 'none';
 		$ils = 'unknown';
 		$hasIlsInbox = false;
+		$catalogRegistrationCapabilities = [];
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
@@ -5197,6 +5198,7 @@ class Library extends DataObject {
 			}
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
 			$hasIlsInbox = $catalog->hasIlsInbox();
+			$catalogRegistrationCapabilities = $catalog->getRegistrationCapabilities();
 		}
 
 		$accountProfile = $this->getAccountProfile();
@@ -5208,6 +5210,7 @@ class Library extends DataObject {
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
 		$apiInfo['displayIlsInbox'] = $hasIlsInbox;
+		$apiInfo['catalogRegistrationCapabilities'] = $catalogRegistrationCapabilities;
 
 		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
@@ -5284,8 +5287,8 @@ class Library extends DataObject {
 			}
 		}
 
-		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+		if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php')) {
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 			$apiInfo['enableAspenMaterialsRequest'] = MaterialsRequest::enableAspenMaterialsRequest();
 		}
 

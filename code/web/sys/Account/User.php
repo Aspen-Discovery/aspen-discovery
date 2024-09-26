@@ -265,6 +265,180 @@ class User extends DataObject {
 		}
 	}
 
+	public function delete($useWhere = false) : int {
+		$ret = parent::delete($useWhere);
+		if ($ret) {
+			// delete browse_category_dismissal
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $this->id;
+			$browseCategoryDismissals->find();
+			while ($browseCategoryDismissals->fetch()) {
+				$browseCategoryDismissals->delete();
+			}
+
+			// delete placard_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+			$placardDismissals = new PlacardDismissal();
+			$placardDismissals->userId = $this->id;
+			$placardDismissals->find();
+			while ($placardDismissals->fetch()) {
+				$placardDismissals->delete();
+			}
+
+			// delete system_message_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+			$systemMessageDismissals = new SystemMessageDismissal();
+			$systemMessageDismissals->userId = $this->id;
+			$systemMessageDismissals->find();
+			while ($systemMessageDismissals->fetch()) {
+				$systemMessageDismissals->delete();
+			}
+
+			// delete user_checkout
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			$userCheckouts = new Checkout();
+			$userCheckouts->userId = $this->id;
+			$userCheckouts->find();
+			while ($userCheckouts->fetch()) {
+				$userCheckouts->delete();
+			}
+
+			// delete user_events_entry
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->userId = $this->id;
+			$userEventsEntry->find();
+			while ($userEventsEntry->fetch()) {
+				$userEventsEntry->delete();
+			}
+
+			// delete user_events_registration
+			require_once ROOT_DIR . '/sys/Events/UserEventsRegistrations.php';
+			$userEventsRegistration = new UserEventsRegistrations();
+			$userEventsRegistration->userId = $this->id;
+			$userEventsRegistration->find();
+			while ($userEventsRegistration->fetch()) {
+				$userEventsRegistration->delete();
+			}
+
+			// delete user_hold
+			require_once ROOT_DIR . '/sys/User/Hold.php';
+			$userHolds = new Hold();
+			$userHolds->userId = $this->id;
+			$userHolds->find();
+			while ($userHolds->fetch()) {
+				$userHolds->delete();
+			}
+
+			// delete user_ils_message
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$userILSMessage = new UserILSMessage();
+			$userILSMessage->userId = $this->id;
+			$userILSMessage->find();
+			while ($userILSMessage->fetch()) {
+				$userILSMessage->delete();
+			}
+
+			// delete user_link
+			require_once ROOT_DIR . '/sys/Account/UserLink.php';
+			$userLink = new UserLink();
+			$userLink->primaryAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			$userLink = new UserLink();
+			$userLink->linkedAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			// delete user_list
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$userList = new UserList();
+			$userList->user_id = $this->id;
+			$userList->find();
+			while ($userList->fetch()) {
+				// delete user_list_entry
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+				$userListEntry->find();
+				while ($userListEntry->fetch()) {
+					$userListEntry->delete();
+				}
+				$userList->delete();
+			}
+
+			// delete user_messages
+			require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+			$userMessage = new UserMessage();
+			$userMessage->userId = $this->id;
+			$userMessage->find();
+			while ($userMessage->fetch()) {
+				$userMessage->delete();
+			}
+
+			// delete user_not_interested
+			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+			$userNotInterested = new NotInterested();
+			$userNotInterested->userId = $this->id;
+			$userNotInterested->find();
+			while ($userNotInterested->fetch()) {
+				$userNotInterested->delete();
+			}
+
+			// delete user_notification_tokens
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$userNotificationToken = new UserNotificationToken();
+			$userNotificationToken->userId = $this->id;
+			$userNotificationToken->find();
+			while ($userNotificationToken->fetch()) {
+				$userNotificationToken->delete();
+			}
+
+			// delete user_notifications
+			require_once ROOT_DIR . '/sys/Account/UserNotification.php';
+			$userNotification = new UserNotification();
+			$userNotification->userId = $this->id;
+			$userNotification->find();
+			while ($userNotification->fetch()) {
+				$userNotification->delete();
+			}
+
+			// delete user_reading_history_work
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$userReadingHistory = new ReadingHistoryEntry();
+			$userReadingHistory->userId = $this->id;
+			$userReadingHistory->find();
+			while ($userReadingHistory->fetch()) {
+				$userReadingHistory->delete();
+			}
+
+			// delete user_roles
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRoles = new UserRoles();
+			$userRoles->userId = $this->id;
+			$userRoles->find();
+			while ($userRoles->fetch()) {
+				$userRoles->delete();
+			}
+
+			// delete materials_request (createdBy)
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$userMaterialsRequests = new MaterialsRequest();
+			$userMaterialsRequests->createdBy = $this->id;
+			$userMaterialsRequests->find();
+			while ($userMaterialsRequests->fetch()) {
+				$userMaterialsRequests->delete();
+			}
+
+		}
+		return $ret;
+	}
+
 	function setRoles($values) {
 		$rolesToAssign = [];
 		foreach ($values as $index => $value) {
@@ -3474,13 +3648,16 @@ class User extends DataObject {
 		}
 
 		//Materials Request if enabled
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		if (MaterialsRequest::enableAspenMaterialsRequest()) {
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Requests Needing Holds', 'Review and generate holds for requests that have hold candidates.', '/MaterialsRequest/RequestsNeedingHolds'), 'Manage Library Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Format Mapping', 'Define format mapping between Aspen formats and Materials Request Formats for use when placing holds.', '/MaterialsRequest/FormatMapping'), 'Administer Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
 			}
 		}
@@ -4261,6 +4438,108 @@ class User extends DataObject {
 		}
 	}
 
+	public function placeHoldForRequest(MaterialsRequest $materialsRequest) : array {
+		$selectedRequestCandidate = $materialsRequest->getSelectedHoldCandidate();
+		$source = $selectedRequestCandidate->source;
+		if ($source == 'ils' || $source == null) {
+			//Materials request stores the id of the pickup location
+			$pickupBranchId = $materialsRequest->holdPickupLocation;
+			if (empty($pickupBranchId)) {
+				$pickupBranchId = $this->homeLocationId;
+			}
+			$location = new Location();
+			$location->locationId = $pickupBranchId;
+			if ($location->find(true)) {
+				$pickupBranch = $location->code;
+				$locationValid = $this->validatePickupBranch($pickupBranch);
+			}else{
+				$locationValid = false;
+			}
+
+			if (!$locationValid) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'This location is no longer available, please select a different pickup location',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$homeLibrary = $this->getHomeLibrary();
+
+			if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+				$cancelDate = null;
+			} else {
+				//Default to a date based on the default not needed after days in the library configuration.
+				$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+				$cancelDate = date('Y-m-d', $nnaDate);
+			}
+
+			//We will always try to place bib level holds from materials requests
+
+			//Make sure that there are not volumes available
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($selectedRequestCandidate->sourceId);
+			if ($recordDriver->isValid()) {
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeDataDB = new IlsVolumeInfo();
+				$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+				if ($volumeDataDB->find(true)) {
+					return [
+						'success' => false,
+						'message' => translate(['text' => 'You must place a volume hold on this title.']),
+					];
+				}
+			}
+			$result = $this->placeHold($selectedRequestCandidate->sourceId, $pickupBranch, $cancelDate);
+			$responseMessage = strip_tags($result['api']['message']);
+			$responseMessage = trim($responseMessage);
+			return [
+				'success' => $result['success'],
+				'message' => $responseMessage,
+			];
+		} elseif ($source == 'overdrive') {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'cloud_library') {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'axis360') {
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'palace_project') {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Invalid source',
+			];
+		}
+	}
+
 	protected function clearRuntimeDataVariables() {
 		if ($this->_accountProfile != null) {
 			$this->_accountProfile->__destruct();
@@ -4806,10 +5085,12 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		$materialsRequests = new MaterialsRequest();
 		$materialsRequests->createdBy = $this->id;
 		$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$statusQueryNotCancelled = new MaterialsRequestStatus();
 		$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
 		$statusQueryNotCancelled->isPatronCancel = 0;
@@ -4819,6 +5100,8 @@ class User extends DataObject {
 	}
 
 	public function getNumOpenMaterialsRequests() {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$homeLibrary = $this->getHomeLibrary();
 		if(is_null($homeLibrary)) {
 			global $library;
@@ -4842,8 +5125,8 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$allRequests = [];
 		$showOpen = true;
 		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {

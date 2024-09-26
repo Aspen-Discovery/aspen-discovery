@@ -25,6 +25,11 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_debian_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_debian_$2.sh
 fi
 
+if [ -f "/usr/local/aspen-discovery/install/updateCron_$2.php" ]; then
+  echo "Updating cron configuration"
+  php /usr/local/aspen-discovery/install/updateCron_$2.php $1
+fi
+
 echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver

@@ -24,6 +24,7 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$this->objectAction = $objectAction;
+		$interface->assign('context', $this->getContext());
 		$structure = $this->getObjectStructure($this->getContext());
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
@@ -63,6 +64,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('objectAction', $objectAction);
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
+		$customListPanel = $this->getCustomListPanel();
+		$interface->assign('customListPanel', $customListPanel);
 		if (is_null($objectAction) || $objectAction == 'list') {
 			$this->viewExistingObjects($structure);
 		} elseif ($objectAction == 'save' || $objectAction == 'saveCopy' || $objectAction == 'delete') {
@@ -709,7 +712,6 @@ abstract class ObjectEditor extends Admin_Admin {
 	function getModule(): string {
 		return 'Admin';
 	}
-
 	public function canAddNew() {
 		return true;
 	}
@@ -763,6 +765,15 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	public function customListActions() {
 		return [];
+	}
+
+	/**
+	 * Returns the template for the custom list panel if any
+	 *
+	 * @return string
+	 */
+	public function getCustomListPanel() : string {
+		return '';
 	}
 
 	/**

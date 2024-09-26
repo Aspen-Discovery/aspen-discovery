@@ -757,7 +757,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
-		if (empty($mySip->hostname) || empty($mySip->sipPort)){
+		if (empty($mySip->hostname) || empty($mySip->port)){
 			$success = false;
 			$message = 'The SIP server is not properly configured for this account profile.';
 			$title = 'An Error Occurred';

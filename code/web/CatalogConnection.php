@@ -242,6 +242,8 @@ class CatalogConnection {
 		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 		if ($homeLibrary) {
 			if ($homeLibrary->enableMaterialsRequest == 1) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 				$materialsRequest = new MaterialsRequest();
 				$materialsRequest->createdBy = $user->id;
 				$statusQuery = new MaterialsRequestStatus();

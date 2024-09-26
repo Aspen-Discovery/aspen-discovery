@@ -2,7 +2,9 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Dashboard.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 
 class MaterialsRequest_Dashboard extends Admin_Dashboard {
 	function launch() {
@@ -48,6 +50,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			$allStats = 0;
 			foreach ($location as $loc) {
 				if ($loc['displayLabel'] != "All") {
+					require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 					$stats = new MaterialsRequestUsage();
 					$stats->libraryId = $loc['id'];
 					if ($month != null) {
