@@ -5764,7 +5764,7 @@ class UserAPI extends AbstractAPI {
 	function checkoutILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
 		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
 			//For self check we don't require the pin, use find new user
-			//Call find new user just to be sure that all patron information is up to date.
+			//Call find new user just to be sure that all patron information is up-to-date.
 			$user = UserAccount::findNewUser($patronBarcode, null);
 			if (!$user) {
 				//This user no longer exists? return an error?
@@ -5794,11 +5794,17 @@ class UserAPI extends AbstractAPI {
 					$activeLocationId = $_REQUEST['locationId'];
 				}
 			}
-			if (empty($itemBarcode) || empty($activeLocationId)) {
+			if (empty($itemBarcode)) {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => 'Barcode and location id must be provided',
+					'message' => 'Item Barcode must be provided',
+				];
+			} elseif (empty($activeLocationId)) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Active location id must be provided',
 				];
 			} else {
 				$location = new Location();
