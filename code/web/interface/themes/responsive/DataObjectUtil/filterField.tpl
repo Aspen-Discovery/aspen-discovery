@@ -1,7 +1,7 @@
 {strip}
 {assign var=filterName value=$filterField.property}
-<div class="row" id="filter_{$filterField.property}">
-	<div class="col-xs-3">
+<div class="row" id="filter_{$filterField.property}" style="padding-top: 5px; padding-bottom: 5px;">
+	<div class="col-xs-3 text-center">
 		<label>{translate text=$filterField.label isAdminFacing=true}</label>
 	</div>
 	{if !empty($appliedFilters.$filterName)}
@@ -66,8 +66,10 @@
 			{translate text="Unhandled filter type %1%" 1=$filterField.type isAdminFacing=true}
 		</div>
 	{/if}
+	
 	<div class="col-xs-1 text-right">
-		<button class="btn btn-sm btn-danger" onclick="$('#filter_{$filterField.property}').remove();return false;" aria-label="{translate text="Delete" isAdminFacing=true}"><i class="fas fa-sm fa-trash-alt"></i></button>
+		<button class="btn btn-sm btn-danger" type="button" onclick="$('#filter_{$filterField.property}').remove();return false;" aria-label="{translate text="Delete" isAdminFacing=true}"><i class="fas fa-sm fa-trash-alt"></i></button>
 	</div>
+	
 </div>
 {/strip}
