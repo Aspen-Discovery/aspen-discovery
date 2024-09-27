@@ -850,6 +850,9 @@ public class RecordGroupingProcessor {
 		String title = getAxis360FieldValue(itemDetails, "title");
 		String formatType = itemDetails.getString("formatType");
 		String language = getAxis360FieldValue(itemDetails, "language");
+		if (language.length() > 3) {
+			language = translateValue("language_to_three_letter_code", language);
+		}
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("axis360", axis360Id);
 
