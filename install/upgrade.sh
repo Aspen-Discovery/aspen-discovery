@@ -26,6 +26,11 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_$2.sh $1
 fi
 
+if [ -f "/usr/local/aspen-discovery/install/updateCron_$2.php" ]; then
+  echo "Updating cron configuration"
+  php /usr/local/aspen-discovery/install/updateCron_$2.php $1
+fi
+
 chown aspen:aspen_apache /data/aspen-discovery/$1
 chmod 775 /data/aspen-discovery/$1
 

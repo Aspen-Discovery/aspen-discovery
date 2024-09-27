@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 
 class MaterialsRequest_ManageStatuses extends ObjectEditor {
 
@@ -68,7 +68,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 		return 'id';
 	}
 
-	function customListActions() {
+	function customListActions() : array {
 		$objectActions = [];
 
 		$objectActions[] = [

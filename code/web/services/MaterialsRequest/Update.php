@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . "/Action.php";
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
-require_once ROOT_DIR . "/sys/MaterialsRequest.php";
+require_once ROOT_DIR . "/sys/MaterialsRequests/MaterialsRequest.php";
 
 class MaterialsRequest_Update extends Admin_Admin {
 
@@ -113,9 +113,6 @@ class MaterialsRequest_Update extends Admin_Admin {
 					$interface->assign('success', true);
 					$interface->assign('materialsRequest', $materialsRequest);
 					if ($statusChanged) {
-						//Update usage table
-						$materialsRequest->updateUsageTable();
-
 						//Send an email as needed
 						$materialsRequest->sendStatusChangeEmail();
 					}

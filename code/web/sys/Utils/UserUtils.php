@@ -157,7 +157,7 @@ class UserUtils {
 				}
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->createdBy = $newUser->id;
 			$materialsRequests->find();
@@ -170,7 +170,7 @@ class UserUtils {
 				$result['numMaterialsRequestsMoved']++;
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->assignedTo = $newUser->id;
 			$materialsRequests->find();

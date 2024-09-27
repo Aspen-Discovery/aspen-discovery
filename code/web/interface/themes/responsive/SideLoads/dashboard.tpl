@@ -9,7 +9,10 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}</h3>
+							<h3 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}
+								{' '}
+								<a href="/SideLoads/UsageGraphs?stat=activeUsers{if !empty($profileName)}&profileName={$profileName}{/if}&instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
+							</h3>
 						</div>
 					</div>
 					<div class="row">
@@ -35,7 +38,10 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">{translate text="Records Accessed Online" isAdminFacing=true}</h3>
+							<h3 class="dashboardCategoryLabel">{translate text="Records Accessed Online" isAdminFacing=true}
+								{' '}
+								<a href="/SideLoads/UsageGraphs?stat=recordsAccessedOnline{if !empty($profileName)}&profileName={$profileName}{/if}&instance={$selectedInstance}" title="{translate text="Show Records Accessed Online Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a>
+							</h3>
 						</div>
 					</div>
 					<div class="row">

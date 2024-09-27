@@ -104,12 +104,12 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 				'name' => 'User System Message Dismissals',
 			],
 			'materials_request_statuses' => [
-				'classFile' => ROOT_DIR . '/sys/MaterialsRequestStatus.php',
+				'classFile' => ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php',
 				'className' => 'MaterialsRequestStatus',
 				'name' => 'Materials Request Statuses',
 			],
 			'materials_requests' => [
-				'classFile' => ROOT_DIR . '/sys/MaterialsRequest.php',
+				'classFile' => ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php',
 				'className' => 'MaterialsRequest',
 				'name' => 'Materials Requests',
 			],

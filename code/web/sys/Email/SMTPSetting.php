@@ -87,6 +87,7 @@ class SMTPSetting extends DataObject {
 				'label' => 'Password',
 				'description' => 'The password',
 				'default' => '',
+				'hideInLists' => true
 			],
 		];
 	}
@@ -102,6 +103,7 @@ class SMTPSetting extends DataObject {
 		$mail->isSMTP();
 		// $mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		$mail->Host = $this->host;
+		$mail->Port = $this->port;
 		$mail->SMTPAuth = true;
 		$mail->Username = $this->user_name;
 		$mail->Password = $this->password;

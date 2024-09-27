@@ -768,8 +768,8 @@ class UInterface extends Smarty {
 
 		if (!$fromBookCoverProcessing) {
 			//Determine whether or not materials request functionality should be enabled
-			if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-				require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php')) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 				$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
 				$materialRequestType = $library->enableMaterialsRequest;
 				$this->assign('materialRequestType', $materialRequestType);

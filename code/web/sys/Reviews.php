@@ -65,7 +65,7 @@ class ExternalReviews {
 	 * @access  public
 	 * @return  array                       Associative array of excerpts.
 	 */
-	public function fetch() {
+	public function fetch()  : array {
 		return $this->results;
 	}
 

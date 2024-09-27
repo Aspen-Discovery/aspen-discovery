@@ -118,7 +118,7 @@ class Admin_Libraries extends ObjectEditor {
 		if ($library->find(true)) {
 			$library->clearMaterialsRequestFormats();
 
-			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
+			$defaultMaterialsRequestFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats($libraryId);
 			$library->setMaterialsRequestFormats($defaultMaterialsRequestFormats);
 			$library->update();
 		}

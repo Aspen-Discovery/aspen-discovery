@@ -488,4 +488,10 @@ class Axis360_AJAX extends JSON_Action {
 			'modalButtons' => "",
 		];
 	}
+
+	public function exportUsageData() {
+		require_once ROOT_DIR . '/services/Axis360/UsageGraphs.php';
+		$axis360UsageGraph = new Axis360_UsageGraphs();
+		$axis360UsageGraph->buildCSV();
+	}
 }

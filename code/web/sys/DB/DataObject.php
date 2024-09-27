@@ -162,7 +162,7 @@ abstract class DataObject implements JsonSerializable {
 	/**
 	 * @return DataObject|false|null
 	 */
-	public function fetch() {
+	public function fetch(): bool|DataObject|null {
 		$this->__fetchingFromDB = true;
 		$this->clearRuntimeDataVariables();
 		if ($this->__queryStmt == null) {
@@ -1059,7 +1059,7 @@ abstract class DataObject implements JsonSerializable {
 		return $this->canActiveUserEdit();
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		return true;
 	}
 

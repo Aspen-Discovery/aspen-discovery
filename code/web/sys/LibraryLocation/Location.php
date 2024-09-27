@@ -1253,7 +1253,7 @@ class Location extends DataObject {
 						'property' => 'allowUpdatingHoursFromILS',
 						'type' => 'checkbox',
 						'label' => 'Automatically update hours from the ILS',
-						'description' => 'Whether hours should be automatically updated (Koha Only).',
+						'description' => 'Whether closures should be automatically updated (Koha Only).',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Location ILS Connection'],

@@ -732,6 +732,7 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	public function setSearchTerms($searchTerms) {
+		$this->clearQuery();
 		$this->searchTerms = [];
 		$this->searchTerms[] = $searchTerms;
 	}
@@ -1373,6 +1374,10 @@ abstract class SearchObject_BaseSearcher {
 
 	public function getQuery() {
 		return $this->query;
+	}
+
+	public function clearQuery() {
+		$this->query = null;
 	}
 
 	public function getSearchTerms() {
