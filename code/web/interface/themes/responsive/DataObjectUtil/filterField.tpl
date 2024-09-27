@@ -1,7 +1,7 @@
 {strip}
 {assign var=filterName value=$filterField.property}
 <div class="row" id="filter_{$filterField.property}" style="padding-top: 5px; padding-bottom: 5px;">
-	<div class="col-xs-3 text-center">
+	<div class="col-xs-3">
 		<label>{translate text=$filterField.label isAdminFacing=true}</label>
 	</div>
 	{if !empty($appliedFilters.$filterName)}

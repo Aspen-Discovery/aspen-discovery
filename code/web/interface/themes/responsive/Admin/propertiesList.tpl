@@ -63,8 +63,8 @@
 										<button class="btn btn-default btn-sm" type="button" id="addFilterButton" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');" style="padding-top: 5px; padding-bottom: 5px;"><i class="fas fa-plus"></i> {translate text="Add Filter" isAdminFacing=true}</button>
 									</div>
 
-									<div class="col-tn-6 col-xs-6" style="padding-top: 10+; padding-top: 10px; padding-bottom: 10px;">
-										<button class="btn btn-default btn-sm" type="submit" id="applyFilterButton" onkeydown="checkEnter(event)" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();"><i class="fas fa-filter"></i> {translate text="Apply Filters" isAdminFacing=true}</button>
+									<div class="col-tn-6 col-xs-6 text-right" style="padding-top: 10px; padding-bottom: 10px; right:10px;">
+										<button class="btn btn-default btn-sm" type="submit" id="applyFilterButton" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();"><i class="fas fa-filter"></i> {translate text="Apply Filters" isAdminFacing=true}</button>
 									</div>
 								</div>
 							</div>
@@ -73,15 +73,6 @@
 				</div>
 			</div>
 		</div>
-
-	<script>
-    function checkEnter(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            document.getElementById('applyFilterButton').click();
-        }
-    }
-	</script>	
 	{/if}
 
 	<div class='adminTableRegion fixed-height-table'>
