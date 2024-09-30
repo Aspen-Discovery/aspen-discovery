@@ -11,7 +11,7 @@
 						<div class="row">
 							<div class="col-sm-10 col-sm-offset-1">
 								<h3 class="dashboardCategoryLabel">{$method}{' '} {* No translation needed *}
-									<a href="/Admin/APIUsageGraphs?stat={$method}&instance={$selectedInstance}" title="{translate text="{$moduleName} Graph" inAttribute="true" isAdminFacing=true}">
+									<a href="/API/UsageGraphs?stat={$method}&instance={$selectedInstance}" title="{translate text="{$moduleName}: {$method} Graph" inAttribute="true" isAdminFacing=true}">
 										<i class="fas fa-chart-line"></i>
 									</a>
 								</h3>

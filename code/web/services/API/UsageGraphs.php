@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 
-class Admin_APIUsageGraphs extends Admin_Admin
+class API_UsageGraphs extends Admin_Admin
 {
 	function launch()
 	{
@@ -17,7 +17,7 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		}
 
 		$title = 'Aspen Discovery API Usage Graph';
-		$interface->assign('section', 'Admin');
+		$interface->assign('section', 'API');
 		$interface->assign('showCSVExportButton', true);
 		$interface->assign('graphTitle', $title);
 		$this->assignGraphSpecificTitle($stat);
@@ -25,7 +25,7 @@ class Admin_APIUsageGraphs extends Admin_Admin
 		$interface->assign('stat', $stat);
 		$interface->assign('propName', 'exportToCSV');
 		$title = $interface->getVariable('graphTitle');
-		$this->display('usage-graph.tpl', $title);
+		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 	function getBreadcrumbs(): array
 	{
