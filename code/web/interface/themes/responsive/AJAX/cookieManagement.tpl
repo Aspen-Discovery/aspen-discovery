@@ -67,7 +67,7 @@
                             <li>{translate text="Library Website" isPublicFacing=true}</li>
                         {/if}
                     </ul>
-                    {translate text="For more information, please see our "}<a style="cursor:pointer;" onclick="window.location = '/Help/CookieConsentPrivacyPolicy';">{translate text=" Cookie Consent Privacy Policy"}</a>
+                    {translate text="For more information, please see our " isPublicFacing=true}<a style="cursor:pointer;" onclick="window.location = '/Help/CookieConsentPrivacyPolicy';">{translate text=" Cookie Consent Privacy Policy" isPublicFacing=true}</a>
         </div>
     </form>
 </div>
