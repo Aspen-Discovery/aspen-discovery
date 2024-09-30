@@ -4756,9 +4756,6 @@ class Library extends DataObject {
 	}
 
 	public function updateLocalAnalyticsPreferences(){
-		if (empty($this->libraryId)) {
-			return;
-		}
 		//Find all locations with given library Id
 		$locations = [];
 		$location = new Location();
