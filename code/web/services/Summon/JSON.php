@@ -33,13 +33,11 @@ class Summon_JSON extends JSON_Action {
 			$summonRecordUsage->timesUsed = 1;
 			$summonRecordUsage->insert();
 		}
-
-		$userObj = UserAccount::getActiveUserObj();
-		$userSummonTracking = $userObj->userCookiePreferenceLocalAnalytics;
-	 
-		if ($userSummonTracking) {
-			$userId = UserAccount::getActiveUserId();
-			if ($userId) {
+		$userId = UserAccount::getActiveUserId();
+		if ($userId) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userSummonTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userSummonTracking) {
 				//Track usage for the user
 				require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
 				$userSummonUsage = new UserSummonUsage();
@@ -58,6 +56,8 @@ class Summon_JSON extends JSON_Action {
 				}
 			}
 		}
+		
+		
 
 		return [
 			'success' => true,

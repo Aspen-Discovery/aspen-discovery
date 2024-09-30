@@ -27,8 +27,6 @@ class OpenArchives_JSON extends JSON_Action {
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		global $aspenUsage;
 		global $library;
-		$userObj = UserAccount::getActiveUserObj();
-		$userOpenArchivesTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		$openArchivesUsage->instance = $aspenUsage->getInstance();
 		$openArchivesUsage->openArchivesRecordId = $id;
 		$openArchivesUsage->year = date('Y');
@@ -45,9 +43,11 @@ class OpenArchives_JSON extends JSON_Action {
 			$openArchivesUsage->insert();
 		}
 
-		if ($userOpenArchivesTracking) {
-			$userId = UserAccount::getActiveUserId();
-			if ($userId) {
+		$userId = UserAccount::getActiveUserId();
+		if ($userId) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userOpenArchivesTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userOpenArchivesTracking) {
 				//Track usage for the user
 				require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
 				$userOpenArchivesUsage = new UserOpenArchivesUsage();
@@ -65,9 +65,8 @@ class OpenArchives_JSON extends JSON_Action {
 					$userOpenArchivesUsage->usageCount = 1;
 					$userOpenArchivesUsage->insert();
 				}
-			}
+		}s
 		}
-
 		return [
 			'success' => true,
 			'message' => 'Updated usage for archive record ' . $id,

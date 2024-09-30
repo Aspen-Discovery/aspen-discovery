@@ -42,13 +42,13 @@ class Websites_JSON extends JSON_Action {
 			$webPageUsage->insert();
 		}
 
-		$userObj = UserAccount::getActiveUserObj();
-		$userWebsiteTracking = $userObj->userCookiePreferenceLocalAnalytics;
+		$userId = UserAccount::getActiveUserId();
 
-		if ($userWebsiteTracking) {
-			$userId = UserAccount::getActiveUserId();
-			if ($userId) {
-				//Track usage for the user
+		if ($userId) {
+			//Track usage for the logged in user
+			$userObj = UserAccount::getActiveUserObj();
+			$userWebsiteTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userWebsiteTracking) {
 				require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
 				$userWebsiteUsage = new UserWebsiteUsage();
 				$userWebsiteUsage->userId = $userId;

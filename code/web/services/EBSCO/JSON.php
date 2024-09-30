@@ -72,12 +72,12 @@ class EBSCO_JSON extends JSON_Action {
 			$ebscoEdsRecordUsage->insert();
 		}
 
-		$userObj = UserAccount::getActiveUserObj();
-		$userEbscoTracking = $userObj->userCookiePreferenceLocalAnalytics;
+		$userId = UserAccount::getActiveUserId();
 
-		if ($userEbscoTracking) {
-			$userId = UserAccount::getActiveUserId();
-			if ($userId) {
+		if ($userId) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userEbscoTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userEbscoTracking) {
 				//Track usage for the user
 				require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 				$userEbscoEdsUsage = new UserEbscoEdsUsage();
