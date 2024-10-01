@@ -1622,8 +1622,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 	public function trackUserUsageOfOverDrive($user): void {
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
-		$userObj = UserAccount::getActiveUserObj();
-		$userOverDriveTracking = $userObj->userCookiePreferenceLocalAnalytics;
+		$userOverDriveTracking = $user->userCookiePreferenceLocalAnalytics;
 		global $aspenUsage;
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
