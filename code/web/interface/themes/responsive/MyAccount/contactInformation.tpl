@@ -155,7 +155,7 @@
 								{translate text='The following settings determine how you would like to receive notifications when physical materials are ready for pickup at your library.  Notifications for online content are always delivered via email.' isPublicFacing=true}
 							</p>
 
-							{if !$isCarlX}
+							{if !$isCarlX && !$isSymphony}
 								<div class="form-group">
 									<div class="col-xs-4"><strong>{translate text='Receive notices by' isPublicFacing=true}</strong></div>
 									<div class="col-xs-8">
@@ -242,6 +242,40 @@
 								</div>
 
 							{/if}
+
+							{if $isSymphony && !empty($noticeOptions)}
+								<div class="form-group">
+									<div class="col-xs-4"><strong>{translate text='Receive notices by' isPublicFacing=true}</strong></div>
+									<div class="col-xs-8">
+										{if $edit == true && $canUpdateContactInfo == true}
+											<div class="btn-group btn-group-sm" data-toggle="buttons">
+												{foreach from=$noticeOptions item=option}
+													<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_notices == $option}active{/if}"><input type="radio" value="{$option}" id="noticesMail" name="{$noticeCategoryNumber}" {if $profile->_notices == $option}checked="checked"{/if}> {translate text=$option isPublicFacing=true}</label>
+												{/foreach}
+											</div>
+										{else}
+											{$profile->_noticePreferenceLabel|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
+							{if $isSymphony && !empty($billingNoticeOptions)}
+								<div class="form-group">
+									<div class="col-xs-4"><strong>{translate text='Receive billing notices by' isPublicFacing=true}</strong></div>
+									<div class="col-xs-8">
+										{if $edit == true && $canUpdateContactInfo == true}
+											<div class="btn-group btn-group-sm" data-toggle="buttons">
+												{foreach from=$billingNoticeOptions item=option}
+													<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_billingNotices == $option}active{/if}"><input type="radio" value="{$option}" id="noticesMail" name="{$billingNoticeCategoryNumber}" {if $profile->_billingNotices == $option}checked="checked"{/if}> {translate text=$option isPublicFacing=true}</label>
+												{/foreach}
+											</div>
+										{else}
+											{$profile->_noticePreferenceLabel|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
+
 						{/if}
 
 						{if empty($offline) && $edit == true && $canUpdateContactInfo}

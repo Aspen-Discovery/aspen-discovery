@@ -382,7 +382,7 @@ class SirsiDynixROA extends HorizonAPI {
 			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse('patronStatusInfoDescribe', $webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
 			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse('patronDAddress1PolicyDescribe', $webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed},category01,category02,category03,category04,category05,category06,category07,category08,category09,category10,category11,category12}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
@@ -2376,6 +2376,18 @@ class SirsiDynixROA extends HorizonAPI {
 								$patron->_zip = $_REQUEST['zip'];
 							}
 
+							// Update notice preferences
+							$noticeCategory = $homeLibrary->symphonyNoticeCategoryNumber;
+							if (!empty($noticeCategory) && isset($_REQUEST['category' . $noticeCategory])) {
+								$updatePatronInfoParameters['fields']['category' . $noticeCategory]['key'] = $this->getPatronFieldValue($_REQUEST['category' . $noticeCategory], $homeLibrary->useAllCapsWhenUpdatingProfile);
+								$patron->_notices = $_REQUEST['category' . $noticeCategory];
+							}
+							$billingNoticeCategory = $homeLibrary->symphonyBillingNoticeCategoryNumber;
+							if (!empty($billingNoticeCategory) && isset($_REQUEST['category' . $billingNoticeCategory])) {
+								$updatePatronInfoParameters['fields']['category' . $billingNoticeCategory]['key'] = $this->getPatronFieldValue($_REQUEST['category' . $billingNoticeCategory], $homeLibrary->useAllCapsWhenUpdatingProfile);
+								$patron->_billingNotices = $_REQUEST['category' . $billingNoticeCategory];
+							}
+
 							// Update Home Location
 							if (!empty($_REQUEST['pickupLocation'])) {
 								$homeLibraryLocation = new Location();
@@ -2540,7 +2552,11 @@ class SirsiDynixROA extends HorizonAPI {
 	public function loadContactInformation(User $user) {
 		$webServiceURL = $this->getWebServiceURL();
 		$staffSessionToken = $this->getStaffSessionToken();
-		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+		$homeLibrary = $user->getHomeLibrary();
+		$categories = '';
+		$categories .= $homeLibrary->symphonyNoticeCategoryNumber ? ',category' . $homeLibrary->symphonyNoticeCategoryNumber : '';
+		$categories .= $homeLibrary->symphonyBillingNoticeCategoryNumber ? ',category' . $homeLibrary->symphonyBillingNoticeCategoryNumber : '';
+		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}" . $categories);
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->unique_ils_id . '?includeFields=' . $includeFields;
 
 		// phoneList is for texting notification preferences
@@ -2726,6 +2742,20 @@ class SirsiDynixROA extends HorizonAPI {
 		$user->_finesVal = $finesVal;
 		$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
 		$user->_notices = '-';
+		$user->_billingNotices = '-';
+		// Get notice and billing notice preferences out of patron categories (for CLEVNET)
+		if (isset($homeLibrary->symphonyNoticeCategoryNumber)) {
+			$noticeCategoryField = "category" . $homeLibrary->symphonyNoticeCategoryNumber;
+			if (isset($lookupMyAccountInfoResponse->fields->$noticeCategoryField->key)) {
+				$user->_notices = $lookupMyAccountInfoResponse->fields->$noticeCategoryField->key;
+			}
+		}
+		if (isset($homeLibrary->symphonyBillingNoticeCategoryNumber)) {
+			$billingNoticeCategoryField = "category" . $homeLibrary->symphonyBillingNoticeCategoryNumber;
+			if (isset($lookupMyAccountInfoResponse->fields->$billingNoticeCategoryField->key)) {
+				$user->_billingNotices = $lookupMyAccountInfoResponse->fields->$billingNoticeCategoryField->key;
+			}
+		}
 		$user->_noticePreferenceLabel = 'Email';
 		$user->_web_note = '';
 	}
