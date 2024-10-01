@@ -428,7 +428,7 @@ class UserAPI extends AbstractAPI {
 				];
 
 				$result['message'] = translate([
-					'text' => 'A email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
+					'text' => 'An email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
 					'isPublicFacing' => true,
 				]) . ' ' . translate([
 					'text' => 'If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.',
