@@ -10,6 +10,7 @@ class KohaApiUserAgent {
 	private $baseURL;
 	private $defaultHeaders;
 	private $authenticationMethod;
+	private $expiresAt;
 
 	public function __construct($accountProfile) {
 		$this->accountProfile = $accountProfile;
@@ -278,27 +279,31 @@ class KohaApiUserAgent {
 			$basicToken = $this->getBasicAuthToken();
 			$header = 'Authorization: Basic ' . $basicToken;
 		} else {
-			$oAuthToken = $this->getOAuthToken();
-			if ($oAuthToken) {
-				$this->oAuthToken = $oAuthToken;
-				$header = 'Authorization: Bearer ' . $this->oAuthToken;
-			} else {
-				global $logger;
-				//Special message case for patronLogin
-				if (stripos($caller, "koha.patronLogin") !== false) {
-					$logger->log("Unable to authenticate with the ILS from koha.patronLogin", Logger::LOG_ERROR);
+			if ($this->isExpiredToken()) {
+				$oAuthToken = $this->getOAuthToken();
+				if ($oAuthToken) {
+					$this->oAuthToken = $oAuthToken;
+					$header = 'Authorization: Bearer ' . $this->oAuthToken;
 				} else {
-					$logger->log("Unable to retrieve OAuth2 token from " . $caller, Logger::LOG_ERROR);
+					global $logger;
+					//Special message case for patronLogin
+					if (stripos($caller, "koha.patronLogin") !== false) {
+						$logger->log("Unable to authenticate with the ILS from koha.patronLogin", Logger::LOG_ERROR);
+					} else {
+						$logger->log("Unable to retrieve OAuth2 token from " . $caller, Logger::LOG_ERROR);
+					}
+					$result['messages'][] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['messages'] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					return $oAuthToken;
 				}
-				$result['messages'][] = translate([
-					'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-					'isPublicFacing' => true,
-				]);
-				$result['api']['messages'] = translate([
-					'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-					'isPublicFacing' => true,
-				]);
-				return $oAuthToken;
+			} else {
+				$header = 'Authorization: Bearer ' . $this->oAuthToken;
 			}
 		}
 		return $header;
@@ -330,12 +335,25 @@ class KohaApiUserAgent {
 		$jsonResponse = json_decode($response);
 		$responseCode = $this->apiCurlWrapper->getResponseCode();
 		ExternalRequestLogEntry::logRequest('koharestapiclient.getOAuthToken', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), json_encode($params), $responseCode, $response, ['client_secret' => $this->accountProfile->oAuthClientSecret]);
+
 		if (!empty($jsonResponse->access_token)) {
 			$oAuthToken = $jsonResponse->access_token;
 		} else {
 			$oAuthToken = false;
 		}
+
+		if (!empty($jsonResponse->expires_in)) {
+			$this->expiresAt = time() + $jsonResponse->expires_in;
+		}
+
 		return $oAuthToken;
+	}
+
+	private function isExpiredToken(): bool {
+		if ( time() > $this->expiresAt) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
