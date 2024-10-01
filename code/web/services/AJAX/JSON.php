@@ -25,7 +25,9 @@ class AJAX_JSON extends Action {
 				'saveCookiePreference',
 				'deleteTranslationTerm',
 				'getDisplaySettingsForm',
-				'updateDisplaySettings'
+				'updateDisplaySettings',
+				'manageCookiePreferences',
+				'saveCookieManagementPreferences'
 			])) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
@@ -99,6 +101,7 @@ class AJAX_JSON extends Action {
 			$userObj = UserAccount::getActiveUserObj();
 			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'];
 			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'];
+			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'];
 			$userObj->update(); //update user object to DB
 			return[
 				'success' => true,
@@ -109,6 +112,7 @@ class AJAX_JSON extends Action {
 			$userCookiePost = [
 				'Essential' => 1, //Essential cookies cannot be disabled
 				'Analytics' => $_REQUEST['cookieAnalytics'],
+				'UserLocalAnalytics' => $_REQUEST['cookieUserLocalAnalytics'],
 				];
 			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
 			return [
@@ -630,6 +634,117 @@ class AJAX_JSON extends Action {
 				'isPublicFacing' => true,
 			]),
 		];
+	}
+
+	function manageCookiePreferences(){
+		global $interface;
+		return [
+			'success' => true,
+			'modalBody' => $interface->fetch('AJAX/cookieManagement.tpl'),
+			'modalButtons' => '<button type="button" class="btn btn-primary" onclick="$(\'#cookieManagementPreferencesForm\').submit();">' . translate([
+					'text' => 'Save Preferences',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]) . '</button>',
+		];
+	}
+
+	function saveCookieManagementPreferences() {
+		require_once ROOT_DIR . '/services/MyAccount/MyCookiePreferences.php';
+		if (UserAccount::isLoggedIn()) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'] == "1" || $_REQUEST['cookieEssential'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'] == "1" || $_REQUEST['cookieAnalytics'] == 1 ? 1 : 0;
+			$userObj->userCookiePreferenceLocalAnalytics = $_REQUEST['cookieUserLocalAnalytics'] == "1" || $_REQUEST['cookieUserLocalAnalytics'] == 1 ? 1 : 0;
+
+			$userObj->update();
+			
+			if ($userObj->userCookiePreferenceLocalAnalytics == 0) {
+				$this->removeLocalAnalyticsTrackingForUser($userObj->id);
+			}
+			return[
+				'success' => true,
+				'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
+			];
+		} else {
+			$userCookiePost = [
+				'Essential' => 1,
+				'Analytics' => $_REQUEST['cookieAnalytics'],
+				'UserLocalAnalytics' =>  isset($_POST['cookieUserLocalAnalytics']) ? 1 : 0,
+			];
+			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
+			return [
+				'success' => true,
+				'message' => '',
+			];
+		}
+	}
+
+	public function removeLocalAnalyticsTrackingForUser($userId) {
+		require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
+		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
+		require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
+		require_once ROOT_DIR . '/sys/Ebsco/UserEbscohostUsage.php';
+		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
+		require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
+		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
+		require_once ROOT_DIR . '/sys/PalaceProject/UserPalaceProjectUsage.php';
+		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
+		require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
+		require_once ROOT_DIR . '/sys/Events/UserEventsUsage.php';
+
+		$userId = UserAccount::getActiveUserId();
+
+		if ($userId) {
+			$userSummonUsage = new UserSummonUsage();
+			$userSummonUsage->userId = $userId;
+			$userSummonUsage->delete(true);
+
+			$userAxis360Usage = new UserAxis360Usage();
+			$userAxis360Usage->userId = $userId;
+			$userAxis360Usage->delete(true);
+
+			$userCloudLibraryUsage = new UserCloudLibraryUsage();
+			$userCloudLibraryUsage->userId = $userId;
+			$userCloudLibraryUsage->delete(true);
+
+			$userEbscoEdsUsage = new UserEbscoEdsUsage();
+			$userEbscoEdsUsage->userId = $userId;
+			$userEbscoEdsUsage->delete(true);
+
+			$userEbscoHostUsage = new UserEbscohostUsage();
+			$userEbscoHostUsage->userId = $userId;
+			$userEbscoEdsUsage->delete(true);
+
+			$userHooplaUsage = new UserHooplaUsage();
+			$userHooplaUsage->userId = $userId;
+			$userHooplaUsage->delete(true);
+
+			$userOpenArchivesUsage = new UserOpenArchivesUsage();
+			$userOpenArchivesUsage->userId = $userId;
+			$userOpenArchivesUsage->delete(true);
+			
+			$userOverDriveUsage = new UserOverDriveUsage();
+			$userOverDriveUsage->userId = $userId;
+			$userOverDriveUsage->delete(true);
+
+			$userPalaceProjectUsage = new UserPalaceProjectUsage();
+			$userPalaceProjectUsage->userId = $userId;
+			$userPalaceProjectUsage->delete(true);
+
+			$userSideLoadUsage = new UserSideLoadUsage();
+			$userSideLoadUsage->userId = $userId;
+			$userSideLoadUsage->delete(true);
+
+			$userWebsiteUsage = new UserWebsiteUsage();
+			$userWebsiteUsage->userId = $userId;
+			$userWebsiteUsage->delete(true);
+
+			$userEventsUsage = new UserEventsUsage();
+			$userEventsUsage->userId = $userId;
+			$userEventsUsage->delete(true);
+		}
 	}
 
 	function getBreadcrumbs(): array {

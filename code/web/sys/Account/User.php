@@ -49,7 +49,7 @@ class User extends DataObject {
 	public $isLoggedInViaSSO;
 	public $userCookiePreferenceEssential;
 	public $userCookiePreferenceAnalytics;
-
+	public $userCookiePreferenceLocalAnalytics;
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 
@@ -1328,6 +1328,7 @@ class User extends DataObject {
 	}
 
 	function updateUserPreferences() {
+		require_once ROOT_DIR . '/sys/LibraryLocation/UserLocalAnalyticsPreference.php';
 		// Validate that the input data is correct
 		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0) {
 			return [
@@ -1413,6 +1414,7 @@ class User extends DataObject {
 			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
 			$this->__set('userCookiePreferenceEssential', 1);
 			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceLocalAnalytics', (isset($_POST['userCookieUserLocalAnalytics']) && $_POST['userCookieUserLocalAnalytics']) ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);

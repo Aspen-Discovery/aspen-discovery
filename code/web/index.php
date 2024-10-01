@@ -281,6 +281,7 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$analyticsPref = $cookie['Analytics'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+				$userLocalAnalyticsPref = $cookie['UserLocalAnalytics'];
 				$userObj->update();
 			}
 		}
