@@ -25,7 +25,7 @@ class BlockPatronAccountLink extends DataObject {
 	 * @return bool
 	 * @see DB/DB_DataObject::fetch()
 	 */
-	function fetch($includeBarCodes = true) {
+	function fetch($includeBarCodes = true): bool|DataObject|null {
 		$return = parent::fetch();
 		if (!is_null($return) & $includeBarCodes) {
 			// Default values (clear out any previous values
