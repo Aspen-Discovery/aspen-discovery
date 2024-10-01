@@ -4392,6 +4392,9 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			if (in_array('cookieStorageConsent', $this->_changedFields)) {
+				$this->updateLocalAnalyticsPreferences();
+			}
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4409,7 +4412,6 @@ class Library extends DataObject {
 			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
-
 		return $ret;
 	}
 
@@ -4753,6 +4755,30 @@ class Library extends DataObject {
 			unset($this->_holidays);
 		}
 	}
+
+	public function updateLocalAnalyticsPreferences(){
+		//Find all locations with given library Id
+		$locations = [];
+		$location = new Location();
+		$location->libraryId = $this->libraryId;
+		$location->find();
+		//Clone each matching location and add to array
+		while ($location->fetch()) {
+			$locations[] = clone $location;
+		}
+		//For each location, find all users with a amtching homelocationId
+		foreach ($locations as $location) {
+			$user = new User();
+			$user->homeLocationId = $location->locationId;
+			$user->find();
+			//For these user, update userCookiePreferenceLocalAnalytics based on cookieStorageConsent value
+			while ($user->fetch()) {
+				$user->userCookiePreferenceLocalAnalytics = $this->cookieStorageConsent ==1 ? 0 : 1;
+				$user->update();
+			}
+		}
+	}
+	
 
 	public function getILLItemTypes() {
 		if (!isset($this->_interLibraryLoanItemTypes)) {

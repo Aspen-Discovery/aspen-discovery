@@ -43,21 +43,26 @@ class Websites_JSON extends JSON_Action {
 		}
 
 		$userId = UserAccount::getActiveUserId();
-		if ($userId) {
-			//Track usage for the user
-			require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
-			$userWebsiteUsage = new UserWebsiteUsage();
-			$userWebsiteUsage->userId = $userId;
-			$userWebsiteUsage->year = date('Y');
-			$userWebsiteUsage->month = date('n');
-			$userWebsiteUsage->websiteId = $webPage->websiteId;
 
-			if ($userWebsiteUsage->find(true)) {
-				$userWebsiteUsage->usageCount++;
-				$userWebsiteUsage->update();
-			} else {
-				$userWebsiteUsage->usageCount = 1;
-				$userWebsiteUsage->insert();
+		if ($userId) {
+			//Track usage for the logged in user
+			$userObj = UserAccount::getActiveUserObj();
+			$userWebsiteTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userWebsiteTracking) {
+				require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
+				$userWebsiteUsage = new UserWebsiteUsage();
+				$userWebsiteUsage->userId = $userId;
+				$userWebsiteUsage->year = date('Y');
+				$userWebsiteUsage->month = date('n');
+				$userWebsiteUsage->websiteId = $webPage->websiteId;
+	
+				if ($userWebsiteUsage->find(true)) {
+					$userWebsiteUsage->usageCount++;
+					$userWebsiteUsage->update();
+				} else {
+					$userWebsiteUsage->usageCount = 1;
+					$userWebsiteUsage->insert();
+				}
 			}
 		}
 
