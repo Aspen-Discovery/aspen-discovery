@@ -5,6 +5,7 @@ class GeneralSetting extends DataObject {
 	public $id;
 	public $name;
 	public $autoRotateCard;
+	public $enableSelfRegistration;
 
 	private $_libraries;
 
@@ -31,6 +32,13 @@ class GeneralSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Automatically rotate the library card screen to landscape',
 				'description' => 'Whether or not the library card screen automatically rotates to landscape mode when navigated to.',
+				'hideInLists' => true,
+			],
+			'enableSelfRegistration' => [
+				'property' => 'enableSelfRegistration',
+				'type' => 'checkbox',
+				'label' => 'Enable self-registration',
+				'description' => 'Whether or not users can self register for a new account in LiDA.',
 				'hideInLists' => true,
 			],
 			'libraries' => [

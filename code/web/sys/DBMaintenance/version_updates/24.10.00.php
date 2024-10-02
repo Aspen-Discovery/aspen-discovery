@@ -116,6 +116,14 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 		//katherine - ByWater
 
 		//kirstien - ByWater
+		'add_enableSelfRegistration_LiDA' => [
+			'title' => 'Add Enable Self-Registration to General LiDA Settings',
+			'description' => 'Add Enable Self-Registration to General LiDA Settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE aspen_lida_general_settings ADD COLUMN enableSelfRegistration TINYINT DEFAULT 0'
+			]
+		], //add_enableSelfRegistration_LiDA
 
 		//kodi - ByWater
 

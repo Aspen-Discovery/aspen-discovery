@@ -577,13 +577,25 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		$forgotPasswordType = $this->getForgotPasswordType();
 		//This can change if both email and name are required to initiate
 		$canInitiatePasswordType = $forgotPasswordType != 'none';
+
+		$enableSelfRegistrationInApp = false;
+		global $library;
+		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+		$appGeneralSetting = new GeneralSetting();
+		$appGeneralSetting->id = $library->lidaGeneralSettingId;
+		if($appGeneralSetting->find(true)) {
+			$enableSelfRegistrationInApp = $appGeneralSetting->enableSelfRegistration;
+		}
+
 		return [
 			'lookupAccountByEmail' => false,
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => false,
 			'forgottenPassword' => $forgotPasswordType != 'none',
 			'initiatePasswordResetByEmail' => false,
-			'initiatePasswordResetByBarcode' => $canInitiatePasswordType
+			'initiatePasswordResetByBarcode' => $canInitiatePasswordType,
+			'enableSelfRegistration' => $library->enableSelfRegistration,
+			'enableSelfRegistrationInApp' => $enableSelfRegistrationInApp
 		];
 	}
 

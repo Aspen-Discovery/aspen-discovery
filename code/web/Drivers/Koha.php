@@ -7951,13 +7951,25 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function getRegistrationCapabilities() : array {
+		$enableSelfRegistrationInApp = false;
+		global $library;
+		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+		$appGeneralSetting = new GeneralSetting();
+		$appGeneralSetting->id = $library->lidaGeneralSettingId;
+		if($appGeneralSetting->find(true)) {
+			$enableSelfRegistrationInApp = $appGeneralSetting->enableSelfRegistration;
+		}
+
 		return [
 			'lookupAccountByEmail' => true,
 			'lookupAccountByPhone' => true,
 			'basicRegistration' => true,
 			'forgottenPassword' => $this->getForgotPasswordType() != 'none',
 			'initiatePasswordResetByEmail' => true,
-			'initiatePasswordResetByBarcode' => true
+			'initiatePasswordResetByBarcode' => true,
+			'enableSelfRegistration' => $library->enableSelfRegistration,
+			'selfRegistrationUrl' => $library->selfRegistrationUrl ?? null,
+			'enableSelfRegistrationInApp' => $enableSelfRegistrationInApp
 		];
 	}
 
