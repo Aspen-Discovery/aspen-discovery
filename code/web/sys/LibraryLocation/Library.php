@@ -5260,6 +5260,10 @@ class Library extends DataObject {
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
 			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
 			'enableAspenMaterialsRequest' => false,
+			'enableSelfRegistration' => (int)$this->enableSelfRegistration,
+			'selfRegistrationFormMessage' => $this->selfRegistrationFormMessage,
+			'selfRegistrationSuccessMessage' => $this->selfRegistrationSuccessMessage,
+			'promptForBirthDateInSelfReg' => $this->promptForBirthDateInSelfReg,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5361,6 +5365,7 @@ class Library extends DataObject {
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
+		$apiInfo['enableSelfRegistrationInApp'] = $generalSettings->enableSelfRegistration ?? 0;
 
 		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
 
