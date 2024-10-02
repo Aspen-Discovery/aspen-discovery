@@ -340,6 +340,8 @@ class Library extends DataObject {
 	public $enableReadingHistory;
 	public $optInToReadingHistoryUpdatesILS;
 	public $optOutOfReadingHistoryUpdatesILS;
+	public $enableCostSavings;
+	protected $_costSavingsExplanation;
 	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
@@ -1598,6 +1600,30 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
+					],
+					'enableCostSavings' => [
+						'property' => 'enableCostSavings',
+						'type' => 'checkbox',
+						'label' => 'Enable Cost Savings',
+						'description' => 'Whether or not library costs savings are shown to patrons within Aspen.',
+						'hideInLists' => true,
+						'default' => 1,
+					],
+					'costSavingsExplanationEnabled' => [
+						'property' => 'costSavingsExplanationEnabled',
+						'type' => 'translatableTextBlock',
+						'label' => 'Cost Savings Enabled Explanation',
+						'description' => 'Provide additional information about how Library Cost Savings Work when cost savings are enabled',
+						'defaultTextFile' => 'Library_costSavingsExplanationEnabled.MD',
+						'hideInLists' => true,
+					],
+					'costSavingsExplanationDisabled' => [
+						'property' => 'costSavingsExplanationDisabled',
+						'type' => 'translatableTextBlock',
+						'label' => 'Cost Savings Disabled Explanation',
+						'description' => 'Provide additional information about how Library Cost Savings Work when cost savings are disabled',
+						'defaultTextFile' => 'Library_costSavingsExplanationDisabled.MD',
+						'hideInLists' => true,
 					],
 					'enableSavedSearches' => [
 						'property' => 'enableSavedSearches',
@@ -4392,6 +4418,8 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->saveTextBlockTranslations('costSavingsExplanationEnabled');
+			$this->saveTextBlockTranslations('costSavingsExplanationDisabled');
 			if (in_array('cookieStorageConsent', $this->_changedFields)) {
 				$this->updateLocalAnalyticsPreferences();
 			}
@@ -4404,6 +4432,16 @@ class Library extends DataObject {
 				$user = new User();
 				/** @noinspection SqlResolve */
 				$user->query("update user set displayName = '' where homeLocationId = {$libraryLocations->locationId}");
+			}
+		}
+		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
+			$libraryLocations = new Location();
+			$libraryLocations->libraryId = $this->libraryId;
+			$libraryLocations->find();
+			while ($libraryLocations->fetch()) {
+				$user = new User();
+				/** @noinspection SqlResolve */
+				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here
@@ -4451,6 +4489,8 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->saveTextBlockTranslations('costSavingsExplanationEnabled');
+			$this->saveTextBlockTranslations('costSavingsExplanationDisabled');
 		}
 		return $ret;
 	}

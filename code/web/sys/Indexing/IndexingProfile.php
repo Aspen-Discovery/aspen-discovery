@@ -104,6 +104,7 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$iTypesToSuppress;
 	public $noteSubfield;
+	public $replacementCostSubfield;
 	public $dueDate;
 	public $dueDateFormat;
 	public $dateCreated;
@@ -955,6 +956,14 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 1,
 						'description' => 'The subfield to use when loading notes for an item',
 						'forcesReindex' => true,
+					],
+					'replacementCostSubfield' => [
+						'property' => 'replacementCostSubfield',
+						'type' => 'text',
+						'label' => 'Replacement Cost',
+						'maxLength' => 1,
+						'description' => 'The subfield to use when determining replacement costs for an item',
+						'forcesReindex' => false,
 					],
 				],
 			],

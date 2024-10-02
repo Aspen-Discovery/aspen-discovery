@@ -179,7 +179,7 @@
 							{/if}
 
 							{if empty($offline)}
-								{if $showRatings || $enableSavedSearches || ($enableReadingHistory && $userHasCatalogConnection) || $showFavorites}
+								{if $showRatings || $enableSavedSearches || (($enableReadingHistory && $enableCostSavings) && $userHasCatalogConnection) || $showFavorites}
 									<hr class="menu">
 								{/if}
 								{if !empty($showRatings)}
@@ -205,6 +205,13 @@
 									<div class="myAccountLink">
 										<a href="/MyAccount/ReadingHistory">
 											{translate text="Reading History" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
+										</a>
+									</div>
+								{/if}
+								{if !empty($enableCostSavings) && $userHasCatalogConnection}
+									<div class="myAccountLink">
+										<a href="/MyAccount/LibrarySavings">
+											{translate text="Library Savings" isPublicFacing=true}
 										</a>
 									</div>
 								{/if}

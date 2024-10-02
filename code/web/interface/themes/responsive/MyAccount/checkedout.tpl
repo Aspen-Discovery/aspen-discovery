@@ -17,6 +17,10 @@
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
 
+		{if !empty($enableCostSavings) && $userHasCatalogConnection}
+			<div id="costSavingsPlaceholder"></div>
+		{/if}
+
 		{if !empty($offline) && !$enableEContentWhileOffline}
 			<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 		{else}

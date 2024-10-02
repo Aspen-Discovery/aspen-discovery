@@ -113,6 +113,60 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 			]
 		], //update_default_request_statuses
 
+		//mark - Grove DIS-28 Library cost savings
+		'administer_replacement_costs_permission' => [
+			'title' => 'Add Administer Replacement Costs Permission',
+			'description' => 'Add Administer Replacement Costs Permission',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration', 'Administer Replacement Costs', '', 100, 'Allows users to administer replacement costs for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Replacement Costs'))",
+			]
+		], //administer_replacement_costs_permission
+		'library_enable_cost_savings' => [
+			'title' => 'Library Enable Cost Savings',
+			'description' => 'Add new settings  to determine if costs savings functionality is enabled within a library',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library add column enableCostSavings TINYINT(0) DEFAULT 0",
+			]
+		], //library_enable_cost_savings
+		'user_cost_savings' => [
+			'title' => 'User Cost Savings',
+			'description' => 'Add fields to store information for the user related to library cost savings',
+			'sql' => [
+				"ALTER TABLE user add column enableCostSavings TINYINT(0) DEFAULT 0",
+				"ALTER TABLE user add column totalCostSavings DECIMAL(10,2) DEFAULT 0",
+				"ALTER TABLE user add column currentCostSavings DECIMAL(10,2) DEFAULT 0",
+			],
+		], //user_cost_savings
+		'replacement_costs' => [
+			'title' => 'Replacement Costs',
+			'description' => 'Create a table to store replacement costs',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS replacement_costs (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					catalogFormat VARCHAR(255) NOT NULL UNIQUE,
+					replacementCost DECIMAL(10,2) DEFAULT 0
+				) ENGINE InnoDB DEFAULT CHARSET=utf8"
+			]
+		], //replacement_costs
+		'indexing_profile_replacement_cost_subfield' => [
+			'title' => 'Indexing Profile - Replacement Cost',
+			'description' => 'Add a replacement cost subfield to Indexing profile',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN replacementCostSubfield CHAR(1) DEFAULT ''",
+				"UPDATE indexing_profiles SET replacementCostSubfield = 'v' WHERE catalogDriver = 'Koha'"
+			]
+		], //indexing_profile_replacement_cost_subfield
+		'reading_history_entry_cost_savings' => [
+			'title' => 'Reading History Entry - Replacement Cost',
+			'description' => 'Add a field to store cost savings for a reading history entry',
+			'sql' => [
+				'ALTER TABLE user_reading_history_work ADD COLUMN costSavings DECIMAL(10,2) DEFAULT 0',
+			]
+		], //reading_history_entry_cost_savings
+
 		//katherine - ByWater
 
 		//kirstien - ByWater

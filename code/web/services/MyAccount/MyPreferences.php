@@ -30,12 +30,14 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowPickupLocationUpdates = true;
 				$allowRememberPickupLocation = false;
 				$allowHomeLibraryUpdates = false;
+				$enableCostSavingsForLibrary = false;
 			} else {
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowPickupLocationUpdates = ($patronHomeLibrary->allowPickupLocationUpdates == 1);
 				$allowRememberPickupLocation = ($patronHomeLibrary->allowRememberPickupLocation == 1);
 				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
+				$enableCostSavingsForLibrary = ($patronHomeLibrary->enableCostSavings == 1);
 			}
 
 			$isAssociatedWithILS = $user->hasIlsConnection();
@@ -46,6 +48,7 @@ class MyAccount_MyPreferences extends MyAccount {
 			$interface->assign('allowRememberPickupLocation', $allowRememberPickupLocation);
 			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
 			$interface->assign('isAssociatedWithILS', $isAssociatedWithILS);
+			$interface->assign('enableCostSavingsForLibrary', $enableCostSavingsForLibrary);
 
 			// Determine Pickup Locations
 			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);

@@ -203,6 +203,16 @@
 							&nbsp;{if $profile->disableCirculationActions==1} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
 						{/if}
 					</div>
+					{if $enableCostSavingsForLibrary}
+						<div class="form-group propertyRow">
+							<label for="enableCostSavings" class="control-label">{translate text='Display Library Savings' isPublicFacing=true}</label>&nbsp;
+							{if $edit == true}
+								<input type="checkbox" class="form-control" name="enableCostSavings" id="enableCostSavings" {if $profile->enableCostSavings==1}checked='checked'{/if} data-switch="">
+							{else}
+								&nbsp;{if $profile->enableCostSavings==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+							{/if}
+						</div>
+					{/if}
 
 					{if empty($offline) && $edit == true}
 						<div class="form-group propertyRow">

@@ -765,7 +765,7 @@ class CatalogConnection {
 				'isPublicFacing' => true,
 			]);
 		} elseif ($action == 'deleteAll') {
-			//Remove all titles from database (do not remove from ILS)
+			//Remove all titles from the database (do not remove from ILS)
 			$readingHistoryDB = new ReadingHistoryEntry();
 			$readingHistoryDB->userId = $patron->id;
 			$readingHistoryDB->find();
@@ -773,6 +773,8 @@ class CatalogConnection {
 				$readingHistoryDB->deleted = 1;
 				$readingHistoryDB->update();
 			}
+			$patron->totalCostSavings = 0;
+			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate([
 				'text' => 'Deleted all entries from Reading History.',
@@ -1170,6 +1172,7 @@ class CatalogConnection {
 			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
 			} else {
+				//TODO: This should check to see if the grouped work has been checked out rather than the record
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
 				if (!empty($checkout->groupedWorkId)) {
@@ -1184,9 +1187,14 @@ class CatalogConnection {
 				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
 				$historyEntryDB->format = substr($checkout->format, 0, 50);
 				$historyEntryDB->checkOutDate = time();
+				$historyEntryDB->costSavings = $checkout->getReplacementCost();
 				if (!$historyEntryDB->insert()) {
 					global $logger;
 					$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
+				}else{
+					if ($patron->enableCostSavings) {
+						$patron->__set('totalCostSavings', $patron->totalCostSavings + $historyEntryDB->costSavings);
+					}
 				}
 			}
 		}
