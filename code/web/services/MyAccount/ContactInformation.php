@@ -45,6 +45,7 @@ class MyAccount_ContactInformation extends MyAccount {
 				$symphonyNoticeCategoryOptions = $patronHomeLibrary->symphonyNoticeCategoryOptions;
 				$symphonyBillingNoticeCategoryNumber = $patronHomeLibrary->symphonyBillingNoticeCategoryNumber;
 				$symphonyNoticeCategoryNumber = $patronHomeLibrary->symphonyNoticeCategoryNumber;
+				$symphonyDefaultPhoneField = $patronHomeLibrary->symphonyDefaultPhoneField;
 				if (($user->_finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)) {
 					$canUpdateContactInfo = false;
 					$canUpdateAddress = false;
@@ -189,7 +190,7 @@ class MyAccount_ContactInformation extends MyAccount {
 		}
 
 		//Symphony specific options
-		if ($ils == "symphony" && !$offlineMode) {
+		if ($ils == "symphony") {
 			if (!empty($symphonyNoticeCategoryOptions)) {
 				$noticeOptions = explode('|', $symphonyNoticeCategoryOptions);
 			}
@@ -201,6 +202,7 @@ class MyAccount_ContactInformation extends MyAccount {
 			$interface->assign('billingNoticeOptions', $billingNoticeOptions ?? []);
 			$interface->assign('billingNoticeCategoryNumber', "category" . $symphonyBillingNoticeCategoryNumber ?? '');
 		}
+		$interface->assign('defaultPhoneField', strtolower($symphonyDefaultPhoneField) ?? 'phone');
 
 		$interface->assign('isHorizon', $ils == 'horizon');
 		$interface->assign('isCarlX', $ils == 'carlx');

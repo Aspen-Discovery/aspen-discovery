@@ -109,7 +109,11 @@
 								<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
 									{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && !$isHorizon}
-										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
+										{if $isSymphony && !empty($defaultPhoneField)}
+											<input type="tel" name="{$defaultPhoneField}" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
+										{else}
+											<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
+										{/if}
 									{else}
 										{$profile->phone|escape}
 									{/if}

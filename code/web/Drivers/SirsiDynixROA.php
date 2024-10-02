@@ -197,9 +197,20 @@ class SirsiDynixROA extends HorizonAPI {
 							case 'ZIP' :
 								$Zip = $fields->data;
 								break;
+							// If the library does not use the PHONE field, set $user->phone to DAYPHONE or HOMEPHONE
+							case 'DAYPHONE' :
+								$dayphone = $fields->data;
+								$user->phone = $dayphone;
+							case 'HOMEPHONE' :
+								$homephone = $fields->data;
+								$user->phone = $homephone;
 							case 'PHONE' :
 								$phone = $fields->data;
 								$user->phone = $phone;
+								break;
+							case 'CELLPHONE' :
+								$cellphone = $fields->data;
+								$user->_mobileNumber = $cellphone;
 								break;
 							case 'EMAIL' :
 								$email = $fields->data;
@@ -2339,6 +2350,21 @@ class SirsiDynixROA extends HorizonAPI {
 								$patron->email = $_REQUEST['email'];
 							}
 
+							if (isset($_REQUEST['homephone'])) {
+								$this->setPatronUpdateFieldBySearch('HOMEPHONE', $_REQUEST['homephone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->phone = $_REQUEST['homephone'];
+							}
+
+							if (isset($_REQUEST['dayphone'])) {
+								$this->setPatronUpdateFieldBySearch('DAYPHONE', $_REQUEST['dayphone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->phone = $_REQUEST['dayphone'];
+							}
+
+							if (isset($_REQUEST['cellphone'])) {
+								$this->setPatronUpdateFieldBySearch('CELLPHONE', $_REQUEST['cellphone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->_mobileNumber = $_REQUEST['cellphone'];
+							}
+
 							if (isset($_REQUEST['phone'])) {
 								$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
 								$patron->phone = $_REQUEST['phone'];
@@ -2633,9 +2659,20 @@ class SirsiDynixROA extends HorizonAPI {
 					case 'ZIP' :
 						$Zip = $fields->data;
 						break;
+					// If the library does not use the PHONE field, set $user->phone to DAYPHONE or HOMEPHONE
+					case 'DAYPHONE' :
+						$dayphone = $fields->data;
+						$user->phone = $dayphone;
+					case 'HOMEPHONE' :
+						$homephone = $fields->data;
+						$user->phone = $homephone;
 					case 'PHONE' :
 						$phone = $fields->data;
 						$user->phone = $phone;
+						break;
+					case 'CELLPHONE' :
+						$cellphone = $fields->data;
+						$user->_mobileNumber = $cellphone;
 						break;
 					case 'EMAIL' :
 						$email = $fields->data;

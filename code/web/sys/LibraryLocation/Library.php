@@ -248,6 +248,7 @@ class Library extends DataObject {
 	public $allowPatronWorkPhoneNumberUpdates;
 	public $showWorkPhoneInProfile;
 	public $showNoticeTypeInProfile;
+	public $symphonyDefaultPhoneField;
 	public $symphonyNoticeCategoryNumber;
 	public $symphonyNoticeCategoryOptions;
 	public $symphonyBillingNoticeCategoryNumber;
@@ -1913,6 +1914,16 @@ class Library extends DataObject {
 								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
 								'hideInLists' => true,
 								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyDefaultPhoneField' => [
+								'property' => 'symphonyDefaultPhoneField',
+								'type' => 'text',
+								'label' => 'Symphony Default Phone Field',
+								'description' => 'The default phone field name (usually PHONE, but sometimes DAYPHONE or HOMEPHONE)',
+								'hideInLists' => true,
+								'size' => '16',
+								'default' => 'PHONE',
 								'permissions' => ['Library ILS Connection'],
 							],
 							'symphonyNoticeCategoryNumber' => [
