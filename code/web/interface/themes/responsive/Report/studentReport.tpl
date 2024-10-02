@@ -1,4 +1,3 @@
-{debug}
 {strip}
 	<div id="main-content" class="col-md-12">
 		<div class="doNotPrint">
