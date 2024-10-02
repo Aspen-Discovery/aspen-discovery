@@ -175,7 +175,6 @@
 			<tbody>
 {assign var=previousPatron value=0}
 {foreach from=$reportData item=dataRow name=overdueData}
-	{if empty($smarty.foreach.overdueData.first)}
 	{if $dataRow.P_BARCODE != $previousPatron}
 		{if $smarty.foreach.overdueData.index > 0}</div></div></td></tr>{/if}
 				<tr class="overdueSlipContainer">
@@ -219,7 +218,6 @@
 									<div class="DUE_DATE">{$dataRow.DUE_DATE}</div>
 									<div class="PRICE">{$dataRow.OWED|regex_replace:"/^ *0\.00$/":"10.00"}</div>
 								</div>	
-	{/if}
 {/foreach}
 					</td>
 				</tr>
