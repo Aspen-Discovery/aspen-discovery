@@ -92,24 +92,30 @@ class Record_AccessOnline extends Action {
 	public function trackUserUsageOfSideLoad(int $sideLoadId): void {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
+
 		global $aspenUsage;
 		$userUsage->instance = $aspenUsage->getInstance();
+		$userSideLoadTracking = true;
 		if (UserAccount::getActiveUserId() == false) {
 			//User is not logged in
 			$userUsage->userId = -1;
 		} else {
 			$userUsage->userId = UserAccount::getActiveUserId();
+			$userObj = UserAccount::getActiveUserObj();
+			$userSideLoadTracking = $userObj->userCookiePreferenceLocalAnalytics;
 		}
 		$userUsage->sideLoadId = $sideLoadId;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 
-		if ($userUsage->find(true)) {
-			$userUsage->usageCount++;
-			$userUsage->update();
-		} else {
-			$userUsage->usageCount = 1;
-			$userUsage->insert();
+		if ($userSideLoadTracking) {
+			if ($userUsage->find(true)) {
+				$userUsage->usageCount++;
+				$userUsage->update();
+			} else {
+				$userUsage->usageCount = 1;
+				$userUsage->insert();
+			}
 		}
 	}
 
