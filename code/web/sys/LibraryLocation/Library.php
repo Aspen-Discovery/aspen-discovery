@@ -248,6 +248,11 @@ class Library extends DataObject {
 	public $allowPatronWorkPhoneNumberUpdates;
 	public $showWorkPhoneInProfile;
 	public $showNoticeTypeInProfile;
+	public $symphonyDefaultPhoneField;
+	public $symphonyNoticeCategoryNumber;
+	public $symphonyNoticeCategoryOptions;
+	public $symphonyBillingNoticeCategoryNumber;
+	public $symphonyBillingNoticeCategoryOptions;
 	public $allowPickupLocationUpdates;
 	public $showAlternateLibraryOptionsInProfile;
 	public $additionalCss;
@@ -1909,6 +1914,60 @@ class Library extends DataObject {
 								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
 								'hideInLists' => true,
 								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyDefaultPhoneField' => [
+								'property' => 'symphonyDefaultPhoneField',
+								'type' => 'text',
+								'label' => 'Symphony Default Phone Field',
+								'description' => 'The default phone field name (usually PHONE, but sometimes DAYPHONE or HOMEPHONE)',
+								'hideInLists' => true,
+								'size' => '16',
+								'default' => 'PHONE',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyNoticeCategoryNumber' => [
+								'property' => 'symphonyNoticeCategoryNumber',
+								'type' => 'text',
+								'label' => 'User Category Number for Notice Preference',
+								'description' => 'Which Symphony User Category number contains notice options - include leading 0 (ie, 02, not 2)',
+								'note' => 'For Symphony, allows the user to choose between notice options',
+								'hideInLists' => true,
+								'size' => '2',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyNoticeCategoryOptions' => [
+								'property' => 'symphonyNoticeCategoryOptions',
+								'type' => 'text',
+								'label' => 'User Category Notice Options',
+								'description' => 'Symphony User Category notice options separated by pipes | (ex. EMAIL|PHONE|SMSTEXT).',
+								'note' => 'For Symphony, allows the user to choose between notice options',
+								'hideInLists' => true,
+								'size' => '128',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyBillingNoticeCategoryNumber' => [
+								'property' => 'symphonyBillingNoticeCategoryNumber',
+								'type' => 'text',
+								'label' => 'User Category Number for Billing Notice Preference',
+								'description' => 'Which Symphony User Category number contains billing notice options - include leading 0 (ie, 02, not 2)',
+								'note' => 'For Symphony, allows the user to choose between billing notice options',
+								'hideInLists' => true,
+								'size' => '2',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyBillingNoticeCategoryOptions' => [
+								'property' => 'symphonyBillingNoticeCategoryOptions',
+								'type' => 'text',
+								'label' => 'User Category Billing Notice Options',
+								'description' => 'Symphony User Category billing notice options separated by pipes | (ex. B-EMAIL|B-PAPER).',
+								'note' => 'For Symphony, allows the user to choose between billing notice options',
+								'hideInLists' => true,
+								'size' => '128',
+								'default' => '',
 								'permissions' => ['Library ILS Connection'],
 							],
 							'addSMSIndicatorToPhone' => [
