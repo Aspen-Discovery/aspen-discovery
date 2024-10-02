@@ -353,7 +353,7 @@ if (isset($_REQUEST['lookfor'])) {
 		if ($cleanedSearchTerm != $searchTerm) {
 			$searchTerm = $cleanedSearchTerm;
 		}
-		if (strlen($searchTerm) >= 256) {
+		if (strlen($searchTerm) >= 500) {
 			$interface->setTemplate('../queryTooLong.tpl');
 			$interface->setPageTitle('An Error has occurred');
 			$interface->display('layout.tpl');
