@@ -122,6 +122,7 @@ class User extends DataObject {
 	private $_numHoldsAvailableOverDrive = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_notices;
+	public $_billingNotices = "-";
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
 	private $_readingHistorySize = 0;

@@ -41,6 +41,11 @@ class MyAccount_ContactInformation extends MyAccount {
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking = ($patronHomeLibrary->allowLinkedAccounts == 1);
+				$symphonyBillingNoticeCategoryOptions = $patronHomeLibrary->symphonyBillingNoticeCategoryOptions;
+				$symphonyNoticeCategoryOptions = $patronHomeLibrary->symphonyNoticeCategoryOptions;
+				$symphonyBillingNoticeCategoryNumber = $patronHomeLibrary->symphonyBillingNoticeCategoryNumber;
+				$symphonyNoticeCategoryNumber = $patronHomeLibrary->symphonyNoticeCategoryNumber;
+				$symphonyDefaultPhoneField = $patronHomeLibrary->symphonyDefaultPhoneField;
 				if (($user->_finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)) {
 					$canUpdateContactInfo = false;
 					$canUpdateAddress = false;
@@ -184,8 +189,24 @@ class MyAccount_ContactInformation extends MyAccount {
 			$interface->assign('phoneTypes', $phoneTypes);
 		}
 
+		//Symphony specific options
+		if ($ils == "symphony") {
+			if (!empty($symphonyNoticeCategoryOptions)) {
+				$noticeOptions = explode('|', $symphonyNoticeCategoryOptions);
+			}
+			if (!empty($symphonyBillingNoticeCategoryOptions)) {
+				$billingNoticeOptions = explode('|', $symphonyBillingNoticeCategoryOptions);
+			}
+			$interface->assign('noticeOptions', $noticeOptions ?? []);
+			$interface->assign('noticeCategoryNumber', "category" . $symphonyNoticeCategoryNumber ?? '');
+			$interface->assign('billingNoticeOptions', $billingNoticeOptions ?? []);
+			$interface->assign('billingNoticeCategoryNumber', "category" . $symphonyBillingNoticeCategoryNumber ?? '');
+		}
+		$interface->assign('defaultPhoneField', strtolower($symphonyDefaultPhoneField) ?? 'phone');
+
 		$interface->assign('isHorizon', $ils == 'horizon');
 		$interface->assign('isCarlX', $ils == 'carlx');
+		$interface->assign('isSymphony', $ils == 'symphony');
 
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}
