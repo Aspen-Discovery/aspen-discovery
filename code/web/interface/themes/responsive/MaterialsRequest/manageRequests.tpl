@@ -216,6 +216,12 @@
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
+								{if !empty($page)}
+									<input type="hidden" name="page" value="{$page}">
+								{/if}
+								{if !empty($pageSize)}
+									<input type="hidden" name="pageSize" value="{$pageSize}">
+								{/if}
 								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
