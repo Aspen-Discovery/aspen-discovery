@@ -3065,8 +3065,8 @@ class Library extends DataObject {
 							'restrictOwningBranchesAndSystems' => [
 								'property' => 'restrictOwningBranchesAndSystems',
 								'type' => 'checkbox',
-								'label' => 'Restrict Library System, Branch, and Available At Facets to this library',
-								'description' => 'Restrict Owning Library and Owning Branches, and Available At Facets to this library',
+								'label' => 'Restrict Library System, Branch, Available At Facets, and Call Numbers to this library',
+								'description' => 'Restrict Owning Library and Owning Branches, Available At Facets, and Call Numbers to this library',
 								'default' => 1,
 								'forcesReindex' => true,
 							],

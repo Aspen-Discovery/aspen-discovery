@@ -36,53 +36,55 @@
 					{/if}
 				</div>
 			</div>
-			<div class="row"><div class="col-xs-12">&nbsp;</div> </div>
-			<div class="row">
-				<div class="col-xs-12">
-					{if $profile->trackReadingHistory}
-						<p>{translate text="You are saving %1% with what is currently checked out from the library and you have saved %2% by checking out the materials in your reading history from the library." 1=$currentCostSavings 2=$totalCostSavings isPublicFacing=true}</p>
-					{else}
-						<p>{translate text="You are saving %1% with what is currently checked out from the library." 1=$currentCostSavings isPublicFacing=true}</p>
-						<p>{translate text="Start recording your <a href='/MyAccount/ReadingHistory'>reading history</a> to see your cost savings over time." 1=$currentCostSavings isPublicFacing=true}</p>
-					{/if}
-				</div>
-			</div>
-			{if $showGraphs}
+			{if $profile->enableCostSavings}
+				<div class="row"><div class="col-xs-12">&nbsp;</div> </div>
 				<div class="row">
 					<div class="col-xs-12">
-						<h2>{translate text="Monthly Savings" isPublicFacing=true}</h2>
+						{if $profile->trackReadingHistory}
+							<p>{translate text="You are saving %1% with what is currently checked out from the library and you have saved %2% by checking out the materials in your reading history from the library." 1=$currentCostSavings 2=$totalCostSavings isPublicFacing=true}</p>
+						{else}
+							<p>{translate text="You are saving %1% with what is currently checked out from the library." 1=$currentCostSavings isPublicFacing=true}</p>
+							<p>{translate text="Start recording your <a href='/MyAccount/ReadingHistory'>reading history</a> to see your cost savings over time." 1=$currentCostSavings isPublicFacing=true}</p>
+						{/if}
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-xs-12">
-						<label for="yearToShow" class="control-label">{translate text="Year to Show" isPublicFacing="true"}</label>
-						<select name="yearToShow" id="yearToShow" class="form-control" onchange="document.location.href = this.options[this.selectedIndex].value;">
-							{foreach from=$yearsToShow item=year}
-								<option value="\MyAccount\LibrarySavings?yearToShow={$year}" {if $year==$yearToShow}selected="selected"{/if}>{$year}</option>
-							{/foreach}
-						</select>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-xs-12">
-						<div class="chart-container" style="position: relative; height:50%; width:100%">
-							<canvas id="monthlySavingsChart"></canvas>
+				{if $showGraphs}
+					<div class="row">
+						<div class="col-xs-12">
+							<h2>{translate text="Monthly Savings" isPublicFacing=true}</h2>
 						</div>
 					</div>
-				</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<label for="yearToShow" class="control-label">{translate text="Year to Show" isPublicFacing="true"}</label>
+							<select name="yearToShow" id="yearToShow" class="form-control" onchange="document.location.href = this.options[this.selectedIndex].value;">
+								{foreach from=$yearsToShow item=year}
+									<option value="\MyAccount\LibrarySavings?yearToShow={$year}" {if $year==$yearToShow}selected="selected"{/if}>{$year}</option>
+								{/foreach}
+							</select>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="chart-container" style="position: relative; height:50%; width:100%">
+								<canvas id="monthlySavingsChart"></canvas>
+							</div>
+						</div>
+					</div>
 
-				<div class="row">
-					<div class="col-xs-12">
-						<h2>{translate text="Yearly Savings" isPublicFacing=true}</h2>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-xs-12">
-						<div class="chart-container" style="position: relative; height:50%; width:100%">
-							<canvas id="yearlySavingsChart"></canvas>
+					<div class="row">
+						<div class="col-xs-12">
+							<h2>{translate text="Yearly Savings" isPublicFacing=true}</h2>
 						</div>
 					</div>
-				</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="chart-container" style="position: relative; height:50%; width:100%">
+								<canvas id="yearlySavingsChart"></canvas>
+							</div>
+						</div>
+					</div>
+				{/if}
 			{/if}
 		{/if}
 		{/strip}
