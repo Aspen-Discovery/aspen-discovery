@@ -15,14 +15,14 @@ if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFieldsToDisplay.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFieldsToDisplay.php';
 }
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormats.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
 }
-if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
-	require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormFields.php';
 }
 if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
@@ -248,6 +248,11 @@ class Library extends DataObject {
 	public $allowPatronWorkPhoneNumberUpdates;
 	public $showWorkPhoneInProfile;
 	public $showNoticeTypeInProfile;
+	public $symphonyDefaultPhoneField;
+	public $symphonyNoticeCategoryNumber;
+	public $symphonyNoticeCategoryOptions;
+	public $symphonyBillingNoticeCategoryNumber;
+	public $symphonyBillingNoticeCategoryOptions;
 	public $allowPickupLocationUpdates;
 	public $showAlternateLibraryOptionsInProfile;
 	public $additionalCss;
@@ -340,6 +345,8 @@ class Library extends DataObject {
 	public $enableReadingHistory;
 	public $optInToReadingHistoryUpdatesILS;
 	public $optOutOfReadingHistoryUpdatesILS;
+	public $enableCostSavings;
+	protected $_costSavingsExplanation;
 	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
@@ -470,7 +477,7 @@ class Library extends DataObject {
 	private $_materialsRequestFormFields;
 	/** @var MaterialsRequestFieldsToDisplay[] */
 	private $_materialsRequestFieldsToDisplay;
-	/** @var MaterialsRequestFormats[] */
+	/** @var MaterialsRequestFormat[] */
 	private $_materialsRequestFormats;
 
 
@@ -539,7 +546,7 @@ class Library extends DataObject {
 		unset($manageMaterialsRequestFieldsToDisplayStructure['libraryId']); //needed?
 		unset($manageMaterialsRequestFieldsToDisplayStructure['weight']);
 
-		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure($context);
+		$materialsRequestFormatsStructure = MaterialsRequestFormat::getObjectStructure($context);
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);
 
@@ -1599,6 +1606,30 @@ class Library extends DataObject {
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
 					],
+					'enableCostSavings' => [
+						'property' => 'enableCostSavings',
+						'type' => 'checkbox',
+						'label' => 'Enable Cost Savings',
+						'description' => 'Whether or not library costs savings are shown to patrons within Aspen.',
+						'hideInLists' => true,
+						'default' => 1,
+					],
+					'costSavingsExplanationEnabled' => [
+						'property' => 'costSavingsExplanationEnabled',
+						'type' => 'translatableTextBlock',
+						'label' => 'Cost Savings Enabled Explanation',
+						'description' => 'Provide additional information about how Library Cost Savings Work when cost savings are enabled',
+						'defaultTextFile' => 'Library_costSavingsExplanationEnabled.MD',
+						'hideInLists' => true,
+					],
+					'costSavingsExplanationDisabled' => [
+						'property' => 'costSavingsExplanationDisabled',
+						'type' => 'translatableTextBlock',
+						'label' => 'Cost Savings Disabled Explanation',
+						'description' => 'Provide additional information about how Library Cost Savings Work when cost savings are disabled',
+						'defaultTextFile' => 'Library_costSavingsExplanationDisabled.MD',
+						'hideInLists' => true,
+					],
 					'enableSavedSearches' => [
 						'property' => 'enableSavedSearches',
 						'type' => 'checkbox',
@@ -1909,6 +1940,60 @@ class Library extends DataObject {
 								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
 								'hideInLists' => true,
 								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyDefaultPhoneField' => [
+								'property' => 'symphonyDefaultPhoneField',
+								'type' => 'text',
+								'label' => 'Symphony Default Phone Field',
+								'description' => 'The default phone field name (usually PHONE, but sometimes DAYPHONE or HOMEPHONE)',
+								'hideInLists' => true,
+								'size' => '16',
+								'default' => 'PHONE',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyNoticeCategoryNumber' => [
+								'property' => 'symphonyNoticeCategoryNumber',
+								'type' => 'text',
+								'label' => 'User Category Number for Notice Preference',
+								'description' => 'Which Symphony User Category number contains notice options - include leading 0 (ie, 02, not 2)',
+								'note' => 'For Symphony, allows the user to choose between notice options',
+								'hideInLists' => true,
+								'size' => '2',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyNoticeCategoryOptions' => [
+								'property' => 'symphonyNoticeCategoryOptions',
+								'type' => 'text',
+								'label' => 'User Category Notice Options',
+								'description' => 'Symphony User Category notice options separated by pipes | (ex. EMAIL|PHONE|SMSTEXT).',
+								'note' => 'For Symphony, allows the user to choose between notice options',
+								'hideInLists' => true,
+								'size' => '128',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyBillingNoticeCategoryNumber' => [
+								'property' => 'symphonyBillingNoticeCategoryNumber',
+								'type' => 'text',
+								'label' => 'User Category Number for Billing Notice Preference',
+								'description' => 'Which Symphony User Category number contains billing notice options - include leading 0 (ie, 02, not 2)',
+								'note' => 'For Symphony, allows the user to choose between billing notice options',
+								'hideInLists' => true,
+								'size' => '2',
+								'default' => '',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'symphonyBillingNoticeCategoryOptions' => [
+								'property' => 'symphonyBillingNoticeCategoryOptions',
+								'type' => 'text',
+								'label' => 'User Category Billing Notice Options',
+								'description' => 'Symphony User Category billing notice options separated by pipes | (ex. B-EMAIL|B-PAPER).',
+								'note' => 'For Symphony, allows the user to choose between billing notice options',
+								'hideInLists' => true,
+								'size' => '128',
+								'default' => '',
 								'permissions' => ['Library ILS Connection'],
 							],
 							'addSMSIndicatorToPhone' => [
@@ -3371,7 +3456,7 @@ class Library extends DataObject {
 						'description' => 'Determine which material formats are available to patrons for request',
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
-						'subObjectType' => 'MaterialsRequestFormats',
+						'subObjectType' => 'MaterialsRequestFormat/s',
 						'structure' => $materialsRequestFormatsStructure,
 						'sortable' => true,
 						'storeDb' => true,
@@ -4392,6 +4477,11 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->saveTextBlockTranslations('costSavingsExplanationEnabled');
+			$this->saveTextBlockTranslations('costSavingsExplanationDisabled');
+			if (in_array('cookieStorageConsent', $this->_changedFields)) {
+				$this->updateLocalAnalyticsPreferences();
+			}
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4403,13 +4493,22 @@ class Library extends DataObject {
 				$user->query("update user set displayName = '' where homeLocationId = {$libraryLocations->locationId}");
 			}
 		}
+		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
+			$libraryLocations = new Location();
+			$libraryLocations->libraryId = $this->libraryId;
+			$libraryLocations->find();
+			while ($libraryLocations->fetch()) {
+				$user = new User();
+				/** @noinspection SqlResolve */
+				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
+			}
+		}
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
 			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
-
 		return $ret;
 	}
 
@@ -4449,6 +4548,8 @@ class Library extends DataObject {
 			$this->saveThemes();
 			$this->saveILLItemTypes();
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
+			$this->saveTextBlockTranslations('costSavingsExplanationEnabled');
+			$this->saveTextBlockTranslations('costSavingsExplanationDisabled');
 		}
 		return $ret;
 	}
@@ -4531,7 +4632,7 @@ class Library extends DataObject {
 
 	public function saveMaterialsRequestFormats() {
 		if (isset ($this->_materialsRequestFormats) && is_array($this->_materialsRequestFormats)) {
-			/** @var MaterialsRequestFormats $object */
+			/** @var MaterialsRequestFormat $object */
 			foreach ($this->_materialsRequestFormats as $object) {
 				if ($object->_deleteOnSave == true) {
 					$deleteCheck = $object->delete();
@@ -4700,7 +4801,7 @@ class Library extends DataObject {
 	}
 
 	public function clearMaterialsRequestFormats() {
-		$this->clearOneToManyOptions('MaterialsRequestFormats', 'libraryId');
+		$this->clearOneToManyOptions('MaterialsRequestFormat', 'libraryId');
 		$this->_materialsRequestFormats = [];
 	}
 
@@ -4753,6 +4854,30 @@ class Library extends DataObject {
 			unset($this->_holidays);
 		}
 	}
+
+	public function updateLocalAnalyticsPreferences(){
+		//Find all locations with given library Id
+		$locations = [];
+		$location = new Location();
+		$location->libraryId = $this->libraryId;
+		$location->find();
+		//Clone each matching location and add to array
+		while ($location->fetch()) {
+			$locations[] = clone $location;
+		}
+		//For each location, find all users with a amtching homelocationId
+		foreach ($locations as $location) {
+			$user = new User();
+			$user->homeLocationId = $location->locationId;
+			$user->find();
+			//For these user, update userCookiePreferenceLocalAnalytics based on cookieStorageConsent value
+			while ($user->fetch()) {
+				$user->userCookiePreferenceLocalAnalytics = $this->cookieStorageConsent ==1 ? 0 : 1;
+				$user->update();
+			}
+		}
+	}
+	
 
 	public function getILLItemTypes() {
 		if (!isset($this->_interLibraryLoanItemTypes)) {
@@ -5030,12 +5155,12 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @return array|null
+	 * @return MaterialsRequestFormat[]|null
 	 */
-	public function getMaterialsRequestFormats() {
+	public function getMaterialsRequestFormats() : ?array{
 		if (!isset($this->_materialsRequestFormats) && $this->libraryId) {
 			$this->_materialsRequestFormats = [];
-			$materialsRequestFormats = new MaterialsRequestFormats();
+			$materialsRequestFormats = new MaterialsRequestFormat();
 			$materialsRequestFormats->libraryId = $this->libraryId;
 			$materialsRequestFormats->orderBy('weight');
 			if ($materialsRequestFormats->find()) {
@@ -5135,6 +5260,10 @@ class Library extends DataObject {
 			'showAvailableCoversInSummon' => $this->showAvailableCoversInSummon,
 			'showAlternateLibraryCard' => $this->showAlternateLibraryCard,
 			'enableAspenMaterialsRequest' => false,
+			'enableSelfRegistration' => (int)$this->enableSelfRegistration,
+			'selfRegistrationFormMessage' => $this->selfRegistrationFormMessage,
+			'selfRegistrationSuccessMessage' => $this->selfRegistrationSuccessMessage,
+			'promptForBirthDateInSelfReg' => $this->promptForBirthDateInSelfReg,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -5189,6 +5318,7 @@ class Library extends DataObject {
 		$forgotPasswordType = 'none';
 		$ils = 'unknown';
 		$hasIlsInbox = false;
+		$catalogRegistrationCapabilities = [];
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
@@ -5197,6 +5327,7 @@ class Library extends DataObject {
 			}
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
 			$hasIlsInbox = $catalog->hasIlsInbox();
+			$catalogRegistrationCapabilities = $catalog->getRegistrationCapabilities();
 		}
 
 		$accountProfile = $this->getAccountProfile();
@@ -5208,6 +5339,7 @@ class Library extends DataObject {
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
 		$apiInfo['displayIlsInbox'] = $hasIlsInbox;
+		$apiInfo['catalogRegistrationCapabilities'] = $catalogRegistrationCapabilities;
 
 		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
@@ -5233,6 +5365,7 @@ class Library extends DataObject {
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
+		$apiInfo['enableSelfRegistrationInApp'] = $generalSettings->enableSelfRegistration ?? 0;
 
 		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
 
@@ -5284,8 +5417,8 @@ class Library extends DataObject {
 			}
 		}
 
-		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+		if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php')) {
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 			$apiInfo['enableAspenMaterialsRequest'] = MaterialsRequest::enableAspenMaterialsRequest();
 		}
 

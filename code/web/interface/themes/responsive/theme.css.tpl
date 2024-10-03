@@ -444,7 +444,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
-    background-color: {$defaultButtonHoverBackgroundColor}70 !important;
+    background-color: {$defaultButtonHoverBackgroundColor} !important;
     color: {$defaultButtonHoverForegroundColor} !important;
     border-color: {$defaultButtonBorderColor};
 {rdelim}

@@ -92,7 +92,7 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
 						{if $record->canReturnEarly}
-							<a href="#" onclick="return AspenDiscovery.PalaceProject.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-info">{translate text='Return Now' isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.PalaceProject.returnCheckout('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-warning">{translate text='Return Now' isPublicFacing=true}</a>
 						{/if}
 					</div>
 					{if !empty($showWhileYouWait)}

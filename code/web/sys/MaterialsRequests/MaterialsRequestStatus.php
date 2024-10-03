@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -12,6 +12,10 @@ class MaterialsRequestStatus extends DataObject {
 	public $emailTemplate;
 	public $isOpen;
 	public $isPatronCancel;
+	public $checkForHolds;
+	public $holdPlacedSuccessfully;
+	public $holdFailed;
+
 	public $libraryId;
 
 	public function getUniquenessFields(): array {
@@ -21,6 +25,21 @@ class MaterialsRequestStatus extends DataObject {
 		];
 	}
 
+	public function getNumericColumnNames() : array {
+		return [
+			'id',
+			'isDefault',
+			'sendEmailToPatron',
+			'isOpen',
+			'isPatronCancel',
+			'checkForHolds',
+			'holdPlacedSuccessfully',
+			'holdFailed',
+			'libraryId'
+		];
+	}
+
+	/** @noinspection PhpUnusedParameterInspection */
 	static function getObjectStructure($context = ''): array {
 		$libraryList = [];
 		$library = new Library();
@@ -43,7 +62,7 @@ class MaterialsRequestStatus extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id of the libary within the database',
+				'description' => 'The unique id of the library within the database',
 			],
 			'description' => [
 				'property' => 'description',
@@ -56,20 +75,39 @@ class MaterialsRequestStatus extends DataObject {
 				'property' => 'isDefault',
 				'type' => 'checkbox',
 				'label' => 'Default Status?',
-				'description' => 'Whether or not this status is the default status to apply to new requests',
+				'description' => 'Whether this status is the default status to apply to new requests',
 			],
 			'isPatronCancel' => [
 				'property' => 'isPatronCancel',
 				'type' => 'checkbox',
 				'label' => 'Set When Patron Cancels?',
-				'description' => 'Whether or not this status should be set when the patron cancels their request',
+				'description' => 'Whether this status should be set when the patron cancels their request',
 			],
 			'isOpen' => [
 				'property' => 'isOpen',
 				'type' => 'checkbox',
 				'label' => 'Open Status?',
-				'description' => 'Whether or not this status needs further processing',
+				'description' => 'Whether this status needs further processing',
 			],
+			'checkForHolds' => [
+				'property' => 'checkForHolds',
+				'type' => 'checkbox',
+				'label' => 'Check for holds?',
+				'description' => 'If the status has this option checked, any requests with this title will be checked to see if the title is in Aspen so a hold can be placed for it.',
+			],
+			'holdPlacedSuccessfully' => [
+				'property' => 'holdPlacedSuccessfully',
+				'type' => 'checkbox',
+				'label' => 'Hold Placed Successfully?',
+				'description' => 'Only one status can be flagged with this option. When a hold is placed successfully, the request will be moved to this status.',
+			],
+			'holdFailed' => [
+				'property' => 'holdFailed',
+				'type' => 'checkbox',
+				'label' => 'Hold Failed?',
+				'description' => 'Only one status can be flagged with this option. When a hold cannot be placed, the request will be moved to this status. (Staff can also choose to not move requests to this status and retry later)',
+			],
+
 			'sendEmailToPatron' => [
 				'property' => 'sendEmailToPatron',
 				'type' => 'checkbox',

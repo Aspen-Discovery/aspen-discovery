@@ -293,7 +293,7 @@ class TwoFactorAuthCode extends DataObject {
 		}
 	}
 
-	function canActiveUserEdit() {
+	function canActiveUserEdit() : bool {
 		return false;
 	}
 }

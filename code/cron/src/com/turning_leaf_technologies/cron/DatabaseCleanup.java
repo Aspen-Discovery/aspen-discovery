@@ -34,7 +34,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldIndexingDiagnostics(dbConn, logger, processLog);
 
 		removeOldObjectHistory(dbConn, logger, processLog);
-
+		removeLocalAnalyticsTracking(dbConn, logger, processLog);
 		processLog.setFinished();
 		processLog.saveResults();
 	}
@@ -467,4 +467,125 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	private void removeLocalAnalyticsTracking(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try {
+			//Get userIDs that have cookie consent for external search sources set to 0
+			PreparedStatement getNoLocalAnalyticsTrackingUserIdsStmt = dbConn.prepareStatement("SELECT id, analyticsDataCleared FROM user WHERE userCookiePreferenceLocalAnalytics = 0");
+			ResultSet userIdsRS = getNoLocalAnalyticsTrackingUserIdsStmt.executeQuery();
+
+			PreparedStatement removeAxis360UsageStmt = dbConn.prepareStatement("DELETE FROM user_axis360_usage WHERE userId = ?");
+			PreparedStatement removeCloudLibraryUsageStmt = dbConn.prepareStatement("DELETE FROM user_cloud_library_usage WHERE userId = ?");
+			PreparedStatement removeEbscoHostUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebscohost_usage WHERE userId = ?");
+			PreparedStatement removeEbscoEdsUsageStmt = dbConn.prepareStatement("DELETE FROM user_ebsco_eds_usage WHERE userId = ?");
+			PreparedStatement removeHooplaUsageStmt = dbConn.prepareStatement("DELETE FROM user_hoopla_usage WHERE userId = ?");
+			PreparedStatement removeOverdriveUsageStmt = dbConn.prepareStatement("DELETE FROM user_overdrive_usage WHERE userId = ?");
+			PreparedStatement removePalaceProjectUsageStmt = dbConn.prepareStatement("DELETE FROM user_palace_project_usage WHERE userId = ?");
+			PreparedStatement removeSideloadUsageStmt = dbConn.prepareStatement("DELETE FROM user_sideload_usage WHERE userId = ?");
+			PreparedStatement removeSummonUsageStmt = dbConn.prepareStatement("DELETE FROM user_summon_usage WHERE userId = ?");
+			PreparedStatement removeWebIndexerUsageStmt = dbConn.prepareStatement("DELETE FROM user_website_usage WHERE userId = ?");
+			PreparedStatement removeEventsUsageStmt = dbConn.prepareStatement("DELETE FROM user_events_usage WHERE userId = ?");
+			PreparedStatement removeOpenArchivesUsageStmt = dbConn.prepareStatement("DELETE FROM user_open_archives_usage WHERE userId = ?");
+
+			PreparedStatement updateAnalyticsDataClearedStmt = dbConn.prepareStatement("UPDATE user SET analyticsDataCleared = 1 WHERE id = ?");
+
+			int totalRowsRemovedAXIS360 = 0;
+			int totalRowsRemovedCloudLibrary = 0;
+			int totalRowsRemovedEbscoHost = 0;
+			int totalRowsRemovedEbscoEds = 0;
+			int totalRowsRemovedHoopla = 0;
+			int totalRowsRemovedOverdrive = 0;
+			int totalRowsRemovedPalaceProject = 0;
+			int totalRowsRemovedSideload = 0;
+			int totalRowsRemovedSummon = 0;
+			int totalRowsRemovedWebIndexer = 0;
+			int totalRowsRemovedEvents = 0;
+			int totalRowsRemovedOpenArchives = 0;
+
+			while (userIdsRS.next()) {
+				int userId = userIdsRS.getInt("id");
+				boolean analyticsDataCleared = userIdsRS.getBoolean("analyticsDataCleared");
+				//If analytics data has not been cleared for current user, proceed
+				if (!analyticsDataCleared) {
+					removeAxis360UsageStmt.setInt(1, userId);
+					totalRowsRemovedAXIS360 += removeAxis360UsageStmt.executeUpdate();
+	
+					removeCloudLibraryUsageStmt.setInt(1, userId);
+					totalRowsRemovedCloudLibrary += removeCloudLibraryUsageStmt.executeUpdate();
+	
+					removeEbscoHostUsageStmt.setInt(1, userId);
+					totalRowsRemovedEbscoHost += removeEbscoHostUsageStmt.executeUpdate();
+	
+					removeEbscoEdsUsageStmt.setInt(1, userId);
+					totalRowsRemovedEbscoEds += removeEbscoEdsUsageStmt.executeUpdate();
+	
+					removeHooplaUsageStmt.setInt(1, userId);
+					totalRowsRemovedHoopla += removeHooplaUsageStmt.executeUpdate();
+	
+					removeOverdriveUsageStmt.setInt(1, userId);
+					totalRowsRemovedOverdrive += removeOverdriveUsageStmt.executeUpdate();
+	
+					removePalaceProjectUsageStmt.setInt(1, userId);
+					totalRowsRemovedPalaceProject += removePalaceProjectUsageStmt.executeUpdate();
+	
+					removeSideloadUsageStmt.setInt(1, userId);
+					totalRowsRemovedSideload += removeSideloadUsageStmt.executeUpdate();
+	
+					removeSummonUsageStmt.setInt(1, userId);
+					totalRowsRemovedSummon += removeSummonUsageStmt.executeUpdate();
+	
+					removeWebIndexerUsageStmt.setInt(1, userId);
+					totalRowsRemovedWebIndexer += removeWebIndexerUsageStmt.executeUpdate();
+	
+					removeEventsUsageStmt.setInt(1, userId);
+					totalRowsRemovedEvents += removeEventsUsageStmt.executeUpdate();
+	
+					removeOpenArchivesUsageStmt.setInt(1, userId);
+					totalRowsRemovedOpenArchives += removeOpenArchivesUsageStmt.executeUpdate();
+
+					//Update analyticsDataCleared to true for this user
+					updateAnalyticsDataClearedStmt.setInt(1, userId);
+					updateAnalyticsDataClearedStmt.executeUpdate();
+				} else {
+					processLog.addNote("Analytics data already cleared for user ID: " + userId);
+				}
+			}
+
+
+			//Log results
+			processLog.addNote("Removed " + totalRowsRemovedAXIS360 + " AXIS 360 usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedCloudLibrary + " Cloud Library usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedEbscoHost + " Ebsco Host usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedEbscoEds + " Ebsco EDS usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedHoopla + " Hoopla usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedOverdrive + " Overdrive usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedPalaceProject + " Palace Project usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedSideload + " Sideload usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedSummon + " Summon usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedWebIndexer + " Web Indexer usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedEvents + " Events usage records for users with localAnalytics set to 0");
+			processLog.addNote("Removed " + totalRowsRemovedOpenArchives + " Open Archives usage records for users with localAnalytics set to 0");
+			processLog.addNote("Analytics data clearing completed.");
+			processLog.incUpdated();
+			processLog.saveResults();
+
+			//Close statements and results sets
+			getNoLocalAnalyticsTrackingUserIdsStmt.close();
+			userIdsRS.close();
+			removeAxis360UsageStmt.close();
+			removeCloudLibraryUsageStmt.close();
+			removeEbscoHostUsageStmt.close();
+			removeEbscoEdsUsageStmt.close();
+			removeHooplaUsageStmt.close();
+			removeOverdriveUsageStmt.close();
+			removePalaceProjectUsageStmt.close();
+			removeSideloadUsageStmt.close();
+			removeSummonUsageStmt.close();
+			removeWebIndexerUsageStmt.close();
+			removeEventsUsageStmt.close();
+			removeOpenArchivesUsageStmt.close();
+			updateAnalyticsDataClearedStmt.close();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to remove external search tracking. ", e);
+		}
+	}
 }

@@ -2321,6 +2321,25 @@ function getLibraryLocationUpdates() {
 				"ALTER TABLE library ADD COLUMN alternateLibraryCardFormMessage MEDIUMTEXT",
 			],
 		],
+
+		'symphony_user_category_notice_settings' => [
+			'title' => 'Symphony user category notice settings',
+			'description' => 'Add settings for which Symphony user categories have what options for notices and billing notices',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN symphonyNoticeCategoryNumber VARCHAR(2)",
+				"ALTER TABLE library ADD COLUMN symphonyNoticeCategoryOptions VARCHAR(128)",
+				"ALTER TABLE library ADD COLUMN symphonyBillingNoticeCategoryNumber VARCHAR(2)",
+				"ALTER TABLE library ADD COLUMN symphonyBillingNoticeCategoryOptions VARCHAR(128)",
+			],
+		],
+
+		'symphony_default_phone_field' => [
+			'title' => 'Symphony default phone field',
+			'description' => 'Add field to set name of default phone field (usually PHONE)',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN symphonyDefaultPhoneField VARCHAR(16) DEFAULT 'PHONE'",
+			],
+		],
 	];
 }
 

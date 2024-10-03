@@ -39,6 +39,9 @@ class API_RegistrationAPI extends AbstractAPI {
 					'getForgotPasswordType',
 					'initiatePasswordResetByEmail',
 					'initiatePasswordResetByBarcode',
+					'getSelfRegistrationForm',
+					'getSelfRegistrationTerms',
+					'processSelfRegistration'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -158,6 +161,107 @@ class API_RegistrationAPI extends AbstractAPI {
 			}
 		}
 		return $catalog->processBasicRegistrationForm($addressValidated);
+	}
+
+	/** @noinspection PhpUnused */
+	function getSelfRegistrationForm() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->getSelfRegistrationFields();
+	}
+
+	/** @noinspection PhpUnused */
+	function getSelfRegistrationTerms() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->getSelfRegistrationTerms();
+	}
+
+	/** @noinspection PhpUnused */
+	function processSelfRegistration() : array {
+		global $library;
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+
+		require_once ROOT_DIR . '/sys/Administration/USPS.php';
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$uspsInfo = USPS::getUSPSInfo();
+		$streetAddress = '';
+		$city = '';
+		$state = '';
+		$zip = '';
+		$dob = '';
+		foreach ($_REQUEST as $selfRegValue => $val){
+			if (!(preg_match('/(.*?)address2(.*)|(.*?)borrower_B(.*)|(.*?)borrower_alt(.*)/', $selfRegValue))){
+				if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)){
+					$streetAddress = $val;
+				}
+				elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
+					$city = $val;
+				}
+				elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
+					//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+					if (strlen($val) == 2){
+						$state = $val;
+					}
+				}
+				elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
+					$zip = $val;
+				}
+				elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)){
+					$dob = $val;
+				}
+			}
+		}
+
+		if($uspsInfo) {
+			if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)){
+				if (!empty($dob)) {
+					if (SystemUtils::validateAge($library->minSelfRegAge, $dob)) {
+						return $catalog->selfRegister();
+					} else {
+						$ageMessage = translate([
+							'text' => 'Age not valid.',
+							'isPublicFacing' => true
+						]);
+
+						return [
+							'success' => false,
+							'title' => '',
+							'message' => $ageMessage
+						];
+					}
+				} else {
+					return $catalog->selfRegister();
+				}
+			} else {
+				$addressMessage = translate([
+					'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
+					'isPublicFacing' => true
+				]);
+
+				return [
+					'success' => false,
+					'title' => '',
+					'message' => $addressMessage
+				];
+			}
+		} else {
+			if (!empty($dob)) {
+				if (SystemUtils::validateAge($library->minSelfRegAge, $dob)){
+					return $catalog->selfRegister();
+				} else {
+					$ageMessage = translate([
+						'text' => 'Age should be at least' . $library->minSelfRegAge . ' years. Please enter a valid Date of Birth.',
+						'isPublicFacing' => true
+					]);
+					return [
+						'success' => false,
+						'title' => '',
+						'message' => $ageMessage
+					];
+				}
+			} else {
+				return $catalog->selfRegister();
+			}
+		}
 	}
 
 	/** @noinspection PhpUnused */

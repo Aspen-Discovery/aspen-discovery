@@ -666,7 +666,7 @@ class UInterface extends Smarty {
 		$this->assign('showUserCirculationModules', $library->showUserCirculationModules);
 		$this->assign('showUserContactInformation', $library->showUserContactInformation);
 		$this->assign('showUserPreferences', $library->showUserPreferences);
-
+		$this->assign('cookieConsentEnabled', $library->cookieStorageConsent);
 		if ($location != null) { // library and location
 			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
@@ -768,8 +768,8 @@ class UInterface extends Smarty {
 
 		if (!$fromBookCoverProcessing) {
 			//Determine whether or not materials request functionality should be enabled
-			if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-				require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			if (file_exists(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php')) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 				$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
 				$materialRequestType = $library->enableMaterialsRequest;
 				$this->assign('materialRequestType', $materialRequestType);

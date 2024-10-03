@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . "/sys/MaterialsRequest.php";
+require_once ROOT_DIR . "/sys/MaterialsRequests/MaterialsRequest.php";
 
 /**
  * MaterialsRequest Home Page, displays an existing Materials Request.
@@ -33,7 +33,7 @@ class MaterialsRequest_NewRequest extends MyAccount {
 		$availableFormats = MaterialsRequest::getFormats(true);
 		$interface->assign('availableFormats', $availableFormats);
 
-		//Setup a default title based on the search term
+		//Set up a default title based on the search term
 		$interface->assign('new', true);
 		$request = new MaterialsRequest();
 		$request->placeHoldWhenAvailable = true; // set the place hold option on by default

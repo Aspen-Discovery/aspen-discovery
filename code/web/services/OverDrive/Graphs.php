@@ -214,6 +214,9 @@ class OverDrive_Graphs extends Admin_Admin {
 		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
+		$interface->assign('section', 'OverDrive');
+		$interface->assign('showCSVExportButton', true);
+
 		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 

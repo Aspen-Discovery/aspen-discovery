@@ -216,11 +216,13 @@
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
-								{if in_array('Import Materials Requests', $userPermissions)}
-									{* We don't really want to do this much / ever so it gets a special permission *}
-									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+								{if !empty($page)}
+									<input type="hidden" name="page" value="{$page}">
 								{/if}
+								{if !empty($pageSize)}
+									<input type="hidden" name="pageSize" value="{$pageSize}">
+								{/if}
+								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
 					</div>
@@ -231,14 +233,6 @@
 			</form>
 		{else}
 			<div class="alert alert-info">{translate text="There are no materials requests that meet your criteria." isAdminFacing=true}</div>
-			{if in_array('Import Materials Requests', $userPermissions)}
-				{* We don't really want to do this much / ever so it gets a special permission *}
-				<div class="row">
-					<div class="col-xs-12">
-						<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
-					</div>
-				</div>
-			{/if}
 		{/if}
 	{/if}
 </div>

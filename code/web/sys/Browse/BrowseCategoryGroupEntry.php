@@ -123,7 +123,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories') || UserAccount::userHasPermission('Administer Selected Browse Category Groups');
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
 			//Always allow since the only way they can get here is by editing a group they have access to
 			return true;

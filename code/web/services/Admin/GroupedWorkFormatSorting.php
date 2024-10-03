@@ -96,7 +96,7 @@ class Admin_GroupedWorkFormatSorting extends ObjectEditor {
 		return $objectActions;
 	}
 
-	function loadActiveFormats(){
+	function loadActiveFormats() : void {
 		$id = $_REQUEST['id'];
 		if (!empty($id) && is_numeric($id)) {
 			$formatSortingGroup = new GroupedWorkFormatSortingGroup();

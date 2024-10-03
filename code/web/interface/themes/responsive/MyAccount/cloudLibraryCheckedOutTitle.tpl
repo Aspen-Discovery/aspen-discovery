@@ -96,7 +96,7 @@
 						{if !empty($accessOnlineLink)}
 							<a href="{$accessOnlineLink}" target="_blank" class="btn btn-sm btn-action btn-wrap" aria-label="{translate text='Open in cloudLibrary' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text='Open in cloudLibrary' isPublicFacing=true}</a>
 						{/if}
-						{if array_key_exists('Palace Project', $enabledModules)}
+						{if array_key_exists('Palace Project', $enabledModules) && !empty($asccessOnlineLink)}
 							<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canRenew}

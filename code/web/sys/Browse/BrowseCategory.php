@@ -593,7 +593,7 @@ class BrowseCategory extends BaseBrowsable {
 		return false;
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if ($this->sharing == 'everyone') {
 			return UserAccount::userHasPermission('Administer All Browse Categories') || ($this->userId == UserAccount::getActiveUserId());
 		}

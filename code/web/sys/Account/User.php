@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -49,7 +49,7 @@ class User extends DataObject {
 	public $isLoggedInViaSSO;
 	public $userCookiePreferenceEssential;
 	public $userCookiePreferenceAnalytics;
-
+	public $userCookiePreferenceLocalAnalytics;
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 
@@ -80,6 +80,10 @@ class User extends DataObject {
 	public $updateMessageIsError;
 
 	public $proPayPayerAccountId;
+
+	public $enableCostSavings;
+	public $totalCostSavings;
+	public $currentCostSavings;
 
 	/** @var User $parentUser */
 	private $parentUser;
@@ -118,6 +122,7 @@ class User extends DataObject {
 	private $_numHoldsAvailableOverDrive = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_notices;
+	public $_billingNotices = "-";
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
 	private $_readingHistorySize = 0;
@@ -263,6 +268,180 @@ class User extends DataObject {
 		} else {
 			parent::__set($name, $value);
 		}
+	}
+
+	public function delete($useWhere = false) : int {
+		$ret = parent::delete($useWhere);
+		if ($ret) {
+			// delete browse_category_dismissal
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $this->id;
+			$browseCategoryDismissals->find();
+			while ($browseCategoryDismissals->fetch()) {
+				$browseCategoryDismissals->delete();
+			}
+
+			// delete placard_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+			$placardDismissals = new PlacardDismissal();
+			$placardDismissals->userId = $this->id;
+			$placardDismissals->find();
+			while ($placardDismissals->fetch()) {
+				$placardDismissals->delete();
+			}
+
+			// delete system_message_dismissal
+			require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+			$systemMessageDismissals = new SystemMessageDismissal();
+			$systemMessageDismissals->userId = $this->id;
+			$systemMessageDismissals->find();
+			while ($systemMessageDismissals->fetch()) {
+				$systemMessageDismissals->delete();
+			}
+
+			// delete user_checkout
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			$userCheckouts = new Checkout();
+			$userCheckouts->userId = $this->id;
+			$userCheckouts->find();
+			while ($userCheckouts->fetch()) {
+				$userCheckouts->delete();
+			}
+
+			// delete user_events_entry
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->userId = $this->id;
+			$userEventsEntry->find();
+			while ($userEventsEntry->fetch()) {
+				$userEventsEntry->delete();
+			}
+
+			// delete user_events_registration
+			require_once ROOT_DIR . '/sys/Events/UserEventsRegistrations.php';
+			$userEventsRegistration = new UserEventsRegistrations();
+			$userEventsRegistration->userId = $this->id;
+			$userEventsRegistration->find();
+			while ($userEventsRegistration->fetch()) {
+				$userEventsRegistration->delete();
+			}
+
+			// delete user_hold
+			require_once ROOT_DIR . '/sys/User/Hold.php';
+			$userHolds = new Hold();
+			$userHolds->userId = $this->id;
+			$userHolds->find();
+			while ($userHolds->fetch()) {
+				$userHolds->delete();
+			}
+
+			// delete user_ils_message
+			require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+			$userILSMessage = new UserILSMessage();
+			$userILSMessage->userId = $this->id;
+			$userILSMessage->find();
+			while ($userILSMessage->fetch()) {
+				$userILSMessage->delete();
+			}
+
+			// delete user_link
+			require_once ROOT_DIR . '/sys/Account/UserLink.php';
+			$userLink = new UserLink();
+			$userLink->primaryAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			$userLink = new UserLink();
+			$userLink->linkedAccountId = $this->id;
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+			}
+
+			// delete user_list
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$userList = new UserList();
+			$userList->user_id = $this->id;
+			$userList->find();
+			while ($userList->fetch()) {
+				// delete user_list_entry
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+				$userListEntry->find();
+				while ($userListEntry->fetch()) {
+					$userListEntry->delete();
+				}
+				$userList->delete();
+			}
+
+			// delete user_messages
+			require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+			$userMessage = new UserMessage();
+			$userMessage->userId = $this->id;
+			$userMessage->find();
+			while ($userMessage->fetch()) {
+				$userMessage->delete();
+			}
+
+			// delete user_not_interested
+			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+			$userNotInterested = new NotInterested();
+			$userNotInterested->userId = $this->id;
+			$userNotInterested->find();
+			while ($userNotInterested->fetch()) {
+				$userNotInterested->delete();
+			}
+
+			// delete user_notification_tokens
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$userNotificationToken = new UserNotificationToken();
+			$userNotificationToken->userId = $this->id;
+			$userNotificationToken->find();
+			while ($userNotificationToken->fetch()) {
+				$userNotificationToken->delete();
+			}
+
+			// delete user_notifications
+			require_once ROOT_DIR . '/sys/Account/UserNotification.php';
+			$userNotification = new UserNotification();
+			$userNotification->userId = $this->id;
+			$userNotification->find();
+			while ($userNotification->fetch()) {
+				$userNotification->delete();
+			}
+
+			// delete user_reading_history_work
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$userReadingHistory = new ReadingHistoryEntry();
+			$userReadingHistory->userId = $this->id;
+			$userReadingHistory->find();
+			while ($userReadingHistory->fetch()) {
+				$userReadingHistory->delete();
+			}
+
+			// delete user_roles
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRoles = new UserRoles();
+			$userRoles->userId = $this->id;
+			$userRoles->find();
+			while ($userRoles->fetch()) {
+				$userRoles->delete();
+			}
+
+			// delete materials_request (createdBy)
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$userMaterialsRequests = new MaterialsRequest();
+			$userMaterialsRequests->createdBy = $this->id;
+			$userMaterialsRequests->find();
+			while ($userMaterialsRequests->fetch()) {
+				$userMaterialsRequests->delete();
+			}
+
+		}
+		return $ret;
 	}
 
 	function setRoles($values) {
@@ -890,6 +1069,12 @@ class User extends DataObject {
 				$this->homeLocationId = 0;
 				global $logger;
 				$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
+			}else{
+				//Get the home library for the user
+				$homeLibrary = $this->getHomeLibrary();
+				if ($homeLibrary !== null) {
+					$this->enableCostSavings = $homeLibrary->enableCostSavings;
+				}
 			}
 			if (empty($this->pickupLocationId)) {
 				$this->pickupLocationId = $this->homeLocationId;
@@ -1154,6 +1339,7 @@ class User extends DataObject {
 	}
 
 	function updateUserPreferences() {
+		require_once ROOT_DIR . '/sys/LibraryLocation/UserLocalAnalyticsPreference.php';
 		// Validate that the input data is correct
 		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0) {
 			return [
@@ -1239,11 +1425,16 @@ class User extends DataObject {
 			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
 			$this->__set('userCookiePreferenceEssential', 1);
 			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
+			$this->__set('userCookiePreferenceLocalAnalytics', (isset($_POST['userCookieUserLocalAnalytics']) && $_POST['userCookieUserLocalAnalytics']) ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
 		$this->__set('rememberHoldPickupLocation', (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on') ? 1 : 0);
 		$this->__set('disableCirculationActions', (isset($_POST['disableCirculationActions']) && $_POST['disableCirculationActions'] == 'on') ? 0 : 1);
+		$homeLibrary = $this->getHomeLibrary();
+		if ($homeLibrary !== null && $homeLibrary->enableCostSavings) {
+			$this->__set('enableCostSavings', (isset($_POST['enableCostSavings']) && $_POST['enableCostSavings'] == 'on') ? 1 : 0);
+		}
 
 		global $enabledModules;
 		global $library;
@@ -1501,6 +1692,10 @@ class User extends DataObject {
 					$checkoutsToReturn = array_merge($checkoutsToReturn, $linkedUser->getCheckouts(false, $source));
 				}
 			}
+		}
+
+		if ($includeLinkedUsers && $source == 'all') {
+			$this->calculateCostSavingsForCurrentCheckouts($checkoutsToReturn);
 		}
 		return $checkoutsToReturn;
 	}
@@ -2592,6 +2787,17 @@ class User extends DataObject {
 		}
 	}
 
+	public function isCostSavingsEnabled() : bool {
+		//Check to see if it's enabled by home library
+		$homeLibrary = $this->getHomeLibrary();
+		if (!empty($homeLibrary)) {
+			return $homeLibrary->enableCostSavings && $this->enableCostSavings;
+		} else {
+			global $library;
+			return $library->enableCostSavings && $this->enableCostSavings;
+		}
+	}
+
 	public function getPaymentHistory($page = 1, $recordsPerPage = 25) {
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
@@ -2640,6 +2846,29 @@ class User extends DataObject {
 					'isPublicFacing' => true,
 				]),
 			];
+		}
+	}
+
+	/**
+	 * Returns the timestamp when reading history was first tracked, or null if reading history is not enabled or is empty
+	 *
+	 * @return int|null
+	 */
+	public function getReadingHistoryStartDate() : ?int {
+		if ($this->isReadingHistoryEnabled()) {
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$readingHistoryEntry = new ReadingHistoryEntry();
+			$readingHistoryEntry->userId = $this->id;
+			$readingHistoryEntry->deleted = 0;
+			$readingHistoryEntry->orderBy('checkOutDate ASC');
+			$readingHistoryEntry->limit(0, 1);
+			if ($readingHistoryEntry->find(true)) {
+				return $readingHistoryEntry->checkOutDate;
+			}else{
+				return null;
+			}
+		}else{
+			return null;
 		}
 	}
 
@@ -3474,13 +3703,16 @@ class User extends DataObject {
 		}
 
 		//Materials Request if enabled
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		if (MaterialsRequest::enableAspenMaterialsRequest()) {
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Requests Needing Holds', 'Review and generate holds for requests that have hold candidates.', '/MaterialsRequest/RequestsNeedingHolds'), 'Manage Library Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Format Mapping', 'Define format mapping between Aspen formats and Materials Request Formats for use when placing holds.', '/MaterialsRequest/FormatMapping'), 'Administer Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
 			}
 		}
@@ -3550,6 +3782,7 @@ class User extends DataObject {
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Replacement Costs', 'Define default replacement costs by format.', '/Admin/ReplacementCosts'), 'Administer Replacement Costs');
 		$sections['cataloging']->addAction(new AdminAction('Hidden Series', 'Edit series to be excluded from the Series facet and Series Display Information', '/Admin/HideSeriess'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
@@ -4261,6 +4494,186 @@ class User extends DataObject {
 		}
 	}
 
+	public function placeHoldForRequest(MaterialsRequest $materialsRequest) : array {
+		$selectedRequestCandidate = $materialsRequest->getSelectedHoldCandidate();
+		$source = $selectedRequestCandidate->source;
+		if ($source == 'ils' || $source == null) {
+			//Materials request stores the id of the pickup location
+			$pickupBranchId = $materialsRequest->holdPickupLocation;
+			if (empty($pickupBranchId)) {
+				$pickupBranchId = $this->homeLocationId;
+			}
+			$location = new Location();
+			$location->locationId = $pickupBranchId;
+			if ($location->find(true)) {
+				$pickupBranch = $location->code;
+				$locationValid = $this->validatePickupBranch($pickupBranch);
+			}else{
+				$locationValid = false;
+			}
+
+			if (!$locationValid) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'This location is no longer available, please select a different pickup location',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			$homeLibrary = $this->getHomeLibrary();
+
+			if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+				$cancelDate = null;
+			} else {
+				//Default to a date based on the default not needed after days in the library configuration.
+				$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+				$cancelDate = date('Y-m-d', $nnaDate);
+			}
+
+			//We will always try to place bib level holds from materials requests
+
+			//Make sure that there are not volumes available
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($selectedRequestCandidate->sourceId);
+			if ($recordDriver->isValid()) {
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeDataDB = new IlsVolumeInfo();
+				$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+				if ($volumeDataDB->find(true)) {
+					return [
+						'success' => false,
+						'message' => translate(['text' => 'You must place a volume hold on this title.']),
+					];
+				}
+			}
+			$result = $this->placeHold($selectedRequestCandidate->sourceId, $pickupBranch, $cancelDate);
+			$responseMessage = strip_tags($result['api']['message']);
+			$responseMessage = trim($responseMessage);
+			return [
+				'success' => $result['success'],
+				'message' => $responseMessage,
+			];
+		} elseif ($source == 'overdrive') {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'cloud_library') {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'axis360') {
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} elseif ($source == 'palace_project') {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			$action = $result['api']['action'] ?? null;
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Invalid source',
+			];
+		}
+	}
+
+	public function calculateCostSavingsForCurrentCheckouts(array $checkouts) : float {
+		$costSavings = 0;
+		foreach ($checkouts as $checkout) {
+			$costSavings += $checkout->getReplacementCost();
+		}
+		$this->__set('currentCostSavings', $costSavings);
+		$this->update();
+		return $costSavings;
+	}
+
+	public function getCurrentCostSavingsMessage(bool $wrapWithAlert) : string {
+		$totalSavings = 0;
+		$linkedUsers = $this->getLinkedUsers();
+		if (count($linkedUsers)) {
+			$costSavingsMessage = "You are saving %1% with what is currently checked out from the library to you and your linked accounts. Learn more in <a href='/MyAccount/LibrarySavings'>Library Savings</a>.";
+		}else{
+			$costSavingsMessage = "You are saving %1% with what is currently checked out from the library. Learn more in <a href='/MyAccount/LibrarySavings'>Library Savings</a>.";
+		}
+		$costSavings = $this->currentCostSavings;
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$formattedCostSavings = StringUtils::formatCurrency($costSavings);
+
+		$translatedMessage = translate(['text' => $costSavingsMessage, '1'=>$formattedCostSavings, 'isPublicFacing'=>true]);
+		if ($wrapWithAlert) {
+			$translatedMessage = '<div class="alert alert-info">' . $translatedMessage . '</div>';
+		}
+		return $translatedMessage;
+	}
+
+	public function getTotalCostSavingsMessage(bool $wrapWithAlert) : string {
+		$totalSavings = 0;
+		$costSavingsMessage = "You have saved %1% by checking out the materials in your reading history from the library. Learn more in <a href='/MyAccount/LibrarySavings'>Library Savings</a>.";
+		$costSavings = $this->totalCostSavings;
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$formattedCostSavings = StringUtils::formatCurrency($costSavings);
+		$translatedMessage = translate(['text' => $costSavingsMessage, '1'=>$formattedCostSavings, 'isPublicFacing'=>true]);
+		if ($wrapWithAlert) {
+			$translatedMessage = '<div class="alert alert-info">' . $translatedMessage . '</div>';
+		}
+		return $translatedMessage;
+	}
+
+	public function getCostSavingsByMonth($month, $year) : float{
+		$startTimeStamp = strtotime($year . '-' . $month);
+		if ($month < 12) {
+			$endTimeStamp = strtotime($year . '-' . ($month + 1));
+		}else{
+			$endTimeStamp = strtotime(($year + 1) . '-01');
+		}
+
+		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		$readingHistoryEntry = new ReadingHistoryEntry();
+		$readingHistoryEntry->userId = $this->id;
+		$readingHistoryEntry->whereAdd("checkOutDate >= $startTimeStamp AND checkOutDate < $endTimeStamp", 'AND');
+		$readingHistoryEntry->selectAdd('SUM(costSavings) as costSavings');
+		if ($readingHistoryEntry->find(true)) {
+			return (float)$readingHistoryEntry->costSavings;
+		}else{
+			return 0;
+		}
+	}
+
+	public function getCostSavingsByYear($year) : float{
+		$startTimeStamp = strtotime($year . '-01-01');
+		$endTimeStamp = strtotime(($year + 1) . '-01-01');
+
+		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		$readingHistoryEntry = new ReadingHistoryEntry();
+		$readingHistoryEntry->userId = $this->id;
+		$readingHistoryEntry->whereAdd("checkOutDate >= $startTimeStamp AND checkOutDate < $endTimeStamp", 'AND');
+		$readingHistoryEntry->selectAdd('SUM(costSavings) as costSavings');
+		if ($readingHistoryEntry->find(true)) {
+			return (float)$readingHistoryEntry->costSavings;
+		}else{
+			return 0;
+		}
+	}
+
 	protected function clearRuntimeDataVariables() {
 		if ($this->_accountProfile != null) {
 			$this->_accountProfile->__destruct();
@@ -4806,10 +5219,12 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 		$materialsRequests = new MaterialsRequest();
 		$materialsRequests->createdBy = $this->id;
 		$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
 
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$statusQueryNotCancelled = new MaterialsRequestStatus();
 		$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
 		$statusQueryNotCancelled->isPatronCancel = 0;
@@ -4819,6 +5234,8 @@ class User extends DataObject {
 	}
 
 	public function getNumOpenMaterialsRequests() {
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$homeLibrary = $this->getHomeLibrary();
 		if(is_null($homeLibrary)) {
 			global $library;
@@ -4842,8 +5259,8 @@ class User extends DataObject {
 			$homeLibrary = $library;
 		}
 
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 		$allRequests = [];
 		$showOpen = true;
 		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {

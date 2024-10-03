@@ -21,6 +21,7 @@
 		{if !empty($offline)}
 			<div class="alert alert-warning">{translate text="<strong>The library system is currently offline.</strong> We are unable to retrieve information about any titles currently checked out." isPublicFacing=true}</div>
 		{/if}
+
 		{strip}
 			{if !empty($masqueradeMode) && !$allowReadingHistoryDisplayInMasqueradeMode}
 				<div class="row">
@@ -39,15 +40,19 @@
 				</div>
 			</div>
 
+			{if !empty($enableCostSavings) && $userHasCatalogConnection}
+				<div id="costSavingsPlaceholder"></div>
+			{/if}
+
 			<div id="readingHistoryListPlaceholder">
 				{translate text="Loading Reading History, this may take awhile the first time." isPublicFacing=true}
 			</div>
 
 			<script type="text/javascript">
 				{literal}
-                $(document).ready(function() {
-                    AspenDiscovery.Account.loadReadingHistory({/literal}{$selectedUser}, undefined, {$page}, undefined, '{$readingHistoryFilter|escape}'{literal});
-                });
+				$(document).ready(function() {
+					AspenDiscovery.Account.loadReadingHistory({/literal}{$selectedUser}, undefined, {$page}, undefined, '{$readingHistoryFilter|escape}'{literal});
+				});
 				{/literal}
 			</script>
 		{/strip}
