@@ -50,10 +50,14 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 		}
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 		$interface->assign('publisher', isset($this->fields['publisher']) ? $this->fields['publisher'] : '');
-		if (array_key_exists('date', $this->fields)) {
-			$interface->assign('date', $this->fields['date']);
+		if (array_key_exists('date_text', $this->fields)) {
+			$interface->assign('date', $this->fields['date_text']);
 		} else {
-			$interface->assign('date', null);
+			if (array_key_exists('date', $this->fields)) {
+				$interface->assign('date', $this->fields['date']);
+			} else {
+				$interface->assign('date', null);
+			}
 		}
 
 		//Check to see if there are lists the record is on
