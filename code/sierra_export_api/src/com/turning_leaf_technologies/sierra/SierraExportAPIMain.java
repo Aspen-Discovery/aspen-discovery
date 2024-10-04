@@ -1256,6 +1256,18 @@ public class SierraExportAPIMain {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), noteValue));
 						}
 					}
+					//Replacement Cost
+					if (fixedFields.has("62") && indexingProfile.getReplacementCostSubfield() != ' '){
+						String replacementCost = fixedFields.getJSONObject("62").getString("value").trim();
+						if (!replacementCost.isEmpty() && !replacementCost.equals("-")) {
+							try{
+								Double replacementCostValue = Double.parseDouble(replacementCost) / 100;
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getReplacementCostSubfield(), replacementCostValue.toString()));
+							}catch (NumberFormatException e) {
+								//Just ignore this
+							}
+						}
+					}
 
 					//Process variable fields
 					for (int j = 0; j < varFields.length(); j++){
