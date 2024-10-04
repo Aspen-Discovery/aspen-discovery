@@ -13728,6 +13728,36 @@ AspenDiscovery.InterLibraryLoan = (function(){
 			});
 		},
 
+		getShareItResults: function(shareItNumTitlesToLoad, shareItSavedSearchId){
+			var url = Globals.path + "/Search/AJAX";
+			var params = "method=getShareItResults&shareItNumTitlesToLoad=" + encodeURIComponent(shareItNumTitlesToLoad) + "&shareItSavedSearchId=" + encodeURIComponent(shareItSavedSearchId);
+			var fullUrl = url + "?" + params;
+			$.ajax({
+				url: fullUrl,
+				success: function(data) {
+					if (data.numTitles === 0){
+						$("#shareItSearchResultsPlaceholder").hide();
+					}else{
+						$("#shareItSearchResultsPlaceholder").html(data.formattedData);
+					}
+				}
+			});
+		},
+
+		loadRelatedShareItTitles: function (id) {
+			var url;
+			url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = "method=getShareItInfo";
+			var fullUrl = url + "?" + params;
+			$.getJSON(fullUrl, function(data) {
+				if (data.numTitles === 0){
+					$("#shareItPanel").hide();
+				}else{
+					$("#inShareItPlaceholder").html(data.formattedData);
+				}
+			});
+		},
+
 		removeBlankThumbnail: function(imgElem, elemToHide, isForceRemove) {
 			var $img = $(imgElem);
 			//when the content providers cannot find a bookjacket, they return a 1x1 pixel

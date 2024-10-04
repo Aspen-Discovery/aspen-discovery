@@ -367,6 +367,13 @@ class Search_Results extends ResultsAction {
 		} else {
 			$interface->assign('showInnReachLink', false);
 		}
+		$enableShareItIntegration = ($library->ILLSystem == 3);
+		if ($enableShareItIntegration) {
+			$interface->assign('showShareItLink', true);
+			$interface->assign('shareItSavedSearchId', $searchObject->getSearchId());
+		} else {
+			$interface->assign('showShareItLink', false);
+		}
 
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();

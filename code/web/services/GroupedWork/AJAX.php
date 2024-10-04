@@ -1026,6 +1026,46 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getShareItInfo() : array {
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
+		global $interface;
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+
+		// Retrieve Full record from Solr
+		if (!($record = $searchObject->getRecord($id))) {
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
+		}
+
+		$shareIt = new ShareIt();
+
+		$searchTerms = [
+			[
+				'lookfor' => $record['title_short'],
+				'index' => 'Title',
+			],
+		];
+		if (isset($record['author_display'])) {
+			$searchTerms[] = [
+				'lookfor' => $record['author_display'],
+				'index' => 'Author',
+			];
+		}
+
+		$shareItResults = $shareIt->getTopSearchResults($searchTerms, 10);
+		$interface->assign('shareItResults', $shareItResults['records']);
+
+		return [
+			'numTitles' => count($shareItResults),
+			'formattedData' => $interface->fetch('GroupedWork/ajax-shareit.tpl'),
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function getSeriesSummary() : array {
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';

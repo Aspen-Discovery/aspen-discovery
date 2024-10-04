@@ -176,7 +176,7 @@ class CurlWrapper {
 	 * Uses the POST Method to retrieve content from a page
 	 *
 	 * @param string $url The url to post to
-	 * @param string[]|string $postParams Additional Post Params to use
+	 * @param string[]|string|stdClass $postParams Additional Post Params to use
 	 * @param boolean $jsonEncode
 	 *
 	 * @return string   The response from the web page if any

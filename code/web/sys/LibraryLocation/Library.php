@@ -469,6 +469,13 @@ class Library extends DataObject {
 	public $cookieStorageConsent;
 	public $cookiePolicyHTML;
 
+	//SHAREit
+	public $repeatInShareIt;
+	public $shareItCid;
+	public $shareItLid;
+	public $shareItUsername;
+	public $shareItPassword;
+
 	public $allowUpdatingHolidaysFromILS;
 
 	private $_cloudLibraryScope;
@@ -3547,6 +3554,7 @@ class Library extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							0 => 'INN-Reach',
+							3 => 'SHAREit',
 							1 => 'WorldCat',
 							2 => 'Other',
 						],
@@ -3618,6 +3626,53 @@ class Library extends DataObject {
 								'description' => 'Whether or not INN-Reach Search Results should be shown at the end of search results.',
 								'hideInLists' => true,
 								'default' => 0,
+							],
+						],
+					],
+					'shareItSection' => [
+						'property' => 'shareItSection',
+						'type' => 'section',
+						'label' => 'SHAREit',
+						'hideInLists' => true,
+						'helpLink' => '',
+						'properties' => [
+							'repeatInShareIt' => [
+								'property' => 'repeatInShareIt',
+								'type' => 'checkbox',
+								'label' => 'Repeat In SHAREit',
+								'description' => 'Turn on to allow repeat search in SHAREit functionality.',
+								'hideInLists' => true,
+							],
+							'shareItCid' => [
+								'property' => 'shareItCid',
+								'type' => 'text',
+								'label' => 'SHAREit CID',
+								'description' => 'The Customer ID for SHAREit.',
+								'hideInLists' => true,
+								'size' => '80',
+							],
+							'shareItLid' => [
+								'property' => 'shareItLid',
+								'type' => 'text',
+								'label' => 'SHAREit LID',
+								'description' => 'The Library ID for SHAREit.',
+								'hideInLists' => true,
+								'size' => '80',
+							],
+							'shareItUsername' => [
+								'property' => 'shareItUsername',
+								'type' => 'text',
+								'label' => 'SHAREit Username',
+								'description' => 'The Username for SHAREit authentication.',
+								'hideInLists' => true,
+								'size' => '80',
+							],
+							'shareItPassword' => [
+								'property' => 'shareItPassword',
+								'type' => 'storedPassword',
+								'label' => 'SHAREit Password',
+								'description' => 'The Password for SHAREit authentication.',
+								'hideInLists' => true,
 							],
 						],
 					],

@@ -185,6 +185,13 @@ abstract class RecordInterface {
 				'hideByDefault' => false,
 			];
 		}
+		if ($interface->getVariable('enableShareItIntegration')) {
+			$moreDetailsOptions['shareIt'] = [
+				'label' => 'More Copies In ' . $library->interLibraryLoanName,
+				'body' => '<div id="inShareItPlaceholder">' . translate(['text'=>"Loading $library->interLibraryLoanName Copies...", 'isPublicFacing'=> true]) . '</div>',
+				'hideByDefault' => false,
+			];
+		}
 		if ($hasNovelistAllInOne) {
 			$moreDetailsOptions['novelist'] = [
 				'label' => 'NoveList',
@@ -313,6 +320,7 @@ abstract class RecordInterface {
 			'moreLikeThis' => 'More Like This',
 			'otherEditions' => 'Other Editions and Formats',
 			'innReach' => 'INN-Reach',
+			'shareIt' => 'SHAREit',
 			'tableOfContents' => 'Table of Contents  (MARC/Syndetics/ContentCafe)',
 			'excerpt' => 'Excerpt (Syndetics/ContentCafe)',
 			'authornotes' => 'Author Notes (Syndetics/ContentCafe)',
@@ -347,6 +355,7 @@ abstract class RecordInterface {
 			'syndeticsUnbound' => 'open',
 			'otherEditions' => 'closed',
 			'innReach' => 'closed',
+			'shareIt' => 'closed',
 			'links' => 'closed',
 			'tableOfContents' => 'closed',
 			'excerpt' => 'closed',

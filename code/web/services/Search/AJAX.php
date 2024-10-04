@@ -126,6 +126,10 @@ class AJAX extends Action {
 				$innReachResults = $innReach->getTopSearchResults($searchObject->getSearchTerms(), 5);
 				$interface->assign('innReachResults', $innReachResults['records']);
 			}
+			if ($library && $library->ILLSystem == 3 && $library->showInnReachResultsAtEndOfSearch) {
+				$innReachResults = $innReach->getTopSearchResults($searchObject->getSearchTerms(), 5);
+				$interface->assign('innReachResults', $innReachResults['records']);
+			}
 
 			$innReachLink = $innReach->getSearchLink($searchObject->getSearchTerms());
 			$interface->assign('innReachLink', $innReachLink);
@@ -134,6 +138,41 @@ class AJAX extends Action {
 			return [
 				'numTitles' => count($innReachResults),
 				'formattedData' => $interface->fetch('Search/ajax-innreach.tpl'),
+			];
+		} else {
+			return [
+				'numTitles' => 0,
+				'formattedData' => '',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getShareItResults() {
+		$shareItSavedSearchId = $_GET['shareItSavedSearchId'];
+
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
+		global $interface;
+		global $library;
+		global $timer;
+
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+		$searchObject = $searchObject->restoreSavedSearch($shareItSavedSearchId, false);
+		if (!empty($searchObject) && !($searchObject instanceof AspenError)) {
+			//Load results from SHAREit
+			$shareIt = new ShareIt();
+
+			// Only show INN-Reach results within search results if enabled
+			$shareItResults = $shareIt->getTopSearchResults($searchObject->getSearchTerms(), 5);
+			$interface->assign('shareItResults', $shareItResults['records']);
+
+			$interface->assign('shareItLink', $shareItResults['searchLink']);
+			$timer->logTime('load SHAREitTitles');
+			return [
+				'numTitles' => count($shareItResults),
+				'formattedData' => $interface->fetch('Search/ajax-shareit.tpl'),
 			];
 		} else {
 			return [

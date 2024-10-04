@@ -54,6 +54,8 @@ class Union_AJAX extends JSON_Action {
 			$results = $this->getResultsFromSolrSearcher('OpenArchives', $searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'innReach') {
 			$results = $this->getResultsFromInnReach($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
+		} elseif ($source == 'shareIt') {
+			$results = $this->getResultsFromShareIt($searchType, $searchTerm, $numberOfResults);
 		} elseif ($source == 'websites') {
 			$results = $this->getResultsFromSolrSearcher('Websites', $searchTerm, $numberOfResults, $fullResultsLink);
 		} else {
@@ -103,7 +105,7 @@ class Union_AJAX extends JSON_Action {
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0) {
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			$formattedNumResults = number_format($summary['resultTotal']);
 			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
@@ -119,7 +121,7 @@ class Union_AJAX extends JSON_Action {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		if ($searchTerm == '') {
-			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'Enter search terms to see results.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
 			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
@@ -140,7 +142,7 @@ class Union_AJAX extends JSON_Action {
 			$summary = $ebscohostSearcher->getResultSummary();
 			$records = $ebscohostSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
 				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
@@ -166,7 +168,7 @@ class Union_AJAX extends JSON_Action {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		if ($searchTerm == '') {
-			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'Enter search terms to see results.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
@@ -179,7 +181,7 @@ class Union_AJAX extends JSON_Action {
 			$summary = $edsSearcher->getResultSummary();
 			$records = $edsSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
 				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
@@ -208,7 +210,7 @@ class Union_AJAX extends JSON_Action {
 		$dpla = new DPLA();
 		$dplaResults = $dpla->getDPLAResults($searchTerm, $numberOfResults);
 		if (!isset($dplaResults['resultTotal']) || ($dplaResults['resultTotal'] == 0)) {
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
 			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
@@ -231,7 +233,7 @@ class Union_AJAX extends JSON_Action {
 		$interface->assign('viewingCombinedResults', true);
 		//Prompt user to enter search terms if there are none provided
 		if ($searchTerm == '') {
-			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'Enter search terms to see results.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			//Initialize and execute a SummonSearch using provicded search terms
 			/** @var SearchObject_SummonSearcher $summonSearcher */
@@ -248,7 +250,7 @@ class Union_AJAX extends JSON_Action {
 			$records = $summonSearcher->getCombinedResultHTML();
 			//Handle no results
 			if ($summary['resultTotal' == 0]) {
-				$results = '<div class="clearfix"></div><div>No Results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
 				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
@@ -275,7 +277,7 @@ class Union_AJAX extends JSON_Action {
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		if ($searchTerm == '') {
-			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'Enter search terms to see results.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			$innReach = new InnReach();
 			$searchTerms = [
@@ -287,12 +289,46 @@ class Union_AJAX extends JSON_Action {
 			$innReachResults = $innReach->getTopSearchResults($searchTerms, $numberOfResults);
 			global $interface;
 			if ($innReachResults['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($innReachResults['resultTotal']);
 				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 				$interface->assign('innReachResults', $innReachResults['records']);
 				$results .= $interface->fetch('Union/innReach.tpl');
+			}
+		}
+		return $results;
+	}
+
+	/**
+	 * @param $searchType
+	 * @param $searchTerm
+	 * @param $numberOfResults
+	 * @return string
+	 */
+	private function getResultsFromShareIt($searchType, $searchTerm, $numberOfResults) {
+		global $interface;
+		$interface->assign('viewingCombinedResults', true);
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
+		if ($searchTerm == '') {
+			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'Enter search terms to see results.', 'isPublicFacing'=>true]) . '</div>';
+		} else {
+			$shareIt = new ShareIt();
+			$searchTerms = [
+				[
+					'index' => $searchType,
+					'lookfor' => $searchTerm,
+				],
+			];
+			$shareItResults = $shareIt->getTopSearchResults($searchTerms, $numberOfResults);
+			global $interface;
+			if (count($shareItResults['records']) == 0) {
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
+			} else {
+				$fullResultsLink = $shareItResults['searchLink'];
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute'=>true]).")'>See all results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$interface->assign('shareItResults', $shareItResults['records']);
+				$results .= $interface->fetch('Union/shareIt.tpl');
 			}
 		}
 		return $results;

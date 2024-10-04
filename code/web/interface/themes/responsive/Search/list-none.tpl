@@ -101,6 +101,10 @@
 			{* INN-Reach Results *}
 			<div id='innReachSearchResultsPlaceholder'></div>
 			{* javascript call for content at bottom of page*}
+		{elseif !empty($showShareItLink)}
+			{* SHAREit Results *}
+			<div id='shareItSearchResultsPlaceholder'></div>
+			{* javascript call for content at bottom of page*}
 		{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
 			{include file="Search/interLibraryLoanSearch.tpl"}
 		{/if}
@@ -156,6 +160,9 @@
 		$(function(){ldelim}
 			{if !empty($showInnReachLink)}
 			AspenDiscovery.InterLibraryLoan.getInnReachResults(5, {$innReachSavedSearchId});
+			{/if}
+			{if !empty($showShareItLink)}
+			AspenDiscovery.InterLibraryLoan.getShareItResults(5, {$shareItSavedSearchId});
 			{/if}
 			{if !empty($showDplaLink)}
 			AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escapeCSS}");

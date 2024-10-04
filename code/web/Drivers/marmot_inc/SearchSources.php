@@ -70,6 +70,7 @@ class SearchSources {
 			$repeatSearchSetting = $location->repeatSearchOption;
 			$repeatInWorldCat = $location->repeatInWorldCat == 1;
 			$repeatInInnReach = $location->repeatInInnReach == 1;
+			$repeatInShareIt = $location->repeatInShareIt == 1;
 			if (strlen($location->systemsToRepeatIn) > 0) {
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			} else {
@@ -79,6 +80,7 @@ class SearchSources {
 			$repeatSearchSetting = $library->repeatSearchOption;
 			$repeatInWorldCat = $library->repeatInWorldCat == 1;
 			$repeatInInnReach = $library->repeatInInnReach == 1;
+			$repeatInShareIt = $library->repeatInShareIt == 1;
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
@@ -312,6 +314,16 @@ class SearchSources {
 			];
 		}
 
+		if ($repeatInShareIt) {
+			$searchOptions['shareIt'] = [
+				'name' => $library->interLibraryLoanName,
+				'description' => 'Additional materials from partner libraries available by interlibrary loan.',
+				'external' => true,
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => false,
+			];
+		}
+
 		//Course reserves for colleges
 		if ($repeatCourseReserves) {
 			//Mesa State
@@ -446,6 +458,17 @@ class SearchSources {
 				$baseUrl = substr($baseUrl, 0, strlen($baseUrl) -1);
 			}
 			return "$baseUrl/iii/encore/search/C|S" . $lookFor . "|Orightresult|U1?lang=eng&amp;suite=def";
+		} elseif ($searchSource == 'shareIt') {
+			require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
+			$shareIt = new ShareIt();
+			$searchTerms = [
+				[
+					'index' => $type,
+					'lookfor' => $lookFor,
+				],
+			];
+			$link = $shareIt->getSearchLink($searchTerms);
+			return $link;
 		} elseif ($searchSource == 'amazon') {
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		} elseif ($searchSource == 'course-reserves-course-name') {

@@ -94,6 +94,7 @@ class Location extends DataObject {
 	public $repeatInOnlineCollection;
 	public $repeatInInnReach;
 	public $repeatInWorldCat;
+	public $repeatInShareIt;
 	public $vdxFormId;
 	public $vdxLocation;
 	public $systemsToRepeatIn;
@@ -162,6 +163,7 @@ class Location extends DataObject {
 			'repeatInOnlineCollection',
 			'repeatInInnReach',
 			'repeatInWorldCat',
+			'repeatInShareIt',
 			'showEmailThis',
 			'showShareOnExternalSites',
 			'showFavorites',
@@ -884,6 +886,14 @@ class Location extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Repeat In INN-Reach',
 								'description' => 'Turn on to allow repeat search in INN-Reach functionality.',
+								'hideInLists' => true,
+								'default' => false,
+							],
+							[
+								'property' => 'repeatInShareIt',
+								'type' => 'checkbox',
+								'label' => 'Repeat In SHAREit',
+								'description' => 'Turn on to allow repeat search in SHAREit functionality.',
 								'hideInLists' => true,
 								'default' => false,
 							],

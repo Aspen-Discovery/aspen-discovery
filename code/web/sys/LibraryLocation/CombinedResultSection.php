@@ -9,7 +9,6 @@ abstract class CombinedResultSection extends DataObject {
 	public $numberOfResultsToShow;
 
 	static function getObjectStructure($context = ''): array {
-		global $configArray;
 		global $enabledModules;
 		global $library;
 		$validResultSources = [];
@@ -39,6 +38,9 @@ abstract class CombinedResultSection extends DataObject {
 		global $library;
 		if ($library->enableInnReachIntegration) {
 			$validResultSources['innReach'] = 'INN-Reach';
+		}
+		if ($library->ILLSystem == 3) {
+			$validResultSources['shareIt'] = 'SHAREit';
 		}
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$validResultSources['websites'] = 'Website Search';
@@ -129,6 +131,16 @@ abstract class CombinedResultSection extends DataObject {
 				],
 			];
 			return $innReach->getSearchLink($search);
+		} elseif ($this->source == 'shareIt') {
+			require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
+			$shareIt = new ShareIt();
+			$search = [
+				[
+					'lookfor' => $searchTerm,
+					'index' => $searchType,
+				],
+			];
+			return $shareIt->getSearchLink($search);
 		} elseif ($this->source == 'websites') {
 			return "/Websites/Results?lookfor=$searchTerm&searchSource=websites";
 		} else {
