@@ -2633,8 +2633,37 @@ class Theme extends DataObject {
 	public function update($context = '') {
 		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
+		$updateDerivedThemes = false;
+		$oldThemeName = null;
+		if (!empty($this->_changedFields)) {
+			if (in_array('themeName', $this->_changedFields)) {
+				//Need to update all the themes that extend this theme to make sure they have the new correct name for what they are extending.
+				$originalTheme = new Theme();
+				$originalTheme->id = $this->id;
+				if ($originalTheme->find(true)) {
+					$oldThemeName = $originalTheme->themeName;
+					$updateDerivedThemes = true;
+				}
+			}
+		}
+
 		$ret = parent::update();
 		if ($ret !== FALSE) {
+			// Update any themes that extend this theme to give them the correct name
+			if ($updateDerivedThemes) {
+				$childTheme = new Theme();
+				$childTheme->extendsTheme = $oldThemeName;
+				$childThemes = $childTheme->fetchAll();
+				foreach ($childThemes as $childTheme) {
+					$tmpChildTheme = new Theme();
+					$tmpChildTheme->id = $childTheme->id;
+					if ($tmpChildTheme->find(true)) {
+						$tmpChildTheme->extendsTheme = $this->themeName;
+						$tmpChildTheme->update();
+					}
+				}
+			}
+
 			$this->saveLibraries();
 			$this->saveLocations();
 
