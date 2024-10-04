@@ -4479,7 +4479,7 @@ class Library extends DataObject {
 			$this->saveTextBlockTranslations('paymentHistoryExplanation');
 			$this->saveTextBlockTranslations('costSavingsExplanationEnabled');
 			$this->saveTextBlockTranslations('costSavingsExplanationDisabled');
-			if (in_array('cookieStorageConsent', $this->_changedFields)) {
+			if (!empty($this->_changedFields) && in_array('cookieStorageConsent', $this->_changedFields)) {
 				$this->updateLocalAnalyticsPreferences();
 			}
 		}
