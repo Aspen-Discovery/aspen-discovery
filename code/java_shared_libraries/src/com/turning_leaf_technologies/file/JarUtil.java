@@ -18,7 +18,7 @@ public class JarUtil {
 			checksumValue = checksumCalculator.getValue();
 			logger.debug("Checksum of " + jarName + " is " + checksumValue);
 		} catch (IOException e) {
-			logger.error("Error determining checksum for "  + jarName);
+			logger.error("Error determining checksum for "  + jarName, e);
 		}
 		return checksumValue;
 	}
