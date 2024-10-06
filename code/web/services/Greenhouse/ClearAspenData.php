@@ -185,7 +185,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 						require_once ROOT_DIR . '/sys/User/Hold.php';
 						$message .= $this->deleteAll('Hold');
 
-						require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+						require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
 						$message .= $this->deleteAll('MaterialsRequest');
 
 						require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';

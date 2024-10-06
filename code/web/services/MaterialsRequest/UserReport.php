@@ -2,8 +2,8 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
-require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
-require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
+require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php');
+require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php');
 
 class MaterialsRequest_UserReport extends Admin_Admin {
 

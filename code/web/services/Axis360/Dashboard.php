@@ -175,7 +175,7 @@ class Axis360_Dashboard extends Admin_Dashboard {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'axis360';
+		return 'boundless';
 	}
 
 	function canView(): bool {

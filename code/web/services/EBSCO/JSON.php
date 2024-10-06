@@ -43,6 +43,7 @@ class EBSCO_JSON extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	public function trackEdsUsage(): array {
+		global $library;
 		if (!isset($_REQUEST['id'])) {
 			return [
 				'success' => false,
@@ -72,25 +73,30 @@ class EBSCO_JSON extends JSON_Action {
 		}
 
 		$userId = UserAccount::getActiveUserId();
-		if ($userId) {
-			//Track usage for the user
-			require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
-			$userEbscoEdsUsage = new UserEbscoEdsUsage();
-			global $aspenUsage;
-			$userEbscoEdsUsage->instance = $aspenUsage->getInstance();
-			$userEbscoEdsUsage->userId = $userId;
-			$userEbscoEdsUsage->year = date('Y');
-			$userEbscoEdsUsage->month = date('n');
 
-			if ($userEbscoEdsUsage->find(true)) {
-				$userEbscoEdsUsage->usageCount++;
-				$userEbscoEdsUsage->update();
-			} else {
-				$userEbscoEdsUsage->usageCount = 1;
-				$userEbscoEdsUsage->insert();
+		if ($userId) {
+			$userObj = UserAccount::getActiveUserObj();
+			$userEbscoTracking = $userObj->userCookiePreferenceLocalAnalytics;
+			if ($userEbscoTracking) {
+				//Track usage for the user
+				require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
+				$userEbscoEdsUsage = new UserEbscoEdsUsage();
+				global $aspenUsage;
+				$userEbscoEdsUsage->instance = $aspenUsage->getInstance();
+				$userEbscoEdsUsage->userId = $userId;
+				$userEbscoEdsUsage->year = date('Y');
+				$userEbscoEdsUsage->month = date('n');
+
+				if ($userEbscoEdsUsage->find(true)) {
+					$userEbscoEdsUsage->usageCount++;
+					$userEbscoEdsUsage->update();
+				} else {
+					$userEbscoEdsUsage->usageCount = 1;
+					$userEbscoEdsUsage->insert();
+				}
 			}
 		}
-
+		
 		return [
 			'success' => true,
 			'message' => 'Updated usage for EBSCO EDS record ' . $id,

@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . "/Action.php";
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MaterialsRequest_MyRequests extends MyAccount {

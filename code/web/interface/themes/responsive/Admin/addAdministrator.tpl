@@ -34,6 +34,18 @@
 						</label>
 					{/foreach}
 				</div>
+
+				{assign var=property value=$structure.additionalAdministrationLocations}
+				{assign var=propName value=$property.property}
+				<label for='{$propName}' class="control-label">{translate text="Additional Locations To Administer" isAdminFacing=true}</label>
+				<div class="controls">
+					{* Display the list of roles to add *}
+					{foreach from=$property.values item=propertyName key=propertyValue}
+						<label class="checkbox">
+							<input name='{$propName}[{$propertyValue}]' type="checkbox" value='{$propertyValue}' {if !empty($propValue) && in_array($propertyValue, array_keys($propValue))}checked="checked"{/if} >{$propertyName}
+						</label>
+					{/foreach}
+				</div>
 			</div>
 			<div class="form-group">
 				<div class="controls">

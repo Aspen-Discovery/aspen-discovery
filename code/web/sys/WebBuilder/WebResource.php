@@ -176,14 +176,6 @@ class WebResource extends DB_LibraryLinkedObject {
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => true,
-			],
-			'limitAccessToLibraries' => [
-				'property' => 'limitAccessToLibraries',
-				'type' => 'checkbox',
-				'label' => 'Limit access to patrons libraries',
-				'description' => 'Require login to access page',
-				'onchange' => 'return AspenDiscovery.WebBuilder.updateWebResourceFields();',
-				'default' => 0,
 			]
 		];
 	}

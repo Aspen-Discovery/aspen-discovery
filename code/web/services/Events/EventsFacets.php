@@ -26,19 +26,16 @@ class Events_EventsFacets extends ObjectEditor {
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$hasExistingObjects = true;
 		if (!UserAccount::userHasPermission('Administer Events Facet Settings')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-
-			$eventsFacetSetting = new LibraryEventsSetting();
-			$eventsFacetSetting->libraryId = $library->libraryId;
-			if ($eventsFacetSetting->find(true)) {
-				$object->id = $eventsFacetSetting->eventsFacetSettingsId;
-			}
+			$hasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryEventsSetting', 'eventsFacetSettingsId');
 		}
-		$object->find();
 		$list = [];
-		while ($object->fetch()) {
-			$list[$object->id] = clone $object;
+		if ($hasExistingObjects) {
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
+			}
 		}
 		return $list;
 	}

@@ -113,7 +113,7 @@
         }
     </style>
     <div id="formish">
-        <h1>{translate text="Barcode Generator" isAdminFacing=true}"</h1>
+        <h1>{translate text="Barcode Generator" isAdminFacing=true}</h1>
         <p>Print barcodes for each number supplied on Avery 5160 labels</p>
         <p>Before printing labels, use your browser’s print preview options to </p>
         <ul>

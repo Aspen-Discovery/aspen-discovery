@@ -2633,8 +2633,37 @@ class Theme extends DataObject {
 	public function update($context = '') {
 		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
+		$updateDerivedThemes = false;
+		$oldThemeName = null;
+		if (!empty($this->_changedFields)) {
+			if (in_array('themeName', $this->_changedFields)) {
+				//Need to update all the themes that extend this theme to make sure they have the new correct name for what they are extending.
+				$originalTheme = new Theme();
+				$originalTheme->id = $this->id;
+				if ($originalTheme->find(true)) {
+					$oldThemeName = $originalTheme->themeName;
+					$updateDerivedThemes = true;
+				}
+			}
+		}
+
 		$ret = parent::update();
 		if ($ret !== FALSE) {
+			// Update any themes that extend this theme to give them the correct name
+			if ($updateDerivedThemes) {
+				$childTheme = new Theme();
+				$childTheme->extendsTheme = $oldThemeName;
+				$childThemes = $childTheme->fetchAll();
+				foreach ($childThemes as $childTheme) {
+					$tmpChildTheme = new Theme();
+					$tmpChildTheme->id = $childTheme->id;
+					if ($tmpChildTheme->find(true)) {
+						$tmpChildTheme->extendsTheme = $this->themeName;
+						$tmpChildTheme->update();
+					}
+				}
+			}
+
 			$this->saveLibraries();
 			$this->saveLocations();
 
@@ -3231,14 +3260,15 @@ class Theme extends DataObject {
 		unset($this->_locations);
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if (UserAccount::userHasPermission('Administer All Themes')) {
 			return true;
 		} elseif (UserAccount::userHasPermission('Administer Library Themes')) {
 			$libraries = $this->getLibraries();
-			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
+			$validLibraries = Library::getLibraryList(true);
+			$validLibraryIds = array_keys($validLibraries);
 			foreach ($libraries as $libraryTheme) {
-				if ($libraryTheme->libraryId == $homeLibrary->libraryId) {
+				if (in_array($libraryTheme->libraryId, $validLibraryIds)) {
 					return true;
 				}
 			}

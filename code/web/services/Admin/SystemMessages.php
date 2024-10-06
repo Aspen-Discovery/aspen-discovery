@@ -32,20 +32,20 @@ class Admin_SystemMessages extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')) {
-			$librarySystemMessage = new SystemMessageLibrary();
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null) {
-				$librarySystemMessage->libraryId = $library->libraryId;
-				$systemMessagesForLibrary = [];
+			$libraries = Library::getLibraryList(true);
+			$systemMessagesForLibrary = [];
+			foreach ($libraries as $libraryId => $displayName) {
+				$librarySystemMessage = new SystemMessageLibrary();
+				$librarySystemMessage->libraryId = $libraryId;
 				$librarySystemMessage->find();
 				while ($librarySystemMessage->fetch()) {
 					$systemMessagesForLibrary[] = $librarySystemMessage->systemMessageId;
 				}
-				if (count($systemMessagesForLibrary) > 0) {
-					$object->whereAddIn('id', $systemMessagesForLibrary, false);
-				} else {
-					$userHasExistingMessages = false;
-				}
+			}
+			if (count($systemMessagesForLibrary) > 0) {
+				$object->whereAddIn('id', $systemMessagesForLibrary, false);
+			} else {
+				$userHasExistingMessages = false;
 			}
 		}
 		$list = [];

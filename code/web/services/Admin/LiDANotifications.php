@@ -36,19 +36,19 @@ class Admin_LiDANotifications extends ObjectEditor {
 		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Send Notifications to All Libraries')) {
 			$librarySystemMessage = new LiDANotificationLibrary();
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null) {
-				$librarySystemMessage->libraryId = $library->libraryId;
-				$systemMessagesForLibrary = [];
+			$libraryList = Library::getLibraryList(true);
+			$systemMessagesForLibrary = [];
+			foreach ($libraryList as $libraryId => $displayName) {
+				$librarySystemMessage->libraryId = $libraryId;
 				$librarySystemMessage->find();
 				while ($librarySystemMessage->fetch()) {
 					$systemMessagesForLibrary[] = $librarySystemMessage->lidaNotificationId;
 				}
-				if (count($systemMessagesForLibrary) > 0) {
-					$object->whereAddIn('id', $systemMessagesForLibrary, false);
-				} else {
-					$userHasExistingMessages = false;
-				}
+			}
+			if (count($systemMessagesForLibrary) > 0) {
+				$object->whereAddIn('id', $systemMessagesForLibrary, false);
+			} else {
+				$userHasExistingMessages = false;
 			}
 		}
 		$list = [];

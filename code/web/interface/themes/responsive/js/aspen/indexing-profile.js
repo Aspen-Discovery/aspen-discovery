@@ -36,7 +36,7 @@ AspenDiscovery.IndexingClass = (function () {
 					'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes',
 					'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated',
 					'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat',
-					'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield',
+					'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowreplacementCostSubfield',
 					'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField',
 					'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost',
 					'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection',

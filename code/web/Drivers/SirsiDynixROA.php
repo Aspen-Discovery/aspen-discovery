@@ -197,9 +197,20 @@ class SirsiDynixROA extends HorizonAPI {
 							case 'ZIP' :
 								$Zip = $fields->data;
 								break;
+							// If the library does not use the PHONE field, set $user->phone to DAYPHONE or HOMEPHONE
+							case 'DAYPHONE' :
+								$dayphone = $fields->data;
+								$user->phone = $dayphone;
+							case 'HOMEPHONE' :
+								$homephone = $fields->data;
+								$user->phone = $homephone;
 							case 'PHONE' :
 								$phone = $fields->data;
 								$user->phone = $phone;
+								break;
+							case 'CELLPHONE' :
+								$cellphone = $fields->data;
+								$user->_mobileNumber = $cellphone;
 								break;
 							case 'EMAIL' :
 								$email = $fields->data;
@@ -382,7 +393,7 @@ class SirsiDynixROA extends HorizonAPI {
 			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse('patronStatusInfoDescribe', $webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
 			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse('patronDAddress1PolicyDescribe', $webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed},category01,category02,category03,category04,category05,category06,category07,category08,category09,category10,category11,category12}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
@@ -2339,6 +2350,21 @@ class SirsiDynixROA extends HorizonAPI {
 								$patron->email = $_REQUEST['email'];
 							}
 
+							if (isset($_REQUEST['homephone'])) {
+								$this->setPatronUpdateFieldBySearch('HOMEPHONE', $_REQUEST['homephone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->phone = $_REQUEST['homephone'];
+							}
+
+							if (isset($_REQUEST['dayphone'])) {
+								$this->setPatronUpdateFieldBySearch('DAYPHONE', $_REQUEST['dayphone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->phone = $_REQUEST['dayphone'];
+							}
+
+							if (isset($_REQUEST['cellphone'])) {
+								$this->setPatronUpdateFieldBySearch('CELLPHONE', $_REQUEST['cellphone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->_mobileNumber = $_REQUEST['cellphone'];
+							}
+
 							if (isset($_REQUEST['phone'])) {
 								$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
 								$patron->phone = $_REQUEST['phone'];
@@ -2374,6 +2400,18 @@ class SirsiDynixROA extends HorizonAPI {
 							if (isset($_REQUEST['zip'])) {
 								$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
 								$patron->_zip = $_REQUEST['zip'];
+							}
+
+							// Update notice preferences
+							$noticeCategory = $homeLibrary->symphonyNoticeCategoryNumber;
+							if (!empty($noticeCategory) && isset($_REQUEST['category' . $noticeCategory])) {
+								$updatePatronInfoParameters['fields']['category' . $noticeCategory]['key'] = $this->getPatronFieldValue($_REQUEST['category' . $noticeCategory], $homeLibrary->useAllCapsWhenUpdatingProfile);
+								$patron->_notices = $_REQUEST['category' . $noticeCategory];
+							}
+							$billingNoticeCategory = $homeLibrary->symphonyBillingNoticeCategoryNumber;
+							if (!empty($billingNoticeCategory) && isset($_REQUEST['category' . $billingNoticeCategory])) {
+								$updatePatronInfoParameters['fields']['category' . $billingNoticeCategory]['key'] = $this->getPatronFieldValue($_REQUEST['category' . $billingNoticeCategory], $homeLibrary->useAllCapsWhenUpdatingProfile);
+								$patron->_billingNotices = $_REQUEST['category' . $billingNoticeCategory];
 							}
 
 							// Update Home Location
@@ -2540,7 +2578,11 @@ class SirsiDynixROA extends HorizonAPI {
 	public function loadContactInformation(User $user) {
 		$webServiceURL = $this->getWebServiceURL();
 		$staffSessionToken = $this->getStaffSessionToken();
-		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+		$homeLibrary = $user->getHomeLibrary();
+		$categories = '';
+		$categories .= $homeLibrary->symphonyNoticeCategoryNumber ? ',category' . $homeLibrary->symphonyNoticeCategoryNumber : '';
+		$categories .= $homeLibrary->symphonyBillingNoticeCategoryNumber ? ',category' . $homeLibrary->symphonyBillingNoticeCategoryNumber : '';
+		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}" . $categories);
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->unique_ils_id . '?includeFields=' . $includeFields;
 
 		// phoneList is for texting notification preferences
@@ -2617,9 +2659,20 @@ class SirsiDynixROA extends HorizonAPI {
 					case 'ZIP' :
 						$Zip = $fields->data;
 						break;
+					// If the library does not use the PHONE field, set $user->phone to DAYPHONE or HOMEPHONE
+					case 'DAYPHONE' :
+						$dayphone = $fields->data;
+						$user->phone = $dayphone;
+					case 'HOMEPHONE' :
+						$homephone = $fields->data;
+						$user->phone = $homephone;
 					case 'PHONE' :
 						$phone = $fields->data;
 						$user->phone = $phone;
+						break;
+					case 'CELLPHONE' :
+						$cellphone = $fields->data;
+						$user->_mobileNumber = $cellphone;
 						break;
 					case 'EMAIL' :
 						$email = $fields->data;
@@ -2726,6 +2779,20 @@ class SirsiDynixROA extends HorizonAPI {
 		$user->_finesVal = $finesVal;
 		$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
 		$user->_notices = '-';
+		$user->_billingNotices = '-';
+		// Get notice and billing notice preferences out of patron categories (for CLEVNET)
+		if (isset($homeLibrary->symphonyNoticeCategoryNumber)) {
+			$noticeCategoryField = "category" . $homeLibrary->symphonyNoticeCategoryNumber;
+			if (isset($lookupMyAccountInfoResponse->fields->$noticeCategoryField->key)) {
+				$user->_notices = $lookupMyAccountInfoResponse->fields->$noticeCategoryField->key;
+			}
+		}
+		if (isset($homeLibrary->symphonyBillingNoticeCategoryNumber)) {
+			$billingNoticeCategoryField = "category" . $homeLibrary->symphonyBillingNoticeCategoryNumber;
+			if (isset($lookupMyAccountInfoResponse->fields->$billingNoticeCategoryField->key)) {
+				$user->_billingNotices = $lookupMyAccountInfoResponse->fields->$billingNoticeCategoryField->key;
+			}
+		}
 		$user->_noticePreferenceLabel = 'Email';
 		$user->_web_note = '';
 	}

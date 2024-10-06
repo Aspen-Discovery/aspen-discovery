@@ -24,17 +24,30 @@ class Admin_EmailTemplates extends ObjectEditor {
 		$object = new EmailTemplate();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
+		$userHasExistingTemplates = true;
 		if (!UserAccount::userHasPermission('Administer All Email Templates')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-			$groupedWorkDisplaySettings->id = $library->groupedWorkDisplaySettingId;
-			$groupedWorkDisplaySettings->find(true);
-			$object->id = $groupedWorkDisplaySettings->facetGroupId;
+			$libraries = Library::getLibraryList(true);
+			$templatesForLibrary = [];
+			foreach ($libraries as $libraryId => $displayName) {
+				$libraryEmailTemplate = new LibraryEmailTemplate();
+				$libraryEmailTemplate->libraryId = $libraryId;
+				$libraryEmailTemplate->find();
+				while ($libraryEmailTemplate->fetch()) {
+					$templatesForLibrary[] = $libraryEmailTemplate->emailTemplateId;
+				}
+			}
+			if (count($templatesForLibrary) > 0) {
+				$object->whereAddIn('id', $templatesForLibrary, false);
+			} else {
+				$userHasExistingTemplates = false;
+			}
 		}
-		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$object->find();
-		while ($object->fetch()) {
-			$list[$object->id] = clone $object;
+		if ($userHasExistingTemplates) {
+			$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
+			}
 		}
 
 		return $list;

@@ -2,14 +2,12 @@ package com.turning_leaf_technologies.oai;
 
 import com.turning_leaf_technologies.dates.DateInfo;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
-import org.apache.commons.lang3.time.DateParser;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 class OAISolrRecord {
 	private String identifier;
@@ -29,6 +27,7 @@ class OAISolrRecord {
 	private final HashSet<String> locations = new HashSet<>();
 	private String rights;
 	private final HashSet<String> date = new HashSet<>();
+	private final HashSet<String> dateUnchanged = new HashSet<>();
 	private String id;
 	private String collection_name;
 	private long collection_id;
@@ -70,20 +69,22 @@ class OAISolrRecord {
 		this.scopesToInclude = scopesToInclude;
 	}
 
-	Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
-
-	void addDates(String[] dates, Logger logger) {
-		for (String date : dates) {
-			if (AspenStringUtils.isNumeric(date)) {
-				this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
-			} else {
-				DateInfo dateInfo = new DateInfo(date);
-				if (!dateInfo.isNotSet()) {
-					this.date.add(dateInfo.getSolrDate());
+	void addDates(String[] dates, Logger logger, long dateFormatting) {
+		if(dateFormatting==1) {
+			for (String date : dates) {
+				if (AspenStringUtils.isNumeric(date)) {
+					this.date.add(new DateInfo(1, 1, Integer.parseInt(date)).getSolrDate());
 				} else {
-					logger.debug("Could not parse date " + date);
+					DateInfo dateInfo = new DateInfo(date);
+					if (!dateInfo.isNotSet()) {
+						this.date.add(dateInfo.getSolrDate());
+					} else {
+                        logger.debug("Could not parse date {}", date);
+					}
 				}
 			}
+		}else{
+			this.dateUnchanged.add(dates[0]);
 		}
 	}
 
@@ -112,6 +113,7 @@ class OAISolrRecord {
 		doc.addField("relation", relation);
 		doc.addField("rights", rights);
 		doc.addField("date", date);
+		doc.addField("date_text", dateUnchanged);
 		doc.addField("geographic", locations);
 		doc.addField("scope_has_related_records", scopesToInclude);
 		return doc;

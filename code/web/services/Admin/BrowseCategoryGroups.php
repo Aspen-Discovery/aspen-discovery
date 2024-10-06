@@ -43,8 +43,12 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 				}
 				$object->whereAddIn('id', $allowedGroups, false);
 			} else {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$object->id = $library->browseCategoryGroupId;
+				$libraries = Library::getLibraryListAsObjects(true);
+				$browseCategoryGroups = [];
+				foreach ($libraries as $tmpLibrary){
+					$browseCategoryGroups[] = $tmpLibrary->browseCategoryGroupId;
+				}
+				$object->whereAddIn('id', $browseCategoryGroups, false);
 			}
 		}
 		$object->find();

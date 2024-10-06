@@ -71,6 +71,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private boolean hideUnknownLiteraryForm;
 	private boolean hideNotCodedLiteraryForm;
 	private char noteSubfield;
+	private char replacementCostSubfield;
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
 	private Pattern suppressRecordsWithUrlsMatching;
@@ -225,6 +226,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.includePersonalAndCorporateNamesInTopics = indexingProfileRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 
 		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
+		this.setReplacementCostSubfield(getCharFromRecordSet(indexingProfileRS, "replacementCostSubfield"));
 
 		this.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 		this.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
@@ -721,6 +723,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setNoteSubfield(char noteSubfield){
 		this.noteSubfield = noteSubfield;
+	}
+
+	public char getReplacementCostSubfield() {
+		return replacementCostSubfield;
+	}
+
+	public void setReplacementCostSubfield(char replacementCostSubfield) {
+		this.replacementCostSubfield = replacementCostSubfield;
 	}
 
 	public char getCallNumberCutterSubfield() {

@@ -14,7 +14,7 @@ class ILS_SelfCheckTester extends Admin_Admin {
 			global $locationSingleton;
 			global $library;
 			$location = $locationSingleton->getActiveLocation();
-			if ($location == null) {
+			if (empty($location)) {
 				$location = $library->getMainLocation();
 			}
 			if ($location != null) {

@@ -76,7 +76,8 @@
     "JUnit.MarcRecordGrouperTest.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "pr/2028",
+    "git-widget-placeholder": "24.10.00",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/web/aspen-discovery/intellij_project",
     "project.structure.last.edited": "Artifacts",
@@ -216,7 +217,6 @@
       <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
       <option name="MAIN_CLASS_NAME" value="org.aspendiscovery.palace_project.PalaceProjectExportMain" />
       <module name="palace_project_export" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../code/palace_project_export" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -287,7 +287,6 @@
       <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.sierra.SierraExportAPIMain" />
       <module name="sierra_export_api" />
-      <option name="PROGRAM_PARAMETERS" value="mcfls.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../code/sierra_export_api" />
       <method v="2">
         <option name="Make" enabled="true" />

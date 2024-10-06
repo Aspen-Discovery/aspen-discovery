@@ -16,6 +16,7 @@ class ReadingHistoryEntry extends DataObject {
 	public $checkInDate;
 	public $deleted;
 	public $isIll;
+	public $costSavings;
 
 	function objectHistoryEnabled() : bool {
 		return false;

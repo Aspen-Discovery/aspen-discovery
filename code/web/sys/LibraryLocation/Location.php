@@ -45,7 +45,6 @@ class Location extends DataObject {
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $showOnDonationsPage;
-	public $showInSearchFacet;
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;
@@ -925,15 +924,6 @@ class Location extends DataObject {
 								'forcesReindex' => true,
 							],
 							[
-								'property' => 'showInSearchFacet',
-								'type' => 'checkbox',
-								'label' => 'Show This Branch In Available At and Owning Location Facets',
-								'description' => 'Whether or not the library should appear as a location that can be selected to filter search results by in the Available At and Owning Location facets.',
-								'hideInLists' => true,
-								'default' => true,
-								'forcesReindex' => false,
-							],
-							[
 								'property' => 'additionalLocationsToShowAvailabilityFor',
 								'type' => 'text',
 								'label' => 'Additional Locations to Include in Available At Facet',
@@ -1263,7 +1253,7 @@ class Location extends DataObject {
 						'property' => 'allowUpdatingHoursFromILS',
 						'type' => 'checkbox',
 						'label' => 'Automatically update hours from the ILS',
-						'description' => 'Whether hours should be automatically updated (Koha Only).',
+						'description' => 'Whether closures should be automatically updated (Koha Only).',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Location ILS Connection'],
@@ -2598,8 +2588,8 @@ class Location extends DataObject {
 	}
 
 	/**
-	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
-	 * @param boolean $valueIsCode whether or not the value returned is the location code or location id (default)
+	 * @param boolean $restrictByHomeLibrary whether only locations for the patron's home library should be returned
+	 * @param boolean $valueIsCode whether the value returned is the location code or location id (default)
 	 * @return array
 	 */
 	static function getLocationList(bool $restrictByHomeLibrary, bool $valueIsCode = false): array {
@@ -2607,8 +2597,13 @@ class Location extends DataObject {
 		$location->orderBy('displayName');
 		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
+			$user = UserAccount::getActiveUserObj();
 			if ($homeLibrary != null) {
-				$location->libraryId = $homeLibrary->libraryId;
+				$location->whereAdd("libraryId = $homeLibrary->libraryId");
+			}
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
 			}
 		}
 		$selectValue = 'locationId';
@@ -2635,8 +2630,13 @@ class Location extends DataObject {
 			$location->orderBy('displayName');
 			if ($restrictByHomeLibrary) {
 				$homeLibrary = Library::getPatronHomeLibrary();
+				$user = UserAccount::getActiveUserObj();
 				if ($homeLibrary != null) {
-					$location->libraryId = $homeLibrary->libraryId;
+					$location->whereAdd("libraryId = $homeLibrary->libraryId");
+				}
+				$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+				if (!empty($additionalAdministrationLocations)) {
+					$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
 				}
 			}
 			$location->find();

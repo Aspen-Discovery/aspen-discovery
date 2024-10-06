@@ -99,6 +99,21 @@
 				</div>
 
 				<div class="panel active">
+					<a href="#testingToolsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Testing Tools" inAttribute=true isAdminFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Testing Tools" isAdminFacing=true}
+							</div>
+						</div>
+					</a>
+					<div id="testingToolsGroup" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Testing/GenerateReadingHistory">{translate text="Generate Reading History" isAdminFacing=true}</a></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel active">
 					<a href="#communityGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Community" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">

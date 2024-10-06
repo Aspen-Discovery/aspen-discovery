@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 
 /**
  * MaterialsRequest Submission processing, processes a new request for the user and
@@ -51,7 +51,7 @@ class MaterialsRequest_Results extends Action {
 				$interface->assign('requestsThisYear', $requestsThisYear);
 				$interface->assign('openRequests', $openRequests);
 
-				require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 				MaterialsRequestUsage::incrementStat($materialsRequest->status, $homeLibrary->libraryId);
 
 				$materialsRequest->sendStatusChangeEmail();

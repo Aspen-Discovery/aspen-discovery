@@ -31,8 +31,31 @@ class Admin_Libraries extends ObjectEditor {
 			}
 		} else {
 			//This doesn't need pagination since there should only be one
-			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
+			$object = new Library();
+			$homeLibrary = Library::getPatronHomeLibrary();
+			if ($homeLibrary != null) {
+				$object->whereAdd("libraryId = $homeLibrary->libraryId");
+			}
+			$user = UserAccount::getActiveUserObj();
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$locationsForUser = Location::getLocationListAsObjects(true);
+				$additionalAdministrationLibraries = [];
+				foreach ($locationsForUser as $location) {
+					$additionalAdministrationLibraries[$location->libraryId] = $location->libraryId;
+				}
+
+				$object->whereAddIn('libraryId', $additionalAdministrationLibraries, false, 'OR');
+			}
+
+			$object->orderBy($this->getSort());
+			$this->applyFilters($object);
+			$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+			$object->find();
+			while ($object->fetch()) {
+				$libraryList[$object->libraryId] = clone $object;
+			}
+
 		}
 
 		return $libraryList;
@@ -95,7 +118,7 @@ class Admin_Libraries extends ObjectEditor {
 		if ($library->find(true)) {
 			$library->clearMaterialsRequestFormats();
 
-			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
+			$defaultMaterialsRequestFormats = MaterialsRequestFormat::getDefaultMaterialRequestFormats($libraryId);
 			$library->setMaterialsRequestFormats($defaultMaterialsRequestFormats);
 			$library->update();
 		}

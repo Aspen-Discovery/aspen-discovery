@@ -1780,7 +1780,6 @@ class Sierra extends Millennium {
 		$params = [];
 
 		if ($formFields != null) {
-			$params['patronType'] = $selfRegistrationForm->selfRegPatronCode;
 			foreach ($formFields as $fieldObj){
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {
@@ -1824,6 +1823,8 @@ class Sierra extends Millennium {
 					$params['pin'] = $_REQUEST['pin'];
 				}
 			}
+			$params['homeLibraryCode'] = $_REQUEST['pickupLocation'];
+			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronCode;
 		}
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/";
@@ -2450,20 +2451,26 @@ class Sierra extends Millennium {
 		if ($doCheckout) {
 			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkout";
 
-			$params = [];
-			$params['patronBarcode'] = $patron->ils_barcode;
-			$params['itemBarcode'] = $barcode;
+			//On some systems, PHP is not properly encoding the integer statgroup, so we will manually encode it.
+			//This is important because Sierra can't handle the statgroup if it is encoded as string
+			$jsonEncodedParams = '{';
+			$jsonEncodedParams .= '"patronBarcode": "' . $patron->ils_barcode . '",';
+			$jsonEncodedParams .= '"itemBarcode": "' . $barcode . '",';
 			if (!empty($patron->ils_password)) {
-				$params['patronPin'] = $patron->ils_password;
+				$jsonEncodedParams .= '"patronPin": "' . $patron->ils_password . '",';
 			}
 			if (!empty($currentLocation->circulationUsername)) {
-				$params['username'] = $currentLocation->circulationUsername;
+				$jsonEncodedParams .= '"username": "' . $currentLocation->circulationUsername . '",';
 			}
 			if (!empty($currentLocation->statGroup) && $currentLocation->statGroup != -1) {
-				$params['statgroup'] = $currentLocation->statGroup;
+				$jsonEncodedParams .= '"statgroup": ' . $currentLocation->statGroup . ',';
 			}
+			if (str_ends_with($jsonEncodedParams, ',')) {
+				$jsonEncodedParams = substr($jsonEncodedParams, 0, strlen($jsonEncodedParams) - 1);
+			}
+			$jsonEncodedParams .= '}';
 
-			$checkoutResult = $this->_postPage('sierra.checkout', $sierraUrl, json_encode($params));
+			$checkoutResult = $this->_postPage('sierra.checkout', $sierraUrl, $jsonEncodedParams);
 			if ($this->lastResponseCode == 200) {
 				$checkoutLink = $checkoutResult->id;
 

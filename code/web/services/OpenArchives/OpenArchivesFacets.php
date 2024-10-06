@@ -26,10 +26,13 @@ class OpenArchives_OpenArchivesFacets extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Open Archives Facet Settings')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraries = Library::getLibraryListAsObjects(true);
+			$validSettings = [];
+			foreach ($libraries as $tmpLibrary) {
+				$validSettings[] = $tmpLibrary->openArchivesFacetSettingId;
+			}
 
-            $OAFacetSettingId = $library->openArchivesFacetSettingId;
-			$object->id = $OAFacetSettingId->facetGroupId;
+            $object->whereAddIn('id', $validSettings, false);
 		}
 		$object->find();
 		$list = [];

@@ -323,7 +323,7 @@ public class PalaceProjectExportMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			} else if (result.deleteWork) {
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 			}
 		}
 	}
@@ -818,7 +818,7 @@ public class PalaceProjectExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
 					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 					markRecordToReloadAsProcessedStmt.executeUpdate();

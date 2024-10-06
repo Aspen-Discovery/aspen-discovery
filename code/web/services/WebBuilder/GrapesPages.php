@@ -26,7 +26,7 @@ class WebBuilder_GrapesPages extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
 		if (!UserAccount::userHasPermission('Administer All Grapes Pages')) {
-			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryBasicPage', 'basicPageId');
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryGrapesPage', 'grapesPageId');
 		}
 		$objectList = [];
 		if ($userHasExistingObjects) {

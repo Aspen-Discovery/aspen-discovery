@@ -99,7 +99,8 @@ class UserAPI extends AbstractAPI {
 					'getMaterialsRequests',
 					'getMaterialsRequestDetails',
 					'createMaterialsRequest',
-					'cancelMaterialsRequest'
+					'cancelMaterialsRequest',
+					'deleteAspenUser'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -427,7 +428,7 @@ class UserAPI extends AbstractAPI {
 				];
 
 				$result['message'] = translate([
-					'text' => 'A email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
+					'text' => 'An email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
 					'isPublicFacing' => true,
 				]) . ' ' . translate([
 					'text' => 'If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.',
@@ -1967,7 +1968,7 @@ class UserAPI extends AbstractAPI {
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
 							'shouldBeItemHold' => false,
-							];
+						];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
 						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
 						$action = $result['api']['action'] ?? null;
@@ -1983,39 +1984,39 @@ class UserAPI extends AbstractAPI {
 							'shouldBeItemHold' => false,
 						];
 					} else {
-							//Make sure that there are not volumes available
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$recordDriver = new MarcRecordDriver($bibId);
-							if ($recordDriver->isValid()) {
-								require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-								$volumeDataDB = new IlsVolumeInfo();
-								$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-								if ($volumeDataDB->find(true)) {
-									return [
-										'success' => false,
-										'message' => translate(['text' => 'You must place a volume hold on this title.']),
-									];
-								}
+						//Make sure that there are not volumes available
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver($bibId);
+						if ($recordDriver->isValid()) {
+							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+							$volumeDataDB = new IlsVolumeInfo();
+							$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+							if ($volumeDataDB->find(true)) {
+								return [
+									'success' => false,
+									'message' => translate(['text' => 'You must place a volume hold on this title.']),
+								];
 							}
-							$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
-							$action = $result['api']['action'] ?? null;
-							$responseMessage = strip_tags($result['api']['message']);
-							$responseMessage = trim($responseMessage);
-							$hasItems = false;
-							if(isset($result['items'])) {
-								$hasItems = (bool)$result['items'];
-							}
-							return [
-								'success' => $result['success'],
-								'title' => $result['api']['title'],
-								'message' => $responseMessage,
-								'action' => $action,
-								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
-								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => $hasItems,
-								'items' => $result['items'] ?? null,
-							];
 						}
+						$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
+						$action = $result['api']['action'] ?? null;
+						$responseMessage = strip_tags($result['api']['message']);
+						$responseMessage = trim($responseMessage);
+						$hasItems = false;
+						if(isset($result['items'])) {
+							$hasItems = (bool)$result['items'];
+						}
+						return [
+							'success' => $result['success'],
+							'title' => $result['api']['title'],
+							'message' => $responseMessage,
+							'action' => $action,
+							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => $hasItems,
+							'items' => $result['items'] ?? null,
+						];
+					}
 				} elseif ($source == 'overdrive') {
 					return $this->placeOverDriveHold();
 				} elseif ($source == 'cloud_library') {
@@ -5763,7 +5764,7 @@ class UserAPI extends AbstractAPI {
 	function checkoutILSItem($patronBarcode = null, $patronPassword = null, $itemBarcode = null, $activeLocationId = null): array {
 		if ($patronBarcode != null && $patronPassword == null && $this->context == 'internal') {
 			//For self check we don't require the pin, use find new user
-			//Call find new user just to be sure that all patron information is up to date.
+			//Call find new user just to be sure that all patron information is up-to-date.
 			$user = UserAccount::findNewUser($patronBarcode, null);
 			if (!$user) {
 				//This user no longer exists? return an error?
@@ -5793,11 +5794,17 @@ class UserAPI extends AbstractAPI {
 					$activeLocationId = $_REQUEST['locationId'];
 				}
 			}
-			if (empty($itemBarcode) || empty($activeLocationId)) {
+			if (empty($itemBarcode)) {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => 'Barcode and location id must be provided',
+					'message' => 'Item Barcode must be provided',
+				];
+			} elseif (empty($activeLocationId)) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Active location id must be provided',
 				];
 			} else {
 				$location = new Location();
@@ -6141,7 +6148,7 @@ class UserAPI extends AbstractAPI {
 				];
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MMaterialsRequest/aterialsRequest.php';
 
 			$id = $_REQUEST['id'];
 			$materialsRequest = new MaterialsRequest();
@@ -6179,6 +6186,8 @@ class UserAPI extends AbstractAPI {
 			$openRequests = $user->getNumOpenMaterialsRequests();
 			$maxActiveRequests = $user->getNumMaterialsRequestsMaxActive();
 			$maxRequestsPerYear = $user->getNumMaterialsRequestsMaxPerYear();
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->createdBy = $user->id;
 			$statusQuery = new MaterialsRequestStatus();
@@ -6331,7 +6340,8 @@ class UserAPI extends AbstractAPI {
 				];
 			}
 
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
 
 			$id = $_REQUEST['id'];
 			$materialsRequest = new MaterialsRequest();
@@ -6344,7 +6354,6 @@ class UserAPI extends AbstractAPI {
 					$homeLibrary = $library;
 				}
 
-				require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 				$cancelledStatus = new MaterialsRequestStatus();
 				$cancelledStatus->isPatronCancel = 1;
 				$cancelledStatus->libraryId = $homeLibrary->libraryId;
@@ -6353,7 +6362,7 @@ class UserAPI extends AbstractAPI {
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
 				if ($materialsRequest->update()) {
-					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
 					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 					return [
 						'success' => true,
@@ -6367,6 +6376,31 @@ class UserAPI extends AbstractAPI {
 						'message' => translate(['text' => 'Could not cancel the request, error during update.', 'isPublicFacing' => true]),
 					];
 				}
+			}
+		}
+
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to validate user',
+		];
+	}
+
+	function deleteAspenUser() : array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if($user->delete()) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'User successfully deleted from Aspen.', 'isPublicFacing' => true]),
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'Unable to delete the user from Aspen at this time.', 'isPublicFacing' => true]),
+				];
 			}
 		}
 

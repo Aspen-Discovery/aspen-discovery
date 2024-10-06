@@ -3346,6 +3346,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Unknown Error',
 				'isPublicFacing' => true,
 			]),
+			'showCostSavings' => false,
 		];
 
 		global $offlineMode;
@@ -3356,6 +3357,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'Your session has ended, please login to view checkouts.',
 					'isPublicFacing' => true,
 				]),
+				'showCostSavings' => false,
 			];
 		}else if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
 			$source = $_REQUEST['source'];
@@ -3432,6 +3434,12 @@ class MyAccount_AJAX extends JSON_Action {
 				$readerName = new OverDriveDriver();
 				$readerName = $readerName->getReaderName();
 				$interface->assign('readerName', $readerName);
+
+				if ($interface->getVariable('enableCostSavings') && $source == 'all'){
+					//Get costs savings
+					$result['showCostSavings'] = true;
+					$result['costSavingsMessage'] = $user->getCurrentCostSavingsMessage(true);
+				}
 
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
@@ -3716,6 +3724,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Unknown Error',
 				'isPublicFacing' => true,
 			]),
+			'showCostSavings' => false,
 		];
 
 
@@ -3796,6 +3805,9 @@ class MyAccount_AJAX extends JSON_Action {
 			if (!($result instanceof AspenError)) {
 				$interface->assign('historyActive', $result['historyActive']);
 				$interface->assign('transList', $result['titles']);
+				$patronHomeLibrary = $patron->getHomeLibrary();
+				$result['showCostSavings'] = $patronHomeLibrary->enableCostSavings && $patron->enableCostSavings;
+				$result['costSavingsMessage'] = $user->getTotalCostSavingsMessage(true);
 			}
 		}
 		$result['success'] = true;

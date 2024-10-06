@@ -17,16 +17,8 @@ class LocationTheme extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
-		$location = new Location();
-		$location->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Locations')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$location->libraryId = $homeLibrary->libraryId;
-		}
-		$locationList = $location->fetchAll('locationId', 'displayName');
-		$location = new Location();
-		$location->orderBy('displayName');
-		$allLocationList = $location->fetchAll('locationId', 'displayName');
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Locations'));
+		$allLocationList = Location::getLocationList(false);
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -63,7 +55,7 @@ class LocationTheme extends DataObject {
 		];
 	}
 
-	public function canActiveUserEdit() {
+	public function canActiveUserEdit() : bool {
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			foreach ($homeLibrary->getLocations() as $location) {

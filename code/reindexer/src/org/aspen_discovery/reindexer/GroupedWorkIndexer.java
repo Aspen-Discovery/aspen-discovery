@@ -310,7 +310,7 @@ public class GroupedWorkIndexer {
 			getDebugInfoStmt = dbConn.prepareStatement("SELECT id from grouped_work_debug_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			updateDebuggingInfoStmt = dbConn.prepareStatement("UPDATE grouped_work_debug_info set processed = 1, debugInfo = ?, debugTime = ? where id =?");
 
-			removeItemsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items where groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = ?)");
+			removeItemsForWorkStmt = dbConn.prepareStatement("DELETE grouped_work_record_items FROM grouped_work_records LEFT JOIN grouped_work_record_items ON ( grouped_work_record_items.groupedWorkRecordId = grouped_work_records.id ) WHERE groupedWorkId = ?");
 			removeVariationsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation where groupedWorkId = ?");
 			removeRecordsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where groupedWorkId = ?");
 		} catch (Exception e){
@@ -2370,7 +2370,7 @@ public class GroupedWorkIndexer {
 					updateItemForRecordStmt.setLong(20, itemId);
 					updateItemForRecordStmt.executeUpdate();
 				}catch (SQLException e){
-					logEntry.incErrors("Error updating item " + itemId + " record " + recordId);
+					logEntry.incErrors("Error updating item " + itemId + " record " + recordId, e);
 					errorsSavingItem = true;
 				}
 			}

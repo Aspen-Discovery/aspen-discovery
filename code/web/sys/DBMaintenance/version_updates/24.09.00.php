@@ -177,7 +177,13 @@ function getUpdates24_09_00(): array {
 			'continueOnError' => false,
 			'sql' => ["ALTER TABLE user_list_entry MODIFY COLUMN sourceId VARCHAR(255)"]
 
-		], //
+		], // sourceId_allow_255_char
+		'remove_showInSearchFacet' => [
+			'title' => 'Remove showInSearchFacet',
+			'description' => 'Remove the showInSearchFacet column from the Location table as part of the removal of the feature to hide branches from search facets',
+			'continueOnError' => false,
+			'sql' => ["ALTER TABLE location DROP COLUMN showInSearchFacet"]
+		], // remove_showInSearchFacet
 
 		//pedro - PTFS-Europe
 

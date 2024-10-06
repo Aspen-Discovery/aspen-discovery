@@ -170,6 +170,10 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
+					if (data.showCostSavings && source === 'all') {
+						// noinspection JSUnresolvedReference
+						$("#costSavingsPlaceholder").html(data.costSavingsMessage);
+					}
 				} else {
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
 				}
@@ -215,8 +219,15 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
 				if (data.success) {
+					// noinspection JSUnresolvedReference
 					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
+					// noinspection JSUnresolvedReference
 					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
+					// noinspection JSUnresolvedReference
+					if (data.showCostSavings && source === 'all') {
+						// noinspection JSUnresolvedReference
+						$("#costSavingsPlaceholder").html(data.costSavingsMessage);
+					}
 				} else {
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
 				}
@@ -335,6 +346,10 @@ AspenDiscovery.Account = (function () {
 				document.body.style.cursor = "default";
 				if (data.success) {
 					$("#readingHistoryListPlaceholder").html(data.readingHistory);
+					if (data.showCostSavings) {
+						// noinspection JSUnresolvedReference
+						$("#costSavingsPlaceholder").html(data.costSavingsMessage);
+					}
 				} else {
 					$("#readingHistoryListPlaceholder").html(data.message);
 				}

@@ -281,6 +281,7 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 				$analyticsPref = $cookie['Analytics'];
 				$userObj->userCookiePreferenceEssential = 1;
 				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+				$userLocalAnalyticsPref = $cookie['UserLocalAnalytics'];
 				$userObj->update();
 			}
 		}
@@ -352,7 +353,7 @@ if (isset($_REQUEST['lookfor'])) {
 		if ($cleanedSearchTerm != $searchTerm) {
 			$searchTerm = $cleanedSearchTerm;
 		}
-		if (strlen($searchTerm) >= 256) {
+		if (strlen($searchTerm) >= 500) {
 			$interface->setTemplate('../queryTooLong.tpl');
 			$interface->setPageTitle('An Error has occurred');
 			$interface->display('layout.tpl');
@@ -494,6 +495,7 @@ if ($isLoggedIn) {
 	$interface->assign('activeUserId', $user->id);
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
+	$interface->assign('enableCostSavings', $user->isCostSavingsEnabled());
 	$interface->assign('enableNotificationHistory', $user->isNotificationHistoryEnabled());
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
@@ -654,6 +656,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$user = UserAccount::getActiveUserObj();
 	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 	$interface->assign('enablePaymentHistory', $user->isPaymentHistoryEnabled());
+	$interface->assign('enableCostSavings', $user->isCostSavingsEnabled());
 	$interface->assign('enableNotificationHistory', $user->isNotificationHistoryEnabled());
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
@@ -672,6 +675,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('disableCoverArt', false);
 	$interface->assign('enableReadingHistory', false);
 	$interface->assign('enablePaymentHistory', false);
+	$interface->assign('enableCostSavings', false);
 	$interface->assign('enableNotificationHistory', false);
 }
 

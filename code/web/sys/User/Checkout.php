@@ -201,4 +201,45 @@ class Checkout extends CircEntry {
 		$this->performPreSaveChecks();
 		return parent::update();
 	}
+
+	public function getReplacementCost() : float {
+		require_once ROOT_DIR . '/sys/ReplacementCost.php';
+		$replacementCosts = ReplacementCost::getReplacementCostsByFormat();
+
+		$replacementCostForCheckout = 0;
+		$useDefaultReplacementCost = true;
+		//Check to see if the title has a replacement cost in the record
+		$recordDriver = $this->getRecordDriver();
+		if ($recordDriver instanceof MarcRecordDriver) {
+			$indexingProfile = $recordDriver->getIndexingProfile();
+			if (!empty($indexingProfile->replacementCostSubfield) && $indexingProfile->replacementCostSubfield != ' ' && !empty($indexingProfile->itemRecordNumber) && $indexingProfile->itemRecordNumber != ' '){
+				//We need the full MARC record to get all the data
+				$marcRecord = $recordDriver->getMarcRecord();
+				if ($marcRecord) {
+					$itemFields = $marcRecord->getFields($indexingProfile->itemTag);
+					/** @var File_MARC_Data_Field $itemField */
+					foreach ($itemFields as $itemField) {
+						$itemRecordNumber = $itemField->getSubfield($indexingProfile->itemRecordNumber);
+						$replacementCost = $itemField->getSubfield($indexingProfile->replacementCostSubfield);
+						if ($itemRecordNumber != null && $replacementCost != null) {
+							if ($itemRecordNumber->getData() == $this->itemId) {
+								$replacementCost = $replacementCost->getData();
+								if ($replacementCost > 0 && is_numeric($replacementCost)) {
+									$replacementCostForCheckout = $replacementCost;
+									$useDefaultReplacementCost = false;
+								}
+								break;
+							}
+						}
+					}
+				}
+				$marcRecord = null;
+			}
+		}
+		$lowerFormat = strtolower($this->format);
+		if ($useDefaultReplacementCost && array_key_exists($lowerFormat, $replacementCosts)) {
+			$replacementCostForCheckout = $replacementCosts[$lowerFormat];
+		}
+		return $replacementCostForCheckout;
+	}
 }

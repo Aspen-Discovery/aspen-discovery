@@ -28,24 +28,6 @@ class Admin_Administrators extends ObjectEditor {
 				$admin = new User();
 				$admin->id = $userId;
 				if ($admin->find(true)) {
-					$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
-					if ($homeLibrary != null) {
-						/** @noinspection PhpUndefinedFieldInspection */
-						$admin->homeLibraryName = $homeLibrary->displayName;
-					} else {
-						/** @noinspection PhpUndefinedFieldInspection */
-						$admin->homeLibraryName = 'Unknown';
-					}
-
-					$location = new Location();
-					$location->locationId = $admin->homeLocationId;
-					if ($location->find(true)) {
-						/** @noinspection PhpUndefinedFieldInspection */
-						$admin->homeLocation = $location->displayName;
-					} else {
-						/** @noinspection PhpUndefinedFieldInspection */
-						$admin->homeLocation = 'Unknown';
-					}
 					$adminList[$userId] = $admin;
 				}
 			}

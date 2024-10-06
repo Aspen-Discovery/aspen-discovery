@@ -1,10 +1,11 @@
 <?php
-
+require_once ROOT_DIR . '/Drivers/KohaApiUserAgent.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Koha extends AbstractIlsDriver {
 	private $dbConnection = null;
+	private KohaApiUserAgent $kohaApiUserAgent;
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
@@ -910,59 +911,48 @@ class Koha extends AbstractIlsDriver {
 				$lookupUserResult->close();
 			} else if ($this->getKohaVersion() >= 22.1110) {
 				//Authenticate the user using KOHA API
-				$oauthToken = $this->getOAuthToken();
-				if (!$oauthToken) {
-					global $logger;
-					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
-					$result['messages'][] = translate([
-						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]);
-					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
-				} else {
-					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
-					$postParams = [
-						'identifier' => $barcode,
-						'password' => $password,
+				$postParams = [
+					'identifier' => $barcode,
+					'password' => $password,
 					];
-					$this->apiCurlWrapper->addCustomHeaders([
-						'Authorization: Bearer ' . $oauthToken,
-						'User-Agent: Aspen Discovery',
-						'Accept: */*',
-						'Cache-Control: no-cache',
-						'Content-Type: application/json;charset=UTF-8',
-						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-					], true);
-				}
-				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
-				$responseCode = $this->apiCurlWrapper->getResponseCode();
-				$jsonResponse = json_decode($responseBody);
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
-				if ($responseCode == 201) {
-					$cardNumber = $jsonResponse->cardnumber;
-					$patronId = $jsonResponse->patron_id;
-					$authenticationSuccess = true;
-				} else {
-					if (!empty($jsonResponse) && !empty($jsonResponse->error) && $jsonResponse->error == 'Password expired') {
-						$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+				$response = $this->kohaApiUserAgent->post("/api/v1/auth/password/validation",$postParams,"koha.patronLogin",['password' => $password]);
+			
+				if ($response) {
 
-						$lookupUserResult = mysqli_query($this->dbConnection, $sql);
-						if ($lookupUserResult->num_rows > 0) {
-							$lookupUserRow = $lookupUserResult->fetch_assoc();
-
-							$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
-							if ($expiredPasswordResult != null) {
-								$lookupUserResult->close();
-								return $expiredPasswordResult;
+					$responseCode = $response['code'];
+					$headers = $response['headers'];
+					$apiURL = $response['url'];
+					
+					if ($response['code'] == 201) {
+						$patronId = $response['content']['patron_id'];
+						$authenticationSuccess = true;
+					} else {
+						$error = $response['content']['error'];
+						$message = $response['content']['message'];
+						if (!empty($response['content']) && !empty($error) && $error == 'Password expired') {
+							$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+	
+							$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+							if ($lookupUserResult->num_rows > 0) {
+								$lookupUserRow = $lookupUserResult->fetch_assoc();
+	
+								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
+								if ($expiredPasswordResult != null) {
+									$lookupUserResult->close();
+									return $expiredPasswordResult;
+								}
 							}
+							$lookupUserResult->close();
 						}
-						$lookupUserResult->close();
+						$result['messages'][] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
 					}
-					$result['messages'][] = translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]);
+				} else {
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
 				}
+				
 			} else {
 				//Authenticate the user using KOHA ILSDI
 				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
@@ -984,16 +974,21 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
+
 					//Technically this is not right, we're using an XML response and thinking it's JSON, but for practical purposes its going to work since we have the same format in the XML and json bodies and everything is clases
 					$jsonResponse = $responseBody;
+					$message = $jsonResponse->message;
+					$error = $jsonResponse->code;
 					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
+
 				} else {
 					$responseCode = $this->curlWrapper->getResponseCode();
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
-					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, '', ['password' => $password]);
+					$headers = $this->curlWrapper->getHeaders();
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, '', ['password' => $password]);
 				}
 			}
 			if ($authenticationSuccess) {
@@ -1009,11 +1004,10 @@ class Koha extends AbstractIlsDriver {
 						return $result;
 					}
 				} else {
-
-					if (isset($jsonResponse->message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
+					if (isset($message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-					} else if (isset($jsonResponse->message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
+					} else if (isset($message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
 						global $logger;
 						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
@@ -1034,7 +1028,7 @@ class Koha extends AbstractIlsDriver {
 							}
 						} else {
 							//Check to see if the patron password has expired, this is not available on all systems.
-							if (isset($jsonResponse->code) && $jsonResponse->code == 'PasswordExpired') {
+							if (isset($error) && $error == 'PasswordExpired') {
 								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
 								if ($expiredPasswordResult != null) {
 									return $expiredPasswordResult;
@@ -1052,7 +1046,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			} else {
 				$postParams['password'] = '**password**';
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, "", ['password' => $password]);
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {
@@ -1060,7 +1054,10 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			return null;
 		}
-	}/**
+	}
+		
+
+/**
  * @param $borrowernumber
  * @return array
  */
@@ -1402,6 +1399,7 @@ class Koha extends AbstractIlsDriver {
 		$this->delApiCurlWrapper->setTimeout(30);
 		$this->renewalsCurlWrapper = new CurlWrapper();
 		$this->renewalsCurlWrapper->setTimeout(30);
+		$this->kohaApiUserAgent = new KohaApiUserAgent($accountProfile);
 	}
 
 	function __destruct() {
@@ -1723,153 +1721,108 @@ class Koha extends AbstractIlsDriver {
 			],
 		];
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$hold_result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-
+		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
+		if (!$patronEligibleForHolds['isEligible']) {
+			$hold_result['message'] = $patronEligibleForHolds['message'];
+			// Result for API or app use
+			$hold_result['api']['message'] = $patronEligibleForHolds['message'];
+			return $hold_result;
+		}
+		//Get a specific item number to place a hold on even though we are placing a title level hold.
+		//because.... Koha
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$recordDriver = new MarcRecordDriver($recordId);
+		if (!$recordDriver->isValid()) {
+			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			// Result for API or app use
 			$hold_result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Unable to find a valid record for this title.  Please try your search again.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-
-			$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
-			if (!$patronEligibleForHolds['isEligible']) {
-				$hold_result['message'] = $patronEligibleForHolds['message'];
-
-				// Result for API or app use
-				$hold_result['api']['message'] = $patronEligibleForHolds['message'];
-
-				return $hold_result;
-			}
-
-			//Get a specific item number to place a hold on even though we are placing a title level hold.
-			//because.... Koha
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$recordDriver = new MarcRecordDriver($recordId);
-			if (!$recordDriver->isValid()) {
-				$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
-
-				// Result for API or app use
-				$hold_result['api']['message'] = translate([
-					'text' => 'Unable to find a valid record for this title.  Please try your search again.',
-					'isPublicFacing' => true,
-				]);
-
-				return $hold_result;
-			}
-
-			//Check to see if the patron already has that record checked out
-			$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
-			if ($allowHoldsOnCheckedOutTitles == 0) {
-				$existingCheckouts = $this->getCheckouts($patron);
-				foreach ($existingCheckouts as $checkout) {
-					if ($checkout->recordId == $recordId) {
-						$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
-
-						// Result for API or app use
-						$hold_result['api']['message'] = translate([
-							'text' => 'You already have that title checked out, you cannot place a hold on it until you check it in.',
-							'isPublicFacing' => true,
-						]);
-
-						return $hold_result;
-					}
+			return $hold_result;
+		}
+		//Check to see if the patron already has that record checked out
+		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
+		if ($allowHoldsOnCheckedOutTitles == 0) {
+			$existingCheckouts = $this->getCheckouts($patron);
+			foreach ($existingCheckouts as $checkout) {
+				if ($checkout->recordId == $recordId) {
+					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
+					// Result for API or app use
+					$hold_result['api']['message'] = translate([
+						'text' => 'You already have that title checked out, you cannot place a hold on it until you check it in.',
+						'isPublicFacing' => true,
+					]);
+					return $hold_result;
 				}
 			}
-
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			if (strpos($recordId, ':') !== false) {
-				[
-					$source,
-					$recordId,
-				] = explode(':', $recordId);
-			}
-
-			$holdParams = [
-				'patron_id' => (int)$patron->unique_ils_id,
-				'pickup_library_id' => $pickupBranch,
-				'biblio_id' => (int)$recordId,
-			];
-
-			if ($cancelDate != null) {
-				$holdParams['expiration_date'] = $cancelDate;
-			}
-
-			//Check to see if we need to place holds on a specific variation.
-			/** @var Grouping_Record[] $recordVariations */
-			$recordVariations = $recordDriver->getRecordVariations();
-			$activeRecordVariation = null;
-			if (count($recordVariations) > 1 && !empty($_REQUEST['variationId'])) {
-				foreach ($recordVariations as $recordVariation) {
-					if ($recordVariation->variationId == $_REQUEST['variationId']) {
-						$activeRecordVariation = $recordVariation;
-						break;
-					}
+		}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
+		if (strpos($recordId, ':') !== false) {
+			[
+				$source,
+				$recordId,
+			] = explode(':', $recordId);
+		}
+		$holdParams = [
+			'patron_id' => (int)$patron->unique_ils_id,
+			'pickup_library_id' => $pickupBranch,
+			'biblio_id' => (int)$recordId,
+		];
+		if ($cancelDate != null) {
+			$holdParams['expiration_date'] = $cancelDate;
+		}
+		//Check to see if we need to place holds on a specific variation.
+		/** @var Grouping_Record[] $recordVariations */
+		$recordVariations = $recordDriver->getRecordVariations();
+		$activeRecordVariation = null;
+		if (count($recordVariations) > 1 && !empty($_REQUEST['variationId'])) {
+			foreach ($recordVariations as $recordVariation) {
+				if ($recordVariation->variationId == $_REQUEST['variationId']) {
+					$activeRecordVariation = $recordVariation;
+					break;
 				}
 			}
-			if ($activeRecordVariation != null) {
-				$allowHoldItemTypeSelectionPref = $this->getKohaSystemPreference('AllowHoldItemTypeSelection', 0);
-				if ($allowHoldItemTypeSelectionPref == 1) {
-					//Check to see if item type
-					$items = $activeRecordVariation->getItems();
-					$allItemTypes = [];
-
-					$marcRecord = $recordDriver->getMarcRecord();
-					$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-					foreach ($items as $recordItem) {
-						foreach ($marcItems as $marcItem) {
-							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-							if ($itemSubField->getData() == $recordItem->itemId) {
-								$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
-								if ($iTypeSubfield != null) {
-									$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
-								}
-								break;
+		}
+		if ($activeRecordVariation != null) {
+			$allowHoldItemTypeSelectionPref = $this->getKohaSystemPreference('AllowHoldItemTypeSelection', 0);
+			if ($allowHoldItemTypeSelectionPref == 1) {
+				//Check to see if item type
+				$items = $activeRecordVariation->getItems();
+				$allItemTypes = [];
+				$marcRecord = $recordDriver->getMarcRecord();
+				$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+				foreach ($items as $recordItem) {
+					foreach ($marcItems as $marcItem) {
+						$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+						if ($itemSubField->getData() == $recordItem->itemId) {
+							$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
+							if ($iTypeSubfield != null) {
+								$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
 							}
+							break;
 						}
 					}
-					//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
-					//If there is just one, we can do an item type hold
-					if (count($allItemTypes) == 1) {
-						$holdParams['item_type'] = reset($allItemTypes);
-					}
+				}
+				//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
+				//If there is just one, we can do an item type hold
+				if (count($allItemTypes) == 1) {
+					$holdParams['item_type'] = reset($allItemTypes);
 				}
 			}
-
-			$postParams = json_encode($holdParams);
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('koha.placeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($responseCode == 201) {
+		}
+		$endpoint = "/api/v1/holds";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->post($endpoint,$holdParams,'koha.placeHold',[],$extraHeaders);
+		$hold_result['id'] = $recordId;
+		if ($response) {
+			if ($response['code'] == 201) {
 				$hold_result['message'] = translate([
 					'text' => "Your hold was placed successfully.",
 					'isPublicFacing' => true,
 				]);
 				$hold_result['success'] = true;
-
 				// Result for API or app use
 				$hold_result['api']['title'] = translate([
 					'text' => 'Hold placed successfully',
@@ -1883,12 +1836,10 @@ class Koha extends AbstractIlsDriver {
 					'text' => 'Go to Holds',
 					'isPublicFacing' => true,
 				]);
-
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			} else {
-				if ($responseCode == 403) {
-					$foundMessage = false;
+				if ($response['code'] == 403) {
 					$hold_result = [
 						'success' => false,
 						'api' => [
@@ -1898,78 +1849,41 @@ class Koha extends AbstractIlsDriver {
 							]),
 						],
 					];
-
-					if (!empty($response)) {
-						$jsonResponse = json_decode($response);
-
-						if (!empty($jsonResponse->error)) {
-							$hold_result['message'] = translate([
-								'text' => $jsonResponse->error,
-								'isPublicFacing' => true,
-							]);
-							$hold_result['api']['message'] = translate([
-								'text' => $jsonResponse->error,
-								'isPublicFacing' => true,
-							]);
-							$foundMessage = true;
-						}
-					}
-
-					if (!$foundMessage) {
-						$hold_result['message'] = translate([
-							'text' => "Error placing a hold on this title, the hold was not allowed.",
-							1 => $responseCode,
-							'isPublicFacing' => true,
-						]);
-						// Result for API or app use
-						$hold_result['api']['message'] = translate([
-							'text' => "Error placing a hold on this title, the hold was not allowed.",
-							1 => $responseCode,
-							'isPublicFacing' => true,
-						]);
-					}
+					$hold_result['message'] = translate([
+						'text' => $response['content']['error'],
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = translate([
+						'text' => $response['content']['error'],
+						'isPublicFacing' => true,
+					]);
+					
 				} else {
 					$hold_result = [
 						'success' => false,
 						'message' => translate([
 							'text' => "Error (%1%) placing a hold on this title.",
-							1 => $responseCode,
+							1 => $response['code'],
 							'isPublicFacing' => true,
 						]),
 						'api' => [
 							'message' => translate([
 								'text' => "Error (%1%) placing a hold on this title.",
-								1 => $responseCode,
+								1 => $response['code'],
 								'isPublicFacing' => true,
 							])
 						]
 					];
 
-					if ($response) {
-						$response = json_decode($response);
-						if (isset($response->error)) {
-							$hold_result['message'] .= '<br/>' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-							$hold_result['api']['message'] .= ' ' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-						} elseif (isset($response->errors)) {
-							foreach ($response->errors as $error) {
-								$hold_result['message'] .= '<br/>' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-								$hold_result['api']['message'] .= ' ' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-							}
-						}
-					}
-
+					$hold_result['message'] .= '<br/>' . translate([
+							'text' => $response['content']['error'],
+							'isPublicFacing' => true,
+						]);
+					$hold_result['api']['message'] .= ' ' . translate([
+							'text' => $response['content']['error'],
+							'isPublicFacing' => true,
+						]);
+						
 					// Result for API or app use
 					$hold_result['api']['title'] = translate([
 						'text' => 'Unable to place hold',
@@ -1977,7 +1891,7 @@ class Koha extends AbstractIlsDriver {
 					]);
 					$hold_result['api']['message'] = translate([
 						'text' => "Error (%1%) placing a hold on this title.",
-						1 => $responseCode,
+						1 => $response['code'],
 						'isPublicFacing' => true,
 					]);
 				}
@@ -2132,6 +2046,14 @@ class Koha extends AbstractIlsDriver {
 
 		$hold_result = [];
 		$hold_result['success'] = false;
+		$hold_result['title'] = translate([
+			'text' => 'Unable to place hold',
+			'isPublicFacing' => true,
+		]);
+		$hold_result['message'] = translate([
+			'text' => 'There was an error placing your hold.',
+			'isPublicFacing' => true,
+		]);
 
 		// Result for API or app use
 		$hold_result['api']['title'] = translate([
@@ -2150,83 +2072,53 @@ class Koha extends AbstractIlsDriver {
 			return $hold_result;
 		}
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
+		if (!$recordDriver->isValid()) {
+			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
+			$hold_result['api']['message'] = translate([
+				'text' => 'Unable to find a valid record for this title.  Please try your search again.',
 				'isPublicFacing' => true,
 			]);
-
-			// Result for API or app use
-			$result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
+			return $hold_result;
+		}
+		
+		//Set pickup location
+		if (isset($_REQUEST['pickupBranch'])) {
+			$pickupBranch = trim($_REQUEST['pickupBranch']);
 		} else {
-
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
-			if (!$recordDriver->isValid()) {
-				$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
-				$hold_result['api']['message'] = translate([
-					'text' => 'Unable to find a valid record for this title.  Please try your search again.',
-					'isPublicFacing' => true,
-				]);
-
-				return $hold_result;
+			$pickupBranch = $patron->homeLocationId;
+			//Get the code for the location
+			$locationLookup = new Location();
+			$locationLookup->locationId = $pickupBranch;
+			$locationLookup->find();
+			if ($locationLookup->getNumResults() > 0) {
+				$locationLookup->fetch();
+				$pickupBranch = $locationLookup->code;
 			}
-			$hold_result['title'] = $recordDriver->getTitle();
+		}
+		$holdParams = [
+			'patron_id' => (int)$patron->unique_ils_id,
+			'pickup_library_id' => $pickupBranch,
+			'biblio_id' => (int)$recordDriver->getId(),
+			'item_id' => (int)$itemId,
+		];
+		if ($cancelDate != null) {
+			$holdParams['expiration_date'] = $cancelDate;
+		}
+		$endpoint = "/api/v1/holds";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->post($endpoint,$holdParams,'koha.placeItemHold',[],$extraHeaders);
 
-			//Set pickup location
-			if (isset($_REQUEST['pickupBranch'])) {
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-			} else {
-				$pickupBranch = $patron->homeLocationId;
-				//Get the code for the location
-				$locationLookup = new Location();
-				$locationLookup->locationId = $pickupBranch;
-				$locationLookup->find();
-				if ($locationLookup->getNumResults() > 0) {
-					$locationLookup->fetch();
-					$pickupBranch = $locationLookup->code;
-				}
-			}
-
-			$holdParams = [
-				'patron_id' => (int)$patron->unique_ils_id,
-				'pickup_library_id' => $pickupBranch,
-				'biblio_id' => (int)$recordDriver->getId(),
-				'item_id' => (int)$itemId,
-			];
-			if ($cancelDate != null) {
-				$holdParams['expiration_date'] = $cancelDate;
-			}
-
-			$postParams = json_encode($holdParams);
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('koha.placeItemHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-			$hold_result['id'] = $recordId;
-			if ($responseCode == 201) {
+		if ($response) {
+			if ($response['code'] == 201) {
 				$hold_result['message'] = translate([
 					'text' => "Your hold was placed successfully.",
 					'isPublicFacing' => true,
 				]);
+				$hold_result['id'] = $recordId;
+				$hold_result['title'] = $recordDriver->getTitle();
 				$hold_result['success'] = true;
-
 				// Result for API or app use
 				$hold_result['api']['title'] = translate([
 					'text' => 'Hold placed successfully',
@@ -2236,24 +2128,24 @@ class Koha extends AbstractIlsDriver {
 					'text' => 'Your hold was placed successfully.',
 					'isPublicFacing' => true,
 				]);
+				$hold_result['api']['id'] = $recordId;
+				$hold_result['api']['title'] = $recordDriver->getTitle();
 				$hold_result['api']['action'] = translate([
 					'text' => 'Go to Holds',
 					'isPublicFacing' => true,
 				]);
-
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			} else {
-				if ($responseCode == 403) {
+				if ($response['code'] == 403) {
 					$hold_result = [
 						'success' => false,
 						'message' => translate([
 							'text' => "Error placing a hold on this item, the hold was not allowed.",
-							1 => $responseCode,
+							1 => $response['code'],
 							'isPublicFacing' => true,
 						]),
 					];
-
 					// Result for API or app use
 					$hold_result['api']['title'] = translate([
 						'text' => 'Unable to place hold',
@@ -2261,7 +2153,7 @@ class Koha extends AbstractIlsDriver {
 					]);
 					$hold_result['api']['message'] = translate([
 						'text' => "Error placing a hold on this title, the hold was not allowed.",
-						1 => $responseCode,
+						1 => $response['code'],
 						'isPublicFacing' => true,
 					]);
 				} else {
@@ -2269,11 +2161,10 @@ class Koha extends AbstractIlsDriver {
 						'success' => false,
 						'message' => translate([
 							'text' => "Error (%1%) placing a hold on this item.",
-							1 => $responseCode,
+							1 => $response['code'],
 							'isPublicFacing' => true,
 						]),
 					];
-
 					// Result for API or app use
 					$hold_result['api']['title'] = translate([
 						'text' => 'Unable to place hold',
@@ -2281,35 +2172,18 @@ class Koha extends AbstractIlsDriver {
 					]);
 					$hold_result['api']['message'] = translate([
 						'text' => 'Error (%1%) placing a hold on this item.',
-						1 => $responseCode,
+						1 => $response['code'],
 						'isPublicFacing' => true,
 					]);
-
-					if ($response) {
-						$response = json_decode($response);
-						if (isset($response->error)) {
-							$hold_result['message'] .= '<br/>' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-							$hold_result['api']['message'] .= ' ' . translate([
-									'text' => $response->error,
-									'isPublicFacing' => true,
-								]);
-						} elseif (isset($response->errors)) {
-							foreach ($response->errors as $error) {
-								$hold_result['message'] .= '<br/>' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-								$hold_result['api']['message'] .= ' ' . translate([
-										'text' => $error->message,
-										'isPublicFacing' => true,
-									]);
-							}
-						}
-					}
-
+					
+					$hold_result['message'] .= '<br/>' . translate([
+							'text' => $response['error'],
+							'isPublicFacing' => true,
+						]);
+					$hold_result['api']['message'] .= ' ' . translate([
+							'text' => $response['error'],
+							'isPublicFacing' => true,
+						]);	
 				}
 			}
 		}
@@ -2681,53 +2555,33 @@ class Koha extends AbstractIlsDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['isPending'] = false;
-					$oauthToken = $this->getOAuthToken();
-					if ($oauthToken == false) {
-						$result['message'] = translate([
-							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-							'isPublicFacing' => true,
-						]);
 
-						// Result for API or app use
-						$result['api']['message'] = translate([
-							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-							'isPublicFacing' => true,
-						]);
-					} else {
-						$this->apiCurlWrapper->addCustomHeaders([
-							'Authorization: Bearer ' . $oauthToken,
-							'User-Agent: Aspen Discovery',
-							'Accept: */*',
-							'Cache-Control: no-cache',
-							'Content-Type: application/json',
-							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-							'Accept-Encoding: gzip, deflate',
-							'x-koha-override: cancellation-request-flow' // fix to allow for approvals in koha 22.11.07 for patrons canceling waiting holds
-						], true);
-						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
-						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
-						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-						if ($this->apiCurlWrapper->getResponseCode() !== 204 && $this->apiCurlWrapper->getResponseCode() !== 202) {
-							$cancel_response = json_decode($response);
+					$endpoint = "/api/v1/holds/$holdKey";
+					$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-override: cancellation-request-flow'];
+					$response = $this->kohaApiUserAgent->delete($endpoint,'koha.cancelHold',[],$extraHeaders);
+					if ($response) {
+						if ($response['code'] !== 204 && $response['code'] !== 202) {
+							$cancel_response = $response['content'];
 							$allCancelsSucceed = false;
-							if (isset($cancel_response->error)) {
+							if (isset($cancel_response['error'])) {
 								$result['message'] = translate([
-									'text' => $cancel_response->error,
+									'text' => $cancel_response['error'],
 									'isPublicFacing' => true,
 								]);
 								$result['success'] = false;
 								$result['api']['message'] = translate([
-									'text' => $cancel_response->error,
+									'text' => $cancel_response['error'],
 									'isPublicFacing' => true,
 								]);
 							}
 						}
-
-						if($this->apiCurlWrapper->getResponseCode() === 202) {
+						if($response['code'] === 202) {
 							$result['isPending'] = true;
 							$result['api']['isPending'] = true;
 						}
-					}
+					} else {
+						$allCancelsSucceed = false;
+					}	
 				} else {
 					$holdParams = [
 						'service' => 'CancelHold',
@@ -3159,39 +3013,14 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	private function getOutstandingCreditTotal($patron) {
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$renew_result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-			$renew_result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/patrons/$patron->unique_ils_id/account";
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('koha.getOutstandingCreditTotal', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if ($responseCode == 200) {
-				$jsonResponse = json_decode($response);
-				if (!empty($jsonResponse->outstanding_credits)) {
-					return $jsonResponse->outstanding_credits->total;
+		$response = $this->kohaApiUserAgent->get("/api/v1/patrons/$patron->unique_ils_id/account",'koha.getOutstandingCreditTotal',[],['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()]);
+		if ($response) {
+			if ($response['code'] == 200){
+				if (!empty($response['content']['outstanding_credits']['total'])) {
+					return $response['content']['outstanding_credits']['total'];
 				}
 			}
 		}
-		return false;
 	}
 
 	private $oauthToken = null;
@@ -3237,7 +3066,7 @@ class Koha extends AbstractIlsDriver {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		// Store result for API or app use
 		$result['api'] = [];
 
@@ -3259,97 +3088,54 @@ class Koha extends AbstractIlsDriver {
 			'isPublicFacing' => true,
 		]);
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-
-			// Result for API or app use
-			$result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
-			$postParams = "";
-			if (strlen($dateToReactivate) > 0) {
-				$postParams = [];
-				[
-					$year,
-					$month,
-					$day,
-				] = explode('-', $dateToReactivate);
-				$postParams['end_date'] = "$year-$month-$day";
-				$postParams = json_encode($postParams);
-			}
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-			ExternalRequestLogEntry::logRequest('koha.freezeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if (!$response) {
-				if ($this->apiCurlWrapper->getResponseCode() != 204) {
-					$result['message'] = translate([
-						'text' => 'Your hold was frozen successfully.',
-						'isPublicFacing' => true,
-					]);
-					$result['success'] = true;
-
-					// Result for API or app use
-					$result['api']['title'] = translate([
-						'text' => 'Hold frozen',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['message'] = translate([
-						'text' => 'Your hold was frozen successfully.',
-						'isPublicFacing' => true,
-					]);
-
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
-				}
-				return $result;
-			} else {
-				$hold_response = json_decode($response, false);
-				if (isset($hold_response->error)) {
-					$result['message'] = $hold_response->error;
-					$result['success'] = true;
-
-					// Result for API or app use
-					$result['api']['message'] = $hold_response->error;
-				} else {
-					$result['message'] = translate([
-						'text' => 'Your hold was frozen successfully.',
-						'isPublicFacing' => true,
-					]);
-					$result['success'] = true;
-
-					// Result for API or app use
-					$result['api']['title'] = translate([
-						'text' => 'Hold frozen',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['message'] = translate([
-						'text' => 'Your hold was frozen successfully.',
-						'isPublicFacing' => true,
-					]);
-
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
-				}
-			}
+		$postParams = [];
+		if (strlen($dateToReactivate) > 0) {
+			$postParams = [];
+			[
+				$year,
+				$month,
+				$day,
+			] = explode('-', $dateToReactivate);
+			$postParams['end_date'] = "$year-$month-$day";	
 		}
 
+		$endpoint = "/api/v1/holds/$itemToFreezeId/suspension";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->post($endpoint,$postParams,'koha.freezeHold',[],$extraHeaders);
+
+		if ($response) {
+			$holdResponse = $response['content'];
+			if ($response['code'] != 201) {
+				$result['title'] = translate([
+					'text' => 'Hold frozen',
+					'isPublicFacing' => true,
+				]);
+				$result['message'] = translate([
+					'text' => $holdResponse['error'],
+					'isPublicFacing' => true,
+				]);
+				$result['success'] = false;
+				// Result for API or app use
+				$result['api']['message'] = $holdResponse['error'];
+			} else {
+				$result['message'] = translate([
+					'text' => 'Your hold was frozen successfully.',
+					'isPublicFacing' => true,
+				]);
+				$result['success'] = true;
+				// Result for API or app use
+				$result['api']['title'] = translate([
+					'text' => 'Hold frozen',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = translate([
+					'text' => 'Your hold was frozen successfully.',
+					'isPublicFacing' => true,
+				]);
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+			}
+		}
 		return $result;
 	}
 
@@ -3373,59 +3159,31 @@ class Koha extends AbstractIlsDriver {
 			'isPublicFacing' => true,
 		]);
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
+		$endpoint = "/api/v1/holds/$itemToThawId/suspension";
+		$extraHeaders = ['Accept-Encoding: gzip, deflate','x-koha-library: ' .  $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->delete($endpoint,'koha.thawHold',[],$extraHeaders);
+		if ($response['code'] != 204) {
+			$result['message'] = $response['content'];
+			$result['success'] = false;
+			$result['api']['message'] = $response['content'];
+		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Your hold was thawed successfully.',
 				'isPublicFacing' => true,
 			]);
-
+			$result['success'] = true;
 			$result['api']['title'] = translate([
-				'text' => 'Error',
+				'text' => 'Hold thawed',
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+				'text' => 'Your hold was thawed successfully.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', null);
-			ExternalRequestLogEntry::logRequest('koha.thawHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if (strlen($response) > 0) {
-				$result['message'] = $response;
-				$result['success'] = true;
-				$result['api']['message'] = $response;
-			} else {
-				$result['message'] = translate([
-					'text' => 'Your hold was thawed successfully.',
-					'isPublicFacing' => true,
-				]);
-				$result['success'] = true;
-
-				$result['api']['title'] = translate([
-					'text' => 'Hold thawed',
-					'isPublicFacing' => true,
-				]);
-				$result['api']['message'] = translate([
-					'text' => 'Your hold was thawed successfully.',
-					'isPublicFacing' => true,
-				]);
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfHolds();
-			}
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		}
+	
 
 		return $result;
 	}
@@ -5060,16 +4818,7 @@ class Koha extends AbstractIlsDriver {
 				'success' => false,
 				'message' => 'Unknown error processing materials requests.',
 			];
-			$oauthToken = $this->getOAuthToken();
-			if ($oauthToken == false) {
-				return [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]),
-				];
-			} else {
+
 				/** @noinspection SpellCheckingInspection */
 				$postFields = [
 					'title' => $_REQUEST['title'],
@@ -5100,49 +4849,37 @@ class Koha extends AbstractIlsDriver {
 						];
 					}
 				}
-
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions";
-				$this->apiCurlWrapper->addCustomHeaders([
-					'Authorization: Bearer ' . $oauthToken,
-					'User-Agent: Aspen Discovery',
-					'Accept: */*',
-					'Cache-Control: no-cache',
-					'Content-Type: application/json;charset=UTF-8',
-					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-					'x-koha-library: ' .  $user->getHomeLocationCode(),
-				], true);
-				$postParams = json_encode($postFields);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
-				ExternalRequestLogEntry::logRequest('koha.processMaterialsRequestForm', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-				if ($this->apiCurlWrapper->getResponseCode() != 201) {
-					if (strlen($response) > 0) {
-						$jsonResponse = json_decode($response);
-						if ($jsonResponse) {
-							if (!empty($jsonResponse->error)) {
+				$response = $this->kohaApiUserAgent->post("/api/v1/suggestions",$postFields,"koha.processMaterialsRequestForm",[]);
+				$responseCode = $response['code'];
+				$responseBody = $response['content'];
+				if ($response) {
+					if ($responseCode != 201) {
+						if (!empty($responseBody)) {
+							if (!empty($responseBody['error'])) {
 								$result['message'] = translate([
-									'text' => $jsonResponse->error,
+									'text' => $responseBody['error'],
 									'isPublicFacing' => true,
 								]);
-							} else {
+							} elseif (!empty($responseBody['errors'])) {
 								$result['message'] = '';
-								foreach ($jsonResponse->errors as $error) {
+								foreach ($responseBody['errors'] as $error) {
 									$result['message'] .= translate([
 											'text' => $error->message,
 											'isPublicFacing' => true,
 										]) . '<br/>';
 								}
+							} else {
+								$result['message'] = $responseBody;
 							}
 						} else {
-							$result['message'] = $response;
+							$result['message'] = "Error $responseCode updating your account.";
 						}
 					} else {
-						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+						$result['success'] = true;
+						$result['message'] = 'Successfully submitted your request.';
 					}
-				} else {
-					$result['success'] = true;
-					$result['message'] = 'Successfully submitted your request.';
 				}
-			}
+				
 			return $result;
 		} else {
 			if (empty($user->cat_password)) {
@@ -5352,38 +5089,31 @@ class Koha extends AbstractIlsDriver {
 
 	function deleteMaterialsRequests(User $patron) {
 		if ($this->getKohaVersion() > 21.05) {
-			$oauthToken = $this->getOAuthToken();
-			if ($oauthToken == false) {
-				return [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]),
-				];
-			} else {
-				$suggestionId = $_REQUEST['delete_field'];
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/$suggestionId";
-				$this->delApiCurlWrapper->addCustomHeaders([
-					'Authorization: Bearer ' . $oauthToken,
-					'User-Agent: Aspen Discovery',
-					'Accept: */*',
-					'Cache-Control: no-cache',
-					'Content-Type: application/json;charset=UTF-8',
-					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				], true);
-				$response = $this->delApiCurlWrapper->curlSendPage($apiUrl, 'DELETE', '');
-
-				ExternalRequestLogEntry::logRequest('koha.deleteMaterialsRequests', 'DELETE', $apiUrl, $this->delApiCurlWrapper->getHeaders(), '', $this->delApiCurlWrapper->getResponseCode(), $response, []);
-
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-
-				return [
-					'success' => true,
-					'message' => 'deleted your requests',
-				];
-
+			$result = [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+					'isPublicFacing' => true,
+				])
+			];
+			
+			$suggestionId = $_REQUEST['delete_field'];
+			$response = $this->kohaApiUserAgent->delete("/api/v1/suggestions/$suggestionId",'koha.deleteMaterialsRequests');
+			if ($response) {
+				if ($response['code'] == 204) {
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$result = [
+						'success' => true,
+						'message' => 'Your requests have been deleted succesfully',
+					];
+				} else {
+					$result = [
+						'success' => false,
+						'message' => $response['error']
+					];
+				}
 			}
+			return $result;
 		} else {
 			$this->loginToKohaOpac($patron);
 
@@ -6976,33 +6706,17 @@ class Koha extends AbstractIlsDriver {
 	 */
 	protected function getUsersExtendedAttributesFromKoha($borrowerNumber): array {
 		$extendedAttributes = [];
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken != false) {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-			], true);
-
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', null);
-			ExternalRequestLogEntry::logRequest('koha.getUserExtendedAttributes', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-			if ($this->apiCurlWrapper->getResponseCode() == 200) {
-				$jsonResponse = json_decode($response, true);
-				foreach ($jsonResponse as $response) {
-					$attribute = [
-						'id' => $response['extended_attribute_id'],
-						'type' => $response['type'],
-						'value' => $response['value'],
-					];
-					$extendedAttributes[] = $attribute;
-				}
+		$response = $this->kohaApiUserAgent->get("/api/v1/patrons/$borrowerNumber/extended_attributes",'koha.getUserExtendedAttributes',[],[]);
+		$responseCode = $response['code'];
+		if ($responseCode == 200) {
+			$body = $response['body'];
+			foreach($body as $elem ) { 
+				$attribute = [
+					'id' => $elem['extended_attribute_id'],
+					'type' => $elem['type'],
+					'value' => $elem['value'],
+				];
+				$extendedAttributes[] = $attribute;
 			}
 		}
 		return $extendedAttributes;
@@ -7131,54 +6845,49 @@ class Koha extends AbstractIlsDriver {
 			'userid' => $username,
 		];
 
-		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			$result['message'] = translate([
-				'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
-			$postParams = json_encode($postVariables);
+		$response = $this->kohaApiUserAgent->put("/api/v1/patrons/$patron->unique_ils_id",$postVariables,"koha.updateEditableUsername",[],['x-koha-library: ' .  $patron->getHomeLocationCode()]);
+		$responseCode = $response['code'];
+		$responseContent = $response['content'];
 
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json;charset=UTF-8',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'x-koha-library: ' .  $patron->getHomeLocationCode(),
-			], true);
-			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
-			ExternalRequestLogEntry::logRequest('koha.updateEditableUsername', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				if (strlen($response) > 0) {
-					$jsonResponse = json_decode($response);
-					if ($jsonResponse) {
-						$result['message'] = $jsonResponse->error;
+		if ($response) {
+			if ($responseCode != 200) {
+				if (!empty($responseContent['error'])) {
+					if (!empty($responseContent['error'])) {
+						$result['message'] = translate([
+							'text' => $responseContent['error'],
+							'isPublicFacing' => true,
+						]);
+					} elseif (!empty($responseContent['errors'])) {
+						$result['message'] = '';
+						foreach ($responseContent['errors'] as $error) {
+							$result['message'] .= translate([
+									'text' => $error['message'],
+									'isPublicFacing' => true,
+								]) . '<br/>';
+						}
 					} else {
-						$result['message'] = $response;
+						$result['message'] = $responseContent;
 					}
 				} else {
-					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+					$result['message'] = "Error $responseCode updating your account.";
 				}
-
 			} else {
-				$response = json_decode($response);
-				if ($response->userid == $username) {
+				if ($responseContent['userid'] == $username) {
 					$result = [
 						'success' => true,
 						'message' => 'Your account was updated successfully.',
+						'isPublicFacing' => true
 					];
 				} else {
 					$result = [
 						'success' => true,
 						'message' => 'Error updating this setting in the system.',
+						'isPublicFacing' => true
 					];
 				}
 			}
 		}
+		
 		return $result;
 	}
 
@@ -7951,13 +7660,25 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function getRegistrationCapabilities() : array {
+		$enableSelfRegistrationInApp = false;
+		global $library;
+		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+		$appGeneralSetting = new GeneralSetting();
+		$appGeneralSetting->id = $library->lidaGeneralSettingId;
+		if($appGeneralSetting->find(true)) {
+			$enableSelfRegistrationInApp = $appGeneralSetting->enableSelfRegistration;
+		}
+
 		return [
 			'lookupAccountByEmail' => true,
 			'lookupAccountByPhone' => true,
 			'basicRegistration' => true,
 			'forgottenPassword' => $this->getForgotPasswordType() != 'none',
 			'initiatePasswordResetByEmail' => true,
-			'initiatePasswordResetByBarcode' => true
+			'initiatePasswordResetByBarcode' => true,
+			'enableSelfRegistration' => $library->enableSelfRegistration,
+			'selfRegistrationUrl' => $library->selfRegistrationUrl ?? null,
+			'enableSelfRegistrationInApp' => $enableSelfRegistrationInApp
 		];
 	}
 

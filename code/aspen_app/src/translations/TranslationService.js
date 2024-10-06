@@ -376,6 +376,18 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
                key: 'sort_by_user_defined',
                value: getTermFromDictionary(language, 'user_defined'),
           },
+          {
+               key: 'sort_by_due_asc',
+               value: getTermFromDictionary(language, 'due_asc'),
+          },
+          {
+               key: 'sort_by_due_desc',
+               value: getTermFromDictionary(language, 'due_desc'),
+          },
+          {
+               key: 'sort_by_times_renewed',
+               value: getTermFromDictionary(language, 'times_renewed'),
+          },
      ];
 
      await getTranslatedTermWithValues(titlesOnHold, language, url);
