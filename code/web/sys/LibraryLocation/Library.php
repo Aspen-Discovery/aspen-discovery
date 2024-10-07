@@ -247,6 +247,7 @@ class Library extends DataObject {
 	public $bypassReviewQueueWhenUpdatingProfile;
 	public $allowPatronWorkPhoneNumberUpdates;
 	public $showWorkPhoneInProfile;
+	public $showCellphoneInProfile;
 	public $showNoticeTypeInProfile;
 	public $symphonyDefaultPhoneField;
 	public $symphonyNoticeCategoryNumber;
@@ -1906,12 +1907,22 @@ class Library extends DataObject {
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
+							'showCellphoneInProfile' => [
+								'property' => 'showCellphoneInProfile',
+								'type' => 'checkbox',
+								'label' => 'Show Cellphone in Profile',
+								'note' => 'Applies to Symphony Only',
+								'description' => 'Whether or not patron profiles include a cellphone number - they can update it if Allow Patron Phone Number Updates is on.',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
 							'showNoticeTypeInProfile' => [
 								'property' => 'showNoticeTypeInProfile',
 								'type' => 'checkbox',
 								'label' => 'Show Notice Type in Profile',
 								'description' => 'Whether or not patrons should be able to change how they receive notices in their profile.',
-								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
+								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices, for Symphony, shows notice and billing-notice options if configured',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],

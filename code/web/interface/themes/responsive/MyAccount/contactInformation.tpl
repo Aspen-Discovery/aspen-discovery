@@ -119,6 +119,12 @@
 									{/if}
 								</div>
 							</div>
+							{if $isSymphony && !empty($showCellphoneInProfile)}
+								<div class="form-group">
+									<div class="col-xs-4"><label for="cellphone">{translate text='Cellphone Number' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber}<input name="cellphone" id="cellphone" value="{$profile->_mobileNumber|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->_mobileNumber|escape}{/if}</div>
+								</div>
+							{/if}
 							{if !empty($showWorkPhoneInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number' isPublicFacing=true}</label></div>
