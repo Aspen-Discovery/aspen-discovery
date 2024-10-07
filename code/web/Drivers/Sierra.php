@@ -1867,7 +1867,15 @@ class Sierra extends Millennium {
 						preg_match($this->urlIdRegExp, $fineEntry->item, $m);
 						$itemIdShort = $m[1];
 						$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
-						$message = $this->getTitleByItemId($itemId, $itemIdShort);
+						if ($itemIdShort !=null ) {
+							$message = $this->getTitleByItemId($itemId, $itemIdShort);
+						} else {
+							$message = translate([
+								'text' => 'Title not available - contact library. ',
+								'isPublicFacing' => true,
+								'inAttribute' => true,
+							]);
+						}
 					}
 				}
 				$fines[] = [
