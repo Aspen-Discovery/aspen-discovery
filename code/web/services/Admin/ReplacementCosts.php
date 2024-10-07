@@ -75,6 +75,7 @@ class Admin_ReplacementCosts extends ObjectEditor {
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function recalculateHistoricCostSavings() : void {
 		$replacementCosts = ReplacementCost::getReplacementCostsByFormat();
 

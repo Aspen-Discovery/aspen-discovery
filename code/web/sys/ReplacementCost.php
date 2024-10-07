@@ -48,7 +48,7 @@ class ReplacementCost extends DataObject {
 
 		foreach ($results as $result) {
 			//Check to see if we already have this format
-			$formatExists = in_array($result['format'], $activeFormats);
+			$formatExists = array_key_exists($result['format'], $activeFormats);
 
 			if (!$formatExists) {
 				$replacementCost = new ReplacementCost();
