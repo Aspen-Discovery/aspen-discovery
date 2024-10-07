@@ -25,6 +25,7 @@ class MyAccount_ContactInformation extends MyAccount {
 				$canUpdateAddress = false;
 				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
+				$showCellphoneInProfile = false;
 				$canUpdateWorkPhoneNumber = false;
 				$showNoticeTypeInProfile = false;
 				$allowPinReset = false;
@@ -36,6 +37,7 @@ class MyAccount_ContactInformation extends MyAccount {
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
 				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
+				$showCellphoneInProfile = ($patronHomeLibrary->showCellphoneInProfile == 1);
 				$canUpdateWorkPhoneNumber = ($patronHomeLibrary->allowPatronWorkPhoneNumberUpdates == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
@@ -58,6 +60,7 @@ class MyAccount_ContactInformation extends MyAccount {
 			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('canUpdateWorkPhoneNumber', $canUpdateWorkPhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
+			$interface->assign('showCellphoneInProfile', $showCellphoneInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);
 			$interface->assign('allowPinReset', $allowPinReset);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
