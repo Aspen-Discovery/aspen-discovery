@@ -2597,13 +2597,15 @@ class Location extends DataObject {
 		$location->orderBy('displayName');
 		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$user = UserAccount::getActiveUserObj();
 			if ($homeLibrary != null) {
 				$location->whereAdd("libraryId = $homeLibrary->libraryId");
 			}
-			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
-			if (!empty($additionalAdministrationLocations)) {
-				$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+				if (!empty($additionalAdministrationLocations)) {
+					$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
+				}
 			}
 		}
 		$selectValue = 'locationId';
@@ -2630,13 +2632,15 @@ class Location extends DataObject {
 			$location->orderBy('displayName');
 			if ($restrictByHomeLibrary) {
 				$homeLibrary = Library::getPatronHomeLibrary();
-				$user = UserAccount::getActiveUserObj();
 				if ($homeLibrary != null) {
 					$location->whereAdd("libraryId = $homeLibrary->libraryId");
 				}
-				$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
-				if (!empty($additionalAdministrationLocations)) {
-					$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
+				if (UserAccount::isLoggedIn()) {
+					$user = UserAccount::getActiveUserObj();
+					$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+					if (!empty($additionalAdministrationLocations)) {
+						$location->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
+					}
 				}
 			}
 			$location->find();
