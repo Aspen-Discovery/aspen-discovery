@@ -1554,9 +1554,9 @@ class User extends DataObject {
 	 * @param string $source
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($includeLinkedUsers = true, $source = 'all'): array {
+	public function getCheckouts(bool $includeLinkedUsers = true, string $source = 'all'): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		//Check to see if we should return cached information, we will reload it if we last fetched it more than
+		//Check to see if we should return cached information, we will reload it if we last fetched data more than
 		//15 minutes ago or if the refresh option is selected
 		$reloadCheckoutInformation = false;
 		if (($this->checkoutInfoLastLoaded < (time() - 5 * 60)) || isset($_REQUEST['refreshCheckouts'])) {
@@ -1693,7 +1693,7 @@ class User extends DataObject {
 			}
 		}
 
-		if ($includeLinkedUsers && $source == 'all') {
+		if ($source == 'all') {
 			$this->calculateCostSavingsForCurrentCheckouts($checkoutsToReturn);
 		}
 		return $checkoutsToReturn;
@@ -4606,6 +4606,9 @@ class User extends DataObject {
 	}
 
 	public function getCurrentCostSavingsMessage(bool $wrapWithAlert) : string {
+		//Make sure to get checkouts for the user since this triggers the calculation
+		$checkouts = $this->getCheckouts();
+
 		$totalSavings = 0;
 		$linkedUsers = $this->getLinkedUsers();
 		if (count($linkedUsers)) {
