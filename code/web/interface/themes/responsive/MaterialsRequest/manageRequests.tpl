@@ -99,6 +99,17 @@
 		</div>
 		{if count($allRequests) > 0}
 			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
+				<div class="form-group col-xs-4">
+					<label for="pageSize" class="control-label">{translate text="Entries Per Page" isAdminFacing=true}&nbsp;</label>
+					<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="AspenDiscovery.changePageSize()">
+						<option value="30"{if $materialsRequestsPerPage == 30} selected="selected"{/if}>30</option>
+						<option value="50"{if $materialsRequestsPerPage == 50} selected="selected"{/if}>50</option>
+						<option value="75"{if $materialsRequestsPerPage == 75} selected="selected"{/if}>75</option>
+						<option value="100"{if $materialsRequestsPerPage == 100} selected="selected"{/if}>100</option>
+						<option value="250"{if $materialsRequestsPerPage == 250} selected="selected"{/if}>250</option>
+						<option value="500"{if $materialsRequestsPerPage == 500} selected="selected"{/if}>500</option>
+					</select>
+				</div>
 				<table id="requestedMaterials" class="table tablesorter table-striped table-hover table-sticky">
 					<thead>
 						<tr>
@@ -219,10 +230,7 @@
 								{if !empty($page)}
 									<input type="hidden" name="page" value="{$page}">
 								{/if}
-								{if !empty($pageSize)}
-									<input type="hidden" name="pageSize" value="{$pageSize}">
-								{/if}
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
 					</div>
