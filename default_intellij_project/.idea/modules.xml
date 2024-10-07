@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" filepath="$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" filepath="$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" filepath="$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/cron/cron.iml" filepath="$PROJECT_DIR$/../code/cron/cron.iml" />
@@ -26,7 +26,6 @@
       <module fileurl="file://$PROJECT_DIR$/../sites/sites.iml" filepath="$PROJECT_DIR$/../sites/sites.iml" />
       <module fileurl="file://$PROJECT_DIR$/../sites/default/solr-7.6.0/solr-7.6.0.iml" filepath="$PROJECT_DIR$/../sites/default/solr-7.6.0/solr-7.6.0.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/symphony_export/symphony_export.iml" filepath="$PROJECT_DIR$/../code/symphony_export/symphony_export.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../tests/tests.iml" filepath="$PROJECT_DIR$/../tests/tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/user_list_indexer/user_list_indexer.iml" filepath="$PROJECT_DIR$/../code/user_list_indexer/user_list_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/web_indexer/web_indexer.iml" filepath="$PROJECT_DIR$/../code/web_indexer/web_indexer.iml" />
     </modules>

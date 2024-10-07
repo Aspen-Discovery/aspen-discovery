@@ -102,13 +102,19 @@
 							{if (!isset($property.hideInLists) || $property.hideInLists == false) && $property.type != 'section'}
 								{assign var=propName value=$property.property}
 								{assign var=propValue value=$dataItem->$propName}
-								<td aria-label="{$dataItem|escape} {$propName}{if empty($propValue)} - empty{/if}">
+								<td aria-label="{if !empty($dataItem) && !is_array($dataItem)}{$dataItem|escape} {/if}{$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
 										{if $dataItem->canActiveUserEdit()}
 											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>
 											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{/if}
-											{$propValue|escape}
+											{if empty($propValue)}
+												{translate text="Not Set" isAdminFacing=true}
+											{elseif is_array($propValue)}
+												{implode subject=$propValue glue=", "}
+											{else}
+												{$propValue|escape}
+											{/if}
 											{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 										{else}
 											{$propValue|escape}

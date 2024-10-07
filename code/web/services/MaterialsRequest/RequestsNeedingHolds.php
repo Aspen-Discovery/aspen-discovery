@@ -6,7 +6,7 @@ require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php');
 
-class RequestsNeedingHolds extends ObjectEditor {
+class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$list = [];
@@ -217,5 +217,9 @@ class RequestsNeedingHolds extends ObjectEditor {
 		}
 		$objectStructure = $this->getObjectStructure();
 		$this->viewExistingObjects($objectStructure);
+	}
+
+	public function canFilter($objectStructure) : bool {
+		return false;
 	}
 }
