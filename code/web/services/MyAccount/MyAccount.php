@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 
 abstract class MyAccount extends Action {
-	protected $requireLogin = true;
+	protected bool $requireLogin = true;
 
 	function __construct($isStandalonePage = false) {
 		parent::__construct($isStandalonePage);
@@ -83,7 +83,7 @@ abstract class MyAccount extends Action {
 		$readerName = $readerName->getReaderName();
 		$interface->assign('readerName', $readerName);
 
-		// If neither sidebar sections are show, don't display the sidebar
+		// If neither sidebar section is shown, don't display the sidebar
 		if ($interface->getVariable('showMyAccount') || $interface->getVariable('showAccountSettings')) {
 			parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);
 		} else {

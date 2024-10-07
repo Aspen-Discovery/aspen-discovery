@@ -70,7 +70,7 @@ class Testing_GenerateReadingHistory extends Admin_Admin {
 					$currentYear = date('Y', time());
 					$numEntriesGenerated = 0;
 					//Loop through the years to generate
-					for ($year = $currentYear; $year > ($currentYear - $numberOfYears + 1); $year--) {
+					for ($year = $currentYear; $year >= ($currentYear - $numberOfYears + 1); $year--) {
 						//Loop through each month
 						$maxMonth = 12;
 						if ($year == $currentYear) {

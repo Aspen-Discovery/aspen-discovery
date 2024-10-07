@@ -114,6 +114,7 @@ class LibrarySavings extends MyAccount {
 		}
 
 		$interface->assign('costSavingsExplanation', $costSavingsExplanation);
+		$interface->assign('profile', $patron);
 
 
 		$this->display('librarySavings.tpl', 'Library Savings');
