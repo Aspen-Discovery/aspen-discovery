@@ -23,7 +23,7 @@ class MyAccount_SnapPayComplete extends MyAccount {
 				$error = 'Invalid signature';
 			} else {
 				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-				$result = UserPayment::completeSnapPayPayment($_REQUEST); // TO DO: $_REQUEST appears to persist to UserPayment::completeSnapPayPayment... @Mark Should I pass nothing as parameters?
+				$result = UserPayment::completeSnapPayPayment();
 				if ($result['success']) {
 					$message = $result['message'];
 					$cancelled = 0;
