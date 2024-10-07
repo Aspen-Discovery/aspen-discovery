@@ -2340,6 +2340,14 @@ function getLibraryLocationUpdates() {
 				"ALTER TABLE library ADD COLUMN symphonyDefaultPhoneField VARCHAR(16) DEFAULT 'PHONE'",
 			],
 		],
+
+		'show_cellphone_in_profile' => [
+			'title' => 'Show cellphone in profile',
+			'description' => 'Toggle to show cellphone in profile (for Symphony)',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showCellphoneInProfile TINYINT(1) DEFAULT '0'",
+			],
+		],
 	];
 }
 
