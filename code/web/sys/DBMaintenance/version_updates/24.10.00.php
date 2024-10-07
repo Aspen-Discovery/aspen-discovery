@@ -233,6 +233,14 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 		//pedro - PTFS-Europe
 
 		//James Staub - Nashville Public Library
+		'drop_snappayToken_column' => [
+			'title' => 'Drop SnapPay Token column from User Payments',
+			'description' => 'Drop SnapPay Token column from User Payments',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_payments DROP COLUMN snappayToken',
+			]
+		], //drop_snappayToken_column
 
 		//Jeremy Eden - Howell Carnegie District Library
 		'add_openarchives_dateformatting_field' => [
