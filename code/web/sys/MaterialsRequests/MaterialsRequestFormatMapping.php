@@ -9,6 +9,7 @@ class MaterialsRequestFormatMapping extends DataObject {
 	public $materialsRequestFormatId;
 	public $catalogFormat;
 
+	/** @noinspection PhpUnusedParameterInspection */
 	static function getObjectStructure($context = ''): array {
 		$libraryList = [];
 		$tmpLibrary = new Library();
@@ -85,7 +86,7 @@ class MaterialsRequestFormatMapping extends DataObject {
 
 		foreach ($results as $result) {
 			//Check to see if we already have this format
-			$formatExists = in_array($result['format'], $activeFormats);
+			$formatExists = array_key_exists($result['format'], $activeFormats);
 
 			if (!$formatExists) {
 				$materialsRequestFormatMapping = new MaterialsRequestFormatMapping();
