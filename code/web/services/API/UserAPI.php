@@ -4815,6 +4815,7 @@ class UserAPI extends AbstractAPI {
 			if($accountToLinkUser && !($accountToLinkUser instanceof AspenError)) {
 				require_once ROOT_DIR . '/sys/Account/PType.php';
 				if ($accountToLinkUser->id != $initiatingUser->id) {
+					$accountToLinkUser->getDisplayName();
 					$initiatingUserPtype = $initiatingUser->getPType();
 					$accountToLinkUserPType = $accountToLinkUser->getPType();
 					$initiatingUserLinkingSetting = PType::getAccountLinkingSetting($initiatingUserPtype);
