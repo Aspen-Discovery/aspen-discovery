@@ -75,6 +75,7 @@ class Admin_ReplacementCosts extends ObjectEditor {
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function recalculateHistoricCostSavings() : void {
 		$replacementCosts = ReplacementCost::getReplacementCostsByFormat();
 
@@ -177,7 +178,7 @@ class Admin_ReplacementCosts extends ObjectEditor {
 		}
 
 		$activeUser = UserAccount::getActiveUserObj();
-		$activeUser->__set('updateMessage', translate(['text'=>'Updated %1% historic cost savings.', 1=>$numUpdated, 'isAdminFacing' => true]));
+		$activeUser->__set('updateMessage', translate(['text'=>'Updated %1% historic cost savings that were previously 0.', 1=>$numUpdated, 'isAdminFacing' => true]));
 		$activeUser->update();
 		header("Location: /Admin/ReplacementCosts");
 	}

@@ -928,7 +928,6 @@ class Koha extends AbstractIlsDriver {
 						$authenticationSuccess = true;
 					} else {
 						$error = $response['content']['error'];
-						$message = $response['content']['message'];
 						if (!empty($response['content']) && !empty($error) && $error == 'Password expired') {
 							$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 	
@@ -977,7 +976,6 @@ class Koha extends AbstractIlsDriver {
 
 					//Technically this is not right, we're using an XML response and thinking it's JSON, but for practical purposes its going to work since we have the same format in the XML and json bodies and everything is clases
 					$jsonResponse = $responseBody;
-					$message = $jsonResponse->message;
 					$error = $jsonResponse->code;
 					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 
@@ -1004,10 +1002,10 @@ class Koha extends AbstractIlsDriver {
 						return $result;
 					}
 				} else {
-					if (isset($message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
+					if (isset($error) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-					} else if (isset($message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
+					} else if (isset($error) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
 						global $logger;
 						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}

@@ -68,6 +68,7 @@ class MaterialsRequest extends DataObject {
 					'type' => 'label',
 					'label' => 'Patron Barcode',
 					'description' => 'The requesting patron\'s barcode',
+					'canSort' => false,
 				],
 				'title' => [
 					'property' => 'title',
@@ -92,18 +93,21 @@ class MaterialsRequest extends DataObject {
 					'type' => 'label',
 					'label' => 'Num Hold Candidates',
 					'description' => 'The number of hold candidates',
+					'canSort' => false,
 				],
 				'selectedHoldCandidate' => [
 					'property' => 'selectedHoldCandidate',
 					'type' => 'label',
 					'label' => 'Selected Hold Candidate',
 					'description' => 'The hold candidate that will be used',
+					'canSort' => false,
 				],
 				'holdFailureMessage' => [
 					'property' => 'holdFailureMessage',
 					'type' => 'label',
 					'label' => 'Hold Failure Message',
 					'description' => 'The error if any that occurred when placing the hold',
+					'canSort' => false,
 				]
 			];
 		}else{
