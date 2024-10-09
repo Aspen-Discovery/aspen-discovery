@@ -3640,7 +3640,7 @@ class User extends DataObject {
 			'View Dashboards',
 			'View System Reports',
 		]);
-		$sections['system_reports']->addAction(new AdminAction('API Usage Dashboard', 'API Usage Report for Aspen Discovery.', '/Admin/APIUsageDashboard'), [
+		$sections['system_reports']->addAction(new AdminAction('API Usage Dashboard', 'API Usage Report for Aspen Discovery.', '/API/UsageDashboard'), [
 			'View Dashboards',
 			'View System Reports',
 		]);
