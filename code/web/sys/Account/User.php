@@ -3711,6 +3711,7 @@ class User extends DataObject {
 				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Hold Candidate Generation Log', 'A log showing information about the hold candidate generation process for materials requests.', '/MaterialsRequest/HoldCandidateGenerationLog'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Format Mapping', 'Define format mapping between Aspen formats and Materials Request Formats for use when placing holds.', '/MaterialsRequest/FormatMapping'), 'Administer Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
 			}

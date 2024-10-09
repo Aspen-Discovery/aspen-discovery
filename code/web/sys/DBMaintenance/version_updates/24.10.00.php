@@ -112,6 +112,22 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 	Thanks', 0, 1, -1)",
 			]
 		], //update_default_request_statuses
+		'materials_request_hold_candidate_generation_log' => [
+			'title' => 'Materials Request Hold Candidate Generation Log',
+			'description' => 'Create a table to store information about generating hold candidates for materials requests',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS materials_request_hold_candidate_generation_log (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					startTime INT NOT NULL,
+					endTime INT, 
+					numRequestsChecked INT DEFAULT 0,
+					numRequestsWithNewSuggestions INT DEFAULT 0,
+					numSearchErrors INT DEFAULT 0,
+					notes TEXT,
+					index (startTime)
+				) ENGINE INNODB'
+			]
+		], //materials_request_hold_candidate_generation_log
 
 		//mark - Grove DIS-28 Library cost savings
 		'administer_replacement_costs_permission' => [
