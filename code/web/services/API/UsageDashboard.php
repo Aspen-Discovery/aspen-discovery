@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 
-class Admin_APIUsageDashboard extends Admin_Dashboard {
+class API_UsageDashboard extends Admin_Dashboard {
 	function launch() {
 		global $interface;
 
@@ -24,7 +24,7 @@ class Admin_APIUsageDashboard extends Admin_Dashboard {
 
 		$interface->assign('statsByModule', $statsByModule);
 
-		$this->display('api_usage_dashboard.tpl', 'Aspen Usage Dashboard');
+		$this->display('dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
 	/**
