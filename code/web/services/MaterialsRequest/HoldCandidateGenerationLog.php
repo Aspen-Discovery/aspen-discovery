@@ -65,19 +65,27 @@ class MaterialsRequest_HoldCandidateGenerationLog extends ObjectEditor {
 		return 'startTime';
 	}
 
-	function canCompare() {
+	function canCompare() : bool {
 		return false;
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return false;
 	}
 
-	function canBatchDelete() {
+	function canBatchDelete() : bool {
 		return false;
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
+		return false;
+	}
+
+	function showHistory() : bool {
+		return false;
+	}
+
+	function showHistoryLinks() : bool {
 		return false;
 	}
 }
