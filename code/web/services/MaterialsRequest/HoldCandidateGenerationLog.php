@@ -64,4 +64,20 @@ class MaterialsRequest_HoldCandidateGenerationLog extends ObjectEditor {
 	function getDefaultSort(): string {
 		return 'startTime';
 	}
+
+	function canCompare() {
+		return false;
+	}
+
+	function canBatchEdit() {
+		return false;
+	}
+
+	function canBatchDelete() {
+		return false;
+	}
+
+	function canAddNew() {
+		return false;
+	}
 }
