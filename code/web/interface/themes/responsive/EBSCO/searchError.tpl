@@ -10,10 +10,10 @@
 	</div>
 	{/if}
 
-	{if !empty($searchError) && !empty($searchError.error.msg)}
+	{if !empty($searchError) && !empty($searchError->getMessage())}
 		<h2>{translate text="Error description" isPublicFacing=true}</h2>
 		<div>
-			{$searchError.error.msg}
+			{$searchError->getMessage()}
 		</div>
 	{/if}
 </div>

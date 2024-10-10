@@ -186,12 +186,12 @@ BODY;
 							return true;
 						} elseif ($createSessionResponse->ErrorDescription) {
 							echo("create session failed, " . print_r($createSessionResponse));
-							return false;
+							return new AspenError("Error processing search in EBSCO EDS");
 						}
 					}
 				} else {
 					echo("Authentication failed!, $return");
-					return false;
+					return new AspenError("Error processing search in EBSCO EDS: Authentication failed");
 				}
 			} else {
 				return false;
@@ -553,8 +553,12 @@ BODY;
 	}
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
-		if (!$this->authenticate()) {
+		$isAuthenticated = $this->authenticate();
+		if (empty($isAuthenticated)) {
 			return null;
+		}
+		if (get_class($isAuthenticated) == 'AspenError') {
+			return $isAuthenticated;
 		}
 
 		$this->startQueryTimer();
