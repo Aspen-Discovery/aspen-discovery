@@ -1086,6 +1086,73 @@ class UserPayment extends DataObject {
 			'message' => $success ? $message : $error,
 		];
 	}
+
+	public static function completeSnapPayPayment($payload): array {
+		$success = false;
+		$error = '';
+		$message = '';
+
+		$userPayment = new UserPayment();
+		$userPayment->id = $payload['udf1'];
+		if($userPayment->find(true)) {
+			$userPayment->transactionId = $payload['paymenttransactionid'];
+
+			if ($payload['transactionstatus'] != 'Y') {
+				// transaction failed
+				$userPayment->error = true;
+				$message = 'Unable to process payment. ';
+				$message .= $payload['returnmessage'];
+				$userPayment->message = $message;
+				$userPayment->update();
+			} else {
+				// transaction completed
+				$userPayment->completed = 1;
+				$userPayment->totalPaid = $payload['total_amount'];
+				$userPayment->update();
+
+				if ($userPayment->transactionType == 'donation') {
+					//Check to see if we have a donation for this payment
+					require_once ROOT_DIR . '/sys/Donations/Donation.php';
+					$donation = new Donation();
+					$donation->paymentId = $userPayment->id;
+					if ($donation->find(true)) {
+						$success = true;
+						$message = translate([
+							'text' => 'Your donation payment has been completed. ',
+							'isPublicFacing' => true,
+						]);
+						$userPayment->message .= 'Donation payment completed, TransactionId = ' . $payload['transaction_id'] . ', TotalAmount = ' . $payload['total_amount'] . '.';
+						$userPayment->update();
+
+						$donation->sendReceiptEmail();
+					} else {
+						$message = translate([
+							'text' => 'Unable to locate donation with given payment id %1%',
+							'isPublicFacing' => true,
+							1 => $userPayment->id,
+						]);
+					}
+				} else {
+					$user = new User();
+					$user->id = $userPayment->userId;
+					if ($user->find(true)) {
+						$completePayment = $user->completeFinePayment($userPayment);
+						if ($completePayment['success']) {
+							$success = true;
+							$message = translate([]);
+							$userPayment->message .= 'Payment completed, TransactionId = ' . $payload['transaction_id'] . ', TotalAmount = ' . $payload['total_amount'] . '.';
+						} else {
+							$userPayment->error = true;
+							$userPayment->message .= $completePayment['message'];
+						}
+					} else {
+						$userPayment->error = true;
+						$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+					}
+				}
+			}
+		}
+	}
 		public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
