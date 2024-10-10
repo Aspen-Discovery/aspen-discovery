@@ -770,7 +770,7 @@ class UserAPI extends AbstractAPI {
 			if ($linkedUsers && $user->getLinkedUsers() != null) {
 				$linkedAccounts = $user->getLinkedUsers();
 				foreach ($linkedAccounts as $linkedUser) {
-					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
+					$linkedUserSummary = $linkedUser->getAccountSummary();
 					$userData->finesVal += (int)$linkedUserSummary->totalFines;
 					$userData->numHoldsIls = (int)$linkedUserSummary->getNumHolds();
 					$userData->numCheckedOutIls += (int)$linkedUserSummary->numCheckedOut;
@@ -4713,13 +4713,14 @@ class UserAPI extends AbstractAPI {
 			if (count($linkedAccounts) > 0) {
 				foreach ($linkedAccounts as $linkedAccount) {
 					$linkedAccount->loadContactInformation();
+					$accountSummary = $linkedAccount->getCatalogDriver()->getAccountSummary($linkedAccount);
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->getBarcode();
 					$account[$linkedAccount->id]['barcodeStyle'] = $linkedAccount->getHomeLibrary()->libraryCardBarcodeStyle;
 					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
-					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
-					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
+					$account[$linkedAccount->id]['expired'] = $accountSummary->isExpired();
+					$account[$linkedAccount->id]['expires'] = $accountSummary->expiresOn();
 					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
 					$account[$linkedAccount->id]['alternateLibraryCard'] = $linkedAccount->getAlternateLibraryCardBarcode();
 					$account[$linkedAccount->id]['alternateLibraryCardPassword'] = $linkedAccount->getAlternateLibraryCardPasswordOrPin();
