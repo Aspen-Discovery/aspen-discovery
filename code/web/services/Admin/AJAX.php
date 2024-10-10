@@ -1664,20 +1664,9 @@ class Admin_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	/*	Aspen API Usage and general Aspen usage use the same graph template and AJAX file,
-		but different services.
-		This is reflected in the following control flow
-	*/
 	public function exportUsageData() {
-		$stat = $_REQUEST['stat'];
-
-		if ($stat == 'runPendingDatabaseUpdates') {
-			require_once ROOT_DIR . '/services/Admin/APIUsageGraphs.php';
-			$aspenUsageGraph = new Admin_APIUsageGraphs();
-		} else {
-			require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
-			$aspenUsageGraph = new Admin_UsageGraphs();
-		}
+		require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
+		$aspenUsageGraph = new Admin_UsageGraphs();
 		$aspenUsageGraph->buildCSV();
 	}
 }
