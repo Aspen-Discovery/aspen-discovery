@@ -594,6 +594,11 @@ class Admin_AJAX extends JSON_Action {
 							];
 						}
 					}else {
+						if ($fieldStructure['type'] == 'enum') {
+							if (is_array($fieldStructure['values']) && array_key_exists($newValue, $fieldStructure['values'])) {
+								$newValue = $fieldStructure['values'][$newValue];
+							}
+						}
 						return [
 							'success' => true,
 							'title' => 'Success',
@@ -607,7 +612,8 @@ class Admin_AJAX extends JSON_Action {
 							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
 							$dataObject->update();
 						}
-					}if ($selectedField == "accountLinkingSetting"){ //ToDo: Link to help center
+					}
+					if ($selectedField == "accountLinkingSetting"){ //ToDo: Link to help center
 						if ($newValue == 1){
 							return [
 								'success' => true,
@@ -634,6 +640,11 @@ class Admin_AJAX extends JSON_Action {
 							];
 						}
 					}else {
+						if ($fieldStructure['type'] == 'enum') {
+							if (is_array($fieldStructure['values']) && array_key_exists($newValue, $fieldStructure['values'])) {
+								$newValue = $fieldStructure['values'][$newValue];
+							}
+						}
 						return [
 							'success' => true,
 							'title' => 'Success',
