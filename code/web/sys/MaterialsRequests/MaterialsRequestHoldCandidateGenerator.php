@@ -44,6 +44,7 @@ function generateMaterialsRequestsHoldCandidates() : int {
 			//check all requests in that status
 			$requestToCheck = new MaterialsRequest();
 			$requestToCheck->status = $requestStatusToCheckForHolds->id;
+			$requestToCheck->placeHoldWhenAvailable = 1;
 			//Check the request for new candidates even if some have already been found
 			//In case we are waiting for another edition
 			$requestToCheck->find();
