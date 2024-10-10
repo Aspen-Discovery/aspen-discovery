@@ -552,11 +552,15 @@ public class SymphonyExportMain {
 					while (volumeInfoLine != null) {
 						String[] volumeInfoFields = volumeInfoLine.split("\\|");
 						if (volumeInfoFields.length > 7) {
-							String[] repairedVolumeInfo = new String[8];
+							String[] repairedVolumeInfo = new String[7];
 							repairedVolumeInfo[0] = volumeInfoFields[0];
 							repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
-							System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 6);
-							volumeInfoFields = repairedVolumeInfo;
+							try {
+								System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 5);
+								volumeInfoFields = repairedVolumeInfo;
+							} catch (Exception e) {
+								logEntry.incErrors("Error repairing volume info for " + volumeInfoLine, e);
+							}
 						}
 						if (volumeInfoFields.length == 7) {
 							//It is more reliable to get the volume from the short bib number rather than the first field
