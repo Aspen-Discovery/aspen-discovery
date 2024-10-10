@@ -85,7 +85,7 @@ class MyAccount_MyList extends MyAccount {
 			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0) {
 				$actionToPerform = $_REQUEST['myListActionHead'];
 				if ($actionToPerform == 'saveList') {
-					$list->title = $_REQUEST['newTitle'];
+					$list->title = strip_tags($_REQUEST['newTitle']);
 					$list->description = strip_tags($_REQUEST['newDescription']);
 					$list->public = isset($_REQUEST['public']) && ($_REQUEST['public'] == 'true' || $_REQUEST['public'] == 'on');
 					if (!$list->public) {
