@@ -126,6 +126,7 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function authenticate() {
+		global $logger;
 		if (SearchObject_EbscoEdsSearcher::$authenticationToken == null) {
 			global $library;
 			$settings = $this->getSettings();
@@ -185,13 +186,13 @@ BODY;
 							//echo("Authenticated in EDS!");
 							return true;
 						} elseif ($createSessionResponse->ErrorDescription) {
-							echo("create session failed, " . print_r($createSessionResponse));
-							return false;
+							$logger->log("create session failed, " . print_r($createSessionResponse, true), Logger::LOG_WARNING);
+							return new AspenError("Error processing search in EBSCO EDS");
 						}
 					}
 				} else {
-					echo("Authentication failed!, $return");
-					return false;
+					$logger->log("Error processing search in EBSCO EDS: " . print_r($return, true), Logger::LOG_WARNING);
+					return new AspenError("Error processing search in EBSCO EDS: Authentication failed");
 				}
 			} else {
 				return false;
@@ -553,8 +554,12 @@ BODY;
 	}
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
-		if (!$this->authenticate()) {
+		$isAuthenticated = $this->authenticate();
+		if (empty($isAuthenticated)) {
 			return null;
+		}
+		if (get_class($isAuthenticated) == 'AspenError') {
+			return $isAuthenticated;
 		}
 
 		$this->startQueryTimer();
