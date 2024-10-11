@@ -134,7 +134,7 @@ class SMTPSetting extends DataObject {
 			echo 'Mailer Error: ' . $mail->ErrorInfo;
 			return false;
 		} else {
-			echo 'Message has been sent';
+		//	echo 'Message has been sent';
 			return true;
 		}
 	}
