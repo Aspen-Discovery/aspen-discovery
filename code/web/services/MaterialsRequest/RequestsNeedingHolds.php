@@ -109,7 +109,7 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 		global $interface;
 		//Load status information
 		$materialsRequestStatus = new MaterialsRequestStatus();
-		$materialsRequestStatus->orderBy('holdFailed DESC, holdPlacedSuccessfully DESC, description ASC');
+		$materialsRequestStatus->orderBy('holdNotNeeded DESC, holdFailed DESC, holdPlacedSuccessfully DESC, description ASC');
 		$homeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($homeLibrary)) {
 			//User does not have a home library, this is likely an admin account.  Use the active library
@@ -225,7 +225,7 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 						$materialsRequest->id = $requestId;
 						if ($materialsRequest->find(true)) {
 							if ($materialsRequest->status != $newStatus) {
-								if ($newStatusObject->holdFailed || $newStatusObject->holdPlacedSuccessfully) {
+								if ($newStatusObject->holdFailed || $newStatusObject->holdPlacedSuccessfully || $newStatusObject->holdNotNeeded) {
 									$materialsRequest->holdsCreated = 1;
 								}
 								$materialsRequest->status = $newStatus;
