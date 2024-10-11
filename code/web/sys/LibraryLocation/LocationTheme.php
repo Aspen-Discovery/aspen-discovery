@@ -57,13 +57,8 @@ class LocationTheme extends DataObject {
 
 	public function canActiveUserEdit() : bool {
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			foreach ($homeLibrary->getLocations() as $location) {
-				if ($location->locationId == $this->locationId) {
-					return true;
-				}
-			}
-			return false;
+			$adminLocations = Location::getLocationList(true);
+			return array_key_exists($this->locationId, $adminLocations);
 		}else {
 			return true;
 		}

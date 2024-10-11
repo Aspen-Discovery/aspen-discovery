@@ -2683,7 +2683,7 @@ class Location extends DataObject {
 	 * @return LibraryTheme[]|null
 	 */
 	public function getThemes(): ?array {
-		if (!isset($this->_themes) && $this->libraryId) {
+		if (!isset($this->_themes) && $this->locationId) {
 			$this->_themes = [];
 			$locationTheme = new LocationTheme();
 			$locationTheme->locationId = $this->locationId;

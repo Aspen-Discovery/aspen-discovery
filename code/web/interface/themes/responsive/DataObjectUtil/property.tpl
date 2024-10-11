@@ -440,7 +440,15 @@
 			{include file="DataObjectUtil/currency.tpl"}
 
 		{elseif $property.type == 'label'}
-			<div id='{$propName}'>{$propValue|escape}</div>
+			<div id='{$propName}'>
+				{if empty($propValue)}
+					{translate text="Not Set" isAdminFacing=true}
+				{elseif is_array($propValue)}
+					{implode subject=$propValue glue=", " escape=true}
+				{else}
+					{$propValue|escape}
+				{/if}
+			</div>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
