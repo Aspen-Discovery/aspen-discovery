@@ -5507,7 +5507,9 @@ class Library extends DataObject {
 		$thirdPartyRegistrationLocations = array_merge([
 			'-1' => 'None, Use ILS defaults'
 		], $thirdPartyRegistrationLocations);
-		$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
+		if (!empty($structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation'])) {
+			$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
+		}
 		return $structure;
 	}
 

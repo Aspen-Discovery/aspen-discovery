@@ -14,6 +14,7 @@ class MaterialsRequestStatus extends DataObject {
 	public $isPatronCancel;
 	public $checkForHolds;
 	public $holdPlacedSuccessfully;
+	public $holdNotNeeded;
 	public $holdFailed;
 
 	public $libraryId;
@@ -100,6 +101,12 @@ class MaterialsRequestStatus extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Hold Placed Successfully?',
 				'description' => 'Only one status can be flagged with this option. When a hold is placed successfully, the request will be moved to this status.',
+			],
+			'holdNotNeeded' => [
+				'property' => 'holdNotNeeded',
+				'type' => 'checkbox',
+				'label' => 'Hold Not Needed?',
+				'description' => 'Only one status can be flagged with this option. When a hold is not needed, the request will be moved to this status.',
 			],
 			'holdFailed' => [
 				'property' => 'holdFailed',

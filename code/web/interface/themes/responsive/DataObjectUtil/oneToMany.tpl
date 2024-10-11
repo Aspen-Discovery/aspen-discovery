@@ -55,7 +55,12 @@
 										</select>
 									{else}
 										<input type="hidden" name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' value="{$subPropValue}"/>
-										{foreach from=$subProperty.allValues item=propertyName key=propertyValue}
+										{if !empty($subProperty.allValues)}
+											{assign var=tmpValues value=$subProperty.allValues}
+										{else}
+											{assign var=tmpValues value=$subProperty.values}
+										{/if}
+										{foreach from=$tmpValues item=propertyName key=propertyValue}
 											{if $subPropValue == $propertyValue}
 												{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}
 											{/if}

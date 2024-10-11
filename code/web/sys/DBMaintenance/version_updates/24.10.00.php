@@ -44,6 +44,14 @@ function getUpdates24_10_00(): array {
 				"ALTER TABLE materials_request_status ADD COLUMN holdFailed TINYINT(1) DEFAULT 0",
 			]
 		], //add_hold_options_for_materials_request_statuses
+		'add_hold_not_needed_for_materials_request_statuses' => [
+			'title' => 'Add Hold Not Needed Options for Materials Request Statuses',
+			'description' => 'Add hold not needed option for materials request status',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE materials_request_status ADD COLUMN holdNotNeeded TINYINT(1) DEFAULT 0",
+			]
+		], //add_hold_options_for_materials_request_statuses
 		'add_materials_request_format_mapping' => [
 			'title' => 'Add Materials Request Format Mapping',
 			'description' => 'Add new a new table to define mapping between Aspen Materials Request Formats and Aspen Catalog Formats',
@@ -112,6 +120,15 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 	Thanks', 0, 1, -1)",
 			]
 		], //update_default_request_statuses
+		'update_default_request_statuses_2' => [
+			'title' => 'Update default material request statuses pt 2',
+			'description' => 'Update default material request statuses pt 2',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, holdNotNeeded, libraryId) 
+					VALUES ('Hold Not Needed', 1, '', 0, 1, -1)",
+			]
+		], //update_default_request_statuses_2
 		'materials_request_hold_candidate_generation_log' => [
 			'title' => 'Materials Request Hold Candidate Generation Log',
 			'description' => 'Create a table to store information about generating hold candidates for materials requests',
