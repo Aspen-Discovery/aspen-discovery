@@ -71,6 +71,9 @@ function generateMaterialsRequestsHoldCandidates() : int {
 				} else {
 					//Do a title author search, this may want to be an advanced search
 					$trimmedTitle = trim($requestToCheck->title);
+					if (str_starts_with($trimmedTitle, '"') && str_ends_with($trimmedTitle, '"')) {
+						$trimmedTitle = substr($trimmedTitle, 1, -1);
+					}
 
 					$searchObject->setSearchTerms([
 						'index' => 'Keyword',
@@ -131,8 +134,12 @@ function generateMaterialsRequestsHoldCandidates() : int {
 											$staffUsersWithNewHoldCandidates[$requestToCheck->assignedTo] = $requestToCheck->assignedTo;
 										}
 										if ($requestToCheck->readyForHolds == 0) {
-											$requestToCheck->readyForHolds = 1;
-											$requestToCheck->update();
+											$requestToUpdate = new MaterialsRequest();
+											$requestToUpdate->id = $requestToCheck->id;
+											if ($requestToUpdate->find(true)) {
+												$requestToUpdate->readyForHolds = 1;
+												$requestToUpdate->update();
+											}
 										}
 									}
 								}
@@ -150,8 +157,12 @@ function generateMaterialsRequestsHoldCandidates() : int {
 					$existingHoldCandidate->find();
 					if ($existingHoldCandidate->getNumResults() === 1) {
 						$existingHoldCandidate->fetch();
-						$requestToCheck->selectedHoldCandidateId = $existingHoldCandidate->id;
-						$requestToCheck->update();
+						$requestToUpdate = new MaterialsRequest();
+						$requestToUpdate->id = $requestToCheck->id;
+						if ($requestToUpdate->find(true)) {
+							$requestToUpdate->selectedHoldCandidateId = $existingHoldCandidate->id;
+							$requestToUpdate->update();
+						}
 					}
 				}
 			}

@@ -8,7 +8,7 @@ require_once ROOT_DIR . "/sys/MaterialsRequests/MaterialsRequest.php";
  */
 class MaterialsRequest_NewRequest extends MyAccount {
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $library;
 
@@ -23,7 +23,7 @@ class MaterialsRequest_NewRequest extends MyAccount {
 				$pickupLocations[] = [
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
+					'selected' => $curLocation->locationId == $user->pickupLocationId ? 'selected' : '',
 				];
 			}
 		}
@@ -39,7 +39,7 @@ class MaterialsRequest_NewRequest extends MyAccount {
 		$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 		$request->illItem = true; // set the place hold option on by default
 		if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
-			$searchType = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : 'Keyword';
+			$searchType = $_REQUEST['searchIndex'] ?? 'Keyword';
 			if (strcasecmp($searchType, 'author') == 0) {
 				$request->author = $_REQUEST['lookfor'];
 			} else {
@@ -58,7 +58,7 @@ class MaterialsRequest_NewRequest extends MyAccount {
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
 				$searchObj = $searchObj->restoreSavedSearch($lastSearchId, false, true);
-				if ($searchObj != false) {
+				if ($searchObj !== false) {
 
 					$searchTerms = $searchObj->getSearchTerms();
 					if (is_array($searchTerms)) {
@@ -130,8 +130,8 @@ class MaterialsRequest_NewRequest extends MyAccount {
 
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
-		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+		$interface->assign('usernameLabel', !empty($library->loginFormUsernameLabel) ? $library->loginFormUsernameLabel : 'Your Name');
+		$interface->assign('passwordLabel', !empty($library->loginFormPasswordLabel) ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		$this->display('new.tpl', 'Materials Request');
 	}

@@ -822,11 +822,14 @@ class MaterialsRequest extends DataObject {
 	function getAdditionalListActions(): array {
 		$objectActions = [];
 
-		$objectActions[] = [
-			'text' => 'Select Hold Candidate',
-			'onclick' => "return AspenDiscovery.MaterialsRequest.showSelectHoldCandidateForm('$this->id')",
-			'url' => '',
-		];
+		$holdCandidates = $this->getHoldCandidates();
+		if (count($holdCandidates) > 1) {
+			$objectActions[] = [
+				'text' => 'Select Hold Candidate',
+				'onclick' => "return AspenDiscovery.MaterialsRequest.showSelectHoldCandidateForm('$this->id')",
+				'url' => '',
+			];
+		}
 		if ($this->selectedHoldCandidateId > 0) {
 			$objectActions[] = [
 				'text' => 'Place Hold',
