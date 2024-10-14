@@ -187,12 +187,12 @@ BODY;
 							return true;
 						} elseif ($createSessionResponse->ErrorDescription) {
 							$logger->log("create session failed, " . print_r($createSessionResponse, true), Logger::LOG_WARNING);
-							return new AspenError("Error processing search in EBSCO EDS");
+							return new AspenError("EBSCO EDS Authentication failed");
 						}
 					}
 				} else {
-					$logger->log("Error processing search in EBSCO EDS: " . print_r($return, true), Logger::LOG_WARNING);
-					return new AspenError("Error processing search in EBSCO EDS: Authentication failed");
+					$logger->log("EBSCO EDS Authentication failed: " . print_r($return, true), Logger::LOG_WARNING);
+					return new AspenError("EBSCO EDS Authentication failed");
 				}
 			} else {
 				return false;
@@ -661,12 +661,12 @@ BODY;
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
 				$this->lastSearchResults = false;
-				return new AspenError("Error processing search in EBSCO EDS");
+				return new AspenError("Could not process search in EBSCO EDS");
 			}
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return new AspenError("Error loading data from EBSCO $e");
+			$logger->log("Error loading data from EBSCO EDS: $e", Logger::LOG_ERROR);
+			return new AspenError("Could not load data from EBSCO EDS");
 		}
 	}
 
