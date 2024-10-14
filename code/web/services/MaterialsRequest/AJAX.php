@@ -436,6 +436,7 @@ class MaterialsRequest_AJAX extends Action {
 	function selectHoldCandidate() : array {
 		if (empty($_REQUEST['requestId']) || !is_numeric($_REQUEST['requestId'])) {
 			return [
+				'success' => false,
 				'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
 				'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'No ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
 				'modalButtons' => '',
@@ -449,6 +450,7 @@ class MaterialsRequest_AJAX extends Action {
 			if ($materialsRequest->find(true)) {
 				if (empty($_REQUEST['holdCandidateId']) || !is_numeric($_REQUEST['holdCandidateId'])) {
 					return [
+						'success' => false,
 						'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
 						'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'No Hold Candidate was selected.', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
 						'modalButtons' => '',
@@ -463,6 +465,7 @@ class MaterialsRequest_AJAX extends Action {
 						$materialsRequest->update();
 
 						return [
+							'success' => true,
 							'title' => 'Hold Candidate Selected',
 							'modalBody' => translate([
 								'text' => 'The selected materials request has been updated.',
@@ -473,6 +476,7 @@ class MaterialsRequest_AJAX extends Action {
 						];
 					}else{
 						return [
+							'success' => false,
 							'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
 							'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'Invalid hold candidate selected', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
 							'modalButtons' => '',
@@ -481,6 +485,7 @@ class MaterialsRequest_AJAX extends Action {
 				}
 			}else{
 				return [
+					'success' => false,
 					'title' => translate(['text' => 'Error', 'inAttribute' => true, 'isAdminFacing' => true]),
 					'modalBody' => "<div class='alert alert-danger'>" . translate(['text' => 'Incorrect ID was provided', 'inAttribute' => true, 'isAdminFacing' => true]) . "</div>",
 					'modalButtons' => '',

@@ -13191,7 +13191,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		updateHoldOptions: function(){
-			var placeHold = $("input[name=placeHoldWhenAvailable]:checked").val() === 1 || $("input[name=illItem]:checked").val() === 1;
+			var placeHold = $("input[name=placeHoldWhenAvailable]:checked").val() === "1" || $("input[name=illItem]:checked").val() === "1";
 			// comparison needed to change placeHold to a boolean
 			if (placeHold){
 				$("#pickupLocationField").show();

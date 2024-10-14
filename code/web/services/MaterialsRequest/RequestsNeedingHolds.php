@@ -149,6 +149,8 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 							$materialsRequest->holdFailureMessage = $result['message'];
 							$updateMessageIsError = true;
 						}else{
+							$updateMessage .= 'Hold Placed successfully for request ' . $requestId . '<br/>';
+
 							$materialsRequest->holdFailureMessage = '';
 							$materialsRequest->holdsCreated = 1;
 							//Set the status to the correct status showing the hold has been placed
@@ -192,10 +194,10 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 
 		$numRequestsWithNewSuggestions = generateMaterialsRequestsHoldCandidates();
 		if ($numRequestsWithNewSuggestions > 0) {
-			$interface->assign('updateMessage', 'No new hold candidates were found');
+			$interface->assign('updateMessage', "$numRequestsWithNewSuggestions requests were updated with new hold suggestions.");
 			$interface->assign('updateMessageIsError', false);
 		}else{
-			$interface->assign('updateMessage', "$numRequestsWithNewSuggestions requests were updated with new hold suggestions.");
+			$interface->assign('updateMessage', 'No new hold candidates were found');
 			$interface->assign('updateMessageIsError', false);
 		}
 
