@@ -4637,6 +4637,13 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$mandatoryFields = [];
 		}
+
+		if (isset($kohaPreferences['OPACSuggestionUnwantedFields'])) {
+			$unwantedFields = array_flip(explode('|', $kohaPreferences['OPACSuggestionUnwantedFields']));
+		} else {
+			$unwantedFields = [];
+		}
+
 		//Make sure that title is always required
 		$mandatoryFields['title'] = true;
 
@@ -4793,8 +4800,14 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$field['required'] = false;
 			}
-		}
 
+			if(array_key_exists($field['property'], $unwantedFields) && $field['required'] == false) {
+				unset($fields[array_search($field,$fields)]);
+				# Once you've removed the desired field, you'll need to reindex the array
+				$fields = array_values($fields);
+			}
+		}
+		
 		$interface->assign('submitUrl', '/MaterialsRequest/NewRequestIls');
 		$interface->assign('structure', $fields);
 		$interface->assign('saveButtonText', 'Submit your suggestion');
