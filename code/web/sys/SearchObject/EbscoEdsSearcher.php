@@ -126,6 +126,7 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function authenticate() {
+		global $logger;
 		if (SearchObject_EbscoEdsSearcher::$authenticationToken == null) {
 			global $library;
 			$settings = $this->getSettings();
@@ -185,13 +186,13 @@ BODY;
 							//echo("Authenticated in EDS!");
 							return true;
 						} elseif ($createSessionResponse->ErrorDescription) {
-							echo("create session failed, " . print_r($createSessionResponse));
-							return false;
+							$logger->log("create session failed, " . print_r($createSessionResponse, true), Logger::LOG_WARNING);
+							return new AspenError("EBSCO EDS Authentication failed");
 						}
 					}
 				} else {
-					echo("Authentication failed!, $return");
-					return false;
+					$logger->log("EBSCO EDS Authentication failed: " . print_r($return, true), Logger::LOG_WARNING);
+					return new AspenError("EBSCO EDS Authentication failed");
 				}
 			} else {
 				return false;
@@ -553,8 +554,12 @@ BODY;
 	}
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
-		if (!$this->authenticate()) {
+		$isAuthenticated = $this->authenticate();
+		if (empty($isAuthenticated)) {
 			return null;
+		}
+		if (get_class($isAuthenticated) == 'AspenError') {
+			return $isAuthenticated;
 		}
 
 		$this->startQueryTimer();
@@ -656,12 +661,12 @@ BODY;
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
 				$this->lastSearchResults = false;
-				return new AspenError("Error processing search in EBSCO EDS");
+				return new AspenError("Could not process search in EBSCO EDS");
 			}
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return new AspenError("Error loading data from EBSCO $e");
+			$logger->log("Error loading data from EBSCO EDS: $e", Logger::LOG_ERROR);
+			return new AspenError("Could not load data from EBSCO EDS");
 		}
 	}
 
