@@ -414,14 +414,12 @@ function getValidServerNames(): array {
 function getGitBranch() {
 	global $interface;
 
-	$branchName = '';
-	$branchNameWithCommit = '';
-
 	$files = [];
-	foreach (glob('release_notes/*.MD') as $filename) {
+	foreach (glob(ROOT_DIR . '/release_notes/*.MD') as $filename) {
 		if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $filename)) {
 			$tmp = str_replace('.MD', '', $filename);
-			$tmp = str_replace('release_notes/', '', $tmp);
+			/** @noinspection RegExpRedundantEscape */
+			$tmp = preg_replace('~.*release_notes[\\/]~', '', $tmp);
 			$files[] = $tmp;
 		}
 	}
