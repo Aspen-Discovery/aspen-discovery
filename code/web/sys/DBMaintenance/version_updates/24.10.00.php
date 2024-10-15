@@ -110,12 +110,12 @@ function getUpdates24_10_00(): array {
 			'continueOnError' => false,
 			'sql' => [
 				"UPDATE materials_request_status SET isOpen = 1, checkForHolds = 1 where description='Item purchased' and libraryId = -1",
-				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, holdPlacedSuccessfully, libraryId) 
-					VALUES ('Hold Placed', 1, '{title} has been received by the library and you have been added to the hold queue. 
+				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel, holdPlacedSuccessfully, libraryId) 
+					VALUES ('Hold Placed', 1, 0, '{title} has been received by the library and you have been added to the hold queue. 
 
 Thank you for your purchase suggestion!', 0, 1, -1)",
-				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, holdFailed, libraryId) 
-					VALUES ('Hold Failed', 1, '{title} has been received by the library, however we were not able to add you to the hold queue. Please ensure that your account is in good standing and then visit our catalog to place your hold.
+				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel, holdFailed, libraryId) 
+					VALUES ('Hold Failed', 1, 0, '{title} has been received by the library, however we were not able to add you to the hold queue. Please ensure that your account is in good standing and then visit our catalog to place your hold.
 
 	Thanks', 0, 1, -1)",
 			]
@@ -125,8 +125,8 @@ Thank you for your purchase suggestion!', 0, 1, -1)",
 			'description' => 'Update default material request statuses pt 2',
 			'continueOnError' => false,
 			'sql' => [
-				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, holdNotNeeded, libraryId) 
-					VALUES ('Hold Not Needed', 1, '', 0, 1, -1)",
+				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel, holdNotNeeded, libraryId) 
+					VALUES ('Hold Not Needed', 1, 0, '', 0, 1, -1)",
 			]
 		], //update_default_request_statuses_2
 		'materials_request_hold_candidate_generation_log' => [
