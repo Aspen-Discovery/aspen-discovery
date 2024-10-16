@@ -439,6 +439,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                expired: primaryUser.expired,
                expires: primaryUser.expires,
                barcodeStyle: barcodeStyle,
+               homeLocation: primaryUser.homeLocation,
           };
           cardStack.push(primaryCard);
           if (!_.isUndefined(response.data.result.linkedAccounts)) {
@@ -456,6 +457,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                                    expired: account.expired,
                                    expires: account.expires,
                                    barcodeStyle: account.barcodeStyle ?? barcodeStyle,
+                                   homeLocation: account.homeLocation,
                               };
                               cardStack.push(card);
                          } else if (_.includes(cards, account.cat_username) === false) {
@@ -468,6 +470,7 @@ export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, l
                                    expired: account.expired,
                                    expires: account.expires,
                                    barcodeStyle: account.barcodeStyle ?? barcodeStyle,
+                                   homeLocation: account.homeLocation,
                               };
                               cardStack.push(card);
                          }

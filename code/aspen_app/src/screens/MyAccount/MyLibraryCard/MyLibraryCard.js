@@ -285,7 +285,7 @@ const CreateLibraryCard = (data) => {
      }
 
      let icon = library.favicon;
-     if (library.logoApp) {
+     if (card.homeLocation === library.displayName && library.logoApp) {
           icon = library.logoApp;
      }
 
@@ -302,7 +302,7 @@ const CreateLibraryCard = (data) => {
                          <Flex direction="row">
                               {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                               <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                                   {library.displayName}
+                                   {card.homeLocation}
                               </Text>
                          </Flex>
                     </Center>
@@ -339,7 +339,7 @@ const CreateLibraryCard = (data) => {
                               <Flex direction="row">
                                    {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                                    <Text bold ml={3} mt={2} fontSize="lg" color={cardText}>
-                                        {library.displayName}
+                                        {card.homeLocation}
                                    </Text>
                               </Flex>
                          </Center>
