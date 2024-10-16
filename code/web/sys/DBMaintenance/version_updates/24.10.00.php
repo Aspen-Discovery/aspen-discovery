@@ -126,7 +126,7 @@ Thank you for your purchase suggestion!', 0, 0, 1, -1)",
 			'continueOnError' => false,
 			'sql' => [
 				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel, holdNotNeeded, libraryId) 
-					VALUES ('Hold Not Needed', 1, '', 0, 0, 1, -1)",
+					VALUES ('Hold Not Needed', 0, '', 0, 0, 1, -1)",
 			]
 		], //update_default_request_statuses_2
 		'materials_request_hold_candidate_generation_log' => [

@@ -94,9 +94,13 @@ fwrite($fhnd, "INSERT INTO `materials_request_status` (`id`, `description`, `isD
 	(18, 'Unavailable', 0, 1, 'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested cannot be purchased at this time from any of our regular suppliers and is not available from any of our lending libraries.', 0, 0, -1, 0, 0, 0, 0),
 	(19, 'Cancelled by Patron', 0, 0, '', 0, 1, -1, 0, 0, 0, 0),
 	(20, 'Cancelled - Duplicate Request', 0, 0, '', 0, 0, -1, 0, 0, 0, 0),
-	(21, 'Hold Placed', 0, 1, '0', 0, 0, -1, 0, 1, 0, 0),
-	(22, 'Hold Failed', 0, 1, '0', 0, 0, -1, 0, 0, 1, 0),
-	(23, 'Hold Not Needed', 0, 1, '0', 0, 0, -1, 0, 0, 0, 1);\n");
+	(21, 'Hold Placed', 0, 1, '{title} has been received by the library and you have been added to the hold queue. 
+
+Thank you for your purchase suggestion!', 0, 0, -1, 0, 1, 0, 0),
+	(22, 'Hold Failed', 0, 1, '{title} has been received by the library, however we were not able to add you to the hold queue. Please ensure that your account is in good standing and then visit our catalog to place your hold.
+
+	Thanks', 0, 0, -1, 0, 0, 1, 0),
+	(23, 'Hold Not Needed', 0, 0, '', 0, 0, -1, 0, 0, 0, 1);\n");
 /** @noinspection SqlWithoutWhere */
 fwrite($fhnd, "UPDATE modules set enabled=0;UPDATE modules set enabled=1 where name in ('Side Loads', 'User Lists');\n");
 fwrite($fhnd, "INSERT INTO system_variables (currencyCode, storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, appScheme, trackIpAddresses) VALUES ('USD', 0, 1, 2, 2, 'aspen-lida', 0); \n");
