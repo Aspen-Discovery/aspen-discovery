@@ -558,7 +558,7 @@ BODY;
 		if (empty($isAuthenticated)) {
 			return null;
 		}
-		if (get_class($isAuthenticated) == 'AspenError') {
+		if (is_object($isAuthenticated) && get_class($isAuthenticated) == 'AspenError') {
 			return $isAuthenticated;
 		}
 
