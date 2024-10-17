@@ -59,7 +59,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 			if (shelfLocationField != null) {
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
 				//noinspection SpellCheckingInspection
-				if (shelfLocation.equals("xord")) {
+				if (shelfLocation.equalsIgnoreCase("xord")) {
 					item.itemInfo.setIsOrderItem();
 				}
 			}
