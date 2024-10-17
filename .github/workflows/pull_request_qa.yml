@@ -5,7 +5,17 @@ on:
   push:
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print GitHub vars
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(vars) }}
+
   check_release_notes:
+    if: "!(vars.SKIP_GHA_PULL_REQUEST_QA  == '1' || vars.SKIP_GHA_PULL_REQUEST_QA_CHECK_RELEASE_NOTES  == '1')"
     runs-on: ubuntu-latest
     
     steps:
@@ -34,6 +44,7 @@ jobs:
           fi
 
   check_tabs_vs_spaces:
+    if: "!(vars.SKIP_GHA_PULL_REQUEST_QA  == '1' || vars.SKIP_GHA_PULL_REQUEST_QA_CHECK_TABS_VS_SPACES  == '1')"
     runs-on: ubuntu-latest
 
     steps:
@@ -90,6 +101,7 @@ jobs:
           exit $EXIT_CODE
 
   check_create_site_for_docker:
+    if: "!(vars.SKIP_GHA_PULL_REQUEST_QA  == '1' || vars.SKIP_GHA_PULL_REQUEST_QA_CHECK_CREATE_SITE_FOR_DOCKER  == '1')"
     runs-on: ubuntu-latest
 
     steps:
