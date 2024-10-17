@@ -32,6 +32,7 @@ php_ini="/etc/php/${php_vers}/apache2/php.ini"
 grep -q '^memory_limit = 256M' "$php_ini" || sed -Ei 's/^memory_limit = [0-9]+M/memory_limit = 256M/' "$php_ini"
 grep -q '^post_max_size = 75M' "$php_ini" || sed -Ei 's/^post_max_size = [0-9]+M/post_max_size = 75M/' "$php_ini"
 grep -q '^upload_max_filesize = 75M' "$php_ini" || sed -Ei 's/^upload_max_filesize = [0-9]+M/upload_max_filesize = 75M/' "$php_ini"
+grep -q '^;max_input_vars = 1000' "$php_ini" || sed -Ei 's/^;max_input_vars = [0-9]+/max_input_vars = 5000/' "$php_ini"
 
 # MariaDB overrides
 cp 60-aspen.cnf /etc/mysql/mariadb.conf.d/
