@@ -254,7 +254,7 @@ public class MarcRecordFormatClassifier {
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches() && !(physicalDescriptionData.contains("cd player") || physicalDescriptionData.contains("cd boombox") || physicalDescriptionData.contains("cd boom box") || physicalDescriptionData.contains("cd/mp3 player"))) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
 						Subfield subfieldE = field.getSubfield('e');
-						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book") && !subfieldE.getData().toLowerCase().contains("booklet")){
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format CD+Book based on 300 Physical Description", 2);}
 							result.add("CD+Book");
 						}else{
@@ -363,6 +363,9 @@ public class MarcRecordFormatClassifier {
 						}else if (subfieldData.contains("pop-up")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Pop-UpBook based on 655 Genre", 2);}
 							result.add("Pop-UpBook");
+						}else if (subfieldData.equals("zines")) {
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Zines based on 655 Genre", 2);}
+							result.add("Zines");
 						}else if (subfieldData.startsWith("manga graphic novel") || subfieldData.equals("manga") || subfieldData.equals("manga.")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Manga based on 655 Genre", 2);}
 							result.add("Manga");
