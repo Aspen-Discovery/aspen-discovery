@@ -64,6 +64,7 @@ class SearchSources {
 		global $library;
 		global $enabledModules;
 
+		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null && $location->useScope && $location->restrictSearchByLocation) {
@@ -369,8 +370,8 @@ class SearchSources {
 	}
 
 	/**
-	 * @param $location
-	 * @param $library
+	 * @param Location $location
+	 * @param Library $library
 	 * @return array
 	 */
 	static function getCombinedSearchSetupParameters($location, $library) {

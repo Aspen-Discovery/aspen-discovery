@@ -270,6 +270,7 @@ function updateConfigForScoping($configArray) {
 
 	//Load the library system information
 	global $library;
+	/** @var Location $locationSingleton */
 	global $locationSingleton;
 	if (isset($_SESSION['library']) && isset($_SESSION['location']) && !isset($_REQUEST['reload'])) {
 		$library = $_SESSION['library'];

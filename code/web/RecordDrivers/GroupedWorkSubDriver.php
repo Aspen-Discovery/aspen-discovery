@@ -426,7 +426,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 	}
 
 	/**
-	 * @param Grouping_Record $relatedRecord
+	 * @param null|Grouping_Record $relatedRecord
 	 * @param boolean $isAvailable
 	 * @param boolean $isHoldable
 	 * @param null|IlsVolumeInfo[] $volumeData
