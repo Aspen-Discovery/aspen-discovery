@@ -217,9 +217,9 @@ class CurlWrapper {
 		} else {
 			curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
 		}
-		if ($body != null) {
+
 			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
-		}
+
 		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
