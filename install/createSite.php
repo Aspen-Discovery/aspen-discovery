@@ -13,10 +13,15 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
 	$runningOnWindows = false;
 }
 
+$linuxOS = null;
 $linuxArray = ['centos', 'debian'];
 
 $foundConfig = false;
 $variables = [];
+$siteOnWindows = false;
+$sitename = null;
+$cleanSitename = null;
+
 if (count($_SERVER['argv']) > 1){
 	//Read the file
 	$siteConfigFile = __DIR__ . '/' . $_SERVER['argv'][1];
@@ -61,6 +66,11 @@ if (count($_SERVER['argv']) > 1){
 			$variables['ilsDatabaseTimezone'] = $configArray['Koha']['DBTimezone'];
 			$variables['ilsClientId'] = $configArray['Koha']['ClientId'];
 			$variables['ilsClientSecret'] = $configArray['Koha']['ClientSecret'];
+		}elseif ($variables['ils'] == 'Symphony') {
+			$variables['ilsDriver'] = 'SirsiDynixROA';
+			$variables['ilsClientId'] = $configArray['Symphony']['ClientId'];
+			$variables['ilsStaffUser'] = $configArray['Symphony']['StaffUser'];
+			$variables['ilsStaffPassword'] = $configArray['Symphony']['StaffPassword'];
 		}else{
 			$variables['ilsDriver'] = $configArray['ILS']['ilsDriver'];
 		}
@@ -87,7 +97,7 @@ if (!$foundConfig) {
 		'cleanSitename' => $cleanSitename,
 	];
 
-	//Prompt for needed information
+	//Prompt for any information we need to set up the site
 
 	$variables['library'] = '';
 	while (empty($variables['library'])) {
@@ -166,6 +176,11 @@ if (!$foundConfig) {
 		}
 		$variables['ilsClientId'] = readline("Client ID for Koha API > ");
 		$variables['ilsClientSecret'] = readline("Client Secret for Koha API > ");
+	}elseif ($variables['ils'] == 'Symphony'){
+		$variables['ilsDriver'] = 'SirsiDynixROA';
+		$variables['ilsClientId'] = readline("Client ID for Symphony API > ");
+		$variables['ilsStaffUser'] = readline("Staff Username for use with the Symphony API > ");
+		$variables['ilsStaffPassword'] = readline("Staff Password for use with the Symphony API > ");
 	}
 
 	while (empty($variables['ilsDriver'])) {
@@ -205,7 +220,7 @@ if (!$foundConfig) {
 		$variables['databasePassword'] = readline("Database password for {$variables['databaseUser']} for Aspen > ");
 	}
 
-	$variables['timezone'] =  readline("Enter the timezone of the library (e.g. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php) > ");
+	$variables['timezone'] =  readline("Enter the timezone of the library (e.g. America/Los_Angeles, check https://www.php.net/manual/en/timezones.php) > ");
 	if (empty($variables['timezone'])){
 		$variables['timezone'] = "America/Los_Angeles";
 	}
@@ -259,7 +274,7 @@ if (file_exists($siteDir)){
 $variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
 
 /*
- * Setup the server
+ * Set up the server
  */
 
 //Create the basic sites directory
@@ -270,19 +285,19 @@ if ($siteOnWindows){
 }
 
 //Rename files appropriately based on the sitename
-rename($siteDir . '/httpd-{sitename}.conf', $siteDir . "/httpd-{$sitename}.conf");
+rename($siteDir . '/httpd-{sitename}.conf', $siteDir . "/httpd-$sitename.conf");
 if ($siteOnWindows){
-	rename($siteDir . '/{sitename}.bat', $siteDir . "/{$sitename}.bat");
+	rename($siteDir . '/{sitename}.bat', $siteDir . "/$sitename.bat");
 }else{
-	rename($siteDir . '/{sitename}.sh', $siteDir . "/{$sitename}.sh");
+	rename($siteDir . '/{sitename}.sh', $siteDir . "/$sitename.sh");
 }
 rename($siteDir . '/conf/config.pwd.ini.template', $siteDir . "/conf/config.pwd.ini");
 
-replaceVariables($siteDir . "/httpd-{$sitename}.conf", $variables);
+replaceVariables($siteDir . "/httpd-$sitename.conf", $variables);
 if ($siteOnWindows) {
-	replaceVariables($siteDir . "/{$sitename}.bat", $variables);
+	replaceVariables($siteDir . "/$sitename.bat", $variables);
 }else{
-	replaceVariables($siteDir . "/{$sitename}.sh", $variables);
+	replaceVariables($siteDir . "/$sitename.sh", $variables);
 }
 replaceVariables($siteDir . "/conf/config.ini", $variables);
 replaceVariables($siteDir . "/conf/config.cron.ini", $variables);
@@ -325,6 +340,7 @@ $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db
 $updateUserStmt->execute();
 
 //Assign supportingCompany in the db
+/** @noinspection SqlWithoutWhere */
 $postSupportingCompanyStmt = $aspen_db->prepare("UPDATE system_variables set supportingCompany=" . $aspen_db->quote($variables['supportingCompany']));
 $postSupportingCompanyStmt->execute();
 
@@ -334,7 +350,13 @@ if ($variables['ils'] == 'Koha'){
 	echo("Loading Koha information to database\r\n");
 	copy("$installDir/install/koha_connection.sql", "$tmp_dir/koha_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/koha_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_{$sitename}.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_$sitename.sql");
+}elseif ($variables['ils'] == 'Symphony'){
+	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
+	echo("Loading Koha information to database\r\n");
+	copy("$installDir/install/symphony_connection.sql", "$tmp_dir/symphony_connection_$sitename.sql");
+	replaceVariables("$tmp_dir/symphony_connection_$sitename.sql", $variables);
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/symphony_connection_$sitename.sql");
 }
 
 $aspen_db = null;
@@ -390,9 +412,10 @@ if (!$runningOnWindows){
 
 //Link the httpd conf file
 if (!$siteOnWindows){
-	symlink($siteDir . "/httpd-{$sitename}.conf", $$linuxOS['apacheDir'] . "/httpd-{$sitename}.conf");
+	symlink($siteDir . "/httpd-$sitename.conf", $$linuxOS['apacheDir'] . "/httpd-$sitename.conf");
 	if ($linuxOS == 'debian') {
-		exec("a2ensite httpd-{$sitename}");
+		/** @noinspection SpellCheckingInspection */
+		exec("a2ensite httpd-$sitename");
 	}
 	//Restart apache
 	exec("systemctl restart " . $$linuxOS['service']);
@@ -407,10 +430,10 @@ if (!$siteOnWindows){
 
 if (!$siteOnWindows){
 	//Start solr
-	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
-	execInBackground($siteDir . "/{$sitename}.sh start");
+	exec('chmod +x ' . $siteDir . "/$sitename.sh");
+	execInBackground($siteDir . "/$sitename.sh start");
 	//Link cron to /etc/cron.d folder
-	exec("ln -s /usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
+	exec("ln -s /usr/local/aspen-discovery/sites/$sitename/conf/crontab_settings.txt /etc/cron.d/$cleanSitename");
 }
 
 //Update my.cnf for backups
@@ -424,7 +447,7 @@ echo("-------------------------------------------------------------------------\
 echo("Next Steps\r\n");
 $step = 1;
 if ($siteOnWindows) {
-	echo($step++ . ") Add Include \"$siteDir/httpd-{$sitename}.conf\" to the httpd.conf file\r\n");
+	echo($step++ . ") Add Include \"$siteDir/httpd-$sitename.conf\" to the httpd.conf file\r\n");
 	echo($step++ . ") Add {$variables['servername']} to the hosts file\r\n");
 	echo($step++ . ") Restart apache\r\n");
 	echo($step++ . ") Start Solr\r\n");
@@ -437,15 +460,14 @@ echo($step++ . ") Firewall Solr port to ensure that it is not accessible to the 
 
 exit();
 
-function recursive_copy($src,$dst) {
+function recursive_copy($src,$dst) : void {
 	$dir = opendir($src);
 	@mkdir($dst);
 	while(( $file = readdir($dir)) ) {
 		if (( $file != '.' ) && ( $file != '..' )) {
 			if ( is_dir($src . '/' . $file) ) {
 				recursive_copy($src .'/'. $file, $dst .'/'. $file);
-			}
-			else {
+			} else {
 				copy($src .'/'. $file,$dst .'/'. $file);
 			}
 		}
@@ -453,7 +475,7 @@ function recursive_copy($src,$dst) {
 	closedir($dir);
 }
 
-function recursive_rmdir($dir) {
+function recursive_rmdir($dir) : void {
 	if (is_dir($dir)) {
 		$objects = scandir($dir);
 		foreach ($objects as $object) {
@@ -468,7 +490,7 @@ function recursive_rmdir($dir) {
 	}
 }
 
-function replaceVariables($filename, $variables){
+function replaceVariables($filename, $variables) : void {
 	$contents = file ($filename);
 	$fHnd = fopen($filename, 'w');
 	foreach ($contents as $line){
@@ -480,9 +502,9 @@ function replaceVariables($filename, $variables){
 	fclose($fHnd);
 }
 
-function execInBackground($cmd) {
+function execInBackground($cmd) : void {
 	echo ("Running $cmd\r\n");
-	if (substr(php_uname(), 0, 7) == "Windows"){
+	if (str_starts_with(php_uname(), "Windows")){
 		$cmd = str_replace('/', '\\', $cmd);
 		pclose(popen("start /B ". $cmd, "r"));
 	} else {

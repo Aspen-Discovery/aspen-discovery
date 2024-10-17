@@ -332,7 +332,7 @@ class SystemVariables extends DataObject {
 				'type' => 'text',
 				'label' => 'Support Company',
 				'description' => 'Sets supporting company name in footer',
-				'default' => 'ByWater Solutions',
+				'default' => '',
 			],
 			'trackIpAddresses' => [
 				'property' => 'trackIpAddresses',
