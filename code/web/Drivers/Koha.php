@@ -3071,7 +3071,7 @@ class Koha extends AbstractIlsDriver {
 		$result = [
 			'success' => false,
 			'message' => translate([
-				'text' => 'Unable to freeze your hold.',
+				'text' => 'Unable to freeze your hold. ',
 				'isPublicFacing' => true,
 			]),
 		];
@@ -3104,17 +3104,29 @@ class Koha extends AbstractIlsDriver {
 		if ($response) {
 			$holdResponse = $response['content'];
 			if ($response['code'] != 201) {
-				$result['title'] = translate([
-					'text' => 'Hold frozen',
-					'isPublicFacing' => true,
-				]);
-				$result['message'] = translate([
-					'text' => $holdResponse['error'],
-					'isPublicFacing' => true,
-				]);
-				$result['success'] = false;
-				// Result for API or app use
-				$result['api']['message'] = $holdResponse['error'];
+				if (isset($holdResponse['error'])){
+					$result['title'] = translate([
+						'text' => 'Hold frozen',
+						'isPublicFacing' => true,
+					]);
+					$result['message'] = translate([
+						'text' => $holdResponse['error'],
+						'isPublicFacing' => true,
+					]);
+					$result['success'] = false;
+					// Result for API or app use
+					$result['api']['message'] = $holdResponse['error'];
+				} elseif (isset($holdResponse['errors'])) {
+					foreach ($holdResponse['errors'] as $error) {
+						$result['message'] .= translate([
+							'text' => $error['message'],
+							'isPublicFacing' => true,
+						]) . '<br/>';
+					}
+				} else {
+					$result['message'] = $holdResponse;
+				}
+				
 			} else {
 				$result['message'] = translate([
 					'text' => 'Your hold was frozen successfully.',
