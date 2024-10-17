@@ -71,6 +71,7 @@ class SearchSources {
 			$repeatInWorldCat = $location->repeatInWorldCat == 1;
 			$repeatInInnReach = $location->repeatInInnReach == 1;
 			$repeatInShareIt = $location->repeatInShareIt == 1;
+			$repeatInCloudSource = $location->repeatInCloudSource == 1;
 			if (strlen($location->systemsToRepeatIn) > 0) {
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			} else {
@@ -81,6 +82,7 @@ class SearchSources {
 			$repeatInWorldCat = $library->repeatInWorldCat == 1;
 			$repeatInInnReach = $library->repeatInInnReach == 1;
 			$repeatInShareIt = $library->repeatInShareIt == 1;
+			$repeatInCloudSource = $library->repeatInCloudSource == 1;
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
@@ -304,6 +306,16 @@ class SearchSources {
 			];
 		}
 
+		if ($repeatInCloudSource) {
+			$searchOptions['cloudSource'] = [
+				'name' => 'CloudSource',
+				'description' => "Open Articles, eBooks, eTextBooks, and more from CloudSource.",
+				'external' => true,
+				'catalogType' => 'cloudSource',
+				'hasAdvancedSearch' => false,
+			];
+		}
+
 		if ($repeatInInnReach) {
 			$searchOptions['innReach'] = [
 				'name' => $library->interLibraryLoanName,
@@ -392,23 +404,19 @@ class SearchSources {
 	}
 
 	public function getWorldCatSearchType($type) {
+		/** @noinspection PhpSwitchCanBeReplacedWithMatchExpressionInspection */
 		switch ($type) {
 			case 'Subject':
 				return 'su';
-				break;
 			case 'Author':
 				return 'au';
-				break;
 			case 'Title':
 				return 'ti';
-				break;
 			case 'ISN':
 				return 'bn';
-				break;
 			case 'Keyword':
 			default:
 				return 'kw';
-				break;
 		}
 	}
 
@@ -418,7 +426,7 @@ class SearchSources {
 		global $configArray;
 		if ($searchSource == 'worldcat') {
 			$worldCatSearchType = $this->getWorldCatSearchType($type);
-			$worldCatLink = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
+			$worldCatLink = "https://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
 			if (strlen($library->worldCatUrl) > 0) {
 				$worldCatLink = $library->worldCatUrl;
 				if (strpos($worldCatLink, '?') == false) {
@@ -469,6 +477,8 @@ class SearchSources {
 			];
 			$link = $shareIt->getSearchLink($searchTerms);
 			return $link;
+		} elseif ($searchSource == 'cloudSource') {
+			return $library->cloudSourceBaseUrl . '/search/results?qu=' . urlencode($lookFor) . '&te=1803299674&dt=list';
 		} elseif ($searchSource == 'amazon') {
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		} elseif ($searchSource == 'course-reserves-course-name') {

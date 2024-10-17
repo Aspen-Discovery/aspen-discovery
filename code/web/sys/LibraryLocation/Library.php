@@ -161,6 +161,8 @@ class Library extends DataObject {
 		$repeatInInnReach;
 	public /** @noinspection PhpUnused */
 		$repeatInWorldCat;
+	public $repeatInCloudSource;
+	public $cloudSourceBaseUrl;
 	public $overDriveScopeId;
 
 	public $hooplaLibraryID;
@@ -3802,6 +3804,32 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,
+					],
+				],
+			],
+			'cloudSourceSection' => [
+				'property' => 'cloudSourceSection',
+				'type' => 'section',
+				'label' => 'CloudSource',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'helpLink' => '',
+				'properties' => [
+					'repeatInCloudSource' => [
+						'property' => 'repeatInCloudSource',
+						'type' => 'checkbox',
+						'label' => 'Repeat In CloudSource',
+						'description' => 'Turn on to allow repeat search in CloudSource functionality.',
+						'hideInLists' => true,
+					],
+					'cloudSourceBaseUrl' => [
+						'property' => 'cloudSourceBaseUrl',
+						'type' => 'text',
+						'label' => 'CloudSource URL',
+						'description' => 'The base CloudSource URL to use while searching.',
+						'note' => 'Will be similar to https://csclient2.ent.sirsi.net/client/en_US/{customer_name}.',
+						'hideInLists' => true,
+						'size' => '255',
 					],
 				],
 			],
