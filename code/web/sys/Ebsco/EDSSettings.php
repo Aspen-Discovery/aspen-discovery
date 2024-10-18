@@ -11,6 +11,10 @@ class EDSSettings extends DataObject {
 	public $edsSearchProfile;
 	public $fullTextLimiter;
 
+	function getEncryptedFieldNames(): array {
+		return ['edsApiPassword'];
+	}
+
 	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [

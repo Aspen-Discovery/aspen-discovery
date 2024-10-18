@@ -50,6 +50,15 @@ function getUpdates24_11_00(): array {
 		//alexander - PTFS-Europe
 
 		//chloe - PTFS-Europe
+		'ebsco_passwords_are_stored_as_hash' => [
+			'title' => 'EBSCO Passwords Are Stored As Hash',
+			'description' => 'allow for longer strings so passwords can be stored as hashed values',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE ebsco_eds_settings MODIFY COLUMN edsApiPassword VARCHAR(255)",
+				"ALTER TABLE ebscohost_settings MODIFY COLUMN profilePwd VARCHAR(255)"
+			]
+		] // ebsco_passwords_are_stored_as_hash
 
 		//pedro - PTFS-Europe
 

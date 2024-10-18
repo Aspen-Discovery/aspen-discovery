@@ -13,6 +13,10 @@ class EBSCOhostSetting extends DataObject {
 
 	private $_searchSettings;
 
+	function getEncryptedFieldNames(): array {
+		return ['profilePwd'];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		$ebscoHostSearchSettingStructure = EBSCOhostSearchSetting::getObjectStructure($context);
 
