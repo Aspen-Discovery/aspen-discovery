@@ -7085,7 +7085,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$totalRecords = 0;
 			} else {
 				$userList->id = $listId;
-				$totalRecords = $userList->numValidListItems();
+				// $totalRecords = $userList->numValidListItems();
 				if (!$userList->find(true)) {
 					$result['success'] = false;
 					$result['message'] = translate([
@@ -7093,6 +7093,17 @@ class MyAccount_AJAX extends JSON_Action {
 						'isPublicFacing' => true,
 					]);
 					$listOk = false;
+				} else {
+						//Authorization check: Ensure list belongs to logged in user
+					if ($userList->user_id != UserAccount::getActiveUserId()) {
+						$result['success'] = false;
+						$result['message'] =translate([
+							'text' => 'You are not authorized to modify this list.',
+							'isPublicFacing' => true,
+						]);
+						return $result;
+					}
+					$totalRecords = $userList->numValidListItems();
 				}
 			}
 
