@@ -77,7 +77,7 @@ class KohaApiUserAgent {
 	 * Recover specific data of it as properties.
 	 *
 	 * @param string $endpoint e.g "/api/v1/auth/password/validation"
-	 * @param array $requestParameters e.g ['identifier' => $username,'password' => $password,]
+	 * @param array|object $requestParameters e.g ['identifier' => $username,'password' => $password,]
 	 * @param string $caller e.g "koha.PatronLogin"
 	 * @param array $dataToSanitize e.g ['password' => $password]
 	 * @param array|null $extraHeaders e.g ['x-koha-embed: +strings,extended_attributes']
@@ -85,11 +85,11 @@ class KohaApiUserAgent {
 	 * @return  array|bool     An array containing the response body and response code retrieved by the request or false if authorization fails.
 	 * @access  public
 	 */
-	public function post(string $endpoint, array $requestParameters, string $caller, array $dataToSanitize = [], array $extraHeaders = null): array|bool {
+	public function post(string $endpoint, array|object $requestParameters, string $caller, array $dataToSanitize = [], array $extraHeaders = null): array|bool {
 		// Preparing request
 		$apiURL = $this->baseURL . $endpoint;
 		$jsonEncodedParams = json_encode($requestParameters);
-
+		
 		if ($this->getAuthorizationHeader($caller)) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				$this->getAuthorizationHeader($caller)
@@ -106,6 +106,7 @@ class KohaApiUserAgent {
 		$response = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', $jsonEncodedParams);
 		$responseCode = $this->apiCurlWrapper->getResponseCode();
 		$jsonResponse = $this->jsonValidate($response);
+
 		ExternalRequestLogEntry::logRequest($caller, 'POST', $apiURL, $this->apiCurlWrapper->getHeaders(), $jsonEncodedParams, $responseCode, $response, $dataToSanitize);
 		return [
 			'content' => $jsonResponse,
