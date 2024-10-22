@@ -23,7 +23,7 @@ class SirsiDynixROA extends HorizonAPI {
 			if (!empty($physicalLocation)) {
 				$workingLibraryId = $physicalLocation->code;
 			}
-			//If we still don't have a working library id, get the
+			//If we still don't have a working library id, get the first location for the library
 			if (empty($workingLibraryId)) {
 				$libraryLocations = $library->getLocations();
 				$firstLocation = reset($libraryLocations);
@@ -901,7 +901,7 @@ class SirsiDynixROA extends HorizonAPI {
 				$password,
 			]);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
-				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
+				//We got a valid user (A bad call will have isset($loginUserResponse->messageList) )
 				$sirsiRoaUserID = $loginUserResponse->patronKey;
 				$sessionToken = $loginUserResponse->sessionToken;
 				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
@@ -1119,7 +1119,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*}}}");
+		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*},barcode}}");
 		$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1538,8 +1538,7 @@ class SirsiDynixROA extends HorizonAPI {
 			if (UserAccount::isUserMasquerading()) {
 				//If the user is masquerading, we will use the staff login since we might not have the patron PIN
 				//list($userValid, $sessionToken) = $this->loginViaWebService(UserAccount::getGuidingUserObject()->cat_username, UserAccount::getGuidingUserObject()->cat_password);
-				$sessionToken = $this->getStaffSessionToken();
-				return $sessionToken;
+				return $this->getStaffSessionToken();
 			}
 			[
 				,
@@ -3563,5 +3562,314 @@ class SirsiDynixROA extends HorizonAPI {
 
 	public function showDateInFines(): bool {
 		return false;
+	}
+
+	public function hasAPICheckout() : bool {
+		return true;
+	}
+
+	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'There was an error checking out this title.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Unable to checkout title',
+				'isPublicFacing' => true,
+			]),
+			'api' => [
+				'title' => translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error checking out this title.',
+					'isPublicFacing' => true,
+				]),
+			],
+			'itemData' => []
+		];
+
+		//Find the correct stat group to use
+		$doCheckout = false;
+
+		//Use the current location for the item
+		//To get the current location, we need to determine if the item is already on hold.
+		//If it is, make sure it is on hold for the active user and use the pickup_location
+		//If it is not on hold, use the current location for the item
+		$sessionToken = $this->getStaffSessionToken();
+		if (!$sessionToken) {
+			return $result;
+		}
+
+		//Now that we have the session token, get holds information
+		$webServiceURL = $this->getWebServiceURL();
+
+		$lookupItemResponse = $this->getWebServiceResponse('lookupItem', $webServiceURL . '/catalog/item/barcode/' . $barcode, null, $sessionToken);
+		if (empty($lookupItemResponse) || !empty($lookupItemResponse->messageList)) {
+			$result['message'] = translate([
+				'text' => 'Could not find an item with that barcode, unable to checkout item.',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Could not find an item with that barcode, unable to checkout item.',
+				'isPublicFacing' => true,
+			]);
+		}else{
+			require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+			$scoSettings = new AspenLiDASelfCheckSetting();
+			$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+
+			if ($checkoutLocationSetting == 0) {
+				//Use the active location, no change needed
+				$doCheckout = true;
+			}elseif ($checkoutLocationSetting == 1) {
+				//Use home location for the user
+				$currentLocation = $patron->getHomeLocation();
+				$doCheckout = true;
+			}else {
+				$doCheckout = true;
+
+				$currentItemLocation = $lookupItemResponse->fields->currentLocation->key;
+				if ($currentItemLocation == 'CHECKEDOUT') {
+					$result['message'] = translate([
+						'text' => 'This title is already checked out, cannot check it out again.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'This title is already checked out, cannot check it out again.',
+						'isPublicFacing' => true,
+					]);
+					$doCheckout = false;
+				}elseif ($currentItemLocation == 'HOLDS') {
+					//The title is on the hold shelf, make sure it is on the hold shelf for the current patron
+					$doCheckout = false;
+
+					$itemKey = $lookupItemResponse->key;
+
+					//Get holds for the patron
+					$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*},barcode}}");
+					$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
+					if ($patronHolds && isset($patronHolds->fields)) {
+						foreach ($patronHolds->fields->holdRecordList as $hold) {
+							if (isset($hold->fields->status)) {
+								$holdStatus = strtolower($hold->fields->status);
+								if ($holdStatus == "being_held") {
+									$holdItemId = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
+									if ($holdItemId == $itemKey) {
+										$doCheckout = true;
+										$curPickupBranch = new Location();
+										$curPickupBranch->code = $hold->fields->pickupLibrary->key;
+										if ($curPickupBranch->find(true)) {
+											$currentLocation = $curPickupBranch;
+										}else{
+											//We didn't get a valid code, use the passed in location
+										}
+										break;
+									}
+								}
+							}
+						}
+					}else{
+						$doCheckout = true;
+						$curPickupBranch = new Location();
+						$curPickupBranch->code = $currentItemLocation;
+						if ($curPickupBranch->find(true)) {
+							$currentLocation = $curPickupBranch;
+						}else{
+							//We didn't get a valid code, use the passed in location
+						}
+					}
+
+					if (!$doCheckout) {
+						$result['message'] = translate([
+							'text' => 'This title is on hold for another user or is not available yet and cannot be checked out.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'This title is on hold for another user or is not available yet and cannot be checked out.',
+							'isPublicFacing' => true,
+						]);
+					}
+				}
+			}
+		}
+
+		if ($doCheckout) {
+			$checkOutParams = [
+				'itemBarcode' => $barcode,
+				'patronBarcode' => $patron->ils_barcode
+			];
+
+			$additionalHeaders = [
+				'SD-Preferred-Role: STAFF'
+			];
+			if (!empty($this->accountProfile->overrideCode)) {
+				$additionalHeaders[] = 'SD-Prompt-Return: CKOBLOCKS/' . $this->accountProfile->overrideCode;
+			}
+
+			$checkOutResponse = $this->getWebServiceResponse('checkOutItem', $webServiceURL . '/circulation/circRecord/checkOut', $checkOutParams, $sessionToken, 'POST', $additionalHeaders, [], $currentLocation->code);
+
+			if (!empty($checkOutResponse)) {
+				$checkOutMessage = '';
+				if (!empty($checkOutResponse->messageList)){
+					foreach ($checkOutResponse->messageList as $message) {
+						if (!empty($checkOutMessage)) {
+							$checkOutMessage .= '<br/>';
+						}else{
+							$checkOutMessage .= translate([
+								'text' => $message->message,
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+				}
+
+				$result['message'] = $checkOutMessage;
+				if ($this->lastWebServiceResponseCode == 200) {
+					$result['success'] = true;
+					$result['api']['title'] = translate([
+						'text' => 'Check Out successful',
+						'isPublicFacing' => true,
+					]);
+				}
+
+				$result['api']['message'] = $checkOutMessage;
+			}
+		}
+
+		return $result;
+	}
+
+	public function hasAPICheckIn() {
+		return true;
+	}
+
+	public function checkInByAPI(User $patron, $barcode, Location $currentLocation): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'There was an error checking in this title.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Unable to check in title',
+				'isPublicFacing' => true,
+			]),
+			'api' => [
+				'title' => translate([
+					'text' => 'Unable to check in title',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error checking in this title.',
+					'isPublicFacing' => true,
+				]),
+			],
+			'itemData' => []
+		];
+
+		//Find the correct stat group to use
+		$doCheckout = false;
+		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+		$scoSettings = new AspenLiDASelfCheckSetting();
+		$checkInLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+		if ($checkInLocationSetting == 0) {
+			//Use the active location, no change needed
+			$doCheckIn = true;
+		}elseif ($checkInLocationSetting == 1) {
+			//Use home location for the user
+			$currentLocation = $patron->getHomeLocation();
+			$doCheckIn = true;
+		}else {
+			$doCheckIn = true;
+
+		}
+
+		if ($doCheckIn) {
+			$sessionToken = $this->getStaffSessionToken();
+			if (!$sessionToken) {
+				return $result;
+			}
+
+			//Now that we have the session token, get holds information
+			$webServiceURL = $this->getWebServiceURL();
+
+			$lookupItemResponse = $this->getWebServiceResponse('lookupItem', $webServiceURL . '/catalog/item/barcode/' . $barcode, null, $sessionToken);
+			if (!empty($lookupItemResponse)) {
+				$currentLocation = $lookupItemResponse->fields->currentLocation->key;
+				if ($currentLocation !== 'CHECKEDOUT') {
+					$result['message'] = translate([
+						'text' => 'This title is not currently checked out. Cannot check it in.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'This title is not currently checked out. Cannot check it in.',
+						'isPublicFacing' => true,
+					]);
+				}else{
+					$checkInParams = [
+						'itemBarcode' => $barcode
+					];
+
+					$additionalHeaders = [];
+
+					$checkInResponse = $this->getWebServiceResponse('checkInItem', $webServiceURL . '/circulation/circRecord/checkIn', $checkInParams, $sessionToken, 'POST', $additionalHeaders);
+
+					if (!empty($checkInResponse)) {
+						$checkInMessage = '';
+						if (!empty($checkInResponse->messageList)) {
+							foreach ($checkInResponse->messageList as $message) {
+								if (!empty($checkInMessage)) {
+									$checkInMessage .= '<br/>';
+								} else {
+									$checkInMessage .= translate([
+										'text' => $message->message,
+										'isPublicFacing' => true,
+									]);
+								}
+							}
+						}
+
+						$result['message'] = $checkInMessage;
+						if ($this->lastWebServiceResponseCode == 200) {
+							$result['success'] = true;
+							$result['api']['title'] = translate([
+								'text' => 'Check in successful',
+								'isPublicFacing' => true,
+							]);
+						}
+
+						$result['api']['message'] = $checkInMessage;
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	public function describePath(string $path) : ?stdClass {
+		$sessionToken = $this->getStaffSessionToken();
+		if (!$sessionToken) {
+			return null;
+		}
+
+		//Now that we have the session token, get holds information
+		$webServiceURL = $this->getWebServiceURL();
+		return $this->getWebServiceResponse('describePath', "$webServiceURL/$path/describe", null, $sessionToken);
+	}
+
+	public function getRequest(string $path): ?stdClass {
+		$sessionToken = $this->getStaffSessionToken();
+		if (!$sessionToken) {
+			return null;
+		}
+
+		//Now that we have the session token, get holds information
+		$webServiceURL = $this->getWebServiceURL();
+		return $this->getWebServiceResponse('describePath', "$webServiceURL/$path", null, $sessionToken);
 	}
 }
