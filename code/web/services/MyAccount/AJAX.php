@@ -7094,7 +7094,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$listOk = false;
 				} else {
 						//Authorization check: Ensure list belongs to logged in user
-					if ($userList->user_id != UserAccount::getActiveUserId()) {
+					$currentUser = UserAccount::getActiveUserObj();
+					if (!$currentUser->canEditList($userList)) {
 						$result['success'] = false;
 						$result['message'] =translate([
 							'text' => 'You are not authorized to modify this list.',
