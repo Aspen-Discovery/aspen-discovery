@@ -3594,6 +3594,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		//Find the correct stat group to use
 		$doCheckout = false;
+		$addOverrideCode = false;
 
 		//Use the current location for the item
 		//To get the current location, we need to determine if the item is already on hold.
@@ -3660,6 +3661,8 @@ class SirsiDynixROA extends HorizonAPI {
 									$holdItemId = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
 									if ($holdItemId == $itemKey) {
 										$doCheckout = true;
+										//For titles that are on hold, we need to add an override.
+										$addOverrideCode = true;
 										$curPickupBranch = new Location();
 										$curPickupBranch->code = $hold->fields->pickupLibrary->key;
 										if ($curPickupBranch->find(true)) {
@@ -3706,7 +3709,8 @@ class SirsiDynixROA extends HorizonAPI {
 			$additionalHeaders = [
 				'SD-Preferred-Role: STAFF'
 			];
-			if (!empty($this->accountProfile->overrideCode)) {
+			//For titles that are on hold, we need to add an override.
+			if ($addOverrideCode && !empty($this->accountProfile->overrideCode)) {
 				$additionalHeaders[] = 'SD-Prompt-Return: CKOBLOCKS/' . $this->accountProfile->overrideCode;
 			}
 
