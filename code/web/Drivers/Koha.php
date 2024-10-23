@@ -3088,7 +3088,7 @@ class Koha extends AbstractIlsDriver {
 
 		$postParams = (object) [];
 		if (strlen($dateToReactivate) > 0) {
-			$postParams['end_date'] = $dateToReactivate;	
+			$postParams->end_date = $dateToReactivate;	
 		} 
 
 		$endpoint = "/api/v1/holds/$itemToFreezeId/suspension";
