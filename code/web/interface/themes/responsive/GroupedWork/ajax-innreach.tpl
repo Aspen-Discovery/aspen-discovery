@@ -12,8 +12,7 @@
 		{translate text="Format" isPublicFacing=true}
 	</th>
   {foreach from=$innReachResults item=innReachTitle}
-	  {if !empty($similar)}
-	  	{if $similar.recordId != -1}
+	  {if !empty($innReachTitle) && $innReachTitle.id != -1}
 		  <tr>
 			  <td>
 		      <a href="{$innReachTitle.link}" rel="external" onclick="window.open (this.href, 'child'); return false"><h5>{$innReachTitle.title|removeTrailingPunctuation|escape}</h5></a>
@@ -29,7 +28,6 @@
 				  {if !empty($innReachTitle.format)}<small>{$innReachTitle.format|escape}</small>{/if}
 			  </td>
 		  </tr>
-	  	{/if}
 	  {/if}
   {/foreach}
 </table>
