@@ -40,6 +40,7 @@ class CurlWrapper {
 			CURLOPT_FORBID_REUSE => false,
 			CURLOPT_HEADER => false,
 			CURLOPT_AUTOREFERER => true,
+			CURLOPT_ENCODING => '',
 		];
 		$this->options = $default_options;
 	}
