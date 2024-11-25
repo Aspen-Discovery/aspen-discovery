@@ -128,7 +128,7 @@ try {
 
     exec("chown -R $newOwner $logDir");
     exec("chown -R $newOwner $logDir/logs");
-
+    
     //Conf directory
     exec("chmod -R 755 $configDir/conf");
     exec("chown $newOwner $configDir/conf");
@@ -136,6 +136,8 @@ try {
     exec("chown root:root $configDir/httpd-$siteName.conf");
     exec("chown root:root $configDir/conf/crontab_settings.txt");
     exec("chmod 0644 $configDir/conf/crontab_settings.txt");
+    exec("chown root:root $configDir/conf/crontab");
+    exec("chmod 0644 $configDir/conf/crontab");
 
     if (file_exists("$configDir/conf/log4j")) {
         exec("chown $newOwner $configDir/conf/log4j*");
@@ -147,6 +149,7 @@ try {
     //Copy the httpd conf file
     $apacheDir = "/etc/apache2";
     copy("$configDir/httpd-$siteName.conf", "$apacheDir/sites-enabled/httpd-$siteName.conf");
+
 } catch (ErrorException $e) {
     echo "%   ERROR ASSIGNING PERMISSIONS AND OWNERSHIPS\n";
     echo "%   ERROR MESSAGE : " . $e->getMessage() . "\n";

@@ -1,0 +1,57 @@
+## -->  Crontab for Docker
+
+
+# * * * * *  command to execute
+# │ │ │ │ │
+# │ │ │ │ └───── day of week (0 - 6)
+# │ │ │ │        (0 to 6 are Sunday to Saturday, or use names (Sun,Mon,Tue,Wed,Thu,Fri,Sat); 7 is Sunday, the same as 0)
+# │ │ │ └────────── month (1 - 12)
+# │ │ └─────────────── day of month (1 - 31)
+# │ └──────────────────── hour (0 - 23)
+# └───────────────────────── min (0 - 59)
+## taken from https://en.wikipedia.org/wiki/Cron
+
+
+#   Indexing Tasks 
+7 3 * * *   sudo -u www-data    echo php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+*/5 * * * * sudo -u www-data    php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Regular extracts that don't need to run continuously 
+*/5 * * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/oai_indexer && java -jar oai_indexer.jar {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+*/5 * * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/reindexer && java -jar reindexer.jar {sitename} nightly >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   New York Times Best seller Lists Updating 
+15 7 * * 5  sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+
+########################## Aspen Discovery Cleanup ##########################
+
+
+#   CRON for Aspen (book cover cache cleanup etc.)
+00 22 * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Fetch Notification Receipts 
+0 11 * * 1-5    sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Update Saved Searches 
+0 10 * * 1-5    sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Send Custom LiDA Notifications 
+*/15 * * * *    sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Temp files
+26 0 * * *  cd /tmp; rm -rf CURLCOOKIE*
+
+#   Run Scheduled Updates 
+*/5 * * * * php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Update Translations from Community 
+15 1 * * *  php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+
+#   Run Clam AV Scans 
+00 3 * * *  truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/{sitename}/solr7/ --exclude-dir=/var/log/aspen-discovery/{sitename} --exclude-dir=/data/aspen-discovery/{sitename}/covers/small --exclude-dir=/data/aspen-discovery/{sitename}/covers/medium --exclude-dir=/data/aspen-discovery/{sitename}/covers/large --log=/var/log/aspen-discovery/clam_av.log
+
+#   Generate Materials Request Hold Candidates 
+0 9 * * *   php /usr/local/aspen-discovery/code/web/cron/generateMaterialRequestHoldCandidates.php template.linux >/proc/1/fd/1 2>/proc/1/fd/2
+
+## Cron needs a new line at the EOF to work properly

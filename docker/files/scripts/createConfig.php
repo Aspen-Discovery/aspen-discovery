@@ -83,6 +83,7 @@ if ($emptyVariables > 0) {
 
 $templateDir = "/usr/local/aspen-discovery/sites/template.linux";
 $defaultDir = "/usr/local/aspen-discovery/sites/default";
+$dockerDir = "/usr/local/aspen-discovery/docker";
 
 if (!file_exists($templateDir)) {
 	echo "ERROR: The template directory '" . $templateDir . "' does not exists.\n";
@@ -90,6 +91,10 @@ if (!file_exists($templateDir)) {
 }
 if (!file_exists($defaultDir)) {
 	echo "ERROR: The default site directory '" . $defaultDir . "' does not exists.\n";
+	die(1);
+}
+if (!file_exists($dockerDir)) {
+	echo "ERROR: The docker directory '" . $dockerDir . "' does not exists.\n";
 	die(1);
 }
 
@@ -111,6 +116,10 @@ try {
 //Copy from default site directory
 	copy($defaultDir . "/conf/badBotsLocal.conf", $siteDir . "/conf/badBotsLocal.conf");
 	copy($defaultDir . "/conf/badBotsDefault.conf", $siteDir . "/conf/badBotsDefault.conf");
+
+//Copy from docker directory
+	copy("$dockerDir/files/cron/crontab", "$siteDir/conf/crontab");
+	replaceVariables($siteDir . "/conf/crontab", $variables);
 
 //Set timezone
 	exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');
