@@ -6557,6 +6557,82 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	function createHeyCentricOrder(){
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('HeyCentric');
+		} else {
+			$result = $this->createGenericOrder('HeyCentric');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/HeyCentricSetting.php';
+			$heyCentricSettings = new HeyCentricSetting();
+			$heyCentricSettings->id = $paymentLibrary->heyCentricSettingId;
+
+			if ($heyCentricSettings->find(true)) {
+				$paymentRequestUrl = $heyCentricSettings->baseUrl;
+				$paymentRequestUrl .= "client=" . $heyCentricSettings->client;
+				$paymentRequestUrl .= "&area=" . $heyCentricSettings->area;
+				$paymentRequestUrl .= "&till=" . $heyCentricSettings->till;
+				$paymentRequestUrl .= "&entity=" . $heyCentricSettings->entity;
+				$paymentRequestUrl .= "&pmtTyp=" . $payment->transactionType;
+				$paymentRequestUrl .= "&val1=" . $payment->id;
+				$paymentRequestUrl .= "&val1Desc=" . urlencode("Payment type: " . $payment->transactionType);
+				$paymentRequestUrl .= "&am=" . $payment->totalPaid;
+				$paymentRequestUrl .= "&email=" . $patron->email;
+				$paymentRequestUrl .= "&rurl=" . $configArray['Site']['url'] . "/MyAccount/AJAX?method=completeHeyCentricOrder%26paymentId=" . $payment->id;
+				$paymentRequestUrl .= "&sid=";
+				$paymentRequestUrl .= "&hash=" . base64_encode(md5("client=$heyCentricSettings->client&entity=$heyCentricSettings->entity&pmtTyp=$payment->transactionType&am=$payment->totalPaid" . $heyCentricSettings->privateKey));
+
+				// Placeholder for future requirement to facilitate Unit4 upgrades
+				$paymentRequestUrl .= "&co=";
+				$paymentRequestUrl .= "&bu=";
+				$paymentRequestUrl .= "&lang=";
+				$paymentRequestUrl .= "&mode=";
+
+				// optional parameters
+				$paymentRequestUrl .= "&val2=";
+				$paymentRequestUrl .= "&val2Desc=";
+				$paymentRequestUrl .= "&cmt=";
+				$paymentRequestUrl .= "&extRef=";
+
+				return [
+					'success' => true,
+					'message' => 'Redirecting to payment processor',
+					'paymentRequestUrl' => $paymentRequestUrl,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'HeyCentric was not properly configured',
+				];
+			}
+		}
+	}
+
 	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
 		$patronId = UserAccount::getActiveUserId();

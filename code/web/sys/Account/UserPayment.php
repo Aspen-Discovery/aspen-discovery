@@ -24,6 +24,7 @@ class UserPayment extends DataObject {
 	public $deluxeRemittanceId;
 	public $deluxeSecurityId;
 	public $ncrTransactionId;
+	public $heyCentricPaymentReferenceNumber;
 	public $requestingUrl;
 
 	public static function getObjectStructure($context = '') {
@@ -117,6 +118,13 @@ class UserPayment extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Cancelled?',
 				'description' => 'Whether or not the user cancelled the payment',
+				'readOnly' => true,
+			],
+			'declined' => [
+				'property' => 'declined',
+				'type' => 'checkbox',
+				'label' => 'Cancelled?',
+				'description' => 'Whether or not the payment was declined',
 				'readOnly' => true,
 			],
 			'error' => [
