@@ -154,6 +154,7 @@ class Library extends DataObject {
 	public $invoiceCloudSettingId;
 	public $deluxeCertifiedPaymentsSettingId;
 	public $paypalPayflowSettingId;
+	public $heyCentricSettingId;
 	public $ncrSettingId;
 	public $usernameField;
 
@@ -491,7 +492,8 @@ class Library extends DataObject {
 			'deluxeCertifiedPaymentsSettingId',
 			'paypalPayflowSettingId',
 			'squareSettingId',
-			'sripteSettingId'
+			'sripteSettingId',
+			'heyCentricSettingId'
 		];
 	}
 
@@ -755,6 +757,16 @@ class Library extends DataObject {
 		$ncrSettings[-1] = 'none';
 		while ($ncrSetting->fetch()) {
 			$ncrSettings[$ncrSetting->id] = $ncrSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/HeyCentricSetting.php';
+		$heyCentricSetting = new HeyCentricSetting();
+		$heyCentricSetting->orderBy('name');
+		$heyCentricSettings = [];
+		$heyCentricSetting->find();
+		$heyCentricSettings[-1] = 'none';
+		while ($heyCentricSetting->fetch()) {
+			$heyCentricSettings[$heyCentricSetting->id] = $heyCentricSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2506,7 +2518,8 @@ class Library extends DataObject {
 							12 => 'Square',
 							13 => 'Stripe',
 							14 => 'NCR',
-							15 => 'SnapPay'
+							15 => 'SnapPay',
+							16 => 'HeyCentric'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2698,6 +2711,15 @@ class Library extends DataObject {
 						'values' => $ncrSettings,
 						'label' => 'NCR Settings',
 						'description' => 'The NCR settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'heyCentricSettingId' => [
+						'property' => 'heyCentricSettingId',
+						'type' => 'enum',
+						'values' => $heyCentricSettings,
+						'label' => 'HeyCentric Settings',
+						'description' => 'The HeyCentric settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
