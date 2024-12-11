@@ -6633,6 +6633,43 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	function completeHeyCentricOrder(): void {
+		global $configArray;
+		$paymentId = $_REQUEST['paymentId'];
+		$rc = $_REQUEST['Rc'];
+		$pmt = $_REQUEST['Pmt'];
+		$recNo = $_REQUEST['RecNo'] ?? "";
+
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$payment = new UserPayment();
+		$payment->id = $paymentId;
+
+		$updateDebtInIls = false;
+	
+		if ($rc == 'A') {
+			$payment->completed = true;
+			$payment->heyCentricPaymentReferenceNumber = $recNo;
+			$updateDebtInIls = true;
+		}
+		if ($rc == 'C') {
+			$payment->cancelled = true;
+		} 
+		if ($rc == 'D') {
+			$payment->declined = true;
+		}
+
+		$payment->update(); // update user payment status in Aspen db
+
+		$params = "Rc=$rc&Pmt=$pmt";
+		if ($updateDebtInIls) {
+			$params .= "&RecNo=$recNo";
+			$payment->find(true);
+			$patron = UserAccount::getActiveUserObj();
+			$patron->completeFinePayment($payment); // updated debt status in ILS
+		}
+		header("Location: " . $configArray['Site']['url'] . "/MyAccount/Fines?" . $params);
+	}
+
 	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
 		$patronId = UserAccount::getActiveUserId();

@@ -261,6 +261,32 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// HeyCentric result message
+				if($userLibrary->finePaymentType == 16) {
+					$rc = $_REQUEST['Rc'];
+					$finePaymentResult = (object)[];
+
+					if (!empty($rc)) {
+						$pmt = $_REQUEST['Pmt'];
+						if ($rc == 'A') {
+							$recNo = $_REQUEST['RecNo'];
+							$finePaymentResult->success = true;
+							$finePaymentResult->message = "Payment successful: $pmt GBP paid (HeyCentric payment reference number: $recNo)";
+						}
+						if ($rc == 'D') {
+							$finePaymentResult->success = false;
+							$finePaymentResult->message = "Your payment of $pmt GBP was declined";
+						}
+						if($rc == 'C') {
+							$finePaymentResult->success = false;
+							$finePaymentResult->message = "Your payment of $pmt GBP was cancelled before it could be executed";
+						}
+					}
+					if (!empty((array)$finePaymentResult)) {
+						$interface->assign('finePaymentResult', $finePaymentResult);
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 
