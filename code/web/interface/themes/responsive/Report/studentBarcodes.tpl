@@ -50,7 +50,7 @@ var patron = [];
 				textAlign: "left",
 				textMargin: 2,
 				textPosition: "top",
-				height: 40,
+				height: 33,
 				margin: 0,
 				width: barcodeWidth
 			});
@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 <style>
 .avery5160 {
 	/* Avery 5160 labels */
+	box-sizing: border-box !important;
 	width: 2.625in !important;
 	height: 1in !important;
 	margin: 0in .125in 0in 0in !important;
@@ -73,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	float: left;
 	display: inline-block;
 	text-align: left;
-	overflow: hidden;
+	overflow: hidden !important;
 	outline: 1px dotted;  /*outline doesn't occupy space like border does */
 }
 .gradehomeroom {
@@ -91,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 @media print {
 	@page {
 		size: letter !important;
-		margin: 0.5in 0.0675in 0.5in 0.1875in; /* Adjust the margin to fit content within the page */
+		margin: 0.5in 0.0675in 0.5in 0.1875in !important; /* Adjust the margin to fit content within the page */
 	}
 	.avery5160 {
 		break-inside: avoid-page !important;
@@ -102,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	, #horizontal-menu-bar-wrapper
 	, #page-header
 	, #side-bar
-	, #system-message-header
+	, #system-messages
 	, .breadcrumbs {
 		display: none;
 	}
