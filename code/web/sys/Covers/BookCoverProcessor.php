@@ -748,13 +748,13 @@ class BookCoverProcessor {
 			$imageChecksum = md5($image);
 			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c') {
 				return false;
-			} elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e') {
+			} elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e' || $imageChecksum == '798f904eabf783405079eaf699414801') {
 				//Syndetics Unbound default image at medium size
 				return false;
-			} elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b') {
+			} elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b' || $imageChecksum == 'b13e33c0262a3a1f21dd20b826710cbc') {
 				//Syndetics Unbound default image at small size
 				return false;
-			} elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db') {
+			} elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db' || $imageChecksum == '821d0d442dbee0f51f4c803e8e9fc87a') {
 				//Syndetics Unbound default image at large size
 				return false;
 			}
