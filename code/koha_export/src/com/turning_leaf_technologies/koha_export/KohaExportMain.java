@@ -134,6 +134,8 @@ public class KohaExportMain {
 
 				//Check to see if the ILS connection is offline and don't index
 				if (isOffline()) {
+					logEntry.addNote("ILS is offline, won't index.");
+					logEntry.saveResults();
 					System.exit(0);
 				}
 
