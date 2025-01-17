@@ -84,7 +84,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private boolean hideOrderRecordsForBibsWithPhysicalItems;
 	private int orderRecordsToSuppressByDate;
 	private boolean checkSierraMatTypeForFormat;
-	private boolean index856Links;
+	private int index856Links;
 	private String treatUnknownAudienceAs;
 
 	//Fields for loading order information
@@ -261,7 +261,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.checkSierraMatTypeForFormat = indexingProfileRS.getBoolean("checkSierraMatTypeForFormat");
 
-		index856Links = indexingProfileRS.getBoolean("index856Links");
+		index856Links = indexingProfileRS.getInt("index856Links");
 		treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
 
 		//Custom Facet 1
@@ -1098,11 +1098,11 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.orderStatusSubfield = orderStatusSubfield;
 	}
 
-	public boolean isIndex856Links() {
+	public int getIndex856Links() {
 		return index856Links;
 	}
 
-	public void setIndex856Links(boolean index856Links) {
+	public void setIndex856Links(int index856Links) {
 		this.index856Links = index856Links;
 	}
 

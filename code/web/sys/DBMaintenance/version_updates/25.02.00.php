@@ -50,7 +50,7 @@ function getUpdates25_02_00(): array {
 				'ALTER TABLE two_factor_auth_settings ADD COLUMN accountProfileId INT',
 				"UPDATE two_factor_auth_settings set accountProfileId = (SELECT MIN(id) from account_profiles where ils <> 'na' and name <> 'admin')"
 			]
-		]
+		],
 
 		//katherine
 
@@ -59,6 +59,14 @@ function getUpdates25_02_00(): array {
 		//kodi
 
 		//alexander - PTFS-Europe
+		'indexing_records_with_econtent' => [
+			'title' => 'Indexing Records With Econtent',
+			'description' => 'Whether records with eContent as an item should also index via 856 field.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN index856LinkOnlyIfNoEcontentRecord TINYINT(1) NOT NULL DEFAULT 0'
+			],
+		],
 
 		//chloe - PTFS-Europe
 

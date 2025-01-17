@@ -226,7 +226,7 @@ class IndexingProfile extends DataObject {
 			'orderRecordsToSuppressByDate',
 			'numRetriesForBibLookups',
 			'numMillisecondsToPauseAfterBibLookups',
-			'numExtractionThreads'
+			'numExtractionThreads',
 		];
 	}
 
@@ -476,13 +476,18 @@ class IndexingProfile extends DataObject {
 
 			'index856Links' => [
 				'property' => 'index856Links',
-				'type' => 'checkbox',
+				'type' => 'enum',
 				'label' => 'Index 856 links',
 				'description' => 'Whether or not 856 links with a first indicator of 4 and second indicator of 0 or 1 are indexed and treated as items.',
-				'defaultValue' => false,
-				'hideInLists' => true,
+				'values' => [
+					0 => 'Never',
+					1 => 'Always',
+					2 => 'Only When No eContent Items Are Found'
+				],
+				'default' => 0,
 				'forcesReindex' => true,
 			],
+
 
 			'suppressRecordsWithUrlsMatching' => [
 				'property' => 'suppressRecordsWithUrlsMatching',
