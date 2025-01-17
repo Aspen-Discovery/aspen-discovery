@@ -1,11 +1,16 @@
 package com.turning_leaf_technologies.util;
 
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,4 +59,34 @@ public class SystemUtils {
 		Runtime runtime = Runtime.getRuntime();
 		logger.debug("Max: " + AspenStringUtils.formatBytes(runtime.maxMemory()) + " | Total: " + AspenStringUtils.formatBytes(runtime.totalMemory()) + " | Used: " + (AspenStringUtils.formatBytes(runtime.totalMemory() - runtime.freeMemory())) + " | Free: " + AspenStringUtils.formatBytes(runtime.freeMemory()));
 	}
+
+	public static boolean isOffline(Connection dbConn, Logger logger) {
+		try {
+			PreparedStatement getOfflineStatusStmt = dbConn.prepareStatement("SELECT catalogStatus FROM system_variables", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getOfflineStatusRS = getOfflineStatusStmt.executeQuery();
+			if (getOfflineStatusRS.next()) {
+				int catalogStatus = getOfflineStatusRS.getInt("catalogStatus");
+				getOfflineStatusStmt.close();
+				getOfflineStatusRS.close();
+				return (catalogStatus != 0);
+			}else{
+				getOfflineStatusStmt.close();
+				getOfflineStatusRS.close();
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error("Error determining if the catalog is offline, quitting to be safe", e);
+			System.exit(-9);
+		}
+		return true;
+	}
+
+    public static void QuitIfOffline(Connection dbConn, Logger logger, IlsExtractLogEntry logEntry)
+    {
+        if (isOffline(dbConn, logger)) {
+            logEntry.addNote("ILS is offline, won't index.");
+            logEntry.saveResults();
+            System.exit(0);
+        }
+    }
 }
