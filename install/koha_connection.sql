@@ -31,7 +31,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `indexing_profiles` WRITE;
 /*!40000 ALTER TABLE `indexing_profiles` DISABLE KEYS */;
-INSERT INTO `indexing_profiles` (id, name, marcPath, marcEncoding, indexingClass, recordUrlComponent, formatSource, recordNumberTag, itemTag, itemRecordNumber, useItemBasedCallNumbers, callNumber, location, shelvingLocation,collection, volume, barcode, totalCheckouts, totalRenewals, iType, dueDate, dateCreated, dateCreatedFormat, format, catalogDriver, filenamesToInclude, doAutomaticEcontentSuppression, recordNumberSubfield, recordNumberPrefix, noteSubfield, lastCheckinFormat) VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','Koha','Record','item','999','952','9',1,'o','a','c','8','h','p','l','m','y','k','d','yyyy-MM-dd','y','Koha','.*\\.ma?rc',1,'c', '', 'z', '');
+INSERT INTO `indexing_profiles` (id, name, marcPath, marcEncoding, indexingClass, recordUrlComponent, formatSource, recordNumberTag, itemTag, itemRecordNumber, useItemBasedCallNumbers, callNumber, location, shelvingLocation,collection, volume, barcode, totalCheckouts, totalRenewals, iType, dueDate, dateCreated, dateCreatedFormat, format, catalogDriver, filenamesToInclude, doAutomaticEcontentSuppression, recordNumberSubfield, recordNumberPrefix, noteSubfield, lastCheckinFormat, runFullUpdate) VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','Koha','Record','item','999','952','9',1,'o','a','c','8','h','p','l','m','y','k','d','yyyy-MM-dd','y','Koha','.*\\.ma?rc',1,'c', '', 'z', '',1);
 /*!40000 ALTER TABLE `indexing_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
