@@ -664,7 +664,11 @@ class CatalogConnection {
 									$userReadingHistoryEntry->isIll = 1;
 								}
 								$userReadingHistoryEntry->deleted = 0;
-								$userReadingHistoryEntry->insert();
+								if ($userReadingHistoryEntry->find(true)) {
+									$userReadingHistoryEntry->update();
+								} else {
+									$userReadingHistoryEntry->insert();
+								}
 								$userReadingHistoryEntry = null;
 								//}
 							}
@@ -1204,25 +1208,23 @@ class CatalogConnection {
 				//TODO: This should check to see if the grouped work has been checked out rather than the record
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				if (!empty($checkout->groupedWorkId)) {
-					$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId;
+				$historyEntryDB->sourceId = $checkout->sourceId;
+				$existingEntry = $historyEntryDB->find(true); // Now only checks userId+sourceId
+				if ($existingEntry) {
+					$historyEntryDB->update();
 				} else {
-					$historyEntryDB->groupedWorkPermanentId = "";
-				}
-
-				$historyEntryDB->source = $source;
-				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
-				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
-				$historyEntryDB->format = substr($checkout->format, 0, 50);
-				$historyEntryDB->checkOutDate = time();
-				$historyEntryDB->costSavings = $checkout->getReplacementCost();
-				if (!$historyEntryDB->insert()) {
-					global $logger;
-					$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
-				} else {
-					if ($patron->enableCostSavings) {
-						$patron->__set('totalCostSavings', $patron->totalCostSavings + $historyEntryDB->costSavings);
+					$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
+					$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
+					$historyEntryDB->format = substr($checkout->format, 0, 50);
+					$historyEntryDB->checkOutDate = time();
+					$historyEntryDB->costSavings = $checkout->getReplacementCost();
+					if (!$historyEntryDB->insert()) {
+						global $logger;
+						$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
+					} else {
+						if ($patron->enableCostSavings) {
+							$patron->__set('totalCostSavings', $patron->totalCostSavings + $historyEntryDB->costSavings);
+						}
 					}
 				}
 			}

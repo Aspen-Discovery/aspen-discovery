@@ -7444,12 +7444,9 @@ class MyAccount_AJAX extends JSON_Action {
 						$readingHistoryEntry->isIll = 0;
 						$readingHistoryEntry->isManuallyAdded = 1;
 						//No cost savings updates since this is outside the library
+						$readingHistoryEntry->userId = $user->id;
+						$readingHistoryEntry->sourceId = $sourceId;
 						if ($readingHistoryEntry->find(true)) {
-							$existingEntry = true;
-						} else {
-							$existingEntry = false;
-						}
-						if ($existingEntry) {
 							$readingHistoryEntry->deleted = 0;
 							$readingHistoryEntry->update();
 						} else {
