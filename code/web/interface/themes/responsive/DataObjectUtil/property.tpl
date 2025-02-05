@@ -433,8 +433,10 @@
 			{include file="DataObjectUtil/password.tpl"}
 
 		{elseif $property.type == 'pin'}
-			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control digits {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control pin {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 
+		{elseif $property.type == 'pinConfirmation'}
+			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control pinConfirmation {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 
 		{elseif $property.type == 'currency'}
 			{include file="DataObjectUtil/currency.tpl"}

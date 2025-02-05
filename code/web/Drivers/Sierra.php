@@ -1735,6 +1735,20 @@ class Sierra extends Millennium {
 							'maxLength' => 2,
 						];
 					}
+				} elseif ($customField->ilsName == 'pin') {
+					$fields[$customField->section]['properties'][] = [
+						'property' => $customField->ilsName,
+						'type' => 'pin',
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					$fields[$customField->section]['properties']['pinConfirmation'] = [
+						'property' => 'pinConfirmation',
+						'type' => 'pinConfirmation',  
+						'label' => 'Confirm PIN',
+						'required' => true
+					];
 				} else {
 					$fields[$customField->section]['properties'][] = [
 						'property' => $customField->ilsName,
@@ -1781,15 +1795,23 @@ class Sierra extends Millennium {
 			foreach ($formFields as $fieldObj){
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {
-					if (isset($_REQUEST['middleName'])) {
-						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['middleName'] . ' ' . $_REQUEST['lastName'];
+					if (!empty($_REQUEST['middleName'])) {
+						$fullName = $_REQUEST['lastname'] . ', ' . $_REQUEST['middleName'] . ', ' . $_REQUEST['firstname'];
 					} else {
-						$fullName = $_REQUEST['firstName'] . ' ' . $_REQUEST['lastName'];
+						$fullName = $_REQUEST['lastname'] . ', ' . $_REQUEST['firstname'];
 					}
 					$params['names'] = [$fullName];
 				}
 				elseif ($field == 'birthDate') {
 					$params['birthDate'] = $_REQUEST['birthDate'];
+				}
+				elseif ($field == 'guardian') {
+					if (!empty($_REQUEST['guardian'])) {
+						$params['varFields'][] = [
+							'fieldTag' => 'j',
+							'content' => $_REQUEST['guardian']
+						];
+					}
 				}
 				elseif ($field == 'email') {
 					$params['emails'] = [$_REQUEST['email']];
@@ -1814,15 +1836,59 @@ class Sierra extends Millennium {
 
 					$params['addresses'][] = $address;
 				}
-				elseif ($field == 'barcode') {
-					$params['barcodes'] = [$_REQUEST['barcode']];
-				}
 				elseif ($field == 'pin') {
 					$params['pin'] = $_REQUEST['pin'];
 				}
 			}
+     
+			$barcodePrefix = '';
+			// set barcode suffix length to 7 if not set
+			$barcodeSuffixLength = 7;
+			if (!empty($selfRegistrationForm->selfRegBarcodePrefix)) {
+				$barcodePrefix = $selfRegistrationForm->selfRegBarcodePrefix;
+			}
+			if (!empty($selfRegistrationForm->selfRegBarcodeSuffixLength)) {
+				$barcodeSuffixLength = $selfRegistrationForm->selfRegBarcodeSuffixLength;
+			}
+			$barcode = $this->generateBarcode($barcodePrefix, $barcodeSuffixLength);
+			
+			if ($barcode) {
+				$params['barcodes'] = [$barcode];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Could not generate a valid library card number. Please try again later.'
+				];
+			}
+            
+			if (!empty($selfRegistrationForm->selfRegExpirationDays)) {
+				$expirationDays = $selfRegistrationForm->selfRegExpirationDays;
+			} else {
+				$expirationDays = 30;
+			}
+			$expirationDate = new DateTime();
+			$expirationDate->add(new DateInterval('P' . $expirationDays . 'D'));
+			$params['expirationDate'] = $expirationDate->format('Y-m-d');
+
 			$params['homeLibraryCode'] = $_REQUEST['pickupLocation'];
-			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronCode;
+			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronType;
+			$params['patronCodes'] = [
+				'pcode1' => "e",
+				'pcode2' => "-",
+				'pcode3' => (int)$selfRegistrationForm->selfRegPcode3,
+				'pcode4' => (int)$selfRegistrationForm->selfRegPcode4
+			];
+			$params['pMessage'] = $selfRegistrationForm->selfRegPatronMessage;
+			$params['fixedFields'] = [
+				'268' => [
+					'label' => 'Notice Preference',
+					'value' => $selfRegistrationForm->selfRegNoticePref
+				],
+				'158' => [
+					'label' => 'Patron Agency',
+					'value' => $selfRegistrationForm->selfRegAgency
+				],
+			];
 		}
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/";
@@ -1837,6 +1903,22 @@ class Sierra extends Millennium {
 		}
 
 		return $selfRegResult;
+	}
+
+	private function generateBarcode($barcodePrefix, $barcodeSuffixLength) {
+		$foundValidBarcode = false;
+		$attempts = 0;
+		$maxAttempts = 10;
+
+		while (!$foundValidBarcode && $attempts < $maxAttempts) {
+			$barcode = $barcodePrefix;
+			for ($i = 0; $i < $barcodeSuffixLength; $i++) {
+				$barcode .= rand(0, 9);
+			}
+			$foundValidBarcode = $this->getPatronInfoByBarcode($barcode) === false;
+			$attempts++;
+		}
+		return $foundValidBarcode ? $barcode : null;
 	}
 
 	public function getFines($patron = null, $includeMessages = false): array {

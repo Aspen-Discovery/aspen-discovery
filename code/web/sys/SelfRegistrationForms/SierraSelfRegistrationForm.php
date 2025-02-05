@@ -8,9 +8,16 @@ class SierraSelfRegistrationForm extends DataObject {
 	public $name;
 	public $selfRegistrationTemplate;
 	public $termsOfServiceSetting;
+	public $selfRegBarcodePrefix;
+	public $selfRegBarcodeSuffixLength;
+	public $selfRegExpirationDays;
+	public $selfRegPatronType;
+	public $selfRegPcode3;
+	public $selfRegPcode4;
+	public $selfRegPatronMessage;
+	public $selfRegNoticePref;
+	public $selfRegAgency;
 	public $selfRegEmailBarcode;
-	public $selfRegPatronCode;
-
 	private $_fields;
 	private $_libraries;
 
@@ -75,12 +82,75 @@ class SierraSelfRegistrationForm extends DataObject {
 				'hideInLists' => true,
 				'default' => 'default',
 			],
-			'selfRegPatronCode' => [
-				'property' => 'selfRegPatronCode',
+			'selfRegBarcodePrefix' => [
+				'property' => 'selfRegBarcodePrefix',
 				'type' => 'text',
-				'label' => 'Patron Code',
-				'description' => 'Patron code to use for self registered patrons',
-				'maxLength' => 75,
+				'label' => 'Barcode Prefix',
+				'description' => 'The prefix for the barcode',
+				'maxLength' => 10,
+			],
+			'selfRegBarcodeSuffixLength' => [
+				'property' => 'selfRegBarcodeSuffixLength',
+				'type' => 'integer',
+				'label' => 'Barcode Suffix Length',
+				'description' => 'The length of the suffix for the barcode',
+				'maxLength' => 2,
+			],
+			'selfRegPatronType' => [
+				'property' => 'selfRegPatronType',
+				'type' => 'integer',
+				'label' => 'Patron Type',
+				'description' => 'Patron type to use for self registered patrons',
+				'maxLength' => 3,
+			],
+			'selfRegExpirationDays' => [
+				'property' => 'selfRegExpirationDays',
+				'type' => 'integer',
+				'label' => 'Expiration Days',
+				'description' => 'The number of days after which the patron will be expired',
+				'maxLength' => 3,
+				'default' => 30,
+			],
+			'selfRegPcode3' => [
+        		'property' => 'selfRegPcode3',
+       			'type' => 'integer',
+       			'label' => 'Patron Code 3',
+        		'description' => 'pcode3 for self registered patrons',
+        		'maxLength' => 3,
+   			],
+			'selfRegPcode4' => [
+        		'property' => 'selfRegPcode4',
+       			'type' => 'integer',
+       			'label' => 'Patron Code 4',
+        		'description' => 'pcode4 for self registered patrons',
+        		'maxLength' => 3,
+   			],
+			'selfRegPatronMessage' => [
+				'property' => 'selfRegPatronMessage',
+				'type' => 'text',
+				'label' => 'Patron Message',
+				'description' => 'Patron message to display to self registered patrons',
+				'maxLength' => 35,
+			],
+			'selfRegNoticePref' => [
+   				'property' => 'selfRegNoticePref',
+    			'type' => 'enum',
+    			'label' => 'Notice Preference',
+    			'description' => 'Default notification preference for new patrons',
+    			'values' => [
+        			'-' => 'None',
+        			'z' => 'Email',
+       				'p' => 'Phone',
+       				't' => 'Text'
+    			],
+    			'default' => '-'
+			],
+			'selfRegAgency' => [
+				'property' => 'selfRegAgency',
+				'type' => 'integer',
+				'label' => 'Patron Agency',
+				'description' => 'Patron agency for self registered patrons',
+				'maxLength' => 3,
 			],
 			'selfRegEmailBarcode' => [
 				'property' => 'selfRegEmailBarcode',

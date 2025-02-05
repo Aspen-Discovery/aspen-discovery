@@ -111,6 +111,23 @@ function getUpdates25_02_00(): array {
 				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN apiKey5 varchar(256) DEFAULT NULL",
 			]
 		], //branded_app_api_keys
+		// Yanjun Li - ByWater	
+		'sierra_self_reg_form_updates' => [
+			'title' => 'Sierra Self Reg updates',
+			'description' => 'Add new fields to Sierra self registration forms',
+			'sql' => [
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegNoticePref CHAR(1) DEFAULT "-"',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegExpirationDays INT DEFAULT 30',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode3 INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode4 INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronMessage VARCHAR(35) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegAgency INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra CHANGE COLUMN selfRegPatronCode selfRegPatronType INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodePrefix VARCHAR(10) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodeSuffixLength INT DEFAULT 7',
+			],
+		], //sierra_self_reg_form_updates
+
 
 		//katherine
 

@@ -102,6 +102,7 @@ class SelfRegistrationFormValues extends DataObject {
 				"phone" => "phones",
 				"pin" => "pin",
 				"barcode" => "barcodes",
+				"guardian" => "guardian",
 			];
 		}
 

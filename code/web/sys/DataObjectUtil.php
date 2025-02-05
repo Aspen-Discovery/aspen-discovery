@@ -189,7 +189,9 @@ class DataObjectUtil {
             'address2_prefill',
             'city_prefill',
             'state_prefill',
-            'zip_prefill'
+            'zip_prefill',
+			'pin',
+			'pinConfirmation'
 		])) {
 			if (isset($_REQUEST[$propertyName])) {
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {
