@@ -182,14 +182,16 @@ class DataObjectUtil {
 			'email2',
             'email_prefill',
 			'multiemail',
-			'barcode_prefill',
-			'phone_prefill',
-			'name_prefill',
-			'address_prefill',
-			'address2_prefill',
-			'city_prefill',
-			'state_prefill',
-			'zip_prefill'
+            'barcode_prefill',
+            'phone_prefill',
+            'name_prefill',
+            'address_prefill',
+            'address2_prefill',
+            'city_prefill',
+            'state_prefill',
+            'zip_prefill',
+			'pin',
+			'pinConfirmation'
 		])) {
 			if (isset($_REQUEST[$propertyName])) {
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {
