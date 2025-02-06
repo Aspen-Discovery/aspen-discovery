@@ -117,7 +117,10 @@ function getUpdates25_02_00(): array {
 			'description' => 'Add new fields to Sierra self registration forms',
 			'sql' => [
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegNoticePref CHAR(1) DEFAULT "-"',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegTelephoneField VARCHAR(5) DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegExpirationDays INT DEFAULT 30',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode1 VARCHAR(25) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode2 VARCHAR(25) DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode3 INT DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode4 INT DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronMessage VARCHAR(35) DEFAULT NULL',
@@ -125,6 +128,7 @@ function getUpdates25_02_00(): array {
 				'ALTER TABLE self_registration_form_sierra CHANGE COLUMN selfRegPatronCode selfRegPatronType INT DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodePrefix VARCHAR(10) DEFAULT NULL',
 				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodeSuffixLength INT DEFAULT 7',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegGuardianField VARCHAR(10) DEFAULT NULL',
 			],
 		], //sierra_self_reg_form_updates
 

@@ -1796,9 +1796,9 @@ class Sierra extends Millennium {
 				$field = $fieldObj->ilsName;
 				if ($field == 'firstName') {
 					if (!empty($_REQUEST['middleName'])) {
-						$fullName = $_REQUEST['lastname'] . ', ' . $_REQUEST['middleName'] . ', ' . $_REQUEST['firstname'];
+						$fullName = $_REQUEST['lastName'] . ', ' . $_REQUEST['middleName'] . ', ' . $_REQUEST['firstName'];
 					} else {
-						$fullName = $_REQUEST['lastname'] . ', ' . $_REQUEST['firstname'];
+						$fullName = $_REQUEST['lastName'] . ', ' . $_REQUEST['firstName'];
 					}
 					$params['names'] = [$fullName];
 				}
@@ -1808,7 +1808,7 @@ class Sierra extends Millennium {
 				elseif ($field == 'guardian') {
 					if (!empty($_REQUEST['guardian'])) {
 						$params['varFields'][] = [
-							'fieldTag' => 'j',
+							'fieldTag' => $selfRegistrationForm->selfRegGuardianField,
 							'content' => $_REQUEST['guardian']
 						];
 					}
@@ -1821,7 +1821,7 @@ class Sierra extends Millennium {
 				}
 				elseif ($field == 'phone') {
 					$tmpPhone = new stdClass();
-					$tmpPhone->type = 'p';
+					$tmpPhone->type = $selfRegistrationForm->selfRegTelephoneField;
 					$tmpPhone->number = $_REQUEST['phone'];
 					$params['phones'][] = $tmpPhone;
 				}
@@ -1873,8 +1873,8 @@ class Sierra extends Millennium {
 			$params['homeLibraryCode'] = $_REQUEST['pickupLocation'];
 			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronType;
 			$params['patronCodes'] = [
-				'pcode1' => "e",
-				'pcode2' => "-",
+				'pcode1' => $selfRegistrationForm->selfRegPcode1,
+				'pcode2' => $selfRegistrationForm->selfRegPcode2,
 				'pcode3' => (int)$selfRegistrationForm->selfRegPcode3,
 				'pcode4' => (int)$selfRegistrationForm->selfRegPcode4
 			];
