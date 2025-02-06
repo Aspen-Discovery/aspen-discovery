@@ -236,7 +236,7 @@ if (!$foundConfig) {
 		$variables['databaseHost'] = "localhost";
 	}
 
-	$variables['databasePort'] =  readline("Database host for Aspen (default: 3306) > ");
+	$variables['databasePort'] =  readline("Database port for Aspen (default: 3306) > ");
 	if (empty($variables['databasePort'])){
 		$variables['databasePort'] = "3306";
 	}
