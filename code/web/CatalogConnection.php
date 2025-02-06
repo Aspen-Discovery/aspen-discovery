@@ -646,25 +646,26 @@ class CatalogConnection {
 								//if ($title['permanentId'] != null) {
 								$userReadingHistoryEntry = new ReadingHistoryEntry();
 								$userReadingHistoryEntry->userId = $patron->id;
-								$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
 								$userReadingHistoryEntry->sourceId = $title['recordId'];
-								$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
-								$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
-								$userReadingHistoryEntry->format = $title['format'];
-								$userReadingHistoryEntry->checkOutDate = $title['checkout'];
-								if (!empty($title['checkin'])) {
-									$userReadingHistoryEntry->checkInDate = $title['checkin'];
+								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+								if ($userReadingHistoryEntry->find(true)) {
+									// Update existing entry
+									$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+									$userReadingHistoryEntry->checkInDate = $title['checkin'] ?? null;
+									$userReadingHistoryEntry->isIll = $title['isIll'] ?? 0;
+									$userReadingHistoryEntry->deleted = 0;
+									$userReadingHistoryEntry->update();
 								} else {
-									$userReadingHistoryEntry->checkInDate = null;
+									// Insert new entry
+									$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+									$userReadingHistoryEntry->title = mb_substr($title['title'], 0, 150);
+									$userReadingHistoryEntry->author = mb_substr($title['author'], 0, 75);
+									$userReadingHistoryEntry->format = $title['format'];
+									$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+									$userReadingHistoryEntry->checkInDate = $title['checkin'] ?? null;
+									$userReadingHistoryEntry->isIll = $title['isIll'] ?? 0;
+									$userReadingHistoryEntry->insert();
 								}
-								if (empty($title['isIll'])) {
-									$userReadingHistoryEntry->isIll = 0;
-								} else {
-									$userReadingHistoryEntry->isIll = 1;
-								}
-								$userReadingHistoryEntry->deleted = 0;
-								$userReadingHistoryEntry->insert();
 								$userReadingHistoryEntry = null;
 								//}
 							}
@@ -1204,25 +1205,24 @@ class CatalogConnection {
 				//TODO: This should check to see if the grouped work has been checked out rather than the record
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				if (!empty($checkout->groupedWorkId)) {
-					$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId;
+				$historyEntryDB->sourceId = $checkout->sourceId;
+				$existingEntry = $historyEntryDB->find(true); // Now only checks userId+sourceId
+				if ($existingEntry) {
+					$historyEntryDB->update();
 				} else {
 					$historyEntryDB->groupedWorkPermanentId = "";
-				}
-
-				$historyEntryDB->source = $source;
-				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
-				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
-				$historyEntryDB->format = substr($checkout->format, 0, 50);
-				$historyEntryDB->checkOutDate = time();
-				$historyEntryDB->costSavings = $checkout->getReplacementCost();
-				if (!$historyEntryDB->insert()) {
-					global $logger;
-					$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
-				} else {
-					if ($patron->enableCostSavings) {
-						$patron->__set('totalCostSavings', $patron->totalCostSavings + $historyEntryDB->costSavings);
+					$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
+					$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
+					$historyEntryDB->format = mb_substr($checkout->format, 0, 50);
+					$historyEntryDB->checkOutDate = time();
+					$historyEntryDB->costSavings = $checkout->getReplacementCost();
+					if (!$historyEntryDB->insert()) {
+						global $logger;
+						$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
+					} else {
+						if ($patron->enableCostSavings) {
+							$patron->__set('totalCostSavings', $patron->totalCostSavings + $historyEntryDB->costSavings);
+						}
 					}
 				}
 			}

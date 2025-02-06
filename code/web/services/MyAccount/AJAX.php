@@ -7434,25 +7434,22 @@ class MyAccount_AJAX extends JSON_Action {
 					$groupedWork->permanent_id = $sourceId;
 					if ($groupedWork->find(true)) {
 						$groupedWorkDriver = new GroupedWorkDriver($sourceId);
-						$readingHistoryEntry->title = mb_substr($groupedWorkDriver->getTitle(), 0, 150);
-						$readingHistoryEntry->author = mb_substr($groupedWorkDriver->getPrimaryAuthor(), 0, 75);
-						//Leave the format blank
-						$readingHistoryEntry->format = '';
 						$checkoutDate = mktime(0, 0, 0, $month, 1, $year);
-						$readingHistoryEntry->checkOutDate = $checkoutDate;
-						$readingHistoryEntry->checkInDate = $checkoutDate;
-						$readingHistoryEntry->isIll = 0;
-						$readingHistoryEntry->isManuallyAdded = 1;
-						//No cost savings updates since this is outside the library
 						if ($readingHistoryEntry->find(true)) {
-							$existingEntry = true;
-						} else {
-							$existingEntry = false;
-						}
-						if ($existingEntry) {
-							$readingHistoryEntry->deleted = 0;
+							// Update existing entry
+							$readingHistoryEntry->checkOutDate = $checkoutDate;
+							$readingHistoryEntry->checkInDate = $checkoutDate;
 							$readingHistoryEntry->update();
 						} else {
+							// Insert new entry
+							$readingHistoryEntry->groupedWorkPermanentId = $sourceId;
+							$readingHistoryEntry->title = mb_substr($groupedWorkDriver->getTitle(), 0, 150);
+							$readingHistoryEntry->author = mb_substr($groupedWorkDriver->getPrimaryAuthor(), 0, 75);
+							$readingHistoryEntry->format = '';
+							$readingHistoryEntry->checkOutDate = $checkoutDate;
+							$readingHistoryEntry->checkInDate = $checkoutDate;
+							$readingHistoryEntry->isIll = 0;
+							$readingHistoryEntry->isManuallyAdded = 1;
 							$readingHistoryEntry->insert();
 						}
 
