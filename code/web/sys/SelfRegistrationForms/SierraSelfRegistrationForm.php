@@ -12,11 +12,15 @@ class SierraSelfRegistrationForm extends DataObject {
 	public $selfRegBarcodeSuffixLength;
 	public $selfRegExpirationDays;
 	public $selfRegPatronType;
+	public $selfRegTelephoneField;
+	public $selfRegPcode1;
+	public $selfRegPcode2;
 	public $selfRegPcode3;
 	public $selfRegPcode4;
 	public $selfRegPatronMessage;
 	public $selfRegNoticePref;
 	public $selfRegAgency;
+	public $selfRegGuardianField;
 	public $selfRegEmailBarcode;
 	private $_fields;
 	private $_libraries;
@@ -111,20 +115,46 @@ class SierraSelfRegistrationForm extends DataObject {
 				'maxLength' => 3,
 				'default' => 30,
 			],
+			'selfRegTelephoneField' => [
+				'property' => 'selfRegTelephoneField',
+				'type' => 'enum',
+				'label' => 'Primary Telephone Field',
+				'description' => 'Define primary telephone field for self registered patrons',
+				'hideInLists' => true,
+				'values' => [
+					't' => 'TELEPHONE',
+					'p' => 'TELEPHONE2'
+				],
+				'default' => 't'
+			],
+			'selfRegPcode1' => [
+				'property' => 'selfRegPcode1',
+				'type' => 'text',
+				'label' => 'Patron Code 1',
+				'description' => 'pcode1 for self registered patrons',
+				'maxLength' => 25,
+			],	
+			'selfRegPcode2' => [
+				'property' => 'selfRegPcode2',
+				'type' => 'text',
+				'label' => 'Patron Code 2',
+				'description' => 'pcode2 for self registered patrons',
+				'maxLength' => 25,
+			],
 			'selfRegPcode3' => [
-        		'property' => 'selfRegPcode3',
-       			'type' => 'integer',
-       			'label' => 'Patron Code 3',
-        		'description' => 'pcode3 for self registered patrons',
-        		'maxLength' => 3,
+	        		'property' => 'selfRegPcode3',
+				'type' => 'integer',
+				'label' => 'Patron Code 3',
+				'description' => 'pcode3 for self registered patrons',
+				'maxLength' => 3,
    			],
 			'selfRegPcode4' => [
-        		'property' => 'selfRegPcode4',
-       			'type' => 'integer',
-       			'label' => 'Patron Code 4',
-        		'description' => 'pcode4 for self registered patrons',
-        		'maxLength' => 3,
-   			],
+        			'property' => 'selfRegPcode4',
+				'type' => 'integer',
+				'label' => 'Patron Code 4',
+        			'description' => 'pcode4 for self registered patrons',
+        			'maxLength' => 3,
+  			],
 			'selfRegPatronMessage' => [
 				'property' => 'selfRegPatronMessage',
 				'type' => 'text',
@@ -134,23 +164,32 @@ class SierraSelfRegistrationForm extends DataObject {
 			],
 			'selfRegNoticePref' => [
    				'property' => 'selfRegNoticePref',
-    			'type' => 'enum',
-    			'label' => 'Notice Preference',
-    			'description' => 'Default notification preference for new patrons',
-    			'values' => [
-        			'-' => 'None',
-        			'z' => 'Email',
-       				'p' => 'Phone',
-       				't' => 'Text'
-    			],
-    			'default' => '-'
+    				'type' => 'enum',
+    				'label' => 'Notice Preference',
+    				'description' => 'Default notification preference for new patrons',
+    				'values' => [
+					'-' => 'None',
+					'z' => 'Email',
+					'p' => 'Phone',
+					't' => 'Text'
+    				],
+    				'default' => '-'
 			],
 			'selfRegAgency' => [
 				'property' => 'selfRegAgency',
 				'type' => 'integer',
 				'label' => 'Patron Agency',
 				'description' => 'Patron agency for self registered patrons',
+				'hideInLists' => true,
 				'maxLength' => 3,
+			],
+			'selfRegGuardianField' => [
+				'property' => 'selfRegGuardianField',
+				'type' => 'text',
+				'label' => 'Guardian Field',
+				'description' => 'Define guardian field for self registered patrons',
+				'hideInLists' => true,
+				'maxLength' => 10,
 			],
 			'selfRegEmailBarcode' => [
 				'property' => 'selfRegEmailBarcode',
