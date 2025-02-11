@@ -275,5 +275,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_campaign ADD COLUMN enrollmentEndDate DATE NULL"
             ],
         ],
+        'add_campaign_leaderboard_display_options' => [
+            'title' => 'Add Campaign Leaderboard Display Options',
+            'description' => 'Add the ability for libraries to choose whether to display the leaderboard by user or by branch',
+            'sql' => [
+                "ALTER TABLE library ADD COLUMN campaignLeaderboardDisplay VARCHAR(20) DEFAULT 'displayBranch'",
+            ],
+        ],
     ];
 }
