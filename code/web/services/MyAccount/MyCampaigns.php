@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/UserCompletedMilestone.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+require_once ROOT_DIR . '/sys/Account/User.php';
 
 class MyCampaigns extends MyAccount {
 
@@ -12,10 +13,16 @@ class MyCampaigns extends MyAccount {
 		global $interface;
 		global $library;
 
-		$campaign = new Campaign();
-		  //Get User
-		  $userId = $this->getUserId();
-		  $interface->assign('userId', $userId);
+        $campaign = new Campaign();
+        //Get User
+        $userId = $this->getUserId();
+        $interface->assign('userId', $userId);
+
+        $hasLinkedAccounts = UserAccount::hasLinkedUsers();
+        $interface->assign('hasLinkedAccounts', $hasLinkedAccounts);
+
+        $linkedCampaigns = $this->getLinkedUserCampaigns($userId);
+        $interface->assign('linkedCampaigns', $linkedCampaigns);
 
 		//Get Campaigns
 		$campaignList = $this->getCampaigns();
@@ -113,18 +120,110 @@ class MyCampaigns extends MyAccount {
 				//Add milestones to campaign object
 				$campaign->milestones = $milestones;
 
-				//Add the campaign to the list
+                //Add the campaign to the list
+            $campaignList[] = clone $campaign;
+        }
+        return $campaignList;
+    }
 
-			$campaignList[] = clone $campaign;
-		}
-		return $campaignList;
-	}
+    function getLinkedUserCampaigns($userId) {
+        if (empty($userId)){
+            throw new InvalidArgumentException("User ID is required");
+        }
+        $user = new User();
+        $user->id = $userId;
+
+        if (!$user->find(true)) {
+            throw new RuntimeException("User not found.");
+        }
+
+        $linkedUsers = $user->getLinkedUsers();
+        if (empty($linkedUsers)) {
+            return [];
+        }
+
+        $groupedLinkedCampaigns = [];
+
+        foreach ($linkedUsers as $linkedUser) {
+            $eligibleCampaigns = [];
+            $campaign = new Campaign();
+
+            if ($campaign->find()) {
+                while ($campaign->fetch()) {
+                    $userCampaign = new UserCampaign();
+                    $userCampaign->userId = $linkedUser->id;
+                    $userCampaign->campaignId = $campaign->id;
+    
+                    $isEnrolled = $userCampaign->find(true);
+                    $campaignReward = null;
+                    $rewardDetails = $campaign->getRewardDetails();
+                    if ($rewardDetails != null) {
+                        $campaignReward = [
+                            'rewardName' => $rewardDetails['name'],
+                            'rewardType' => $rewardDetails['rewardType'], 
+                            'badgeImage' => $rewardDetails['badgeImage']
+                        ];
+                    }
+
+                    $startDate = $campaign->startDate;
+                    $endDate = $campaign->endDate;
+
+                    $milestones = CampaignMilestone::getMilestoneByCampaign($campaign->id);
+                    $numCampaignMilestones = count($milestones);
+                    $numCompletedMilestones = 0;
+                    $milestoneRewards = [];
+
+                    foreach ($milestones as $milestone) {
+                        $milestoneProgress = CampaignMilestone::getMilestoneProgress($campaign->id, $linkedUser->id, $milestone->id);
+                        $completedGoals = $milestoneProgress['completed'];
+                        $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
+
+                        if ($milestoneProgress['progress'] == 100) {
+                            $numCompletedMilestones++;
+                        }
+
+                        $milestoneRewards[] = [
+                            'milestoneName' => $milestone->name,
+                            'rewardName' => $milestone->rewardNAme, 
+                            'rewardType' => $milestone->rewardType, 
+                            'badgeImage' => $milestone->badgeImage,
+                            'progress' => $milestoneProgress['progress'],
+                            'completedGoals' => $completedGoals,
+                            'totalGoals' => $totalGoals,
+                            'progressData' => $milestoneProgress['data']
+                        ];
+                    }
+
+                    $eligibleCampaigns[] = [
+                        'campaignId' => $campaign->id,
+                        'campaignName' => $campaign->name,
+                        'isEnrolled' => $isEnrolled,
+                        'campaignReward' => $campaignReward,
+                        'milestones' => $milestoneRewards,
+                        'numCompletedMilestones' => $numCompletedMilestones,
+                        'numCampaignMilestones' => $numCampaignMilestones,
+                        'startDate' => $startDate,
+                        'endDate' => $endDate
+                    ];
+                }
+            }
+
+            $groupedLinkedCampaigns[] = [
+                'linkedUserName' => $linkedUser->displayName, 
+                'linkedUserId' => $linkedUser->id,
+                'campaigns' => $eligibleCampaigns
+            ];
+        }
+       return $groupedLinkedCampaigns;
+    }
 
 
 
-	function getBreadcrumbs(): array
-	{
-		$breadcrumbs = [];
+    //TODO:: Write a function that uses the milestone id for each progress bar to use the ce_milestone_progress_entries table and 
+    //get information about which books were checked out and count towards the milestone. 
+    function getBreadcrumbs(): array
+    {
+        $breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Campaigns');
 		return $breadcrumbs;

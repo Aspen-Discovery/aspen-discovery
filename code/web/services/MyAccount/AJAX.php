@@ -9255,8 +9255,9 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 
 		$campaignId = $_GET['campaignId'] ?? null;
+		$userId = $_GET['userId'] ?? null;
 
-		if (!$campaignId) {
+		if (!$campaignId || !$userId) {
 			return[
 				'success' => false,
 				'title' => translate([
@@ -9264,26 +9265,26 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true
 				]),
 				'message' => translate([
-					'text' => 'Campaign ID is missing.',
+					'text' => 'Campaign ID or user ID is missing.',
 					'isPublicFacing' => true
 				])
 			];
 		}
 
-		$userId = UserAccount::getActiveUserId();
-		if (!$userId) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Error',
-					'isPublicFacing' => true
-				]),
-				'message' => translate([
-					'text' => 'User is not logged in.',
-					'isPublicFacing' => true
-				])
-			];
-		}
+		// $userId = UserAccount::getActiveUserId();
+		// if (!$userId) {
+		// 	return [
+		// 		'success' => false,
+		// 		'title' => translate([
+		// 			'text' => 'Error',
+		// 			'isPublicFacing' => true
+		// 		]),
+		// 		'message' => translate([
+		// 			'text' => 'User is not logged in.',
+		// 			'isPublicFacing' => true
+		// 		])
+		// 	];
+		// }
 
 		$userCampaign = new UserCampaign();
 		$userCampaign->userId = $userId;
@@ -9391,8 +9392,10 @@ class MyAccount_AJAX extends JSON_Action {
 
 
 		$campaignId = $_GET['campaignId'] ?? null;
+		$userId = $_GET['userId'] ?? null;
 
-		if (!$campaignId) {
+
+		if (!$campaignId || !$userId) {
 			return [
 				'success' => false,
 				'title' => translate([
@@ -9400,26 +9403,26 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true
 				]),
 				'message' => translate([
-					'text' => 'Campaign ID is missing.',
+					'text' => 'Campaign ID or user ID is missing.',
 					'isPublicFacing' => true
 				])
 			];
 		}
 
-		$userId = UserAccount::getActiveUserId();
-		if (!$userId) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Error',
-					'isPublicFacing' => true
-				]),
-				'message' => translate([
-					'text' => 'User is not logged in.',
-					'isPublicFacing' => true
-				])
-			];
-		}
+		// $userId = UserAccount::getActiveUserId();
+		// if (!$userId) {
+		// 	return [
+		// 		'success' => false,
+		// 		'title' => translate([
+		// 			'text' => 'Error',
+		// 			'isPublicFacing' => true
+		// 		]),
+		// 		'message' => translate([
+		// 			'text' => 'User is not logged in.',
+		// 			'isPublicFacing' => true
+		// 		])
+		// 	];
+		// }
 
 		$userCampaign = new UserCampaign();
 		$userCampaign->userId = $userId;
