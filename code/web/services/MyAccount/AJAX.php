@@ -9304,6 +9304,39 @@ class MyAccount_AJAX extends JSON_Action {
 			];
 		}
 
+		$today = new DateTime();
+		$enrollmentStartDate = !empty($campaign->enrollmentStartDate) ? new DateTime($campaign->enrollmentStartDate) : null;
+		$enrollmentEndDate = !empty($campaign->enrollmentEndDate) ? new DateTime($campaign->enrollmentEndDate) : null;
+		
+		if ($enrollmentStartDate && $enrollmentEndDate) {
+			if ($today < $enrollmentStartDate) {
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Cannot Enroll',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Enrollment for this campaign has not started yet.',
+						'isPublicFacing' => true
+					])
+				];
+			}
+			if ($today > $enrollmentEndDate) {
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Cannot Enroll',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Enrollment for this campaign has ended.',
+						'isPublicFacing' => true
+					])
+				];
+			}
+		}
+
 		if ($userCampaign->find(true)) {
 			return [
 				'success' => false,

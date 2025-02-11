@@ -9,18 +9,20 @@ require_once ROOT_DIR . '/sys/Account/User.php';
 
 
 class Campaign extends DataObject {
-	public $__table = 'ce_campaign';
-	public $id;
-	public $name;
-	public $description;
-	public $milestones;
-	public $startDate;
-	public $endDate;
-	public $enrollmentCounter;
-	public $unenrollmentCounter;
-	public $currentEnrollments;
-	public $campaignReward;
-	public $userAgeRange;
+    public $__table = 'ce_campaign';
+    public $id;
+    public $name;
+    public $description;
+    public $milestones;
+    public $startDate;
+    public $endDate;
+    public $enrollmentStartDate;
+    public $enrollmentEndDate;
+    public $enrollmentCounter;
+    public $unenrollmentCounter;
+    public $currentEnrollments;
+    public $campaignReward;
+    public $userAgeRange;
 
 	/** @var AvailableMilestones[] */
 	private $_availableMilestones;
@@ -60,43 +62,55 @@ class Campaign extends DataObject {
 				'defaultTextFile' => 'Campaign_description.MD',
 				'hideInLists'=> true,
 			],
-			'availableMilestones' => [
-				'property' => 'availableMilestones',
-				'type' => 'oneToMany',
-				'label' => 'Milestones',
-				'renderAsHeading' => true,
-				'description' => 'The Milestones to be linked to this campaign',
-				'keyThis' => 'campaignId',
-				'keyOther' => 'campaignId',
-				'subObjectType' => 'CampaignMilestone',
-				'structure' => $milestoneStructure,
-				'sortable' => true,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
-				'canAddNew' => true,
-				'canDelete' => true,
-			],
-			'startDate' => [
-				'property' => 'startDate',
-				'type' => 'date',
-				'label' => 'Campaign Start Date (campaigns with no start date will not be visible to patrons)',
-				'description' => 'The date the campaign starts',
-			],
-			'endDate' => [
-				'property' => 'endDate',
-				'type' => 'date',
-				'label' => 'Campaign End Date (campaigns with no end date will not be visible to patrons)',
-				'description' => 'The date the campaign ends',
-			],
-			'campaignReward' => [
-				'property' => 'campaignReward',
-				'type' => 'enum',
-				'label' => 'Reward for Completing Campaign',
-				'values' => $rewardList, 
-				'description' => 'The reward given for completing the campaign.'
-			],
-			'allowPatronTypeAccess' => [
+            'availableMilestones' => [
+                'property' => 'availableMilestones',
+                'type' => 'oneToMany',
+                'label' => 'Milestones',
+                'renderAsHeading' => true,
+                'description' => 'The Milestones to be linked to this campaign',
+                'keyThis' => 'campaignId',
+                'keyOther' => 'campaignId',
+                'subObjectType' => 'CampaignMilestone',
+                'structure' => $milestoneStructure,
+                'sortable' => true,
+                'storeDb' => true,
+                'allowEdit' => false,
+                'canEdit' => false,
+                'canAddNew' => true,
+                'canDelete' => true,
+            ],
+            'startDate' => [
+                'property' => 'startDate',
+                'type' => 'date',
+                'label' => 'Campaign Start Date (campaigns with no start date will not be visible to patrons)',
+                'description' => 'The date the campaign starts',
+            ],
+            'endDate' => [
+                'property' => 'endDate',
+                'type' => 'date',
+                'label' => 'Campaign End Date (campaigns with no end date will not be visible to patrons)',
+                'description' => 'The date the campaign ends',
+            ],
+            'campaignReward' => [
+                'property' => 'campaignReward',
+                'type' => 'enum',
+                'label' => 'Reward for Completing Campaign',
+                'values' => $rewardList, 
+                'description' => 'The reward given for completing the campaign.'
+            ],
+            'enrollmentStartDate' => [
+                'property' => 'enrollmentStartDate',
+                'type' => 'date',
+                'label' => 'Enrollment Period Start Date',
+                'description' => 'The date from which patrons can enroll in the campaign',
+            ],
+            'enrollmentEndDate' => [
+                'property' => 'enrollmentEndDate',
+                'type' => 'date',
+                'label' => 'Enrollment Period End Date',
+                'description' => 'The date patrons can enroll in the campaign until',
+            ],
+            'allowPatronTypeAccess' => [
 				'property' => 'allowPatronTypeAccess',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
