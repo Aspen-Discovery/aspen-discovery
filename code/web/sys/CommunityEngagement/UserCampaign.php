@@ -100,4 +100,59 @@ class UserCampaign extends DataObject {
 		return $milestoneCompletionStatus;
 	}
 
+     /**
+     * Calculate the total number of completed milestones for a user
+     * @param int $userId
+     * @return int
+     */
+    public function calculateUserCompletedMilestones($userId) {
+        $userCampaign = new UserCampaign();
+        $userEnrolledCampaigns = [];
+        $userCampaign->whereAdd("userId = '$userId'");
+        $userCampaign->find();
+        while ($userCampaign->fetch()) {
+            $userEnrolledCampaigns[] = clone $userCampaign;
+        }
+        $totalCompletedMilestones = 0;
+        foreach ($userEnrolledCampaigns as $userEnrolledCampaign) {
+            $milestoneCompletionStatus = $userEnrolledCampaign->checkMilestoneCompletionStatus();
+            $completedMilestones = array_filter($milestoneCompletionStatus, function($status) {
+                return $status === true;
+            });
+            //Add the completed milestones count to the total 
+            $totalCompletedMilestones += count($completedMilestones);
+            return $totalCompletedMilestones;
+        }
+    }
+    /**
+     * Calculate the user's rank based on completed milestones
+     * @param int $userId
+     * @return int
+     */
+    public function getUserRank($userId) {
+        $campaign = new Campaign();
+        $allUsers = $campaign->getAllUsersInCampaigns();
+        $userCompletedMilestones = [];
+        foreach ($allUsers as $user) {
+            $totalCompletedMilestones = $this->calculateUserCompletedMilestones($userId);
+            $userCompletedMilestones[$user] = $totalCompletedMilestones;
+        }
+        arsort($userCompletedMilestones);
+        $rank = 1;
+        $previousCompletedMilestones = null;
+        $userRank = null;
+        foreach ($userCompletedMilestones as $userId => $completedMilestones) {
+            if ($completedMilestones != $previousCompletedMilestones) {
+                $rank = $rank;
+            }
+            if ($user == $userId) {
+                $userRank = $rank;
+                break;
+            }
+            $previousCompletedMilestones = $completedMilestones;
+            $rank++;
+        }
+        return $userRank;
+    }
+
 }

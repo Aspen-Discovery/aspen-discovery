@@ -18041,22 +18041,73 @@ AspenDiscovery.CommunityEngagement = function() {
 			var campaignsList = document.getElementById("campaignsList");
 			var filteredCampaign = document.getElementById("filteredCampaign");
 
-	 
-			$.getJSON(url, params, 
-				function(data) {
-					if (data.success) {
-						$('#filteredCampaign').html(data.html);
-						filteredCampaign.style.display = "block"; 
-						campaignsList.style.display = "none";
-					} else {
-						alert("Error:" +  data.message);
-					}
-				})
-				.fail(function() {
-					console.error('Error retrieving campaign data.');
-				});
-		
-		}
-	}
-	
+     
+            $.getJSON(url, params, 
+                function(data) {
+                    if (data.success) {
+                        $('#filteredCampaign').html(data.html);
+                        filteredCampaign.style.display = "block"; 
+                        campaignsList.style.display = "none";
+                    } else {
+                        alert("Error:" +  data.message);
+                    }
+                })
+                .fail(function() {
+                    console.error('Error retrieving campaign data.');
+                });
+        
+        },
+        filterLeaderboard: function() {
+            var selectedCampaignId = document.getElementById("campaign_id").value;
+            var url = Globals.path + "/CommunityEngagement/AJAX?method=filterLeaderboardCampaigns";
+            var params = {
+                campaignId: selectedCampaignId
+            }
+
+            $.getJSON(url, params, function(data) {
+                if (data.success) {
+                    $('#leaderboard-table').html(data.html);
+                    $('#campaign-name').html(data.campaignName);
+                } else {
+                    $('#leaderboard-table').html(data.html);
+                    $('#campaign-name').html(data.campaignName);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
+        },
+
+        filterBranchLeaderboard: function() {
+            var selectedCampaignId = document.getElementById("campaign_id").value;
+            var url = Globals.path + "/CommunityEngagement/AJAX?method=filterBranchLeaderboardCampaigns";
+            var params = {
+                campaignId: selectedCampaignId
+            }
+
+            $.getJSON(url, params, function (data) {
+                if (data.success) {
+                    $('#leaderboard-table').html(data.html);
+                    $('#campaign-name').html(data.campaignName);
+                } else {
+                    $('#leaderboard-table').html(data.html);
+                    $('#campaign-name').html(data.campaignName);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
+        },
+
+        filterLeaderboardType: function () {
+            let leaderboardType = document.getElementById("main-content").dataset.leaderboardType;
+
+            if (leaderboardType === "displayUser") {
+                AspenDiscovery.CommunityEngagement.filterLeaderboard();
+            } else {
+                AspenDiscovery.CommunityEngagement.filterBranchLeaderboard();
+            }
+        }
+    }
+    
 }(AspenDiscovery.CommunityEngagement || {});

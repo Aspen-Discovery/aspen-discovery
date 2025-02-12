@@ -189,9 +189,123 @@ class CommunityEngagement_AJAX extends JSON_Action {
 			$response['message'] = 'Invalid filter type.';
 		}
 	
-		header('Content-Type: application/json');
-		echo json_encode($response);
-		exit;
-	}
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
 	
+
+    public function filterLeaderboardCampaigns() {
+        require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+        $campaignId = $_GET['campaignId'] ?? null;
+        $response = [];
+        $campaign = new Campaign();
+        $html = '';
+        try {
+            if ($campaignId) { 
+                $campaign->id = $campaignId;
+                if ($campaign->find(true)) {
+                    $campaignName = $campaign->name;
+                }
+                $leaderboard = $campaign->getLeaderboardByCampaign($campaignId);
+                if ($leaderboard) {
+                    $html .='<thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    foreach ($leaderboard as $entry) {
+                        $html .= "<tr><td>{$entry['user']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
+                    }
+                    $html .= '</tbody></table>';
+                    $response['html'] = $html;
+                    $response['campaignName'] = $campaignName;
+                    $response['success'] = true;
+                } else {
+                    $response['success'] = false;
+                    $response['campaignName'] = $campaignName;
+                    $response['html'] = 'There are currently no users enrolled in this campaign.';
+                }
+              
+            } else {
+                $leaderboard = $campaign->getOverallLeaderboard();
+                if ($leaderboard) {
+                    $html .='<thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    foreach ($leaderboard as $entry) {
+                        $html .= "<tr><td>{$entry['user']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
+                    }
+                    $html .= '</tbody></table>';
+                    $response['html'] = $html;
+                    $response['campaignName'] = 'All Campaigns';
+                    $response['success'] = true;
+                } else {
+                    $response['success'] = false;
+                    $response['message'] = 'No leaderboard data found.';
+                }
+               
+            }
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+        } catch (Exception $e) {
+            error_log('Error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error retrieving campaign information'
+            ]);
+        }
+    }
+
+    public function filterBranchLeaderboardCampaigns() {
+        require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+        $campaignId = $_GET['campaignId'] ?? null;
+        $response = [];
+        $campaign = new Campaign();
+        $html = '';
+
+        try {
+            if ($campaignId) {
+                $campaign->id = $campaignId;
+                if ($campaign->find(true)) {
+                    $campaignName = $campaign->name;
+                }
+                $branchLeaderboard = $campaign->getLeaderboardByBranchForCampaign($campaign);
+                if ($branchLeaderboard) {
+                    $html .='<thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    foreach ($branchLeaderboard as $entry) {
+                        $html .= "<tr><td>{$entry['branch']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
+                    }
+                    $html .= '</tbody></table>';
+                    $response['html'] = $html;
+                    $response['campaignName'] = $campaignName;
+                    $response['success'] = true;
+                } else {
+                    $response['success'] = false;
+                    $response['campaignName'] = $campaignName;
+                    $response['html'] = 'There are currently no users enrolled in this campaign.';
+                }
+            } else {
+                $branchLeaderboard = $campaign->getOverallLeaderboardByBranch();
+                if ($branchLeaderboard){
+                    $html .='<thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    foreach ($branchLeaderboard as $entry) {
+                        $html .= "<tr><td>{$entry['branch']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
+                    }
+                    $html .= '</tbody></table>';
+                    $response['html'] = $html;
+                    $response['campaignName'] = 'All Campaigns';
+                    $response['success'] = true;
+                } else {
+                    $response['success'] = false;
+                    $response['message'] = 'No leaderboard data found.';
+                }
+            }
+            
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+        } catch (Exception $e) {
+            error_log('Error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error retrieving campaign information'
+            ]);
+        }
+    }
 }
