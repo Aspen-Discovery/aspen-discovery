@@ -282,5 +282,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE library ADD COLUMN campaignLeaderboardDisplay VARCHAR(20) DEFAULT 'displayBranch'",
             ],
         ],
+        'allow_milestones_to_track_beyond_one_hundred_percent_completion_option' => [
+            'title' => 'Allow Milestones To Track Beyond One Hundred Percent Completion Option',
+            'description' => 'Add the option of setting milestones to continue to track progress beyond one hundred percent completion',
+            'sql' => [
+                "ALTER TABLE ce_milestone ADD COLUMN progressBeyondOneHundredPercent TINYINT DEFAULT 0",
+            ],
+        ],
     ];
 }

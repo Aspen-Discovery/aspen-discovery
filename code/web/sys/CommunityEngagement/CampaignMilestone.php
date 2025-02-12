@@ -132,15 +132,23 @@ class CampaignMilestone extends DataObject {
 		//Number of completed goals for this milestone
 		$userCompletedGoalCount = $campaignMilestoneUsersProgress->getProgressByMilestoneId($milestoneId, $campaignId, $userId);
 
-		if ($goal > 0) {
-			$progress = ($userCompletedGoalCount / $goal ) * 100;
-		} else {
-			$progress = 0;
-		}
-		return [
-			'progress' => round($progress, 2),
-			'completed' => $userCompletedGoalCount
-		];
+        if ($goal > 0) {
+           $extraProgress = 0;
+            $progress = ($userCompletedGoalCount / $goal ) * 100;
+
+           if ($progress > 100){
+             $progress = 100;
+             $extraProgress = ($userCompletedGoalCount /$goal) * 100;
+           }
+        } else {
+            $progress = 0;
+            $extraProgress =0;
+        }
+        return [
+            'progress' => round($progress, 2),
+            'extraProgress' => round($extraProgress, 2),
+            'completed' => $userCompletedGoalCount
+        ];
    }
 
 	/**
@@ -209,30 +217,33 @@ class CampaignMilestone extends DataObject {
 		$campaignMilestoneUsersProgress->ce_campaign_id = $this->campaignId;
 		$campaignMilestoneUsersProgress->userId = $userId;
 
-		# There is one, bail if goal has already been met
-		if ($campaignMilestoneUsersProgress->find(true)) {
-			if ($campaignMilestoneUsersProgress->progress >= $this->goal) {
-				return;
-			}
-		# There isn't one, create it.
-		} else {
-			$campaignMilestoneUsersProgress->progress = 0;
-			$campaignMilestoneUsersProgress->insert();
-		}
+        # There is one, bail if goal has already been met
+        if ($campaignMilestoneUsersProgress->find(true)) {
+            // if ($campaignMilestoneUsersProgress->progress >= $this->goal) {
+            //     $campaignMilestoneUsersProgress->extraProgress++;
+            //     $campaignMilestoneUsersProgress->update();
+            //     return;
+            // }
+            
+        # There isn't one, create it.
+        } else {
+            $campaignMilestoneUsersProgress->progress = 0;
+            $campaignMilestoneUsersProgress->extraProgress = 0;
+            $campaignMilestoneUsersProgress->insert();
+        }
 
-		$campaignMilestoneProgressEntry = new CampaignMilestoneProgressEntry();
-		$campaignMilestoneProgressEntry->initialize(
-			$this,
-			[
-				"object" => $object,
-				"userId" => $userId,
-				"campaignMilestoneUsersProgress" => $campaignMilestoneUsersProgress
-			]
-		);
-
-		$campaignMilestoneUsersProgress->progress++;
-		$campaignMilestoneUsersProgress->update();
-	}
+        $campaignMilestoneProgressEntry = new CampaignMilestoneProgressEntry();
+        $campaignMilestoneProgressEntry->initialize(
+            $this,
+            [
+                "object" => $object,
+                "userId" => $userId,
+                "campaignMilestoneUsersProgress" => $campaignMilestoneUsersProgress
+            ]
+        );
+        $campaignMilestoneUsersProgress->progress++;    
+        $campaignMilestoneUsersProgress->update();
+    }
 
 	/**
 	 * Checks if a given object meets the conditionals of this milestone.

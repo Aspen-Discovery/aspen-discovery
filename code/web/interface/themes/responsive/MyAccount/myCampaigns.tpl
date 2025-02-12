@@ -70,7 +70,11 @@
                                                     {/if}
                                                 </td>
                                                 <td>
-                                                    {$milestone->completedGoals}/ {$milestone->totalGoals}
+                                                    {if $milestone->completedGoals <= $milestone->totalGoals}
+                                                        {$milestone->completedGoals}/ {$milestone->totalGoals}
+                                                    {else}
+                                                        {$milestone->totalGoals} / {$milestone->totalGoals}
+                                                    {/if}
                                                     {foreach from=$milestone->progressData item="progressData"}
                                                     <div style="padding:10px;">
                                                         {if isset($progressData['title'])}
@@ -79,13 +83,20 @@
                                                     </div>
                                                     {/foreach}
                                                 </td>
-                                                <td>
+                                                <td style="position: relative; text-align: center; vertical-align: middle;">
                                                     <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
                                                         <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
                                                         aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
                                                             {$milestone->progress}%
                                                         </div>
                                                     </div>
+                                                    {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
+                                                        <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                            <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                                {$milestone->extraProgress}%
+                                                            </span>
+                                                        </div>
+                                                    {/if}
                                                 </td>
                                             </tr>                                 
                                         {/foreach}
@@ -158,19 +169,32 @@
                                                     <img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" width="100" height="100" />
                                                 {/if}
                                             </td>
-                                            <td>{$milestone.completedGoals} / {$milestone.totalGoals}
-                                            {foreach from=$milestone.progressData item="progressData"}
-                                                <div style="padding:10px;">
-                                                    {$progressData['title']}
-                                                </div>
-                                            {/foreach}
-                                            </td>
                                             <td>
+                                                {if $milestone.completedGoals <= $milestone->totalGoals}
+                                                    {$milestone.completedGoals} / {$milestone.totalGoals}
+                                                {else}
+                                                    {$milestone.totalGoals} / {$milestone.totalGoals}
+                                                {/if}
+                                                {foreach from=$milestone.progressData item="progressData"}
+                                                    <div style="padding:10px;">
+                                                        {$progressData['title']}
+                                                    </div>
+                                                {/foreach}
+                                            </td>
+                                            <td style="position: relative; text-align: center; vertical-align: middle;">
                                                 <div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
                                                     <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$milestone.progress}%; line-height: 20px; text-align: center; color: #fff;">
                                                         {$milestone.progress}%
                                                     </div>
                                                 </div>
+
+                                                {if $milestone.progressBeyondOneHundredPercent && $milestone.extraProgress > 0}
+                                                    <div class="extra-progress" aria-valuenow="{$milestone.extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                        <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                            {$milestone.extraProgress}%
+                                                        </span>
+                                                    </div>
+                                                {/if}
                                             </td>
                                         </tr>
                                     {/foreach}
@@ -258,7 +282,11 @@
                                                     {/if}
                                                 </td>
                                                 <td>
-                                                    {$milestone->completedGoals}/ {$milestone->totalGoals}
+                                                    {if $milestone->completedGoals <= $milestone->totalGoals}
+                                                        {$milestone->completedGoals} / {$milestone->totalGoals}
+                                                    {else}
+                                                        {$milestone->totalGoals} / {$milestone->totalGoals}
+                                                    {/if}
                                                     {foreach from=$milestone->progressData item="progressData"}
                                                     <div style="padding:10px;">
                                                         {if isset($progressData['title'])}
@@ -274,6 +302,14 @@
                                                             {$milestone->progress}%
                                                         </div>
                                                     </div>
+
+                                                    {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
+                                                        <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                            <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                                {$milestone->extraProgress}%
+                                                            </span>
+                                                        </div>
+                                                    {/if}
                                                 </td>
                                             </tr>                                 
                                         {/foreach}
@@ -477,12 +513,21 @@
                                         {foreach from=$campaign->milestones item="milestone"}
                                             <tr>
                                                 <td>{$milestone->name}</td>
-                                                <td>
-                                                <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
-                                                    <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
-                                                    aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
-                                                        {$milestone->progress}%
+                                                <td style="position: relative; text-align: center; vertical-align: middle; >
+                                                    <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
+                                                        <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
+                                                        aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
+                                                            {$milestone->progress}%
+                                                        </div>
                                                     </div>
+
+                                                    {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
+                                                        <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                            <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                                {$milestone->extraProgress}%
+                                                            </span>
+                                                        </div>
+                                                    {/if}
                                                 </td>
                                                 <td>
                                                     {$milestone->rewardName}

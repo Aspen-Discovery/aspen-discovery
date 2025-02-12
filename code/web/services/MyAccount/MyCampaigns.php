@@ -103,13 +103,15 @@ class MyCampaigns extends MyAccount {
 					$milestoneProgress = CampaignMilestone::getMilestoneProgress($campaignId, $userId, $milestone->id);
 					$progressData = CampaignMilestoneProgressEntry::getUserProgressDataByMilestoneId($userId, $milestoneId, $campaignId);
 
-					$milestone->progress = $milestoneProgress['progress'];
-					$milestone->completedGoals = $milestoneProgress['completed'];
-					$milestone->totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestoneId);
-					$milestone->progressData = $progressData;
-				 
-				}
-				$campaign->numCampaignMilestones = $numCampaignMilestones;
+                    $milestone->progress = $milestoneProgress['progress'];
+                    $milestone->extraProgress = $milestoneProgress['extraProgress'];
+                    $milestone->completedGoals = $milestoneProgress['completed'];
+                    $milestone->totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestoneId);
+                    $milestone->progressData = $progressData;
+                }
+                //Add completed milestones count to campaign object
+                // $campaign->numCompletedMilestones = $completedMilestonesCount;
+                $campaign->numCampaignMilestones = $numCampaignMilestones;
 
 				$userCampaign = new UserCampaign();
 				$userCampaign->userId = $userId;
@@ -178,9 +180,6 @@ class MyCampaigns extends MyAccount {
                         $completedGoals = $milestoneProgress['completed'];
                         $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
 
-                        if ($milestoneProgress['progress'] == 100) {
-                            $numCompletedMilestones++;
-                        }
 
                         $milestoneRewards[] = [
                             'milestoneName' => $milestone->name,
@@ -188,9 +187,11 @@ class MyCampaigns extends MyAccount {
                             'rewardType' => $milestone->rewardType, 
                             'badgeImage' => $milestone->badgeImage,
                             'progress' => $milestoneProgress['progress'],
+                            'extraProgress' => $milestoneProgress['extraProgress'],
                             'completedGoals' => $completedGoals,
                             'totalGoals' => $totalGoals,
-                            'progressData' => $milestoneProgress['data']
+                            'progressData' => $milestoneProgress['data'],
+                            'progressBeyondOneHundredPercent' => $milestone->progressBeyondOneHundredPercent,
                         ];
                     }
 
