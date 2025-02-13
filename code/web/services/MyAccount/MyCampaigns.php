@@ -180,6 +180,9 @@ class MyCampaigns extends MyAccount {
                         $completedGoals = $milestoneProgress['completed'];
                         $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
 
+                        if ($milestoneProgress['progress'] == 100) {
+                            $numCompletedMilestones++;
+                        }
 
                         $milestoneRewards[] = [
                             'milestoneName' => $milestone->name,
