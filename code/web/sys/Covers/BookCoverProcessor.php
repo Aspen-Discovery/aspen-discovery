@@ -1869,8 +1869,9 @@ class BookCoverProcessor {
 
 	private function getUploadedListCover($id) {
 		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
-		if (file_exists($uploadedImage)) {
-			return $this->processImageURL('upload', $uploadedImage);
+		$source = $this->bookCoverInfo->imageSource;
+		if ($source == 'upload' && file_exists($uploadedImage)) {
+			return $this->processImageURL($source, $uploadedImage);
 		}
 		return false;
 	}
