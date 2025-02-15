@@ -1745,7 +1745,7 @@ class Sierra extends Millennium {
 					];
 					$fields[$customField->section]['properties']['pinConfirmation'] = [
 						'property' => 'pinConfirmation',
-						'type' => 'pinConfirmation',  
+						'type' => 'pinConfirmation',
 						'label' => 'Confirm PIN',
 						'required' => true
 					];
@@ -1840,7 +1840,7 @@ class Sierra extends Millennium {
 					$params['pin'] = $_REQUEST['pin'];
 				}
 			}
-     
+
 			$barcodePrefix = '';
 			// set barcode suffix length to 7 if not set
 			$barcodeSuffixLength = 7;
@@ -1851,7 +1851,7 @@ class Sierra extends Millennium {
 				$barcodeSuffixLength = $selfRegistrationForm->selfRegBarcodeSuffixLength;
 			}
 			$barcode = $this->generateBarcode($barcodePrefix, $barcodeSuffixLength);
-			
+
 			if ($barcode) {
 				$params['barcodes'] = [$barcode];
 			} else {
@@ -1860,7 +1860,7 @@ class Sierra extends Millennium {
 					'message' => 'Could not generate a valid library card number. Please try again later.'
 				];
 			}
-            
+
 			if (!empty($selfRegistrationForm->selfRegExpirationDays)) {
 				$expirationDays = $selfRegistrationForm->selfRegExpirationDays;
 			} else {

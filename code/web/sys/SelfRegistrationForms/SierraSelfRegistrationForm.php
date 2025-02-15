@@ -133,7 +133,7 @@ class SierraSelfRegistrationForm extends DataObject {
 				'label' => 'Patron Code 1',
 				'description' => 'pcode1 for self registered patrons',
 				'maxLength' => 25,
-			],	
+			],
 			'selfRegPcode2' => [
 				'property' => 'selfRegPcode2',
 				'type' => 'text',
@@ -142,19 +142,19 @@ class SierraSelfRegistrationForm extends DataObject {
 				'maxLength' => 25,
 			],
 			'selfRegPcode3' => [
-	        		'property' => 'selfRegPcode3',
+				'property' => 'selfRegPcode3',
 				'type' => 'integer',
 				'label' => 'Patron Code 3',
 				'description' => 'pcode3 for self registered patrons',
 				'maxLength' => 3,
-   			],
+			],
 			'selfRegPcode4' => [
-        			'property' => 'selfRegPcode4',
+				'property' => 'selfRegPcode4',
 				'type' => 'integer',
 				'label' => 'Patron Code 4',
-        			'description' => 'pcode4 for self registered patrons',
-        			'maxLength' => 3,
-  			],
+				'description' => 'pcode4 for self registered patrons',
+				'maxLength' => 3,
+			],
 			'selfRegPatronMessage' => [
 				'property' => 'selfRegPatronMessage',
 				'type' => 'text',
@@ -163,17 +163,17 @@ class SierraSelfRegistrationForm extends DataObject {
 				'maxLength' => 35,
 			],
 			'selfRegNoticePref' => [
-   				'property' => 'selfRegNoticePref',
-    				'type' => 'enum',
-    				'label' => 'Notice Preference',
-    				'description' => 'Default notification preference for new patrons',
-    				'values' => [
+				'property' => 'selfRegNoticePref',
+				'type' => 'enum',
+				'label' => 'Notice Preference',
+				'description' => 'Default notification preference for new patrons',
+				'values' => [
 					'-' => 'None',
 					'z' => 'Email',
 					'p' => 'Phone',
 					't' => 'Text'
-    				],
-    				'default' => '-'
+				],
+				'default' => '-'
 			],
 			'selfRegAgency' => [
 				'property' => 'selfRegAgency',
