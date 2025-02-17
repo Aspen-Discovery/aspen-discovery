@@ -81,4 +81,8 @@ class CommunityEngagement_Milestones extends ObjectEditor {
 			'Administer Community Engagement Module',
 		]);
 	}
+
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.CommunityEngagement.updateManualMilestoneFields();';
+	}
 }

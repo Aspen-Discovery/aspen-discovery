@@ -120,6 +120,18 @@ AspenDiscovery.CommunityEngagement = function() {
             } else {
                 AspenDiscovery.CommunityEngagement.filterBranchLeaderboard();
             }
+        },
+
+        updateManualMilestoneFields: function () {
+            let milestoneType = document.querySelector('[name="milestoneType"]').value;
+            let allowPatronProgressInput = document.querySelector('[name="allowPatronProgressInput"]');
+
+            if (milestoneType !== 'manual') {
+                allowPatronProgressInput.disabled = true;
+                allowPatronProgressInput.checked = false;
+            } else {
+                allowPatronProgressInput.disabled = false;
+            }
         }
     }
     

@@ -289,5 +289,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_milestone ADD COLUMN progressBeyondOneHundredPercent TINYINT DEFAULT 0",
             ],
         ],
+        'add_allow_patron_progress_input' => [
+            'title' => 'Add Allow Patron Progress Input',
+            'description' => 'Add the option of allowing patrons to update their own progress',
+            'sql' => [
+                "ALTER TABLE ce_milestone ADD COLUMN allowPatronProgressInput TINYINT DEFAULT 0",
+            ],
+        ],
     ];
 }

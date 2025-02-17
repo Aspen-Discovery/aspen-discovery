@@ -14,6 +14,7 @@ class Milestone extends DataObject {
     public $campaignId;
     public $conditionalOperator;
     public $progressBeyondOneHundredPercent;
+    public $allowPatronProgressInput;
 
   
 
@@ -42,8 +43,9 @@ class Milestone extends DataObject {
                     'user_checkout' => 'Checkout',
                     'user_hold' => 'Hold',
                     'user_work_review' => 'Rating',
+                    'manual' => 'Manual',
                 ],
-                'onchange' => 'updateConditionalField(this.value)',
+                'onchange' => 'AspenDiscovery.CommunityEngagement.updateManualMilestoneFields()',
             ],
             'conditionalField' => [
                 'property' => 'conditionalField',
@@ -80,6 +82,13 @@ class Milestone extends DataObject {
                 'type' => 'checkbox',
                 'label' => 'Track Progress Beyond 100%',
                 'description' => 'Whether or not progress should continue to be tracked once the milestone has reached 100% completion.',
+                'default' => false,
+            ],
+            'allowPatronProgressInput' => [
+                'property' => 'allowPatronProgressInput',
+                'type' => 'checkbox',
+                'label' => 'Allow Patrons to Update Progress',
+                'description' => 'Allow patrons to update their own progress for this milestone.',
                 'default' => false,
             ],
         ];
