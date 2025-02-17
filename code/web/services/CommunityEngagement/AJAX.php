@@ -308,4 +308,73 @@ class CommunityEngagement_AJAX extends JSON_Action {
             ]);
         }
     }
+
+    public function manuallyProgressUserMilestone() {
+        require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+        require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
+        require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+        require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
+
+        $milestoneId = $_GET['milestoneId'] ?? null;
+        $userId = $_GET['userId'] ?? null;
+        $campaignId = $_GET['campaignId'] ?? null;
+
+        if (!isset($milestoneId) || $milestoneId <=0) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'Invalid milestone ID.',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        if (!isset($userId)) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'Invalid user ID.',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        if (!isset($campaignId)){
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'Invalid campaign ID.',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+       
+        $campaignMilestoneUsersProgress = new CampaignMilestoneUsersProgress();
+        $campaignMilestoneUsersProgress->ce_milestone_id = $milestoneId;
+        $campaignMilestoneUsersProgress->userId = $userId;
+        $campaignMilestoneUsersProgress->ce_campaign_id = $campaignId;
+
+
+        if ($campaignMilestoneUsersProgress->find(true)) {
+            $campaignMilestoneUsersProgress->progress++;
+            $campaignMilestoneUsersProgress->update();
+        } else {
+            $campaignMilestoneUsersProgress->progress++;
+            $campaignMilestoneUsersProgress->insert();
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => translate([
+                'text' => 'Progress added successfully!',
+                'isPublicFacing' => true,
+            ]),
+        ]);
+        exit;
+ 
+    }
 }

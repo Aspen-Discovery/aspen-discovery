@@ -184,9 +184,12 @@ class MyCampaigns extends MyAccount {
                             $numCompletedMilestones++;
                         }
 
+
+
                         $milestoneRewards[] = [
+                            'id' => $milestone->id,
                             'milestoneName' => $milestone->name,
-                            'rewardName' => $milestone->rewardNAme, 
+                            'rewardName' => $milestone->rewardName, 
                             'rewardType' => $milestone->rewardType, 
                             'badgeImage' => $milestone->badgeImage,
                             'progress' => $milestoneProgress['progress'],
@@ -195,6 +198,7 @@ class MyCampaigns extends MyAccount {
                             'totalGoals' => $totalGoals,
                             'progressData' => $milestoneProgress['data'],
                             'progressBeyondOneHundredPercent' => $milestone->progressBeyondOneHundredPercent,
+                            'allowPatronProgressInput' => $milestone->allowPatronProgressInput
                         ];
                     }
 

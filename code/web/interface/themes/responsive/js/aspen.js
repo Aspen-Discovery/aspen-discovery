@@ -18119,6 +18119,25 @@ AspenDiscovery.CommunityEngagement = function() {
             } else {
                 allowPatronProgressInput.disabled = false;
             }
+        },
+        manuallyProgressMilestone: function (milestoneId, userId, campaignId) {
+            var url = Globals.path + "/CommunityEngagement/AJAX?method=manuallyProgressUserMilestone";
+            var params = {
+                milestoneId : milestoneId,
+                userId: userId,
+                campaignId: campaignId,
+            };
+
+            $.getJSON(url, params, function(data) {
+                if (data.success) {
+                    AspenDiscovery.showMessage("Progress Added", data.message, false, true, false, false);
+                } else {
+                    AspenDiscovery.showMessage("An Error Has Occurred", data.message);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
         }
     }
     

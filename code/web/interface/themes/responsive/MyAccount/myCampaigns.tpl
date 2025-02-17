@@ -47,6 +47,12 @@
                             </td>
                         </tr>
                             {* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
+                            {assign var="showAddProgressColumn" value=false}
+                            {foreach from=$campaign->milestones item="milestone"}
+                                {if $milestone->allowPatronProgressInput}
+                                    {assign var="showAddProgressColumn" value=true}
+                                {/if}
+                            {/foreach}
                             <tr id="yourCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
                                 <td colspan="4">
                                     {* <h4>{translate text="Milestones"}</h4> *}
@@ -57,6 +63,9 @@
                                             <th>{translate text="Milestone Reward" isPublicFacing=true}</th>
                                             <th>{translate text="Progress Towards Milestone" isPublicFacing=true}</th>
                                             <th>{translate text="Progress Percentage" isPublicFacing=true}</th>
+                                              {if $showAddProgressColumn}
+                                                <th>{translate text="Add Progress" isPublicFacing=true}</th>
+                                            {/if}
                                         </tr>
                                     </thead>
                                         <tbody>
@@ -98,6 +107,11 @@
                                                         </div>
                                                     {/if}
                                                 </td>
+                                                 {if $milestone->allowPatronProgressInput}
+                                                    <td>
+                                                        <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id});">{translate text="Add Progress" isPublicFacing=true}</button>     
+                                                    </td>
+                                                {/if}
                                             </tr>                                 
                                         {/foreach}
                                         </tbody>
@@ -127,6 +141,12 @@
                 </thead>
                 <tbody>
                     {foreach from=$linkedUser.campaigns item="campaign" key="resultIndex"}
+                     {assign var="showLinkedUserAddProgressColumn" value=false}
+                            {foreach from=$campaign.milestones item="milestone"}
+                                {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
+                                    {assign var="showLinkedUserAddProgressColumn" value=true}
+                                {/if}
+                            {/foreach}
                         <tr>
                             <td>{$campaign.campaignName}</td>
                             <td>{$campaign.startDate}</td>
@@ -158,6 +178,9 @@
                                             <th>{translate text="Milestone Reward" isPublicFacing=true}</th>
                                             <th>{translate text="Progress Towards Milestone" isPublicFacing=true}</th>
                                             <th>{translate text="Progress Percentage" isPublicFacing=true}</th>
+                                            {if $showLinkedUserAddProgressColumn}
+                                                <th>{translate text="Add Progress" isPublicFacing=true}</th>
+                                            {/if}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -196,6 +219,11 @@
                                                     </div>
                                                 {/if}
                                             </td>
+                                            {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});">{translate text="Add Progress" isPublicFacing=true}</button>
+                                                </td>
+                                            {/if}
                                         </tr>
                                     {/foreach}
                                     </tbody>

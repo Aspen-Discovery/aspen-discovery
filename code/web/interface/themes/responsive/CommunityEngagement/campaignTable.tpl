@@ -24,7 +24,7 @@
                                         <div style="margin-right: 20px;">
                                             {translate text="Complete" isAdminFacing=true}
                                         </div>
-                                    <div>
+                                    <div>                          
                                         {if $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['milestoneRewardGiven'] == 0}
                                             <button class="btn btn-primary set-reward-btn-milestone" data-user-id="{$user->id}" data-campaign-id="{$campaign->id}" data-milestone-id="{$milestone->id}" onclick="AspenDiscovery.CommunityEngagement.milestoneRewardGiven({$user->id}, {$campaign->id}, {$milestone->id});">
                                                 {translate text="Give Reward" isAdminFacing=true}
@@ -36,6 +36,11 @@
                                 </div>
                                 {else}
                                     <div>
+                                        {if $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['milestoneType'] === 'manual'}
+                                            <button class="btn btn-primary set-reward-btn-milestone" data-user-id="{$user->id}" data-campaign-id="{$campaign->id}" data-milestone-id="{$milestone->id}" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone->id}, {$user->id}, {$campaign->id});">
+                                            {translate text="Add Progress" isAdminFacing=true}
+                                            </button>
+                                        {/if}
                                         {translate text="Incomplete" isAdminFacing=true}<br>
                                         <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
                                         <div class="progress-bar" role="progressbar" aria-valuenow="{$userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['percentageProgress']}" aria-valuemin="0"
