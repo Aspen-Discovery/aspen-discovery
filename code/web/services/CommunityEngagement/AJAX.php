@@ -379,6 +379,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
     }
 
     public function campaignLeaderboardOptIn() {
+        //TODO: CHANGE SO THAT WE USE THE PASSED IN USER NOT LOGGED IN
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
                 'success' => false,
@@ -423,6 +424,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
     }
 
     public function campaignLeaderboardOptOut() {
+        //TODO: CHANGE SO THAT WE USE THE PASSED IN USER NOT LOGGED IN
+
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
                 'success' => false,
@@ -467,5 +470,146 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
     }
 
+    public function getCampaignEmailOptInForm() {
+        require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+        require_once ROOT_DIR . '/sys/Account/User.php';
+        $campaignId = $_GET['campaignId'];
+        $userId = $_GET['userId'];
+
+
+        if (!$campaignId || !$userId) {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Campaign or User information is missing.',
+                    'isPublicFacing' => true
+                ]),
+            ];
+        }
+
+        $user = new User();
+        $user->id = $userId;
+        if(!$user->find(true)) {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true
+                ]),
+                'message' => translate([
+                    'text' => 'User not found',
+                    'isPublicFacing' => true
+                ])
+                ];
+        }
+
+        $optInToAllCampaignEmails = $user->campaignNotificationsByEmail;
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        $optInToCampaignSpecificEmails = null;
+        if ($userCampaign->find(true)) {
+            $optInToCampaignSpecificEmails = $userCampaign->optInToCampaignEmailNotifications;
+        }
+
+        $isOptedIn = ($optInToCampaignSpecificEmails !== null) ? $optInToCampaignSpecificEmails : $optInToAllCampaignEmails;
+
+        if ($isOptedIn) {
+            $buttonExplanationText = translate([
+                'text' => 'Opt Out of Email Notifications for This Campaign',
+                'isPublicFacing' => true
+            ]);
+            $action = "AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, 0)";
+        } else {
+            $buttonExplanationText = translate([
+                'text' => 'Opt In to Email Notifications for This Campaign',
+                'isPublicFacing' => true
+            ]);
+            $action = "AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, 1)";
+        }
+
+        return [
+            'success' => true,
+            'title' => translate([
+                'text' => 'Campaign Notification Options',
+                'isPublicFacing' => true
+            ]),
+            'modalBody' => translate([
+                'text' => $buttonExplanationText,
+                'isPublicFacing' => true,
+            ]),
+            'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='$action'>" . translate([
+                'text' => 'Submit',
+                'isPublicFacing' => true,
+                ]) . "</button>",
+        ];
+    }
+
+    public function saveCampaignEmailOptInToggle() {
+        require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+
+        $campaignId = $_GET['campaignId'] ?? null;
+        $userId = $_GET['userId'] ?? null;
+        $optIn = $_GET['optIn'] ?? null;
+
+        if (!$campaignId || !$userId || $optIn === null) {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true
+                ]),
+                'message' => translate([
+                    'text' => 'Campaign, user or opt in information is missing',
+                    'isPublicFacing' => true,
+                ]),
+            ];
+        }
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userid = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        if ($userCampaign->find(true)) {
+            $userCampaign->optInToCampaignEmailNotifications = (int)$optIn;
+            $success = $userCampaign->update();
+        } else {
+            $userCampaign->optInToCampaignEmailNotifications = (int)$optIn;
+            $success = $userCampaign->insert();
+        }
+
+        if ($success) {
+            return [
+                'success' => true,
+                'title' => translate([
+                    'text' => 'Success',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'You have updated your campaign notification preferences.',
+                    'isPublicFacing' => true,
+                ])
+            ];
+        } else {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => false,
+                ]),
+                'message' => translate([
+                    'text' => 'Failed to update your campaign notification preferences.',
+                    'isPublicFacing' => true,
+                ])
+            ];
+        }
+    }
+       
 
 }

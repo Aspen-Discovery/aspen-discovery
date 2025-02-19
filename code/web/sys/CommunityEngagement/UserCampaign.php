@@ -12,6 +12,7 @@ class UserCampaign extends DataObject {
     public $completed;
     public $rewardGiven;
     public $optInToCampaignLeaderboard;
+    public $optInToCampaignEmailNotifications;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -64,6 +65,12 @@ class UserCampaign extends DataObject {
                 'type' => 'checkbox',
                 'label' => 'Opt In To Campaign Leaderboard',
                 'description' => 'Whether or not to opt into the being displayed on the leaderboard for this campaign',
+            ],
+            'optInToCampaignEmailNotifications' => [
+                'property' => 'optInToCampaignEmailNotifications',
+                'type' => 'checkbox',
+                'label' => 'Opt In To Campaign Notification Emails',
+                'description' => 'Whether or not to opt in to email notifications for this campaign',
             ],
         ];
     }

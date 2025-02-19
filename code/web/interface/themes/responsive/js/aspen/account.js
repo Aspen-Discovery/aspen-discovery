@@ -2894,6 +2894,20 @@ AspenDiscovery.Account = (function () {
 			});
 			return false;
 		},
+		showEmailOptInPrompt: function (campaignId, userId) {
+			var url = Globals.path + "CommunityEngagement/AJAX?method=getCampaignEmailOptInForm";
+			var params = {
+				campaignId: campaignId,
+				userId: userId,
+			}
+
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					console.log("show email opt in form");
+				}
+			})
+		},
+
 		enroll: function (campaignId, userId) {
 			AspenDiscovery.Account.reloadHolds();
 			AspenDiscovery.Account.reloadCheckouts();
@@ -2908,6 +2922,9 @@ AspenDiscovery.Account = (function () {
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+						if (response.showEmailOptInPrompt) {
+							showEmailOptInPrompt(response.campaignId, response.userId);
+						}
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}

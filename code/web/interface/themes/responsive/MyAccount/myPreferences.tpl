@@ -242,11 +242,17 @@
 							{/if}
 						</div>
 					{/if}
-					{if array_key_exists('Community Engagement', $enabledModules) && $campaignLeaderboardDisplay == 'displayUser'}
+					{if array_key_exists('Community Engagement', $enabledModules)}
 						<div class="form-group propertyRow">
-							<label for="optInToAllCampaignLeaderboards" class="control-label">{translate text="Opt in to All Leaderboards" isPublicFacing=true}</label>&nbsp;
-							<input type="checkbox" class="form-control" name="optInToAllCampaignLeaderboards" id="optInToAllCampaignLeaderboards" {if $profile->optInToAllCampaignLeaderboards==1}checked='checked'{/if} data-switch="">
+							<label for="campaignNotificationsByEmail" class="control-label">{translate text="Get Campaign Notifications By Email" isPublicFacing=true}</label>&nbsp;
+							<input type="checkbox" class="form-control" name="campaignNotificationsByEmail" id="campaignNotificationsByEmail" {if $profile->campaignNotificationsByEmail==1}checked='checked'{/if} data-switch="">
 						</div>
+						{if $campaignLeaderboardDisplay == 'displayUser'}
+							<div class="form-group propertyRow">
+								<label for="optInToAllCampaignLeaderboards" class="control-label">{translate text="Opt in to All Leaderboards" isPublicFacing=true}</label>&nbsp;
+								<input type="checkbox" class="form-control" name="optInToAllCampaignLeaderboards" id="optInToAllCampaignLeaderboards" {if $profile->optInToAllCampaignLeaderboards==1}checked='checked'{/if} data-switch="">
+							</div>
+						{/if}
 					{/if}
 
 					{if empty($offline) && $edit == true}

@@ -185,6 +185,25 @@ AspenDiscovery.CommunityEngagement = function() {
             .fail(function(jqXHR, textStatus, errorThrown) {
                 console.error("AJAX Error: ", textStatus, errorThrown);
             });
+        },
+        toggleCampaignEmailOptIn: function ($campaignId, $userId, optIn) {
+            var url = Globals.path + "communityEngagement/AJAX?method=saveCampaignEmailOptInToggle";
+            var params = {
+                campaignId: campaignId, 
+                userId: userId, 
+                optIn: optIn,
+            };
+
+            $.getJSON(url, params, function(data) {
+                if (data.success) {
+                    AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+                } else {
+                    AspenDiscovery.showMessage(data.title, data.message);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
         }
 
     }

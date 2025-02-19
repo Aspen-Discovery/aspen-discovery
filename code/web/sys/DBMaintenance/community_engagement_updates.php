@@ -317,5 +317,19 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_user_campaign ADD COLUMN optInToCampaignLeaderboard TINYINT DEFAULT NULL",
             ],
         ],
+        'get_campaign_notifications_by_email' => [
+            'title' => 'Get Campaign Notifications By Email',
+            'description' => 'Opt in or out to getting campaign notifications by email',
+            'sql' => [
+                "ALTER TABLE user ADD COLUMN campaignNotificationsByEmail TINYINT DEFAULT 0",
+            ],
+        ],
+        'add_individual_campaign_email_notification_opt_in' => [
+            'title' => 'Add Individual Campaign Email Notification Opt In',
+            'description' => 'Add the ability to opt in and out of notifications by email for individual campaigns',
+            'sql' => [
+                "ALTER TABLE ce_user_campaign ADD COLUMN optInToCampaignEmailNotifications TINYINT DEFAULT NULL",
+            ],
+        ],
     ];
 }

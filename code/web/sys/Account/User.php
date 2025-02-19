@@ -53,6 +53,7 @@ class User extends DataObject {
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 	public $optInToAllCampaignLeaderboards;
+	public $campaignNotificationsByEmail;
 
 	public $onboardAppNotifications;
 	public $shouldAskBrightness;
@@ -1578,6 +1579,7 @@ class User extends DataObject {
 		}
 
 		$this->__set('optInToAllCampaignLeaderboards', (isset($_POST['optInToAllCampaignLeaderboards']) && $_POST['optInToAllCampaignLeaderboards'] == 'on') ? 1 : 0);
+		$this->__set('campaignNotificationsByEmail', (isset($_POST['campaignNotificationsByEmail']) && $_POST['campaignNotificationsByEmail'] == 'on') ? 1 : 0);
 		$this->clearCache();
 		$saveResult = $this->update();
 		if ($saveResult === false) {

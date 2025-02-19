@@ -9379,7 +9379,10 @@ class MyAccount_AJAX extends JSON_Action {
 				'message' => translate([
 					'text' => 'Failed to enroll user in campaign.',
 					'isPublicFacing' => true
-				])
+				]),
+				'showEmailOptInPrompt' => true,
+				'campaignId' => $campaignId,
+				'userId' => $userId
 			];
 		}
 	}
