@@ -18138,7 +18138,42 @@ AspenDiscovery.CommunityEngagement = function() {
             .fail(function(jqXHR, textStatus, errorThrown) {
                 console.error("AJAX Error: ", textStatus, errorThrown);
             });
+        },
+        optInToCampaignLeaderboard: function (campaignId, userId) {
+            var url = Globals.path + "/CommunityEngagement/AJAX?method=campaignLeaderboardOptIn";
+            var params = {
+                campaignId: campaignId,
+                userId: userId,
+            }
+            $.getJSON(url, params, function(data) {
+                if (data.success) {
+                    AspenDiscovery.showMessage("Joined Leaderboard", data,message, false, true, false, false);
+                } else {
+                    AspenDiscovery.showMessage("An Error Has Occurred", data.message);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
+        },
+        optOutOfCampaignLeaderboard: function (campaignId, userId) {
+            var url = Globals.path + "/CommunityEngagement/AJAX?method=campaignLeaderboardOptOut";
+            var params = {
+                campaignId: campaignId,
+                userId: userId,
+            }
+            $.getJSON(url, params, function(data) {
+                if (data.success) {
+                    AspenDiscovery.showMessage("Opted Out of Leaderboard", data,message, false, true, false, false);
+                } else {
+                    AspenDiscovery.showMessage("An Error Has Occurred", data.message);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error: ", textStatus, errorThrown);
+            });
         }
+
     }
     
 }(AspenDiscovery.CommunityEngagement || {});

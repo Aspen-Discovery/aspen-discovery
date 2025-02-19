@@ -377,4 +377,95 @@ class CommunityEngagement_AJAX extends JSON_Action {
         exit;
  
     }
+
+    public function campaignLeaderboardOptIn() {
+        if (!UserAccount::isLoggedIn()) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'User not logged in.',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $user = UserAccount::getLoggedInUser();
+        $userId = $user->id;
+        $campaignId = $_GET['campaignId'];
+
+        if (empty($campaignId)) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'Invalid Campaign ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        $userCampaign->optInToCampaignLeaderboard = 1;
+        $userCampaign->update();
+
+        echo json_encode([
+            'success' => true,
+            'message' => translate([
+                'text' => 'You have successfully joined the leaderboard for this campaign',
+                'isPublicFacing' => true,
+            ]),
+        ]);
+        exit;
+    }
+
+    public function campaignLeaderboardOptOut() {
+        if (!UserAccount::isLoggedIn()) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'User not logged in.',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $user = UserAccount::getLoggedInUser();
+        $userId = $user->id;
+        $campaignId = $_GET['campaignId'];
+
+        if (empty($campaignId)) {
+            echo json_encode([
+                'success' => false,
+                'message' => translate([
+                    'text' => 'Invalid Campaign ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        $userCampaign->optInToCampaignLeaderboard = 0;
+        $userCampaign->update();
+
+        echo json_encode([
+            'success' => true,
+            'message' => translate([
+                'text' => 'You have successfully opted out of the leaderboard for this campaign',
+                'isPublicFacing' => true,
+            ]),
+        ]);
+        exit;
+
+    }
+
+
 }

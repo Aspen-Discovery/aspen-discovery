@@ -45,6 +45,13 @@
                             <td>
                                 <button class="btn btn-primary btn-sm" onclick="toggleYourCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
                             </td>
+                            <td>
+                                {if $campaign->optInToCampaignLeaderboard == 0}
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignLeaderboard({$campaign->id}, {$userId});">{translate text=" Join Leaderboard" isPublicFacing=true}</button>
+                                {else}
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
+                                {/if}
+                            </td>
                         </tr>
                             {* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
                             {assign var="showAddProgressColumn" value=false}

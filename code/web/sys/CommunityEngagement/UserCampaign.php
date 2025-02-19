@@ -3,14 +3,15 @@
 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
 
 class UserCampaign extends DataObject {
-	public $__table = 'ce_user_campaign';
-	public $id;
-	public $userId;
-	public $campaignId;
-	public $enrollmentDate;
-	public $unenerollmentDate;
-	public $completed;
-	public $rewardGiven;
+    public $__table = 'ce_user_campaign';
+    public $id;
+    public $userId;
+    public $campaignId;
+    public $enrollmentDate;
+    public $unenerollmentDate;
+    public $completed;
+    public $rewardGiven;
+    public $optInToCampaignLeaderboard;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -49,17 +50,23 @@ class UserCampaign extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Campaign Complete',
 				'description' => 'Whether or not the campaign is complete',
-				'default' => false,
-			],
-			'rewardGiven' => [
-				'property' => 'rewardGiven',
-				'type' => 'checkbox',
-				'label' => 'Reward Given',
-				'description' => 'Whether or not the reward for completing the campaign has been given',
-				'default' => false,
-			],
-		];
-	}
+                'default' => false,
+            ],
+            'rewardGiven' => [
+                'property' => 'rewardGiven',
+                'type' => 'checkbox',
+                'label' => 'Reward Given',
+                'description' => 'Whether or not the reward for completing the campaign has been given',
+                'default' => false,
+            ],
+            'optInToCampaignLeaderboard' => [
+                'property' => 'optInToCampaignLeaderboard',
+                'type' => 'checkbox',
+                'label' => 'Opt In To Campaign Leaderboard',
+                'description' => 'Whether or not to opt into the being displayed on the leaderboard for this campaign',
+            ],
+        ];
+    }
 
 	//Check if the user has completed the campaign
 	public function checkCompletionStatus() {
