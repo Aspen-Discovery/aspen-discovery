@@ -523,6 +523,11 @@
                                 {if $campaign->campaignRewardGiven}
                                     <strong>{translate text="Reward Received"}</strong>
                                 {/if}
+                                 {if $campaign->campaignRewardGiven && $campaign->rewardType === 1}
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$campaign->rewardName}&picture={$url}{$campaign->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
+                                    <a href="https://twitter.com/intent/tweet?url={$url}{$campaign->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
+                                    <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$campaign->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
+                                {/if}
                                 </td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="toggleYourPastCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
@@ -549,38 +554,42 @@
                                                         </div>
                                                     </div>
 
-                                                    {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
-                                                        <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
-                                                            <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
-                                                                {$milestone->extraProgress}%
-                                                            </span>
-                                                        </div>
+                                                {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
+                                                    <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                        <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                            {$milestone->extraProgress}%
+                                                        </span>
+                                                    </div>
+                                                {/if}
+                                            </td>
+                                            <td>
+                                                {$milestone->rewardName}
+                                                {if $milestone->rewardType === 1 && $milestone->rewardExists}
+                                                    <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
+                                                {/if}
+                                            </td>
+                                            <td>
+                                                {if $milestone->rewardGiven}
+                                                    {translate text="Reward Given" isPublicFacing=true}
+                                                      {if $milestone->rewardType === 1}
+                                                        <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$milestone->rewardName}&picture={$url}{$milestone->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
+                                                        <a href="https://twitter.com/intent/tweet?url={$url}{$milestone->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
+                                                        <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$milestone->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
                                                     {/if}
-                                                </td>
-                                                <td>
-                                                    {$milestone->rewardName}
-                                                    {if $milestone->rewardType == 1 && $milestone->rewardExists}
-                                                        <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
-                                                    {/if}
-                                                </td>
-                                                <td>
-                                                    {if $milestone->rewardGiven}
-                                                        {translate text="Reward Given" isPublicFacing=true}
-                                                    {else}
-                                                        {translate text="Not Yet Given" isPublicFacing=true}
-                                                    {/if}
-                                                </td>
-                                            </tr>
-                                        {/foreach}
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                    {/if}
-                {/foreach}
-                </tbody>
-            </table>
-        {/if}
+                                                {else}
+                                                    {translate text="Not Yet Given" isPublicFacing=true}
+                                                {/if}
+                                            </td>
+                                        </tr>
+                                    {/foreach}
+                                    </tbody>
+                                </table>
+                             </td>
+                        </tr>
+                {/if}
+            {/foreach}
+            </tbody>
+        </table>
     {/if}
 {/strip}
 {literal}

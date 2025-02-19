@@ -32,6 +32,8 @@ class MyCampaigns extends MyAccount {
 		$pastCampaigns = $campaign->getPastCampaigns($userId);
 		$interface->assign('pastCampaigns', $pastCampaigns);
 
+        $url = $this->getBaseUrl();
+        $interface->assign('url', $url);
 
 		$this->display('../MyAccount/myCampaigns.tpl', 'My Campaigns');
 	}
@@ -223,6 +225,11 @@ class MyCampaigns extends MyAccount {
             ];
         }
        return $groupedLinkedCampaigns;
+    }
+
+    public function getBaseUrl(): string {
+        global $configArray;
+        return $configArray['Site']['url'];
     }
 
 
