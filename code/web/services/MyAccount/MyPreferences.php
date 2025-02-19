@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_MyPreferences extends MyAccount {
 	function launch() : void {
 		global $interface;
+		global $library;
 		$user = UserAccount::getLoggedInUser();
 
 		if ($user) {
@@ -31,6 +32,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowRememberPickupLocation = false;
 				$allowHomeLibraryUpdates = false;
 				$enableCostSavingsForLibrary = false;
+				$campaignLeaderboardDisplay = $library->campaignLeaderboardDisplay;
 			} else {
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
@@ -38,6 +40,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$allowRememberPickupLocation = ($patronHomeLibrary->allowRememberPickupLocation == 1);
 				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 				$enableCostSavingsForLibrary = ($patronHomeLibrary->enableCostSavings == 1);
+				$campaignLeaderboardDisplay = $patronHomeLibrary->campaignLeaderboardDisplay;
 			}
 
 			$isAssociatedWithILS = $user->hasIlsConnection();
@@ -49,6 +52,7 @@ class MyAccount_MyPreferences extends MyAccount {
 			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
 			$interface->assign('isAssociatedWithILS', $isAssociatedWithILS);
 			$interface->assign('enableCostSavingsForLibrary', $enableCostSavingsForLibrary);
+			$interface->assign('campaignLeaderboardDisplay', $campaignLeaderboardDisplay);
 
 			// Determine Pickup Locations
 			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);
@@ -98,7 +102,11 @@ class MyAccount_MyPreferences extends MyAccount {
 							$user->updateMessage .= '<br/>';
 						}
 						if (!empty($result2)) { // $result2 may be null, guard clause required
-							$user->updateMessage .= implode('<br/>', $result2['messages']);
+							if (is_array($result2['messages'])) {
+								$user->updateMessage .= implode('<br/>', $result2['messages']);
+							} else {
+								$user->updateMessage .=$result2['messages'];
+							}
 							$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
 						}
 					}

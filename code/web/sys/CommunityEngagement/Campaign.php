@@ -663,6 +663,9 @@ class Campaign extends DataObject {
         $users = $this->getAllUsersInCampaigns();
         $leaderboard = [];
         foreach ($users as $user) {
+            if ($user->optInToAllCampaignLeaderboards == 0) {
+                continue;
+            }
             $totalCompletedMilestones = $userCampaign->calculateUserCompletedMilestones($user->id);
             $leaderboard[] = [
                 'user' => $user->displayName,

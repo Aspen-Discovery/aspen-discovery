@@ -296,5 +296,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_milestone ADD COLUMN allowPatronProgressInput TINYINT DEFAULT 0",
             ],
         ],
+        'add_ability_to_opt_in_to_all_campaign_leaderboards' => [
+            'title' => 'Add Ability To Opt In To All Campaign Leaderboards',
+            'description' => 'Add the ability to opt in to all campaigns',
+            'sql' => [
+                "ALTER TABLE user ADD COLUMN optInToAllCampaignLeaderboards TINYINT DEFAULT 0",
+            ],
+        ],
     ];
 }
