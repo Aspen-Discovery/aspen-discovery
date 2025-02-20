@@ -555,7 +555,7 @@ class UserAccount {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $driverData['accountProfile'];
 			$okToAuthenticate = false;
-			if ($accountProfile->id == $library->accountProfileId || $accountProfile->authenticationMethod == 'db') {
+			if ($accountProfile->id == $library->accountProfileId || $accountProfile->authenticationMethod == 'db' || $accountProfile->authenticationMethod == 'ils') {
 				$okToAuthenticate = true;
 			}
 
