@@ -4229,6 +4229,9 @@ class User extends DataObject {
 			$sections['communityEngagement']->addAction(new AdminAction('Admin View', 'View progress and manage rewards.', '/CommunityEngagement/AdminView'), [
 				'View Community Engagement Dashboard',
 			]);
+			$sections['communityEngagement']->addAction(new AdminAction('Dashboard', 'View usage dashboard for Community Engagement.', '/CommunityEngagement/Dashboard'), [
+				'View Community Engagement Dashboard',
+			]);
 		}
 		$sections['cataloging'] = new AdminSection('Catalog / Grouped Works');
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
