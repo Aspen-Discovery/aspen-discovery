@@ -197,25 +197,19 @@ try {
 } catch (Exception $e) {
 	//Table has not been created yet, ignore it
 }
-$usageByIPAddress->lastRequest = time();
-$usageByIPAddress->numRequests++;
 
 //Check to see if we should be blocking based on the IP address
 if (IPAddress::isClientIpBlocked()) {
 	$aspenUsage->blockedRequests++;
 	$aspenUsage->update();
-	try {
-		$usageByIPAddress->numBlockedRequests++;
-		if (SystemVariables::getSystemVariables()->trackIpAddresses) {
-			$usageByIPAddress->update();
-		}
-	} catch (Exception $e) {
-		//Ignore this, the class has not been created yet
-	}
+
+	$usageByIPAddress->incrementNumBlockedRequests();
 
 	http_response_code(403);
 	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
 	die();
+}else{
+	$usageByIPAddress->incrementNumRequests();
 }
 if (IPAddress::showDebuggingInformation()) {
 	ini_set('display_errors', true);

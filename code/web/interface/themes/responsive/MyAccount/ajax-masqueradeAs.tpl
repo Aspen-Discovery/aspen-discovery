@@ -25,10 +25,21 @@
 	<script type="text/javascript">
 		$('#cardNumber').focus().select();
 		{literal}
-		$("#masqueradeForm").validate({
-			submitHandler: function () {
-				AspenDiscovery.Account.initiateMasquerade();
-			}
+		$(document).ready(function () {
+			$("#masqueradeForm").validate({
+				submitHandler: function (form) {
+					AspenDiscovery.Account.initiateMasquerade();
+				}
+			});
+
+			$("#masqueradeForm").on("keydown", function (event) {
+				if (event.key === "Enter" && !$(event.target).is("textarea")) {
+					event.preventDefault();
+					if ($("#masqueradeForm").valid()) {
+						$("#masqueradeForm").submit();
+					}
+				}
+			});
 		});
 		{/literal}
 

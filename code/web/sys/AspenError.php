@@ -178,20 +178,8 @@ class AspenError extends DataObject {
 				//Table does not exist yet
 			}
 		}
-		global $usageByIPAddress;
-		if (!empty($usageByIPAddress)) {
-			try {
-				if (SystemVariables::getSystemVariables()->trackIpAddresses) {
-					if ($usageByIPAddress->id) {
-						$usageByIPAddress->update();
-					} else {
-						$usageByIPAddress->insert();
-					}
-				}
-			} catch (Exception $e) {
-				//Table does not exist yet
-			}
-		}
+
+		//Do not need to save UsageByIP since it is done in bootstrap and in realtime as counters update
 
 		try {
 			$this->insert();

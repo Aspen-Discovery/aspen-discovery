@@ -326,6 +326,15 @@ function getUpdates25_02_00(): array {
 				"ALTER TABLE user_checkout ADD COLUMN showFineButton TINYINT(1) DEFAULT 0",
 			]
 		], //user_checkout_add_showFineButton
+		'snappay_settings_add_emailNotifications' => [
+			'title' => 'SnapPay Settings Add Email Notifications',
+			'description' => 'Add Email Notifications to SnapPay Settings',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE snappay_settings ADD COLUMN emailNotifications TINYINT(1) DEFAULT 0",
+				"ALTER TABLE snappay_settings ADD COLUMN emailNotificationsAddresses VARCHAR(255) DEFAULT NULL",
+			]
+		], //snappay_settings_add_emailNotifications
 
 		//Lucas Montoya - Theke Solutions
 

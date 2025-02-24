@@ -6085,7 +6085,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 			require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
 			$snapPaySetting = new SnapPaySetting();
-			$snapPaySetting->id = $userLibrary->snapSettingId;
+			$snapPaySetting->id = $userLibrary->snapPaySettingId;
 			if ($snapPaySetting->find(true)) {
 				$patron->loadContactInformation();
 				// hard coded SnapPay hosted payment page URL
@@ -6284,7 +6284,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 			return [
 				'success' => true,
-				'paymentIframe' => "<iframe class='fulfillmentFrame' id='payflow-link-iframe' src='{$iframeUrl}/?SECURETOKEN={$token}&SECURETOKENID={$tokenId}' sandbox='allow-top-navigation allow-scripts allow-same-origin allow-forms allow-modals' border='0' frameborder='0' scrolling='no' allowtransparency='true'>\n</iframe>",
+				'paymentIframe' => "<iframe class='fulfillmentFrame' id='payflow-link-iframe' src='{$iframeUrl}/?SECURETOKEN={$token}&SECURETOKENID={$tokenId}' sandbox='allow-top-navigation allow-scripts allow-same-origin allow-forms allow-modals' border='0' frameborder='0' scrolling='yes' allowtransparency='true'>\n</iframe>",
 			];
 		}
 	}

@@ -4155,6 +4155,10 @@ class User extends DataObject {
 				'Administer All Web Resources',
 				'Administer Library Web Resources',
 			]);
+			$sections['web_builder']->addAction(new AdminAction('Custom Web Resource Pages', 'Create custom web resource pages to display web resources belonging to specific categories and audiences.', '/WebBuilder/CustomWebResourcePages'), [
+				'Administer All Custom Web Resource Pages',
+				'Administer Library Custom Web Resource Pages',
+			]);
 			$sections['web_builder']->addAction(new AdminAction('Staff Members', 'Add staff members to create a staff directory.', '/WebBuilder/StaffMembers'), [
 				'Administer All Staff Members',
 				'Administer Library Staff Members',

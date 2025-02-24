@@ -6,6 +6,7 @@ class WebBuilderAudience extends DataObject {
 	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
+	public $description;
 
 	public function getUniquenessFields(): array {
 		return ['name'];
@@ -27,9 +28,35 @@ class WebBuilderAudience extends DataObject {
 				'required' => true,
 				'maxLength' => 100,
 			],
+			'customWebBuilderAudienceDescription' => [
+				'property' => 'customWebBuilderAudienceDescription',
+				'type' => 'translatableTextBlock',
+				'label' => 'Description',
+				'description' => 'A description for the audience.',
+				'defaultTextFile' => '',
+				'hideInLists' => true,
+			],
 		];
 	}
 
+	public function insert($context = '')
+	{
+		$this->lastUpdate = time();
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('customWebBuilderAudienceDescription');
+		}
+		return $ret;
+	}
+	public function update($context = '')
+	{
+		$this->lastUpdate = time();
+		$ret = parent::update();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('customWebBuilderAudienceDescription');
+		}
+		return $ret;
+	}
 	public static function getAudiences() {
 		$audiences = [];
 		$audience = new WebBuilderAudience();

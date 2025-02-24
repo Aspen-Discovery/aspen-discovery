@@ -9,7 +9,7 @@
 					{translate text="You may either add this search to an existing collection spotlight as a new tab, or you may create a new spotlight to display this search in." isAdminFacing=true}
 				{/if}
 			{else}
-				{translate text="Please enter a name for the spotlight to be created." }
+				{translate text="Please enter a name for the spotlight to be created." isAdminFacing=true}
 			{/if}
 		</p>
 	</div>

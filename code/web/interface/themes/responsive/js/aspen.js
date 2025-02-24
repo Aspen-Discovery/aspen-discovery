@@ -16347,6 +16347,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
@@ -16356,6 +16358,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
@@ -16365,6 +16369,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
@@ -16374,6 +16380,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
@@ -16383,6 +16391,12 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
+				if (sourceType === 'custom_web_resource_page') {
+					$('#propertyRowcustomImage').show();
+					$('#propertyRowhideDescription').show();
+				}
 				if (sourceType === 'image') {
 					$('#propertyRowimgAction').show();
 					$('#propertyRowimgAlt').show();

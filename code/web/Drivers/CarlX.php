@@ -1788,7 +1788,7 @@ class CarlX extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					} else {
-						$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
+						$payment->message .= "CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber. ";
 					}
 				}
 			} else {

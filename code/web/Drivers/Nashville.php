@@ -16,20 +16,16 @@ class Nashville extends CarlX {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 
-		// Nashville Non-Resident processing:
-		// Look for Non-Resident Fee associated with patron's account and whether it is included in this payment
-		// If so, update the patron's expiration date
-		$accountLinesPaid = explode(',', $payment->finesPaid);
-		$allFines = $this->getFines($patron);
-		foreach ($accountLinesPaid as $line) {
-			[$feeId, $pmtAmount] = explode('|', $line);
-			foreach ($allFines as $fine) {
-				if ($fine['fineId'] == $feeId) {
-					if ($fine['type'] == 'NON-RESIDENT FEE') {
-						$this->updateNonResident($patron);
-						break;
-					}
-				}
+		// Nashville Non-Resident processing PART 1:
+		// BEFORE recording payments in CarlX,
+		// check if any fines are NON-RESIDENT FEE.
+		// Make an array to cover the case that two or more active non-resident fees are on the account.
+		$carlXFines = $this->getFines($patron);
+		$nonResidentFeeIds = [];
+		foreach ($carlXFines as $fine) {
+			if ($fine['type'] == 'NON-RESIDENT FEE') {
+				// Store nonResidentFee fine id
+				$nonResidentFeeIds[] = $fine['fineId'];
 			}
 		}
 
@@ -40,6 +36,22 @@ class Nashville extends CarlX {
 		} else {
 			$message = "Online payment successfully recorded in CarlX for Payment Reference ID $payment->id.";
 			$level = Logger::LOG_DEBUG;
+
+			// Nashville Non-Resident processing PART 2:
+			// AFTER all payments succeed,
+			// Look for Non-Resident Fee associated with patron's account and whether it is included in this payment
+			// If so, update the patron's expiration date
+			if (!empty($nonResidentFeeIds)) {
+				$accountLinesPaid = explode(',', $payment->finesPaid);
+				foreach ($accountLinesPaid as $line) {
+					[$feeId, $pmtAmount] = explode('|', $line);
+					foreach ($nonResidentFeeIds as $nonResidentFeeId) {
+						if ($nonResidentFeeId == $feeId) {
+							$this->updateNonResident($patron);
+						}
+					}
+				}
+			}
 		}
 		$logger->log($message, $level);
 
@@ -62,12 +74,20 @@ class Nashville extends CarlX {
 		return $canPayFine;
 	}
 
-	// Following successful online payment, update Patron with new Expiration Date
+	// Following successful online payment, update Patron with new Expiration Date = today + 1 year
 	protected function updateNonResident(User $user): array {
 		global $logger;
 		$patronId = $user->ils_barcode;
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$request->Patron = new stdClass();
+		// If patron expiration date is one year or more in the future, do not update
+		if (strtotime($request->Patron->ExpirationDate) > strtotime('+1 year')) {
+			$logger->log("Non Resident Patron $patronId has an expiration date more than one year in the future. No update needed.", Logger::LOG_DEBUG);
+			return [
+				'success' => true,
+				'message' => "Non Resident Patron $patronId has an expiration date more than one year in the future. No update needed.",
+			];
+		}
 		$request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
 		//$logger->log("Request updatePatron\r\n" . print_r($request, true), Logger::LOG_DEBUG);
 		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);

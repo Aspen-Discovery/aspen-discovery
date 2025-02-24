@@ -8,6 +8,7 @@ class BrandedAppSetting extends DataObject {
 	public $logoSplash;
 	public $logoLogin;
 	public $logoAppIcon;
+	public $logoAppIconAndroid;
 	public $privacyPolicy;
 	public $privacyPolicyContactAddress;
 	public $privacyPolicyContactPhone;
@@ -72,12 +73,22 @@ class BrandedAppSetting extends DataObject {
 			'logoAppIcon' => [
 				'property' => 'logoAppIcon',
 				'type' => 'image',
-				'label' => 'Logo for App Icon',
-				'description' => 'The logo used as the app icon',
-				'note' => '1024x1024 or 512x512 is the recommended image size',
+				'label' => 'Icon for iOS App',
+				'description' => 'The logo used as the app icon for the iOS application',
+				'note' => '1024x1024 is the recommended image size. The icon should be square.',
 				'hideInLists' => true,
 				'required' => true,
-				'thumbWidth' => 128,
+				'thumbWidth' => 1024,
+			],
+			'logoAppIconAndroid' => [
+				'property' => 'logoAppIconAndroid',
+				'type' => 'image',
+				'label' => 'Icon for Android App',
+				'description' => 'The logo used as the app icon for the Android application',
+				'note' => '512x512 is the recommended image size. Note this must be manually uploaded to the play store as well. Notify your support company when changing.',
+				'hideInLists' => true,
+				'required' => true,
+				'thumbWidth' => 512,
 			],
 			'logoNotification' => [
 				'property' => 'logoNotification',

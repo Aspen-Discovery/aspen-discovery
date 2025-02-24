@@ -498,7 +498,7 @@ class UserAccount {
 		global $usageByIPAddress;
 		global $library;
 
-		$usageByIPAddress->numLoginAttempts++;
+		$usageByIPAddress->incrementNumLoginAttempts();
 		UserAccount::$ssoAuthOnly = UserAccount::isPrimaryAccountAuthenticationSSO();
 		$localAuthOnly = false;
 
@@ -511,7 +511,7 @@ class UserAccount {
 			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
-				$usageByIPAddress->numFailedLoginAttempts++;
+				$usageByIPAddress->incrementNumFailedLoginAttempts();
 				require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
 				FailedLoginsByIPAddress::addFailedLogin();
 				return new AspenError('Could not authenticate in sign on service');
@@ -532,7 +532,7 @@ class UserAccount {
 			$isAuthenticated = $ldapAuthentication->validateAccount($_POST['username'], $_POST['password'], null);
 			if($isAuthenticated instanceof AspenError) {
 				$logger->log('The user could not be logged in', Logger::LOG_NOTICE);
-				$usageByIPAddress->numFailedLoginAttempts++;
+				$usageByIPAddress->incrementNumFailedLoginAttempts();
 				require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
 				FailedLoginsByIPAddress::addFailedLogin();
 				return new AspenError('Could not authenticate in sign on service');
@@ -592,7 +592,7 @@ class UserAccount {
 					if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 						// Create error
 						$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
-						$usageByIPAddress->numFailedLoginAttempts++;
+						$usageByIPAddress->incrementNumFailedLoginAttempts();
 						//DON'T mark this as a failed login in the IP table since they were actually valid and we're blocking them
 						return $cardExpired;
 					} elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))) {
@@ -658,7 +658,7 @@ class UserAccount {
 				return $primaryUser;
 			}
 		} else {
-			$usageByIPAddress->numFailedLoginAttempts++;
+			$usageByIPAddress->incrementNumFailedLoginAttempts();
 			require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
 			FailedLoginsByIPAddress::addFailedLogin();
 			return $lastError;
