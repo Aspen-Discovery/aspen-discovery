@@ -8,6 +8,9 @@ class SnapPaySetting extends DataObject {
 	public $accountId;
 	public $merchantId;
 	public $apiAuthenticationCode;
+	public $emailNotifications;
+	public $emailNotificationsAddresses;
+
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
@@ -59,6 +62,28 @@ class SnapPaySetting extends DataObject {
 				'label' => 'API Authentication Code',
 				'description' => 'The API Authentication Code to use when paying fines with SnapPay.',
 				'hideInLists' => true,
+				'default' => '',
+				'size' => 255,
+			],
+			'emailNotifications' => [
+				'property' => 'emailNotifications',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Do not send email notifications',
+					1 => 'Email errors',
+					2 => 'Email all transactions',
+				],
+				'label' => 'Email Notifications',
+				'description' => 'Send Email notifications to Library staff for payment transactions',
+				'hideInLists' => false,
+				'default' => 0,
+			],
+			'emailNotificationsAddresses' => [
+				'property' => 'emailNotificationsAddresses',
+				'type' => 'text',
+				'label' => 'Email Notification Addresses',
+				'description' => 'Semicolon-separated list of email addresses to send notifications to',
+				'hideInLists' => false,
 				'default' => '',
 				'size' => 255,
 			],

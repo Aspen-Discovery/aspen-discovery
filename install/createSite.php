@@ -57,7 +57,7 @@ if (count($_SERVER['argv']) > 1){
 			'ils' => $configArray['Site']['ils'],
 			'ilsUrl' => $configArray['ILS']['ilsUrl'],
 			'ilsStaffUrl' => $configArray['ILS']['ilsStaffUrl'],
-			'apacheGroup' => $configArray['Site']['apacheGroup'],
+			'apacheGroup' => $configArray['Site']['apacheGroup'] ?? "_www",
 		];
 		if ($variables['ils'] == 'Koha') {
 			$variables['ilsDriver'] = 'Koha';
@@ -96,7 +96,7 @@ if (count($_SERVER['argv']) > 1){
 			$variables['ilsDriver'] = $configArray['ILS']['ilsDriver'];
 		}
 		$siteOnWindows = $configArray['Site']['siteOnWindows'] == 'Y' || $configArray['Site']['siteOnWindows'] == 'y';
-		$siteOnMac = $configArray['Site']['siteOnMac'] == 'Y' || $configArray['Site']['siteOnMac'] == 'y';
+		$siteOnMac = !empty($configArray['Site']['siteOnMac']) && ($configArray['Site']['siteOnMac'] == 'Y' || $configArray['Site']['siteOnMac'] == 'y');
 
 		if (!$siteOnWindows && !$siteOnMac){
 			$linuxOS = $configArray['Site']['operatingSystem'];

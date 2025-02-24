@@ -38,6 +38,9 @@ class Event extends DataObject {
 	public $_instanceCount;
 	public $_datesPreview;
 
+	public $dateUpdated;
+	public $deleted;
+
 
 
 
@@ -62,6 +65,14 @@ class Event extends DataObject {
 				'required' => true,
 				'values' => $locationList,
 				'onchange' => 'return AspenDiscovery.Events.getEventTypesForLocation(this.value);',
+			],
+			'sublocationId' => [
+				'property' => 'sublocationId',
+				'type' => 'enum',
+				'label' => 'Sublocation',
+				'description' => 'Sublocation of the event',
+				'values' => [],
+				'hiddenByDefault' => true,
 			],
 			'eventTypeId' => [
 				'property' => 'eventTypeId',
@@ -159,6 +170,7 @@ class Event extends DataObject {
 					'frequencySection' => [
 						'property' => 'frequencySection',
 						'type' => 'section',
+						'label' => 'Event Frequency',
 						'hiddenByDefault' => true,
 						'properties' => [
 							'recurrenceInterval' => [
@@ -176,6 +188,7 @@ class Event extends DataObject {
 					'weeklySection' => [
 						'property' => 'weeklySection',
 						'type' => 'section',
+						'label' => 'Repeat Based on Week',
 						'hiddenByDefault' => true,
 						'properties' => [
 							'weekDays' => [
@@ -187,6 +200,7 @@ class Event extends DataObject {
 					'monthlySection' => [
 						'property' => 'monthlySection',
 						'type' => 'section',
+						'label' => 'Repeat Based on Month',
 						'hiddenByDefault' => true,
 						'properties' => [
 							'monthlyOption' => [
@@ -212,6 +226,7 @@ class Event extends DataObject {
 					'repeatEndsSection' => [
 						'property' => 'repeatEndsSection',
 						'type' => 'section',
+						'label' => 'Repeat Ends',
 						'hiddenByDefault' => true,
 						'properties' => [
 							'endOption' => [
@@ -248,6 +263,13 @@ class Event extends DataObject {
 				'hiddenByDefault' => true,
 				'readOnly' => true,
 			],
+			'dateUpdated' => [
+				'property' => 'dateUpdated',
+				'label' => 'Date Updated',
+				'type' => 'integer',
+				'hiddenByDefault' => true,
+				'hideInLists' => true,
+			]
 		];
 		// Add empty, hidden, readonly copies of all potential fields so that data can be added if they exist for any selected event type
 		$eventFieldList = EventField::getEventFieldList();
@@ -504,6 +526,7 @@ class Event extends DataObject {
 	}
 
 	public function update($context = '') {
+		$this->dateUpdated = time();
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -515,6 +538,9 @@ class Event extends DataObject {
 	}
 
 	public function insert($context = '') {
+		if (empty($this->dateUpdated)) {
+			$this->dateUpdated = time(); // Set to 0 for new events
+		}
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -523,6 +549,27 @@ class Event extends DataObject {
 			$this->generateInstances();
 		}
 		return $ret;
+	}
+
+	function delete($useWhere = false) : int {
+		if (!$useWhere) {
+			$this->deleted = 1;
+			$this->dateUpdated = time();
+			$ret = parent::update();
+
+			if ($ret) {
+				$instance = new EventInstance();
+				$instance->eventId = $this->id;
+				$instance->find();
+				while ($instance->fetch()) {
+					$instance->delete(false);
+				}
+				return true;
+			}
+			return false;
+		} else {
+			return parent::delete($useWhere);
+		}
 	}
 
 	public function __set($name, $value) {
@@ -580,6 +627,7 @@ class Event extends DataObject {
 			'monthDate',
 			'monthOffset',
 			'endOption',
+			'dateUpdated'
 		];
 	}
 
@@ -699,8 +747,9 @@ class Event extends DataObject {
 		$todayDate = date('Y-m-d');
 		$todayTime = date('H:i:s');
 		$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
+		$instance->deleted = 1;
 		while ($instance->fetch()) {
-			$instance->delete(true);
+			$instance->update();
 		}
 	}
 
@@ -791,7 +840,7 @@ class Event extends DataObject {
 			$instance->eventId = $this->id;
 			$todayDate = date('Y-m-d');
 			$todayTime = date('H:i:s');
-			$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
+			$instance->whereAdd("deleted = 0 AND date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
 			$this->_instanceCount = $instance->count();
 		}
 		return $this->_instanceCount;
@@ -946,6 +995,11 @@ class Event extends DataObject {
 				}
 			}
 		}
+		if ($this->locationId) {
+			$structure['sublocationId']['values'] = Location::getEventSublocations($this->locationId);
+			$structure['sublocationId']['hiddenByDefault'] = false;
+		}
+		$this->dateUpdated = time();
 		return $structure;
 	}
 }

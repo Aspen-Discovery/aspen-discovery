@@ -1,8 +1,8 @@
 <?php
 
-require_once ROOT_DIR . '/RecordDrivers/NativeEventRecordDriver.php';
+require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 
-class NativeEvents_Event extends Action {
+class AspenEvents_Event extends Action {
 
 	private $recordDriver;
 
@@ -10,7 +10,7 @@ class NativeEvents_Event extends Action {
 		global $interface;
 		$id = urldecode($_REQUEST['id']);
 
-		$this->recordDriver = new NativeEventRecordDriver($id);
+		$this->recordDriver = new AspenEventRecordDriver($id);
 		if (!$this->recordDriver->isValid()) {
 			global $interface;
 			$interface->assign('module', 'Error');

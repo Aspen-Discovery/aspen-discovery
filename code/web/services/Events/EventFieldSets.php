@@ -59,7 +59,7 @@ class Events_EventFieldSets extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
-		$breadcrumbs[] = new Breadcrumb('/Events/EventsFieldSets', 'Events Field Sets');
+		$breadcrumbs[] = new Breadcrumb('/Events/EventFieldSets', 'Events Field Sets');
 		return $breadcrumbs;
 	}
 

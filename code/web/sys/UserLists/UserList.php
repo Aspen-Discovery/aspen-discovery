@@ -386,14 +386,9 @@ class UserList extends DataObject {
 		if ($sortName == null) {
 			$sortName = $this->defaultSort;
 		}
-		$listEntryInfo = $this->getListEntries($sortName, $forLiDA, $appVersion);
-
-		//Trim to the number of records we want to return
-		if ($numItems > 0) {
-			$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
-		} else {
+			$listEntryInfo = $this->getListEntries($sortName, $forLiDA, $appVersion, $start, $numItems);
+			// No need to check $numItems as getListEntries() already checks for this before limiting the query.
 			$filteredListEntries = $listEntryInfo['listEntries'];
-		}
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {

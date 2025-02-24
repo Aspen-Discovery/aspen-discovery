@@ -59,7 +59,7 @@ INSERT INTO `status_map_values` (indexingProfileId, value, status, groupedStatus
                                 (1,'!','On Hold Shelf','Checked Out',0),
                                 (1,'$','Lost and Paid','Currently Unavailable',1),
                                 (1,'+','Coming Soon','Coming Soon',0),
-                                (1,'-','On Shelf','On Shelf',0),
+                                (1,'-','On Shelf','On Shelf',0);
 UNLOCK TABLES;
 
 --

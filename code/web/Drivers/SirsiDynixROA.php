@@ -1215,15 +1215,13 @@ class SirsiDynixROA extends HorizonAPI {
 					$isLocalIllHold = true;
 				}elseif (!empty($hold->fields->selectedItem->fields->currentLocation->key)) {
 					$currentLocation = $hold->fields->selectedItem->fields->currentLocation->key;
-					if ($currentLocation == 'ILL' || $currentLocation == 'ILLSHIPPED' || $currentLocation == 'ILL_WYLD') {
+					if (in_array(strtoupper($currentLocation), ['ILL', 'ILLSHIPPED', 'ILLPENDING', 'ILL_WYLD'])) {
 						$isLocalIllHold = true;
 						$curHold->status = str_replace('_', ' ', $currentLocation);
 					}
 				}
 				if ($isLocalIllHold){
-					if (strcasecmp($curHold->status, 'INSHIPPING') === 0
-						|| strcasecmp($curHold->status, 'INTRANSIT') === 0
-						|| strcasecmp($curHold->status, 'ILLSHIPPED') === 0){
+					if (in_array(strtoupper($curHold->status), ['INSHIPPING', 'INTRANSIT', 'ILLSHIPPED'])){
 						$curHold->outOfHoldGroupMessage = translate(['text' => 'Shipping from Another Library', 'isPublicFacing' => true]);
 					}else{
 						$curHold->outOfHoldGroupMessage = translate(['text' => 'Hold Pending from Another Library', 'isPublicFacing' => true]);
@@ -1238,11 +1236,7 @@ class SirsiDynixROA extends HorizonAPI {
 				$curHold->frozen = strcasecmp($curHold->status, 'Suspended') == 0;
 				$curHold->canFreeze = true;
 				$curHold->locationUpdateable = true;
-				if (strcasecmp($curHold->status, 'Transit') == 0
-					|| strcasecmp($curHold->status, 'Expired') == 0
-					|| strcasecmp($curHold->status, 'INSHIPPING') == 0
-					|| strcasecmp($curHold->status, 'ILL WYLD') == 0
-					) {
+				if (in_array(strtoupper($curHold->status), ['TRANSIT', 'EXPIRED', 'INSHIPPING', 'ILL WYLD', 'ILLPENDING'])) {
 					$curHold->locationUpdateable = false;
 					$curHold->canFreeze = false;
 				}

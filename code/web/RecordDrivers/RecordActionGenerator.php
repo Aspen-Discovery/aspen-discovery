@@ -77,6 +77,27 @@ function getLocalIllRequestAction($module, $source, $id) : array {
 	];
 }
 
+function getNoVolumesCanBeRequestedAction($module, $source, $id) : array {
+	$title = translate([
+		'text' => 'Request Unavailable',
+		'isPublicFacing' => true,
+		'inAttribute' => true,
+	]);
+	$message = translate([
+		'text' => "Titles with volumes cannot be requested from other libraries via the catalog. Please contact the library to request this title.",
+		'isPublicFacing' => true,
+		'inAttribute' => true,
+	]);
+	return [
+		'title' => $title,
+		'url' => '',
+		'id' => "actionButton$id",
+		'onclick' => "AspenDiscovery.showMessage('$title', '$message');return false;",
+		'requireLogin' => false,
+		'type' => 'local_ill_request',
+		'btnType' => 'btn-local-ill-request btn-action'
+	];
+}
 //VDX Requests
 function getVdxRequestAction($module, $source, $id) : array {
 	return [

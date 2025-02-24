@@ -68,4 +68,12 @@ class Admin_AccountProfiles extends ObjectEditor {
 	function getInitializationJs(): string {
 		return 'AspenDiscovery.Admin.toggleSSOSettingsInAccountProfile();AspenDiscovery.Admin.toggleAccountProfileIlsFields();';
 	}
+
+	function canBatchDelete() : bool {
+		return false;
+	}
+
+	function canBatchEdit() : bool {
+		return false;
+	}
 }

@@ -132,6 +132,10 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		numDeleted++;
 	}
 
+	void incDeletedByNum(int num) {
+		numDeleted += num;
+	}
+
 	void incUpdated() {
 		numUpdated++;
 		if (numUpdated % 50 == 0){

@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.events;
 
-import com.turning_leaf_technologies.config.ConfigUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
@@ -14,7 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.time.zone.ZoneRules;
 import java.util.*;
 
-class NativeEvent {
+class AspenEvent {
 	private final long id;
 	private final long eventId;
 	private final int eventType;
@@ -26,13 +25,14 @@ class NativeEvent {
 	private final String cover;
 	private final long locationId;
 	private final String locationCode;
+	private final String sublocationName;
 	private final HashSet<String> libraries = new HashSet<>();
 	private final long sublocationId;
 	private final Boolean status;
 	private final Boolean nonPublic;
 	private final ArrayList<EventField> fields = new ArrayList<EventField>();
 
-	NativeEvent(ResultSet existingEventsRS) throws SQLException{
+	AspenEvent(ResultSet existingEventsRS) throws SQLException{
 		this.id = existingEventsRS.getLong("id"); // The event instance ID
 		this.eventId = existingEventsRS.getLong("eventId"); // The parent event ID
 		this.eventType = existingEventsRS.getInt("eventTypeId");
@@ -44,6 +44,7 @@ class NativeEvent {
 		this.cover = existingEventsRS.getString("cover");
 		this.locationId = existingEventsRS.getLong("locationId");
 		this.locationCode = existingEventsRS.getString("displayName");
+		this.sublocationName = existingEventsRS.getString("sublocationName");
 		this.sublocationId = existingEventsRS.getLong("sublocationId");
 		this.status = existingEventsRS.getBoolean("status");
 		this.nonPublic = existingEventsRS.getBoolean("private");
@@ -105,16 +106,23 @@ class NativeEvent {
 		return locationId;
 	}
 
-	public String getLocationCode() {
+	public String getLocationName() {
 		return locationCode;
+	}
+
+	public String getSublocationName() {
+		return sublocationName;
 	}
 
 	public long getSublocationId() {
 		return sublocationId;
 	}
 
-	public Boolean getStatus() {
-		return status;
+	public String getStatus() {
+		if (status) {
+			return "Active";
+		}
+		return "Cancelled";
 	}
 
 	public Boolean getNonPublic() {
@@ -163,6 +171,29 @@ class NativeEvent {
 			this.facet = facet;
 		}
 
+		public String getFacetName() {
+			switch (this.facet) {
+				case 0:
+					return "";
+				case 1:
+					return "age_group_facet";
+				case 2:
+					return "program_type_facet";
+				case 3:
+					return "internal_category_facet";
+				case 4:
+					return "event_type";
+				case 5:
+					return "custom_facet_1";
+				case 6:
+					return "custom_facet_2";
+				case 7:
+					return "custom_facet_3";
+				default:
+					return "";
+			}
+		}
+
 		public String getName() {
 			return name;
 		}
@@ -177,9 +208,11 @@ class NativeEvent {
 				case 2: // Checkbox
 					return "custom_bool_" + sanitized_name;
 				case 3: // Select list
-				case 4: // Email
-				case 5: // URL
 					return "custom_string_" + sanitized_name;
+				case 4: // Email
+					return "custom_email_" + sanitized_name;
+				case 5: // URL
+					return "custom_url_" + sanitized_name;
 			}
 			return sanitized_name;
 		}
@@ -190,7 +223,12 @@ class NativeEvent {
 
 		public String getValue() {
 			if (allowableValues.length > 0 && StringUtils.isNumeric(value)) {
-				return allowableValues[Integer.parseInt(value)];
+				try {
+					return allowableValues[Integer.parseInt(value)];
+				}catch (ArrayIndexOutOfBoundsException e) {
+					//MDN 2/6/25 do additional handling and logging if we don't get a good value.
+					return "Unknown";
+				}
 			} else {
 				return value;
 			}

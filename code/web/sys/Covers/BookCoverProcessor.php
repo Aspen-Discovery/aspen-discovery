@@ -82,12 +82,12 @@ class BookCoverProcessor {
 			if ($this->getAssabetCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'nativeEvent_event') {
-			if ($this->getNativeEventsDateCover($this->id)){
+		} elseif ($this->type == 'aspenEvent_event') {
+			if ($this->getAspenEventsDateCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'nativeEvent_eventRecord') {
-			if ($this->getNativeEventsImageCover($this->id)){
+		} elseif ($this->type == 'aspenEvent_eventRecord') {
+			if ($this->getAspenEventsImageCover($this->id)){
 				return true;
 			}
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage' || $this->type == 'GrapesPage') {
@@ -1768,15 +1768,15 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getNativeEventsDateCover($id) {
+	private function getAspenEventsDateCover($id) {
 		if (strpos($id, ':') !== false) {
 			[
 				,
 				$id,
 			] = explode(":", $id);
 		}
-		require_once ROOT_DIR . '/RecordDrivers/NativeEventRecordDriver.php';
-		$driver = new NativeEventRecordDriver($id);
+		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+		$driver = new AspenEventRecordDriver($id);
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -1817,15 +1817,15 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getNativeEventsImageCover($id) {
+	private function getAspenEventsImageCover($id) {
 		if (strpos($id, ':') !== false) {
 			[
 				,
 				$id,
 			] = explode(":", $id);
 		}
-		require_once ROOT_DIR . '/RecordDrivers/NativeEventRecordDriver.php';
-		$driver = new NativeEventRecordDriver($id);
+		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+		$driver = new AspenEventRecordDriver($id);
 		if (($driver->isValid()) && $driver->getCoverImagePath()) {
 			$uploadedImage = $driver->getCoverImagePath();
 			if (file_exists($uploadedImage)) {

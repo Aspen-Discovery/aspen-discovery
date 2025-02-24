@@ -758,20 +758,6 @@ class Record_AJAX extends Action {
 
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
-			/*foreach ($relatedRecord->getItems() as $item) {
-				if (!$item->isEContent){
-					if (empty($item->volume)) {
-						$numItemsWithoutVolumes++;
-					} else {
-						if ($item->libraryOwned || $item->locallyOwned) {
-							if (array_key_exists($item->volumeId, $volumeData)) {
-								$volumeData[$item->volumeId]->setHasLocalItems(true);
-							}
-						}
-						$numItemsWithVolumes++;
-					}
-				}
-			}*/
 			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
@@ -780,8 +766,9 @@ class Record_AJAX extends Action {
 								if (empty($item->volume)) {
 									$numItemsWithoutVolumes++;
 								} else {
-									if ($item->libraryOwned || $item->locallyOwned) {
-										if (array_key_exists($item->volumeId, $volumeData)) {
+									if (array_key_exists($item->volumeId, $volumeData)) {
+										$volumeData[$item->volumeId]->addItem($item);
+										if ($item->libraryOwned || $item->locallyOwned) {
 											$volumeData[$item->volumeId]->setHasLocalItems(true);
 										}
 									}
@@ -789,6 +776,17 @@ class Record_AJAX extends Action {
 								}
 							}
 						}
+					}
+				}
+			}
+
+			list($interLibraryLoanType, , $homeLocation, $holdGroups) = $marcRecord->getInterLibraryLoanIntegrationInformation($relatedRecord, 'any');
+			if ($interLibraryLoanType != null) {
+				foreach ($volumeData as $key => $volumeInfo) {
+					if ($marcRecord->oneOrMoreHoldableItemsOwnedByPatronHoldGroups($volumeInfo->getItems(), $holdGroups, 'any', $homeLocation->code)){
+						$volumeInfo->setNeedsIllRequest(false);
+					}else{
+						$volumeInfo->setNeedsIllRequest(true);
 					}
 				}
 			}
@@ -974,7 +972,15 @@ class Record_AJAX extends Action {
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $pickupBranch, $cancelDate, $pickupSublocation);
 					} else {
 						if (isset($_REQUEST['volume']) && $holdType == 'volume') {
-							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
+							if ($_REQUEST['volume'] === 'unselected') {
+								return [
+									'success' => false,
+									'message' => 'You must select a volume to place the hold on.',
+									'title' => 'Select a volume',
+								];
+							}else {
+								$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
+							}
 						} else {
 							$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation);
 						}
@@ -1004,7 +1010,7 @@ class Record_AJAX extends Action {
 
 								require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
 								$sublocation = new Sublocation();
-								if ($sublocation->get('ilsId', $pickupSublocation)) {
+								if ($sublocation->get('id', $pickupSublocationId)) {
 									if ($pickupLocation->locationId == $sublocation->locationId) {
 										if ($sublocation->id != $user->pickupSublocationId) {
 											$patron->setPickupSublocationId($sublocation->id);
@@ -1820,27 +1826,37 @@ class Record_AJAX extends Action {
 		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation) {
 			//If the patron's preferred pickup location is not valid, then force them to pick a new location
 			$preferredPickupLocationIsValid = false;
+			$preferredPickupLocation = null;
 			$preferredPickupSublocationIsValid = false;
 			foreach ($locations as $location) {
 				if (is_object($location) && ($location->locationId == $user->pickupLocationId)) {
 					$preferredPickupLocationIsValid = true;
+					$preferredPickupLocation = $location;
 					break;
 				}
 			}
 
-			require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
-			require_once ROOT_DIR . '/sys/LibraryLocation/SublocationPatronType.php';
-			$patronType = $user->getPTypeObj();
-			$sublocationLookup = new Sublocation();
-			$sublocationLookup->id = $user->pickupSublocationId;
-			$sublocationLookup->isValidHoldPickupAreaILS = 1;
-			$sublocationLookup->isValidHoldPickupAreaAspen = 1;
-			if ($sublocationLookup->find(true)) {
-				$sublocationPType = new SublocationPatronType();
-				$sublocationPType->patronTypeId = $patronType->id;
-				$sublocationPType->sublocationId = $sublocationLookup->id;
-				if ($sublocationPType->find(true)) {
-					$preferredPickupSublocationIsValid = true;
+			$preferredPickupSublocationIsValid = true;
+			if ($preferredPickupLocationIsValid) {
+				//The preferred location is valid, check to see if sublocations are in use and if so if the preferred pickup area is valid
+				$preferredSublocationsAtPreferredLocation = $preferredPickupLocation->getPickupSublocations($user);
+				if (count($preferredSublocationsAtPreferredLocation) > 1) {
+					$preferredPickupSublocationIsValid = false;
+					require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
+					require_once ROOT_DIR . '/sys/LibraryLocation/SublocationPatronType.php';
+					$patronType = $user->getPTypeObj();
+					$sublocationLookup = new Sublocation();
+					$sublocationLookup->id = $user->pickupSublocationId;
+					$sublocationLookup->isValidHoldPickupAreaILS = 1;
+					$sublocationLookup->isValidHoldPickupAreaAspen = 1;
+					if ($sublocationLookup->find(true)) {
+						$sublocationPType = new SublocationPatronType();
+						$sublocationPType->patronTypeId = $patronType->id;
+						$sublocationPType->sublocationId = $sublocationLookup->id;
+						if ($sublocationPType->find(true)) {
+							$preferredPickupSublocationIsValid = true;
+						}
+					}
 				}
 			}
 
@@ -1848,7 +1864,8 @@ class Record_AJAX extends Action {
 				$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
 			} else {
 				$rememberHoldPickupLocation = false;
-			}		} else {
+			}
+		} else {
 			$rememberHoldPickupLocation = false;
 		}
 		$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);

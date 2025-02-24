@@ -540,6 +540,7 @@ class MaterialsRequest_AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function checkRequestForExistingRecord() : array {
 		$id = $_REQUEST['id'];
 		$result = [
@@ -557,17 +558,19 @@ class MaterialsRequest_AJAX extends Action {
 				$existingRecords = checkForExistingTitleForRequest($request->format, $request->title, $request->author, $request->isbn, $request->issn, $request->upc);
 				$request->lastCheckForExistingRecord = time();
 
-				if (count($existingRecords) == 0) {
+				if ($existingRecords === false || count($existingRecords) == 0) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
 					$infoChanged = $request->hasExistingRecord != 0;
 					$request->hasExistingRecord = 0;
 					$existingRecordInformation = translate(['text'=>'No', 'isAdminFacing'=>true]);
 				}else{
+					/** @noinspection PhpUnusedLocalVariableInspection */
 					$infoChanged = $request->hasExistingRecord == 0;
 
 					$firstRecord = $existingRecords[0];
 					$request->hasExistingRecord = 1;
 					$request->existingRecordUrl = $firstRecord->getLinkUrl();
-					$existingRecordInformation = "<a href='{$request->existingRecordUrl}' target='_blank'>" . translate(['text'=>'Yes', 'isAdminFacing'=>true]) . "</a>";
+					$existingRecordInformation = "<a href='$request->existingRecordUrl' target='_blank'>" . translate(['text'=>'Yes', 'isAdminFacing'=>true]) . "</a>";
 				}
 				$existingRecordInformation .= '<br/>' . translate(['text'=>'Checked %1%', 1=> date('m/d/Y H:i:s', $request->lastCheckForExistingRecord), 'isAdminFacing'=>true]);
 				$request->update();

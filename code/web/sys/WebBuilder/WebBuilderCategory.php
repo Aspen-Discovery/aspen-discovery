@@ -6,6 +6,7 @@ class WebBuilderCategory extends DataObject {
 	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
+	public $description;
 
 	public function getUniquenessFields(): array {
 		return ['name'];
@@ -27,9 +28,35 @@ class WebBuilderCategory extends DataObject {
 				'required' => true,
 				'maxLength' => 100,
 			],
+			'customWebBuilderCategoryDescription' => [
+				'property' => 'customWebBuilderCategoryDescription',
+				'type' => 'translatableTextBlock',
+				'label' => 'Description',
+				'description' => 'A description for the category.',
+				'defaultTextFile' => '',
+				'hideInLists' => true,
+			],
 		];
 	}
 
+	public function insert($context = '')
+	{
+		$this->lastUpdate = time();
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('customWebBuilderCategoryDescription');
+		}
+		return $ret;
+	}
+	public function update($context = '')
+	{
+		$this->lastUpdate = time();
+		$ret = parent::update();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('customWebBuilderCategoryDescription');
+		}
+		return $ret;
+	}
 	public static function getCategories() {
 		$categories = [];
 		$category = new WebBuilderCategory();

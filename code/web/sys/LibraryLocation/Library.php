@@ -4185,7 +4185,7 @@ class Library extends DataObject {
 		if (!array_key_exists('Single sign-on', $enabledModules)) {
 			unset($structure['ssoSection']);
 		}
-		if (!$catalog->hasIlsConsentSupport()) {
+		if ($catalog && !$catalog->hasIlsConsentSupport()) {
 			unset($structure['dataProtectionRegulations']['properties']['ilsConsentEnabled']);
 		}
 

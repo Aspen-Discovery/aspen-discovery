@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class Events_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
-	public function getEventTypeIdsForLocation() {
+	public function getEventTypesAndSubLocationsForLocation() {
 		require_once ROOT_DIR . '/sys/Events/EventType.php';
 		$result = [
 			'success' => false,
@@ -20,10 +20,12 @@ class Events_AJAX extends JSON_Action {
 		];
 		if (!empty($_REQUEST['locationId'])) {
 			$eventTypeIds = EventType::getEventTypeIdsForLocation($_REQUEST['locationId']);
+			$sublocations = Location::getEventSublocations($_REQUEST['locationId']);
 			if (!empty($eventTypeIds)) {
 				$result = [
 					'success' => true,
 					'eventTypeIds' => json_encode($eventTypeIds),
+					'sublocations' => json_encode($sublocations),
 				];
 			} else {
 				$result = [

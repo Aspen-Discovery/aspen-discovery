@@ -4,8 +4,8 @@ class EventsIndexingSetting extends DataObject {
 	public $id;
 	public $runFullUpdate;
 	public $numberOfDaysToIndex;
-	public $lastUpdateOfAllEvents;
-	public $lastUpdateOfChangedEvents;
+//	public $lastUpdateOfAllEvents;
+//	public $lastUpdateOfChangedEvents;
 	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [

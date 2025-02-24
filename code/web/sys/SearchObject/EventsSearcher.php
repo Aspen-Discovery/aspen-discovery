@@ -376,9 +376,9 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		} else if (substr($record['type'], 0, 13) == 'event_assabet') {
 			require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 			return new AssabetEventRecordDriver($record);
-		} else if (substr($record['type'], 0, 17) == 'event_nativeEvent') {
-			require_once ROOT_DIR . '/RecordDrivers/NativeEventRecordDriver.php';
-			return new NativeEventRecordDriver($record);
+		} else if (substr($record['type'], 0, 17) == 'event_aspenEvent') {
+			require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+			return new AspenEventRecordDriver($record);
 		} else {
 			// TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
 			require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';

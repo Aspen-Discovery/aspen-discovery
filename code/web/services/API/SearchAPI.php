@@ -118,7 +118,7 @@ class SearchAPI extends AbstractAPI {
 			$backupFileFound = false;
 			$backupFileTooSmall = false;
 			foreach ($backupFiles as $backupFile) {
-				if (str_ends_with($backupFile, '.tar.gz/') || str_ends_with($backupFile, '.sql.gz/')) {
+				if (str_ends_with($backupFile, '.tar.gz') || str_ends_with($backupFile, '.sql.gz')) {
 					$fileCreationTime = filectime($backupDir . $backupFile);
 					if ((time() - $fileCreationTime) < (24.5 * 60 * 60)) {
 						$fileSize = filesize($backupDir . $backupFile);

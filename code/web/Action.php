@@ -114,14 +114,7 @@ abstract class Action
 		$aspenUsage->blockedApiRequests++;
 		$aspenUsage->update();
 		global $usageByIPAddress;
-		try {
-			$usageByIPAddress->numBlockedApiRequests++;
-			if (SystemVariables::getSystemVariables()->trackIpAddresses) {
-				$usageByIPAddress->update();
-			}
-		} catch (Exception $e) {
-			//Table does not exist yet
-		}
+		$usageByIPAddress->incrementNumBlockedApiRequests();
 
 		http_response_code(403);
 		$clientIP = IPAddress::getClientIP();

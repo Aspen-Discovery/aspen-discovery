@@ -50,6 +50,7 @@ class SpringshareLibCalIndexer {
 	private static final CRC32 checksumCalculator = new CRC32();
 
 	private PreparedStatement addEventStmt;
+	private PreparedStatement updateEventStmt;
 	private PreparedStatement deleteEventStmt;
 	private PreparedStatement addRegistrantStmt;
 	private PreparedStatement deleteRegistrantStmt;
@@ -76,7 +77,8 @@ class SpringshareLibCalIndexer {
 		logEntry = new EventsIndexerLogEntry("Springshare LibCal " + name, aspenConn, logger);
 
 		try {
-			addEventStmt = aspenConn.prepareStatement("INSERT INTO springshare_libcal_events SET settingsId = ?, externalId = ?, title = ?, rawChecksum =?, rawResponse = ?, deleted = 0 ON DUPLICATE KEY UPDATE title = VALUES(title), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), deleted = 0", Statement.RETURN_GENERATED_KEYS);
+			addEventStmt = aspenConn.prepareStatement("INSERT INTO springshare_libcal_events (settingsId, externalId, title, rawChecksum, rawResponse, deleted) VALUES (?, ?, ?, ?, ?, 0)", Statement.RETURN_GENERATED_KEYS);
+			updateEventStmt = aspenConn.prepareStatement("UPDATE springshare_libcal_events SET title = ?, rawChecksum =?, rawResponse = ?, deleted = 0 where settingsId = ? AND externalId = ?", Statement.RETURN_GENERATED_KEYS);
 			deleteEventStmt = aspenConn.prepareStatement("UPDATE springshare_libcal_events SET deleted = 1 where id = ?");
 
 			PreparedStatement getLibraryScopesStmt = aspenConn.prepareStatement("SELECT subdomain from library inner join library_events_setting on library.libraryId = library_events_setting.libraryId WHERE settingSource = 'springshare' AND settingId = ?");
@@ -91,7 +93,6 @@ class SpringshareLibCalIndexer {
 		}
 
 		try {
-			//noinspection SpellCheckingInspection
 			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
 			deleteRegistrantStmt = aspenConn.prepareStatement("DELETE FROM user_events_registrations WHERE userId = ? AND sourceId = ?");
 		} catch (Exception e) {
@@ -99,6 +100,8 @@ class SpringshareLibCalIndexer {
 		}
 
 		loadExistingEvents();
+
+		logEntry.addNote("There are " + existingEvents.size() + " events for setting " + settingsId);
 	}
 
 	private void loadExistingEvents() {
@@ -147,15 +150,16 @@ class SpringshareLibCalIndexer {
 			return;
 		}
 
-		try {
-			solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
-			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
-			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
-			System.exit(-1);
-		} catch (Exception e) {
-			logEntry.incErrors("Error deleting from index ", e);
-		}
+		//We do not need to delete from the index proactively, because we delete existing records individually below
+//		try {
+//			solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
+//			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+//		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
+//			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
+//			System.exit(-1);
+//		} catch (Exception e) {
+//			logEntry.incErrors("Error deleting from index ", e);
+//		}
 
 		Date lastDateToIndex = new Date();
 		long numberOfDays = numberOfDaysToIndex * 24L;
@@ -301,21 +305,30 @@ class SpringshareLibCalIndexer {
 				}
 
 				//Add the event to the database
-				try {
-					addEventStmt.setLong(1, settingsId);
-					addEventStmt.setString(2, eventId);
-					addEventStmt.setString(3, curEvent.getString("title"));
-					addEventStmt.setLong(4, checksum);
-					addEventStmt.setString(5, rawResponse);
-					addEventStmt.executeUpdate();
-				} catch (SQLException e) {
-					logEntry.incErrors("Error adding event to database " , e);
-				}
-
 				if (eventExists){
 					existingEvents.remove(eventId);
+					try {
+						updateEventStmt.setString(1, curEvent.getString("title"));
+						updateEventStmt.setLong(2, checksum);
+						updateEventStmt.setString(3, rawResponse);
+						updateEventStmt.setLong(4, settingsId);
+						updateEventStmt.setString(5, eventId);
+					} catch (SQLException e) {
+						logEntry.incErrors("Error updating event in database " , e);
+					}
 					logEntry.incUpdated();
 				}else{
+					try {
+						addEventStmt.setLong(1, settingsId);
+						addEventStmt.setString(2, eventId);
+						addEventStmt.setString(3, curEvent.getString("title"));
+						addEventStmt.setLong(4, checksum);
+						addEventStmt.setString(5, rawResponse);
+						addEventStmt.executeUpdate();
+					} catch (SQLException e) {
+						logEntry.incErrors("Error adding event to database " , e);
+					}
+
 					logEntry.incAdded();
 				}
 
@@ -376,7 +389,7 @@ class SpringshareLibCalIndexer {
 			}
 		}
 
-		for(SpringshareLibCalEvent eventInfo : existingEvents.values()){
+		for (SpringshareLibCalEvent eventInfo : existingEvents.values()){
 			try {
 				deleteEventStmt.setLong(1, eventInfo.getId());
 				deleteEventStmt.executeUpdate();
@@ -385,7 +398,7 @@ class SpringshareLibCalIndexer {
 			}
 			try {
 				// TODO: set the delete ID correctly after I figure out what the solr id should be James 2022 03 17
-				solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
+				solrUpdateServer.deleteById("libcal_" + settingsId + "_" + eventInfo.getExternalId());
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting event by id ", e);
 			}
@@ -537,7 +550,6 @@ class SpringshareLibCalIndexer {
 				HttpRequestBase apiRequest;
 
 				eventRegistrations = new JSONArray();
-				//noinspection SpellCheckingInspection
 				String apiRegistrationsURL = baseUrl + "/1.1/events/" + eventId + "/registrations?waitlist=1";
 				apiRequest = new HttpGet(apiRegistrationsURL);
 				apiRequest.addHeader("Authorization", oAuthTokenType + " " + oAuthAccessToken);

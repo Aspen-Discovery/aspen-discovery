@@ -807,6 +807,21 @@ class Polaris extends AbstractIlsDriver {
 				if (count($sublocations) == 1) {
 					$firstSublocation = reset($sublocations);
 					$body->HoldPickupAreaID = (int)$firstSublocation->ilsId;
+				}else{
+					$sublocationIsValid = false;
+					if ($patron->rememberHoldPickupLocation) {
+						foreach ($sublocations as $sublocation) {
+							if ($sublocation->id == $patron->pickupSublocationId) {
+								$sublocationIsValid = true;
+								$body->HoldPickupAreaID = (int)$sublocation->ilsId;
+								break;
+							}
+						}
+					}
+					if (!$sublocationIsValid) {
+						$firstSublocation = reset($sublocations);
+						$body->HoldPickupAreaID = (int)$firstSublocation->ilsId;
+					}
 				}
 			}
 		}

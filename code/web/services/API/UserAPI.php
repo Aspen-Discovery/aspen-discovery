@@ -272,46 +272,52 @@ class UserAPI extends AbstractAPI {
 		$parentAccount = null;
 		$validatedViaSSO = false;
 
+		global $library;
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = UserAccount::getAccountProfiles();
 
 		foreach ($driversToTest as $driverName => $additionalInfo) {
-			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
-				try {
-					$authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
-				} catch (UnknownAuthenticationMethodException $e) {
-					return [
-						'success' => false,
-						'message' => 'Unknown authentication method',
-						'session' => false,
-						'validUntil' => null,
-					];
-				}
-				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
-				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					$_REQUEST['rememberMe'] = "true";
-					UserAccount::updateSession($validatedUser);
-					return [
-						'success' => true,
-						'message' => 'User is valid',
-						'session' => session_id(),
-						'validUntil' => strtotime('+2 weeks'),
-						'lang' => $validatedUser->interfaceLanguage ?? 'en',
-						'homeLocationId' => $validatedUser->homeLocationId ?? null,
-					];
-				} else {
-					$invalidUser = (array) $validatedUser;
-					if(isset($invalidUser['message'])) {
+			/** @var AccountProfile $tmpAccountProfile **/
+			$tmpAccountProfile = $additionalInfo['accountProfile'];
+			// Only allow login with the active library account profile, database login and sso are not currently supported
+			if ($library->accountProfileId == $tmpAccountProfile->id) {
+				if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
+					try {
+						$authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
+					} catch (UnknownAuthenticationMethodException $e) {
 						return [
 							'success' => false,
-							'id' => $invalidUser['id'] ?? null,
-							'message' => $invalidUser['message'],
-							'resetToken' => $invalidUser['resetToken'] ?? null,
-							'userId' => $invalidUser['userId'] ?? null,
+							'message' => 'Unknown authentication method',
 							'session' => false,
 							'validUntil' => null,
-							'lang' => 'en',
 						];
+					}
+					$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
+					if ($validatedUser && !($validatedUser instanceof AspenError)) {
+						$_REQUEST['rememberMe'] = "true";
+						UserAccount::updateSession($validatedUser);
+						return [
+							'success' => true,
+							'message' => 'User is valid',
+							'session' => session_id(),
+							'validUntil' => strtotime('+2 weeks'),
+							'lang' => $validatedUser->interfaceLanguage ?? 'en',
+							'homeLocationId' => $validatedUser->homeLocationId ?? null,
+						];
+					} else {
+						$invalidUser = (array)$validatedUser;
+						if (isset($invalidUser['message'])) {
+							return [
+								'success' => false,
+								'id' => $invalidUser['id'] ?? null,
+								'message' => $invalidUser['message'],
+								'resetToken' => $invalidUser['resetToken'] ?? null,
+								'userId' => $invalidUser['userId'] ?? null,
+								'session' => false,
+								'validUntil' => null,
+								'lang' => 'en',
+							];
+						}
 					}
 				}
 			}

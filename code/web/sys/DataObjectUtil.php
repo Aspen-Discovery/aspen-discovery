@@ -182,14 +182,14 @@ class DataObjectUtil {
 			'email2',
             'email_prefill',
 			'multiemail',
-            'barcode_prefill',
-            'phone_prefill',
-            'name_prefill',
-            'address_prefill',
-            'address2_prefill',
-            'city_prefill',
-            'state_prefill',
-            'zip_prefill'
+			'barcode_prefill',
+			'phone_prefill',
+			'name_prefill',
+			'address_prefill',
+			'address2_prefill',
+			'city_prefill',
+			'state_prefill',
+			'zip_prefill'
 		])) {
 			if (isset($_REQUEST[$propertyName])) {
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {
@@ -289,7 +289,9 @@ class DataObjectUtil {
 			}
 
 		} elseif ($property['type'] == 'checkbox') {
-			$object->setProperty($propertyName, isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0, $property);
+			if (empty($property['readOnly'])) {
+				$object->setProperty($propertyName, isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0, $property);
+			}
 		} elseif ($property['type'] == 'webBuilderColor') {
 			$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 		} elseif ($property['type'] == 'multiSelect') {

@@ -3,6 +3,7 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Events/EventFieldSet.php';
 require_once ROOT_DIR . '/sys/Events/EventTypeLibrary.php';
 require_once ROOT_DIR . '/sys/Events/EventTypeLocation.php';
+require_once ROOT_DIR . '/sys/Events/Event.php';
 
 class EventType extends DataObject {
 	public $__table = 'event_type';
@@ -138,6 +139,16 @@ class EventType extends DataObject {
 			$this->saveLocations();
 		}
 		return $ret;
+	}
+
+	function delete($useWhere = false) : int {
+		$event = new Event();
+		$event->eventTypeId = $this->id;
+		$event->deleted = 0;
+		if ($event->count() == 0) {
+			return parent::delete($useWhere);
+		}
+		return 0;
 	}
 
 	public function __set($name, $value) {

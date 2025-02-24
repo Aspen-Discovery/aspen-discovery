@@ -24,7 +24,9 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 				$this->valid = true;
 			}
 		}
-		$this->recordtype = $this->fields['recordtype'];
+		if ($this->valid) {
+			$this->recordtype = $this->fields['recordtype'];
+		}
 	}
 
 	public function isValid() {

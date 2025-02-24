@@ -4,6 +4,8 @@
 ## crontab for the site should be linked to from /etc/cron.d
 ## when updated, cron simply needs to be restarted.  I.e.
 ## sudo service crond restart
+## or on debian systems
+## sudo service cron restart
 ##
 ##################
 

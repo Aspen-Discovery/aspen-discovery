@@ -23,7 +23,23 @@ class Events_Events extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new Event();
+		$object->deleted = 0;
 		$object->orderBy($this->getSort());
+		$user = UserAccount::getLoggedInUser();
+		if (!UserAccount::userHasPermission('Administer Events for All Locations')) {
+			if (!UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
+				//Need to use where add here so the where add in below works properly
+				$object->whereAdd("locationId = $user->homeLocationId");
+			} else {
+				//Scope to just locations for the user based on their home library
+				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
+				$object->whereAdd("libraryId = $patronLibrary->libraryId");
+			}
+			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+			if (!empty($additionalAdministrationLocations)) {
+				$object->whereAddIn('locationId', array_keys($additionalAdministrationLocations), false, 'OR');
+			}
+		}
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$list = [];
@@ -68,13 +84,21 @@ class Events_Events extends ObjectEditor {
 
 	function canView(): bool {
 		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission(['Administer Events for All Locations']);
+			return UserAccount::userHasPermission([
+				'Administer Events for All Locations',
+				'Administer Events for Home Library Locations',
+				'Administer Events for Home Location'
+			]);
 		}
 		return false;
 	}
 
 	function canBatchEdit(): bool {
-		return UserAccount::userHasPermission(['Administer Events for All Locations']);
+		return UserAccount::userHasPermission([
+			'Administer Events for All Locations',
+			'Administer Events for Home Library Locations',
+			'Administer Events for Home Location'
+		]);
 	}
 
 	public function hasMultiStepAddNew() : bool {

@@ -80,11 +80,13 @@ class Admin_Libraries extends ObjectEditor {
 		$catalogDriver = CatalogFactory::getCatalogConnectionInstance(trim($accountProfile->driver), $accountProfile);
 		$consentPluginNames = $catalogDriver->getPluginNamesByMethodName('patron_consent_type');
 		$anyConsentPluginsEnabled = false;
-		foreach($consentPluginNames as $pluginName) {
-			$pluginStatus = $catalogDriver->getPluginStatus($pluginName);
-			if ($pluginStatus['enabled']) {
-				$anyConsentPluginsEnabled = true;
-				break;
+		if ($consentPluginNames != false) {
+			foreach ($consentPluginNames as $pluginName) {
+				$pluginStatus = $catalogDriver->getPluginStatus($pluginName);
+				if ($pluginStatus['enabled']) {
+					$anyConsentPluginsEnabled = true;
+					break;
+				}
 			}
 		}
 

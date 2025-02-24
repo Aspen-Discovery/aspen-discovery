@@ -4,9 +4,9 @@ require_once 'IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/Event.php';
 
-class NativeEventRecordDriver extends IndexRecordDriver {
+class AspenEventRecordDriver extends IndexRecordDriver {
 	private $valid;
-	/** @var NativeEventRecordDriver */
+	/** @var AspenEventRecordDriver */
 	private $eventObject;
 
 	public function __construct($recordData) {
@@ -41,7 +41,7 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 		$this->getSearchResult('list', false);
 
 		global $interface;
-		$interface->assign('eventVendor', 'nativeEvent');
+		$interface->assign('eventVendor', 'aspenEvent');
 
 		//Switch template
 		return 'RecordDrivers/Events/listEntry.tpl';
@@ -119,10 +119,10 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 //			$eventsUsage->insert();
 //		}
 
-		return 'RecordDrivers/Events/nativeEvent_result.tpl';
+		return 'RecordDrivers/Events/aspenEvent_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "nativeEvent_event") {
+	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "aspenEvent_event") {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -153,8 +153,11 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getFullDescription() {
-		$description = $this->getEventObject();
-		return $description->description;
+		if (isset($this->fields['description'])) {
+			return $this->fields['description'];
+		} else {
+			return '';
+		}
 	}
 
 	public function getEventTypeFields() {
@@ -170,7 +173,23 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 			$pattern = '/custom_([a-z]+)_/i';
 			$fieldname = preg_replace($pattern, "", $key);
 			$fieldname = str_replace("_", " ", $fieldname);
-			$html .= "<li>$fieldname: $value[0]</li>";
+			if (str_contains($key, "custom_facet")) {
+				continue;
+			}
+			if (is_array($value) && count($value) > 0) {
+				if (str_contains($key, "url")) {
+					$html .= "<li>$fieldname: <a href='$value[0]'>$value[0]</a></li>";
+				} else if (str_contains($key, "email")) {
+					$html .= "<li>$fieldname: <a href='mailto:$value[0]'>$value[0]</a></li>";
+				} else {
+					$html .= "<li>$fieldname: $value[0]</li>";
+				}
+			} else if (str_contains($key, "bool")) {
+				$value = $value == 1 ? "true" : "false";
+				$html .= "<li>$fieldname: " . $value . "</li>";
+			} else {
+				$html .= "<li>$fieldname: $value</li>";
+			}
 		}
 		return $html;
 	}
@@ -188,7 +207,7 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getLinkUrl($absolutePath = false) {
-		return '/NativeEvents/' . $this->getId() . '/Event';
+		return '/AspenEvents/' . $this->getId() . '/Event';
 	}
 
 	public function getExternalUrl($absolutePath = false) {
@@ -212,7 +231,7 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getRoom() {
-		return array_key_exists("room", $this->fields) ? $this->fields['room'] : '';
+		return implode(", ", array_key_exists("room", $this->fields) ? $this->fields['room'] : []);
 	}
 
 	public function getType() {
@@ -230,7 +249,7 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 	function getEventCoverUrl() {
 		if (!empty($this->fields['image_url'])) {
 			global $interface;
-			return $this->getBookcoverUrl('medium', false, "nativeEvent_eventRecord");
+			return $this->getBookcoverUrl('medium', false, "aspenEvent_eventRecord");
 		}
 		return $this->getBookcoverUrl('medium');
 	}
@@ -418,7 +437,7 @@ class NativeEventRecordDriver extends IndexRecordDriver {
 			'registration_required' => $this->isRegistrationRequired(),
 			'bypass' => $this->getBypassSetting(),
 			'url' => null,
-			'source' => 'nativeEvents',
+			'source' => 'aspenEvents',
 			'author' => null,
 			'format' => null,
 			'ratingData' => null,

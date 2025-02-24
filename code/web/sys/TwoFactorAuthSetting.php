@@ -48,6 +48,7 @@ class TwoFactorAuthSetting extends DataObject {
 				'label' => 'Name',
 				'description' => 'A name for the settings',
 				'maxLength' => 50,
+				'required' => true
 			],
 			'isEnabled' => [
 				'property' => 'isEnabled',
@@ -139,7 +140,7 @@ class TwoFactorAuthSetting extends DataObject {
 		}
 	}
 
-	public function update($context = '') : bool {
+	public function update($context = '') : bool|int {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

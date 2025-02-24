@@ -12232,16 +12232,35 @@ AspenDiscovery.Events = (function(){
 			$.getJSON(ajaxUrl);
 		},
 
-		//For native events
+		//For Aspen Events
 		getEventTypesForLocation: function(locationId) {
 			var url = Globals.path + '/Events/AJAX';
 			var params = {
-				method: 'getEventTypeIdsForLocation',
+				method: 'getEventTypesAndSublocationsForLocation',
 				locationId: locationId
 			};
 
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
+					if(data.sublocations && data.sublocations.length > 0) {
+						var sublocations = JSON.parse(data.sublocations);
+						$("#sublocationIdSelect").html("");
+						Object.keys(sublocations).forEach(function(key) {
+							$("<option/>", {
+								value: key,
+								text: sublocations[key]
+							}).appendTo("#sublocationIdSelect");
+						});
+						if (sublocations.length === 0) {
+							$("#propertyRowsublocationId").hide();
+						} else {
+							$("#propertyRowsublocationId").show();
+						}
+
+					} else {
+						$("#sublocationIdSelect").html("");
+						$("#propertyRowsublocationId").hide();
+					}
 					if (data.eventTypeIds.length > 0) {
 						$("#eventTypeIdSelect option").each(function () {
 							if (!data.eventTypeIds.includes($(this).val())) {
@@ -15116,6 +15135,12 @@ AspenDiscovery.Record = (function () {
 		},
 
 		placeVolumeHold: function () {
+			var selectedVolume = $("#selectedVolume option:selected").val() ;
+			if (selectedVolume === 'unselected'){
+				alert("You must select a volume before continuing");
+				return false;
+			}
+
 			var requestTitleButton = $('#requestTitleButton');
 			requestTitleButton.prop('disabled', true);
 			requestTitleButton.addClass('disabled');
@@ -15124,7 +15149,7 @@ AspenDiscovery.Record = (function () {
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var module = $('#module').val();
-			var volume = $('#selectedVolume');
+
 			var params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
@@ -15137,11 +15162,8 @@ AspenDiscovery.Record = (function () {
 			if (autoLogOut) {
 				params['autologout'] = true;
 			}
-			if (volume.length > 0) {
-				params['volume'] = volume.val();
-			} else {
-				alert("Please select a volume to place a hold on.");
-				return false;
+			if (selectedVolume.length > 0) {
+				params['volume'] = selectedVolume;
 			}
 			if (params['pickupBranch'] === 'undefined') {
 				alert("Please select a location to pick up your hold when it is ready.");
@@ -16325,6 +16347,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
@@ -16334,6 +16358,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
@@ -16343,6 +16369,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
@@ -16352,6 +16380,8 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
@@ -16361,6 +16391,12 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowimgAction').hide();
 				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
+				$('#propertyRowcustomImage').hide();
+				$('#propertyRowhideDescription').hide();
+				if (sourceType === 'custom_web_resource_page') {
+					$('#propertyRowcustomImage').show();
+					$('#propertyRowhideDescription').show();
+				}
 				if (sourceType === 'image') {
 					$('#propertyRowimgAction').show();
 					$('#propertyRowimgAlt').show();

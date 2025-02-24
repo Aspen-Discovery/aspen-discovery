@@ -8,6 +8,7 @@ class EventInstanceGroup extends DataObject {
 	public $title;
 	public $startDate;
 	public $_instances;
+	public $deleted;
 	
 	static function getObjectStructure($context = ''): array {
 
@@ -107,6 +108,7 @@ class EventInstanceGroup extends DataObject {
 			$this->_instances = [];
 			$instance = new EventInstance();
 			$instance->eventId = $this->id;
+			$instance->deleted = 0;
 			$todayDate = date('Y-m-d');
 			$todayTime = date('H:i:s');
 			$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
@@ -124,6 +126,7 @@ class EventInstanceGroup extends DataObject {
 			$this->_instances = [];
 			$instance = new EventInstance();
 			$instance->eventId = $this->id;
+			$instance->deleted = 0;
 			$instance->find();
 			while ($instance->fetch()) {
 				$this->_instances[$instance->id] = clone($instance);
@@ -141,43 +144,4 @@ class EventInstanceGroup extends DataObject {
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_instances = [];
 	}
-
-//	public function getLibraries() {
-//		if (!isset($this->_libraries) && $this->id) {
-//			$this->_libraries = [];
-//			$library = new LibraryEventsSetting();
-//			$library->eventsFacetSettingsId = $this->id;
-//			$library->find();
-//			while ($library->fetch()) {
-//				$this->_libraries[$library->libraryId] = $library->libraryId;
-//			}
-//		}
-//		return $this->_libraries;
-//	}
-//	private function clearLibraries() {
-//		//Delete links to the libraries
-//		$libraryEventSetting = new LibraryEventsSetting();
-//		$libraryEventSetting->eventsFacetSettingsId = $this->id;
-//		while ($libraryEventSetting->fetch()){
-//			$libraryEventSetting->eventsFacetSettingsId = "0";
-//			$libraryEventSetting->update();
-//		}
-//	}
-//	public function saveLibraries() {
-//		if (isset($this->_libraries) && is_array($this->_libraries)) {
-//			$this->clearLibraries();
-//
-//			foreach ($this->_libraries as $libraryId) {
-//				$libraryEventSetting = new LibraryEventsSetting();
-//				$libraryEventSetting->libraryId = $libraryId;
-//
-//				while ($libraryEventSetting->fetch()){ //if there is no event setting for a library, that library won't save because there's nothing to update
-//					$libraryEventSetting->eventsFacetSettingsId = $this->id;
-//					$libraryEventSetting->update();
-//				}
-//			}
-//			unset($this->_libraries);
-//		}
-//	}
-//
 }

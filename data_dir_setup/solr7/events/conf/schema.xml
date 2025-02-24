@@ -133,6 +133,10 @@
 		<dynamicField name="custom_string_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="custom_text_*" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="custom_bool_*" type="integer" indexed="true" stored="true"/>
+		<dynamicField name="custom_url_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="custom_email_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="custom_facet_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
 
 		<!-- spelling -->
 		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
@@ -143,7 +147,7 @@
 
 	</fields>
 
-	<uniqueKey>identifier</uniqueKey>
+	<uniqueKey>id</uniqueKey>
 	<copyField source="title" dest="title_sort"/>
 	<copyField source="title" dest="title_suggestions"/>
 	<copyField source="age_group" dest="age_group_facet"/>

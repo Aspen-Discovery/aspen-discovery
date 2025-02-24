@@ -380,7 +380,6 @@ class SystemVariables extends DataObject {
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
-			$objectStructure['enableBrandedApp']['type'] = 'hidden';
 			$objectStructure['enableAspenEvents']['type'] = 'hidden';
 		}
 

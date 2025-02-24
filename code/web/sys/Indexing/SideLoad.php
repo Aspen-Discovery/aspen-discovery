@@ -188,17 +188,6 @@ class SideLoad extends DataObject {
 				'default' => 'SideLoadedEContentProcessor',
 				'forcesReindex' => true,
 			],
-			'recordDriver' => [
-				'property' => 'recordDriver',
-				'type' => 'text',
-				'label' => 'Record Driver',
-				'maxLength' => 50,
-				'description' => 'The record driver to use while displaying information in Aspen Discovery',
-				'required' => true,
-				'hideInLists' => true,
-				'default' => 'SideLoadedRecord',
-				'forcesReindex' => true,
-			],
 
 			'recordNumberTag' => [
 				'property' => 'recordNumberTag',

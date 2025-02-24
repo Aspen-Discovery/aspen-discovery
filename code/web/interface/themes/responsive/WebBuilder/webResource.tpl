@@ -40,7 +40,7 @@
 					<div class="panel-body">
 						{foreach from=$webResource->getAudiences() item=audience}
 							<div class="col-xs-12">
-								<a href='/Websites/Results?filter[]=audience_facet%3A"{$audience->name}"'>{$audience->name}</a>
+								<a href='/WebBuilder/ResourceAudience?id={$audience->id}'>{$audience->name}</a>
 							</div>
 						{/foreach}
 					</div>
@@ -55,7 +55,7 @@
 					<div class="panel-body">
 						{foreach from=$webResource->getCategories() item=category}
 							<div class="col-xs-12">
-								<a href='/Websites/Results?filter[]=category_facet%3A"{$category->name}"'>{$category->name}</a>
+								<a href='/WebBuilder/ResourceCategory?id={$category->id}'>{$category->name}</a>
 							</div>
 						{/foreach}
 					</div>

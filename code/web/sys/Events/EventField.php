@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/Events/EventFieldSetField.php';
 
 class EventField extends DataObject {
 	public $__table = 'event_field';
@@ -67,14 +68,24 @@ class EventField extends DataObject {
 					'1' => 'Age Group',
 					'2' => 'Program Type',
 					'3' => 'Category',
-					'4' => 'Custom Facet 1',
-					'5' => 'Custom Facet 2',
-					'6' => 'Custom Facet 3',
+					'4' => 'Event Type',
+					'5' => 'Custom Facet 1',
+					'6' => 'Custom Facet 2',
+					'7' => 'Custom Facet 3',
 				],
 				'default' => '0',
 			],
 		];
 		return $structure;
+	}
+
+	function delete($useWhere = false) : int {
+		$fieldSet = new EventFieldSetField();
+		$fieldSet->eventFieldId = $this->id;
+		if ($fieldSet->count() == 0) {
+			return parent::delete($useWhere);
+		}
+		return 0;
 	}
 
 	public static function getEventFieldList(): array {

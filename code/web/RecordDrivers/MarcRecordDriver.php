@@ -1100,42 +1100,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				if ($volumeData == null) {
 					$volumeData = $relatedRecord->getVolumeData();
 				}
-				//See if we have InterLibrary Loan integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
-				$interLibraryLoanType = 'none';
-				$treatHoldAsInterLibraryLoanRequest = false;
-				$homeLocation = null;
-				$holdGroups = [];
-				try {
-					$homeLocation = Location::getDefaultLocationForUser();
-					if ($homeLocation != null) {
-						$interLibraryLoanType = $homeLocation->getInterlibraryLoanType();
-						if ($interLibraryLoanType != 'none') {
-							$treatHoldAsInterLibraryLoanRequest = true;
-							require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroup.php';
-							require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroupLocation.php';
-
-							//Get the VDX Group(s) that we will interact with
-							$holdGroupsForLocation = new HoldGroupLocation();
-							$holdGroupsForLocation->locationId = $homeLocation->locationId;
-							$holdGroupIds = $holdGroupsForLocation->fetchAll('holdGroupId');
-							foreach ($holdGroupIds as $holdGroupId) {
-								$holdGroup = new HoldGroup();
-								$holdGroup->id = $holdGroupId;
-								if ($holdGroup->find(true)) {
-									$holdGroups[] = clone $holdGroup;
-								}
-							}
-
-							//Check to see if we have any items that are owned by any of the records in any of the groups.
-							//If we do, we don't need to use VDX
-							if ($this->oneOrMoreHoldableItemsOwnedByPatronHoldGroups($relatedRecord->getItems(), $holdGroups, $variationId, $homeLocation->code)) {
-								$treatHoldAsInterLibraryLoanRequest = false;
-							}
-						}
-					}
-				} catch (Exception $e) {
-					//This happens if the tables are not installed yet
-				}
+				list($interLibraryLoanType, $treatHoldAsInterLibraryLoanRequest, $homeLocation, $holdGroups) = $this->getInterLibraryLoanIntegrationInformation($relatedRecord, $variationId);
 
 				//Figure out what needs to happen with volumes (if anything)
 				$needsVolumeHold = false;
@@ -1175,13 +1140,34 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 					}
 				}
+				$interface->assign('itemsWithoutVolumesNeedIllRequest', $itemsWithoutVolumesNeedIllRequest);
 
 				//Figure out the actions to add
 				if ($needsVolumeHold) {
+					//We can just show buttons for each volume if there are 3 or fewer volumes and no items without a volume
 					if (count($holdableVolumes) > 3 || count($itemsWithoutVolumes) > 0) {
-						//We will need to show a popup to select the volume
-						$interface->assign('itemsWithoutVolumesNeedIllRequest', $itemsWithoutVolumesNeedIllRequest);
-						$this->_actions[$variationId][] = getMultiVolumeHoldAction($this->getModule(), $source, $id);
+						//Check to see if all items require a request
+						$allVolumesRequireIll = true;
+						if ($interLibraryLoanType !== 'none') {
+							if (count($itemsWithoutVolumes) > 0 && !$itemsWithoutVolumesNeedIllRequest) {
+								$allVolumesRequireIll = false;
+							}
+							foreach ($holdableVolumes as $volumeInfo) {
+								if (!$volumeInfo['needsIllRequest']) {
+									$allVolumesRequireIll = false;
+								}
+							}
+						}else{
+							$allVolumesRequireIll = false;
+						}
+						if ($allVolumesRequireIll) {
+							//The button will show a message to the patron no volumes can be requested
+							$this->_actions[$variationId][] = getNoVolumesCanBeRequestedAction($this->getModule(), $source, $id);
+						}else{
+							//We will need to show a popup to select the volume
+							$interface->assign('itemsWithoutVolumesNeedIllRequest', $itemsWithoutVolumesNeedIllRequest);
+							$this->_actions[$variationId][] = getMultiVolumeHoldAction($this->getModule(), $source, $id);
+						}
 					}else{
 						//We show a button per volume
 						ksort($holdableVolumes);
@@ -1250,7 +1236,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @param string $patronHomeLocationCode - The location code for the patron's home location
 	 * @return bool
 	 */
-	private function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
+	public function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
 		//If no hold groups exist, everything is valid
 		if (count($holdGroups) == 0) {
 			return true;
@@ -2962,6 +2948,56 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$this->validUrls = $validUrls;
 		}
 		return $this->validUrls;
+	}
+
+	/**
+	 * @param Grouping_Record|null $relatedRecord
+	 * @param $variationId
+	 * @return array
+	 */
+	public function getInterLibraryLoanIntegrationInformation(?Grouping_Record $relatedRecord, $variationId): array {
+//See if we have InterLibrary Loan integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
+		$interLibraryLoanType = 'none';
+		$treatHoldAsInterLibraryLoanRequest = false;
+		$homeLocation = null;
+		$holdGroups = [];
+		try {
+			$homeLocation = Location::getDefaultLocationForUser();
+			if ($homeLocation != null) {
+				$interLibraryLoanType = $homeLocation->getInterlibraryLoanType();
+				if ($interLibraryLoanType != 'none') {
+					$treatHoldAsInterLibraryLoanRequest = true;
+					require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroup.php';
+					require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroupLocation.php';
+
+					//Get the Hold Group(s) that we will interact with
+					$holdGroupsForLocation = new HoldGroupLocation();
+					$holdGroupsForLocation->locationId = $homeLocation->locationId;
+					$holdGroupIds = $holdGroupsForLocation->fetchAll('holdGroupId');
+					foreach ($holdGroupIds as $holdGroupId) {
+						$holdGroup = new HoldGroup();
+						$holdGroup->id = $holdGroupId;
+						if ($holdGroup->find(true)) {
+							$holdGroups[] = clone $holdGroup;
+						}
+					}
+
+					//Check to see if we have any items that are owned by any of the records in any of the groups.
+					//If we do, we don't need to use VDX
+					if ($this->oneOrMoreHoldableItemsOwnedByPatronHoldGroups($relatedRecord->getItems(), $holdGroups, $variationId, $homeLocation->code)) {
+						$treatHoldAsInterLibraryLoanRequest = false;
+					}
+				}
+			}
+		} catch (Exception $e) {
+			//This happens if the tables are not installed yet
+		}
+		return array(
+			$interLibraryLoanType,
+			$treatHoldAsInterLibraryLoanRequest,
+			$homeLocation,
+			$holdGroups
+		);
 	}
 }
 

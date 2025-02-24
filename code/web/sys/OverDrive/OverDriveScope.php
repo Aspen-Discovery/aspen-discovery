@@ -131,7 +131,7 @@ class OverDriveScope extends DataObject {
 		}
 	}
 
-	public function update($context = '') : bool {
+	public function update($context = '') : bool|int {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

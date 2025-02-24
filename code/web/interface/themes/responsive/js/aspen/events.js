@@ -5,16 +5,35 @@ AspenDiscovery.Events = (function(){
 			$.getJSON(ajaxUrl);
 		},
 
-		//For native events
+		//For Aspen Events
 		getEventTypesForLocation: function(locationId) {
 			var url = Globals.path + '/Events/AJAX';
 			var params = {
-				method: 'getEventTypeIdsForLocation',
+				method: 'getEventTypesAndSublocationsForLocation',
 				locationId: locationId
 			};
 
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
+					if(data.sublocations && data.sublocations.length > 0) {
+						var sublocations = JSON.parse(data.sublocations);
+						$("#sublocationIdSelect").html("");
+						Object.keys(sublocations).forEach(function(key) {
+							$("<option/>", {
+								value: key,
+								text: sublocations[key]
+							}).appendTo("#sublocationIdSelect");
+						});
+						if (sublocations.length === 0) {
+							$("#propertyRowsublocationId").hide();
+						} else {
+							$("#propertyRowsublocationId").show();
+						}
+
+					} else {
+						$("#sublocationIdSelect").html("");
+						$("#propertyRowsublocationId").hide();
+					}
 					if (data.eventTypeIds.length > 0) {
 						$("#eventTypeIdSelect option").each(function () {
 							if (!data.eventTypeIds.includes($(this).val())) {

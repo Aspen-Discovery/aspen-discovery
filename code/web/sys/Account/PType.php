@@ -253,7 +253,7 @@ class PType extends DataObject {
 		}
 	}
 
-	public function update($context = '') : bool {
+	public function update($context = '') : bool|int {
 		if ($this->accountLinkingSetting != 0) {
 			$user = new User();
 			$user->patronType = $this->pType;
