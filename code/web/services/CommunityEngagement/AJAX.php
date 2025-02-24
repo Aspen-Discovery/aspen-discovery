@@ -379,7 +379,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
     }
 
     public function campaignLeaderboardOptIn() {
-        //TODO: CHANGE SO THAT WE USE THE PASSED IN USER NOT LOGGED IN
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
                 'success' => false,
@@ -391,8 +390,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
             exit;
         }
 
-        $user = UserAccount::getLoggedInUser();
-        $userId = $user->id;
+        $userId = $_GET['userId'];
         $campaignId = $_GET['campaignId'];
 
         if (empty($campaignId)) {
@@ -424,7 +422,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
     }
 
     public function campaignLeaderboardOptOut() {
-        //TODO: CHANGE SO THAT WE USE THE PASSED IN USER NOT LOGGED IN
 
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
@@ -437,8 +434,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
             exit;
         }
 
-        $user = UserAccount::getLoggedInUser();
-        $userId = $user->id;
+        $userId = $_GET['userId'];
         $campaignId = $_GET['campaignId'];
 
         if (empty($campaignId)) {
@@ -607,6 +603,52 @@ class CommunityEngagement_AJAX extends JSON_Action {
                     'text' => 'Failed to update your campaign notification preferences.',
                     'isPublicFacing' => true,
                 ])
+            ];
+        }
+    }
+
+    public function saveLeaderboardChanges() {
+        $input = file_get_contents("php://input");
+        $data = json_decode($input, true);
+
+        if (empty($data['html'])) {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Nothing data to save',
+                    'isPublicFacing' => true,
+                ]),
+            ];
+        }
+
+        $filePath = "/interface/themes/responsive/js/CommunityEngagement/leaderboard.tpl";
+        if (file_put_contents($filePath, $data['html']) !== false) {
+            return [
+                'success' => true,
+                'title' => translate([
+                    'text' => 'Success',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Leaderboard updated successfully!',
+                    'isPublicFacing' => true,
+                ]),
+            ];
+        } else {
+            return [
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Failed to save changes.',
+                    'isPublicFacing' => true,
+                ]),
             ];
         }
     }
