@@ -1,10 +1,30 @@
 {strip}
 	<div class="row">
 		<div class="col-xs-12">
-			<h1>{$title}</h1>
+			<h1>{translate text="Resources A to Z" isPublicFacing=true inAttribute=true}</h1>
 		</div>
 		<div class="col-xs-12">
 			{$description}
+		</div>
+		<div id="filterAtoZ-navbar" class="navbar-horizontal">
+			<ul id="filterAtoZ-list" class="navbar-horizontal-items" >
+				{foreach from=$filterArray item=filter}
+					<li id="filterAtoZ-listItem" class="navbar-horizontal-item">
+					{if in_array($filter, $validLetters)}
+							{if $filter == 'num'}
+								<a  class="btn btn-primary btn-sm" href="/WebBuilder/ResourcesAtoZ?startsWith={$filter}">#</a>
+							{else}
+								<a  class="btn btn-primary btn-sm" href="/WebBuilder/ResourcesAtoZ?startsWith={$filter}">{$filter}</a>
+							{/if}
+						{else}
+						<a  class="btn btn-primary btn-sm" disabled="true">{$filter}</a>
+						{/if}
+					</li>
+				{/foreach}
+				<li class=""  style="margin-left: auto;">
+					<a  class="btn btn-primary btn-sm" href="/WebBuilder/ResourcesAtoZ?startsWith=All">View All</a>
+				</li>
+			</ul>
 		</div>
 	</div>
 	{foreach from=$webResources item=curResource}

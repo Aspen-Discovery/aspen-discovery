@@ -90,7 +90,8 @@ class BookCoverProcessor {
 			if ($this->getAspenEventsImageCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage' || $this->type == 'GrapesPage') {
+		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage' || $this->type == 'GrapesPage'
+			|| $this->type == 'ResourceAudiencePage' || $this->type == 'ResourceCategoryPage' || $this->type == 'CustomResourcePage' || $this->type == 'WebResourcesAtoZ') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
 			}
@@ -1856,6 +1857,12 @@ class BookCoverProcessor {
 		} elseif ($this->type == 'GrapesPage') {
 			require_once ROOT_DIR . '/RecordDrivers/GrapesPageRecordDriver.php';
 			$recordDriver = new GrapesPageRecordDriver($this->type . ':' . $id);
+		} elseif ($this->type == 'ResourceAudiencePage' ||$this->type == 'ResourceCategoryPage' || $this->type == 'CustomResourcePage') {
+			require_once ROOT_DIR . '/RecordDrivers/CustomResourcePagesRecordDriver.php';
+			$recordDriver = new CustomResourcePagesRecordDriver($this->type . ':' . $id);
+		} elseif ($this->type == 'WebResourcesAtoZ') {
+			require_once ROOT_DIR . '/RecordDrivers/CustomResourcePagesRecordDriver.php';
+			$recordDriver = new CustomResourcePagesRecordDriver($this->type);
 		}
 
 		if ($recordDriver != null && $recordDriver->isValid()) {

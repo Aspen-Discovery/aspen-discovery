@@ -475,6 +475,14 @@ public class EvolveExportMain {
 
 	}
 
+	private static void setSubfieldFromJson(JSONObject curItem, String jsonField, char subfield, DataField itemField, MarcFactory marcFactory) {
+		if (curItem.isNull(jsonField)) {
+			MarcUtil.setSubFieldData(itemField, subfield, "", marcFactory);
+		} else {
+			MarcUtil.setSubFieldData(itemField, subfield, curItem.getString(jsonField), marcFactory);
+		}
+	}
+
 	private static void updateBibWithEvolveHolding(MarcFactory marcFactory, JSONObject curItem, org.marc4j.marc.Record marcRecord) {
 		//String itemBarcode = curItem.getString("Barcode");
 		List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
@@ -488,70 +496,31 @@ public class EvolveExportMain {
 			for (DataField existingItemField : existingItemFields) {
 				Subfield existingRecordNumberSubfield = existingItemField.getSubfield(indexingProfile.getItemRecordNumberSubfield());
 				if (existingRecordNumberSubfield == null) {
-					//Just skip this item
-				} else {
-					if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
-						isExistingItem = true;
-						if (curItem.isNull("Barcode")) {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
-						} else {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
-						}
-						MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
-						if (curItem.isNull("CallNumber")){
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
-						}else{
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
-						}
-						if (curItem.isNull("DueDate")) {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
-						} else {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
-						}
-						if (curItem.isNull("Location")) {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
-						} else {
-							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
-						}
-						break;
-					}
+					continue;
+				}
+				if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
+					isExistingItem = true;
+
+					setSubfieldFromJson(curItem, "Barcode", indexingProfile.getBarcodeSubfield(), existingItemField, marcFactory);
+					setSubfieldFromJson(curItem, "CircStatus", indexingProfile.getItemStatusSubfield(), existingItemField, marcFactory);
+					setSubfieldFromJson(curItem, "CallNumber", indexingProfile.getCallNumberSubfield(), existingItemField, marcFactory);
+					setSubfieldFromJson(curItem, "DueDate", indexingProfile.getDueDateSubfield(), existingItemField, marcFactory);
+					setSubfieldFromJson(curItem, "Location", indexingProfile.getLocationSubfield(), existingItemField, marcFactory);
+					break;
 				}
 			}
+
 			if (!isExistingItem) {
-				//Add a new field for the item
 				DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
 				MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), holdingIdString, marcFactory);
-				MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
-				if (curItem.isNull("CallNumber")){
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
-				}else{
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
-				}
-				if (curItem.isNull("Barcode")) {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
-				}else{
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
-				}
-				if (curItem.isNull("DueDate")) {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
-				} else {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
-				}
-				if (curItem.isNull("Location")) {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
-				}else {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
-				}
-				if (curItem.isNull("Collection")) {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCollectionSubfield(), "", marcFactory);
-				}else {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCollectionSubfield(), curItem.getString("Collection"), marcFactory);
-				}
-				if (curItem.isNull("CreatedDate")) {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDateCreatedSubfield(), "", marcFactory);
-				}else {
-					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDateCreatedSubfield(), curItem.getString("CreatedDate"), marcFactory);
-				}
+
+				setSubfieldFromJson(curItem, "CircStatus", indexingProfile.getItemStatusSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "CallNumber", indexingProfile.getCallNumberSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "Barcode", indexingProfile.getBarcodeSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "DueDate", indexingProfile.getDueDateSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "Location", indexingProfile.getLocationSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "Collection", indexingProfile.getCollectionSubfield(), newItemField, marcFactory);
+				setSubfieldFromJson(curItem, "CreatedDate", indexingProfile.getDateCreatedSubfield(), newItemField, marcFactory);
 
 				marcRecord.addVariableField(newItemField);
 			}

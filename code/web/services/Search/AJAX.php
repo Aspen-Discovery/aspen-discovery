@@ -126,10 +126,6 @@ class AJAX extends Action {
 				$innReachResults = $innReach->getTopSearchResults($searchObject->getSearchTerms(), 5);
 				$interface->assign('innReachResults', $innReachResults['records']);
 			}
-			if ($library && $library->ILLSystem == 3 && $library->showInnReachResultsAtEndOfSearch) {
-				$innReachResults = $innReach->getTopSearchResults($searchObject->getSearchTerms(), 5);
-				$interface->assign('innReachResults', $innReachResults['records']);
-			}
 
 			$innReachLink = $innReach->getSearchLink($searchObject->getSearchTerms());
 			$interface->assign('innReachLink', $innReachLink);

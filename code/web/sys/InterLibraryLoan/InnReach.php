@@ -4,16 +4,24 @@
  */
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
+require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
 
 class InnReach {
 	/**
 	 * Load search results from INN-Reach using the encore interface.
 	 **/
 	function getTopSearchResults($searchTerms, $maxResults) {
+		global $logger;
 		$innReachUrl = $this->getSearchLink($searchTerms);
 		//Load the HTML from INN-Reach
 		$req = new CurlWrapper();
 		$innReachInfo = $req->curlGetPage($innReachUrl);
+		$responseCode = $req->getResponseCode();
+		//Logging
+		ExternalRequestLogEntry::logRequest('innreach.getTopSearchResults', 'GET', $innReachUrl, $req->getHeaders(), '', $responseCode, $innReachInfo, []);
+		if ($responseCode != 200) {
+			$logger->log('Unable to search for titles on INN-Reach. Response code was ' . $responseCode, Logger::LOG_ERROR);
+		}
 
 		//Get the total number of results
 		if (preg_match('/<span class="noResultsHideMessage">.*?(\d+) - (\d+) of (\d+).*?<\/span>/s', $innReachInfo, $summaryInfo)) {

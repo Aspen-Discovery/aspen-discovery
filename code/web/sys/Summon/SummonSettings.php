@@ -8,6 +8,7 @@ class SummonSettings extends DataObject {
 	public $summonApiId;
 	public $summonApiPassword;
 	public $summonBaseApi;
+	public $filterOutBooksAndEbooks;
 
 	function getEncryptedFieldNames(): array {
 		return ['summonApiPassword'];
@@ -48,6 +49,14 @@ class SummonSettings extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Summon API Password',
 				'description' => 'The password to use when connecting to the Summon API',
+				'hideInLists' => true,
+			],
+			'filterOutBooksAndEbooks' => [
+				'property' => 'filterOutBooksAndEbooks',
+				'type' => 'checkbox',
+				'default' => false,
+				'label' => 'Filter Out Books And eBooks',
+				'description' => 'Whether or not to include books and ebooks in the summon search results',
 				'hideInLists' => true,
 			],
 		];

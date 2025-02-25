@@ -1277,8 +1277,16 @@ class Polaris extends AbstractIlsDriver {
 				if ($authenticationResponseRaw) {
 					$authenticationResponse = json_decode($authenticationResponseRaw);
 					if (empty($authenticationResponse->PAPIErrorCode) || $authenticationResponse->PAPIErrorCode == 0) {
-						$accessToken = $authenticationResponse->AccessToken;
-						$patronId = $authenticationResponse->PatronID;
+						$accessToken = $authenticationResponse->AccessToken ?? null;
+						$patronId = $authenticationResponse->PatronID ?? null;
+						if ($accessToken === null) {
+							global $logger;
+							$logger->log('Polaris authentication error: AccessToken is null. Raw response: ' . PHP_EOL . print_r($authenticationResponse, true), Logger::LOG_ERROR);
+						}
+						if ($patronId === null) {
+							global $logger;
+							$logger->log('Polaris authentication error: PatronID is null. Raw response: ' . PHP_EOL . print_r($authenticationResponse, true), Logger::LOG_ERROR);
+						}
 						$session = [
 							'userValid' => true,
 							'accessToken' => $accessToken,
