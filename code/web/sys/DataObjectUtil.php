@@ -348,12 +348,16 @@ class DataObjectUtil {
 				} elseif (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0) {
 					//return an error to the browser
 					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
-				} elseif (in_array($_FILES[$propertyName]["type"], [
-					'image/gif',
-					'image/jpeg',
-					'image/png',
-					'image/svg+xml',
-				])) {
+				} elseif ((!empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], $property['validTypes'])) ||
+					(empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']))) {
+					$allowedTypes = !empty($property['validTypes']) ? implode(', ', $property['validTypes']) : 'image/gif, image/jpeg, image/png, image/svg+xml';
+					AspenError::raiseError(translate([
+						'text' => 'Invalid file type: %1%. Allowed types: %2%.',
+						1 => $_FILES[$propertyName]["type"],
+						2 => $allowedTypes,
+						'isAdminFacing' => true
+					]));
+				} else {
 					$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
 					//Copy the full image to the files directory
 					//Filename is the name of the object + the original filename

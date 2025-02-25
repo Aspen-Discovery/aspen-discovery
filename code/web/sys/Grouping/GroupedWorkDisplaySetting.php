@@ -374,6 +374,9 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'type' => 'enum',
 						'values' => $formatSortGroups,
 						'label' => 'Format Sorting',
+						'description' => 'Required format sorting configuration that can be created under Format Sorting.',
+						'required' => true,
+						'default' => 1
 					],
 					'searchAlgorithm' => [
 						'property' => 'searchAlgorithm',
