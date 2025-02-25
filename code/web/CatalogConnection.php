@@ -643,11 +643,17 @@ class CatalogConnection {
 						$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
 						if ($result['numTitles'] > 0) {
 							foreach ($result['titles'] as $title) {
-								//if ($title['permanentId'] != null) {
 								$userReadingHistoryEntry = new ReadingHistoryEntry();
 								$userReadingHistoryEntry->userId = $patron->id;
 								$userReadingHistoryEntry->sourceId = $title['recordId'];
 								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+
+								if (empty($title['recordId']) || empty($this->accountProfile->recordSource)) {
+									if (!empty($title['permanentId'])) {
+										$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+									}
+								}
+
 								if ($userReadingHistoryEntry->find(true)) {
 									// Update existing entry
 									$userReadingHistoryEntry->checkOutDate = $title['checkout'];
@@ -667,7 +673,6 @@ class CatalogConnection {
 									$userReadingHistoryEntry->insert();
 								}
 								$userReadingHistoryEntry = null;
-								//}
 							}
 						}
 						$timer->logTime("Finished loading native reading history");
@@ -1202,15 +1207,23 @@ class CatalogConnection {
 			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
 			} else {
-				//TODO: This should check to see if the grouped work has been checked out rather than the record
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				$historyEntryDB->sourceId = $checkout->sourceId;
-				$existingEntry = $historyEntryDB->find(true); // Now only checks userId+sourceId
+				$historyEntryDB->source = $source;
+				$historyEntryDB->sourceId = $sourceId;
+
+				// If source or sourceId is empty, we should also check by groupedWorkPermanentId.
+				if (empty($sourceId) || empty($source)) {
+					if (!empty($checkout->groupedWorkId)) {
+						$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId;
+					}
+				}
+
+				$existingEntry = $historyEntryDB->find(true);
 				if ($existingEntry) {
 					$historyEntryDB->update();
 				} else {
-					$historyEntryDB->groupedWorkPermanentId = "";
+					$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId ?? "";
 					$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
 					$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
 					$historyEntryDB->format = mb_substr($checkout->format, 0, 50);

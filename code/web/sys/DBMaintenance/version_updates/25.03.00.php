@@ -167,25 +167,40 @@ function getUpdates25_03_00(): array {
 		// Leo Stoyanov - BWS
 		'deduplicate_reading_history' => [
 			'title' => 'De-Duplicate Reading History & Add Unique Key',
-			'description' => 'Combine multiple rows per (userId, sourceId, source) into one row before adding unique key.',
+			'description' => 'Combine multiple rows per (userId, sourceId, source, groupedWorkPermanentId) into one row before adding unique key. Keep the most recently checked out duplicate.',
 			'continueOnError' => true,
 			'sql' => [
-				// 1. Keep the latest entry of the duplicated titles.
+				// 1. Delete duplicates keeping the most recently checked out title (i.e., highest checkOutDate).
+				// If checkOutDate is the same, keep the one with higher ID.
+				// Exclude empty source/sourceId cases from first path; second path handles it.
 				"DELETE t1 FROM user_reading_history_work t1
 				INNER JOIN user_reading_history_work t2 
 				WHERE 
-					t1.id < t2.id AND
-					t1.userId = t2.userId AND
-					t1.sourceId = t2.sourceId AND
-					t1.source = t2.source;",
+					(
+						(
+							t1.userId = t2.userId AND 
+							t1.source = t2.source AND 
+							t1.sourceId = t2.sourceId AND 
+							(t1.source != '' OR t1.sourceId != '') AND
+							(t1.checkOutDate < t2.checkOutDate OR (t1.checkOutDate = t2.checkOutDate AND t1.id < t2.id))
+						) 
+						OR 
+						(
+							t1.userId = t2.userId AND 
+							t1.source = '' AND t1.sourceId = '' AND 
+							t2.source = '' AND t2.sourceId = '' AND 
+							t1.groupedWorkPermanentId = t2.groupedWorkPermanentId AND
+							(t1.checkOutDate < t2.checkOutDate OR (t1.checkOutDate = t2.checkOutDate AND t1.id < t2.id))
+						)
+					);",
 
-				// 2. Remove existing index if present (usually if an Admin is re-running a DB maintenance).
+				// 2. Remove existing index if present (usually if an Admin is re-running a DB maintenance)
 				"ALTER TABLE user_reading_history_work 
-				DROP INDEX IF EXISTS user_source;",
+				DROP INDEX IF EXISTS user_source_grouped_work;",
 
-				// 3. Create the new unique index
+				// 3. Create new composite unique index.
 				"ALTER TABLE user_reading_history_work 
-				ADD UNIQUE INDEX user_source (userId, sourceId, source);"
+				ADD UNIQUE INDEX user_source_grouped_work (userId, sourceId, source, groupedWorkPermanentId);"
 			],
 		], //deduplicate_reading_history
 

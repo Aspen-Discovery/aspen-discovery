@@ -7431,6 +7431,7 @@ class MyAccount_AJAX extends JSON_Action {
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 
 					$groupedWork = new GroupedWork();
+					// Adding from a grouped record means the sourceId will be the grouped record's permanent_id.
 					$groupedWork->permanent_id = $sourceId;
 					if ($groupedWork->find(true)) {
 						$groupedWorkDriver = new GroupedWorkDriver($sourceId);
