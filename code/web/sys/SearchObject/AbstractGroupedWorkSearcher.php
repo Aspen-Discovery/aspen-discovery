@@ -468,6 +468,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			return '/MyAccount/Home?';
 		} elseif ($this->searchType == 'list') {
 			return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+		} elseif ($this->searchType == 'series') {
+			return '/Series/' . urlencode($_GET['id']) . '?';
 		}
 
 		// If none of the special cases were met, use the default from the parent:

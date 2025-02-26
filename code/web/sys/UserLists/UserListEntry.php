@@ -91,17 +91,17 @@ class UserListEntry extends DataObject {
 		} elseif ($this->source == 'OpenArchives') {
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			return new OpenArchivesRecordDriver($this->sourceId);
-		}elseif ($this->source == 'Events') {
-			if (preg_match('`^communico`', $this->sourceId)){
+		} elseif ($this->source == 'Events') {
+			if (preg_match('`^communico`', $this->sourceId)) {
 				require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 				return new CommunicoEventRecordDriver($this->sourceId);
-			} elseif (preg_match('`^libcal`', $this->sourceId)){
+			} elseif (preg_match('`^libcal`', $this->sourceId)) {
 				require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 				return new SpringshareLibCalEventRecordDriver($this->sourceId);
-			} elseif (preg_match('`^lc_`', $this->sourceId)){
+			} elseif (preg_match('`^lc_`', $this->sourceId)) {
 				require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 				return new LibraryCalendarEventRecordDriver($this->sourceId);
-			} elseif (preg_match('`^assabet`', $this->sourceId)){
+			} elseif (preg_match('`^assabet`', $this->sourceId)) {
 				require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 				return new AssabetEventRecordDriver($this->sourceId);
 			}
@@ -125,6 +125,9 @@ class UserListEntry extends DataObject {
 		} elseif ($this->source == 'Summon') {
 			require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 			return new SummonRecordDriver($this->sourceId);
+		} elseif ($this->source == 'Series') {
+			require_once ROOT_DIR . '/RecordDrivers/SeriesRecordDriver.php';
+			return new SeriesRecordDriver($this->sourceId);
 		} else {
 			return null;
 		}

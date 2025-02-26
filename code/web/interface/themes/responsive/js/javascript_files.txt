@@ -50,6 +50,7 @@ aspen/record.js
 aspen/responsive.js
 aspen/results-list.js
 aspen/searches.js
+aspen/series.js
 aspen/sideloads.js
 aspen/summon.js
 aspen/title-scroller.js

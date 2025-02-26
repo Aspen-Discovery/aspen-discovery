@@ -1382,6 +1382,86 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return 'RecordDrivers/GroupedWork/courseReserveEntry.tpl';
 	}
 
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * user's favorites list.
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getSeriesEntry($listId = null) {
+		global $configArray;
+		global $interface;
+		global $timer;
+
+		$id = $this->getUniqueID();
+		$timer->logTime("Starting to load search result for grouped work $id");
+		$interface->assign('summId', $id);
+		if (substr($id, 0, 1) == '.') {
+			$interface->assign('summShortId', substr($id, 1));
+		} else {
+			$interface->assign('summShortId', $id);
+		}
+
+		$relatedManifestations = $this->getRelatedManifestations();
+		$interface->assign('relatedManifestations', $relatedManifestations);
+
+		//Build the link URL.
+		//If there is only one record for the work we will link straight to that.
+		$linkUrl = $this->getMoreInfoLinkUrl();
+		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
+
+		$interface->assign('summUrl', $linkUrl);
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)) {
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		} else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$isbn = $this->getCleanISBN();
+		$interface->assign('summISBN', $isbn);
+		$interface->assign('summFormats', $this->getFormats());
+
+		$this->assignBasicTitleDetails();
+
+
+		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
+
+		if (IPAddress::showDebuggingInformation()) {
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
+		//Description
+		$interface->assign('summDescription', $this->getDescriptionFast());
+		$timer->logTime('Finished Loading Description');
+		if ($this->hasCachedSeries()) {
+			$interface->assign('ajaxSeries', false);
+			$interface->assign('summSeries', $this->getSeries(false));
+		} else {
+			$interface->assign('ajaxSeries', true);
+			$interface->assign('summSeries', '');
+		}
+
+		$interface->assign('summPubDate', $this->getEarliestPublicationDate());
+		$interface->assign('summVolume', $this->getVolumeDataForRecord($this->getId()));
+
+		$timer->logTime('Finished Loading Series');
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		$interface->assign('recordDriver', $this);
+
+		return 'RecordDrivers/GroupedWork/seriesEntry.tpl';
+	}
+
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		global $interface;
 		$interface->assign('showRatings', $collectionSpotlight->showRatings);

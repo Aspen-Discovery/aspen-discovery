@@ -71,6 +71,9 @@ class SearchObjectFactory {
 			case 'summon' :
 				$engine = 'Summon';
 				break;
+			case 'series' :
+				$engine = 'Series';
+				break;
 			default:
 				$systemVariables = SystemVariables::getSystemVariables();
 				if ($systemVariables->searchVersion == 1) {
@@ -136,6 +139,9 @@ class SearchObjectFactory {
 				break;
 			case 'summon':
 				$source = 'Summon';
+				break;
+			case 'series' :
+				$source = 'Series';
 				break;
 			default:
 				$source = 'GroupedWork';

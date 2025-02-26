@@ -855,7 +855,7 @@ public abstract class AbstractGroupedWorkSolr {
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 
 		//Remove anything in parentheses since it's normally just the format
-		series = series.replaceAll("\\s+\\(+.*?\\)+", "");
+		// series = series.replaceAll("\\s+\\(+.*?\\)+", "");
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
 		series = series.replaceAll(",\\s+(the|an)$", "");
@@ -993,7 +993,7 @@ public abstract class AbstractGroupedWorkSolr {
 			this.placesOfPublication.add(placeOfPublication);
 		}
 	}
-	
+
 	void addLiteraryForms(HashMap<String, Integer> literaryForms) {
 		for (String curLiteraryForm : literaryForms.keySet()) {
 			this.addLiteraryForm(curLiteraryForm, literaryForms.get(curLiteraryForm));

@@ -148,6 +148,10 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
+		if (array_key_exists('Series', $enabledModules) && $library->useSeriesSearchIndex) {
+			$exploreMoreOptions = $this->loadSeriesOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
+		}
+
 		if ($library->enableGenealogy) {
 			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
@@ -369,6 +373,74 @@ class ExploreMore {
 							//Add a link to the actual title
 							$exploreMoreOptions['sampleRecords']['lists'][] = [
 								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1,
+								'openInNewWindow' => false,
+							];
+						}
+
+						$numCatalogResultsAdded++;
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
+
+	protected function loadSeriesOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
+		if ($activeSection != 'series') {
+			if (strlen($searchTerm) > 0) {
+				$exploreMoreOptions['sampleRecords']['series'] = [];
+
+				/** @var SearchObject_SeriesSearcher $searchObject */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('Series');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms([
+					'lookfor' => $searchTerm,
+					'index' => 'SeriesKeyword',
+				]);
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
+				$results = $searchObjectSolr->processSearch(true, false);
+
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					$numCatalogResults = $results['response']['numFound'];
+					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->listsImage)) {
+							$image = '/files/original/' . $appliedTheme->listsImage;
+						} else{
+							$image = '/interface/themes/responsive/images/library_symbol.png';
+						}
+						//Add a link to remaining results
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Series (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Series related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
+							'image' => $image,
+							'link' => $searchObjectSolr->renderSearchUrl(),
+							'usageCount' => 1,
+							'openInNewWindow' => false,
+						];
+					}
+					foreach ($results['response']['docs'] as $doc) {
+						/** @var SeriesRecordDriver $driver */
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
+							//Add a link to the actual title
+							$exploreMoreOptions['sampleRecords']['series'][] = [
+								'label' => "Series: " . $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),

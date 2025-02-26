@@ -1,0 +1,31 @@
+SeriesKeyword:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - author:
+      - [exact, 600]
+      - [and, 250]
+    - table_of_contents:
+      - [ exact, 600 ]
+      - [ and, 250 ]
+    - description:
+      - [exact, 500]
+      - [and, 125]
+    - keywords:
+      - [exact, 300]
+      - [and, 50]
+    - alternate_ids:
+      - [and, 25]
+
+SeriesTitle:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+
+SeriesAuthor:
+  QueryFields:
+    - author:
+      - [exact, 600]
+      - [and, 250]

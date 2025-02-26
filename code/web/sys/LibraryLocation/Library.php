@@ -455,6 +455,8 @@ class Library extends DataObject {
 
 	public $allowUpdatingHolidaysFromILS;
 
+	public $useSeriesSearchIndex;
+
 	private $_cloudLibraryScope;
 
 	/** @var MaterialsRequestFormFields[] */
@@ -2926,6 +2928,20 @@ class Library extends DataObject {
 				],
 			],
 
+			// Series Search
+			'useSeriesSearchIndex' => [
+				'property' => 'useSeriesSearchIndex',
+				'type' => 'enum',
+				'values' => [
+					'0' => 'Grouped Work Based Series Search',
+					'1' => 'Aspen Series Search',
+				],
+				'label' => 'Series Search Mode',
+				'hideInLists' => false,
+				'default' => '0',
+				'forcesReindex' => true,
+			],
+
 			'combinedResultsSection' => [
 				'property' => 'combinedResultsSection',
 				'type' => 'section',
@@ -4241,7 +4257,7 @@ class Library extends DataObject {
 			$scopingSetting = $searchSource;
 			if ($scopingSetting == null) {
 				return null;
-			} elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists' || $scopingSetting == 'open_archives' || $scopingSetting == 'course_reserves') {
+			} elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists' || $scopingSetting == 'series' || $scopingSetting == 'open_archives' || $scopingSetting == 'course_reserves') {
 				Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
 			} elseif ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped') {
 				//Get the default library

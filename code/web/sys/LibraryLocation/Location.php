@@ -1909,7 +1909,7 @@ class Location extends DataObject {
 			$scopingSetting = $searchSource;
 			if ($searchSource == null) {
 				Location::$searchLocation[$searchSource] = null;
-			} elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists') {
+			} elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists' || $scopingSetting == 'series') {
 				global $locationSingleton;
 				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
 			} elseif ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped') {

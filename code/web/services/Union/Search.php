@@ -113,6 +113,14 @@ class Union_Search extends ResultsAction {
 			$interface->assign('action', $action);
 			$this->searchResultsAction = new Union_CombinedResults();
 			$this->searchResultsAction->launch();
+		} elseif ($searchSource == 'series') {
+			require_once(ROOT_DIR . '/services/Series/Results.php');
+			$module = 'Series';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$this->searchResultsAction = new Series_Results();
+			$this->searchResultsAction->launch();
 		} else {
 			if (isset($_REQUEST['searchIndex'])) {
 				$searchIndex = $_REQUEST['searchIndex'];

@@ -36,6 +36,9 @@ class SearchSources {
 			case 'websites':
 				$searchObject = SearchObjectFactory::initSearchObject('Websites');
 				break;
+			case 'series':
+				$searchObject = SearchObjectFactory::initSearchObject('Series');
+				break;
 			case 'catalog':
 			default:
 				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */ $searchObject = SearchObjectFactory::initSearchObject();
@@ -94,6 +97,7 @@ class SearchSources {
 		$searchSummon = array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 		$searchCourseReserves = $library->enableCourseReserves == 2;
+		$searchSeries = $library->useSeriesSearchIndex == 1;
 
 		[
 			$enableCombinedResults,
@@ -249,6 +253,15 @@ class SearchSources {
 				'name' => 'Course Reserves',
 				'description' => 'Course Reserves',
 				'catalogType' => 'course_reserves',
+				'hasAdvancedSearch' => false,
+			];
+		}
+
+		if ($searchSeries) {
+			$searchOptions['series'] = [
+				'name' => 'Series',
+				'description' => 'Series',
+				'catalogType' => 'series',
 				'hasAdvancedSearch' => false,
 			];
 		}
