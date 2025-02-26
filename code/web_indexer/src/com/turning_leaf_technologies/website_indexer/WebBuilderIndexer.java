@@ -57,6 +57,7 @@ class WebBuilderIndexer {
 		indexCustomPages();
 		indexResources();
 		indexGrapesPages();
+		indexWebResourcePages();
 
 		try {
 			solrUpdateServer.commit(false, false, true);
@@ -439,6 +440,153 @@ class WebBuilderIndexer {
 			getGrapesPagesStmt.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error indexing GrapesPages", e);
+		}
+	}
+
+	private void indexWebResourcePages() {
+		try{
+			PreparedStatement getAudiencesForCustomPagesStmt = aspenConn.prepareStatement("SELECT audienceId FROM web_builder_custom_web_resource_page_audience WHERE customResourcePageId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getCategoriesForCustomPagesStmt = aspenConn.prepareStatement("SELECT categoryId FROM web_builder_custom_web_resource_page_category WHERE customResourcePageId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getTitleOfCustomPageStmt = aspenConn.prepareStatement("SELECT title FROM web_builder_custom_web_resource_page WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getDescriptionForPageStmt = aspenConn.prepareStatement("SELECT translation FROM text_block_translation WHERE objectId = ? AND objectType = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getWebResourcePagesToIndexStmt = aspenConn.prepareStatement("SELECT * from web_builder_web_resources_to_index", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getLibrariesForPageStmt = aspenConn.prepareStatement("SELECT DISTINCT library.libraryId from library INNER JOIN web_builder_web_resources_to_index ON web_builder_web_resources_to_index.webResourcesSettingId = library.webResourcesSettingId WHERE library.webResourcesSettingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+
+			ResultSet getWebResourcePagesToIndexRS = getWebResourcePagesToIndexStmt.executeQuery();
+
+			while (getWebResourcePagesToIndexRS.next()){
+				SolrInputDocument solrDocument = new SolrInputDocument();
+				String type = getWebResourcePagesToIndexRS.getString("webResourcePageType");
+				String settingId = getWebResourcePagesToIndexRS.getString("webResourcesSettingId");
+
+				//handle custom resource pages
+				if (type.equals("custom")) {
+					String id = getWebResourcePagesToIndexRS.getString("customWebResourcePageId");
+					solrDocument.addField("id", "CustomResourcePage:" + id);
+					solrDocument.addField("recordtype", "CustomResourcePage");
+
+					getTitleOfCustomPageStmt.setString(1, id);
+					ResultSet getTitleOfCustomPageRS = getTitleOfCustomPageStmt.executeQuery();
+					while (getTitleOfCustomPageRS.next()) {
+						String title = getTitleOfCustomPageRS.getString("title");
+						solrDocument.addField("title", title);
+						solrDocument.addField("title_display", title);
+						solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
+					}
+
+					//Load audiences
+					getAudiencesForCustomPagesStmt.setString(1, id);
+					ResultSet getAudiencesForPortalPageRS = getAudiencesForCustomPagesStmt.executeQuery();
+					while (getAudiencesForPortalPageRS.next()) {
+						solrDocument.addField("audience", audiences.get(getAudiencesForPortalPageRS.getLong("audienceId")));
+					}
+
+					//Load categories
+					getCategoriesForCustomPagesStmt.setString(1, id);
+					ResultSet getCategoriesForPortalPageRS = getCategoriesForCustomPagesStmt.executeQuery();
+					while (getCategoriesForPortalPageRS.next()) {
+						solrDocument.addField("category", categories.get(getCategoriesForPortalPageRS.getLong("categoryId")));
+					}
+
+					//Load Description
+					getDescriptionForPageStmt.setString(1, id);
+					getDescriptionForPageStmt.setString(2, "CustomWebResourcePage");
+					ResultSet getDescriptionForPageRS = getDescriptionForPageStmt.executeQuery();
+					while (getDescriptionForPageRS.next()){
+						solrDocument.addField("description", getDescriptionForPageRS.getString("translation"));
+					}
+				}
+				//handle audience pages
+				if (type.equals("audience")) {
+					String id = getWebResourcePagesToIndexRS.getString("webResourceAudienceId");
+					solrDocument.addField("id", "ResourceAudiencePage:" + id);
+					solrDocument.addField("recordtype", "ResourceAudiencePage");
+					String title = "Resources For " + audiences.get(getWebResourcePagesToIndexRS.getLong("webResourceAudienceId")); //there is only one audience for an audience resource page
+					solrDocument.addField("title", title);
+					solrDocument.addField("title_display", title);
+					solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
+					solrDocument.addField("audience", audiences.get(getWebResourcePagesToIndexRS.getLong("webResourceAudienceId")));
+					//Load Description
+					getDescriptionForPageStmt.setString(1, id);
+					getDescriptionForPageStmt.setString(2, "WebBuilderAudience");
+					ResultSet getDescriptionForPageRS = getDescriptionForPageStmt.executeQuery();
+					while (getDescriptionForPageRS.next()){
+						solrDocument.addField("description", getDescriptionForPageRS.getString("translation"));
+					}
+				}
+				//handle category pages
+				if (type.equals("category")) {
+					String id = getWebResourcePagesToIndexRS.getString("webResourceCategoryId");
+					solrDocument.addField("id", "ResourceCategoryPage:" + id);
+					solrDocument.addField("recordtype", "ResourceCategoryPage");
+					String title = categories.get(getWebResourcePagesToIndexRS.getLong("webResourceCategoryId")); //there is only one category for a category resource page
+					solrDocument.addField("title", title);
+					solrDocument.addField("title_display", title);
+					solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
+					solrDocument.addField("category", title);
+					//Load Description
+					getDescriptionForPageStmt.setString(1, id);
+					getDescriptionForPageStmt.setString(2, "WebBuilderCategory");
+					ResultSet getDescriptionForPageRS = getDescriptionForPageStmt.executeQuery();
+					while (getDescriptionForPageRS.next()){
+						solrDocument.addField("description", getDescriptionForPageRS.getString("translation"));
+					}
+				}
+				//handle A to Z page
+				if (type.equals("AtoZ")) {
+					solrDocument.addField("id", "WebResourcesAtoZ");
+					solrDocument.addField("recordtype", "WebResourcesAtoZ");
+					solrDocument.addField("title", "Resources A to Z");
+					solrDocument.addField("title_display", "Resources A to Z");
+					solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable("Resources A to Z"));
+					getDescriptionForPageStmt.setString(1, settingId);
+					getDescriptionForPageStmt.setString(2, "WebResourcesSetting");
+					ResultSet getDescriptionForPageRS = getDescriptionForPageStmt.executeQuery();
+					while (getDescriptionForPageRS.next()){
+						solrDocument.addField("description", getDescriptionForPageRS.getString("translation"));
+					}
+				}
+
+				solrDocument.addField("settingId", -1);
+				solrDocument.addField("website_name", "Library Website");
+				solrDocument.addField("search_category", "Website");
+				String url = getWebResourcePagesToIndexRS.getString("webResourcePageURL");
+				solrDocument.addField("source_url", url);
+
+				//Load libraries to scope to
+				getLibrariesForPageStmt.setString(1, settingId);
+				ResultSet getLibrariesForPageRS = getLibrariesForPageStmt.executeQuery();
+				long firstLibraryId = -1;
+				while (getLibrariesForPageRS.next()){
+					if (firstLibraryId == -1){
+						//We have some cases where a library was deleted, but the connections to the pages were not cleaned up.
+						//Make sure that the library id is valid.
+						long tmpFirstLibraryId = getLibrariesForPageRS.getLong("libraryId");
+						if (libraryBaseUrls.containsKey(tmpFirstLibraryId)) {
+							firstLibraryId = tmpFirstLibraryId;
+						}
+					}
+					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForPageRS.getLong("libraryId")));
+				}
+
+				if (firstLibraryId == -1){
+					//The page is not attached to any library
+					continue;
+				}
+
+				logEntry.incNumPages();
+				try {
+					solrUpdateServer.add(solrDocument);
+					logEntry.incUpdated();
+				} catch (SolrServerException | IOException e) {
+					logEntry.incErrors("Error adding page to index", e);
+				}
+			}
+			getWebResourcePagesToIndexRS.close();
+			getWebResourcePagesToIndexStmt.close();
+		}catch (SQLException e){
+			logEntry.incErrors("Error indexing custom web resource pages", e);
 		}
 	}
 }

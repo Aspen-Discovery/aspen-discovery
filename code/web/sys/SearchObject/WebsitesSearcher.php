@@ -141,6 +141,9 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 		} elseif ($record['recordtype'] == 'GrapesPage') {
 			require_once ROOT_DIR . '/RecordDrivers/GrapesPageRecordDriver.php';
 			return new GrapesPageRecordDriver($record);
+		} elseif ($record['recordtype'] == 'ResourceAudiencePage' || $record['recordtype'] == 'ResourceCategoryPage' || $record['recordtype'] == 'CustomResourcePage' || $record['recordtype'] == 'WebResourcesAtoZ') {
+			require_once ROOT_DIR . '/RecordDrivers/CustomResourcePagesRecordDriver.php';
+			return new CustomResourcePagesRecordDriver($record);
 		} else {
 			AspenError::raiseError("Unknown type of Website result {$record['recordtype']}");
 		}

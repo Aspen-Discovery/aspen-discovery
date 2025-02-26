@@ -60,6 +60,8 @@ class ImageUpload extends DataObject {
 				'displayUrl' => '/WebBuilder/ViewImage?size=full&id=',
 				'hideInLists' => true,
 				'required' => true,
+				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateXLargeSize' => [
 				'property' => 'generateXLargeSize',
@@ -78,6 +80,8 @@ class ImageUpload extends DataObject {
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=x-large&id=',
 				'hideInLists' => true,
+				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateLargeSize' => [
 				'property' => 'generateLargeSize',
@@ -96,6 +100,8 @@ class ImageUpload extends DataObject {
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=large&id=',
 				'hideInLists' => true,
+				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateMediumSize' => [
 				'property' => 'generateMediumSize',
@@ -114,6 +120,8 @@ class ImageUpload extends DataObject {
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium',
 				'displayUrl' => '/WebBuilder/ViewImage?size=medium&id=',
 				'hideInLists' => true,
+				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateSmallSize' => [
 				'property' => 'generateSmallSize',
@@ -131,6 +139,8 @@ class ImageUpload extends DataObject {
 				'maxHeight' => ImageUpload::$smallSize,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small',
 				'displayUrl' => '/WebBuilder/ViewImage?size=small&id=',
+				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
 			],
 		];
 	}

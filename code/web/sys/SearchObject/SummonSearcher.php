@@ -48,7 +48,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $maxTopics = 1;
 	protected $groupFilters = array();
 	protected $openAccessFilter = false;
-	protected $expand = false;
+	protected $expand = true;
 	protected $sortOptions = array();
 	/**
 	 * @var string
@@ -73,12 +73,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $bookMark;
 	protected $debug = false;
 	protected $journalTitle = false;
-	protected $lightWeightRes = false;
+	protected $lightWeightRes = true;
 	protected $sort = null;
 	  /**
 	 * @var string mixed
 	 */
-	private $searchIndex = 'Title';
+	private $searchIndex = '';
 	/**Facets, filters and limiters */
 	//Values for the main facets - each has an array of available values
 	protected $facets = [
@@ -291,6 +291,19 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$splitFacets = $this->splitFacets($recordData['facetFields']);
 				$this->facetFields = $splitFacets['facetFields'];
 				$this->limitFields = $splitFacets['limitFields'];
+
+				$summonSettings = $this->getSettings();
+				if ($summonSettings && !empty($summonSettings->filterOutBooksAndEbooks)) {
+					foreach ($this->facetFields as $key => $facet) {
+						if ($facet['displayName'] === 'ContentType') {
+							foreach ($facet['counts'] as $index => $count) {
+								if (isset($count['value']) && ($count['value'] === 'Book / eBook' || $count['value'] === 'Book%20%2F%20eBook')) {
+									unset($this->facetFields[$key]['counts'][$index]);
+								}
+							}
+						}
+					}
+				}
 			}
 			return $recordData;
 	}
@@ -572,6 +585,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->filters[] = urlencode($key) . ',' . $encodedValue . ',';
 			}
 		}
+
+		$summonSettings = $this->getSettings();
+
+		if ($summonSettings && !empty($summonSettings->filterOutBooksAndEbooks)) {
+			$this->filters[] = 'ContentType,Book%20%2F%20eBook,t';
+		}
 		return $this->filters;
 	}
 
@@ -737,21 +756,121 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	  */
 	 public function getSearchIndexes() {
 		return [
-			"Title" => translate([
-				'text' => "Title",
+			'' => translate([
+				'text' => 'All Fields',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-			'All Text' => translate([
-				'text' => "All Text",
+			'AuthorCombined' => translate([
+				'text' => 'Author',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-			'Keyword' => translate([
-				'text' => "Keyword",
+			"TitleCombined" => translate([
+				'text' => 'Title',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
-			])
+			]),
+			'PublicationTitle' => translate([
+				'text' => 'Publication Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'SubjectTerms' => translate([
+				'text' => 'Subject Terms',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Abstract' => translate([
+				'text' => 'Abstract',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'CallNumAll' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'CODEN' => translate([
+				'text' => 'CODEN',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'DEWEY' => translate([
+				'text' => 'Dewey',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'DOI' => translate([
+				'text' => 'DOI',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'IsbnAll' => translate([
+				'text' => 'ISBN',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'IssnAll' => translate([
+				'text' => 'ISSN',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Edition' => translate([
+				'text' => 'Edition',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Fulltext' => translate([
+				'text' => 'Full Text',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Genre' => translate([
+				'text' => 'Genre',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'GeographicLocations' => translate([
+				'text' => 'Geographic Location',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Issue' => translate([
+				'text' => 'Issue',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'OCLC' => translate([
+				'text' => 'OCLC Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'PatentNumber' => translate([
+				'text' => 'Patent Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Publisher' => translate([
+				'text' => 'Publisher',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'PublicationSeriesTitle' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'TemporalSubjectTerms' => translate([
+				'text' => 'Time Period',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Volume' => translate([
+				'text' => 'Volume',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -761,18 +880,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 	public function setSearchTerm() {
-		if (strpos($this->searchTerms, ':') !== false) {
-			[
-				$searchIndex,
-				$term,
-			] = explode(':', $this->searchTerms, 2);
-			$this->setSearchTerms([
-				'lookfor' => $term,
-				'index' => $searchIndex,
-			]);
+		if (is_array($this->searchTerms) && count($this->searchTerms) > 0) {
+			if (strpos($this->searchTerms[0], ':') !== false) {
+				[$searchIndex, $term] = explode(':', $this->searchTerms[0], 2);
+				$this->setSearchTerms([
+					'lookfor' => $term,
+					'index' => $searchIndex,
+				]);
+			} else {
+				$this->setSearchTerms([
+					'lookfor' => $this->searchTerms[0],
+					'index' => $this->getDefaultIndex(),
+				]);
+			}
 		} else {
 			$this->setSearchTerms([
-				'lookfor' => $this->searchTerms,
+				'lookfor' => '',
 				'index' => $this->getDefaultIndex(),
 			]);
 		}

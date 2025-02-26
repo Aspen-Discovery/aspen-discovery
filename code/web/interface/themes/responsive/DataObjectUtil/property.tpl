@@ -480,7 +480,19 @@
 				<label class="input-group-btn">
 					<span class="btn btn-primary">
 						{if $property.type == 'image'}
-							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required)}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
+							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" accept="image/jpeg, image/png, image/svg+xml" {if !empty($property.required)}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
+							{literal}
+							<script>
+								document.getElementById('{/literal}{$propName}{literal}').addEventListener('change', function(e) {
+									const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.svg)$/i;
+									const file = e.target.files[0];
+									if (file && !allowedExtensions.exec(file.name)) {
+										alert('{/literal}{translate text="Invalid file type. Allowed types: JPG, JPEG, PNG, SVG" isAdminFacing=true}{literal}');
+										e.target.value = '';
+									}
+								});
+							</script>
+							{/literal}
 						{else}
 							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required)}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{/if}

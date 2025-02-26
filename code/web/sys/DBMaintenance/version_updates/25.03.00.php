@@ -128,10 +128,52 @@ function getUpdates25_03_00(): array {
 				"ALTER TABLE web_builder_portal_cell ADD COLUMN hideDescription TINYINT(1) DEFAULT 0",
 			],
 		], //portal_cell_show_hide_description
+		'create_web_resources_settings_table' => [
+			'title' => 'Create Web Resources Settings Table',
+			'description' => 'Create custom web resource page table',
+			'sql' => [
+				"DROP TABLE IF EXISTS web_builder_web_resources_settings",
+				'CREATE TABLE IF NOT EXISTS web_builder_web_resources_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100),
+					indexAtoZ TINYINT(1) DEFAULT 0
+				) ENGINE INNODB',
+			],
+		], //create_web_resources_settings_table
+		'create_web_resources_to_index_table' => [
+			'title' => 'Create Web Resources To Index Table',
+			'description' => 'Create custom web resource page table',
+			'sql' => [
+				"DROP TABLE IF EXISTS web_builder_web_resources_to_index",
+				'CREATE TABLE IF NOT EXISTS web_builder_web_resources_to_index (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					webResourcesSettingId INT(11) NOT NULL,
+					webResourcePageURL VARCHAR(100),
+					webResourcePageType VARCHAR(100),
+					customWebResourcePageId VARCHAR(100),
+					webResourceAudienceId VARCHAR(100),
+					webResourceCategoryId VARCHAR(100)
+				) ENGINE INNODB',
+			],
+		], //create_web_resources_to_index_table
+		'add_web_resources_setting_id_to_library_table' => [
+			'title' => 'Web Resources Setting ID',
+			'description' => 'Add web resources setting ID to library table',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN webResourcesSettingId INT(11) DEFAULT -1",
+			],
+		], //add_web_resources_setting_id_to_library_table
 
 		// Leo Stoyanov - BWS
 
 		//alexander - PTFS-Europe
+		'filter_books_from_summon_results' => [
+			'title' => 'Filter Books From Summon Results',
+			'description' => 'Add the option of filtering out records with the content type of book or ebook from Summon results',
+			'sql' => [
+				"ALTER TABLE summon_settings ADD COLUMN filterOutBooksAndEbooks TINYINT(1) NOT NULL DEFAULT 0",
+			],
+		],
 
 		//chloe - PTFS-Europe
 

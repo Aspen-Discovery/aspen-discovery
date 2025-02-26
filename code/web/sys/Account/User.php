@@ -4155,6 +4155,10 @@ class User extends DataObject {
 				'Administer All Web Resources',
 				'Administer Library Web Resources',
 			]);
+			$sections['web_builder']->addAction(new AdminAction('Web Resource Settings', 'Settings for Web Resources including which custom pages get indexed.', '/WebBuilder/WebResourceSettings'), [
+				'Administer All Web Resources',
+				'Administer Library Web Resources',
+			]);
 			$sections['web_builder']->addAction(new AdminAction('Custom Web Resource Pages', 'Create custom web resource pages to display web resources belonging to specific categories and audiences.', '/WebBuilder/CustomWebResourcePages'), [
 				'Administer All Custom Web Resource Pages',
 				'Administer Library Custom Web Resource Pages',

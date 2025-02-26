@@ -523,6 +523,17 @@ class CustomWebResourcePage extends DB_LibraryLinkedObject {
 		}
 	}
 
+	public static function getCustomPages() {
+		$customPages = [];
+		$customPage = new CustomWebResourcePage();
+		$customPage->orderBy('title');
+		$customPage->find();
+		while ($customPage->fetch()) {
+			$customPages[$customPage->id] = $customPage->title;
+		}
+		return $customPages;
+	}
+
 	public function loadCopyableSubObjects() {
 		$this->getCategories();
 		$this->getAudiences();

@@ -402,7 +402,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		];
 		if ($this->getAxis360AccessToken($patron)) {
 			$settings = $this->getSettings($patron);
-			$cancelHoldUrl = $settings->apiUrl . "/Services/VendorAPI/removeHold/v2/$recordId/{$patron->getBarcode()}";
+			$cancelHoldUrl = $settings->apiUrl . "/Services/VendorAPI/removeHold/v2/$recordId/{$patron->getBarcode()}/";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,

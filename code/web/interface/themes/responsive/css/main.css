@@ -7467,6 +7467,36 @@ body > .container {
 .nav-tabs {
   margin-bottom: 0;
 }
+.navbar-horizontal {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  padding-top: 2em;
+  padding-bottom: 2em;
+}
+.navbar-horizontal-items {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 18px;
+}
+.navbar-horizontal-item {
+  display: flex;
+  margin: 2px;
+  font-weight: bold;
+  overflow: hidden;
+}
+.navbar-nav {
+  margin: 7.5px -15px;
+}
+.navbar-nav > li > a {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 20px;
+}
 @media (max-width: 480px) {
   #search_box_group {
     padding-top: 5px;

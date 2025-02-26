@@ -402,6 +402,7 @@ class Library extends DataObject {
 
 	//Web Builder
 	public $enableWebBuilder;
+	public $webResourcesSettingId;
 
 	//WebsiteIndexing
 	public $websiteIndexingFacetSettingId;
