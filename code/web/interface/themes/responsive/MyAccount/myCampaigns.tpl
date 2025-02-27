@@ -130,118 +130,118 @@
                 </tbody>
             </table>
         {/if}
-                {if $hasLinkedUsers}
-            <h2>{translate text="Linked Account Campaigns" isPublicFacing=true}</h2>
-            {foreach from=$linkedCampaigns item="linkedUser"}
-            <h3>{$linkedUser.linkedUserName}</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>{translate text="Campaign Name" isPublicFacing=true}</th>
-                        <th>{translate text="Start Date" isPublicFacing=true}</th>
-                        <th>{translate text="End Date" isPublicFacing=true}</th>
-                        <th>{translate text="Campaign Reward" isPublicFacing=true}</th>
-                        <th>{translate text="Milestones Completed" isPublicFacing=true}</th>
-                        <th>{translate text="Action" isPublicFacing=true}</th>
-                        <th>{translate text="Campaign Information" isPublicFacing=true}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {foreach from=$linkedUser.campaigns item="campaign" key="resultIndex"}
-                     {assign var="showLinkedUserAddProgressColumn" value=false}
-                            {foreach from=$campaign.milestones item="milestone"}
-                                {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
-                                    {assign var="showLinkedUserAddProgressColumn" value=true}
-                                {/if}
-                            {/foreach}
-                        <tr>
-                            <td>{$campaign.campaignName}</td>
-                            <td>{$campaign.startDate}</td>
-                            <td>{$campaign.endDate}</td>
-                            <td>
-                               {$campaign.campaignReward.rewardName}
-                               {if $campaign.campaignReward.rewardType === 1}
-                                    <img src="{$campaign.reward.badgeImage}" alt="{$campaign.reward.rewardName}" width="100" height="100" />
-                                {/if}
-                            </td>
-                            <td>{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
-                            <td>
-                                {if $campaign.isEnrolled}
-                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
-                                {else}
-                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
-                                {/if}
-                            </td>
-                            <td>
-                                <button class="btn btn-primary btn-sm" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
-                            </td>
-                        </tr>
-                        <tr id="linkedUserCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
-                            <td colspan="7">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>{translate text="Milestone" isPublicFacing=true}</th>
-                                            <th>{translate text="Milestone Reward" isPublicFacing=true}</th>
-                                            <th>{translate text="Progress Towards Milestone" isPublicFacing=true}</th>
-                                            <th>{translate text="Progress Percentage" isPublicFacing=true}</th>
-                                            {if $showLinkedUserAddProgressColumn}
-                                                <th>{translate text="Add Progress" isPublicFacing=true}</th>
-                                            {/if}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+            {if $hasLinkedUsers}
+                <h2>{translate text="Linked Account Campaigns" isPublicFacing=true}</h2>
+                {foreach from=$linkedCampaigns item="linkedUser"}
+                    <h3>{$linkedUser.linkedUserName}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{translate text="Campaign Name" isPublicFacing=true}</th>
+                                <th>{translate text="Start Date" isPublicFacing=true}</th>
+                                <th>{translate text="End Date" isPublicFacing=true}</th>
+                                <th>{translate text="Campaign Reward" isPublicFacing=true}</th>
+                                <th>{translate text="Milestones Completed" isPublicFacing=true}</th>
+                                <th>{translate text="Action" isPublicFacing=true}</th>
+                                <th>{translate text="Campaign Information" isPublicFacing=true}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach from=$linkedUser.campaigns item="campaign" key="resultIndex"}
+                            {assign var="showLinkedUserAddProgressColumn" value=false}
                                     {foreach from=$campaign.milestones item="milestone"}
-                                        <tr>
-                                            <td>{$milestone.milestoneName}</td>
-                                            <td>{$milestone.rewardName} 
-                                                {if $milestone.rewardType === 1}
-                                                    <img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" width="100" height="100" />
-                                                {/if}
-                                            </td>
-                                            <td>
-                                                {if $milestone.completedGoals <= $milestone->totalGoals}
-                                                    {$milestone.completedGoals} / {$milestone.totalGoals}
-                                                {else}
-                                                    {$milestone.totalGoals} / {$milestone.totalGoals}
-                                                {/if}
-                                                {foreach from=$milestone.progressData item="progressData"}
-                                                    <div style="padding:10px;">
-                                                        {$progressData['title']}
-                                                    </div>
-                                                {/foreach}
-                                            </td>
-                                            <td style="position: relative; text-align: center; vertical-align: middle;">
-                                                <div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
-                                                    <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$milestone.progress}%; line-height: 20px; text-align: center; color: #fff;">
-                                                        {$milestone.progress}%
-                                                    </div>
-                                                </div>
-
-                                                {if $milestone.progressBeyondOneHundredPercent && $milestone.extraProgress > 0}
-                                                    <div class="extra-progress" aria-valuenow="{$milestone.extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
-                                                        <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
-                                                            {$milestone.extraProgress}%
-                                                        </span>
-                                                    </div>
-                                                {/if}
-                                            </td>
-                                            {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
-                                                <td>
-                                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});">{translate text="Add Progress" isPublicFacing=true}</button>
-                                                </td>
-                                            {/if}
-                                        </tr>
+                                        {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
+                                            {assign var="showLinkedUserAddProgressColumn" value=true}
+                                        {/if}
                                     {/foreach}
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    {/foreach}
-                </tbody>
-            </table>
-            {/foreach}
-        {/if}
+                                <tr>
+                                    <td>{$campaign.campaignName}</td>
+                                    <td>{$campaign.startDate}</td>
+                                    <td>{$campaign.endDate}</td>
+                                    <td>
+                                    {$campaign.campaignReward.rewardName}
+                                    {if $campaign.campaignReward.rewardType == 1}
+                                            <img src="{$campaign.reward.badgeImage}" alt="{$campaign.reward.rewardName}" width="100" height="100" />
+                                        {/if}
+                                    </td>
+                                    <td>{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
+                                    <td>
+                                        {if $campaign.isEnrolled}
+                                            <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
+                                        {else}
+                                            <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                        {/if}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
+                                    </td>
+                                </tr>
+                                <tr id="linkedUserCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+                                    <td colspan="7">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>{translate text="Milestone" isPublicFacing=true}</th>
+                                                    <th>{translate text="Milestone Reward" isPublicFacing=true}</th>
+                                                    <th>{translate text="Progress Towards Milestone" isPublicFacing=true}</th>
+                                                    <th>{translate text="Progress Percentage" isPublicFacing=true}</th>
+                                                    {if $showLinkedUserAddProgressColumn}
+                                                        <th>{translate text="Add Progress" isPublicFacing=true}</th>
+                                                    {/if}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {foreach from=$campaign.milestones item="milestone"}
+                                                <tr>
+                                                    <td>{$milestone.milestoneName}</td>
+                                                    <td>{$milestone.rewardName} 
+                                                        {if $milestone.rewardType == 1}
+                                                            <img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" width="100" height="100" />
+                                                        {/if}
+                                                    </td>
+                                                    <td>
+                                                        {if $milestone.completedGoals <= $milestone->totalGoals}
+                                                            {$milestone.completedGoals} / {$milestone.totalGoals}
+                                                        {else}
+                                                            {$milestone.totalGoals} / {$milestone.totalGoals}
+                                                        {/if}
+                                                        {foreach from=$milestone.progressData item="progressData"}
+                                                            <div style="padding:10px;">
+                                                                {$progressData['title']}
+                                                            </div>
+                                                        {/foreach}
+                                                    </td>
+                                                    <td style="position: relative; text-align: center; vertical-align: middle;">
+                                                        <div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
+                                                            <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$milestone.progress}%; line-height: 20px; text-align: center; color: #fff;">
+                                                                {$milestone.progress}%
+                                                            </div>
+                                                        </div>
+
+                                                        {if $milestone.progressBeyondOneHundredPercent && $milestone.extraProgress > 0}
+                                                            <div class="extra-progress" aria-valuenow="{$milestone.extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+                                                                <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                                                    {$milestone.extraProgress}%
+                                                                </span>
+                                                            </div>
+                                                        {/if}
+                                                    </td>
+                                                    {if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
+                                                        <td>
+                                                            <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});">{translate text="Add Progress" isPublicFacing=true}</button>
+                                                        </td>
+                                                    {/if}
+                                                </tr>
+                                            {/foreach}
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                {/foreach}
+            {/if}
         {assign var="hasActiveCampaigns" value=false}
         {foreach from=$campaignList item="campaign" key="resultIndex"}
             {if $campaign->isActive}
@@ -278,9 +278,9 @@
                                 <td>{translate text="Not Enrolled" isPublicFacing=true}</td>
                             {/if}
                             {if $campaign->enrolled}
-                            <td>
-                                <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
-                            </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
+                                </td>
                             {else}
                                 <td>
                                     <button class="btn btn-sm btn-primary" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
@@ -397,11 +397,11 @@
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
                                 </td>
-                                {else}
-                                    <td>
-                                        <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
-                                    </td>
-                                {/if}
+                            {else}
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                </td>
+                            {/if}
                                 <td>
                                     <button class="btn btn-primary btn-sm" onclick="toggleUpcomingCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
                                 </td>
@@ -530,7 +530,7 @@
                                 {if $campaign->campaignRewardGiven}
                                     <strong>{translate text="Reward Received"}</strong>
                                 {/if}
-                                 {if $campaign->campaignRewardGiven && $campaign->rewardType === 1}
+                                 {if $campaign->campaignRewardGiven && $campaign->rewardType == 1}
                                     <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$campaign->rewardName}&picture={$url}{$campaign->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
                                     <a href="https://twitter.com/intent/tweet?url={$url}{$campaign->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
                                     <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$campaign->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
@@ -571,17 +571,17 @@
                                             </td>
                                             <td>
                                                 {$milestone->rewardName}
-                                                {if $milestone->rewardType === 1 && $milestone->rewardExists}
+                                                {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                     <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                 {/if}
                                             </td>
                                             <td>
                                                 {if $milestone->rewardGiven}
                                                     {translate text="Reward Given" isPublicFacing=true}
-                                                      {if $milestone->rewardType === 1}
-                                                        <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$milestone->rewardName}&picture={$url}{$milestone->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
-                                                        <a href="https://twitter.com/intent/tweet?url={$url}{$milestone->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
-                                                        <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$milestone->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
+                                                    {if $milestone->rewardType == 1}
+                                                    <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$milestone->rewardName}&picture={$url}{$milestone->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
+                                                    <a href="https://twitter.com/intent/tweet?url={$url}{$milestone->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
+                                                    <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$milestone->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
                                                     {/if}
                                                 {else}
                                                     {translate text="Not Yet Given" isPublicFacing=true}
@@ -594,9 +594,10 @@
                              </td>
                         </tr>
                 {/if}
-            {/foreach}
+                {/foreach}
             </tbody>
         </table>
+        {/if}
     {/if}
 {/strip}
 {literal}
