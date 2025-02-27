@@ -469,6 +469,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
     public function getCampaignEmailOptInForm() {
         require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
         require_once ROOT_DIR . '/sys/Account/User.php';
+        require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+
         $campaignId = $_GET['campaignId'];
         $userId = $_GET['userId'];
 
@@ -509,26 +511,32 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
+        $campaign = new Campaign();
+        $campaign->id = $campaignId;
+        if ($campaign->find(true)) {
+            $campaignName = $campaign->name;
+        }
+
         $optInToCampaignSpecificEmails = null;
         if ($userCampaign->find(true)) {
             $optInToCampaignSpecificEmails = $userCampaign->optInToCampaignEmailNotifications;
         }
 
         $isOptedIn = ($optInToCampaignSpecificEmails !== null) ? $optInToCampaignSpecificEmails : $optInToAllCampaignEmails;
+        $sliderState = $isOptedIn ? 'checked' : '';
 
-        if ($isOptedIn) {
-            $buttonExplanationText = translate([
-                'text' => 'Opt Out of Email Notifications for This Campaign',
-                'isPublicFacing' => true
+        if (!empty($user->email)) {
+            $emailReminder = translate([
+                'text' => 'Emails will be sent to: ' . $user->email,
+                'isPublicFacing' => true,
             ]);
-            $action = "AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, 0)";
         } else {
-            $buttonExplanationText = translate([
-                'text' => 'Opt In to Email Notifications for This Campaign',
-                'isPublicFacing' => true
+            $emailReminder = translate([
+                'text' => 'Please update your email address in your contact information.',
+                'isPublicFacing' => true,
             ]);
-            $action = "AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, 1)";
         }
+
 
         return [
             'success' => true,
@@ -537,10 +545,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 'isPublicFacing' => true
             ]),
             'modalBody' => translate([
-                'text' => $buttonExplanationText,
+                'text' => 'Opt in to campaign email updates for ' .$campaignName . ':',
                 'isPublicFacing' => true,
-            ]),
-            'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='$action'>" . translate([
+            ]) . '<label class-"switch"><input type="checkbox" id="emailOptInSlider"' . $sliderState . '><span class="slider"></span></label><br>' . $emailReminder,
+            'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, $(\"#emailOptInSlider\").prop(\"checked\") ? 1 : 0)'>" . translate([
                 'text' => 'Submit',
                 'isPublicFacing' => true,
                 ]) . "</button>",
@@ -568,8 +576,9 @@ class CommunityEngagement_AJAX extends JSON_Action {
             ];
         }
 
+
         $userCampaign = new UserCampaign();
-        $userCampaign->userid = $userId;
+        $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
         if ($userCampaign->find(true)) {

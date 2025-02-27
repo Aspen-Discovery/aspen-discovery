@@ -186,8 +186,8 @@ AspenDiscovery.CommunityEngagement = function() {
 				console.error("AJAX Error: ", textStatus, errorThrown);
 			});
 		},
-		toggleCampaignEmailOptIn: function ($campaignId, $userId, optIn) {
-			var url = Globals.path + "communityEngagement/AJAX?method=saveCampaignEmailOptInToggle";
+		toggleCampaignEmailOptIn: function (campaignId, userId, optIn) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=saveCampaignEmailOptInToggle";
 			var params = {
 				campaignId: campaignId, 
 				userId: userId, 

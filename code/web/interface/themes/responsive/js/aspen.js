@@ -8427,7 +8427,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 		showEmailOptInPrompt: function (campaignId, userId) {
-			var url = Globals.path + "CommunityEngagement/AJAX?method=getCampaignEmailOptInForm";
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=getCampaignEmailOptInForm";
 			var params = {
 				campaignId: campaignId,
 				userId: userId,
@@ -8435,8 +8435,13 @@ AspenDiscovery.Account = (function () {
 
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					console.log("show email opt in form");
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, true, '', false, false);
+				} else {
+					console.error("Error fetching the email opt-in form.");
 				}
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				console.error("AJAX request failed:", textStatus, errorThrown);
 			})
 		},
 
@@ -8453,10 +8458,14 @@ AspenDiscovery.Account = (function () {
 				};
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
-						if (response.showEmailOptInPrompt) {
-							showEmailOptInPrompt(response.campaignId, response.userId);
-						}
+						AspenDiscovery.showMessage(data.title, data.message, false, false, false, false);
+						$('#modalDialog').one('hidden.bs.modal', function() {
+							if (data.showEmailOptInPromptFlag) {
+								AspenDiscovery.Account.showEmailOptInPrompt(data.campaignId, data.userId);
+
+							}
+						});
+				
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
@@ -18190,8 +18199,8 @@ AspenDiscovery.CommunityEngagement = function() {
 				console.error("AJAX Error: ", textStatus, errorThrown);
 			});
 		},
-		toggleCampaignEmailOptIn: function ($campaignId, $userId, optIn) {
-			var url = Globals.path + "communityEngagement/AJAX?method=saveCampaignEmailOptInToggle";
+		toggleCampaignEmailOptIn: function (campaignId, userId, optIn) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=saveCampaignEmailOptInToggle";
 			var params = {
 				campaignId: campaignId, 
 				userId: userId, 
