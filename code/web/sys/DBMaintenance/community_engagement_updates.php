@@ -331,5 +331,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_user_campaign ADD COLUMN optInToCampaignEmailNotifications TINYINT DEFAULT NULL",
             ],
         ],
+        'add_campaign_complete_email_sent' => [
+            'title' => 'Add Campaign Complete Email Sent',
+            'description' => 'Add a column to track when a campaign completed email has been sent',
+            'sql' => [
+                "ALTER TABLE ce_user_campaign ADD COLUMN campaignCompleteEmailSent TINYINT(1) DEFAULT 0"
+            ],
+        ],
     ];
 }

@@ -31,7 +31,8 @@ class EmailTemplate extends DataObject {
 			];
 		} else {
 			$availableTemplates = [
-				'welcome' => 'Welcome'
+				'welcome' => 'Welcome',
+				'campaignStart' => 'Campaign Start',
 			];
 		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
@@ -297,6 +298,24 @@ class EmailTemplate extends DataObject {
 			$text = str_ireplace('%user.firstname%', $user->firstname, $text);
 			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
 			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
+		} elseif ($this->templateType == 'campaignStart') {
+			$user = $parameters['user'];
+			/* @var Library $library */
+			$library = $parameters['library'];
+			if (empty($library->baseUrl)) {
+				global $configArray;
+				$baseUrl = $configArray['Site']['url'];
+			} else {
+				$baseUrl = $library->baseUrl;
+			}
+
+			$text = str_replace('%library.displayName%', $library->displayName, $text);
+			$text = str_replace('%library.baseUrl%', $baseUrl, $text);
+			$text = str_replace('%library.email%', $library->contactEmail, $text);
+			$text = str_ireplace('%user.firstname%', $user->firstname, $text);
+			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
+			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
+			$text = str_replace('%campaign.name%', $parameters['campaignName'], $text);
 		}
 		return $text;
 	}

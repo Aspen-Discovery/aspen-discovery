@@ -2,6 +2,10 @@
 
 require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+
+
 
 /**
  * after_checkout_insert
@@ -22,6 +26,9 @@ add_action('after_object_insert', 'after_checkout_insert', function ($value) {
 			return;
 
 		$campaignMilestone->addCampaignMilestoneProgressEntry($value, $value->userId, $value->groupedWorkId);
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->checkAndHandleCampaignCompletion($value->userId, $campaignMilestone->campaignId);
 	}
 	return;
 });

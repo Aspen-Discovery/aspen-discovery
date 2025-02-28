@@ -1,5 +1,6 @@
 <?php
 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
+	require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
 
 class UserCampaign extends DataObject {
@@ -13,6 +14,7 @@ class UserCampaign extends DataObject {
     public $rewardGiven;
     public $optInToCampaignLeaderboard;
     public $optInToCampaignEmailNotifications;
+    public $campaignCompleteEmailSent;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -167,6 +169,33 @@ class UserCampaign extends DataObject {
             $rank++;
         }
         return $userRank;
+    }
+
+    public function checkAndHandleCampaignCompletion($userId, $campaignId) {
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        if ($userCampaign->find(true)) {
+            if ($userCampaign->completed == 1 && $userCampaign->campaignCompleteEmailSent == 0) {
+                $user = new User();
+                $user->id = $userId;
+                if (!$user->find(true)) {
+                    return;
+                }
+
+                $campaign = new Campaign();
+                $campaign->id = $campaignId;
+                if (!$campaign->find(true)) {
+                    return;
+                }
+                $campaignName = $campaign->name;
+
+                sendCampaignEmail($user, $campaignName);
+                $userCampaign->campaignCompleteEmailSent = 1;
+                $userCampaign->update();
+            }
+        }
     }
 
 }
