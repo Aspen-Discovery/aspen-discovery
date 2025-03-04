@@ -5426,9 +5426,15 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$paymentUrl = $baseUrl . '/v2/payments';
 				$paymentRequestResults = $paymentRequest->curlPostBodyData($paymentUrl, $body);
-				$paymentRequestResults = json_decode($paymentRequestResults);
-				if ($paymentRequestResults->payment) {
-					$paymentResults = $paymentRequestResults->payment;
+				$decodedPaymentRequestResults = json_decode($paymentRequestResults);
+
+				$allowPaymentsDebugging = $squareSettings->enablePaymentsDebugging;
+				if ($allowPaymentsDebugging){
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.completeSquareOrder', 'POST', $paymentUrl, $paymentRequest->getHeaders(), json_encode($body), $paymentRequest->getResponseCode(), $paymentRequestResults, []);
+				}
+
+				if ($decodedPaymentRequestResults->payment) {
+					$paymentResults = $decodedPaymentRequestResults->payment;
 					if ($paymentResults->status == 'COMPLETED' || $paymentResults->status == 'APPROVED') {
 						if ($transactionType == 'donation') {
 							$payment->completed = 1;
@@ -5479,7 +5485,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 					}
 				} else {
-					$error = $paymentRequestResults->error;
+					$error = $decodedPaymentRequestResults->error;
 					$payment->error = 1;
 					$payment->message = $error->detail;
 					$payment->update();
