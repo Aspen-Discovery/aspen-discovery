@@ -376,6 +376,7 @@ function getUpdates25_03_00(): array {
 			'description' => 'Enable to show debugging information about Paypal payments',
 			'sql' => [
 				'ALTER TABLE paypal_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
+				'ALTER TABLE square_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 			]
 		], //enable_payments_debugging
 
