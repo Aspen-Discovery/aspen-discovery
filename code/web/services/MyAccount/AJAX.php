@@ -5037,18 +5037,24 @@ class MyAccount_AJAX extends JSON_Action {
 				"Accept-Language: en_US",
 				"Authorization: Basic $authInfo",
 			], true);
-			$postParams = ['grant_type' => 'client_credentials',];
+			$postParams = ['grant_type' => 'client_credentials'];
 
 			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
 			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
+			$decodedAccessTokenResults = json_decode($accessTokenResults);
+
+			$allowPaymentsDebugging = $payPalSettings->enablePaymentsDebugging;
+			if ($allowPaymentsDebugging){
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.createPayPalOrder', 'POST', $accessTokenUrl, $payPalAuthRequest->getHeaders(), json_encode($postParams), $payPalAuthRequest->getResponseCode(), $accessTokenResults, ['client_secret' => $clientSecret]);
+			}
+
+			if (empty($decodedAccessTokenResults->access_token)) {
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.',
 				];
 			} else {
-				$accessToken = $accessTokenResults->access_token;
+				$accessToken = $decodedAccessTokenResults->access_token;
 			}
 
 			global $library;
@@ -5081,9 +5087,13 @@ class MyAccount_AJAX extends JSON_Action {
 			];
 
 			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-			$paymentResponse = json_decode($paymentResponse);
+			$decodedPaymentResponse = json_decode($paymentResponse);
+			
+			if ($allowPaymentsDebugging){
+				ExternalRequestLogEntry::logRequest('myaccount.createPayPalOrder', 'POST', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(), json_encode($postParams), $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
+			}
 
-			if ($paymentResponse->status != 'CREATED') {
+			if ($decodedPaymentResponse->status != 'CREATED') {
 				return [
 					'success' => false,
 					'message' => 'Unable to create your order in PayPal.',
@@ -5091,13 +5101,13 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			//Log the request in the database so we can validate it on return
-			$payment->orderId = $paymentResponse->id;
+			$payment->orderId = $decodedPaymentResponse->id;
 			$payment->update();
 
 			return [
 				'success' => true,
 				'orderInfo' => $paymentResponse,
-				'orderID' => $paymentResponse->id,
+				'orderID' => $decodedPaymentResponse->id,
 			];
 		}
 	}
@@ -5176,18 +5186,24 @@ class MyAccount_AJAX extends JSON_Action {
 				"Accept-Language: en_US",
 				"Authorization: Basic $authInfo",
 			], true);
-			$postParams = ['grant_type' => 'client_credentials',];
+			$postParams = ['grant_type' => 'client_credentials'];
 
 			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
 			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
+			$decodedAccessTokenResults = json_decode($accessTokenResults);
+			
+			$allowPaymentsDebugging = $payPalSettings->enablePaymentsDebugging;
+			if ($allowPaymentsDebugging){
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.completePayPalOrder', 'POST', $accessTokenUrl, $payPalAuthRequest->getHeaders(), json_encode($postParams), $payPalAuthRequest->getResponseCode(), $accessTokenResults, ['client_secret' => $clientSecret]);
+			}
+
+			if (empty($decodedAccessTokenResults->access_token)) {
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.',
 				];
 			} else {
-				$accessToken = $accessTokenResults->access_token;
+				$accessToken = $decodedAccessTokenResults->access_token;
 			}
 
 			$payPalPaymentRequest = new CurlWrapper();
@@ -5201,9 +5217,13 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
 
 			$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
-			$paymentResponse = json_decode($paymentResponse);
+			$decodedPaymentResponse = json_decode($paymentResponse);
 
-			$purchaseUnits = $paymentResponse->purchase_units;
+			if ($allowPaymentsDebugging){
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.completePayPalOrder', 'GET', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(),'', $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
+			}
+
+			$purchaseUnits = $decodedPaymentResponse->purchase_units;
 			if (!empty($purchaseUnits)) {
 				$firstItem = reset($purchaseUnits);
 				$payments = $firstItem->payments;
