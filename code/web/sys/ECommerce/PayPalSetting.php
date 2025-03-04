@@ -6,6 +6,7 @@ class PayPalSetting extends DataObject {
 	public $id;
 	public $name;
 	public $sandboxMode;
+	public $enablePaymentsDebugging;
 	public $showPayLater;
 	public $clientId;
 	public $clientSecret;
@@ -37,6 +38,14 @@ class PayPalSetting extends DataObject {
 				'description' => 'Whether or not to use PayPal in Sandbox mode',
 				'hideInLists' => false,
 				'note' => 'This is for testing only! No funds will be received by the library.',
+			],
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'showPayLater' => [
 				'property' => 'showPayLater',
