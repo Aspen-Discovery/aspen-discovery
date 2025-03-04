@@ -38,6 +38,15 @@
 		{if !empty($og_url)}
 			<meta property="og:url" content="{$og_url|escape:html}"/>
 		{/if}
+		{if !empty($twitter_card)}
+			<meta name="twitter:card" content="{$twitter_card|escape:html}"/>
+		{/if}
+		{if !empty($twitter_title)}
+			<meta name="twitter:title" content="{$twitter_title|escape:html}"/>
+		{/if}
+		{if !empty($twitter_image)}
+			<meta name="twitter:image" content="{$twitter_image|escape:html}" />
+		{/if}
 		{if !empty($favicon)}
 			<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">
 		{/if}

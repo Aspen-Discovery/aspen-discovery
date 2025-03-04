@@ -531,9 +531,9 @@
                                     <strong>{translate text="Reward Received"}</strong>
                                 {/if}
                                  {if $campaign->campaignRewardGiven && $campaign->rewardType == 1}
-                                    <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$campaign->rewardName}&picture={$url}{$campaign->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
-                                    <a href="https://twitter.com/intent/tweet?url={$url}{$campaign->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
-                                    <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$campaign->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
+                                    <a href="/Search/ShareCampaigns?rewardName={$campaign->rewardName}&rewardImage={$campaign->rewardImage}&rewardId={$campaign->rewardId}">
+                                        {translate text="Share on Social Media" isPublicFacing=true}
+                                    </a>
                                 {/if}
                                 </td>
                                 <td>
@@ -579,9 +579,9 @@
                                                 {if $milestone->rewardGiven}
                                                     {translate text="Reward Given" isPublicFacing=true}
                                                     {if $milestone->rewardType == 1}
-                                                    <a href="https://www.facebook.com/sharer/sharer.php?u={$url}/MyAccount/MyCampaigns&quote={$milestone->rewardName}&picture={$url}{$milestone->rewardImage}" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-square fa-2x fa-fw"></i></a>
-                                                    <a href="https://twitter.com/intent/tweet?url={$url}{$milestone->rewardImage}&text={translate text="My Badge!"}" target="_blank" title="{translate text="Share on Twitter" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Share on Twitter" isPublicFacing=true inAttribute=true}"><i class="fab fa-twitter-square fa-2x fa-fw"></i></a>
-                                                    <a href="http://www.pinterest.com/pin/create/button/?url={$url}/MyAccount/MyCampaigns&media={$url}{$milestone->rewardImage}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Pin %1%, by %2% on Pinterest" 1=$campaign->rewardName|escapeCSS inAttribute=true isPublicFacing=true translateParameters=false} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fab fa-pinterest-square fa-2x fa-fw"></i></a>
+                                                        <a href="/Search/ShareCampaigns?rewardName={$milestone->rewardName}&rewardImage={$milestone->rewardImage}&rewardId={$milestone->rewardId}">
+                                                            {translate text="Share on Social Media" isPublicFacing=true}
+                                                        </a>
                                                     {/if}
                                                 {else}
                                                     {translate text="Not Yet Given" isPublicFacing=true}
