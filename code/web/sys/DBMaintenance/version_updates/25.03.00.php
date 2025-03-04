@@ -371,6 +371,13 @@ function getUpdates25_03_00(): array {
 		//James Staub - Nashville Public Library
 
 		//Lucas Montoya - Theke Solutions
+		'enable_payments_debugging' => [
+			'title' => 'Enable to Show Debugging Information about Paypal Payments',
+			'description' => 'Enable to show debugging information about Paypal payments',
+			'sql' => [
+				'ALTER TABLE paypal_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
+			]
+		], //enable_payments_debugging
 
 		//Yanjun Li - ByWater
 		'sierra_self_reg_form_updates' => [
