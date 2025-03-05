@@ -5820,6 +5820,8 @@ class MyAccount_AJAX extends JSON_Action {
 					'Accept-Encoding: gzip, deflate',
 					'Authorization: ' . $authorization,
 				], true);
+				
+				$allowPaymentsDebugging = $proPaySetting->enablePaymentsDebugging;
 
 				//Create the payer if one doesn't exist already.
 				if (empty($patron->proPayPayerAccountId)) {
@@ -5836,6 +5838,11 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$createPayerResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createPayer));
+
+					if ($allowPaymentsDebugging){
+						ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($createPayer), $curlWrapper->getResponseCode(), $createPayerResponse, []);
+					}
+
 					if ($createPayerResponse && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($createPayerResponse);
 						if ($patron != null) {
@@ -5875,6 +5882,11 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$createMerchantProfileResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createMerchantProfile));
+					
+					if ($allowPaymentsDebugging){
+						ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($createMerchantProfile), $curlWrapper->getResponseCode(), $createMerchantProfileResponse, []);
+					}
+
 					if ($createMerchantProfileResponse && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($createMerchantProfileResponse);
 						$proPaySetting->merchantProfileId = $jsonResponse->ProfileId;
@@ -5928,6 +5940,11 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$response = $curlWrapper->curlSendPage($url, 'PUT', json_encode($requestElements));
+
+					if ($allowPaymentsDebugging){
+						ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($requestElements), $curlWrapper->getResponseCode(), $response, []);
+					}
+
 					if ($response && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($response);
 						$transactionIdentifier = $jsonResponse->HostedTransactionIdentifier;

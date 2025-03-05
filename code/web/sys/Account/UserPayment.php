@@ -506,6 +506,12 @@ class UserPayment extends DataObject {
 							'Authorization: ' . $authorization,
 						], true);
 						$hostedTransactionResultsResponse = $curlWrapper->curlGetPage($url);
+
+						$allowPaymentsDebugging = $proPaySetting->enablePaymentsDebugging;
+						if ($allowPaymentsDebugging){
+							ExternalRequestLogEntry::logRequest('userPayment.completeProPayPayment', 'GET', $url, $curlWrapper->getHeaders(),"", $curlWrapper->getResponseCode(), $hostedTransactionResultsResponse, []);
+						}
+
 						$jsonResponse = null;
 						if ($hostedTransactionResultsResponse && $curlWrapper->getResponseCode() == 200) {
 							$jsonResponse = json_decode($hostedTransactionResultsResponse);
