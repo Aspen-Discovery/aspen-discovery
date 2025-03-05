@@ -612,6 +612,63 @@ class Greenhouse_AJAX extends Action {
 	}
 
 	function getBreadcrumbs(): array {
-		return [];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('', 'Greenhouse AJAX Handling');
+		return $breadcrumbs;
+	}
+
+	/** @noinspection PhpUnused */
+	function runNYTUpdate(): array
+	{
+		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			return ['success' => false, 'message' => 'You must be logged in as an Aspen Administrator to run this update.'];
+		}
+
+		// Verify that the NYT API is configured
+		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+		$nytSettings = new NewYorkTimesSetting();
+		if (!$nytSettings->find(true)) {
+			return ['success' => false, 'message' => 'The New York Times API is not configured.'];
+		}
+
+		// Get the site URL (for constructing the log URL)
+		$siteUrl = $_REQUEST['siteUrl'] ?? $_SERVER['SERVER_NAME'];
+
+		// Get the path to the updateNYTLists.php script
+		$scriptPath = ROOT_DIR . '/cron/updateNYTLists.php';
+
+		// Execute the script
+		$command = "php $scriptPath $siteUrl";
+		$output = [];
+		$returnVar = 0;
+
+		// Execute the command
+		exec($command, $output, $returnVar);
+
+		if ($returnVar !== 0) {
+			return [
+				'success' => false,
+				'message' => 'Error running the NYT updater. Return code: ' . $returnVar,
+				'output' => implode("\n", $output)
+			];
+		}
+
+		// Get the ID of the latest log entry
+		require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
+		$logEntry = new NYTUpdateLogEntry();
+		$logEntry->orderBy('id DESC');
+		$logEntry->limit(1);
+
+		$logId = null;
+		if ($logEntry->find(true)) {
+			$logId = $logEntry->id;
+		}
+
+		return [
+			'success' => true,
+			'message' => 'NYT Lists update completed successfully.',
+			'logId' => $logId
+		];
 	}
 }

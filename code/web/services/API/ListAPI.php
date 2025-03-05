@@ -1692,7 +1692,7 @@ class ListAPI extends AbstractAPI {
 		}
 
 		if ($nytUpdateLog != null) {
-			$nytUpdateLog->addNote("Found list title: '$selectedListTitle' (short: '$selectedListTitleShort').");
+			$nytUpdateLog->addExtensiveNote("Found list title: '$selectedListTitle' (short: '$selectedListTitleShort').");
 		}
 
 		//Get a list of titles from NYT API
@@ -1756,10 +1756,6 @@ class ListAPI extends AbstractAPI {
 		$lastModified = date_timestamp_get(new DateTime($listTitles->last_modified));
 		$lastModifiedDay = date("M j, Y", $lastModified);
 
-		if ($nytUpdateLog != null) {
-			$nytUpdateLog->addNote("List '$selectedList' last modified date: $lastModifiedDay.");
-		}
-
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$nytList = new UserList();
@@ -1769,9 +1765,9 @@ class ListAPI extends AbstractAPI {
 
 		if ($nytUpdateLog != null) {
 			if ($listExistsInAspen) {
-				$nytUpdateLog->addNote("List '$selectedListTitle' exists in Aspen with ID: {$nytList->id}, last NYT modified: {$nytList->nytListModified}");
+				$nytUpdateLog->addNote("List '$selectedListTitle' exists in Aspen with ID: {$nytList->id}, last NYT modified: {$nytList->nytListModified}.");
 			} else {
-				$nytUpdateLog->addNote("List '$selectedListTitle' does not exist in Aspen, will create");
+				$nytUpdateLog->addNote("List '$selectedListTitle' does not exist in Aspen, will create.");
 			}
 		}
 
@@ -1819,7 +1815,7 @@ class ListAPI extends AbstractAPI {
 			if ($nytList->nytListModified == $lastModifiedDay && !$forceFullUpdate) {
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numSkipped++;
-					$nytUpdateLog->addNote("List '$selectedListTitle' has not changed since last update (last modified: $lastModifiedDay).");
+					$nytUpdateLog->addNote("List '$selectedListTitle' has not changed since last update (last modified in Aspen: $lastModifiedDay).");
 				}
 				if ($nytList->deleted == 1) {
 					$nytList->deleted = 0;
@@ -1828,13 +1824,12 @@ class ListAPI extends AbstractAPI {
 						$nytUpdateLog->addNote("List '$selectedListTitle' was marked as deleted, restored it.");
 					}
 				}
-				if (!$forceFullUpdate) {
-					//Nothing has changed, no need to update
-					return [
-						'success' => true,
-						'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded.",
-					];
-				}
+
+				//Nothing has changed, no need to update
+				return [
+					'success' => true,
+					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded.",
+				];
 			}
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->numUpdated++;
@@ -1880,7 +1875,7 @@ class ListAPI extends AbstractAPI {
 
 		if (!isset($listTitles->results) || !is_array($listTitles->results) || count($listTitles->results) == 0) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'");
+				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'.");
 			}
 		}
 
@@ -1927,7 +1922,7 @@ class ListAPI extends AbstractAPI {
 				if ($nytUpdateLog != null) {
 					$title = $titleResult->title ?? '[Title Missing]';
 					$author = $titleResult->author ?? '[Author Missing]';
-					$nytUpdateLog->addExtensiveNote("No ISBNs found for title '{$title}' by {$author}");
+					$nytUpdateLog->addExtensiveNote("No ISBNs found for title '{$title}' by {$author}.");
 					$numTitlesNotFound++;
 				}
 			}//Done checking ISBNs
@@ -1935,14 +1930,12 @@ class ListAPI extends AbstractAPI {
 				$rank = $titleResult->rank ?? 'N/A';
 				$displayName = $titleResult->display_name ?? 'NYT';
 				$publishedDate = $titleResult->published_date ?? 'N/A';
-				$note = "#{$rank} on the {$displayName} list for {$publishedDate}.";
+				$note = "#{$rank} on the {$displayName} list for {$publishedDate}";
 				if (isset($titleResult->rank_last_week) && $titleResult->rank_last_week != 0) {
-					$rankLastWeek = $titleResult->rank_last_week ?? 'N/A';
-					$note .= '  Last week it was ranked ' . $rankLastWeek . '.';
+					$note .= '  Last week it was ranked ' . $titleResult->rank_last_week . '.';
 				}
 				if (isset($titleResult->weeks_on_list) && $titleResult->weeks_on_list != 0) {
-					$weeksOnList = $titleResult->weeks_on_list ?? '0';
-					$note .= "  It has been on the list for {$weeksOnList} week(s).";
+					$note .= "  It has been on the list for {$titleResult->weeks_on_list} week(s).";
 				}
 
 				$userListEntry = new UserListEntry();
@@ -1964,7 +1957,7 @@ class ListAPI extends AbstractAPI {
 					} else {
 						if ($nytUpdateLog != null) {
 							$title = $titleResult->title ?? '[Title Missing]';
-							$nytUpdateLog->addExtensiveError("Failed to update list entry for '{$title}' with ID: $aspenID");
+							$nytUpdateLog->addExtensiveError("Failed to update list entry for '{$title}' with ID: $aspenID.");
 						}
 					}
 				} else {
@@ -1985,7 +1978,7 @@ class ListAPI extends AbstractAPI {
 		}
 
 		if ($results['success']) {
-			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
+			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list.";
 			if ($listExistsInAspen) {
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}

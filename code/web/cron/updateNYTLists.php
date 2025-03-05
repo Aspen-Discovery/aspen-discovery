@@ -94,7 +94,7 @@ if (!$nytSettings->find(true)) {
 			$nytUpdateLog->addExtensiveNote("Starting update for list: $listName.");
 			try {
 				$result = $listAPI->createUserListFromNYT($listName, $nytUpdateLog, $forceFullUpdate);
-				$nytUpdateLog->addNote("Finished update for list: $listName - Success: " . ($result['success'] ? 'Yes' : 'No') . ", Message: " . $result['message'] . ".");
+				$nytUpdateLog->addNote("Finished update for list: $listName - Success: " . ($result['success'] ? 'Yes' : 'No') . ", Message: " . $result['message']);
 			} catch (Exception $e) {
 				$nytUpdateLog->addError("Error updating $listName: " . $e->getMessage());
 			}

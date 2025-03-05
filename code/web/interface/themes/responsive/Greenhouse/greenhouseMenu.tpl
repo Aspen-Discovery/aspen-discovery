@@ -50,6 +50,7 @@
 							<div class="adminMenuLink "><a href="/Greenhouse/ScheduledUpdates">{translate text="Scheduled Updates" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/ReadingHistoryReload">{translate text="Reload Reading History from ILS" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/CompanionSystems">{translate text="Companion Systems" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/NYTListUpdater">{translate text="NYT List Updater" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>
