@@ -6272,8 +6272,12 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$resultJSON = $newRedirectRequest->curlPostBodyData($url, $postParams, true);
 				$result = json_decode($resultJSON);
-				ExternalRequestLogEntry::logRequest('ncr.createNCROrder', 'POST', $url, $newRedirectRequest->getHeaders(), json_encode($postParams), $newRedirectRequest->getResponseCode(), $resultJSON, []);
 
+				$allowPaymentsDebugging = $NCRPaymentsSetting->enablePaymentsDebugging;
+				if ($allowPaymentsDebugging){
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createNCROrder', 'POST', $url, $newRedirectRequest->getHeaders(), json_encode($postParams), $newRedirectRequest->getResponseCode(), $resultJSON, []);
+				}
+				
 				if ($result->status != "ok") {
 					return [
 						'success' => false,
