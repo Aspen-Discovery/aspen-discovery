@@ -5,6 +5,7 @@ class StripeSetting extends DataObject {
 	public $__table = 'stripe_settings';
 	public $id;
 	public $name;
+	public $enablePaymentsDebugging;
 	public $stripePublicKey;
 	public $stripeSecretKey;
 
@@ -44,6 +45,14 @@ class StripeSetting extends DataObject {
 				'hideInLists' => true,
 				'default' => '',
 				'size' => 100,
+			],
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'libraries' => [
 				'property' => 'libraries',
@@ -154,6 +163,12 @@ class StripeSetting extends DataObject {
 
 		$url = $baseUrl . '/v1/payment_intents';
 		$paymentIntent = $paymentIntentSetup->curlPostPage($url, $postParams);
+
+		$allowPaymentsDebugging = $this->enablePaymentsDebugging;
+		if ($allowPaymentsDebugging){
+			ExternalRequestLogEntry::logRequest('stripeSettings.createPaymentIntent', 'POST', $url, $paymentIntentSetup->getHeaders(), json_encode($postParams), $paymentIntentSetup->getResponseCode(), $paymentIntent, []);
+		}
+
 		return json_decode($paymentIntent, true);
 	}
 
@@ -180,6 +195,11 @@ class StripeSetting extends DataObject {
 		], true);
 
 		$paymentTransaction = $paymentRequest->curlPostBodyData($url, null);
+
+		$allowPaymentsDebugging = $this->enablePaymentsDebugging;
+		if ($allowPaymentsDebugging){
+			ExternalRequestLogEntry::logRequest('stripeSettings.createPaymentIntent', 'POST', $url, $paymentRequest->getHeaders(),'', $paymentRequest->getResponseCode(), $paymentTransaction, []);
+		}
 
 		$paymentResponse = json_decode($paymentTransaction, true);
 		if ($paymentRequest->getResponseCode() == 200) {
