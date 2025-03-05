@@ -306,6 +306,21 @@ function getUpdates25_03_00(): array {
 		], //web_resource_generate_placard
 
 		// Leo Stoyanov - BWS
+		'add_ignore_on_order_records_for_title_selection' => [
+			'title' => 'Add ignoreOnOrderRecordsForTitleSelection to indexing profiles',
+			'description' => 'Adds a setting to skip on-order records when selecting titles for display in grouped works (Koha-specific)',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN ignoreOnOrderRecordsForTitleSelection TINYINT(1) DEFAULT 0"
+			],
+		], // add_ignore_on_order_records_for_title_selection
+		'new_nyt_update_settings' => [
+			'title' => 'Add Run Full Update & Enable Extensive Logging to NYT Settings',
+			'description' => 'Add a setting to force full updates of New York Times lists regardless of modification date and a setting to enable extensive logging.',
+			'sql' => [
+				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS runFullUpdate TINYINT(1) NOT NULL DEFAULT 0",
+				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS enableExtensiveLogging TINYINT(1) NOT NULL DEFAULT 0",
+			],
+		], //nyt_force_full_update
 
 		//alexander - PTFS-Europe
 		'filter_books_from_summon_results' => [

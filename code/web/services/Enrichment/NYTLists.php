@@ -12,7 +12,7 @@ class Enrichment_NYTLists extends Admin_Admin {
 		$nytSettings = new NewYorkTimesSetting();
 
 		if (!$nytSettings->find(true)) {
-			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Admin/NewYorkTimesSettings"></a>');
+			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Enrichment/NewYorkTimesSettings">New York Times Settings</a>.');
 		} else {
 			$api_key = $nytSettings->booksApiKey;
 

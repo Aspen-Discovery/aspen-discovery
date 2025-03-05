@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 class ListAPI extends AbstractAPI {
 
@@ -1186,70 +1187,70 @@ class ListAPI extends AbstractAPI {
 					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-						$userListEntry->source = $source;
-						$userListEntry->sourceId = $id;
+					$userListEntry->source = $source;
+					$userListEntry->sourceId = $id;
 
-						if($source === 'Events') {
-							if (preg_match('`^communico`', $id)){
-								require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
-								$recordDriver = new CommunicoEventRecordDriver($id);
-								if ($recordDriver->isValid()) {
-									$title = $recordDriver->getTitle();
-									$userListEntry->title = substr($title, 0, 50);
-								}
-							} elseif (preg_match('`^libcal`', $id)){
-								require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-								$recordDriver = new SpringshareLibCalEventRecordDriver($id);
-								if ($recordDriver->isValid()) {
-									$title = $recordDriver->getTitle();
-									$userListEntry->title = substr($title, 0, 50);
-								}
-							} elseif (preg_match('`^lc_`', $id)){
-								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
-								$recordDriver = new LibraryCalendarEventRecordDriver($id);
-								if ($recordDriver->isValid()) {
-									$title = $recordDriver->getTitle();
-									$userListEntry->title = substr($title, 0, 50);
-								}
-							} elseif (preg_match('`^assabet_`', $id)){
-								require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
-								$recordDriver = new AssabetEventRecordDriver($id);
-								if ($recordDriver->isValid()) {
-									$title = $recordDriver->getTitle();
-									$userListEntry->title = substr($title, 0, 50);
-								}
+					if($source === 'Events') {
+						if (preg_match('`^communico`', $id)){
+							require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+							$recordDriver = new CommunicoEventRecordDriver($id);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
 							}
-						} else {
-							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-							$groupedWork = new GroupedWork();
-							$groupedWork->permanent_id = $id;
-							if ($groupedWork->find(true)) {
-								$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+						} elseif (preg_match('`^libcal`', $id)){
+							require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+							$recordDriver = new SpringshareLibCalEventRecordDriver($id);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						} elseif (preg_match('`^lc_`', $id)){
+							require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+							$recordDriver = new LibraryCalendarEventRecordDriver($id);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						} elseif (preg_match('`^assabet_`', $id)){
+							require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+							$recordDriver = new AssabetEventRecordDriver($id);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
 							}
 						}
+					} else {
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+						$groupedWork = new GroupedWork();
+						$groupedWork->permanent_id = $id;
+						if ($groupedWork->find(true)) {
+							$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+						}
+					}
 
-						$existingEntry = false;
-						if ($userListEntry->find(true)) {
-							$existingEntry = true;
-						}
+					$existingEntry = false;
+					if ($userListEntry->find(true)) {
+						$existingEntry = true;
+					}
 
-						if (isset($_REQUEST['notes'])) {
-							$notes = $_REQUEST['notes'];
-						} else {
-							$notes = '';
-						}
-						$userListEntry->notes = strip_tags($notes);
-						$userListEntry->dateAdded = time();
-						if ($existingEntry) {
-							$userListEntry->update();
-						} else {
-							$userListEntry->insert();
-						}
-						if ($user->lastListUsed != $list->id) {
-							$user->lastListUsed = $list->id;
-							$user->update();
-						}
-						$numAdded++;
+					if (isset($_REQUEST['notes'])) {
+						$notes = $_REQUEST['notes'];
+					} else {
+						$notes = '';
+					}
+					$userListEntry->notes = strip_tags($notes);
+					$userListEntry->dateAdded = time();
+					if ($existingEntry) {
+						$userListEntry->update();
+					} else {
+						$userListEntry->insert();
+					}
+					if ($user->lastListUsed != $list->id) {
+						$user->lastListUsed = $list->id;
+						$user->update();
+					}
+					$numAdded++;
 
 				}
 
@@ -1621,16 +1622,20 @@ class ListAPI extends AbstractAPI {
 	 * @return array
 	 * @throws Exception
 	 */
-	public function createUserListFromNYT($selectedList = null, $nytUpdateLog = null): array {
+	public function createUserListFromNYT($selectedList = null, $nytUpdateLog = null, $forceFullUpdate = false): array {
 		if ($selectedList == null) {
 			$selectedList = $_REQUEST['listToUpdate'];
+		}
+
+		if ($nytUpdateLog != null) {
+			$nytUpdateLog->addNote("Processing NYT list: $selectedList" . ($forceFullUpdate ? " (forced full update)." : "."));
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("API Key missing");
+				$nytUpdateLog->addError("API Key missing.");
 			}
 			return [
 				'success' => false,
@@ -1645,7 +1650,7 @@ class ListAPI extends AbstractAPI {
 		$nytListUser->username = 'nyt_user';
 		if (!$nytListUser->find(true)) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("NY Times user has not been created");
+				$nytUpdateLog->addError("NY Times user has not been created.");
 			}
 			return [
 				'success' => false,
@@ -1653,9 +1658,13 @@ class ListAPI extends AbstractAPI {
 			];
 		}
 
+		if ($nytUpdateLog != null) {
+			$nytUpdateLog->addExtensiveNote("Found nyt_user with ID: {$nytListUser->id}");
+		}
+
 		//Get the raw response from the API with a list of all the names
 		require_once ROOT_DIR . '/sys/NYTApi.php';
-		$nyt_api = new NYTApi($api_key);
+		$nyt_api = new NYTApi($api_key, $nytUpdateLog);
 		$availableListsRaw = $nyt_api->get_list('names');
 		//Convert into an object that can be processed
 		$availableLists = json_decode($availableListsRaw);
@@ -1674,12 +1683,16 @@ class ListAPI extends AbstractAPI {
 		}
 		if (empty($selectedListTitleShort)) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
+				$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API.");
 			}
 			return [
 				'success' => false,
 				'message' => "We did not find list '{$selectedList}' in The New York Times API",
 			];
+		}
+
+		if ($nytUpdateLog != null) {
+			$nytUpdateLog->addNote("Found list title: '$selectedListTitle' (short: '$selectedListTitleShort').");
 		}
 
 		//Get a list of titles from NYT API
@@ -1690,6 +1703,9 @@ class ListAPI extends AbstractAPI {
 			$retry = false;
 			$numTries++;
 			$listTitles = null;
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addExtensiveNote("Retrieving titles for list '$selectedList' (attempt $numTries)");
+			}
 			$listTitlesRaw = $nyt_api->get_list($selectedList);
 			$listTitles = json_decode($listTitlesRaw);
 			if (empty($listTitles->status) || $listTitles->status != "OK") {
@@ -1697,6 +1713,9 @@ class ListAPI extends AbstractAPI {
 					if (strpos($listTitles->fault->faultstring, 'quota violation')) {
 						$retry = ($numTries <= 3);
 						if ($retry) {
+							if ($nytUpdateLog != null) {
+								$nytUpdateLog->addExtensiveNote("Hit quota limit while retrieving titles for '$selectedList', retrying after sleep (attempt $numTries).");
+							}
 							sleep(rand(60, 300));
 						} else {
 							if ($nytUpdateLog != null) {
@@ -1713,10 +1732,21 @@ class ListAPI extends AbstractAPI {
 						$nytUpdateLog->addError("Did not get a good response from the API");
 					}
 				}
+			} else {
+				if ($nytUpdateLog != null) {
+					if (isset($listTitles->results) && is_array($listTitles->results)) {
+						$nytUpdateLog->addExtensiveNote("Retrieved " . count($listTitles->results) . " titles for list '$selectedList'.");
+					} else {
+						$nytUpdateLog->addExtensiveNote("Retrieved titles response for list '$selectedList' but results array is empty or missing.");
+					}
+				}
 			}
 		}
 
 		if ($listTitles == null) {
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("Could not get a response from the API for list '$selectedList'.");
+			}
 			return [
 				'success' => false,
 				'message' => "Could not get a response from the API",
@@ -1726,12 +1756,24 @@ class ListAPI extends AbstractAPI {
 		$lastModified = date_timestamp_get(new DateTime($listTitles->last_modified));
 		$lastModifiedDay = date("M j, Y", $lastModified);
 
+		if ($nytUpdateLog != null) {
+			$nytUpdateLog->addNote("List '$selectedList' last modified date: $lastModifiedDay.");
+		}
+
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$nytList = new UserList();
 		$nytList->user_id = $nytListUser->id;
 		$nytList->title = $selectedListTitle;
 		$listExistsInAspen = $nytList->find(1);
+
+		if ($nytUpdateLog != null) {
+			if ($listExistsInAspen) {
+				$nytUpdateLog->addNote("List '$selectedListTitle' exists in Aspen with ID: {$nytList->id}, last NYT modified: {$nytList->nytListModified}");
+			} else {
+				$nytUpdateLog->addNote("List '$selectedListTitle' does not exist in Aspen, will create");
+			}
+		}
 
 		//We didn't find the list in Aspen Discovery, create one
 		if (!$listExistsInAspen) {
@@ -1753,6 +1795,7 @@ class ListAPI extends AbstractAPI {
 				$logger->log('Created list: ' . $selectedListTitle, Logger::LOG_NOTICE);
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numAdded++;
+					$nytUpdateLog->addNote("Created new list '$selectedListTitle' with ID: $listID.");
 				}
 				$results = [
 					'success' => true,
@@ -1763,7 +1806,7 @@ class ListAPI extends AbstractAPI {
 				global $logger;
 				$logger->log('Could not create list: ' . $selectedListTitle, Logger::LOG_ERROR);
 				if ($nytUpdateLog != null) {
-					$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
+					$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle . ".");
 				}
 				return [
 					'success' => false,
@@ -1773,27 +1816,43 @@ class ListAPI extends AbstractAPI {
 
 		} else {
 			$listID = $nytList->id;
-			if ($nytList->nytListModified == $lastModifiedDay) {
+			if ($nytList->nytListModified == $lastModifiedDay && !$forceFullUpdate) {
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numSkipped++;
+					$nytUpdateLog->addNote("List '$selectedListTitle' has not changed since last update (last modified: $lastModifiedDay).");
 				}
 				if ($nytList->deleted == 1) {
 					$nytList->deleted = 0;
 					$nytList->update();
+					if ($nytUpdateLog != null) {
+						$nytUpdateLog->addNote("List '$selectedListTitle' was marked as deleted, restored it.");
+					}
 				}
-				//Nothing has changed, no need to update
-				return [
-					'success' => true,
-					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded.",
-				];
+				if (!$forceFullUpdate) {
+					//Nothing has changed, no need to update
+					return [
+						'success' => true,
+						'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded.",
+					];
+				}
 			}
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->numUpdated++;
+				if ($forceFullUpdate) {
+					$nytUpdateLog->addNote("Force updating list '$selectedListTitle' regardless of modification date.");
+				} else {
+					$nytUpdateLog->addNote("Updating list '$selectedListTitle' from last modified: {$nytList->nytListModified} to: $lastModifiedDay.");
+				}
 			}
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
-			$nytList->nytListModified = $lastModifiedDay;
+			if (!$forceFullUpdate) {
+				$nytList->nytListModified = $lastModifiedDay;
+			}
 			if ($nytList->deleted == 1) {
 				$nytList->deleted = 0;
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->addNote("List '$selectedListTitle' was marked as deleted, restored it.");
+				}
 			}
 			$nytList->update();
 			$results = [
@@ -1803,6 +1862,9 @@ class ListAPI extends AbstractAPI {
 			$nytList->searchable = 1;
 			//We already have a list, clear the contents so we don't have titles from last time
 			$nytList->removeAllListEntries();
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addExtensiveNote("Cleared existing entries from list '$selectedListTitle'.");
+			}
 		}
 
 		// We need to add titles to the list //
@@ -1813,16 +1875,28 @@ class ListAPI extends AbstractAPI {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		$numTitlesAdded = 0;
+		$numTitlesAttempted = 0;
+		$numTitlesNotFound = 0;
+
+		if (!isset($listTitles->results) || !is_array($listTitles->results) || count($listTitles->results) == 0) {
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'");
+			}
+		}
+
 		foreach ($listTitles->results as $titleResult) {
+			$numTitlesAttempted++;
 			$aspenID = null;
 			// go through each list item
 			if (!empty($titleResult->isbns)) {
+				$isbnsChecked = [];
 				foreach ($titleResult->isbns as $isbns) {
-					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
+					$isbn = isset($isbns->isbn13) && !empty($isbns->isbn13) ? $isbns->isbn13 : ($isbns->isbn10 ?? '');
 					if ($isbn) {
+						$isbnsChecked[] = $isbn;
 						//look the title up by ISBN
 						/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
-						$searchObject = SearchObjectFactory::initSearchObject(); // QUESTION: Does this need to be done within the Loop??
+						$searchObject = SearchObjectFactory::initSearchObject();
 						$searchObject->init();
 						$searchObject->clearFacets();
 						$searchObject->clearFilters();
@@ -1843,14 +1917,32 @@ class ListAPI extends AbstractAPI {
 						break;
 					}
 				}
+				if ($aspenID == null && $nytUpdateLog != null) {
+					$title = $titleResult->title ?? '[Title Missing]';
+					$author = $titleResult->author ?? '[Author Missing]';
+					$nytUpdateLog->addExtensiveNote("Title '{$title}' by {$author} not found with ISBNs: " . implode(", ", $isbnsChecked) . ".");
+					$numTitlesNotFound++;
+				}
+			} else {
+				if ($nytUpdateLog != null) {
+					$title = $titleResult->title ?? '[Title Missing]';
+					$author = $titleResult->author ?? '[Author Missing]';
+					$nytUpdateLog->addExtensiveNote("No ISBNs found for title '{$title}' by {$author}");
+					$numTitlesNotFound++;
+				}
 			}//Done checking ISBNs
 			if ($aspenID != null) {
-				$note = "#{$titleResult->rank} on the {$titleResult->display_name} list for {$titleResult->published_date}.";
-				if ($titleResult->rank_last_week != 0) {
-					$note .= '  Last week it was ranked ' . $titleResult->rank_last_week . '.';
+				$rank = $titleResult->rank ?? 'N/A';
+				$displayName = $titleResult->display_name ?? 'NYT';
+				$publishedDate = $titleResult->published_date ?? 'N/A';
+				$note = "#{$rank} on the {$displayName} list for {$publishedDate}.";
+				if (isset($titleResult->rank_last_week) && $titleResult->rank_last_week != 0) {
+					$rankLastWeek = $titleResult->rank_last_week ?? 'N/A';
+					$note .= '  Last week it was ranked ' . $rankLastWeek . '.';
 				}
-				if ($titleResult->weeks_on_list != 0) {
-					$note .= "  It has been on the list for {$titleResult->weeks_on_list} week(s).";
+				if (isset($titleResult->weeks_on_list) && $titleResult->weeks_on_list != 0) {
+					$weeksOnList = $titleResult->weeks_on_list ?? '0';
+					$note .= "  It has been on the list for {$weeksOnList} week(s).";
 				}
 
 				$userListEntry = new UserListEntry();
@@ -1863,19 +1955,33 @@ class ListAPI extends AbstractAPI {
 					$existingEntry = true;
 				}
 
-				$userListEntry->weight = $titleResult->rank;
+				$userListEntry->weight = $titleResult->rank ?? 999;
 				$userListEntry->notes = $note;
 				$userListEntry->dateAdded = time();
 				if ($existingEntry) {
 					if ($userListEntry->update()) {
 						$numTitlesAdded++;
+					} else {
+						if ($nytUpdateLog != null) {
+							$title = $titleResult->title ?? '[Title Missing]';
+							$nytUpdateLog->addExtensiveError("Failed to update list entry for '{$title}' with ID: $aspenID");
+						}
 					}
 				} else {
 					if ($userListEntry->insert()) {
 						$numTitlesAdded++;
+					} else {
+						if ($nytUpdateLog != null) {
+							$title = $titleResult->title ?? '[Title Missing]';
+							$nytUpdateLog->addExtensiveError("Failed to insert list entry for '{$title}' with ID: $aspenID.");
+						}
 					}
 				}
 			}
+		}
+
+		if ($nytUpdateLog != null) {
+			$nytUpdateLog->addNote("Processed $numTitlesAttempted titles from NYT API: $numTitlesAdded added to list, $numTitlesNotFound not found in catalog.");
 		}
 
 		if ($results['success']) {
