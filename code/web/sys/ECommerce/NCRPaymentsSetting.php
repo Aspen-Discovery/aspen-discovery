@@ -8,7 +8,7 @@ class NCRPaymentsSetting extends DataObject {
 	public $webKey;
 	public $paymentTypeId;
 	public $lastTransactionNumber;
-
+	public $enablePaymentsDebugging;
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
@@ -52,6 +52,14 @@ class NCRPaymentsSetting extends DataObject {
 				'hideInLists' => false,
 				'default' => '0',
 				'maxLength' => 1,
+			],
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'libraries' => [
 				'property' => 'libraries',
