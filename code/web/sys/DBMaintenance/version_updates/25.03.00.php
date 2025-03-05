@@ -378,6 +378,7 @@ function getUpdates25_03_00(): array {
 				'ALTER TABLE paypal_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 				'ALTER TABLE square_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 				'ALTER TABLE stripe_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
+				'ALTER TABLE propay_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 			]
 		], //enable_payments_debugging
 
