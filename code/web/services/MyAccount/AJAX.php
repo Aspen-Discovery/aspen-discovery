@@ -6747,8 +6747,14 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$url = 'https://www.invoicecloud.com/api/v1/biller/status';
 				$authResponse = $authRequest->curlGetPage($url);
-				$authResponse = json_decode($authResponse);
-				if (!$authResponse->Active) {
+				$decodedAuthResponse = json_decode($authResponse);
+
+				$allowPaymentsDebugging = $invoiceCloudSetting->enablePaymentsDebugging;
+				if ($allowPaymentsDebugging){
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createInvoiceCloudOrder','GET', $url, $authRequest->getHeaders(),'', $authRequest->getResponseCode(), $authResponse, []);
+				}
+
+				if (!$decodedAuthResponse->Active) {
 					return [
 						'success' => false,
 						'message' => 'Unable to create your order in InvoiceCloud. Library has an inactive account.'
@@ -6794,14 +6800,19 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$url = 'https://www.invoicecloud.com/cloudpaymentsapi/v2';
 				$paymentResponse = $paymentRequest->curlPostBodyData($url, $postParams);
-				$paymentResponse = json_decode($paymentResponse);
-				if ($paymentResponse->Message != 'SUCCESS') {
+				$decodedPaymentResponse = json_decode($paymentResponse);
+
+				if ($allowPaymentsDebugging){
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createInvoiceCloudOrder','POST', $url, $paymentRequest->getHeaders(),json_encode($postParams), $paymentRequest->getResponseCode(), $paymentRegitsponse, []);
+				}
+
+				if ($decodedPaymentResponse->Message != 'SUCCESS') {
 					return [
 						'success' => false,
-						'message' => 'Unable to create your order in InvoiceCloud. ' . $paymentResponse->Message
+						'message' => 'Unable to create your order in InvoiceCloud. ' . $decodedPaymentResponse->Message
 					];
 				}
-				$paymentRequestUrl = $paymentResponse->Data->CloudPaymentURL;
+				$paymentRequestUrl = $decodedPaymentResponse->Data->CloudPaymentURL;
 
 				return [
 					'success' => true,
