@@ -10,6 +10,7 @@ class PayPalPayflowSetting extends DataObject {
 	public $vendor;
 	public $user;
 	public $password;
+	public $enablePaymentsDebugging;
 
 	private $_libraries;
 
@@ -75,7 +76,15 @@ class PayPalPayflowSetting extends DataObject {
 				'default' => '',
 				'size' => 72,
 			],
-
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
