@@ -381,7 +381,8 @@ function getUpdates25_03_00(): array {
 				'ALTER TABLE propay_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 				'ALTER TABLE ncr_payments_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
 				'ALTER TABLE paypal_payflow_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
-
+				'ALTER TABLE aci_speedpay_settings ADD COLUMN enablePaymentsDebugging TINYINT(1) DEFAULT 0',
+				
 			]
 		], //enable_payments_debugging
 
