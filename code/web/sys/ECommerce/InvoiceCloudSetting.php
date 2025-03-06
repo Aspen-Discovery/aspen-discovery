@@ -10,6 +10,7 @@ class InvoiceCloudSetting extends DataObject {
 	public $apiKey;
 	public $invoiceTypeId;
 	public $ccServiceFee;
+	public $enablePaymentsDebugging;
 
 	private $_libraries;
 
@@ -58,6 +59,15 @@ class InvoiceCloudSetting extends DataObject {
 				'hideInLists' => true,
 				'maxLength' => 50,
 			],
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
