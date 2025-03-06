@@ -16,7 +16,7 @@ class ACISpeedpaySetting extends DataObject {
 	public $sdkApiAuthKey;
 	public $billerId;
 	public $billerAccountId;
-
+	public $enablePaymentsDebugging;
 	private $_libraries;
 
 	static function getObjectStructure($context = ''): array {
@@ -105,6 +105,14 @@ class ACISpeedpaySetting extends DataObject {
 				'values' => $billerAccount_options,
 				'description' => 'The identifier field used to connect payments to users.',
 				'hideInLists' => true,
+			],
+			'enablePaymentsDebugging' => [
+				'property' => 'enablePaymentsDebugging',
+				'type' => 'checkbox',
+				'label' => 'Enable Payments Debugging',
+				'description' => 'Whether or not to allow staff users to get debugging information about payments',
+				'hideInLists' => false,
+				'default' => true,
 			],
 
 			'libraries' => [
@@ -392,6 +400,11 @@ class ACISpeedpaySetting extends DataObject {
 		], true);
 
 		$paymentTransaction = $paymentRequest->curlPostBodyData($url, $postData);
+
+		$allowPaymentsDebugging = $this->enablePaymentsDebugging;
+		if ($allowPaymentsDebugging){
+			ExternalRequestLogEntry::logRequest('aciSpeedPaySetting', 'POST', $url, $paymentRequest->getHeaders(), json_encode($postData), $paymentRequest->getResponseCode(), $paymentTransaction, []);
+		}
 
 		$paymentResponse = json_decode($paymentTransaction, true);
 		if ($paymentRequest->getResponseCode() == 200) {
