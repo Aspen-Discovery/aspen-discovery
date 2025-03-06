@@ -2,11 +2,9 @@
 
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
-
-// Include the NYTListsUpdateService class
 require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
 
-// Create the updater and run it
+// Create the updater and run it.
 $updater = new NYTListsUpdateService();
 $updater->update();
 

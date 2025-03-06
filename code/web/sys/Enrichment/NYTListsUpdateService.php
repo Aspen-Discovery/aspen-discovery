@@ -50,14 +50,15 @@ class NYTListsUpdateService {
 	 *
 	 * @return array Result with success status, message, and log ID
 	 */
-	public function update() {
+	public function update(): array
+	{
 		try {
 			// Create a NYTUpdateLogEntry
 			$this->nytUpdateLog = new NYTUpdateLogEntry();
 			$this->nytUpdateLog->startTime = time();
 			$this->nytUpdateLog->insert();
 			$this->logId = $this->nytUpdateLog->id;
-			$this->nytUpdateLog->addNote("Starting NYT list update process");
+			$this->nytUpdateLog->addNote("Starting NYT list update process.");
 
 			// Check for halt requests periodically throughout the process
 			set_time_limit(0);
@@ -65,34 +66,34 @@ class NYTListsUpdateService {
 			global $configArray;
 			$nytSettings = new NewYorkTimesSetting();
 			if (!$nytSettings->find(true)) {
-				$this->nytUpdateLog->addError("No settings found, not updating lists");
-				$this->message = "No settings found";
+				$this->nytUpdateLog->addError("No settings found, not updating lists.");
+				$this->message = "No settings found, not updating lists.";
 				return $this->getResult();
 			} else {
-				$this->nytUpdateLog->addNote("Found NYT settings, API key: " . substr($nytSettings->booksApiKey, 0, 4) . "...");
+				$this->nytUpdateLog->addExtensiveNote("Found NYT settings, API key: " . substr($nytSettings->booksApiKey, 0, 4) . "...");
 
-				// Check if we're forcing a full update
+				// Check if we're forcing a full update.
 				$forceFullUpdate = $nytSettings->runFullUpdate;
 				if ($forceFullUpdate) {
-					$this->nytUpdateLog->addNote("Force Full Update enabled - all lists will be completely rebuilt regardless of last modified date");
+					$this->nytUpdateLog->addNote("Force Full Update enabled; all lists will be completely rebuilt regardless of last modified date.");
 				}
 
-				// Check if extensive logging is enabled
+				// Check if extensive logging is enabled.
 				$extensiveLoggingEnabled = $nytSettings->enableExtensiveLogging;
 				if ($extensiveLoggingEnabled) {
-					$this->nytUpdateLog->addNote("Extensive Logging enabled - more detailed logs will be generated during this update");
+					$this->nytUpdateLog->addNote("Extensive Logging enabled; more detailed logs will be generated during this update.");
 				}
 
-				//Pass the log entry to the API, so we can update it there
+				// Pass the log entry to the API, so we can update it there.
 				$nyt_api = new NYTApi($nytSettings->booksApiKey, $this->nytUpdateLog);
 
 				$retry = true;
 				$numTries = 0;
 				$availableLists = null;
 				while ($retry == true) {
-					// Check if a halt has been requested
+					// Check if a halt has been requested.
 					if ($this->isHaltRequested()) {
-						$this->nytUpdateLog->addNote("Update halted by user request - stopping processing");
+						$this->nytUpdateLog->addNote("Update halted by user request, stopping processing.");
 						$this->message = "Update halted by user request";
 						$this->nytUpdateLog->endTime = time();
 						$this->nytUpdateLog->update();
@@ -101,8 +102,8 @@ class NYTListsUpdateService {
 
 					$retry = false;
 					$numTries++;
-					$this->nytUpdateLog->addNote("Retrieving available NYT lists (attempt $numTries)");
-					//Get the raw response from the API with a list of all the names
+					$this->nytUpdateLog->addExtensiveNote("Retrieving available NYT lists (attempt $numTries).");
+					// Get the raw response from the API with a list of all the names.
 					try {
 						$availableListsRaw = $nyt_api->get_list('names');
 						//Convert into an object that can be processed
@@ -112,7 +113,7 @@ class NYTListsUpdateService {
 								if (strpos($availableLists->fault->faultstring, 'quota violation')) {
 									$retry = ($numTries <= 3);
 									if ($retry) {
-										$this->nytUpdateLog->addNote("Hit quota limit, retrying after sleep (attempt $numTries)");
+										$this->nytUpdateLog->addExtensiveNote("Hit quota limit, retrying after sleep (attempt $numTries)");
 										sleep(rand(60, 300));
 									} else {
 										if ($this->nytUpdateLog != null) {
@@ -151,18 +152,18 @@ class NYTListsUpdateService {
 					foreach ($availableLists->results as $availableList) {
 						if ($availableList->newest_published_date > $prevYear) {
 							$allListsNames[] = $availableList->list_name_encoded;
-							$this->nytUpdateLog->addNote("List '{$availableList->display_name}' (encoded: {$availableList->list_name_encoded}) is current with newest date: {$availableList->newest_published_date}");
+							$this->nytUpdateLog->addExtensiveNote("List '{$availableList->display_name}' (encoded: {$availableList->list_name_encoded}) is current with newest date: {$availableList->newest_published_date}.");
 						} else {
-							$this->nytUpdateLog->addNote("Skipping list '{$availableList->display_name}' (encoded: {$availableList->list_name_encoded}) as it's older than one year. Newest date: {$availableList->newest_published_date}");
+							$this->nytUpdateLog->addExtensiveNote("Skipping list '{$availableList->display_name}' (encoded: {$availableList->list_name_encoded}) as it's older than one year. Newest date: {$availableList->newest_published_date}.");
 						}
 					}
 					$this->nytUpdateLog->numLists = count($allListsNames);
 					$this->nytUpdateLog->update();
-					$this->nytUpdateLog->addNote("Processing " . count($allListsNames) . " NYT lists that are newer than $prevYear");
+					$this->nytUpdateLog->addNote("Processing " . count($allListsNames) . " NYT lists that are newer than $prevYear.");
 
 					// Final check before starting list processing
 					if ($this->isHaltRequested()) {
-						$this->nytUpdateLog->addNote("Update halted by user request before list processing began");
+						$this->nytUpdateLog->addNote("Update halted by user request before list processing began.");
 						$this->message = "Update halted by user request";
 						$this->nytUpdateLog->endTime = time();
 						$this->nytUpdateLog->update();
@@ -172,11 +173,11 @@ class NYTListsUpdateService {
 					foreach ($allListsNames as $listName) {
 						// Check if a halt has been requested
 						if ($this->isHaltRequested()) {
-							$this->nytUpdateLog->addNote("Update halted by user request - stopping processing");
+							$this->nytUpdateLog->addNote("Update halted by user request, stopping processing.");
 							break;
 						}
 
-						$this->nytUpdateLog->addNote("Starting update for list: $listName");
+						$this->nytUpdateLog->addExtensiveNote("Starting update for list: $listName");
 						try {
 							$result = $listAPI->createUserListFromNYT($listName, $this->nytUpdateLog, $forceFullUpdate);
 							$this->nytUpdateLog->addNote("Finished update for list: $listName - Success: " . ($result['success'] ? 'Yes' : 'No') . ", Message: " . $result['message']);
@@ -200,8 +201,8 @@ class NYTListsUpdateService {
 					$this->success = true;
 					$this->message = "Successfully processed " . count($allListsNames) . " NYT lists";
 				} else {
-					$this->nytUpdateLog->addError("No available lists found or invalid response structure");
-					$this->message = "No available lists found or invalid response structure";
+					$this->nytUpdateLog->addExtensiveError("No available lists found or invalid response structure.");
+					$this->message = "No available lists found or invalid response structure.";
 				}
 
 				$nyt_api = null;
@@ -210,18 +211,18 @@ class NYTListsUpdateService {
 				if ($forceFullUpdate) {
 					$nytSettings->runFullUpdate = 0;
 					$nytSettings->update();
-					$this->nytUpdateLog->addNote("Force Full Update setting has been reset");
+					$this->nytUpdateLog->addNote("Force Full Update setting has been reset.");
 				}
 
 				// Reset the extensive logging flag if it was enabled
 				if ($extensiveLoggingEnabled) {
 					$nytSettings->enableExtensiveLogging = 0;
 					$nytSettings->update();
-					$this->nytUpdateLog->addNote("Extensive Logging setting has been reset");
+					$this->nytUpdateLog->addNote("Extensive Logging setting has been reset.");
 				}
 			}
 
-			$this->nytUpdateLog->addNote("Finished updating lists");
+			$this->nytUpdateLog->addNote("Finished updating lists.");
 			$this->nytUpdateLog->endTime = time();
 			$this->nytUpdateLog->update();
 
@@ -256,7 +257,8 @@ class NYTListsUpdateService {
 	 *
 	 * @return array Result with success status, message, and log ID
 	 */
-	private function getResult() {
+	private function getResult(): array
+	{
 		return [
 			'success' => $this->success,
 			'message' => $this->message,
@@ -265,20 +267,12 @@ class NYTListsUpdateService {
 	}
 
 	/**
-	 * Get the log ID for this update
-	 *
-	 * @return int|null The log ID if available
-	 */
-	public function getLogId() {
-		return $this->logId;
-	}
-
-	/**
 	 * Check if an update is currently running
 	 *
 	 * @return array Information about the running update or null if none is running
 	 */
-	public static function isUpdateRunning() {
+	public static function isUpdateRunning(): array
+	{
 		$logEntry = new NYTUpdateLogEntry();
 		$logEntry->whereAdd('endTime IS NULL'); // Look for unfinished updates
 		$logEntry->whereAdd('startTime > ' . (time() - 3600)); // Started in the last hour
@@ -323,7 +317,7 @@ class NYTListsUpdateService {
 	 * @param int $logId The ID of the update log entry to halt
 	 * @return bool Whether the update was successfully halted
 	 */
-	public static function haltUpdate($logId): bool
+	public static function haltUpdate(int $logId): bool
 	{
 		require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 
@@ -334,7 +328,7 @@ class NYTListsUpdateService {
 			if ($logEntry->endTime === null) {
 				// Set the halt flag instead of trying to kill processes
 				$logEntry->haltRequested = 1;
-				$logEntry->addNote("Update halt requested by user");
+				$logEntry->addExtensiveNote("Update halt requested by user via Greenhouse web interface.");
 				$logEntry->update();
 
 				return true;
