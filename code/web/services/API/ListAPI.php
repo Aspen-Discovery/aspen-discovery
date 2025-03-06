@@ -1619,7 +1619,6 @@ class ListAPI extends AbstractAPI {
 	 *
 	 * @param string $selectedList machine readable name of the new york times list
 	 * @param NYTUpdateLogEntry $nytUpdateLog
-	 * @return array
 	 * @throws Exception
 	 */
 	public function createUserListFromNYT($selectedList = null, $nytUpdateLog = null, $forceFullUpdate = false): array {

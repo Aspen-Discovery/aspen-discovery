@@ -5,6 +5,9 @@
 			{translate text="This tool allows you to run the New York Times lists updater immediately. Use this when you need to update NYT lists without waiting for the scheduled cron job." isAdminFacing=true}
 		</div>
 
+		{* Display status of any currently running update *}
+		<div id="nytUpdateStatus"></div>
+
 		{if !$hasSettings}
 			<div class="alert alert-warning">
 				{translate text="The New York Times API is not configured. Please configure it in the Admin settings first." isAdminFacing=true}
@@ -14,37 +17,45 @@
 				<div class="col-xs-12 col-sm-6">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h2 class="panel-title">{translate text="Current Settings" isAdminFacing=true}</h2>
+							<h2 class="panel-title">{translate text="Settings" isAdminFacing=true}</h2>
 						</div>
 						<div class="panel-body">
 							<div class="form-group">
 								<label>{translate text="API Key" isAdminFacing=true}</label>
 								<div class="form-control-static">{$apiKey}</div>
+								<p class="help-block">
+									<small>{translate text="To modify this key, please visit the full settings page." isAdminFacing=true}</small>
+								</p>
 							</div>
+
 							<div class="form-group">
-								<label>{translate text="Force Full Update" isAdminFacing=true}</label>
-								<div class="form-control-static">
-									{if $forceFullUpdate}
-										<span class="label label-success">{translate text="Enabled" isAdminFacing=true}</span>
-									{else}
-										<span class="label label-default">{translate text="Disabled" isAdminFacing=true}</span>
-									{/if}
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" id="forceFullUpdate" onchange="AspenDiscovery.Greenhouse.toggleNYTSetting('forceFullUpdate', this);" {if $forceFullUpdate}checked{/if}>
+										{translate text="Force Full Update" isAdminFacing=true}
+									</label>
+									<p class="help-block">
+										<small>{translate text="When enabled, all lists will be completely rebuilt regardless of the last modified date." isAdminFacing=true}</small>
+									</p>
 								</div>
 							</div>
+
 							<div class="form-group">
-								<label>{translate text="Extensive Logging" isAdminFacing=true}</label>
-								<div class="form-control-static">
-									{if $enableExtensiveLogging}
-										<span class="label label-success">{translate text="Enabled" isAdminFacing=true}</span>
-									{else}
-										<span class="label label-default">{translate text="Disabled" isAdminFacing=true}</span>
-									{/if}
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" id="enableExtensiveLogging" onchange="AspenDiscovery.Greenhouse.toggleNYTSetting('enableExtensiveLogging', this);" {if $enableExtensiveLogging}checked{/if}>
+										{translate text="Enable Extensive Logging" isAdminFacing=true}
+									</label>
+									<p class="help-block">
+										<small>{translate text="When enabled, more detailed logs will be generated during the update process." isAdminFacing=true}</small>
+									</p>
 								</div>
 							</div>
+
 							<div class="form-group">
 								<p>
-									<a href="/Enrichment/NewYorkTimesSettings" class="btn btn-sm btn-default">
-										{translate text="Edit Settings" isAdminFacing=true}
+									<a href="/Enrichment/NewYorkTimesSettings" class="btn btn-default">
+										<i class="fas fa-cog"></i> {translate text="Advanced Settings" isAdminFacing=true}
 									</a>
 								</p>
 							</div>
@@ -58,15 +69,15 @@
 							<h2 class="panel-title">{translate text="Run Update" isAdminFacing=true}</h2>
 						</div>
 						<div class="panel-body">
-							<p>{translate text="Click the button below to run the NYT lists updater now." isAdminFacing=true}</p>
-							<div class="alert alert-warning">
-								{translate text="This will execute the command on the server and may take several minutes to complete. You will be redirected to the update log when finished." isAdminFacing=true}
-							</div>
-							<button onclick="return AspenDiscovery.Greenhouse.runNYTUpdate('{$siteUrl}');" class="btn btn-primary">
-								{translate text="Run NYT Lists Update Now" isAdminFacing=true}
+							<p>{translate text="Click the button below to run the NYT lists updater now. This will execute the command on the server and may take several minutes to complete." isAdminFacing=true}</p>
+							<button id="runNytUpdateBtn" onclick="return AspenDiscovery.Greenhouse.runNYTUpdate();" class="btn btn-primary">
+								<i class="fas fa-sync"></i> {translate text="Run NYT Lists Update Now" isAdminFacing=true}
 							</button>
-							<div id="nytUpdateResult" class="alert alert-info hidden" role="alert">
-								<i class="fas fa-spinner fa-spin fa-lg"></i> {translate text="Running the update. Please wait..." isAdminFacing=true}
+
+							<div class="form-group" style="margin-top: 20px;">
+								<a href="/UserLists/NYTUpdatesLog" class="btn btn-default">
+									<i class="fas fa-history"></i> {translate text="View All Update Logs" isAdminFacing=true}
+								</a>
 							</div>
 						</div>
 					</div>

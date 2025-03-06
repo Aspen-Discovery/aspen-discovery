@@ -625,50 +625,144 @@ class Greenhouse_AJAX extends Action {
 			return ['success' => false, 'message' => 'You must be logged in as an Aspen Administrator to run this update.'];
 		}
 
-		// Verify that the NYT API is configured
+		// Check for API settings
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
-			return ['success' => false, 'message' => 'The New York Times API is not configured.'];
+			return ['success' => false, 'message' => 'New York Times API is not configured'];
 		}
 
-		// Get the site URL (for constructing the log URL)
-		$siteUrl = $_REQUEST['siteUrl'] ?? $_SERVER['SERVER_NAME'];
+		// First check if any updates are already running and handle them
+		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
+		$currentStatus = NYTListsUpdateService::isUpdateRunning();
 
-		// Get the path to the updateNYTLists.php script
-		$scriptPath = ROOT_DIR . '/cron/updateNYTLists.php';
+		// If there's a running update, force clear it to prevent interface lockups
+		if ($currentStatus['isRunning']) {
+			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
+			$existingLog = new NYTUpdateLogEntry();
+			$existingLog->id = $currentStatus['logId'];
+			if ($existingLog->find(true)) {
+				$existingLog->addNote("Previous update was forcibly cleared to allow a new update to run");
+				$existingLog->endTime = time();
+				$existingLog->update();
+			}
+		}
 
-		// Execute the script
-		$command = "php $scriptPath $siteUrl";
-		$output = [];
-		$returnVar = 0;
+		try {
+			// Create the updater and run it directly
+			$updater = new NYTListsUpdateService();
+			$result = $updater->update();
 
-		// Execute the command
-		exec($command, $output, $returnVar);
-
-		if ($returnVar !== 0) {
+			// Return results to the browser
+			if ($result['success']) {
+				$logId = $result['logId'];
+				return [
+					'success' => true,
+					'message' => 'NYT Lists updated successfully',
+					'logId' => $logId,
+					'clearedPrevious' => $currentStatus['isRunning']
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Error updating NYT Lists: ' . $result['message'],
+					'clearedPrevious' => $currentStatus['isRunning']
+				];
+			}
+		} catch (Exception $e) {
 			return [
 				'success' => false,
-				'message' => 'Error running the NYT updater. Return code: ' . $returnVar,
-				'output' => implode("\n", $output)
+				'message' => 'Exception during NYT update: ' . $e->getMessage(),
+				'clearedPrevious' => $currentStatus['isRunning']
 			];
 		}
+	}
 
-		// Get the ID of the latest log entry
-		require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
-		$logEntry = new NYTUpdateLogEntry();
-		$logEntry->orderBy('id DESC');
-		$logEntry->limit(1);
+	/** @noinspection PhpUnused */
+	function getNYTUpdateStatus(): array
+	{
 
-		$logId = null;
-		if ($logEntry->find(true)) {
-			$logId = $logEntry->id;
+		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
+		$status = NYTListsUpdateService::isUpdateRunning();
+
+		// Get the log entry to check for haltRequested flag
+		if ($status['isRunning'] && isset($status['logId'])) {
+			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
+			$logEntry = new NYTUpdateLogEntry();
+			$logEntry->id = $status['logId'];
+			if ($logEntry->find(true)) {
+				$status['haltRequested'] = ($logEntry->haltRequested == 1);
+			}
 		}
 
 		return [
 			'success' => true,
-			'message' => 'NYT Lists update completed successfully.',
-			'logId' => $logId
+			'status' => $status
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function haltNYTUpdate(): array
+	{
+		// Check permissions
+		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists'];
+		}
+
+		$logId = isset($_REQUEST['logId']) ? (int)$_REQUEST['logId'] : 0;
+		if (!$logId) {
+			return ['success' => false, 'message' => 'No update ID provided'];
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
+		$result = NYTListsUpdateService::haltUpdate($logId);
+
+		if ($result) {
+			return [
+				'success' => true,
+				'message' => 'NYT update has been halted. The process will stop at the next safe point.',
+				'details' => 'The update will finish its current operation and then stop. This may take a few seconds.'
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Could not halt the update. It may have already completed.'
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function saveNYTSettings(): array
+	{
+		// Check permissions
+		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists settings'];
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+		$nytSettings = new NewYorkTimesSetting();
+
+		if (!$nytSettings->find(true)) {
+			$nytSettings->insert();
+		}
+
+		// Only update specific settings from the updater page
+		if (isset($_REQUEST['forceFullUpdate'])) {
+			$nytSettings->runFullUpdate = (int)($_REQUEST['forceFullUpdate'] === 'true');
+		}
+
+		if (isset($_REQUEST['enableExtensiveLogging'])) {
+			$nytSettings->enableExtensiveLogging = (int)($_REQUEST['enableExtensiveLogging'] === 'true');
+		}
+
+		$nytSettings->update();
+
+		return [
+			'success' => true,
+			'settings' => [
+				'forceFullUpdate' => (bool)$nytSettings->runFullUpdate,
+				'enableExtensiveLogging' => (bool)$nytSettings->enableExtensiveLogging
+			]
 		];
 	}
 }

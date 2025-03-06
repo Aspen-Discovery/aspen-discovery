@@ -10,7 +10,8 @@ class NYTUpdateLogEntry extends BaseLogEntry {
 	public $numAdded;
 	public $numUpdated;
 	public $numSkipped;
-	private bool $extensiveLoggingEnabled = false;
+	private bool $extensiveLoggingEnabled;
+	public int $haltRequested;
 
 	/**
 	 * NYTUpdateLogEntry constructor.

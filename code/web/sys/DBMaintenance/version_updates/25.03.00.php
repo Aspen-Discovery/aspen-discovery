@@ -319,6 +319,7 @@ function getUpdates25_03_00(): array {
 			'sql' => [
 				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS runFullUpdate TINYINT(1) NOT NULL DEFAULT 0",
 				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS enableExtensiveLogging TINYINT(1) NOT NULL DEFAULT 0",
+				"ALTER TABLE nyt_update_log ADD COLUMN haltRequested TINYINT(1) DEFAULT 0 NOT NULL"
 			],
 		], //nyt_force_full_update
 

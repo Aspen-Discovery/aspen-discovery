@@ -19,11 +19,11 @@ class Greenhouse_NYTListUpdater extends Admin_Admin
 			$interface->assign('apiKey', substr($nytSettings->booksApiKey, 0, 4) . '...');
 			$interface->assign('forceFullUpdate', $nytSettings->runFullUpdate);
 			$interface->assign('enableExtensiveLogging', $nytSettings->enableExtensiveLogging);
-		}
 
-		// Get the site's name
-		$siteUrl = $_SERVER['SERVER_NAME'];
-		$interface->assign('siteUrl', $siteUrl);
+			require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
+			$updateStatus = NYTListsUpdateService::isUpdateRunning();
+			$interface->assign('updateStatus', $updateStatus);
+		}
 
 		$this->display('nytListUpdater.tpl', 'New York Times List Updater');
 	}
