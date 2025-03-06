@@ -2872,6 +2872,8 @@ CREATE TABLE `library` (
   `instagramLink` varchar(255) DEFAULT NULL,
   `goodreadsLink` varchar(255) DEFAULT NULL,
   `facebookLink` varchar(255) DEFAULT '',
+  `blueskyLink` varchar(255) DEFAULT '',
+  `threadsLink` varchar(255) DEFAULT '',
   `generalContactLink` varchar(255) DEFAULT '',
   `repeatInOnlineCollection` int(11) DEFAULT 1,
   `showExpirationWarnings` tinyint(1) DEFAULT 1,
