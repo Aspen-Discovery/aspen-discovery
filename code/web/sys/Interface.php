@@ -616,6 +616,8 @@ class UInterface extends Smarty {
 		$this->assign('pinterestLink', $library->pinterestLink);
 		$this->assign('goodreadsLink', $library->goodreadsLink);
 		$this->assign('tiktokLink', $library->tiktokLink);
+        $this->assign('blueskyLink', $library->blueskyLink);
+        $this->assign('threadsLink', $library->threadsLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
