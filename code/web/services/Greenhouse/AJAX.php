@@ -611,6 +611,27 @@ class Greenhouse_AJAX extends Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function reloadCoverSources(): array {
+		$result = [
+			'success' => false,
+			'message' => 'No cover sources were selected for processing.'
+		];
+
+		if (is_array($_REQUEST['sources']) && !empty($_REQUEST['sources'])) {
+			require_once ROOT_DIR . '/services/Greenhouse/CoverManager.php';
+			$coverManager = new Greenhouse_CoverManager();
+			$results = $coverManager->reloadMultipleCoverSources($_REQUEST['sources']);
+
+			$result = [
+				'success' => true,
+				'message' => implode('<br>', $results)
+			];
+		}
+
+		return $result;
+	}
+
 	function getBreadcrumbs(): array {
 		return [];
 	}
