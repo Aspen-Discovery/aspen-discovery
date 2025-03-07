@@ -1,7 +1,17 @@
+/**
+ * Aspen Discovery Greenhouse JavaScript Module
+ *
+ * This JavaScript module improves the Aspen Discovery Greenhouse UI by:
+ * - Making the interface more responsive by using AJAX instead of full page reloads.
+ * - Providing immediate visual feedback to users.
+ * - Reducing server load and improving performance; only necessary data is transferred, not entire page content.
+ *
+ */
+
 AspenDiscovery.Greenhouse = (function () {
     return {
         /**
-         * Submit the cover reload form via AJAX
+         * Submit the cover reload form via AJAX.
          */
         reloadCoverSources: function () {
             // Get selected sources
