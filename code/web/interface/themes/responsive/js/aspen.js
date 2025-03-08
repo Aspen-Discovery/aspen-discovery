@@ -18137,13 +18137,28 @@ AspenDiscovery.CommunityEngagement = function() {
 
 		updateManualMilestoneFields: function () {
 			let milestoneType = document.querySelector('[name="milestoneType"]').value;
-			let allowPatronProgressInput = document.querySelector('[name="allowPatronProgressInput"]');
+			let allowPatronProgressInput = document.getElementById('propertyRowallowPatronProgressInput');
+			let conditionalField = document.getElementById('propertyRowconditionalField');
+			let conditionalOperator = document.getElementById('propertyRowconditionalOperator');
+			let conditionalValue = document.getElementById('propertyRowconditionalValue');
+			let description = document.getElementById('propertyRowdescription');
+
+
 
 			if (milestoneType !== 'manual') {
-				allowPatronProgressInput.disabled = true;
-				allowPatronProgressInput.checked = false;
+				allowPatronProgressInput.style.display = 'none';
+				description.style.display = 'none';
+				conditionalField.style.display = '';
+				conditionalOperator.style.display = '';
+				conditionalValue.style.display = '';
+
 			} else {
-				allowPatronProgressInput.disabled = false;
+				allowPatronProgressInput.style.display = '';
+				description.style.display = '';
+				conditionalField.style.display = 'none';
+				conditionalOperator.style.display = 'none';
+				conditionalValue.style.display = 'none';
+
 			}
 		},
 		manuallyProgressMilestone: function (milestoneId, userId, campaignId) {

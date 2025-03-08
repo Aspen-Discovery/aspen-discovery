@@ -338,5 +338,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_user_campaign ADD COLUMN campaignCompleteEmailSent TINYINT(1) DEFAULT 0"
             ],
         ],
+        'add_description_for_manual_milestones' => [
+            'title' => 'Add Description for Manual Milestones',
+            'description' => 'Add a text block description for manual milestones',
+            'sql' => [
+                "ALTER TABLE ce_milestone ADD COLUMN description VARCHAR(255)"
+            ],
+        ],
     ];
 }
