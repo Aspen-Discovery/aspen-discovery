@@ -300,6 +300,7 @@ class Campaign extends DataObject {
 				'rewardType' => $reward->rewardType,
 				'badgeImage' => $reward->getDisplayUrl(),
 				'rewardExists' => !empty($reward->badgeImage),
+				'displayName' => $reward->displayName,
 			];
 		}
 		return null;
@@ -562,6 +563,7 @@ class Campaign extends DataObject {
 				if ($campaignReward->find(true)) {
 					$pastCampaignList[$campaign->id]->rewardId = $campaignReward->id;
 					$pastCampaignList[$campaign->id]->rewardName = $campaignReward->name;
+					$pastCampaignList[$campaign->id]->displayName = $campaignReward->displayName;
 					$pastCampaignList[$campaign->id]->rewardType = $campaignReward->rewardType;
 					$pastCampaignList[$campaign->id]->rewardImage = $campaignReward->getDisplayUrl();
 					if (!empty($campaignReward->badgeImage)) {

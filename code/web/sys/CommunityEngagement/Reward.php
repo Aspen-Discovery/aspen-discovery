@@ -4,6 +4,7 @@ class Reward extends DataObject {
 	public $__table = 'ce_reward';
 	public $id;
 	public $name;
+	public $displayName;
 	public $description;
 	public $rewardType;
 	public $badgeImage;
@@ -25,6 +26,13 @@ class Reward extends DataObject {
 				'maxLength' => 50,
 				'description' => 'A name for the campaign',
 				'required' => true,
+			],
+			'displayName' => [
+				'property' => 'displayName',
+				'type' => 'checkbox',
+				'label' => 'Display Name',
+				'description' => 'Whether or not to display the reward name to patrons',
+				'default' => true,
 			],
 			'description' => [
 				'property' => 'description',

@@ -345,5 +345,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_milestone ADD COLUMN description VARCHAR(255)"
             ],
         ],
+        'add_control_over_whether_reward_name_displays' => [
+            'title' =>'Add Control Over Whether Reward Name Displays',
+            'description' => 'Add control over whether reward name is displayed',
+            'sql' => [
+                "ALTER TABLE ce_reward ADD COLUMN displayName TINYINT(1) DEFAULT 1"
+            ],
+        ],
     ];
 }

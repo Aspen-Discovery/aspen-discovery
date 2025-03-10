@@ -33,7 +33,9 @@
                             <td>{$campaign->startDate}</td>
                             <td>{$campaign->endDate}</td>
                             <td>
-                                {$campaign->rewardName}
+                                {if $campaign->displayName}
+                                    {$campaign->rewardName}
+                                {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}
@@ -134,7 +136,7 @@
                 <h2>{translate text="Linked Account Campaigns" isPublicFacing=true}</h2>
                 {foreach from=$linkedCampaigns item="linkedUser"}
                     <h3>{$linkedUser.linkedUserName}</h3>
-                    <table>
+                    <table id="linkedAccountCampaignsTable" class="table table-striped">
                         <thead>
                             <tr>
                                 <th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -159,10 +161,12 @@
                                     <td>{$campaign.startDate}</td>
                                     <td>{$campaign.endDate}</td>
                                     <td>
-                                    {$campaign.campaignReward.rewardName}
-                                    {if $campaign.campaignReward.rewardType == 1}
-                                            <img src="{$campaign.reward.badgeImage}" alt="{$campaign.reward.rewardName}" width="100" height="100" />
-                                        {/if}
+                                    {if $campaign.campaignReward.displayName}
+                                        {$campaign.campaignReward.rewardName}
+                                    {/if}
+                                    {if $campaign.campaignReward.rewardType == 1 && $campaign.campaignReward.rewardExists}
+                                            <img src="{$campaign.campaignReward.badgeImage}" alt="{$campaign.reward.rewardName}" width="100" height="100" />
+                                    {/if}
                                     </td>
                                     <td>{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
                                     <td>
@@ -194,8 +198,11 @@
                                             {foreach from=$campaign.milestones item="milestone"}
                                                 <tr>
                                                     <td>{$milestone.milestoneName}</td>
-                                                    <td>{$milestone.rewardName} 
-                                                        {if $milestone.rewardType == 1}
+                                                    <td>
+                                                        {if $milestone->displayName}
+                                                            {$milestone.rewardName} 
+                                                        {/if}
+                                                        {if $milestone.rewardType == 1 && $milestone.rewardExists}
                                                             <img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" width="100" height="100" />
                                                         {/if}
                                                     </td>
@@ -266,7 +273,9 @@
                         <tr>
                             <td>{$campaign->name}</td>
                             <td>
-                                {$campaign->rewardName}
+                                {if $campaign->displayName}
+                                    {$campaign->rewardName}
+                                {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}
@@ -311,7 +320,9 @@
                                             <tr>
                                                 <td>{$milestone->name}</td>
                                                 <td>
-                                                    {$milestone->rewardName}
+                                                    {if $milestone->displayName}
+                                                        {$milestone->rewardName}
+                                                    {/if}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                     {/if}
@@ -382,7 +393,9 @@
                         <tr>
                             <td>{$campaign->name}</td>
                             <td>
-                                {$campaign->rewardName}
+                                {if $campaign->displayName}
+                                    {$campaign->rewardName}
+                                {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}
@@ -421,7 +434,9 @@
                                             <tr>
                                                 <td>{$milestone->name}</td>
                                                 <td>
-                                                    {$milestone->rewardName}
+                                                    {if $milestone->displayName}
+                                                        {$milestone->rewardName}
+                                                    {/if}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                     {/if}
@@ -459,7 +474,9 @@
                         <td>{$campaign->startDate}</td>
                         <td>{$campaign->endDate}</td>
                         <td>
-                            {$campaign->rewardName}
+                            {if $campaign->displayName}
+                                {$campaign->rewardName}
+                            {/if}
                             {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                 <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                             {/if}
@@ -480,9 +497,13 @@
                                 <tbody>
                                     {foreach from=$campaign->milestones item="milestone"}
                                         <tr>
-                                            <td>{$milestone->name}</td>
                                             <td>
-                                                {$milestone->rewardName}
+                                                {$milestone->name}
+                                            </td>
+                                            <td>
+                                                {if $milestone->displayName}
+                                                    {$milestone->rewardName}
+                                                {/if}
                                                 {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                     <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                 {/if}
@@ -523,7 +544,9 @@
                                 <td>{$campaign->startDate}</td>
                                 <td>{$campaign->endDate}</td>
                                 <td>
-                                {$campaign->rewardName}
+                                {if $campaign->displayName}
+                                    {$campaign->rewardName}
+                                {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}<br>
@@ -552,7 +575,9 @@
                                         <tbody>
                                         {foreach from=$campaign->milestones item="milestone"}
                                             <tr>
-                                                <td>{$milestone->name}</td>
+                                                <td>
+                                                    {$milestone->name}
+                                                </td>
                                                 <td style="position: relative; text-align: center; vertical-align: middle; >
                                                     <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
                                                         <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
@@ -570,7 +595,9 @@
                                                 {/if}
                                             </td>
                                             <td>
-                                                {$milestone->rewardName}
+                                                {if $milestone->displayName}
+                                                    {$milestone->rewardName}
+                                                {/if}
                                                 {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                     <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                 {/if}

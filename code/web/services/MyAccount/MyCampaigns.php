@@ -85,6 +85,7 @@ class MyCampaigns extends MyAccount {
 				$campaign->rewardType = $rewardDetails['rewardType'];
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
+                $campaign->displayReward = $rewardDetails['displayReward'];
 			}
 
 				//Fetch milestones for this campaign
@@ -173,7 +174,9 @@ class MyCampaigns extends MyAccount {
                         $campaignReward = [
                             'rewardName' => $rewardDetails['name'],
                             'rewardType' => $rewardDetails['rewardType'], 
-                            'badgeImage' => $rewardDetails['badgeImage']
+                            'badgeImage' => $rewardDetails['badgeImage'],
+                            'rewardExists' => $rewardDetails['rewardExists'],
+                            'displayName' => $rewardDetails['displayName'],
                         ];
                     }
 
@@ -195,13 +198,14 @@ class MyCampaigns extends MyAccount {
                         }
 
 
-
                         $milestoneRewards[] = [
                             'id' => $milestone->id,
                             'milestoneName' => $milestone->name,
                             'rewardName' => $milestone->rewardName, 
                             'rewardType' => $milestone->rewardType, 
-                            'badgeImage' => $milestone->badgeImage,
+                            'displayName' => $milestone->displayName,
+                            'badgeImage' => $milestone->rewardImage,
+                            'rewardExists' => $milestone->rewardExists,
                             'progress' => $milestoneProgress['progress'],
                             'extraProgress' => $milestoneProgress['extraProgress'],
                             'completedGoals' => $completedGoals,
@@ -211,6 +215,7 @@ class MyCampaigns extends MyAccount {
                             'allowPatronProgressInput' => $milestone->allowPatronProgressInput
                         ];
                     }
+
 
                     $eligibleCampaigns[] = [
                         'campaignId' => $campaign->id,
