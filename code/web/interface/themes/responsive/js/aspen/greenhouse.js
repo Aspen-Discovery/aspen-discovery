@@ -33,7 +33,7 @@ AspenDiscovery.Greenhouse = (function () {
             $.ajax({
                 url: '/Greenhouse/AJAX',
                 dataType: 'json',
-                method: 'GET',
+                method: 'POST',
                 data: {
                     method: 'reloadCoverSources',
                     sources: selectedSources

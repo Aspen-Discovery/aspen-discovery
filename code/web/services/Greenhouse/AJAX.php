@@ -10,7 +10,7 @@ class Greenhouse_AJAX extends Action {
 		if (UserAccount::isLoggedIn()) {
 			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				global $timer;
-				$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+				$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
 				$timer->logTime("Starting method $method");
 				if (method_exists($this, $method)) {
 					// Methods intend to return JSON data
@@ -618,10 +618,10 @@ class Greenhouse_AJAX extends Action {
 			'message' => 'No cover sources were selected for processing.'
 		];
 
-		if (is_array($_REQUEST['sources']) && !empty($_REQUEST['sources'])) {
+		if (is_array($_POST['sources']) && !empty($_POST['sources'])) {
 			require_once ROOT_DIR . '/services/Greenhouse/CoverManager.php';
 			$coverManager = new Greenhouse_CoverManager();
-			$results = $coverManager->reloadMultipleCoverSources($_REQUEST['sources']);
+			$results = $coverManager->reloadMultipleCoverSources($_POST['sources']);
 
 			$result = [
 				'success' => true,
