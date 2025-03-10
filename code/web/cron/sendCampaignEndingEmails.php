@@ -10,7 +10,7 @@ require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
 $today = date('Y-m-d');
 
 $campaign = new Campaign();
-$campaign->startDate = $today;
+$campaign->endDate = $today;
 
 if ($campaign->find()) {
     while ($campaign->fetch()) {
@@ -38,7 +38,7 @@ if ($campaign->find()) {
 }
 
 function sendCampaignEmail($user, $campaignName) {
-    $emailTemplate = EmailTemplate::getActiveTemplate('campaignStart');
+    $emailTemplate = EmailTemplate::getActiveTemplate('campaignEnding');
     if ($emailTemplate) {
         $parameters = [
             'user' => $user,

@@ -172,12 +172,15 @@ class UserCampaign extends DataObject {
     }
 
     public function checkAndHandleCampaignCompletion($userId, $campaignId) {
+        require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+        global $logger;
+
         $userCampaign = new UserCampaign();
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
         if ($userCampaign->find(true)) {
-            if ($userCampaign->completed == 1 && $userCampaign->campaignCompleteEmailSent == 0) {
+            if ($userCampaign->optInToCampaignEmailNotifications == 1) {
                 $user = new User();
                 $user->id = $userId;
                 if (!$user->find(true)) {
@@ -190,10 +193,62 @@ class UserCampaign extends DataObject {
                     return;
                 }
                 $campaignName = $campaign->name;
+                if ($userCampaign->completed == 1 && $userCampaign->campaignCompleteEmailSent == 0) {
+                    $emailTemplate = EmailTemplate::getActiveTemplate('campaignComplete');
+                    if ($emailTemplate) {
+                        $parameters = [
+                            'user' => $user,
+                            'campaignName' => $campaignName,
+                            'library' => $user->getHomeLibrary(),
+                        ];
+                        try {
+                            $emailTemplate->sendEmail($user->email, $parameters);
+                            $userCampaign->campaignCompleteEmailSent = 1;
+                            $userCampaign->update();
+                        } catch (Exception $e) {
+                            $logger->log("Exception while sending email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
+                        }
+                    }
+                }
+                $milestone = new CampaignMilestone();
+                $milestone->campaignId = $campaignId;
+                $milestones = [];
 
-                sendCampaignEmail($user, $campaignName);
-                $userCampaign->campaignCompleteEmailSent = 1;
-                $userCampaign->update();
+                if ($milestone->find()) {
+                    while ($milestone->fetch()) {
+                        $milestones[] = clone $milestone;
+                    }
+                }
+
+                foreach ($milestones as $milestone) {
+                    $milestoneProgress = new CampaignMilestoneUsersProgress();
+                    $milestoneProgress->userId = $userId;
+                    $milestoneProgress->ce_milestone_id = $milestone->id;
+                    $milestoneProgress->ce_campaign_id = $campaignId;
+
+                    if ($milestoneProgress->find(true)) {
+                        if ($milestoneProgress >= $milestone->goal && !$milestoneProgress->milestoneCompleteEmailSent){
+                            $emailTemplate = EmailTemplate::getActiveTemplate('milestoneComplete');
+
+                            if ($emailTemplate) {
+                                $parameters = [
+                                    'user' => $user,
+                                    'campaignName' => $campaign->name,
+                                    'milestoneName' => $milestone->name,
+                                    'library' => $user->getHomeLibrary(),
+                                ];
+
+                                try {
+                                    $emailTemplate->sendEmail($user->email, $parameters);
+                                    $milestoneProgress->milestoneCompleteEmailSent = 1;
+                                    $milestoneProgress->update();
+                                } catch (Exception $e) {
+                                    $logger->log("Error sending milestone email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

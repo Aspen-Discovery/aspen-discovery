@@ -8,6 +8,7 @@ class CampaignMilestoneUsersProgress extends DataObject
 	public $ce_milestone_id;
 	public $progress;
 	public $rewardGiven;
+	public $milestoneCompleteEmailSent;
 
 	public static function getProgressByMilestoneId($milestoneId, $campaignId, $userId) {
 		$milestoneProgress = new Self();

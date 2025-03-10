@@ -548,7 +548,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 'text' => 'Opt in to campaign email updates for ' .$campaignName . ':',
                 'isPublicFacing' => true,
             ]) . '<label class-"switch"><input type="checkbox" id="emailOptInSlider"' . $sliderState . '><span class="slider"></span></label><br>' . $emailReminder,
-            'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn($campaignId, $userId, $(\"#emailOptInSlider\").prop(\"checked\") ? 1 : 0)'>" . translate([
+            'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.CommunityEngagement.handleCampaignEnrollment($campaignId, $userId, $(\"#emailOptInSlider\").prop(\"checked\") ? 1 : 0)'>" . translate([
                 'text' => 'Submit',
                 'isPublicFacing' => true,
                 ]) . "</button>",
@@ -561,6 +561,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $campaignId = $_GET['campaignId'] ?? null;
         $userId = $_GET['userId'] ?? null;
         $optIn = $_GET['optIn'] ?? null;
+        global $logger;
+        $logger->log("campaign: " . $campaignId . " user: " . $userId . "optin: " . $optIn, Logger::LOG_ERROR);
 
         if (!$campaignId || !$userId || $optIn === null) {
             return [
@@ -584,12 +586,25 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if ($userCampaign->find(true)) {
             $userCampaign->optInToCampaignEmailNotifications = (int)$optIn;
             $success = $userCampaign->update();
-        } else {
-            $userCampaign->optInToCampaignEmailNotifications = (int)$optIn;
-            $success = $userCampaign->insert();
         }
 
         if ($success) {
+            if ($userCampaign->optInToCampaignEmailNotifications == 1) {
+                $campaign = new Campaign();
+                $campaign->id = $campaignId;
+                if ($campaign->find(true)) {
+                    $campaignName = $campaign->name;
+                }
+
+                $user = new User();
+                $user->id = $userId;
+                if ($user->find(true) && !empty($user->email)) {
+                    $this->sendEnrollmentEmail($user, $campaignName);
+                }
+
+                $userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
+            }
+    
             return [
                 'success' => true,
                 'title' => translate([
@@ -615,6 +630,31 @@ class CommunityEngagement_AJAX extends JSON_Action {
             ];
         }
     }
+
+    private function sendEnrollmentEmail($user, $campaignName) {
+        require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+
+       global $logger;
+   
+       $emailTemplate = EmailTemplate::getActiveTemplate('campaignEnroll');
+   
+       if ($emailTemplate) {
+   
+           $parameters = [
+               'user' => $user,
+               'campaignName' => $campaignName,
+               'library' => $user->getHomeLibrary(),
+           ];
+
+   
+           try {
+               $emailTemplate->sendEmail($user->email, $parameters);
+
+           } catch (Exception $e) {
+               $logger->log("Exception while sending email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
+           }
+       }
+   }
 
     public function saveLeaderboardChanges() {
         $input = file_get_contents("php://input");
@@ -660,6 +700,120 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 ]),
             ];
         }
+    }
+
+    public function campaignEmailOptIn() {
+        $userId = $_GET['userId'];
+        $campaignId = $_GET['campaignId'];
+
+        if (empty($campaignId)) {
+            echo json_encode([
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Invalid Campaign ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+        if (empty($userId)) {
+            echo json_encode([
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Invalid User ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        $userCampaign->optInToCampaignEmailNotifications = 1;
+        $userCampaign->update();
+
+        echo json_encode([
+            'success' => true,
+            'title' => translate([
+                'text' => 'Success',
+                'isPublicFacing' => true,
+            ]),
+            'message' => translate([
+                'text' => 'You have successfully opted in to notification emails for this campaign',
+                'isPublicFacing' => true,
+            ]),
+        ]);
+        exit;
+    }
+
+    public function campaignEmailOptOut() {
+
+        $userId = $_GET['userId'];
+        $campaignId = $_GET['campaignId'];
+        global $logger;
+        $logger->log("campaign: " . $campaignId, Logger::LOG_ERROR);
+        $logger->log("USER: " . $userId, Logger::LOG_ERROR);
+
+
+        if (empty($campaignId)) {
+            echo json_encode([
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Invalid Campaign ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        if (empty($userId)) {
+            echo json_encode([
+                'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
+                'message' => translate([
+                    'text' => 'Invalid User ID',
+                    'isPublicFacing' => true,
+                ]),
+            ]);
+            exit;
+        }
+
+        $userCampaign = new UserCampaign();
+        $userCampaign->userId = $userId;
+        $userCampaign->campaignId = $campaignId;
+
+        $userCampaign->optInToCampaignEmailNotifications = 0;
+        $userCampaign->update();
+
+        echo json_encode([
+            'success' => true,
+            'title' => translate([
+                'text' => 'Success',
+                'isPublicFacing' => true,
+            ]),
+            'message' => translate([
+                'text' => 'You have successfully opted out of email notifications for this campaign',
+                'isPublicFacing' => true,
+            ]),
+        ]);
+        exit;
     }
        
 

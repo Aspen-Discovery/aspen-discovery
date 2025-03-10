@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
+require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 
 class MyAccount_MyPreferences extends MyAccount {
 	function launch() : void {
@@ -81,6 +82,20 @@ class MyAccount_MyPreferences extends MyAccount {
 			if ($showAutoRenewSwitch) {
 				$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
 			}
+
+			$campaign = new Campaign();
+			$campaigns = $campaign->getUserEnrolledCampaigns($user->id);
+			$usersCampaigns = [];
+			foreach ($campaigns as $campaign) {
+				$userCampaign = new UserCampaign();
+				$userCampaign->campaignId = $campaign->id;
+				$userCampaign->userId = $user->id;
+				if ($userCampaign->find(true)) {
+					$userCampaign->campaignName = $campaign->name;
+					$usersCampaigns[] = clone $userCampaign;
+				}
+			}
+			$interface->assign('usersCampaigns', $usersCampaigns);
 
 			// Save/Update Actions
 			global $offlineMode;

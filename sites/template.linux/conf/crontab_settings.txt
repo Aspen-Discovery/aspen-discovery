@@ -121,4 +121,10 @@
 ####################################
 0 1 * * * root php /usr/local/aspen-discovery/code/web/cron/talpaWorksCron.php {sitename}
 
+##############################################
+# Send Campaign Emails #
+##############################################
+0 6 * * * root php /usr/local/aspen-discovery/code/web/cron/sendCampaignEmails.php {sitename}
+0 6 * * * root php /usr/local/aspen-discovery/code/web/cron/sendCampaignEndingEmails.php {sitename}
+
 # Debian needs a blank line at the end of cron, make sure to add additional cron lines above this.

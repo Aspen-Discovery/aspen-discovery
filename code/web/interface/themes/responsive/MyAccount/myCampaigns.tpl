@@ -54,6 +54,13 @@
                                     <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
                                 {/if}
                             </td>
+                            <td>
+                                {if $campaign->optInToCampaignEmailNotifications}
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt Out" isPublicFacing=true}</button>
+                                {else}
+                                    <button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt In" isPublicFacing=true}</button>
+                                {/if}
+                            </td>
                         </tr>
                             {* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
                             {assign var="showAddProgressColumn" value=false}

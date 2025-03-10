@@ -273,7 +273,62 @@ AspenDiscovery.CommunityEngagement = function() {
 					console.error("AJAX Error: ", textStatus, errorThrown);
 				}
 			});
-		}
+		},
+		optInToCampaignEmailNotifications: function (campaignId, userId) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=campaignEmailOptIn";
+			var params = {
+				campaignId: campaignId,
+				userId: userId,
+			}
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+				} else {
+					AspenDiscovery.showMessage("An Error Has Occurred", data.message);
+				}
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				console.error("AJAX Error: ", textStatus, errorThrown);
+			});
+		},
+		optOutOfCampaignEmailNotifications: function (campaignId, userId) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=campaignEmailOptOut";
+			var params = {
+				campaignId: campaignId,
+				userId: userId,
+			}
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+				} else {
+					AspenDiscovery.showMessage("An Error Has Occurred", data.message);
+				}
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				console.error("AJAX Error: ", textStatus, errorThrown);
+			});
+		},
+		handleCampaignEnrollment: function (campaignId, userId) {
+			var emailOptIn = $("#emailOptInSlider").prop("checked") ? 1 :0;
+
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: 'enrollCampaign',
+				campaignId: campaignId,
+				userId: userId,
+				emailOptIn: emailOptIn
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					AspenDiscovery.CommunityEngagement.toggleCampaignEmailOptIn(campaignId, userId, emailOptIn);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail (function (jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			})
+		},
 
 	}
 	

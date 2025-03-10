@@ -126,6 +126,11 @@ class MyCampaigns extends MyAccount {
                     }else{
                         $campaign->optInToCampaignLeaderboard = $userCampaign->optInToCampaignLeaderboard;
                     }
+                    if ($userCampaign->optInToCampaignEmailNotifications == null) {
+                        $campaign->optInToCampaignEmailNotifications = $user->campaignNotificationsByEmail;
+                    } else {
+                        $campaign->optInToCampaignEmailNotifications = $userCampaign->optInToCampaignEmailNotifications;
+                    }
                 }
                 $milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
                 $campaign->numCompletedMilestones = count(array_filter($milestoneCompletionStatus));

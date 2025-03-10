@@ -33,6 +33,10 @@ class EmailTemplate extends DataObject {
 			$availableTemplates = [
 				'welcome' => 'Welcome',
 				'campaignStart' => 'Campaign Start',
+				'campaignEnd' => 'Campaign Ending',
+				'campaignEnroll' => 'Campaign Enrollment',
+				'campaignComplete' => 'Campaign Complete',
+				'milestoneComplete' => 'Milestone Complete',
 			];
 		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
@@ -266,11 +270,15 @@ class EmailTemplate extends DataObject {
 	}
 
 	public function sendEmail($toEmail, $parameters) {
+		global $logger;
+
 		if (empty($toEmail)) {
 			return false;
 		}
 		$plainTextBody = $this->plainTextBody;
 		$updatedBody = $this->applyParameters($this->plainTextBody, $parameters);
+		$logger->log("PLAIN BODY: " . $plainTextBody, Logger::LOG_ERROR);
+		$logger->log("SUBJECT: " . $this->subject, Logger::LOG_ERROR);
 
 		$updatedSubject = $this->applyParameters($this->subject, $parameters);
 
@@ -298,7 +306,7 @@ class EmailTemplate extends DataObject {
 			$text = str_ireplace('%user.firstname%', $user->firstname, $text);
 			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
 			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
-		} elseif ($this->templateType == 'campaignStart') {
+		} elseif ($this->templateType == 'campaignStart' || $this->templateType == 'campaignEnroll' || $this->templateType == 'campaignComplete' || $this->templateType == 'milestoneComplete' || $this->milestoneType == 'campaignEnding') {
 			$user = $parameters['user'];
 			/* @var Library $library */
 			$library = $parameters['library'];
@@ -316,6 +324,7 @@ class EmailTemplate extends DataObject {
 			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
 			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
 			$text = str_replace('%campaign.name%', $parameters['campaignName'], $text);
+			$text = str_replace('%milestone.name%', $parameters['milestoneName'], $text);
 		}
 		return $text;
 	}

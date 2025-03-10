@@ -1438,6 +1438,8 @@ class User extends DataObject {
 	}
 
 	function updateUserPreferences() {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+
 		// Validate that the input data is correct
 		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0) {
 			return [

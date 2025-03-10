@@ -352,5 +352,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_reward ADD COLUMN displayName TINYINT(1) DEFAULT 1"
             ],
         ],
+        'track_emails_sent_on_milestone_completion' => [
+            'title' => 'Track Emails Sent On Milestone Completion',
+            'description' => 'Add a column to track emails sent when campaign milestones have been completed',
+            'sql' => [
+                "ALTER TABLE ce_campaign_milestone_users_progress ADD COLUMN milestoneCompleteEmailSent TINYINT(1) DEFAULT 0"
+            ],
+        ],
     ];
 }

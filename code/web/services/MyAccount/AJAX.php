@@ -9253,9 +9253,11 @@ class MyAccount_AJAX extends JSON_Action {
 	public function enrollCampaign() {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+		require_once ROOT_DIR . '/sys/Account/User.php';
 
 		$campaignId = $_GET['campaignId'] ?? null;
 		$userId = $_GET['userId'] ?? null;
+
 
 		if (!$campaignId || !$userId) {
 			return[
@@ -9343,9 +9345,11 @@ class MyAccount_AJAX extends JSON_Action {
 			$campaign->enrollmentCounter++;
 			$campaign->currentEnrollments++;
 			$campaign->update();
+
+
+
 			return [
 				'success' => true,
-				'showEmailOptInPromptFlag' => true,
 				'campaignId' => $campaignId,
 				'userId' => $userId,
 				'title' => translate([
@@ -9598,7 +9602,6 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 	}
-	
 
 	function getYearInReviewSlide() : array {
 		$result = [
