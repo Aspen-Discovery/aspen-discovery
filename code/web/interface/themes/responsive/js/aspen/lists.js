@@ -168,6 +168,14 @@ AspenDiscovery.Lists = (function(){
 			return false;
 		},
 
+		removeUploadedListCover: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?listId=' + id + '&method=removeUploadedListCover';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage(data.title, data.message);
+			});
+			return false;
+		},
+
 		changeWeight: function(listEntryId, direction) {
 			var url = Globals.path + '/MyAccount/AJAX';
 			var params = {

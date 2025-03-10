@@ -16,7 +16,7 @@
                 {foreach from=$users item=user}
                         <tr>
                             <td>{$user->id}</td>
-                            <td>{$user->username}</td>
+                            <td>{$user->displayName}</td>
                             {foreach from=$milestones item=milestone}
                                 <td>
                                 {if $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['milestoneComplete']}

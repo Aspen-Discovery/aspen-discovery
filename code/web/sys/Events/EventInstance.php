@@ -83,7 +83,7 @@ class EventInstance extends DataObject {
 
 	public function update($context = '') {
 		$this->dateUpdated = time();
-		if (count($this->_changedFields) > 0) {
+		if (isset($this->_changedFields) && count($this->_changedFields) > 0) {
 			$this->_changedFields[] = 'dateUpdated';
 		}
 		return parent::update();

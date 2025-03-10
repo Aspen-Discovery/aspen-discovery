@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Suggestions.php';
 
 class MyAccount_Home extends MyAccount {
-	function launch() {
+	function launch() : void {
 		global $interface;
 
 		// The script should only execute when a user is logged in, otherwise it calls Login.php

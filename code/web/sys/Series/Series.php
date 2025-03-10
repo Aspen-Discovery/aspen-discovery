@@ -64,7 +64,7 @@ class Series extends DataObject {
 				'description' => 'Image to replace the automatically generated series cover',
 				'maxWidth' => 280,
 				'maxHeight' => 280,
-				'path' => "$coverPath/original/Series",
+				'path' => "$coverPath/original/series",
 				'hideInLists' => true,
 			],
 			'dateUpdated' => [

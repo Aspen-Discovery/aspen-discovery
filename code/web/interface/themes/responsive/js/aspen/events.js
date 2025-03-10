@@ -139,6 +139,7 @@ AspenDiscovery.Events = (function(){
 				$("#endDate").val(startDate.format("YYYY-MM-DD"));
 				$("#endTime").val(startDate.format("HH:mm"));
 			}
+			AspenDiscovery.Events.calculateRecurrenceDates();
 			return false;
 		},
 

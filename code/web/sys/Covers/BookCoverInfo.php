@@ -78,6 +78,10 @@ class BookCoverInfo extends DataObject {
 		$this->__set('recordId', $recordId);
 	}
 
+	public function setImageSource($imageSource): void {
+		$this->__set('imageSource', $imageSource);
+	}
+
 	/**
 	 * Get the original URL of the cover image
 	 * @return string|null

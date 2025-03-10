@@ -227,7 +227,7 @@
                             <td>
                                 {$campaign->rewardName}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
-                                    <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
+                                    <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}
                             </td>
                             <td>{$campaign->startDate}</td>

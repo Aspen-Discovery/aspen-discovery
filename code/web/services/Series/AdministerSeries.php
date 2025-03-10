@@ -51,7 +51,14 @@ class Series_AdministerSeries extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof Series && !empty($existingObject->id)) {
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => '/Series/' . $existingObject->id
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions(): string {

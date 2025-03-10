@@ -28,6 +28,7 @@ class Event extends DataObject {
 	public $recurrenceFrequency;
 	public $weekDays;
 	public $monthlyOption;
+	public $weekNumber;
 	public $monthDay;
 	public $monthDate;
 	public $monthOffset;
@@ -533,6 +534,11 @@ class Event extends DataObject {
 
 	public function update($context = '') {
 		$this->dateUpdated = time();
+		$this->setStartDate();
+		if (isset($this->weekDays) && is_array($this->weekDays)) {
+			// convert the array to string before storing in the database
+			$this->weekDays = implode(",", $this->weekDays);
+		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -546,6 +552,11 @@ class Event extends DataObject {
 	public function insert($context = '') {
 		if (empty($this->dateUpdated)) {
 			$this->dateUpdated = time(); // Set to 0 for new events
+		}
+		$this->setStartDate();
+		if (isset($this->weekDays) && is_array($this->weekDays)) {
+			// convert the array to string before storing in the database
+			$this->weekDays = implode( ",", $this->weekDays);
 		}
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -617,6 +628,29 @@ class Event extends DataObject {
 			return $this->calculateEnd($name);
 		} else {
 			return parent::__get($name);
+		}
+	}
+
+	public function fetch(): bool|DataObject|null {
+		$return = parent::fetch();
+		if ($return) {
+			if (!empty($this->weekDays) && is_string($this->weekDays) ) {
+				// convert to array retrieving from the database
+				$weekdays= [];
+				foreach (explode(",", $this->weekDays) as $weekDay) {
+					$weekdays[$weekDay] = $weekDay;
+				}
+				$this->weekDays = $weekdays;
+			} else {
+				$this->weekDays = [];
+			}
+		}
+		return $return;
+	}
+
+	public function setStartDate() {
+		if ($this->recurrenceOption != 1 && isset($this->startDate) && isset($this->_dates[0]) && strtotime($this->startDate) != strtotime($this->_dates[0])) {
+			$this->startDate = $this->_dates[0];
 		}
 	}
 
@@ -741,6 +775,21 @@ class Event extends DataObject {
 								$instance->update();
 							}
 						}
+					} else if (in_array('startTime', $this->_changedFields) || in_array('eventLength', $this->_changedFields)) { // If only the time or length has changed, we can just update existing events
+						foreach ($this->_dates as $date) {
+							// Don't create instances in the past
+							if ($date > $todayDate || ($date == $todayDate && $this->startTime > $todayTime)) {
+								$instance = new EventInstance();
+								$instance->eventId = $this->id;
+								$instance->date = $date;
+								$instance->find();
+								if ($instance->fetch()) {
+									$instance->time = $this->startTime;
+									$instance->length = $this->eventLength;
+									$instance->update();
+								}
+							}
+						}
 					}
 				}
 			}
@@ -750,13 +799,12 @@ class Event extends DataObject {
 	private function clearFutureInstances() {
 		$instance = new EventInstance();
 		$instance->eventId = $this->id;
-		$instance->find();
 		$todayDate = date('Y-m-d');
 		$todayTime = date('H:i:s');
 		$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
-		$instance->deleted = 1;
+		$instance->find();
 		while ($instance->fetch()) {
-			$instance->update();
+			$instance->delete();
 		}
 	}
 
@@ -812,6 +860,7 @@ class Event extends DataObject {
 			$this->_datesPreview = '';
 			$instance = new EventInstance();
 			$instance->eventId = $this->id;
+			$instance->deleted = 0;
 			$instance->find();
 			while ($instance->fetch()) {
 				$date = strtotime($instance->date);

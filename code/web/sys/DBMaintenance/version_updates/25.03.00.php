@@ -47,6 +47,13 @@ function getUpdates25_03_00(): array {
 				'ALTER TABLE themes ADD COLUMN headerLogoApp VARCHAR(100) DEFAULT NULL',
 			]
 		], //theme_app_header_logo
+		'move_uploaded_list_images' => [
+			'title' => 'Move uploaded images',
+			'description' => "Move uploaded images uploaded to their own directory so they don't conflict with uploaded records",
+			'sql'=> [
+				'moveUploadedListImages'
+			]
+		], //move_list_images
 
 		//katherine - Grove
 
@@ -132,7 +139,7 @@ function getUpdates25_03_00(): array {
 					lastUpdateOfChangedSeries INT(11) DEFAULT 0,
 					lastUpdateOfAllSeries INT(11) DEFAULT 0
 				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
-					"INSERT INTO series_indexing_settings VALUES (1,1,0,0);",
+				"INSERT INTO series_indexing_settings VALUES (1,1,0,0);",
 			]
 		], //add_series_tables
 		'add_excluded_column_to_series_member' => [
@@ -143,6 +150,33 @@ function getUpdates25_03_00(): array {
 				'ALTER TABLE series_member ADD COLUMN excluded TINYINT(1) DEFAULT 0;'
 			],
 		], // add_excluded_column_to_series_member
+		'add_series_indexes' => [
+			'title' => 'Add Series Indexes',
+			'description' => 'Add Indexes to series table for efficient querying',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE series_member ADD INDEX groupedWorkPermanentId(groupedWorkPermanentId)',
+				'ALTER TABLE series_member ADD INDEX seriesId(seriesId)',
+    			'ALTER TABLE series_member ADD INDEX volume(volume)',
+				'ALTER TABLE series_member ADD INDEX displayName(displayName)',
+				'ALTER TABLE series_member ADD INDEX author(author)',
+				'ALTER TABLE series ADD INDEX groupedWorkSeriesTitle(groupedWorkSeriesTitle)',
+				'ALTER TABLE series_member ADD INDEX seriesWorkId(seriesId, groupedWorkPermanentId, userAdded)',
+				'ALTER TABLE series ADD INDEX displayName(displayName)',
+				'ALTER TABLE series ADD INDEX author(author)',
+			]
+		], //add_series_indexes
+		'update_series_character_sets' => [
+			'title' => 'Update Series Character Sets',
+			'description' => 'Update series tables to use multi-byte character sets',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE series CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_member CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_indexing_settings CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_indexing_log CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'
+			]
+		], //update_series_character_sets
 
 		'track_event_length_in_minutes' => [
 			'title' => 'Track Event Length In Minutes',
@@ -164,6 +198,13 @@ function getUpdates25_03_00(): array {
 				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
 			]
 		], //event_calendar_display_settings
+		'add_event_column_week_number' => [
+			'title' => 'Add weekNumber column to Event table',
+			'description' => 'Add weekNumber column to Event table',
+			'sql' => [
+				"ALTER TABLE event ADD COLUMN weekNumber TINYINT DEFAULT 1"
+			]
+		], //add_event_column_week_number
 
 		//kirstien - Grove
 
@@ -396,4 +437,27 @@ function getUpdates25_03_00(): array {
 		//other
 
 	];
+}
+
+function moveUploadedListImages(&$update) : void {
+	require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+	$uploadedListCovers = new BookCoverInfo();
+	$uploadedListCovers->setRecordType('list');
+	$uploadedListCovers->setImageSource('upload');
+	$uploadedListCovers->find();
+	global $configArray;
+	$originalPath = $configArray['Site']['coverPath'] . '/original/';
+	$newPath = $configArray['Site']['coverPath'] . '/original/lists/';
+
+	$numCoversCopied = 0;
+	while($uploadedListCovers->fetch()) {
+		$listId = $uploadedListCovers->getRecordId();
+		if (file_exists($originalPath . $listId . '.png') && !file_exists($newPath . $listId . '.png')) {
+			copy($originalPath . $listId . '.png', $newPath . $listId . '.png');
+			$numCoversCopied++;
+		}
+	}
+
+	$update['status'] = "Moved $numCoversCopied List covers so they will not conflict with records";
+	$update['success'] = true;
 }

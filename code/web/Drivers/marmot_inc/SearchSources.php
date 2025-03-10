@@ -97,7 +97,7 @@ class SearchSources {
 		$searchSummon = array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 		$searchCourseReserves = $library->enableCourseReserves == 2;
-		$searchSeries = $library->useSeriesSearchIndex == 1;
+		$searchSeries = array_key_exists('Series', $enabledModules) && $library->useSeriesSearchIndex == 1;
 
 		[
 			$enableCombinedResults,

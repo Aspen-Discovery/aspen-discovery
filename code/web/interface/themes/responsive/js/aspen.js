@@ -8427,6 +8427,9 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 		enroll: function (campaignId, userId) {
+			AspenDiscovery.Account.reloadHolds();
+			AspenDiscovery.Account.reloadCheckouts();
+
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
@@ -12478,6 +12481,7 @@ AspenDiscovery.Events = (function(){
 				$("#endDate").val(startDate.format("YYYY-MM-DD"));
 				$("#endTime").val(startDate.format("HH:mm"));
 			}
+			AspenDiscovery.Events.calculateRecurrenceDates();
 			return false;
 		},
 
@@ -13765,6 +13769,14 @@ AspenDiscovery.Lists = (function(){
 				async: false,
 				contentType: false,
 				processData: false
+			});
+			return false;
+		},
+
+		removeUploadedListCover: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?listId=' + id + '&method=removeUploadedListCover';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage(data.title, data.message);
 			});
 			return false;
 		},
