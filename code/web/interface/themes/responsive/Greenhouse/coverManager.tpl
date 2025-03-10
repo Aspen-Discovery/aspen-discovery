@@ -23,7 +23,6 @@
 						<div class="panel-body">
 
 							<form id="coverReloadForm">
-								<h3>{translate text="External Cover Sources" isAdminFacing=true}</h3>
 								<div class="checkbox">
 									<label>
 										<input type="checkbox" name="sources[]" value="default"> {translate text="Default Covers" isAdminFacing=true}
@@ -46,7 +45,7 @@
 								</div>
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" name="sources[]" value="omdb_title_year"> {translate text="OMDB Title+Year Covers" isAdminFacing=true}
+										<input type="checkbox" name="sources[]" value="omdb_title_year"> {translate text="OMDB Title + Year Covers" isAdminFacing=true}
 									</label>
 								</div>
 								<div class="checkbox">
@@ -69,8 +68,6 @@
 										<input type="checkbox" name="sources[]" value="overdrive"> {translate text="OverDrive Covers" isAdminFacing=true}
 									</label>
 								</div>
-
-								<h3 class="mt-4">{translate text="Uploaded Covers" isAdminFacing=true}</h3>
 								<div class="checkbox">
 									<label>
 										<input type="checkbox" name="sources[]" value="upload"> {translate text="Uploaded Covers" isAdminFacing=true}
