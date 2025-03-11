@@ -373,9 +373,9 @@ public class GroupedWorkIndexer {
 		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
 		try {
 			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
-					.withThreadCount(1)
-					.withQueueSize(25)
-					.build();
+				.withThreadCount(1)
+				.withQueueSize(25)
+				.build();
 		}catch (OutOfMemoryError e) {
 			logger.error("Unable to create solr client, out of memory", e);
 			System.exit(-7);
@@ -1528,7 +1528,7 @@ public class GroupedWorkIndexer {
 			if (displayInfoRS.next()) {
 				String title = displayInfoRS.getString("title");
 				if (!title.isEmpty()){
-					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", true);
+					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", "", true, null);
 					groupedWork.clearSubTitle();
 				}
 				String author = displayInfoRS.getString("author");
@@ -1679,11 +1679,11 @@ public class GroupedWorkIndexer {
 	LinkedHashSet<String> translateSystemCollection(String mapName, Set<String> values, String identifier) {
 		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
 		for (String value : values){
-				String translatedValue = translateSystemValue(mapName, value, identifier);
-				if (translatedValue != null) {
-						translatedCollection.add(translatedValue);
-					}
+			String translatedValue = translateSystemValue(mapName, value, identifier);
+			if (translatedValue != null) {
+				translatedCollection.add(translatedValue);
 			}
+		}
 		return  translatedCollection;
 	}
 
@@ -2576,8 +2576,8 @@ public class GroupedWorkIndexer {
 						}
 					}
 					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
-							itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-							itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
+						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
 
 					existingItems.put(itemInfo.getItemIdentifier().toLowerCase(), savedItemInfo);
 				}catch (SQLException e){
@@ -2585,8 +2585,8 @@ public class GroupedWorkIndexer {
 					errorsSavingItem = true;
 				}
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
-					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
+				itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+				itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
 				try {
 					updateItemForRecordStmt.setLong(1, variationId);
 					updateItemForRecordStmt.setLong(2, shelfLocationId);

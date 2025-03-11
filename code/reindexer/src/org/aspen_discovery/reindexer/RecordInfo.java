@@ -26,6 +26,7 @@ public class RecordInfo {
 
 	private boolean hasParentRecord;
 	private boolean hasChildRecord;
+	private boolean onOrder;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
@@ -412,5 +413,24 @@ public class RecordInfo {
 	public void setHasChildRecord(boolean hasChildRecord) {
 		this.hasChildRecord = hasChildRecord;
 	}
+
+	/**
+	 * Checks if the record is currently on order.
+	 *
+	 * @return {@code true} if the item is on order, {@code false} otherwise.
+	 */
+	public boolean isOnOrder() {
+		return onOrder;
+	}
+
+	/**
+	 * Sets the on-order status of the record.
+	 *
+	 * @param onOrder {@code true} to indicate the item is on order, {@code false} otherwise.
+	 */
+	public void setOnOrder(boolean onOrder) {
+		this.onOrder = onOrder;
+	}
+
 
 }
