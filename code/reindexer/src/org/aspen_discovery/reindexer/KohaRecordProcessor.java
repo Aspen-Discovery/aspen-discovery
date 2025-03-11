@@ -3,6 +3,7 @@ package org.aspen_discovery.reindexer;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -45,11 +46,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					String timezone = accountProfileRS.getString("databaseTimezone");
 
 					String kohaConnectionJDBC = "jdbc:mysql://" +
-							host + ":" + port +
-							"/" + databaseName +
-							"?user=" + user +
-							"&password=" + password +
-							"&useUnicode=yes&characterEncoding=UTF-8";
+						host + ":" + port +
+						"/" + databaseName +
+						"?user=" + user +
+						"&password=" + password +
+						"&useUnicode=yes&characterEncoding=UTF-8";
 					if (timezone != null && !timezone.isEmpty()){
 						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, StandardCharsets.UTF_8);
 
@@ -545,5 +546,42 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		return super.isItemHoldableUnscoped(itemInfo);
+	}
+
+	@Override
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+		// Add the record to the grouped work first to ensure it exists in the relatedRecords map
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(profileType, identifier);
+
+		// Check if this is an on-order record and set the flag accordingly, only if the setting is enabled
+		boolean isOnOrder = settings.getIgnoreOnOrderRecordsForTitleSelection() && isRecordExcludedFromTitleSelection(record);
+		recordInfo.setOnOrder(isOnOrder);
+
+		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+	}
+
+	/**
+	 * Determines if a record is an on-order record by checking if all items are on-order
+	 *
+	 * @param record The MARC record to check
+	 * @return true if the record is an on-order record
+	 */
+	private boolean isRecordExcludedFromTitleSelection(Record record) {
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
+		if (itemRecords.isEmpty()) {
+			return false;
+		}
+
+		boolean allItemsExcluded = true;
+		for (DataField itemField : itemRecords) {
+			String itemStatus = getItemStatus(itemField, "");
+			if (itemStatus.equals("On Shelf") || itemStatus.equals("Checked Out")) {
+				// Found an available item, so the record should not be excluded.
+				allItemsExcluded = false;
+				break;
+			}
+		}
+
+		return allItemsExcluded;
 	}
 }

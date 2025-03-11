@@ -113,6 +113,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private SierraExportFieldMapping sierraExportFieldMappings = null;
 
+	// Whether to ignore on-order records when selecting titles for display in grouped works
+	private boolean ignoreOnOrderRecordsForTitleSelection = false;
+
 	public IndexingProfile(String serverName, BaseIndexingLogEntry logEntry){
 		//This is only intended to be used for unit testing
 		super(serverName, logEntry);
@@ -262,6 +265,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		index856Links = indexingProfileRS.getInt("index856Links");
 		treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
+
+		ignoreOnOrderRecordsForTitleSelection = indexingProfileRS.getBoolean("ignoreOnOrderRecordsForTitleSelection");
 
 		//Custom Facet 1
 		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
@@ -1145,5 +1150,23 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setOrderRecordStatusToTreatAsUnderConsideration(String orderRecordStatusToTreatAsUnderConsideration) {
 		this.orderRecordStatusToTreatAsUnderConsideration = orderRecordStatusToTreatAsUnderConsideration;
+	}
+
+	/**
+	 * Return the flag indicating whether on-order records should be ignored for title selection.
+	 *
+	 * @return {@code true} if on-order records should be ignored for title selection, {@code false} otherwise.
+	 */
+	public boolean getIgnoreOnOrderRecordsForTitleSelection() {
+		return ignoreOnOrderRecordsForTitleSelection;
+	}
+
+	/**
+	 * Sets the flag indicating whether on-order records should be ignored for title selection.
+	 *
+	 * @param ignoreOnOrderRecordsForTitleSelection {@code true} to ignore on-order records for title selection, {@code false} otherwise.
+	 */
+	public void setIgnoreOnOrderRecordsForTitleSelection(boolean ignoreOnOrderRecordsForTitleSelection) {
+		this.ignoreOnOrderRecordsForTitleSelection = ignoreOnOrderRecordsForTitleSelection;
 	}
 }
