@@ -109,10 +109,6 @@ class Greenhouse_CoverManager extends Admin_Admin
 				break;
 
 			default:
-				// If the source doesn't match any of the above cases, delete entries with that source
-				$query = "DELETE FROM $tableName WHERE imageSource = " . $bookCoverInfo->escape($source);
-				$bookCoverInfo->query($query);
-				$message = "All covers from source '$source' have been deleted and will be regenerated.";
 				break;
 		}
 
