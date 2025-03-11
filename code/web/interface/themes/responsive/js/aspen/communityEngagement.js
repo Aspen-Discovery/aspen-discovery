@@ -220,60 +220,122 @@ AspenDiscovery.CommunityEngagement = function() {
 				console.error("AJAX Error: ", textStatus, errorThrown);
 			});
 		},
-
-		openLeaderboardEditor: function() {
-			document.getElementById("gjs").style.display = 'block';
-			document.getElementById("saveLeaderboardBtn").style.display = 'inline-block';
-
-			const editor = grapesjs.init({
-				container: '#gjs',
-				height: '90vh',
-				StorageManager: { type: 'none'},
-				panels: { defaults: [] },
-				fromElement: false
-			});
-
-			const leaderboardHTML = document.getElementById("main-content").innerHTML;
-			editor.setComponents(leaderboardHTML);
-
-			const leaderboardComponents = editor.getComponents();
-			leaderboardComponents.each(component => {
-				if (component.is('div') || component.is('h1') || component.is('select')) {
-					component.set({ draggable: false, removable: false, copyable: false });
-				}
-			});
-
-		},
-
-		saveLeaderboardChanges: function() {
-			const editor = grapesjs.editors[0];
-			const updatedHTML = editor.getHtml();
-			var url = Globals.path + "/CommunityEngagement/AJAX?method=saveLeaderboardChanges";
-
-			var params = {
-				html: updatedHTML
-			};
+		//TODO:: REMOVE VAR DUMPS AND ERROR LOGS ETC AND ADD BLOCKS FOR GRAPES
+		getSavedLeaderboardCss: function() {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=getLeaderboardData";
+			var cssData = '';
 
 			$.ajax({
-				url: url,
-				type: "POST",
-				data: JSON.stringify(params),
+				url: url, 
+				method: 'GET',
 				dataType: 'json',
-				success: function(data) {
-					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
-						editor.destroy();
-						$("#gjs").hide();
-						$("#main-content").show();
-					} else {
-						AspenDiscovery.showMessage(data.title, data.message);
+				async: false,
+				success: function (data) {
+					if (data.css) {
+						cssData = data.css;
 					}
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
 					console.error("AJAX Error: ", textStatus, errorThrown);
 				}
-			});
+			})
+			return cssData;
 		},
+		
+		
+
+		openLeaderboardEditor: function() {
+			// Show the GrapesJS editor and hide the main content
+			document.getElementById("gjs").style.display = 'block';
+			document.getElementById("main-content").style.display = 'none';
+			const mainContent = document.getElementById("main-content");
+			const leaderboardHTML = mainContent.innerHTML;
+			let leaderboardCSS = '';
+
+			// const styleTags = document.getElementsByTagName('style');
+			// for (let i = 0; i < styleTags.length; i++) {
+			// 	leaderboardCSS += styleTags[i].innerHTML;
+			// }
+			leaderboardCSS = AspenDiscovery.CommunityEngagement.getSavedLeaderboardCss();
+
+			const editor = grapesjs.init({
+				container: '#gjs',
+				storageManager: {
+					type: 'none'
+				},
+				plugins: [
+					'gjs-blocks-basic', 
+				],
+				pluginOpts: {
+					'gjs-blocks-basic': {},
+				},
+				fromElement: false,
+			});
+			editor.Panels.addButton('options', [{
+				id: 'save-as-page',
+				className: 'fas fa-save',
+				command: 'saveLeaderboardChanges',
+				attributes: { title: 'Save as Page' }
+			}]);
+			editor.Commands.add('saveLeaderboardChanges', {
+				run: function (){
+					const updatedHTML = editor.getHtml();
+
+					document.getElementById("main-content").innerHTML = updatedHTML;
+
+					const updatedCSS = editor.getCss();
+
+					document.getElementById("gjs").style.display = 'none';
+					document.getElementById("main-content").style.display = 'block';
+
+					AspenDiscovery.CommunityEngagement.saveTemplateToDatabase(updatedHTML, updatedCSS);
+
+				}
+			});
+			editor.on('load', () => {
+				editor.setComponents(leaderboardHTML);
+				editor.setStyle(leaderboardCSS);
+			})
+		},
+
+		saveTemplateToDatabase: function(updatedHTML, updatedCSS) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=saveLeaderboardChanges";
+			const params = {
+				html: updatedHTML,
+				css: updatedCSS, 
+				templateName: 'leaderboard_template'
+			};
+			$.ajax({
+				url: url,
+				type: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(params),
+				dataType: "json",
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					console.error("AJAX Error: ", textStatus, errorThrown);
+					console.error("Response Text:", jqXHR.responseText); // Log raw response
+				}
+			})
+		},
+		resetLeaderboard: function() {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=resetLeaderboardDisplay";
+			$.getJSON(url, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			})
+			
+		},
+		
 		optInToCampaignEmailNotifications: function (campaignId, userId) {
 			var url = Globals.path + "/CommunityEngagement/AJAX?method=campaignEmailOptIn";
 			var params = {

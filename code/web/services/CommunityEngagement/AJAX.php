@@ -561,8 +561,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $campaignId = $_GET['campaignId'] ?? null;
         $userId = $_GET['userId'] ?? null;
         $optIn = $_GET['optIn'] ?? null;
-        global $logger;
-        $logger->log("campaign: " . $campaignId . " user: " . $userId . "optin: " . $optIn, Logger::LOG_ERROR);
 
         if (!$campaignId || !$userId || $optIn === null) {
             return [
@@ -657,49 +655,137 @@ class CommunityEngagement_AJAX extends JSON_Action {
    }
 
     public function saveLeaderboardChanges() {
-        $input = file_get_contents("php://input");
-        $data = json_decode($input, true);
+        header('Content-Type: application/json');
+        ob_start();
+       $data = json_decode(file_get_contents('php://input'), true);
 
-        if (empty($data['html'])) {
-            return [
-                'success' => false,
+       $html = $data['html'];
+       $css = $data['css'];
+       $templateName = $data['templateName'];
+
+       if (empty($html) || empty($templateName) || empty($css)) {
+        ob_end_clean();
+            echo json_encode([
+                'success' => false, 
                 'title' => translate([
                     'text' => 'Error',
                     'isPublicFacing' => true,
                 ]),
                 'message' => translate([
-                    'text' => 'Nothing data to save',
+                    'text' => 'Invalid html, css or template name',
                     'isPublicFacing' => true,
                 ]),
-            ];
+            ]);
+            return;
+       }
+
+       $this->saveLeaderboardToDatabase($templateName, $html, $css);
+       $leaderboardData = $this->getLeaderboardData();
+
+       if (empty($leaderboardData) || empty($leaderboardData['html']) || empty($leaderboardData['css'])) {
+        echo json_encode([
+            'success' => false,
+            'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+            'message' => translate(['text' => 'Failed to retrieve updated leaderboard data', 'isPublicFacing' => true]),
+        ]);
+        exit;
+    }
+    
+
+       ob_end_clean();
+       if ($leaderboardData) {
+        echo json_encode([
+            'success' => true,
+            'title' => translate([
+                'text' => 'Success',
+                'isPublicFacing' => true,
+            ]),
+            'message' => translate([
+                'text' => 'Leaderboard changes saved successfully',
+                'isPublicFacing' => true,
+            ]),
+            'updatedHTML' => $leaderboardData['html'],
+            'updatedCSS' => $leaderboardData['css']
+        ]);
+        exit;
+       }
+    }
+
+    private function saveLeaderboardToDatabase($templateName, $html, $css) {
+        require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
+        global $logger;
+
+        $grapesTemplate = new GrapesTemplate();
+        $grapesTemplate->templateName = $templateName;
+        
+        if ($grapesTemplate->find(true)) {
+
+            $grapesTemplate->htmlData = $html;
+            $grapesTemplate->templateContent = $html;
+            $grapesTemplate->cssData = $css;
+            $success = $grapesTemplate->update();
+        } else {
+
+            $grapesTemplate = new GrapesTemplate();
+            $grapesTemplate->htmlData = $html;
+            $grapesTemplate->templateName = $templateName;
+            $grapesTemplate->templateContent = $html;
+            $grapesTemplate->cssData = $css;
+            $success = $grapesTemplate->insert();
         }
 
-        $filePath = "/interface/themes/responsive/js/CommunityEngagement/leaderboard.tpl";
-        if (file_put_contents($filePath, $data['html']) !== false) {
+        if (!$success) {
+            $logger->log("Failed to save template: " . print_r($grapesTemplate->getLastError(), true), LOGGER::LOG_ERROR);
+        }
+        return $success;
+    }
+
+    public function getLeaderboardData() {
+        require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
+
+        $grapesTemplate = new GrapesTemplate();
+        $grapesTemplate->templateName = 'leaderboard_template';
+
+        if ($grapesTemplate->find(true)) {
             return [
+                "html" => $grapesTemplate->htmlData,
+                "css" => $grapesTemplate->cssData
+            ];
+        }
+        return null;
+    }
+
+    public function resetLeaderboardDisplay() {
+        require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
+        $grapesTemplate = new GrapesTemplate();
+        $grapesTemplate->templateName = 'leaderboard_template';
+        if ($grapesTemplate->find(true)) {
+            $grapesTemplate->delete();
+            echo json_encode([
                 'success' => true,
                 'title' => translate([
                     'text' => 'Success',
-                    'isPublicFacing' => true,
+                    'isPublicFacing' => true
                 ]),
                 'message' => translate([
-                    'text' => 'Leaderboard updated successfully!',
-                    'isPublicFacing' => true,
-                ]),
-            ];
-        } else {
-            return [
+                    'text' => 'The leaderboard template has been successfully reset.',
+                    'isPublicFacing' => true
+                ])
+            ]);
+        }else {
+            echo json_encode([
                 'success' => false,
                 'title' => translate([
                     'text' => 'Error',
-                    'isPublicFacing' => true,
+                    'isPublicFacing' => true
                 ]),
                 'message' => translate([
-                    'text' => 'Failed to save changes.',
-                    'isPublicFacing' => true,
-                ]),
-            ];
+                    'text' => 'No leaderboard template to reset.',
+                    'isPublicFacing' => true
+                ])
+            ]);
         }
+        exit;
     }
 
     public function campaignEmailOptIn() {
@@ -760,10 +846,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
         $userId = $_GET['userId'];
         $campaignId = $_GET['campaignId'];
-        global $logger;
-        $logger->log("campaign: " . $campaignId, Logger::LOG_ERROR);
-        $logger->log("USER: " . $userId, Logger::LOG_ERROR);
-
 
         if (empty($campaignId)) {
             echo json_encode([
