@@ -631,8 +631,8 @@ class IndexingProfile extends DataObject {
 					'ignoreOnOrderRecordsForTitleSelection' => [
 						'property' => 'ignoreOnOrderRecordsForTitleSelection',
 						'type' => 'checkbox',
-						'label' => 'Ignore On-Order Records for Title Selection',
-						'description' => 'When checked, titles from on-order records will not be selected as the primary display title in grouped works.',
+						'label' => 'Prioritize Available Records for Title Selection',
+						'description' => 'When checked, if there are available records in a grouped work, titles from those available records will be prioritized as the display title for the grouped work.',
 						'hideInLists' => true,
 						'default' => 0,
 						'forcesReindex' => true,

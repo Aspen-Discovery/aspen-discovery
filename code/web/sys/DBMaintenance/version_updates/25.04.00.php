@@ -24,8 +24,8 @@ function getUpdates25_04_00(): array {
 
 		// Leo Stoyanov - BWS
 		'add_ignore_on_order_records_for_title_selection' => [
-			'title' => 'Add ignoreOnOrderRecordsForTitleSelection to indexing profiles',
-			'description' => 'Adds a setting to skip on-order records when selecting titles for display in grouped works (Koha-specific)',
+			'title' => 'Add Prioritize Available Records for Title Selection Option to Indexing Profiles',
+			'description' => 'Adds a setting to prioritize available records when selecting titles for display in grouped works (Koha-specific).',
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN IF NOT EXISTS ignoreOnOrderRecordsForTitleSelection TINYINT(1) DEFAULT 0"
 			],

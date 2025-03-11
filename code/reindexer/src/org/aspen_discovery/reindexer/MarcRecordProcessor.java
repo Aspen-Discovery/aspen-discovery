@@ -1539,12 +1539,6 @@ abstract class MarcRecordProcessor {
 			if (!hasParentRecord) {
 				RecordInfo recordInfo = groupedWork.getRecordInfo(profileType, identifier);
 
-				// Log if recordInfo is null.
-				if (recordInfo == null) {
-					logger.warn("RecordInfo was null for {}:{} when loading titles.", profileType, identifier);
-				}
-
-				//noinspection SpellCheckingInspection
 				groupedWork.setTitle(
 					titleField.getSubfieldsAsString("a"),
 					subTitle,

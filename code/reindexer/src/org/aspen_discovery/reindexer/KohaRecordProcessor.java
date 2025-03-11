@@ -3,7 +3,6 @@ package org.aspen_discovery.reindexer;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.FormatMapValue;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -548,12 +547,19 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return super.isItemHoldableUnscoped(itemInfo);
 	}
 
+	/**
+	 * Overrided method that updates the Grouped Work Solr data based on the given MARC record.
+	 *
+	 * @param groupedWork The {@link AbstractGroupedWorkSolr} instance representing the grouped work to be updated.
+	 * @param record      The MARC record containing bibliographic information.
+	 * @param identifier  The unique identifier for the record within the grouped work.
+	 */
 	@Override
 	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
-		// Add the record to the grouped work first to ensure it exists in the relatedRecords map
+		// Add the record to the grouped work first to ensure it exists in the relatedRecords map.
 		RecordInfo recordInfo = groupedWork.addRelatedRecord(profileType, identifier);
 
-		// Check if this is an on-order record and set the flag accordingly, only if the setting is enabled
+		// Check if this is an unavailable (e.g., "On Order") record and if the setting is enabled to set the flag accordingly.
 		boolean isOnOrder = settings.getIgnoreOnOrderRecordsForTitleSelection() && isRecordExcludedFromTitleSelection(record);
 		recordInfo.setOnOrder(isOnOrder);
 
@@ -561,10 +567,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	/**
-	 * Determines if a record is an on-order record by checking if all items are on-order
+	 * Determines whether a record should be excluded from title selection based on its item statuses.
+	 * If at least one item is available (e.g., "On Shelf" or "Checked Out"),
+	 * the record is not excluded from title selection.
 	 *
-	 * @param record The MARC record to check
-	 * @return true if the record is an on-order record
+	 * @param record The MARC record to evaluate.
+	 * @return {@code true} if all items in the record are on-order and should be excluded from title selection;
+	 *         {@code false} if at least one item is available.
 	 */
 	private boolean isRecordExcludedFromTitleSelection(Record record) {
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
