@@ -217,7 +217,7 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$numExtractionThreads;
 	public /** @noinspection PhpUnused */
-		$ignoreOnOrderRecordsForTitleSelection;
+		$prioritizeAvailableRecordsForTitleSelection;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -247,7 +247,7 @@ class IndexingProfile extends DataObject {
 			'numRetriesForBibLookups',
 			'numMillisecondsToPauseAfterBibLookups',
 			'numExtractionThreads',
-			'ignoreOnOrderRecordsForTitleSelection',
+			'prioritizeAvailableRecordsForTitleSelection',
 		];
 	}
 
@@ -628,8 +628,8 @@ class IndexingProfile extends DataObject {
 						'note'        => 'Only applies when all items have formats of either Book or Large Print',
 						'forcesReindex' => true,
 					],
-					'ignoreOnOrderRecordsForTitleSelection' => [
-						'property' => 'ignoreOnOrderRecordsForTitleSelection',
+					'prioritizeAvailableRecordsForTitleSelection' => [
+						'property' => 'prioritizeAvailableRecordsForTitleSelection',
 						'type' => 'checkbox',
 						'label' => 'Prioritize Available Records for Title Selection',
 						'description' => 'When checked, if there are available records in a grouped work, titles from those available records will be prioritized as the display title for the grouped work.',
@@ -1575,9 +1575,9 @@ class IndexingProfile extends DataObject {
 					unset($formatMapStructure['appliesToItemCollection']);
 					unset($formatMapStructure['appliesToItemType']);
 
-					// Hide the ignoreOnOrderRecordsForTitleSelection setting for non-Koha ILS.
-					if (isset($structure['formatSection']['properties']['ignoreOnOrderRecordsForTitleSelection'])) {
-						unset($structure['formatSection']['properties']['ignoreOnOrderRecordsForTitleSelection']);
+					// Hide the prioritizeAvailableRecordsForTitleSelection setting for non-Koha ILS.
+					if (isset($structure['formatSection']['properties']['prioritizeAvailableRecordsForTitleSelection'])) {
+						unset($structure['formatSection']['properties']['prioritizeAvailableRecordsForTitleSelection']);
 					}
 				}
 

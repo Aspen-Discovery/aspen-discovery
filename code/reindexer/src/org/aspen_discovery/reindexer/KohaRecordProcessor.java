@@ -559,9 +559,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		// Add the record to the grouped work first to ensure it exists in the relatedRecords map.
 		RecordInfo recordInfo = groupedWork.addRelatedRecord(profileType, identifier);
 
-		// Check if this is an unavailable (e.g., "On Order") record and if the setting is enabled to set the flag accordingly.
-		boolean isOnOrder = settings.getIgnoreOnOrderRecordsForTitleSelection() && isRecordExcludedFromTitleSelection(record);
-		recordInfo.setOnOrder(isOnOrder);
+		// Check if the setting is enabled to set the flag accordingly and if this is a not-for-loan (e.g., "On Order") record.
+		boolean isNotForLoan = settings.getPrioritizeAvailableRecordsForTitleSelection() && isRecordExcludedFromTitleSelection(record);
+		recordInfo.setNotForLoan(isNotForLoan);
 
 		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 	}

@@ -434,7 +434,7 @@ public abstract class AbstractGroupedWorkSolr {
 				updateTitle = true;
 			} else {
 				// Skip unavailable records for title selection if we have any other title.
-				if (recordInfo == null || !recordInfo.isOnOrder()) {
+				if (recordInfo == null || !recordInfo.hasNotForLoanStatus()) {
 					// Only overwrite if we get a better format.
 					if (formatCategory.equals("Books")) {
 						// We have a book, update if we didn't have a book before.

@@ -26,7 +26,7 @@ public class RecordInfo {
 
 	private boolean hasParentRecord;
 	private boolean hasChildRecord;
-	private boolean onOrder;
+	private boolean notForLoan;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
@@ -415,21 +415,22 @@ public class RecordInfo {
 	}
 
 	/**
-	 * Checks if the record is currently on order.
+	 * Checks if the record has a not-for-loan status; that is, it is not on-shelf or checked-out, where
+	 * if it is checked-out, that means it is loanable.
 	 *
 	 * @return {@code true} if the item is on order, {@code false} otherwise.
 	 */
-	public boolean isOnOrder() {
-		return onOrder;
+	public boolean hasNotForLoanStatus() {
+		return notForLoan;
 	}
 
 	/**
 	 * Sets the on-order status of the record.
 	 *
-	 * @param onOrder {@code true} to indicate the item is on order, {@code false} otherwise.
+	 * @param notForLoan {@code true} to indicate the item is on order, {@code false} otherwise.
 	 */
-	public void setOnOrder(boolean onOrder) {
-		this.onOrder = onOrder;
+	public void setNotForLoan(boolean notForLoan) {
+		this.notForLoan = notForLoan;
 	}
 
 
