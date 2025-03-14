@@ -102,7 +102,8 @@ class UserAPI extends AbstractAPI {
 					'getMaterialsRequestDetails',
 					'createMaterialsRequest',
 					'cancelMaterialsRequest',
-					'deleteAspenUser'
+					'deleteAspenUser',
+					'getAllCampaigns'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -6552,5 +6553,78 @@ class UserAPI extends AbstractAPI {
 			'title' => 'Error',
 			'message' => 'Unable to validate user',
 		];
+	}
+
+	function getAllCampaigns() {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+		$user = $this->getUserForApiCall();
+		$userId = $user->id;
+		if ($user && !($user instanceof AspenError)) {
+			$filter = $_REQUEST['filter'] ?? 'enrolled';
+			$page = $_REQUEST['page'] ?? 1;
+			$pageSize = $_REQUEST['pageSize'] ?? 20;
+
+			$campaign = new Campaign();
+			$campaigns = [];
+			$allCampaigns = $campaign->getCampaigns();
+			$pastCampaigns = $campaign->getPastCampaigns($userId);
+			$linkedUserCampaigns = $campaign->getLinkedUserCampaigns($userId);
+
+			$filteredCampaigns = array_filter($allCampaigns, function ($campaign) use ($filter, $userId, $pastCampaigns, $linkedUserCampaigns) {
+				switch ($filter) {
+					case 'enrolled':
+						return $campaign->enrolled;
+					case 'active':
+						return $campaign->isActive;
+					case 'upcoming':
+						return $campaign->isUpcoming;
+					case 'past':
+						return in_array($campaign, $pastCampaigns);
+					case 'linkedUserCampaigns':
+						return in_array($campaign, $linkedUserCampaigns);
+					case 'pastEnrolled':
+						return in_array($campaign, $pastCampaigns) && $campaign->enrolled;
+					default:
+						return true;
+				}		
+			});
+			$totalResults = count($filteredCampaigns);
+			$filteredCampaigns = array_values($filteredCampaigns);
+			$paginatedCampaigns = array_slice($filteredCampaigns, ($page - 1) * $pageSize, $pageSize);
+			
+			$pager = new Pager([
+				'totalItems' => $totalResults,
+				'perPage' => $pageSize,
+				'append' => false,
+			]);
+			
+			return [
+				'success' => true, 
+				'campaigns' => $paginatedCampaigns,
+				'page_total' => (int)$pager->getTotalPages(),
+				'totalResults' => $pager->getTotalItems(),
+				'page_current' => (int)$pager->getCurrentPage(),
+				'filter' => $filter,
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Login unsuccessful'
+				])
+			];
+		}
+	}
+
+	function enrollUserInCampaign() {
+		require_once ROOT_DIR . '/services/MyAccount/AJAX.php';
+
+		$ajaxHandler = new MyAccount_AJAX();
+		$response = $ajaxHandler->enrollCampaign();
+		return $response;
+	}
+
+	function unenrollUserInCampaign() {
+
 	}
 }
