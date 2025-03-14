@@ -43,7 +43,7 @@ class MyCampaigns extends MyAccount {
 		$userId = $user->id;
 		return $userId;
 	}
-
+    //TODO:: MOVE TO CAMPAIGN.PHP
 	function getCampaigns() {
 		global $activeLanguage;
 
