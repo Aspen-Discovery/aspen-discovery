@@ -27,13 +27,6 @@ class Reward extends DataObject {
 				'description' => 'A name for the campaign',
 				'required' => true,
 			],
-			'displayName' => [
-				'property' => 'displayName',
-				'type' => 'checkbox',
-				'label' => 'Display Name',
-				'description' => 'Whether or not to display the reward name to patrons',
-				'default' => true,
-			],
 			'description' => [
 				'property' => 'description',
 				'type' => 'translatableTextBlock',
@@ -49,6 +42,14 @@ class Reward extends DataObject {
 				'label' => 'Reward Type',
 				'description' => 'The type of reward',
 				'values' => $rewardType,
+				'onchange' => 'AspenDiscovery.CommunityEngagement.updateRewardFields()',
+			],
+			'displayName' => [
+				'property' => 'displayName',
+				'type' => 'checkbox',
+				'label' => 'Display Name',
+				'description' => 'Whether or not to display the reward name to patrons',
+				'default' => true,
 			],
 			'badgeImage' => [
 				'property' => 'badgeImage',

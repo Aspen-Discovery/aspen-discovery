@@ -86,6 +86,7 @@ class MyCampaigns extends MyAccount {
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
                 $campaign->displayReward = $rewardDetails['displayReward'];
+                $campaign->displayName = $rewardDetails['displayName'];
 			}
 
 				//Fetch milestones for this campaign

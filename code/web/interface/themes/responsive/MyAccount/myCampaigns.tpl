@@ -89,7 +89,9 @@
                                             <tr>
                                                 <td>{$milestone->name}</td>
                                                 <td>
-                                                    {$milestone->rewardName}
+                                                    {if $milestone->displayName}
+                                                        {$milestone->rewardName}
+                                                    {/if}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                     {/if}
@@ -206,7 +208,7 @@
                                                 <tr>
                                                     <td>{$milestone.milestoneName}</td>
                                                     <td>
-                                                        {if $milestone->displayName}
+                                                        {if $milestone.displayName}
                                                             {$milestone.rewardName} 
                                                         {/if}
                                                         {if $milestone.rewardType == 1 && $milestone.rewardExists}

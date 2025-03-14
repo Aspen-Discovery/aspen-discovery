@@ -83,4 +83,8 @@ class CommunityEngagement_Rewards extends ObjectEditor {
 		]);
 	}
 
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.CommunityEngagement.updateRewardFields();';
+	}
+
 }

@@ -329,6 +329,19 @@ AspenDiscovery.CommunityEngagement = function() {
 				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
 			})
 		},
+		updateRewardFields: function () {
+			console.log("update reward");
+			let rewardType = document.querySelector('[name="rewardType"]').value;
+			let displayRewardNameControl = document.getElementById('propertyRowdisplayName');
+
+
+
+			if (rewardType == 0) {
+				displayRewardNameControl.style.display = 'none';
+			} else {
+				displayRewardNameControl.style.display = '';
+			}
+		},
 
 	}
 	
