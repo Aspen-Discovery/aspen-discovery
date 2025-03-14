@@ -448,6 +448,8 @@ class Library extends DataObject {
 
 	//Community Engagement
 	public $campaignLeaderboardDisplay;
+	public $sendStaffEmailOnCampaignCompletion;
+	public $campaignCompletionNewEmail;
 
 	//SHAREit
 	public $repeatInShareIt;
@@ -3697,6 +3699,22 @@ class Library extends DataObject {
 							'displayUser' => 'Display User',
 						],
 						'default' => 'displayBranch',
+					],
+					'sendStaffEmailOnCampaignCompletion' => [
+						'property' => 'sendStaffEmailOnCampaignCompletion',
+						'type' => 'checkbox',
+						'label' => 'Send email to library when a user completes a campaign',
+						'description' => 'Whether or not an email should be sent out when a user has completed a campaign.',
+						'hideInLists' => true,
+						'default' => 0,
+					],
+					'campaignCompletionNewEmail' => [
+						'property' => 'campaignCompletionNewEmail',
+						'type' => 'text',
+						'label' => 'Email to receive notifications when patrons complete campaigns',
+						'description' => 'The email address that will receive emails when a patron completes a campaign.',
+						'maxLength' => 125,
+						'hideInLists' => true,
 					],
 				],
 			],

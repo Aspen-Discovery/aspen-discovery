@@ -37,6 +37,7 @@ class EmailTemplate extends DataObject {
 				'campaignEnroll' => 'Campaign Enrollment',
 				'campaignComplete' => 'Campaign Complete',
 				'milestoneComplete' => 'Milestone Complete',
+				'staffCampaignComplete' => 'Campaign Complete Staff Alert',
 			];
 		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
@@ -306,7 +307,7 @@ class EmailTemplate extends DataObject {
 			$text = str_ireplace('%user.firstname%', $user->firstname, $text);
 			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
 			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
-		} elseif ($this->templateType == 'campaignStart' || $this->templateType == 'campaignEnroll' || $this->templateType == 'campaignComplete' || $this->templateType == 'milestoneComplete' || $this->milestoneType == 'campaignEnding') {
+		} elseif ($this->templateType == 'campaignStart' || $this->templateType == 'campaignEnroll' || $this->templateType == 'campaignComplete' || $this->templateType == 'milestoneComplete' || $this->templateType == 'campaignEnding' || $this->templateType == 'staffCampaignComplete') {
 			$user = $parameters['user'];
 			/* @var Library $library */
 			$library = $parameters['library'];

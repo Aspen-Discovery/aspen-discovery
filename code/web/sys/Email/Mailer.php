@@ -26,12 +26,10 @@ class Mailer {
 		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
 		$smtpServerSettings = new SMTPSetting();
-		$logger->log("Starting to check email sending method", Logger::LOG_ERROR);
 
 		if($smtpServerSettings->find(true)) {
 			$result = $this->sendViaSMTP($smtpServerSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
 		}elseif ($amazonSesSettings->find(true)) {
-			$logger->log("FOUND AMAZON SES", Logger::LOG_ERROR);
 			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
 		} else {
 			$sendGridSettings = new SendGridSetting();
@@ -143,7 +141,6 @@ class Mailer {
 				$logger->log('Amazon SES send failed: ' . implode(', ', $response->error), Logger::LOG_ERROR);
 				return false;
 			} else {
-				$logger->log('Amazon SES email sent', Logger::LOG_ERROR);
 				return true;
 			}
 		}

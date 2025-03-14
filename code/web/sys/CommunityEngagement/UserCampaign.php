@@ -180,7 +180,6 @@ class UserCampaign extends DataObject {
         $userCampaign->campaignId = $campaignId;
 
         if ($userCampaign->find(true)) {
-            if ($userCampaign->optInToCampaignEmailNotifications == 1) {
                 $user = new User();
                 $user->id = $userId;
                 if (!$user->find(true)) {
@@ -193,20 +192,38 @@ class UserCampaign extends DataObject {
                     return;
                 }
                 $campaignName = $campaign->name;
-                if ($userCampaign->completed == 1 && $userCampaign->campaignCompleteEmailSent == 0) {
-                    $emailTemplate = EmailTemplate::getActiveTemplate('campaignComplete');
-                    if ($emailTemplate) {
-                        $parameters = [
-                            'user' => $user,
-                            'campaignName' => $campaignName,
-                            'library' => $user->getHomeLibrary(),
-                        ];
-                        try {
-                            $emailTemplate->sendEmail($user->email, $parameters);
-                            $userCampaign->campaignCompleteEmailSent = 1;
-                            $userCampaign->update();
-                        } catch (Exception $e) {
-                            $logger->log("Exception while sending email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
+                if ($userCampaign->completed == 1) {
+                    $library = $user->getHomeLibrary();
+                    if ($library->sendStaffEmailOnCampaignCompletion == 1) {
+                        $emailTemplate = EmailTemplate::getActiveTemplate('staffCampaignComplete');
+                        if ($emailTemplate) {
+                            $parameters = [
+                                'user' => $user,
+                                'campaignName' => $campaignName,
+                                'library' => $library,
+                            ];
+                            try {
+                                $emailTemplate->sendEmail($library->campaignCompletionNewEmail, $parameters);
+                            } catch (Exception $e) {
+                                $logger->log("Exception while sending email to {$library->campaignCompletionNewEmail}: " . $e->getMessage(), Logger::LOG_ERROR);
+                            }
+                        }
+                    }
+                    if ($userCampaign->optInToCampaignEmailNotifications == 1 && $userCampaign->campaignCompleteEmailSent == 0) {
+                        $emailTemplate = EmailTemplate::getActiveTemplate('campaignComplete');
+                        if ($emailTemplate) {
+                            $parameters = [
+                                'user' => $user,
+                                'campaignName' => $campaignName,
+                                'library' => $user->getHomeLibrary(),
+                            ];
+                            try {
+                                $emailTemplate->sendEmail($user->email, $parameters);
+                                $userCampaign->campaignCompleteEmailSent = 1;
+                                $userCampaign->update();
+                            } catch (Exception $e) {
+                                $logger->log("Exception while sending email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
+                            }
                         }
                     }
                 }
@@ -249,7 +266,6 @@ class UserCampaign extends DataObject {
                         }
                     }
                 }
-            }
         }
     }
 

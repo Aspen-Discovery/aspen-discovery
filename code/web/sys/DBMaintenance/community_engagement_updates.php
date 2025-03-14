@@ -359,5 +359,13 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE ce_campaign_milestone_users_progress ADD COLUMN milestoneCompleteEmailSent TINYINT(1) DEFAULT 0"
             ],
         ],
+        'add_option_to_send_staff_email_on_campaign_completion' => [
+            'title' => 'Add Option To Send Email On Campaign Completion',
+            'description' => 'Add the option of sending am email to staff when patrons complete a campaign',
+            'sql' => [
+                "ALTER TABLE library ADD COLUMN campaignCompletionNewEmail VARCHAR(125) DEFAULT NULL",
+                "ALTER TABLE library ADD COLUMN sendStaffEmailOnCampaignCompletion TINYINT(1) DEFAULT 0",
+            ],
+        ],
     ];
 }
