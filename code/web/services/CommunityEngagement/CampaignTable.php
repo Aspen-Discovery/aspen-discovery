@@ -42,11 +42,12 @@ class CommunityEngagement_CampaignTable extends Admin_Dashboard {
 						//Get milestone completion status
 						$milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
 
-						foreach ($milestones as $milestone) {
-							$milestoneComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
-							$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaignId, $user->id);
-							$totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestone->id);
-							$milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaignId);
+                        foreach ($milestones as $milestone) {
+                            $milestoneComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
+                            $userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaignId, $user->id);
+                            $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestone->id);
+                            $milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaignId);
+                            $milestoneType = $milestone->milestoneType;
 
                             //Calculate percentage progress
                             $percentageProgress = $totalGoals > 0 ? ($userProgress / $totalGoals) * 100 : 0;

@@ -103,9 +103,13 @@
                                                     {if $milestone->displayName}
                                                         {$milestone->rewardName}
                                                     {/if}
-                                                    {$milestone->rewardGiven}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
+                                                    {/if}
+                                                     {if $milestone->rewardType == 1 && $milestone->rewardGiven}
+                                                        <a href="/Search/ShareCampaigns?rewardName={$milestone->rewardName}&rewardImage={$milestone->rewardImage}&rewardId={$milestone->rewardId}">
+                                                            {translate text="Share on Social Media" isPublicFacing=true}
+                                                        </a>
                                                     {/if}
                                                 </td>
                                                 <td>

@@ -589,22 +589,24 @@ class Campaign extends DataObject {
 						$milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
 						$pastCampaignList[$campaign->id]->campaignRewardGiven = (int)$userCampaign->rewardGiven;
 
-	
-						// Update milestone details based on user progress
-						foreach ($pastCampaignList[$campaign->id]->milestones as $milestone) {
-							$milestoneProgress = CampaignMilestone::getMilestoneProgress($campaign->id, $userId, $milestone->id);
-							$milestone->userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaign->id, $userId);
-							$milestone->isComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
-							$milestone->rewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $userId, $campaign->id);
-							$milestone->progress = $milestoneProgress['progress'];
-						}
-					}
-				}
-			}
-		}
-		return $pastCampaignList;
-	}
-	
+    
+                        // Update milestone details based on user progress
+                        foreach ($pastCampaignList[$campaign->id]->milestones as $milestone) {
+                            $milestoneProgress = CampaignMilestone::getMilestoneProgress($campaign->id, $userId, $milestone->id);
+                            $milestone->userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaign->id, $userId);
+                            $milestone->isComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
+                            $milestone->rewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $userId, $campaign->id);
+                            $milestone->progress = $milestoneProgress['progress'];
+                            $milestone->extraProgress = $milestoneProgress['extraProgress'];
+                            $milestone->progressBeyondOneHundredPercent = $milestone->progressBeyondOneHundredPercent;
+                        }
+                    }
+                }
+            }
+        }
+        return $pastCampaignList;
+    }
+    
 
 
    

@@ -113,7 +113,7 @@ class MyCampaigns extends MyAccount {
                     $milestone->completedGoals = $milestoneProgress['completed'];
                     $milestone->totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestoneId);
                     $milestone->progressData = $progressData;
-                    $milestone->rewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id);
+                    $milestone->rewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaign->id);
                 }
                 //Add completed milestones count to campaign object
                 // $campaign->numCompletedMilestones = $completedMilestonesCount;
