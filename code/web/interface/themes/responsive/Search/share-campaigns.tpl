@@ -3,7 +3,7 @@
     <h2 class="campaignName">{$rewardName}</h2>
     
     <div class="campaignImage">
-        <img src="https://6cf9-82-11-167-64.ngrok-free.app{$og_image}" alt="{$rewardName}" style="max-width:300px; max-height:300px;" />
+        <img src="{$og_image}" alt="{$rewardName}" style="max-width:300px; max-height:300px;" />
     </div>
 
 

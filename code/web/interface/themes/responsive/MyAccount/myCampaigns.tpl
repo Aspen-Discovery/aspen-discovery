@@ -39,6 +39,11 @@
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}
+                                 {if $campaign->campaignRewardGiven && $campaign->rewardType == 1}
+                                    <a href="/Search/ShareCampaigns?rewardName={$campaign->rewardName}&rewardImage={$campaign->badgeImage}&rewardId={$campaign->rewardId}">
+                                        {translate text="Share on Social Media" isPublicFacing=true}
+                                    </a>
+                                {/if}
                             </td>
                             <td>{$campaign->numCompletedMilestones} / {$campaign->numCampaignMilestones}</td>
                             <td>
@@ -98,6 +103,7 @@
                                                     {if $milestone->displayName}
                                                         {$milestone->rewardName}
                                                     {/if}
+                                                    {$milestone->rewardGiven}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
                                                     {/if}
@@ -566,7 +572,7 @@
                                     <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
                                 {/if}<br>
                                 {if $campaign->campaignRewardGiven}
-                                    <strong>{translate text="Reward Received"}</strong>
+                                    <strong>{translate text="Reward Received"}<br></strong>
                                 {/if}
                                  {if $campaign->campaignRewardGiven && $campaign->rewardType == 1}
                                     <a href="/Search/ShareCampaigns?rewardName={$campaign->rewardName}&rewardImage={$campaign->rewardImage}&rewardId={$campaign->rewardId}">
@@ -619,7 +625,7 @@
                                             </td>
                                             <td>
                                                 {if $milestone->rewardGiven}
-                                                    {translate text="Reward Given" isPublicFacing=true}
+                                                    {translate text="Reward Given" isPublicFacing=true}<br>
                                                     {if $milestone->rewardType == 1}
                                                         <a href="/Search/ShareCampaigns?rewardName={$milestone->rewardName}&rewardImage={$milestone->rewardImage}&rewardId={$milestone->rewardId}">
                                                             {translate text="Share on Social Media" isPublicFacing=true}

@@ -296,6 +296,7 @@ class Campaign extends DataObject {
 		$reward->id = $this->campaignReward;
 		if ($reward->find(true)) {
 			return [
+				'id' => $reward->id,
 				'name' => $reward->name,
 				'rewardType' => $reward->rewardType,
 				'badgeImage' => $reward->getDisplayUrl(),

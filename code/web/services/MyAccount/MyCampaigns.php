@@ -82,6 +82,7 @@ class MyCampaigns extends MyAccount {
 			$rewardDetails = $campaign->getRewardDetails();
 			if ($rewardDetails) {
 				$campaign->rewardName = $rewardDetails['name'];
+				$campaign->rewardId = $rewardDetails['id'];
 				$campaign->rewardType = $rewardDetails['rewardType'];
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
@@ -112,6 +113,7 @@ class MyCampaigns extends MyAccount {
                     $milestone->completedGoals = $milestoneProgress['completed'];
                     $milestone->totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestoneId);
                     $milestone->progressData = $progressData;
+                    $milestone->rewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id);
                 }
                 //Add completed milestones count to campaign object
                 // $campaign->numCompletedMilestones = $completedMilestonesCount;
@@ -132,6 +134,7 @@ class MyCampaigns extends MyAccount {
                     } else {
                         $campaign->optInToCampaignEmailNotifications = $userCampaign->optInToCampaignEmailNotifications;
                     }
+                    $campaign->campaignRewardGiven = $userCampaign->rewardGiven;
                 }
                 $milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
                 $campaign->numCompletedMilestones = count(array_filter($milestoneCompletionStatus));

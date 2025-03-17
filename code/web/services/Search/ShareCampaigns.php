@@ -30,8 +30,12 @@ class ShareCampaigns extends Action {
         $this->display('/share-campaigns.tpl', 'Share Campaigns');
     }
 
-    function getBreadcrumbs(): array
-    {
-        return [];
+    function getBreadcrumbs(): array {
+        $breadcrumbs = [];
+        if (UserAccount::isLoggedIn()) {
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/MyCampaigns', 'Your Campaigns');
+		}
+		return $breadcrumbs;
     }
 }
