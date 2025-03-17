@@ -523,7 +523,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
         }
 
         $isOptedIn = ($optInToCampaignSpecificEmails !== null) ? $optInToCampaignSpecificEmails : $optInToAllCampaignEmails;
-        $sliderState = $isOptedIn ? 'checked' : '';
+        $sliderState = $isOptedIn ? ' checked' : '';
 
         if (!empty($user->email)) {
             $emailReminder = translate([
@@ -547,7 +547,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
             'modalBody' => translate([
                 'text' => 'Opt in to campaign email updates for ' .$campaignName . ':',
                 'isPublicFacing' => true,
-            ]) . '<label class-"switch"><input type="checkbox" id="emailOptInSlider"' . $sliderState . '><span class="slider"></span></label><br>' . $emailReminder,
+            ]) . '<label class="switch"><input type="checkbox" id="emailOptInSlider"' . $sliderState . '><span class="slider"></span></label><br>' . $emailReminder,
             'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.CommunityEngagement.handleCampaignEnrollment($campaignId, $userId, $(\"#emailOptInSlider\").prop(\"checked\") ? 1 : 0)'>" . translate([
                 'text' => 'Submit',
                 'isPublicFacing' => true,
@@ -585,7 +585,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
             $userCampaign->optInToCampaignEmailNotifications = (int)$optIn;
             $success = $userCampaign->update();
         }
-
         if ($success) {
             if ($userCampaign->optInToCampaignEmailNotifications == 1) {
                 $campaign = new Campaign();
@@ -600,8 +599,9 @@ class CommunityEngagement_AJAX extends JSON_Action {
                     $this->sendEnrollmentEmail($user, $campaignName);
                 }
 
-                $userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
             }
+            $userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
+
     
             return [
                 'success' => true,

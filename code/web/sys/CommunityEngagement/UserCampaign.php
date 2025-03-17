@@ -1,6 +1,7 @@
 <?php
 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
 	require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+	require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
 
 class UserCampaign extends DataObject {
@@ -86,7 +87,6 @@ class UserCampaign extends DataObject {
 		foreach ($milestones as $milestone) {
 			$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $this->campaignId, $this->userId);
 			$goal = CampaignMilestone::getMilestoneGoalCountByCampaign($this->campaignId, $milestone->id);
-
 			if ($userProgress < $goal) {
 				$isComplete = false;
 				break;
@@ -105,7 +105,6 @@ class UserCampaign extends DataObject {
 
 			//Goal for this milestone
 			$goal = CampaignMilestone::getMilestoneGoalCountByCampaign($this->campaignId, $milestone->id);
-
 			//Check if milestone is complete
 			$isMilestoneComplete = ($userProgress >= $goal);
 
@@ -180,6 +179,7 @@ class UserCampaign extends DataObject {
         $userCampaign->campaignId = $campaignId;
 
         if ($userCampaign->find(true)) {
+
                 $user = new User();
                 $user->id = $userId;
                 if (!$user->find(true)) {
@@ -192,10 +192,21 @@ class UserCampaign extends DataObject {
                     return;
                 }
                 $campaignName = $campaign->name;
+                $isCampaignComplete = $this->checkCompletionStatus();
+                if ($isCampaignComplete) {
+                    $userCampaign->completed = 1;
+                    $userCampaign->update();
+                }
+
                 if ($userCampaign->completed == 1) {
+
                     $library = $user->getHomeLibrary();
                     if ($library->sendStaffEmailOnCampaignCompletion == 1) {
                         $emailTemplate = EmailTemplate::getActiveTemplate('staffCampaignComplete');
+                        
+                        if (!$emailTemplate) {
+                            $logger->log("No active email template found for 'campaignComplete'", Logger::LOG_ERROR);
+                        }
                         if ($emailTemplate) {
                             $parameters = [
                                 'user' => $user,
@@ -233,6 +244,11 @@ class UserCampaign extends DataObject {
 
                 if ($milestone->find()) {
                     while ($milestone->fetch()) {
+                        $milestoneObj = new Milestone();
+                        $milestoneObj->id = $milestone->milestoneId;
+                        if ($milestoneObj->find(true)) {
+                            $milestone->name = $milestoneObj->name;
+                        }
                         $milestones[] = clone $milestone;
                     }
                 }
@@ -240,11 +256,13 @@ class UserCampaign extends DataObject {
                 foreach ($milestones as $milestone) {
                     $milestoneProgress = new CampaignMilestoneUsersProgress();
                     $milestoneProgress->userId = $userId;
-                    $milestoneProgress->ce_milestone_id = $milestone->id;
+                    $milestoneProgress->ce_milestone_id = $milestoneId;
                     $milestoneProgress->ce_campaign_id = $campaignId;
 
                     if ($milestoneProgress->find(true)) {
-                        if ($milestoneProgress >= $milestone->goal && !$milestoneProgress->milestoneCompleteEmailSent){
+
+                        if ($milestoneProgress->progress >= $milestone->goal && !$milestoneProgress->milestoneCompleteEmailSent){
+
                             $emailTemplate = EmailTemplate::getActiveTemplate('milestoneComplete');
 
                             if ($emailTemplate) {

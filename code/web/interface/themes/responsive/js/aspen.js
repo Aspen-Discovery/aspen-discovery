@@ -18374,8 +18374,7 @@ AspenDiscovery.CommunityEngagement = function() {
 				console.error("AJAX Error: ", textStatus, errorThrown);
 			});
 		},
-		handleCampaignEnrollment: function (campaignId, userId) {
-			var emailOptIn = $("#emailOptInSlider").prop("checked") ? 1 :0;
+		handleCampaignEnrollment: function (campaignId, userId, emailOptIn) {
 
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
