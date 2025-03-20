@@ -11,9 +11,7 @@
 		{if $userIsAdmin}
 			<button id="editLeaderboardBtn" class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.openLeaderboardEditor()">{translate text="Edit Leaderboard" isAdminFacing=true}</button>&nbsp;
 			<button id="editLeaderboardBtn" class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.resetLeaderboard()">{translate text="Reset Leaderboard" isAdminFacing=true}</button>
-		{/if}
-		<div id="main-content" class="col-sm-12" data-leaderboard-type="{$campaignLeaderboardDisplay}">
-			<h1>{translate text="Leaderboard" isPublicFacing=true}</h1>
+		{/if}<br><br>
 			{*Filter Leaderboard by campaign*}
 			<label for="campaignFilter">{translate text="Filter by Campaign:" isPublicFacing=true}</label>
 			<select id="campaign_id" onchange="AspenDiscovery.CommunityEngagement.filterLeaderboardType()">
@@ -24,6 +22,9 @@
 					<option value="{$campaign->id}">{$campaign->name}</option>
 				{/foreach}
 			</select>
+		<div id="main-content" class="col-sm-12" data-leaderboard-type="{$campaignLeaderboardDisplay}">
+			<h1>{translate text="Leaderboard" isPublicFacing=true}</h1>
+		
 			<h2 id="campaign-name"></h2>
 			<div id="leaderboard-table"></div>
 		</div>
