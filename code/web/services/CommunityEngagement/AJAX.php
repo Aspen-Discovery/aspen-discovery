@@ -407,11 +407,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign = new UserCampaign();
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
+        $userCampaign->find(['userId' => $userId, 'campaignId' => $campaignId]);
 
-        if ($userCampaign->find()) {
-            $userCampaign->optInToCampaignLeaderboard = 1;
-            $userCampaign->update();
-        }
+
+        $userCampaign->optInToCampaignLeaderboard = 1;
+        $userCampaign->update();
 
         echo json_encode([
             'success' => true,
@@ -454,10 +454,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
-       if($userCampaign->find()) {
-            $userCampaign->optInToCampaignLeaderboard = 0;
-            $userCampaign->update();
-       }
+        $userCampaign->find(['userId' => $userId, 'campaignId' => $campaignId]);
+
+
+        $userCampaign->optInToCampaignLeaderboard = 0;
+        $userCampaign->update();
 
         echo json_encode([
             'success' => true,
@@ -829,6 +830,9 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
+        $userCampaign->find(['userId' => $userId, 'campaignId' => $campaignId]);
+
+
         $userCampaign->optInToCampaignEmailNotifications = 1;
         $userCampaign->update();
 
@@ -884,6 +888,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign = new UserCampaign();
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
+
+        $userCampaign->find(['userId' => $userId, 'campaignId' => $campaignId]);
 
         $userCampaign->optInToCampaignEmailNotifications = 0;
         $userCampaign->update();
