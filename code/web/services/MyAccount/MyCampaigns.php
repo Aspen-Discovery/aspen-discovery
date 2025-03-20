@@ -48,9 +48,14 @@ class MyCampaigns extends MyAccount {
 	}
 
     function userLeaderboardButtonDisplay() {
+        global $library;
         $user = UserAccount::getLoggedInUser();
-        $userLibrary = $user->getHomeLibrary();
-        $campaignLeaderboardDisplay = $userLibrary->campaignLeaderboardDisplay;
+        if ($user->getHomeLibrary() != null){
+            $userLibrary = $user->getHomeLibrary();
+            $campaignLeaderboardDisplay = $userLibrary->campaignLeaderboardDisplay;
+        } else {
+            $campaignLeaderboardDisplay = $library->campaignLeaderboardDisplay;
+        }
         return $campaignLeaderboardDisplay;
     }
     //TODO:: MOVE TO CAMPAIGN.PHP
@@ -96,7 +101,7 @@ class MyCampaigns extends MyAccount {
 				$campaign->rewardType = $rewardDetails['rewardType'];
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
-                $campaign->displayReward = $rewardDetails['displayReward'];
+                // $campaign->displayReward = $rewardDetails['displayReward'];
                 $campaign->displayName = $rewardDetails['displayName'];
 			}
 
