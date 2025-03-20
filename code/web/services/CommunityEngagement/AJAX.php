@@ -220,7 +220,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 } else {
                     $response['success'] = false;
                     $response['campaignName'] = $campaignName;
-                    $response['html'] = 'There are currently no users enrolled in this campaign.';
+                    $response['html'] = 'There are currently no users to display.';
                 }
               
             } else {
@@ -408,8 +408,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
-        $userCampaign->optInToCampaignLeaderboard = 1;
-        $userCampaign->update();
+        if ($userCampaign->find()) {
+            $userCampaign->optInToCampaignLeaderboard = 1;
+            $userCampaign->update();
+        }
 
         echo json_encode([
             'success' => true,
@@ -452,8 +454,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         $userCampaign->userId = $userId;
         $userCampaign->campaignId = $campaignId;
 
-        $userCampaign->optInToCampaignLeaderboard = 0;
-        $userCampaign->update();
+       if($userCampaign->find()) {
+            $userCampaign->optInToCampaignLeaderboard = 0;
+            $userCampaign->update();
+       }
 
         echo json_encode([
             'success' => true,

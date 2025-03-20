@@ -666,6 +666,8 @@ class Campaign extends DataObject {
     public function getOverallLeaderboard() {
         $userCampaign = new UserCampaign();
         $users = $this->getAllUsersInCampaigns();
+		global $logger;
+		$logger->log($users, Logger::LOG_ERROR);
         $leaderboard = [];
         foreach ($users as $user) {
             if ($user->optInToAllCampaignLeaderboards == 0) {
@@ -719,6 +721,9 @@ class Campaign extends DataObject {
         $userCampaignRecords[] = clone $userCampaign;
        }
        foreach ($userCampaignRecords as $userCampaignRecord) {
+		if ($userCampaignRecord->optInToCampaignLeaderboard != 1) {
+			continue;
+		}
             $milestoneCompletionStatus = $userCampaignRecord->checkMilestoneCompletionStatus();
             $userId = $userCampaignRecord->userId;
             $user = new User();
