@@ -1430,12 +1430,19 @@ class SirsiDynixROA extends HorizonAPI {
 				$volume = $this->getMissingVolumeKey($webServiceURL, $shortId, $sessionToken, $displayVolume);
 			}
 
+			// Symphony has an odd behavior where a call key (i.e., call number) can be valid when checked directly,
+			// but still fail with "no call number found" when used in hold placement.
+			// Thus, use the call key first, but keep the item barcode for fallback if needed.
+			$originalItemId = null;
+
 			if (!empty($volume)) {
 				$holdData['call'] = [
 					'resource' => '/catalog/call',
 					'key' => $volume,
 				];
 				$holdData['holdType'] = 'TITLE';
+				// Save itemId for potential fallback.
+				$originalItemId = $itemId;
 			} elseif (!empty($itemId)) {
 				$holdData['itemBarcode'] = $itemId;
 				if ($forceVolumeHold) {
@@ -1539,6 +1546,28 @@ class SirsiDynixROA extends HorizonAPI {
 
 			$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
 
+			// Try fallback if necessary.
+			if (isset($createHoldResponse->messageList) && !empty($originalItemId)) {
+				$callNumberError = false;
+				foreach ($createHoldResponse->messageList as $error) {
+					if ($error->code === 'placeHold.noCallnumber' ||
+						stripos($error->message, 'no call number found') !== false) {
+						$callNumberError = true;
+						break;
+					}
+				}
+
+				// Fallback to item barcode if call number error detected.
+				if ($callNumberError) {
+					// Modify request to use item barcode instead of call key.
+					unset($holdData['call']);
+					$holdData['itemBarcode'] = $originalItemId;
+					$holdData['holdType'] = 'TITLE';
+
+					$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
+				}
+			}
+
 			$hold_result = [];
 			if (isset($createHoldResponse->messageList)) {
 				$hold_result['success'] = false;
@@ -1557,13 +1586,13 @@ class SirsiDynixROA extends HorizonAPI {
 				]);
 
 				$hold_result['message'] .= ' ' . translate([
-						'text' => (string)$createHoldResponse->messageList[0]->message,
+						'text' => $createHoldResponse->messageList[0]->message . '.',
 						'isPublicFacing' => true,
 					]);
 				$hold_result['error_code'] = $createHoldResponse->messageList[0]->code;
 				//Do not return error code to LiDA as part of the message
 				$hold_result['api']['message'] .= ' ' . translate([
-						'text' => (string)$createHoldResponse->messageList[0]->message,
+						'text' => $createHoldResponse->messageList[0]->message . '.',
 						'isPublicFacing' => true,
 					]);
 				global $logger;
