@@ -758,6 +758,9 @@ class Record_AJAX extends Action {
 
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
+			// Track which volumes have at least one non-suppressed item.
+			$volumeHasNonSuppressedItem = [];
+
 			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
@@ -766,6 +769,28 @@ class Record_AJAX extends Action {
 								if (empty($item->volume)) {
 									$numItemsWithoutVolumes++;
 								} else {
+
+									// Check if the item status is suppressed in the indexing profile.
+									$isItemSuppressed = false;
+									if (!empty($item->status)) {
+										$indexingProfile = $marcRecord->getIndexingProfile();
+										if ($indexingProfile) {
+											$statusMap = $indexingProfile->statusMap;
+											// Check if this status is suppressed in the status map.
+											foreach ($statusMap as $statusMapValue) {
+												if (strcasecmp($statusMapValue->value, $item->status) === 0) {
+													$isItemSuppressed = !empty($statusMapValue->suppress);
+													break;
+												}
+											}
+										}
+									}
+
+									if (!$isItemSuppressed) {
+										// Add this volume to tracking array of volumes with at least one non-suppressed item.
+										$volumeHasNonSuppressedItem[$item->volumeId] = true;
+									}
+
 									if (array_key_exists($item->volumeId, $volumeData)) {
 										$volumeData[$item->volumeId]->addItem($item);
 										if ($item->libraryOwned || $item->locallyOwned) {
@@ -787,6 +812,16 @@ class Record_AJAX extends Action {
 						$volumeInfo->setNeedsIllRequest(false);
 					}else{
 						$volumeInfo->setNeedsIllRequest(true);
+					}
+				}
+			}
+
+			// Filter out volumes where all items are suppressed.
+			if (!empty($volumeData)) {
+				foreach($volumeData as $volumeId => $volume) {
+					if (!isset($volumeHasNonSuppressedItem[$volumeId])) {
+						// This volume has no non-suppressed items, remove it.
+						unset($volumeData[$volumeId]);
 					}
 				}
 			}
