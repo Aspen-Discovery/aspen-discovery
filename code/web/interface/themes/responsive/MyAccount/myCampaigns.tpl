@@ -51,10 +51,12 @@
                                     {translate text="Manage Campaign" isPublicFacing=true}
                                 </button>
                                 <div class="action-buttons" id="actions-{$resultIndex}" style="display:none;" role="group" aria-labelledby="toggle-actions-{$resultIndex}">
-                                        {if $campaign->optInToCampaignLeaderboard == 0}
-                                            <button class="btn btn-primary btn-sm" aria-label="{translate text="Join Leaderboard for {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignLeaderboard({$campaign->id}, {$userId});">{translate text=" Join Leaderboard" isPublicFacing=true}</button>
-                                        {else}
-                                            <button class="btn btn-primary btn-sm" aria-label="{translate text="Leave Leaderboard for {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
+                                        {if $campaignLeaderboardDisplay == 'displayUser'}
+                                            {if $campaign->optInToCampaignLeaderboard == 0}
+                                                <button class="btn btn-primary btn-sm" aria-label="{translate text="Join Leaderboard for {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignLeaderboard({$campaign->id}, {$userId});">{translate text=" Join Leaderboard" isPublicFacing=true}</button>
+                                            {else}
+                                                <button class="btn btn-primary btn-sm" aria-label="{translate text="Leave Leaderboard for {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
+                                            {/if}
                                         {/if}
                                     
                                         {if $campaign->optInToCampaignEmailNotifications}

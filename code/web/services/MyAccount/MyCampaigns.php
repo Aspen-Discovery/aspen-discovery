@@ -32,6 +32,9 @@ class MyCampaigns extends MyAccount {
 		$pastCampaigns = $campaign->getPastCampaigns($userId);
 		$interface->assign('pastCampaigns', $pastCampaigns);
 
+        $campaignLeaderboardDisplay = $this->userLeaderboardButtonDisplay();
+        $interface->assign('campaignLeaderboardDisplay', $campaignLeaderboardDisplay);
+
         $url = $this->getBaseUrl();
         $interface->assign('url', $url);
 
@@ -43,6 +46,13 @@ class MyCampaigns extends MyAccount {
 		$userId = $user->id;
 		return $userId;
 	}
+
+    function userLeaderboardButtonDisplay() {
+        $user = UserAccount::getLoggedInUser();
+        $userLibrary = $user->getHomeLibrary();
+        $campaignLeaderboardDisplay = $userLibrary->campaignLeaderboardDisplay;
+        return $campaignLeaderboardDisplay;
+    }
     //TODO:: MOVE TO CAMPAIGN.PHP
 	function getCampaigns() {
 		global $activeLanguage;
