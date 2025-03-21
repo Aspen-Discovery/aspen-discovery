@@ -116,29 +116,16 @@ for dir in "${directories[@]}"; do
 	echo "%   * Created symlink: $source → $dest"
 done
 
-# Check if data-alias.conf is enabled 
-file="/etc/apache2/conf-enabled/data-alias.conf"
-if [ ! -f "$file"  ]; then
-	a2enconf data-alias
+# Ensure the hostname is only added once
+if ! grep -q "$SITE_NAME" /etc/hosts; then
+    echo "127.0.0.1    $SITE_NAME" >> /etc/hosts
 fi
 
-echo "%   * Starting Apache"
-# Start apache
-service apache2 start
-
 # Run any pending database updates
-echo "127.0.0.1    $SITE_NAME" >> /etc/hosts
-echo "%   * Triggering pending database updates"
-curl -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
+#echo "%   * Triggering pending database updates"
+#curl -v -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
 
 sudo -u www-data	php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php $SITE_NAME >/proc/1/fd/1 2>/proc/1/fd/2
 
-echo "%"
-echo "%   Aspen Discovery ready to use!"
-echo "%"
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-
-
-# FIXME: We should probably run Apache in foreground instead. We need to
-#        figure an approach to the curl above in order to do it
-/bin/bash -c "trap : TERM INT; sleep infinity & wait"
+echo "Starting PHP-FPM..."
+php-fpm8.4 --test && exec php-fpm8.4 -F
