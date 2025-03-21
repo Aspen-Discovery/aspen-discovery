@@ -34,6 +34,8 @@ $variables = [
 	'configDir' => $siteDir,
 	'solrHost' => getenv('SOLR_HOST') ?? 'localhost',
 	'solrPort' => getenv('SOLR_PORT') ?? 8983,
+	'phpFpmHost' => getenv('PHP_FPM_HOST') ?? 'localhost',
+	'phpFpmPort' => getenv('PHP_FPM_PORT') ?? '9000',
 	'timezone' => getenv('TIMEZONE') ?? 'US/Central',
 	'aspenAdminPassword' => getenv('ASPEN_ADMIN_PASSWORD'),
 	'databaseHost' => getenv('DATABASE_HOST') ?? 'localhost',
@@ -61,7 +63,7 @@ if ($variables['enableKoha'] === "yes") {
 	$variables['ilsDriver'] = ucfirst(getenv('ILS_DRIVER'));
 }
 
-$mandatory = ['sitename', 'servername', 'solrHost', 'solrPort', 'configDir', 'timezone', 'aspenAdminPassword', 'databaseHost', 'databasePort', 'databaseName', 'databaseUser', 'databasePassword'];
+$mandatory = ['sitename', 'servername', 'solrHost', 'solrPort', 'phpFpmHost', 'phpFpmPort', 'configDir', 'timezone', 'aspenAdminPassword', 'databaseHost', 'databasePort', 'databaseName', 'databaseUser', 'databasePassword'];
 
 if ($variables['enableKoha'] === "yes") {
 	$kohaKeys = ['ilsDriver', 'ilsUrl', 'ilsStaffUrl', 'ilsDatabaseName', 'ilsDatabaseHost', 'ilsDatabasePort', 'ilsDatabaseUser', 'ilsDatabasePassword', 'ilsDatabaseTimeZone'];
@@ -119,8 +121,11 @@ try {
 	copy($defaultDir . "/conf/badBotsDefault.conf", $siteDir . "/conf/badBotsDefault.conf");
 
 //Copy from docker directory
+	copy("$dockerDir/files/php_fpm/php-fpm.conf",$siteDir . "/conf/php-fpm.conf");
 	copy("$dockerDir/files/cron/crontab", "$siteDir/conf/crontab");
 	copy("$dockerDir/files/apache/data-alias.conf", "$apacheDir/conf-available/data-alias.conf");
+
+	replaceVariables($siteDir . "/conf/php-fpm.conf", $variables);
 	replaceVariables($siteDir . "/conf/crontab", $variables);
 	replaceVariables($apacheDir . "/conf-available/data-alias.conf", $variables);
 
