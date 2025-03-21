@@ -133,6 +133,7 @@ try {
 	exec("chmod -R 755 $configDir/conf");
 	exec("chown $newOwner $configDir/conf");
 	exec("chown $newOwner $configDir/conf/config*");
+	exec("chown $newOwner $configDir/conf/php-fpm.conf");
 	exec("chown root:root $configDir/httpd-$siteName.conf");
 	exec("chown root:root $configDir/conf/crontab_settings.txt");
 	exec("chmod 0644 $configDir/conf/crontab_settings.txt");
@@ -149,6 +150,11 @@ try {
 	//Copy the httpd conf file
 	$apacheDir = "/etc/apache2";
 	copy("$configDir/httpd-$siteName.conf", "$apacheDir/sites-enabled/httpd-$siteName.conf");
+	
+	//Copy the php-fpm config file
+	$phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+	$phpDir = "/etc/php/$phpVersion";
+	copy("$configDir/conf/php-fpm.conf", $phpDir . "/fpm/pool.d/php-fpm.conf");
 
 } catch (ErrorException $e) {
 	echo "%   ERROR ASSIGNING PERMISSIONS AND OWNERSHIPS\n";
