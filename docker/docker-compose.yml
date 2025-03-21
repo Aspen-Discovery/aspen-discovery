@@ -8,8 +8,6 @@ services:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
     env_file:
       - .env
-    ports:
-      - "80:80"
     networks:
       - net-aspen
     tty: true
@@ -20,6 +18,24 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  apache:
+    image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
+    env_file:
+      - .env
+    ports:
+      - "85:80"
+    networks:
+       - net-aspen
+    volumes:
+      - ${ASPEN_DATA_DIR}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery/${SITE_NAME}
+    command:
+      - apache
+    depends_on:
+      - backend
+    tty: true
 
   cron:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
