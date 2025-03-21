@@ -2905,6 +2905,7 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, true, '', false, false);
 				} else {
+					AspenDiscovery.showMessageWithButtons(data.title, data.message);
 					console.error("Error fetching the email opt-in form.");
 				}
 			})

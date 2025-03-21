@@ -323,6 +323,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (!isset($milestoneId) || $milestoneId <=0) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'Invalid milestone ID.',
                     'isPublicFacing' => true,
@@ -334,6 +338,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (!isset($userId)) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'Invalid user ID.',
                     'isPublicFacing' => true,
@@ -345,6 +353,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (!isset($campaignId)){
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'Invalid campaign ID.',
                     'isPublicFacing' => true,
@@ -369,6 +381,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         }
 
         echo json_encode([
+            'title' => translate([
+                    'text' => 'Progress Added',
+                    'isPublicFacing' => true,
+                ]),
             'success' => true,
             'message' => translate([
                 'text' => 'Progress added successfully!',
@@ -383,6 +399,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'User not logged in.',
                     'isPublicFacing' => true,
@@ -397,6 +417,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (empty($campaignId)) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'Invalid Campaign ID',
                     'isPublicFacing' => true,
@@ -416,6 +440,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
         echo json_encode([
             'success' => true,
+            'title' => translate([
+                    'text' => 'Joined Leaderboard',
+                    'isPublicFacing' => true,
+                ]),
             'message' => translate([
                 'text' => 'You have successfully joined the leaderboard for this campaign',
                 'isPublicFacing' => true,
@@ -429,6 +457,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (!UserAccount::isLoggedIn()) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'User not logged in.',
                     'isPublicFacing' => true,
@@ -443,6 +475,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
         if (empty($campaignId)) {
             echo json_encode([
                 'success' => false,
+                'title' => translate([
+                    'text' => 'Error',
+                    'isPublicFacing' => true,
+                ]),
                 'message' => translate([
                     'text' => 'Invalid Campaign ID',
                     'isPublicFacing' => true,
@@ -463,6 +499,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
         echo json_encode([
             'success' => true,
+            'title' => translate([
+                    'text' => 'Opted Out of Leaderboard',
+                    'isPublicFacing' => true,
+                ]),
             'message' => translate([
                 'text' => 'You have successfully opted out of the leaderboard for this campaign',
                 'isPublicFacing' => true,
