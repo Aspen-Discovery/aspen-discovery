@@ -209,7 +209,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 }
                 $leaderboard = $campaign->getLeaderboardByCampaign($campaignId);
                 if ($leaderboard) {
-                    $html .='<thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    $html .='<table class="leaderboard-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;"><thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
                     foreach ($leaderboard as $entry) {
                         $html .= "<tr><td>{$entry['user']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
                     }
@@ -226,7 +226,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
             } else {
                 $leaderboard = $campaign->getOverallLeaderboard();
                 if ($leaderboard) {
-                    $html .='<thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    $html .='<table class="leaderboard-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;"><thead><tr><th>User</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
                     foreach ($leaderboard as $entry) {
                         $html .= "<tr><td>{$entry['user']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
                     }
@@ -236,7 +236,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
                     $response['success'] = true;
                 } else {
                     $response['success'] = false;
-                    $response['message'] = 'No leaderboard data found.';
+                    $response['campaignName'] = 'All Campaigns';
+                    $response['html'] = 'There are currently no users to display.';
                 }
                
             }
@@ -267,7 +268,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
                 }
                 $branchLeaderboard = $campaign->getLeaderboardByBranchForCampaign($campaign);
                 if ($branchLeaderboard) {
-                    $html .='<thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    $html .='<table class="leaderboard-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;"><thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
                     foreach ($branchLeaderboard as $entry) {
                         $html .= "<tr><td>{$entry['branch']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
                     }
@@ -283,7 +284,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
             } else {
                 $branchLeaderboard = $campaign->getOverallLeaderboardByBranch();
                 if ($branchLeaderboard){
-                    $html .='<thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
+                    $html .='<table class="leaderboard-table" style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;"><thead><tr><th>Branch</th><th>Rank</th><th>Completed Milestones</th></tr></thead><tbody>';
                     foreach ($branchLeaderboard as $entry) {
                         $html .= "<tr><td>{$entry['branch']}</td><td>{$entry['rankDisplayed']}</td><td>{$entry['completedMilestones']}</td></tr>";
                     }
@@ -719,6 +720,38 @@ class CommunityEngagement_AJAX extends JSON_Action {
     private function saveLeaderboardToDatabase($templateName, $html, $css) {
         require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
         global $logger;
+
+        $activeUser = UserAccount::getActiveUserObj();
+
+        if (!$activeUser) {
+            return [
+				'success' => false,
+				'title' => translate([
+					'text' =>'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You must be logged in to make changes to the leaderboard.',
+					'isPublicFacing' => true
+				])
+			];
+        }
+        $userIsAspenAdmin = UserAccount::getActiveUserObj()->isAspenAdminUser();
+        $userIsAdmin = UserAccount::getActiveUserObj()->isUserAdmin();
+
+        if (!$userIsAspenAdmin || !$userIsAdmin) {
+            return [
+				'success' => false,
+				'title' => translate([
+					'text' =>'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You do not have the correct permissions to make changes to the leaderboard.',
+					'isPublicFacing' => true
+				])
+			];
+        }
 
         $grapesTemplate = new GrapesTemplate();
         $grapesTemplate->templateName = $templateName;

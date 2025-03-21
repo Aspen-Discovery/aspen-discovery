@@ -14,7 +14,7 @@
 		{/if}<br><br>
 			{*Filter Leaderboard by campaign*}
 			<label for="campaignFilter">{translate text="Filter by Campaign:" isPublicFacing=true}</label>
-			<select id="campaign_id" onchange="AspenDiscovery.CommunityEngagement.filterLeaderboardType()">
+			<select id="campaign_id" class="form-control-sm" onchange="AspenDiscovery.CommunityEngagement.filterLeaderboardType()">
 				<option value="">
 					{translate text="All Campaigns" isPublicFacing=true}
 				</option>

@@ -40,9 +40,11 @@ class CommunityEngagement_Leaderboard extends Action {
         }
         return null;
     }
-    //TODO:: Insert breadcrumbs
+
     function getBreadcrumbs(): array {
         $breadcrumbs = [];
+        $breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+        $breadcrumbs[] = new Breadcrumb('/MyAccount/MyCampaigns', 'Your Campaigns');
         return $breadcrumbs;
     }
 }
