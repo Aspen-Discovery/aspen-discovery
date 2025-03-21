@@ -938,10 +938,11 @@ class Campaign extends DataObject {
 			$rewardDetails = $campaign->getRewardDetails();
 			if ($rewardDetails) {
 				$campaign->rewardName = $rewardDetails['name'];
+				$campaign->rewardId = $rewardDetails['id'];
 				$campaign->rewardType = $rewardDetails['rewardType'];
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
-                $campaign->displayReward = $rewardDetails['displayName'];
+                $campaign->displayName = $rewardDetails['displayName'];
 			}
 
 				//Fetch milestones for this campaign
