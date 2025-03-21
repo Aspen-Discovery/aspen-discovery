@@ -52,11 +52,11 @@ RUN wget -O- -q https://packages.sury.org/php/apt.gpg \
 RUN apt -y update \
 	&& apt install -y \
 	  php8.4 \
+	  php8.4-fpm \
 	  php8.4-mcrypt \
 	  php8.4-gd \
 	  php8.4-imagick \
 	  php8.4-curl \
-	  php8.4-mysql \
 	  php8.4-zip \
 	  php8.4-xml \
 	  php8.4-intl \
@@ -65,18 +65,20 @@ RUN apt -y update \
 	  php8.4-pgsql \
 	  php8.4-ssh2 \
 	  php8.4-ldap \
-	  php8.4-xdebug \
+	  php8.4-mysql \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
+
+
+# Enable required Apache modules
+RUN a2enmod proxy_fcgi setenvif rewrite
+RUN a2dissite 000-default
 
 # Adding entrypoint and init scripts
 COPY docker/files/scripts/entrypoint.sh  /entrypoint.sh
 COPY docker/files/scripts/start.sh       /start.sh
 COPY docker/files/scripts/cron.sh        /cron.sh
-
-# Load apache modules
-RUN a2enmod rewrite
-RUN a2dissite 000-default
+COPY docker/files/scripts/apache.sh      /apache.sh
 
 # Add aspen-discovery
 COPY . /usr/local/aspen-discovery
@@ -87,5 +89,6 @@ RUN cd /usr/local/aspen-discovery/sites \
 	&& rm -rf *prod*  \
 	&& rm -rf *dev*   \
 	&& rm -rf template.windows
+
 
 ENTRYPOINT ["/entrypoint.sh"]
