@@ -529,7 +529,7 @@ class WebResource extends DB_LibraryLinkedObject {
 			$placard->title = $this->name;
 			$placard->image = $this->logo;
 			$placard->link = $this->url;
-			$placard->body = $this->teaser;
+			$placard->body = empty($this->teaser) ? $this->description : $this->teaser;
 			$placard->generatedFromSource = 'web_resource:' . $this->id;
 			$placard->insert();
 		}

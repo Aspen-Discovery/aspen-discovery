@@ -2249,7 +2249,8 @@ class UserAPI extends AbstractAPI {
 								'ilsId' => $sublocation->ilsId,
 								'displayName' => $sublocation->name,
 								'locationCode' => $pickupLocation->code,
-								'locationId' => $pickupLocation->locationId
+								'locationId' => $pickupLocation->locationId,
+								'subLocationWeight' => $sublocation->weight,
 							];
 						}
 					}
@@ -3481,8 +3482,8 @@ class UserAPI extends AbstractAPI {
 						'message' => 'recordId and holdId must be provided',
 					];
 				}
-				$recordId = $_REQUEST['recordId'];
-				$holdId = $_REQUEST['holdId'];
+				$recordId = $_REQUEST['recordId'] ?? null;
+				$holdId = $_REQUEST['holdId'] ?? null;
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
 			} elseif ($source == 'overdrive') {
 				return $this->freezeOverDriveHold();

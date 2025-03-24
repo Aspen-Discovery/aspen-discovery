@@ -1,4 +1,5 @@
 {strip}
+<div class="calendar-page">
 {if !empty($headerImage) && !empty($loggedIn) && in_array('Print Calendars with Header Images', $userPermissions)}
 	<div class="calendar-header-image">
 		<img src="{$headerImage}" {if !empty($headerAlt)}alt="{translate text=$headerAlt inAttribute=true isPublicFacing=true}" title="{translate text=$headerAlt inAttribute=true isPublicFacing=true}"{/if} id="calendar-header">
@@ -47,7 +48,7 @@
 						<div class="calendar-day-date">
 							<span class="visible-xs">{$day.fullDate}</span><span class="hidden-xs">{$day.day}</span>
 						</div>
-						<div class="calendar-events">
+						<div class="calendar-events {if count($day.events) < 5}wrap-title{/if}">
 							{foreach from=$day.events item=event}
 								<div class="calendar-event" data-event_id="{$event.id}">
 									<div class="calendar-event-title">
@@ -69,4 +70,5 @@
 			</div>
 		{/foreach}
 	</div>
+</div>
 {/strip}

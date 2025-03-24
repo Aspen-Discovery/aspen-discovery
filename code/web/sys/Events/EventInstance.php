@@ -9,6 +9,7 @@ class EventInstance extends DataObject {
 	public $date;
 	public $time;
 	public $length;
+	public $sublocationId;
 	public $status;
 	public $note;
 
@@ -18,6 +19,8 @@ class EventInstance extends DataObject {
 	public $_eventType;
 
 	public static function getObjectStructure($context = ''): array {
+		$sublocationList = Location::getEventSublocations(null);
+		$sublocationList = [""] + $sublocationList;
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -50,6 +53,13 @@ class EventInstance extends DataObject {
 				'type' => 'integer',
 				'label' => 'Length (Minutes)',
 				'description' => 'The event length in minutes',
+			],
+			'sublocationId' => [
+				'property' => 'sublocationId',
+				'type' => 'enum',
+				'label' => 'Sublocation',
+				'description' => 'Sublocation of the event',
+				'values' => $sublocationList,
 			],
 			'note' => [
 				'property' => 'note',
@@ -104,6 +114,17 @@ class EventInstance extends DataObject {
 		}
 	}
 
+	public function fetch(): bool|DataObject|null {
+		$return = parent::fetch();
+		if ($return) {
+			if (empty($this->sublocationId)) {
+				$event = $this->getParentEvent();
+				$this->sublocationId = $event->sublocationId;
+			}
+		}
+		return $return;
+	}
+
 	function getParentEvent() {
 		$event = new Event();
 		$event->id = $this->eventId;
@@ -132,6 +153,7 @@ class EventInstance extends DataObject {
 		$series = [];
 		$eventInstances = new EventInstance();
 		$eventInstances->eventId = $this->eventId;
+		$eventInstances->deleted = 0;
 		if ($onlyFuture) {
 			$escapedDate = $eventInstances->escape($this->date);
 			$escapedTime = $eventInstances->escape($this->time);
@@ -139,6 +161,7 @@ class EventInstance extends DataObject {
 		} else {
 			$eventInstances->whereAdd("id != " . $this->id);
 		}
+		$eventInstances->orderBy('date');
 		$eventInstances->find();
 		while ($eventInstances->fetch()) {
 			$series[$eventInstances->id] = clone($eventInstances);

@@ -49,7 +49,14 @@ class WebBuilder_Audiences extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof WebBuilderAudience && !empty($existingObject->id)) {
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => '/WebBuilder/ResourceAudience?id=' . $existingObject->id
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions(): string {

@@ -33,11 +33,12 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		try {
 			$userId = $_GET['userId'];
 			$milestoneId = $_GET['milestoneId'];
+			$campaignId = $_GET['campaignId'];
 
 			$campaignMilestoneProgress = new CampaignMilestoneUsersProgress();
-			#TODO: Add a campaignId check
 			$campaignMilestoneProgress->userId = $userId;
 			$campaignMilestoneProgress->ce_milestone_id = $milestoneId;
+			$campaignMilestoneProgress->ce_campaign_id = $campaignId;
 
 			if ($campaignMilestoneProgress->find(true)) {
 				$campaignMilestoneProgress->rewardGiven = 1;

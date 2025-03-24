@@ -145,8 +145,32 @@
 		#footer-container {
 			display: none;
 		}
+
+		.calendar-event .calendar-event-state {
+			height:fit-content;
+			padding: 1px;
+			order:3;
+			position: absolute;
+			margin-top: 1.2rem;
+			font-size: 0.70rem;
+		}
+
+		.calendar-event-time {
+			order: 1;
+		}
+
+		.calendar-event-title {
+			order: 2;
+		}
+
+		.calendar-page {
+			page-break-inside: avoid;
+			height: 90vh;
+		}
+
 	}
 	@media (max-width: @screen-xs-max) {
+
 		.hide-for-agenda-view {
 			display: none;
 		}
@@ -168,15 +192,24 @@
 		}
 	}
 	@media (min-width: @screen-sm-min) {
+		@page {
+			margin-top: 0.25in;
+			margin-bottom: 0.25in;
+		}
+
 		#page-container > .container {
 			width: 95%;
 		}
 
 		.calendar {
 			page-break-inside: avoid;
-			overflow: hidden;
-			height: 85vh;
+			overflow: visible;
+			height: 80vh;
 			margin-top: 0;
+
+			.calendar-current-month {
+				font-size: 2.5rem;
+			}
 
 			@media (min-width: 1700px) { // around A2
 				.calendar-current-month {
@@ -228,8 +261,8 @@
 			}
 
 			.calendar-day-cell {
-				min-height: 14vh;
-				max-height: 21vh;
+				min-height: 12vh;
+				max-height: 20vh;
 				flex-direction: row-reverse;
 				justify-content: space-between;
 				max-width: 100%;
@@ -239,15 +272,38 @@
 					max-width: 90%;
 					overflow: clip;
 
+					&.wrap-title {
+						.calendar-event-title, .calendar-event-time {
+							overflow: visible;
+							white-space: normal;
+							max-height: 3.5vh;
+						}
+					}
+
+					.calendar-event:has(.calendar-event-state) {
+						.calendar-event-title, .calendar-event-time {
+							overflow: visible;
+							white-space: normal;
+							height: 3.5vh;
+						}
+					}
+
+					.calendar-event-title, .calendar-event-time {
+						overflow: clip;
+						white-space: nowrap;
+						font-size: 0.85rem;
+					}
+
 					.calendar-event {
 						margin: 0;
 						padding: 1px 0 0 3px;
 						display: flex;
-						flex-direction: row-reverse;
-						gap: 0.5rem;
+						flex-direction: row;
+						column-gap: 0.5rem;
 						justify-content: left;
 						max-width: 100%;
 						overflow: clip;
+						flex-wrap: nowrap;
 
 						.end-time {
 							display: none;
@@ -261,11 +317,6 @@
 
 						.calendar-event-time {
 							font-weight: bold;
-						}
-
-						div {
-							white-space: nowrap;
-							font-size: 0.9rem;
 						}
 
 						@media (min-width: 1700px) {

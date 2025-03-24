@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/WebBuilder/CustomWebResourcePage.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
@@ -8,7 +8,6 @@ class WebResourcesSetting extends DataObject
 	public $__table = 'web_builder_web_resources_settings';    // table name
 	public $id;
 	public $name;
-	public $webResourceSettingId;
 	public $indexAtoZ;
 
 	private $_libraries;
@@ -36,20 +35,48 @@ class WebResourcesSetting extends DataObject
 				'description' => 'A name for the settings',
 				'maxLength' => 100,
 			],
-			'descriptionAtoZ' => [
-				'property' => 'descriptionAtoZ',
-				'type' => 'translatableTextBlock',
-				'label' => 'Description for A to Z Web Resources',
-				'description' => 'A description for the AtoZ resource page.',
-				'defaultTextFile' => '',
-				'hideInLists' => true,
+			'resourceListingSection' => [
+				'property' => 'resourceListingSection',
+				'type' => 'section',
+				'label' => 'Web Resource Listing Page',
+				'expandByDefault' => true,
+				'properties' => [
+					'resourceListingLink' => [
+						'property' => 'resourceListingLink',
+						'type' => 'url',
+						'label' => 'The Resource Listing Page can be found at',
+						'readOnly' => true,
+					],
+				]
 			],
-			'indexAtoZ' => [
-				'property' => 'indexAtoZ',
-				'type' => 'checkbox',
-				'label' => 'Index A to Z',
-				'default' => false,
-				'hideInLists' => true,
+			'aToZSection' => [
+				'property' => 'aToZSection',
+				'type' => 'section',
+				'label' => 'A-Z Listing Page',
+				'expandByDefault' => true,
+				'properties' => [
+					'aToZListingLink' => [
+						'property' => 'aToZListingLink',
+						'type' => 'url',
+						'label' => 'The A-Z Resources Page can be found at',
+						'readOnly' => true,
+					],
+					'descriptionAtoZ' => [
+						'property' => 'descriptionAtoZ',
+						'type' => 'translatableTextBlock',
+						'label' => 'Description for A to Z Web Resources',
+						'description' => 'A description for the AtoZ resource page.',
+						'defaultTextFile' => '',
+						'hideInLists' => true,
+					],
+					'indexAtoZ' => [
+						'property' => 'indexAtoZ',
+						'type' => 'checkbox',
+						'label' => 'Index A to Z',
+						'default' => false,
+						'hideInLists' => true,
+					],
+				],
 			],
 			'customWebResourcesToIndex' => [
 				'property' => 'customWebResourcesToIndex',
@@ -126,8 +153,15 @@ class WebResourcesSetting extends DataObject
 			return $this->getWebResourceAudiencesToIndex();
 		} elseif ($name == "webResourceCategoriesToIndex") {
 			return $this->getWebResourceCategoriesToIndex();
-		}
-		else {
+		} elseif ($name == 'resourceListingLink') {
+			global $configArray;
+			$baseUrl = $configArray['Site']['url'];
+			return "$baseUrl/WebBuilder/ResourcesList";
+		} elseif ($name == 'aToZListingLink') {
+			global $configArray;
+			$baseUrl = $configArray['Site']['url'];
+			return "$baseUrl/WebBuilder/ResourcesAtoZ";
+		} else {
 			return parent::__get($name);
 		}
 	}

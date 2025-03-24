@@ -133,6 +133,7 @@ class SeriesMember extends DataObject {
 			'pubDate',
 			'isPlaceholder',
 			'userAdded',
+			'excluded'
 		];
 	}
 
@@ -167,7 +168,7 @@ class SeriesMember extends DataObject {
 		return $structure;
 	}
 
-	public function getRecordDriver() {
+	public function getRecordDriver() : ?GroupedWorkDriver {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($this->groupedWorkPermanentId);
 		if (!$recordDriver->isValid()) {
@@ -176,5 +177,14 @@ class SeriesMember extends DataObject {
 		return $recordDriver;
 	}
 
-
+	public function getSeries() : ?Series {
+		require_once ROOT_DIR . '/sys/Series/Series.php';
+		$series = new Series();
+		$series->id = $this->seriesId;
+		if ($series->find(true)) {
+			return $series;
+		}else{
+			return null;
+		}
+	}
 }

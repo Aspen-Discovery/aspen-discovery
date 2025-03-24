@@ -647,7 +647,9 @@ class Sierra extends Millennium {
 					$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
 					$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
 
-					$curCheckout->callNumber = $entry->callNumber;
+					if (!empty($entry->callNumber)) {
+						$curCheckout->callNumber = $entry->callNumber;
+					}
 
 					$curCheckout->itemId = $itemId;
 					if ($bibId != false) {

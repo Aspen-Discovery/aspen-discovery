@@ -46,6 +46,14 @@ function getMultiVolumeHoldAction($module, $source, $id) : array {
 
 //Local ILL Requests
 function getSpecificVolumeLocalIllRequestAction($module, $source, $id, $volumeInfo) : array {
+	//Check to see if the user can do local ILL by PType
+	if (UserAccount::isLoggedIn()) {
+		$user = UserAccount::getActiveUserObj();
+		$ptype = $user->getPTypeObj();
+		if ($ptype == null || !$ptype->allowLocalIll) {
+			return [];
+		}
+	}
 	return [
 		'title' => translate([
 			'text' => 'Request %1%',
@@ -63,6 +71,14 @@ function getSpecificVolumeLocalIllRequestAction($module, $source, $id, $volumeIn
 }
 
 function getLocalIllRequestAction($module, $source, $id) : array {
+	//Check to see if the user can do local ILL by PType
+	if (UserAccount::isLoggedIn()) {
+		$user = UserAccount::getActiveUserObj();
+		$ptype = $user->getPTypeObj();
+		if ($ptype == null || !$ptype->allowLocalIll) {
+			return getLocalIllNotAllowedAction($id);
+		}
+	}
 	return [
 		'title' => translate([
 			'text' => 'Request',
@@ -78,6 +94,14 @@ function getLocalIllRequestAction($module, $source, $id) : array {
 }
 
 function getNoVolumesCanBeRequestedAction($module, $source, $id) : array {
+	//Check to see if the user can do local ILL by PType
+	if (UserAccount::isLoggedIn()) {
+		$user = UserAccount::getActiveUserObj();
+		$ptype = $user->getPTypeObj();
+		if ($ptype == null || !$ptype->allowLocalIll) {
+			return getLocalIllNotAllowedAction($id);
+		}
+	}
 	$title = translate([
 		'text' => 'Request Unavailable',
 		'isPublicFacing' => true,
@@ -85,6 +109,28 @@ function getNoVolumesCanBeRequestedAction($module, $source, $id) : array {
 	]);
 	$message = translate([
 		'text' => "Titles with volumes cannot be requested from other libraries via the catalog. Please contact the library to request this title.",
+		'isPublicFacing' => true,
+		'inAttribute' => true,
+	]);
+	return [
+		'title' => $title,
+		'url' => '',
+		'id' => "actionButton$id",
+		'onclick' => "AspenDiscovery.showMessage('$title', '$message');return false;",
+		'requireLogin' => false,
+		'type' => 'local_ill_request',
+		'btnType' => 'btn-local-ill-request btn-action'
+	];
+}
+
+function getLocalIllNotAllowedAction($id) :array {
+	$title = translate([
+		'text' => 'Request Not Allowed',
+		'isPublicFacing' => true,
+		'inAttribute' => true,
+	]);
+	$message = translate([
+		'text' => "Sorry, your account is not allowed to place requests.",
 		'isPublicFacing' => true,
 		'inAttribute' => true,
 	]);

@@ -148,11 +148,15 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		saveLinkedObject: function(doFullSave){
+			var body = $("#teaser").val();
+			if (body === '') {
+				body = $("#description").val();
+			}
 			var params = {
 				objectId: $("#id").val(),
 				objectName: $("#name").val(),
 				url: $("#url").val(),
-				body: $("#teaser").val(),
+				body: body,
 				image: $("#importFile-label-logo").val(),
 				doFullSave: doFullSave
 			};
@@ -164,7 +168,6 @@ AspenDiscovery.WebBuilder = function () {
 					AspenDiscovery.showMessage('Sorry', data.message);
 				}
 			});
-
 		},
 
 		getImageActionFields: function() {

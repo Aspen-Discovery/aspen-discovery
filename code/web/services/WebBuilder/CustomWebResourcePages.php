@@ -26,7 +26,7 @@ class WebBuilder_CustomWebResourcePages extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
 		if (!UserAccount::userHasPermission('Administer All Custom Web Resource Pages')) {
-			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomWebResourcePage', 'customWebResourcePageId');
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomWebResourcePage', 'customResourcePageId');
 		}
 		$objectList = [];
 		if ($userHasExistingObjects) {

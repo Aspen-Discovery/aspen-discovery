@@ -20,10 +20,11 @@ class CampaignMilestoneUsersProgress extends DataObject
 		return $milestoneProgress->progress ? $milestoneProgress->progress : 0;
 	}
 
-	public static function getRewardGivenForMilestone($milestoneId, $userId) {
+	public static function getRewardGivenForMilestone($milestoneId, $userId, $campaignId) {
 		$progress = new CampaignMilestoneUsersProgress();
 		$progress->ce_milestone_id = $milestoneId;
 		$progress->userId = $userId;
+		$progress->ce_campaign_id = $campaignId;
 
 		if ($progress->find(true)) {
 			return $progress->rewardGiven;

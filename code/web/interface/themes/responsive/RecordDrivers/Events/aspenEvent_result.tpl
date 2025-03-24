@@ -49,6 +49,13 @@
 					<div class="result-value col-tn-6 notranslate">
 						{$recordDriver->getBranch()}
 					</div>
+					{if !empty($recordDriver->getRoom())}
+						<br />
+						<div class="result-label col-tn-2">{translate text="Sublocation" isPublicFacing=true} </div>
+						<div class="result-value col-tn-6 notranslate">
+							{$recordDriver->getRoom()}
+						</div>
+					{/if}
 					{if $private}
 						<div class="result-value col-tn-8">
 							<span class="label label-default">{translate text="Private" isPublicFacing=true}</span>
@@ -91,7 +98,7 @@
 											<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-register btn-wrap" target="_blank" style="width:100%"aria-label="{translate text="Registration Information" isPublicFacing=true inAttribute=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Registration Information" isPublicFacing=true}</a>
 										{/if}
 										{if empty($offline) || $enableEContentWhileOffline}
-											<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'assabet');" class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+											<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'aspenEvents');" class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 										{/if}
 									</div>
 								</div>

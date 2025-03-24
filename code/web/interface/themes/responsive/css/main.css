@@ -10852,6 +10852,24 @@ a.browse-thumbnail.active {
   body #footer-container {
     display: none;
   }
+  body .calendar-event .calendar-event-state {
+    height: fit-content;
+    padding: 1px;
+    order: 3;
+    position: absolute;
+    margin-top: 1.2rem;
+    font-size: 0.7rem;
+  }
+  body .calendar-event-time {
+    order: 1;
+  }
+  body .calendar-event-title {
+    order: 2;
+  }
+  body .calendar-page {
+    page-break-inside: avoid;
+    height: 90vh;
+  }
 }
 @media print and (max-width: 767px) {
   .hide-for-agenda-view {
@@ -10872,14 +10890,21 @@ a.browse-thumbnail.active {
   }
 }
 @media print and (min-width: 768px) {
+  @page {
+    margin-top: 0.25in;
+    margin-bottom: 0.25in;
+  }
   #page-container > .container {
     width: 95%;
   }
   .calendar {
     page-break-inside: avoid;
-    overflow: hidden;
-    height: 85vh;
+    overflow: visible;
+    height: 80vh;
     margin-top: 0;
+  }
+  .calendar .calendar-current-month {
+    font-size: 2.5rem;
   }
   .calendar-row {
     overflow-y: hidden;
@@ -10889,8 +10914,8 @@ a.browse-thumbnail.active {
     font-size: 1.1rem;
   }
   .calendar-row .calendar-day-cell {
-    min-height: 14vh;
-    max-height: 21vh;
+    min-height: 12vh;
+    max-height: 20vh;
     flex-direction: row-reverse;
     justify-content: space-between;
     max-width: 100%;
@@ -10900,25 +10925,40 @@ a.browse-thumbnail.active {
     max-width: 90%;
     overflow: clip;
   }
+  .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-title,
+  .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-time {
+    overflow: visible;
+    white-space: normal;
+    max-height: 3.5vh;
+  }
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-title,
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-time {
+    overflow: visible;
+    white-space: normal;
+    height: 3.5vh;
+  }
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event-title,
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event-time {
+    overflow: clip;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event {
     margin: 0;
     padding: 1px 0 0 3px;
     display: flex;
-    flex-direction: row-reverse;
-    gap: 0.5rem;
+    flex-direction: row;
+    column-gap: 0.5rem;
     justify-content: left;
     max-width: 100%;
     overflow: clip;
+    flex-wrap: nowrap;
   }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event .end-time {
     display: none;
   }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event .calendar-event-time {
     font-weight: bold;
-  }
-  .calendar-row .calendar-day-cell .calendar-events .calendar-event div {
-    white-space: nowrap;
-    font-size: 0.9rem;
   }
   html,
   body {

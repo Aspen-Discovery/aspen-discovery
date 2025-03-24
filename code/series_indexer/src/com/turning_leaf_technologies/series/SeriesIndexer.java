@@ -1,9 +1,7 @@
 package com.turning_leaf_technologies.series;
 
-import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -14,17 +12,12 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.TreeSet;
 
 class SeriesIndexer {
@@ -33,19 +26,10 @@ class SeriesIndexer {
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
 	private TreeSet<Scope> scopes;
-	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
-	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
-	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
-	private Http2SolrClient openArchivesServer;
-	private PreparedStatement getListDisplayNameAndAuthorStmt;
-	private final String serverName;
-	private final String baseUrl;
 
-	SeriesIndexer(String serverName, Ini configIni, Connection dbConn, Logger logger){
-		this.serverName = serverName;
+	SeriesIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
 		this.logger = logger;
-		this.baseUrl = configIni.get("Site", "url");
 
 		String solrPort = configIni.get("Index", "solrPort");
 		if (solrPort == null || solrPort.isEmpty()) {
@@ -187,7 +171,14 @@ class SeriesIndexer {
 			seriesSolr.setId(seriesId);
 			seriesSolr.setTitle(allSeriesRS.getString("displayName"));
 			seriesSolr.setDescription(allSeriesRS.getString("description"));
-			seriesSolr.setAudience(allSeriesRS.getString("audience"));
+			String audience = allSeriesRS.getString("audience");
+			if (audience.charAt(0) == '[') {
+				String[] audiences = audience.substring(1, audience.length() - 1).split(",");
+				seriesSolr.setAudiences(audiences);
+			}else{
+				seriesSolr.setAudience(audience);
+			}
+
 			long created = allSeriesRS.getLong("created");
 			long dateUpdated = allSeriesRS.getLong("dateUpdated");
 			seriesSolr.setCreated(created);

@@ -16,9 +16,13 @@
 							{else}
 								<a  class="btn btn-primary btn-sm" href="/WebBuilder/ResourcesAtoZ?startsWith={$filter}">{$filter}</a>
 							{/if}
+					{else}
+						{if $filter == 'num'}
+							<a  class="btn btn-primary btn-sm" disabled="true">#</a>
 						{else}
-						<a  class="btn btn-primary btn-sm" disabled="true">{$filter}</a>
+							<a  class="btn btn-primary btn-sm" disabled="true">{$filter}</a>
 						{/if}
+					{/if}
 					</li>
 				{/foreach}
 				<li class=""  style="margin-left: auto;">

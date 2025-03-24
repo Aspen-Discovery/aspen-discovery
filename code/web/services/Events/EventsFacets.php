@@ -28,7 +28,7 @@ class Events_EventsFacets extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$hasExistingObjects = true;
 		if (!UserAccount::userHasPermission('Administer Events Facet Settings')) {
-			$hasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryEventsSetting', 'eventsFacetSettingsId');
+			$hasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryEventsFacetSetting', 'eventsFacetGroupId');
 		}
 		$list = [];
 		if ($hasExistingObjects) {

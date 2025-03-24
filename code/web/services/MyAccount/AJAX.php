@@ -7287,6 +7287,23 @@ class MyAccount_AJAX extends JSON_Action {
 						$userEventsEntry->location = $recordDriver->getBranch();
 						$externalUrl = $recordDriver->getExternalUrl();
 					}
+				} elseif (preg_match('`^aspenEvent_`', $userEventsEntry->sourceId)) {
+					require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+					$recordDriver = new AspenEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = mb_substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()) {
+							$regRequired = 1;
+						} else {
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
+					}
 				}
 				$existingEntry = false;
 
@@ -9651,11 +9668,11 @@ class MyAccount_AJAX extends JSON_Action {
 					if (count($sublocations) > 1) {
 						$success = true;
 						if ($context === 'myPreferences') {
-							$labelText = 'Preferred Pickup Location';
+							$labelText = 'Preferred Pickup Area';
 						} elseif ($context === 'changePickupLocation') {
-							$labelText = 'Select a new location to pickup your hold';
+							$labelText = 'Select a new area to pickup your hold';
 						} else {
-							$labelText = 'Select your pickup location';
+							$labelText = 'Select your pickup area';
 						}
 						$html .= '<label class="control-label" for="pickupSublocation">' . translate([
 								'text' => $labelText,

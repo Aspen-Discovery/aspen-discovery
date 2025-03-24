@@ -1459,7 +1459,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 
 		$interface->assign('summPubDate', $this->getEarliestPublicationDate());
-		$interface->assign('summVolume', $this->getVolumeDataForRecord($this->getId()));
 
 		$timer->logTime('Finished Loading Series');
 
@@ -2224,61 +2223,92 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	private $seriesData;
 
-	public function getSeries($allowReload = true) {
+	public function getSeries($allowReload = true) : ?array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 
 		if (empty($this->seriesData)) {
-			//Get a list of isbns from the record and existing display info if any
-			$relatedIsbns = $this->getISBNs();
-
-			if (SystemVariables::getSystemVariables()->enableNovelistSeriesIntegration) {
-				$novelist = NovelistFactory::getNovelist();
-				$novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
-			}else{
-				$novelistData = null;
-			}
-			$existingDisplayInfo = new GroupedWorkDisplayInfo();
-			$existingDisplayInfo->permanent_id = $this->getPermanentId();
-			//prefer use of grouped work series display info if any
-			if ($existingDisplayInfo->find(true) && ((!empty($existingDisplayInfo->seriesDisplayOrder) && $existingDisplayInfo->seriesDisplayOrder != 0)|| !empty($existingDisplayInfo->seriesName)) ) {
-				if ($novelistData != null && !empty($novelistData->seriesTitle)){
-					if (strtolower($novelistData->seriesTitle) == strtolower($existingDisplayInfo->seriesName)){
-						$this->seriesData = [
-							'seriesTitle' => $existingDisplayInfo->seriesName,
-							'volume' => $existingDisplayInfo->seriesDisplayOrder,
-							'fromNovelist' => true,
+			//First check to see if the series index is active
+			global $enabledModules;
+			global $library;
+			$searchSeries = array_key_exists('Series', $enabledModules) && $library->useSeriesSearchIndex == 1;
+			if ($searchSeries) {
+				require_once ROOT_DIR . '/sys/Series/Series.php';
+				require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+				$seriesMember = new SeriesMember();
+				$seriesMember->groupedWorkPermanentId = $this->getPermanentId();
+				$seriesMember->excluded = 0;
+				$seriesInfo = null;
+				if ($seriesMember->find(true)) {
+					$series = $seriesMember->getSeries();
+					if ($series != null) {
+						$seriesInfo = [
+							'seriesTitle' => $series->displayName,
+							'seriesId' => $series->id,
+							'volume' => $seriesMember->volume,
+							'fromNovelist' => false,
+							'fromSeriesIndex' => true
 						];
+					}
+				}
+				return $seriesInfo;
+			}else{
+				//Get a list of isbns from the record and existing display info if any
+				$relatedIsbns = $this->getISBNs();
+
+				if (SystemVariables::getSystemVariables()->enableNovelistSeriesIntegration) {
+					$novelist = NovelistFactory::getNovelist();
+					$novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
+				}else{
+					$novelistData = null;
+				}
+				$existingDisplayInfo = new GroupedWorkDisplayInfo();
+				$existingDisplayInfo->permanent_id = $this->getPermanentId();
+				//prefer use of grouped work series display info if any
+				if ($existingDisplayInfo->find(true) && ((!empty($existingDisplayInfo->seriesDisplayOrder) && $existingDisplayInfo->seriesDisplayOrder != 0)|| !empty($existingDisplayInfo->seriesName)) ) {
+					if ($novelistData != null && !empty($novelistData->seriesTitle)){
+						if (strtolower($novelistData->seriesTitle) == strtolower($existingDisplayInfo->seriesName)){
+							$this->seriesData = [
+								'seriesTitle' => $existingDisplayInfo->seriesName,
+								'volume' => $existingDisplayInfo->seriesDisplayOrder,
+								'fromNovelist' => true,
+								'fromSeriesIndex' => false
+							];
+						} else{
+							$this->seriesData = [
+								'seriesTitle' => $existingDisplayInfo->seriesName,
+								'volume' => $existingDisplayInfo->seriesDisplayOrder,
+								'fromNovelist' => false,
+								'fromSeriesIndex' => false
+							];
+						}
 					} else{
 						$this->seriesData = [
 							'seriesTitle' => $existingDisplayInfo->seriesName,
 							'volume' => $existingDisplayInfo->seriesDisplayOrder,
 							'fromNovelist' => false,
+							'fromSeriesIndex' => false
 						];
 					}
-				} else{
+				} else if ($novelistData != null && !empty($novelistData->seriesTitle)) {
 					$this->seriesData = [
-						'seriesTitle' => $existingDisplayInfo->seriesName,
-						'volume' => $existingDisplayInfo->seriesDisplayOrder,
-						'fromNovelist' => false,
-					];
-				}
-			} else if ($novelistData != null && !empty($novelistData->seriesTitle)) {
-				$this->seriesData = [
-					'seriesTitle' => $novelistData->seriesTitle,
-					'volume' => $novelistData->volume,
-					'fromNovelist' => true,
-				];
-			} else {
-				$seriesFromIndex = $this->getIndexedSeries();
-				if ($seriesFromIndex != null && count($seriesFromIndex) > 0) {
-					$firstSeries = $seriesFromIndex[0];
-					$this->seriesData = [
-						'seriesTitle' => $firstSeries['seriesTitle'],
-						'volume' => isset($firstSeries['volume']) ? $firstSeries['volume'] : '',
-						'fromNovelist' => false,
+						'seriesTitle' => $novelistData->seriesTitle,
+						'volume' => $novelistData->volume,
+						'fromNovelist' => true,
+						'fromSeriesIndex' => false
 					];
 				} else {
-					return null;
+					$seriesFromIndex = $this->getIndexedSeries();
+					if ($seriesFromIndex != null && count($seriesFromIndex) > 0) {
+						$firstSeries = $seriesFromIndex[0];
+						$this->seriesData = [
+							'seriesTitle' => $firstSeries['seriesTitle'],
+							'volume' => isset($firstSeries['volume']) ? $firstSeries['volume'] : '',
+							'fromNovelist' => false,
+							'fromSeriesIndex' => false
+						];
+					} else {
+						return null;
+					}
 				}
 			}
 		}
@@ -2682,7 +2712,21 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $reviews;
 	}
 
-	public function hasCachedSeries() {
+	public function hasCachedSeries() : bool {
+		//First check to see if we have series data cached in the series module
+		global $enabledModules;
+		global $library;
+		$searchSeries = array_key_exists('Series', $enabledModules) && $library->useSeriesSearchIndex == 1;
+		if ($searchSeries) {
+			require_once ROOT_DIR . '/sys/Series/Series.php';
+			require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+			$seriesMember = new SeriesMember();
+			$seriesMember->groupedWorkPermanentId = $this->getPermanentId();
+			$seriesMember->excluded = 0;
+			if ($seriesMember->find(true)) {
+				return true;
+			}
+		}
 		//Get a list of isbns from the record
 		$novelist = NovelistFactory::getNovelist();
 		return $novelist->doesGroupedWorkHaveCachedSeries($this->getPermanentId());
@@ -3299,7 +3343,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
 
 		require_once ROOT_DIR . '/sys/Grouping/Record.php';
-		$relatedRecord = new Grouping_Record($recordDetails[0], $recordDetails, $recordDriver, $volumeData, $source, null);
+		$relatedRecord = new Grouping_Record($recordDetails[0], $recordDetails, $recordDriver, $volumeData, $source, false, null);
 
 		$timer->logTime("Setup base related record");
 		$memoryWatcher->logMemory("Setup base related record");
@@ -3435,9 +3479,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			}
 
 			//Group the item based on location and call number for display in the summary
-			$relatedRecord->addItemSummary($key, $itemSummaryInfo, $item->groupedStatus);
+			$relatedRecord->addItemSummary($item->variationId, $key, $itemSummaryInfo, $item->groupedStatus);
 			//Also add to the details for display in the full list
-			$relatedRecord->addItemDetails($key . $i++, $itemSummaryInfo);
+			$relatedRecord->addItemDetails($item->variationId, $key . $i++, $itemSummaryInfo);
 		}
 		if ($localShelfLocation != null) {
 			$relatedRecord->setShelfLocation($localShelfLocation);
@@ -3450,9 +3494,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$relatedRecord->setCallNumber($libraryCallNumber);
 		}
 		$timer->logTime("Setup record items " . count($this->relatedItemsByRecordId[$relatedRecord->id]));
-		$relatedRecord->sortItemSummary();
+		$relatedRecord->sortItemSummary($relatedRecord->variationId);
 		$timer->logTime("Sorted Item Summary");
-		$relatedRecord->sortItemDetails();
+		$relatedRecord->sortItemDetails($relatedRecord->variationId);
 		$timer->logTime("Sorted Item Details");
 		$memoryWatcher->logMemory("Setup record items");
 
@@ -3813,10 +3857,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if(is_array($notes) && count($notes) > 0) {
 				$notes = implode(', ', $notes);
 				$risFields[] = "N1  - ".$notes;
-			}else{
-				if(!empty($notes)) {
-					$risFields[] = "N1  - ".$notes;
-				}
 			}
 
 			//RIS Tag: N2 - Notes

@@ -20,11 +20,15 @@ class Events_AJAX extends JSON_Action {
 		];
 		if (!empty($_REQUEST['locationId'])) {
 			$eventTypeIds = EventType::getEventTypeIdsForLocation($_REQUEST['locationId']);
+			$eventTypes = [];
+			foreach ($eventTypeIds as $eventTypeId) {
+				$eventTypes[$eventTypeId] = EventType::getTypeName($eventTypeId);
+			}
 			$sublocations = Location::getEventSublocations($_REQUEST['locationId']);
 			if (!empty($eventTypeIds)) {
 				$result = [
 					'success' => true,
-					'eventTypeIds' => json_encode($eventTypeIds),
+					'eventTypes' => json_encode($eventTypes),
 					'sublocations' => json_encode($sublocations),
 				];
 			} else {
@@ -78,6 +82,12 @@ class Events_AJAX extends JSON_Action {
 					'locationIds' => json_encode(array_keys($locations)),
 				];
 			}
+		} else {
+			// Event type value is probably the placeholder prompt
+			$result = [
+				'success' => true,
+				'status' => 'resetForm',
+			];
 		}
 		return $result;
 	}
@@ -194,6 +204,150 @@ class Events_AJAX extends JSON_Action {
 				}
 			}
 			return $result;
+	}
+
+	function getCopyEventsForm() : array {
+		if (!empty($_REQUEST['eventId'])) {
+			global $interface;
+			require_once ROOT_DIR . '/sys/Events/Event.php';
+			require_once ROOT_DIR . '/sys/Events/EventType.php';
+			$event = new Event();
+			$event->id = $_REQUEST['eventId'];
+			if ($event->find(true)) {
+				$eventId = $event->id;
+				$eventLabel = $event->title;
+				$interface->assign('eventId', $eventId);
+				$interface->assign('eventLabel', $eventLabel);
+
+				$eventType = new EventType();
+				$eventType->id = $event->eventTypeId;
+				if ($eventType->find(true)) {
+					if (!$eventType->titleCustomizable) {
+						$interface->assign('eventTitle', $eventType->title);
+					}
+				}
+
+				$locationsForType = EventType::getLocationIdsForEventType($event->eventTypeId);
+				if (UserAccount::userHasPermission('Administer Events for All Locations')) {
+					$locationList = Location::getLocationList(false);
+				} else if (UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
+					$locationList = Location::getLocationList(true);
+				} else {
+					$user = UserAccount::getLoggedInUser();
+					$locationList[$user->homeLocationId] = $user->getHomeLocation()->displayName;
+					$locationList = $locationList + $user->getAdditionalAdministrationLocations();
+				}
+				$locationList = array_intersect(array_flip($locationList), $locationsForType);
+				if (count($locationList) == 0) {
+					$locationList[0] = translate(['text' => "No locations available for this event type", 'isAdminFacing' => true]);
+				}
+				$sublocationList = Location::getEventSublocations($event->locationId);
+				$interface->assign('locationList', $locationList);
+				$interface->assign('sublocationList', $sublocationList);
+				$modalBody = $interface->fetch('Events/copyEventsForm.tpl');
+
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => "Copy $eventLabel",
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Events.processCopyEventsForm();\" class=\"modal-buttons btn btn-primary\">" . translate([
+							'text' => 'Copy',
+							'isAdminFacing' => true,
+						]) . "</button>",
+				];
+			}else{
+				return[
+					'success' => false,
+					'message' => translate([
+						'text' => "Event to copy could not be found.",
+						'isAdminFacing' => true,
+					])
+				];
+			}
+		}else{
+			return[
+				'success' => false,
+				'message' => translate([
+					'text' => "Event to copy was not provided.",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+	}
+	function doCopyEvent() : array {
+
+		if (!empty($_REQUEST['name']) && !empty($_REQUEST['locationId']) && !empty($_REQUEST['date'])) {
+			$eventInstancesCreated = 0;
+			$id = $_REQUEST['id'];
+			$name = $_REQUEST['name'];
+			$locationId = $_REQUEST['locationId'];
+			$sublocationId = $_REQUEST['sublocationId'];
+			$startDate = $_REQUEST['date'];
+
+			require_once ROOT_DIR . '/sys/Events/Event.php';
+			$curObj = new Event();
+			$curObj->id = $id;
+			if ($curObj->find(true)) {
+				$newEvent = clone $curObj;
+				$newEvent->id = null;
+				$newEvent->title = $name;
+				foreach($curObj->getAllTypeFields() as $key => $value) {
+					$newEvent->_typeFields[$key] = $value;
+				}
+				if (!empty($locationId)) {
+					$newEvent->locationId = $locationId;
+				}
+				if (!empty($sublocationId)) {
+					$newEvent->sublocationId = $sublocationId;
+				}
+				if (!empty($startDate)) {
+					$newEvent->startDate = $startDate;
+				}
+				if ($newEvent->insert()) {
+					$eventInstancesCreated = $newEvent->getInstanceCount();
+					if ($eventInstancesCreated == 1) {
+						return [
+							'success' => true,
+							'title' => 'Success',
+							'message' => "Created $name and scheduled for $startDate."
+						];
+					} else if ($eventInstancesCreated > 1) {
+						return [
+							'success' => true,
+							'title' => 'Success',
+							'message' => "Created $eventInstancesCreated future dates for $name. Please verify that they are correct."
+						];
+					} else {
+						return [
+							'success' => true,
+							'title' => 'Success',
+							'message' => "Copied $name but did not create future dates for this event.  Please edit your event to set dates."
+						];
+					}
+
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => "Unable to create new event",
+					];
+				}
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "You must include a name, location, and date for the new event.",
+			];
+		}
+		return [
+			'success' => false,
+			'title' => 'Error',
+			'message' => "Unable to create new event",
+		];
 	}
 
 }

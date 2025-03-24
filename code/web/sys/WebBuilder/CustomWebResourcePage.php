@@ -12,7 +12,6 @@ class CustomWebResourcePage extends DB_LibraryLinkedObject {
 	public $id;
 	public $title;
 	public $urlAlias;
-	public $addToIndex;
 	public $requireLogin;
 	public $requireLoginUnlessInLibrary;
 	public $lastUpdate;
@@ -60,13 +59,6 @@ class CustomWebResourcePage extends DB_LibraryLinkedObject {
 				'description' => 'The url of the page (no domain name)',
 				'size' => '40',
 				'maxLength' => 100,
-			],
-			'addToIndex' => [
-				'property' => 'addToIndex',
-				'type' => 'checkbox',
-				'label' => 'Add to Website Index',
-				'description' => 'Adds resource page to indexed websites',
-				'default' => 0,
 			],
 			'customWebResourceDescription' => [
 				'property' => 'customWebResourceDescription',

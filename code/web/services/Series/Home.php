@@ -12,7 +12,7 @@ class Series_Home extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover() {
+	function reloadCover() : array {
 		$seriesId = $_REQUEST['id'];
 		$series = new Series();
 		$series->id = $seriesId;
@@ -35,10 +35,10 @@ class Series_Home extends Action {
 		];
 	}
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 
-		// Fetch List object
+		// Fetch the Series object
 		$listId = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/Series/Series.php';
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';

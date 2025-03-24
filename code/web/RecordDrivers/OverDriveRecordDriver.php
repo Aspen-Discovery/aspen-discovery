@@ -177,6 +177,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$seriesData = [
 					'seriesTitle' => $seriesName,
 					'fromNovelist' => false,
+					'fromSeriesIndex' => false
 				];
 			}
 		}

@@ -2,13 +2,13 @@
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 
 class SeriesRecordDriver extends IndexRecordDriver {
-	private $seriesObject;
-	private $valid = true;
+	private Series|null|false $seriesObject = null;
+	private bool $valid = true;
 
 	public function __construct($record) {
 		// Call the parent's constructor...
 		if (is_string($record)) {
-			/** @var SearchObject_ListsSearcher $searchObject */
+
 			$searchObject = SearchObjectFactory::initSearchObject('Series');
 			disableErrorHandler();
 			try {
@@ -89,7 +89,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 
 		global $solrScope;
 		if ($this->fields["local_time_since_added_$solrScope"]) {
-			$interface->assign('isNew', in_array('Week', $this->fields["local_time_since_added_$solrScope"]));
+			$interface->assign('isNew', $this->checkIfContainsNewTitles());
 		} else {
 			$interface->assign('isNew', false);
 		}
@@ -99,17 +99,31 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		if ($showListsAppearingOn) {
 			//Check to see if there are lists the record is on
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$appearsOnLists = UserList::getUserListsForRecord('Lists', $this->getId());
+			$appearsOnLists = UserList::getUserListsForRecord('Series', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
-		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
+		$interface->assign('source', $this->fields['source'] ?? '');
 
 		return 'RecordDrivers/Series/result.tpl';
 	}
 
 	public function getMoreDetailsOptions() {
 		return [];
+	}
+
+	public function checkIfContainsNewTitles() {
+		global $solrScope;
+		$series = $this->getSeriesObject();
+		$records = $series->getSeriesRecords(0, 1, 'recordDrivers', 'id desc', false);
+		foreach ($records as $record) {
+			if ($record->fields && isset($record->fields["local_time_since_added_$solrScope"])) {
+				if (in_array('Week', $record->fields["local_time_since_added_$solrScope"])) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	// initially taken From GroupedWorkDriver.php getBrowseResult();

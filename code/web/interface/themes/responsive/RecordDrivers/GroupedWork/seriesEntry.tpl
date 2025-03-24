@@ -34,11 +34,11 @@
 					</div>
 				{/if}
 
-				{if !empty($summSeries)}
-					<div class="series{$summISBN} row">
-						<div class="result-label col-xs-3">{translate text="Series" isPublicFacing=true} </div>
+				{if !empty($summSeries) && !empty($summSeries.volume)}
+					<div class="series row">
+						<div class="result-label col-xs-3">{translate text="Volume" isPublicFacing=true} </div>
 						<div class="result-value col-xs-9">
-							<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)}<strong> {translate text="volume %1%" 1=$summSeries.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}
+							{$summSeries.volume|format_float_with_min_decimals}
 						</div>
 					</div>
 				{/if}

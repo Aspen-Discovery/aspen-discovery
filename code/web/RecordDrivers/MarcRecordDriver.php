@@ -691,6 +691,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			'a',
 			'c',
 			'd',
+			'q'
 		]);
 		if (empty($author)) {
 			$author = $this->getFirstFieldValue('110', [
@@ -1241,13 +1242,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	/**
-	 * @param array $items - The items to check
+	 * @param ?array $items - The items to check
 	 * @param HoldGroup[] $holdGroups - The valid hold groups for the patron's hold groups
 	 * @param int|string $variationId - The variation being loaded
 	 * @param string $patronHomeLocationCode - The location code for the patron's home location
 	 * @return bool
 	 */
-	public function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
+	public function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(?array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
 		//If no hold groups exist, everything is valid
 		if (count($holdGroups) == 0) {
 			return true;
@@ -1624,25 +1625,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 
 		//If this is a periodical we may have additional information
-		$isPeriodical = false;
-		require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
-		foreach ($this->getFormats() as $format) {
-			if ($ils == 'sierra' || $ils == 'millennium') {
-				$formatValue = new FormatMapValue();
-				$formatValue->format = $format;
-				$formatValue->displaySierraCheckoutGrid = 1;
-				if ($formatValue->find(true)) {
-					$isPeriodical = true;
-					break;
-				}
-			}else{
-				if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
-					$isPeriodical = true;
-					break;
-				}
-			}
-		}
-		if ($isPeriodical) {
+		if ($this->isPeriodical()) {
 			global $library;
 			$interface->assign('showCheckInGrid', $library->getGroupedWorkDisplaySettings()->showCheckInGrid);
 			$issues = $this->loadPeriodicalInformation();
@@ -2395,6 +2378,34 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getCopies() {
 		$this->loadCopies();
 		return $this->holdings;
+	}
+
+	public function isPeriodical() {
+		$ils = 'Unknown';
+		if ($this->getIndexingProfile()->getAccountProfile() != null) {
+			$ils = $this->getIndexingProfile()->getAccountProfile()->ils;
+
+		}
+		//If this is a periodical we may have additional information
+		$isPeriodical = false;
+		require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
+		foreach ($this->getFormats() as $format) {
+			if ($ils == 'sierra' || $ils == 'millennium') {
+				$formatValue = new FormatMapValue();
+				$formatValue->format = $format;
+				$formatValue->displaySierraCheckoutGrid = 1;
+				if ($formatValue->find(true)) {
+					$isPeriodical = true;
+					break;
+				}
+			}else{
+				if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
+					$isPeriodical = true;
+					break;
+				}
+			}
+		}
+		return $isPeriodical;
 	}
 
 	public function loadPeriodicalInformation() {

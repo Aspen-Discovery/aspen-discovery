@@ -13,6 +13,14 @@ function getUpdates25_04_00(): array {
 		 ], //name*/
 
 		//mark - Grove
+		'restrict_local_ill_by_patron_type' => [
+			'title' => 'Restrict Local ILL by Patron Type',
+			'description' => 'Add an option to restrict local ILL by Patron Type',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN allowLocalIll TINYINT DEFAULT  1'
+			]
+		], //restrict_local_ill_by_patron_type
 
 		//katherine - Grove
 

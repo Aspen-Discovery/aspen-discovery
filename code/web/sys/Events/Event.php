@@ -48,9 +48,19 @@ class Event extends DataObject {
 	public static function getObjectStructure($context = ''): array {
 		global $configArray;
 		$coverPath = $configArray['Site']['coverPath'];
-		$eventTypes = EventType::getEventTypeList();
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+		if ($context == 'addNew') {
+			if (UserAccount::userHasPermission('Administer Events for All Locations')) {
+				$locationList = Location::getLocationList(false);
+			} else if (UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
+				$locationList = Location::getLocationList(true);
+			} else {
+				$user = UserAccount::getLoggedInUser();
+				$locationList[$user->homeLocationId] = $user->getHomeLocation()->displayName;
+				$locationList = $locationList + $user->getAdditionalAdministrationLocations();
+			}
+		} else {
+			$locationList = Location::getLocationList(false); // No need to restrict the location list if you aren't adding a new event since it's read only
+		}
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -75,20 +85,13 @@ class Event extends DataObject {
 				'values' => [],
 				'hiddenByDefault' => true,
 			],
-			'eventTypeId' => [
-				'property' => 'eventTypeId',
-				'type' => 'enum',
-				'label' => 'Event Type',
-				'description' => 'The type of event',
-				'required' => true,
-				'values' => $eventTypes,
-				'onchange' => "return AspenDiscovery.Events.getEventTypeFields(this.value);"
-			],
+			'eventTypeId' => [],
 			'title' => [
 				'property' => 'title',
 				'type' => 'text',
 				'label' => 'Title',
 				'description' => 'The title for this event',
+				'maxLength' => 50,
 			],
 			'infoSection' => [
 				'property' => 'infoSection',
@@ -98,7 +101,8 @@ class Event extends DataObject {
 				'properties' => [
 					'description' => [
 						'property' => 'description',
-						'type' => 'textarea',
+						'type' => 'html',
+						'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><br><div><span><sub><sup>',
 						'label' => 'Description',
 						'description' => 'The description for this event',
 					],
@@ -108,6 +112,7 @@ class Event extends DataObject {
 						'label' => 'Cover',
 						'maxWidth' => 280,
 						'maxHeight' => 280,
+						'maxLength' => 100,
 						'description' => 'The cover for this event',
 						'path' => "$coverPath/aspenEvents/",
 						'hideInLists' => true,
@@ -146,117 +151,7 @@ class Event extends DataObject {
 				'type' => 'section',
 				'label' => 'Event Scheduling',
 				'expandByDefault' => true,
-				'hiddenByDefault' => true,
-				'properties' => [
-					'startDate' => [
-						'property' => 'startDate',
-						'type' => 'hidden',
-					],
-					'startTime' => [
-						'property' => 'startTime',
-						'type' => 'hidden',
-					],
-					'eventLength' => [
-						'property' => 'eventLength',
-						'type' => 'hidden',
-						'default' => 60,
-					],
-					'endDate' => [
-						'property' => 'endDate',
-						'type' => 'hidden',
-					],
-					'endTime' => [
-						'property' => 'endTime',
-						'type' => 'hidden',
-					],
-					'recurrenceOption' => [
-						'property' => 'recurrenceOption',
-						'type' => 'hidden',
-						'default' => 1,
-					],
-					'frequencySection' => [
-						'property' => 'frequencySection',
-						'type' => 'section',
-						'label' => 'Event Frequency',
-						'hiddenByDefault' => true,
-						'properties' => [
-							'recurrenceInterval' => [
-								'property' => 'recurrenceInterval',
-								'type' => 'hidden',
-								'default' => 1,
-							],
-							'recurrenceFrequency' => [
-								'property' => 'recurrenceFrequency',
-								'type' => 'hidden',
-								'default' => 1,
-							]
-						]
-					],
-					'weeklySection' => [
-						'property' => 'weeklySection',
-						'type' => 'section',
-						'label' => 'Repeat Based on Week',
-						'hiddenByDefault' => true,
-						'properties' => [
-							'weekDays' => [
-								'property' => 'weekDays',
-								'type' => 'hidden',
-							],
-						]
-					],
-					'monthlySection' => [
-						'property' => 'monthlySection',
-						'type' => 'section',
-						'label' => 'Repeat Based on Month',
-						'hiddenByDefault' => true,
-						'properties' => [
-							'monthlyOption' => [
-								'property' => 'monthlyOption',
-								'type' => 'hidden',
-								'default' => 1
-							],
-							'monthDay' => [
-								'property' => 'monthDay',
-								'type' => 'hidden',
-								'default' => 1,
-							],
-							'monthDate' => [
-								'property' => 'monthDate',
-								'type' => 'hidden',
-							],
-							'monthOffset' => [
-								'property' => 'monthOffset',
-								'type' => 'hidden',
-							],
-						]
-					],
-					'repeatEndsSection' => [
-						'property' => 'repeatEndsSection',
-						'type' => 'section',
-						'label' => 'Repeat Ends',
-						'hiddenByDefault' => true,
-						'properties' => [
-							'endOption' => [
-								'property' => 'endOption',
-								'type' => 'hidden',
-								'default' => 1,
-							],
-							'recurrenceEnd' => [
-								'property' => 'recurrenceEnd',
-								'type' => 'hidden',
-							],
-							'recurrenceCount' => [
-								'property' => 'recurrenceCount',
-								'type' => 'hidden',
-								'default' => 1,
-							],
-						],
-					],
-					'datesPreview' => [
-						'property' => 'datesPreview',
-						'type' => 'hidden',
-					],
-				],
+				'properties' => [],
 			],
 			'dates' => [
 				'property' => 'dates',
@@ -288,7 +183,225 @@ class Event extends DataObject {
 				'type' => 'hidden',
 			];
 		}
+		$structure['scheduleSection']['properties'] = [
+			'startDate' => [
+				'property' => 'startDate',
+				'type' => 'date',
+				'label' => 'Event Date',
+				'description' => 'The date this event starts',
+				'onchange' => "return AspenDiscovery.Events.updateRecurrenceOptions(this.value);",
+			],
+			'startTime' => [
+				'property' => 'startTime',
+				'type' => 'time',
+				'label' => 'Start Time',
+				'description' => 'The time this event starts',
+				'onchange' => 'return AspenDiscovery.Events.calculateEndTime();'
+			],
+			'eventLength' => [
+				'property' => 'eventLength',
+				'type' => 'duration',
+				'label' => 'Event Length',
+				'description' => 'How long this event lasts',
+				'note' => 'Default determined by Event Type',
+				'onchange' => "return AspenDiscovery.Events.calculateEndTime();"
+			],
+			'endDate' => [
+				'property' => 'endDate',
+				'type' => 'date',
+				'label' => 'End Date',
+				'description' => 'The date this event ends',
+				'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
+			],
+			'endTime' => [
+				'property' => 'endTime',
+				'type' => 'time',
+				'label' => 'End Time',
+				'description' => 'The time this event ends',
+				'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
+			],
+			'recurrenceOption' => [
+				'property' => 'recurrenceOption',
+				'type' => 'enum',
+				'label' => 'Repeat Options',
+				'description' => 'How this event repeats',
+				'values' => [
+					'1' => 'Does not repeat',
+					'2' => 'Daily',
+					'3' => 'Weekly on this day', // Update option descriptions based on the start date
+					'4' => 'Monthly on the same weekday',
+					'5' => 'Annually on the same date',
+					'6' => 'Every weekday (Monday - Friday)',
+					'7' => 'Custom',
+				],
+				'onchange' => "return AspenDiscovery.Events.toggleRecurrenceSections(this.value);"
+			],
+			'frequencySection' => [
+				'property' => 'frequencySection',
+				'type' => 'section',
+				'label' => 'Repeat Frequency',
+				'properties' => [
+					'recurrenceFrequency' => [
+						'property' => 'recurrenceFrequency',
+						'type' => 'enum',
+						'label' => 'Repeat Frequency',
+						'values' => [
+							'1' => 'Daily',
+							'2' => 'Weekly',
+							'3' => 'Monthly',
+							'4' => 'Annually on the same date',
+						],
+						'onchange' => "return AspenDiscovery.Events.toggleSectionsByFrequency(this.value);"
+					],
+					'recurrenceInterval' => [
+						'property' => 'recurrenceInterval',
+						'type' => 'integer',
+						'label' => 'Repeat Interval',
+						'note' => 'Repeats every [interval] days/weeks/months',
+					],
+				],
+				'expandByDefault' => false,
+				'hiddenByDefault' => true,
+			],
+			'weeklySection' => [
+				'property' => 'weeklySection',
+				'type' => 'section',
+				'label' => 'Repeat Based on Week',
+				'properties' => [
+					'weekDays' => [
+						'property' => 'weekDays',
+						'type' => 'multiSelect',
+						'listStyle' => 'checkbox',
+						'label' => 'Day(s) to Repeat On',
+						'values' => [
+							'0' => 'Sunday',
+							'1' => 'Monday',
+							'2' => 'Tuesday',
+							'3' => 'Wednesday',
+							'4' => 'Thursday',
+							'5' => 'Friday',
+							'6' => 'Saturday',
+						],
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
+					],
+				],
+				'hiddenByDefault' => true,
+				'expandByDefault' => false,
+			],
+			'monthlySection' => [
+				'property' => 'monthlySection',
+				'type' => 'section',
+				'label' => 'Repeat Based on Month',
+				'properties' => [
+					'monthlyOption' => [
+						'property' => 'monthlyOption',
+						'type' => 'enum',
+						'label' => 'Monthly Repeat Options',
+						'values' => [
+							'1'	=> 'Repeat based on day of the week',
+							'2'	=> 'Repeat based on date',
+						],
+						'onchange' => "return AspenDiscovery.Events.toggleMonthlyOptions(this.value);"
+					],
+					'weekNumber' => [
+						'property' => 'weekNumber',
+						'type' => 'enum',
+						'label' => 'Week Number',
+						'values' => [
+							'1' => '1st',
+							'2' => '2nd',
+							'3' => '3rd',
+							'4' => '4th',
+							'5' => '5th',
+							'-1' => 'Last',
+						],
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
+					],
+					'monthDay' => [
+						'property' => 'monthDay',
+						'type' => 'enum',
+						'label' => 'Day to Repeat On',
+						'values' => [
+							'0' => 'Sunday',
+							'1' => 'Monday',
+							'2' => 'Tuesday',
+							'3' => 'Wednesday',
+							'4' => 'Thursday',
+							'5' => 'Friday',
+							'6' => 'Saturday',
+						],
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
+					],
+					'monthDate' => [
+						'property' => 'monthDate',
+						'type' => 'integer',
+						'label' => 'Date to repeat on',
+						'hiddenByDefault' => true,
+						'min' => '-1',
+						'max' => '31',
+						'note' => 'Use -1 to repeat on the last day of the month',
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
+					],
+					'monthOffset' => [
+						'property' => 'monthOffset',
+						'type' => 'integer',
+						'label' => 'Offset',
+						'default' => '0',
+						'note' => 'Number of days to add before or after (use negative numbers for before)',
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
+					]
+				],
+				'hiddenByDefault' => true,
+				'expandByDefault' => false,
+			],
+			'repeatEndsSection' => [
+				'property' => 'repeatEndsSection',
+				'type' => 'section',
+				'label' => 'Repeat Ends',
+				'hiddenByDefault' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'endOption' => [
+						'property' => 'endOption',
+						'type' => 'enum',
+						'label' => 'Repeat End Options',
+						'values' => [
+							'1'	=> 'Ends on a date',
+							'2'	=> 'Ends after a specific number of events',
+						],
+						'onchange' => "return AspenDiscovery.Events.toggleEndOptions(this.value);"
+					],
+					'recurrenceEnd' => [
+						'property' => 'recurrenceEnd',
+						'type' => 'date',
+						'label' => 'Ends After',
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();"
+					],
+					'recurrenceCount' => [
+						'property' => 'recurrenceCount',
+						'type' => 'integer',
+						'label' => 'Times to repeat',
+						'hiddenByDefault' => true,
+						'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();"
+					],
+				],
+			],
+			'datesPreview' => [
+				'property' => 'datesPreview',
+				'type' => 'label',
+				'label' => 'Date Preview',
+				'note' => 'To update, change the scheduling options above',
+				'readOnly' => true,
+				'hiddenByDefault' => true,
+			],
+		];
 		if ($context == 'addNew') {
+			$eventTypes = EventType::getEventTypeList(false, array_keys($locationList)[0]);
+			if (empty($eventTypes)) {
+				$eventTypes = ["No event types available at this location"];
+			} else {
+				$eventTypes = ["Choose an event type"] + $eventTypes;
+			}
 			$structure['eventTypeId'] = [
 				'property' => 'eventTypeId',
 				'type' => 'enum',
@@ -301,10 +414,13 @@ class Event extends DataObject {
 			];
 			$structure['title']['hiddenByDefault'] = true;
 			$structure['infoSection']['hiddenByDefault'] = true;
+			$structure['scheduleSection']['hiddenByDefault'] = true;
+			$structure['scheduleSection']['properties']['startDate']['min'] = date('Y-m-d');
 			$structure['infoSection']['properties']['description']['hiddenByDefault'] = true;
 			$structure['infoSection']['properties']['cover']['hiddenByDefault'] = true;
 			$structure['infoSection']['properties']['fieldSetFieldSection']['hiddenByDefault'] = true;
 		} else {
+			$eventTypes = EventType::getEventTypeList();
 			$structure['eventTypeId'] = [
 				'property' => 'eventTypeId',
 				'type' => 'enum',
@@ -314,220 +430,10 @@ class Event extends DataObject {
 				'readOnly' => true,
 			];
 			$structure['locationId']['readOnly'] = true;
-			$structure['scheduleSection']['properties'] = [
-				'startDate' => [
-					'property' => 'startDate',
-					'type' => 'date',
-					'label' => 'Event Date',
-					'description' => 'The date this event starts',
-					'onchange' => "return AspenDiscovery.Events.updateRecurrenceOptions(this.value);"
-				],
-				'startTime' => [
-					'property' => 'startTime',
-					'type' => 'time',
-					'label' => 'Start Time',
-					'description' => 'The time this event starts',
-					'onchange' => 'return AspenDiscovery.Events.calculateEndTime();'
-				],
-				'eventLength' => [
-					'property' => 'eventLength',
-					'type' => 'duration',
-					'label' => 'Event Length',
-					'description' => 'How long this event lasts',
-					'note' => 'Default determined by Event Type',
-					'onchange' => "return AspenDiscovery.Events.calculateEndTime();"
-				],
-				'endDate' => [
-					'property' => 'endDate',
-					'type' => 'date',
-					'label' => 'End Date',
-					'description' => 'The date this event ends',
-					'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
-				],
-				'endTime' => [
-					'property' => 'endTime',
-					'type' => 'time',
-					'label' => 'End Time',
-					'description' => 'The time this event ends',
-					'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
-				],
-				'recurrenceOption' => [
-					'property' => 'recurrenceOption',
-					'type' => 'enum',
-					'label' => 'Repeat Options',
-					'description' => 'How this event repeats',
-					'values' => [
-						'1' => 'Does not repeat',
-						'2' => 'Daily',
-						'3' => 'Weekly on this day', // Update option descriptions based on the start date
-						'4' => 'Monthly on the same weekday',
-						'5' => 'Annually on the same date',
-						'6' => 'Every weekday (Monday - Friday)',
-						'7' => 'Custom',
-					],
-					'onchange' => "return AspenDiscovery.Events.toggleRecurrenceSections(this.value);"
-				],
-				'frequencySection' => [
-					'property' => 'frequencySection',
-					'type' => 'section',
-					'label' => 'Repeat Frequency',
-					'properties' => [
-						'recurrenceFrequency' => [
-							'property' => 'recurrenceFrequency',
-							'type' => 'enum',
-							'label' => 'Repeat Frequency',
-							'values' => [
-								'1' => 'Daily',
-								'2' => 'Weekly',
-								'3' => 'Monthly',
-								'4' => 'Annually on the same date',
-							],
-							'onchange' => "return AspenDiscovery.Events.toggleSectionsByFrequency(this.value);"
-						],
-						'recurrenceInterval' => [
-							'property' => 'recurrenceInterval',
-							'type' => 'integer',
-							'label' => 'Repeat Interval',
-							'note' => 'Repeats every [interval] days/weeks/months',
-						],
-					],
-					'expandByDefault' => false,
-					'hiddenByDefault' => true,
-				],
-				'weeklySection' => [
-					'property' => 'weeklySection',
-					'type' => 'section',
-					'label' => 'Repeat Based on Week',
-					'properties' => [
-						'weekDays' => [
-							'property' => 'weekDays',
-							'type' => 'multiSelect',
-							'listStyle' => 'checkbox',
-							'label' => 'Day(s) to Repeat On',
-							'values' => [
-								'0' => 'Sunday',
-								'1' => 'Monday',
-								'2' => 'Tuesday',
-								'3' => 'Wednesday',
-								'4' => 'Thursday',
-								'5' => 'Friday',
-								'6' => 'Saturday',
-							],
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
-						],
-					],
-					'hiddenByDefault' => true,
-					'expandByDefault' => false,
-				],
-				'monthlySection' => [
-					'property' => 'monthlySection',
-					'type' => 'section',
-					'label' => 'Repeat Based on Month',
-					'properties' => [
-						'monthlyOption' => [
-							'property' => 'monthlyOption',
-							'type' => 'enum',
-							'label' => 'Monthly Repeat Options',
-							'values' => [
-								'1'	=> 'Repeat based on day of the week',
-								'2'	=> 'Repeat based on date',
-							],
-							'onchange' => "return AspenDiscovery.Events.toggleMonthlyOptions(this.value);"
-						],
-						'weekNumber' => [
-							'property' => 'weekNumber',
-							'type' => 'enum',
-							'label' => 'Week Number',
-							'values' => [
-								'1' => '1st',
-								'2' => '2nd',
-								'3' => '3rd',
-								'4' => '4th',
-								'5' => '5th',
-								'-1' => 'Last',
-							],
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
-						],
-						'monthDay' => [
-							'property' => 'monthDay',
-							'type' => 'enum',
-							'label' => 'Day to Repeat On',
-							'values' => [
-								'0' => 'Sunday',
-								'1' => 'Monday',
-								'2' => 'Tuesday',
-								'3' => 'Wednesday',
-								'4' => 'Thursday',
-								'5' => 'Friday',
-								'6' => 'Saturday',
-							],
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
-						],
-						'monthDate' => [
-							'property' => 'monthDate',
-							'type' => 'integer',
-							'label' => 'Date to repeat on',
-							'hiddenByDefault' => true,
-							'min' => '-1',
-							'max' => '31',
-							'note' => 'Use -1 to repeat on the last day of the month',
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
-						],
-						'monthOffset' => [
-							'property' => 'monthOffset',
-							'type' => 'integer',
-							'label' => 'Offset',
-							'default' => '0',
-							'note' => 'Number of days to add before or after (use negative numbers for before)',
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();",
-						]
-					],
-					'hiddenByDefault' => true,
-					'expandByDefault' => false,
-				],
-				'repeatEndsSection' => [
-					'property' => 'repeatEndsSection',
-					'type' => 'section',
-					'label' => 'Repeat Ends',
-					'hiddenByDefault' => true,
-					'expandByDefault' => true,
-					'properties' => [
-						'endOption' => [
-							'property' => 'endOption',
-							'type' => 'enum',
-							'label' => 'Repeat End Options',
-							'values' => [
-								'1'	=> 'Ends on a date',
-								'2'	=> 'Ends after a specific number of events',
-							],
-							'onchange' => "return AspenDiscovery.Events.toggleEndOptions(this.value);"
-						],
-						'recurrenceEnd' => [
-							'property' => 'recurrenceEnd',
-							'type' => 'date',
-							'label' => 'Ends After',
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();"
-						],
-						'recurrenceCount' => [
-							'property' => 'recurrenceCount',
-							'type' => 'integer',
-							'label' => 'Times to repeat',
-							'hiddenByDefault' => true,
-							'onchange' => "return AspenDiscovery.Events.calculateRecurrenceDates();"
-						],
-					],
-				],
-				'datesPreview' => [
-					'property' => 'datesPreview',
-					'type' => 'label',
-					'label' => 'Date Preview',
-					'note' => 'To update, change the scheduling options above',
-					'readOnly' => true,
-					'hiddenByDefault' => true,
-				],
-			];
 			$structure['infoSection']['expandByDefault'] = false;
 			$structure['scheduleSection']['hiddenByDefault'] = false;
+			$sublocations = Location::getEventSublocations(null);
+			$structure['sublocationId']['values'] = $sublocations;
 		}
 		return $structure;
 	}
@@ -668,7 +574,8 @@ class Event extends DataObject {
 			'monthOffset',
 			'endOption',
 			'dateUpdated',
-			'sublocationId'
+			'sublocationId',
+			'weekNumber',
 		];
 	}
 
@@ -678,6 +585,15 @@ class Event extends DataObject {
 			'url' => '/Events/EventInstances?objectAction=edit&id=' . $this->id,
 		];
 
+		return $objectActions;
+	}
+
+	public function getAdditionalListJavascriptActions(): array {
+		$objectActions[] = [
+			'text' => 'Copy',
+			'onClick' => "return AspenDiscovery.Events.showCopyEventsForm('$this->id')",
+			'icon' => 'fas fa-copy',
+		];
 		return $objectActions;
 	}
 
@@ -855,6 +771,17 @@ class Event extends DataObject {
 		return $this->_typeFields[$fieldId] ?? '';
 	}
 
+	public function getAllTypeFields() {
+		$typeFields = [];
+		$field = new EventEventField();
+		$field->eventId = $this->id;
+		$field->find();
+		while ($field->fetch()) {
+			$typeFields[$field->eventFieldId] = $field->value;
+		}
+		return $typeFields;
+	}
+
 	public function getDatesPreview() {
 		if (!isset($this->_dates) && $this->id) {
 			$this->_datesPreview = '';
@@ -942,6 +869,8 @@ class Event extends DataObject {
 	}
 
 	public function calculateEnd($fieldName) {
+		$endDate = '';
+		$endTime = '';
 		if (isset($this->startDate) && isset($this->startTime) && isset($this->eventLength)) {
 			$dateTime = new \DateTime($this->startDate . ' ' . $this->startTime);
 			$dateTime->modify('+' . $this->eventLength . ' minutes');
@@ -957,6 +886,7 @@ class Event extends DataObject {
 	}
 
 	public function updateStructureForEditingObject($structure) : array {
+		$structure['infoSection']['expandByDefault'] = true;
 		if ($eventType = $this->getEventType()) {
 			if (!empty($this->eventTypeId)) {
 				if (empty($this->title)) {
@@ -1025,6 +955,8 @@ class Event extends DataObject {
 						} else if ($this->recurrenceFrequency == '3') {
 							$structure['scheduleSection']['properties']['monthlySection']['hiddenByDefault'] = false;
 						}
+						$structure['scheduleSection']['properties']['repeatEndsSection']['hiddenByDefault'] = false;
+						$structure['scheduleSection']['properties']['datesPreview']['hiddenByDefault'] = false;
 						break;
 				}
 				switch ($this->monthlyOption) {

@@ -426,7 +426,21 @@ class Record_AJAX extends Action {
 
 			//Figure out what types of holds to allow
 			$items = $marcRecord->getCopies();
-			array_multisort(array_column($items, 'description'), SORT_NATURAL, $items);
+			//sort things alphabetically and newest first for periodicals/serials
+			if ($marcRecord->isPeriodical()){
+				$sorter = function ($a, $b){
+					if ($a['shelfLocation'] == $b['shelfLocation']) {
+						if ($a['callNumber'] == $b['callNumber']) {
+							return 0;
+						}
+						return strnatcasecmp($b['callNumber'], $a['callNumber']);
+					}
+					return strnatcasecmp($a['shelfLocation'], $b['shelfLocation']);
+				};
+				uasort($items, $sorter);
+			} else {
+				array_multisort(array_column($items, 'description'), SORT_NATURAL, $items);
+			}
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			if (count($relatedRecord->recordVariations) > 1) {
 				foreach ($relatedRecord->recordVariations as $variation) {

@@ -23,20 +23,20 @@
 						<span class="result-title">{$placeholder['title']}</span>
 					</div>
 				</div>
-					{if !empty($placeholder['author'])}
-						<div class="row">
-							<div class="result-label col-tn-3 col-xs-3">{translate text="Author" isPublicFacing=true}</div>
-							<div class="result-value col-tn-9 col-xs-9 notranslate">
-								{if is_array($placeholder['author'])}
-									{foreach from=$placeholder['author'] item=author}
-										<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a> <br/>
-									{/foreach}
-								{else}
-									<a href='/Author/Home?author="{$placeholder['author']|escape:"url"}"'>{$placeholder['author']|highlight}</a>
-								{/if}
-							</div>
+				{if !empty($placeholder['author'])}
+					<div class="row">
+						<div class="result-label col-tn-3 col-xs-3">{translate text="Author" isPublicFacing=true}</div>
+						<div class="result-value col-tn-9 col-xs-9 notranslate">
+							{if is_array($placeholder['author'])}
+								{foreach from=$placeholder['author'] item=author}
+									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a> <br/>
+								{/foreach}
+							{else}
+								<a href='/Author/Home?author="{$placeholder['author']|escape:"url"}"'>{$placeholder['author']|highlight}</a>
+							{/if}
 						</div>
-					{/if}
+					</div>
+				{/if}
 				{if !empty($placeholder['volume'])}
 					<div class="row">
 						<div class="result-label col-tn-3 col-xs-3">{translate text="Volume" isPublicFacing=true}</div>

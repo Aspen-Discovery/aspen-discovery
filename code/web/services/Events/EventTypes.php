@@ -67,10 +67,7 @@ class Events_EventTypes extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission(['Administer Event Types']);
-		}
-		return false;
+		return UserAccount::userHasPermission(['Administer Event Types']);
 	}
 
 	function canBatchEdit(): bool {

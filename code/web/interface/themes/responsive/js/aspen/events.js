@@ -34,27 +34,32 @@ AspenDiscovery.Events = (function(){
 						$("#sublocationIdSelect").html("");
 						$("#propertyRowsublocationId").hide();
 					}
-					if (data.eventTypeIds.length > 0) {
-						$("#eventTypeIdSelect option").each(function () {
-							if (!data.eventTypeIds.includes($(this).val())) {
-								$(this).attr('disabled', 'disabled');
-								$(this).removeAttr('selected');
-								$(this).hide();
-							} else {
-								$(this).removeAttr('disabled');
-								$(this).show();
-							}
+					if (data.eventTypes && data.eventTypes.length > 0) {
+						var eventTypes = JSON.parse(data.eventTypes);
+						$("#eventTypeIdSelect").html("");
+						$("<option/>", {
+							value: '',
+							text: "Choose an event type"
+						}).appendTo("#eventTypeIdSelect");
+						Object.keys(eventTypes).forEach(function (key) {
+							$("<option/>", {
+								value: key,
+								text: eventTypes[key]
+							}).appendTo("#eventTypeIdSelect");
 						});
 						$("#propertyRoweventTypeId").show();
-					} else {
-						AspenDiscovery.showMessage(data.title, data.message);
-						$("#eventTypeIdSelect option").each(function () {
-							$(this).attr('disabled', 'disabled');
-							$(this).removeAttr('selected');
-						});
-						$("#propertyRoweventTypeId").hide();
 						$("#propertyRowtitle").hide();
 						$("#propertyRowinfoSection").hide();
+						$("#propertyRowscheduleSection").hide();
+					} else {
+						$("#eventTypeIdSelect").html("");
+						$("<option/>", {
+							value: '',
+							text: "No event types available at this location"
+						}).appendTo("#eventTypeIdSelect");
+						$("#propertyRowtitle").hide();
+						$("#propertyRowinfoSection").hide();
+						$("#propertyRowscheduleSection").hide();
 					}
 				} else {
 					AspenDiscovery.showMessage('An error occurred ', data.message);
@@ -71,35 +76,62 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					eventType = data.eventType;
-					$("#title").val(eventType.title);
-					if (!eventType.titleCustomizable) {
-						$("#title").attr('readonly', 'readonly');
+					if (data.status == "resetForm") {
+						$("#eventTypeIdSelect").val("");
+						$("#propertyRowtitle").hide();
+						$("#propertyRowinfoSection").hide();
+						$("#propertyRowscheduleSection").hide();
+						$("#description").text("");
+						return false;
 					} else {
-						$("#title").removeAttr('readonly');
+						eventType = data.eventType;
+						$("#title").val(eventType.title);
+						if (!eventType.titleCustomizable) {
+							$("#title").attr('readonly', 'readonly');
+						} else {
+							$("#title").removeAttr('readonly');
+						}
+						var descriptionEditor = tinymce.get("description");
+						$("#description").text(eventType.description);
+						descriptionEditor.setContent(eventType.description);
+						if (!eventType.descriptionCustomizable) {
+							$("#description").attr('readonly', 'readonly');
+							descriptionEditor.setMode("readonly");
+						} else {
+							descriptionEditor.setMode("design");
+							$("#description").removeAttr('readonly');
+						}
+						$("#importFile-label-cover").val(eventType.cover);
+						if (!eventType.coverCustomizable) {
+							$("#importFile-label-cover").attr('readonly', 'readonly');
+						} else {
+							$("#importFile-label-cover").removeAttr('readonly');
+						}
+						if (eventType.eventLength != null) {
+							var minutes = eventType.eventLength % 60;
+							var hours = Math.floor(eventType.eventLength / 60);
+							$("#eventLength_hours").val(hours);
+							$("#eventLength_minutes").val(minutes);
+						}
+						$("#eventLength").val(eventType.eventLength);
+						if (!eventType.lengthCustomizable) {
+							$("#eventLength_minutes").attr('readonly', 'readonly');
+							$("#eventLength_hours").attr('readonly', 'readonly');
+							$("#eventLength").attr('readonly', 'readonly');
+						} else {
+							$("#eventLength").removeAttr('readonly');
+							$("#eventLength_minutes").removeAttr('readonly');
+							$("#eventLength_hours").removeAttr('readonly');
+						}
+						$("#accordion_body_Fields_for_this_Event_Type .panel-body").html(data.typeFields);
+						$('#accordion_body_Fields_for_this_Event_Type [data-toggle="tooltip"]').tooltip();
+						$("#propertyRowtitle").show();
+						$("#propertyRowinfoSection").show();
+						$("#propertyRowscheduleSection").show();
+						$("#propertyRowinfoSection .propertyRow").show();
+						descriptionEditor.hide();
+						descriptionEditor.show(); // Prevents editor from being collapsed if it's been hidden
 					}
-					$("#description").val(eventType.description);
-					if (!eventType.descriptionCustomizable) {
-						$("#description").attr('readonly', 'readonly');
-					} else {
-						$("#description").removeAttr('readonly');
-					}
-					$("#importFile-label-cover").val(eventType.cover);
-					if (!eventType.coverCustomizable) {
-						$("#importFile-label-cover").attr('readonly', 'readonly');
-					} else {
-						$("#importFile-label-cover").removeAttr('readonly');
-					}
-					$("#eventLength").val(eventType.eventLength);
-					if (!eventType.lengthCustomizable) {
-						$("#eventLength").attr('readonly', 'readonly');
-					} else {
-						$("#eventLength").removeAttr('readonly');
-					}
-					$("#accordion_body_Fields_for_this_Event_Type .panel-body").html(data.typeFields);
-					$("#propertyRowtitle").show();
-					$("#propertyRowinfoSection").show();
-					$("#propertyRowinfoSection .propertyRow").show();
 				} else {
 					AspenDiscovery.showMessage('An error occurred ', data.message);
 				}
@@ -418,7 +450,17 @@ AspenDiscovery.Events = (function(){
 					resetRecurrenceSections();
 					AspenDiscovery.Events.expandPanel("#accordion_Repeat_Frequency");
 					$("#propertyRowfrequencySection").show();
+					// Get current value of repeat frequency and open appropriate panels
+					$repeatFrequency = $("#recurrenceFrequencySelect").val();
+					if ($repeatFrequency == "2") { // weekly
+						$("#propertyRowweeklySection").show();
+						AspenDiscovery.Events.expandPanel("#propertyRowweeklySection");
+					} else if ($repeatFrequency == "3") { //monthly
+						$("#propertyRowmonthlySection").show();
+						AspenDiscovery.Events.expandPanel("#propertyRowmonthlySection");
+					}
 					$("#propertyRowrepeatEndsSection").show();
+					$("#propertyRowdatesPreview").show();
 					break;
 			}
 			AspenDiscovery.Events.calculateRecurrenceDates();
@@ -521,6 +563,49 @@ AspenDiscovery.Events = (function(){
 					document.body.removeChild(element);
 				}
 			});
+		},
+		showCopyEventsForm: function (eventId) {
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'getCopyEventsForm',
+				eventId: eventId
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyEventsForm: function () {
+			var url = Globals.path + "/Events/AJAX";
+			var eventName = $('#eventName').val();
+			var eventId = $('#eventId').val();
+			var eventLocation = $('#eventLocation').val();
+			var sublocationId = $('#sublocationIdSelect').val();
+			var eventDate = $('#eventDate').val();
+			var params = {
+				method: 'doCopyEvent',
+				id: eventId,
+				name: eventName,
+				locationId: eventLocation,
+				sublocationId: sublocationId,
+				date: eventDate
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Events || {}));

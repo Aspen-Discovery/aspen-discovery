@@ -472,7 +472,41 @@ class Grouping_Record {
 	}
 
 	public function sortItemSummary($variationId): void {
-		ksort($this->_itemSummary[$variationId], SORT_NATURAL);
+		global $library;
+		$ils = 'Unknown';
+		if ($library->getAccountProfile() != null) {
+			$ils = $library->getAccountProfile()->ils;
+
+		}
+		$isPeriodical = false;
+		$format = $this->format;
+		require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
+		if ($ils == 'sierra' || $ils == 'millennium') {
+			$formatValue = new FormatMapValue();
+			$formatValue->format = $format;
+			$formatValue->displaySierraCheckoutGrid = 1;
+			if ($formatValue->find(true)) {
+				$isPeriodical = true;
+			}
+		} else {
+			if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
+				$isPeriodical = true;
+			}
+		}
+		if ($isPeriodical) {
+			$sorter = function ($a, $b){
+				if ($a['shelfLocation'] == $b['shelfLocation']) {
+					if ($a['callNumber'] == $b['callNumber']) {
+						return 0;
+					}
+					return strnatcasecmp($b['callNumber'], $a['callNumber']);
+				}
+				return strnatcasecmp($a['shelfLocation'], $b['shelfLocation']);
+			};
+			uasort($this->_itemSummary[$variationId], $sorter);
+		} else {
+			ksort($this->_itemSummary[$variationId], SORT_NATURAL);
+		}
 	}
 
 	/**

@@ -49,7 +49,14 @@ class WebBuilder_Categories extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof WebBuilderCategory && !empty($existingObject->id)) {
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => '/WebBuilder/ResourceCategory?id=' . $existingObject->id
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions(): string {
@@ -71,4 +78,5 @@ class WebBuilder_Categories extends ObjectEditor {
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
+
 }

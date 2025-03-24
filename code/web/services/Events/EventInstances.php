@@ -17,11 +17,15 @@ class Events_EventInstances extends ObjectEditor {
 	}
 
 	function getToolName(): string {
-		return 'Events';
+		return 'EventInstances';
 	}
 
 	function getPageTitle(): string {
 		return 'Event Instances';
+	}
+
+	function showReturnToList(): bool {
+		return false;
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -58,7 +62,16 @@ class Events_EventInstances extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return EventInstanceGroup::getObjectStructure($context);
+		$structure = EventInstanceGroup::getObjectStructure($context);
+		if (!empty($_REQUEST['id'])) {
+			$event = new Event();
+			$event->id = $_REQUEST['id'];
+			if ($event->find(true)) {
+				$sublocationList = Location::getEventSublocations($event->locationId);
+				$structure['instances']['structure']['sublocationId']['values'] = $sublocationList;
+			}
+		}
+		return $structure;
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -77,7 +90,7 @@ class Events_EventInstances extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
-		$breadcrumbs[] = new Breadcrumb('/Events/EventInstances', 'Event Instances');
+		$breadcrumbs[] = new Breadcrumb('/Events/Events', 'Manage Events');
 		return $breadcrumbs;
 	}
 
@@ -86,14 +99,11 @@ class Events_EventInstances extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission([
-				'Administer Events for All Locations',
-				'Administer Events for Home Library Locations',
-				'Administer Events for Home Location'
-			]);
-		}
-		return false;
+		return UserAccount::userHasPermission([
+			'Administer Events for All Locations',
+			'Administer Events for Home Library Locations',
+			'Administer Events for Home Location'
+		]);
 	}
 
 	function canBatchEdit(): bool {

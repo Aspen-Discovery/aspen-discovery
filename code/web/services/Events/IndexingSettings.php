@@ -18,7 +18,7 @@ class Events_IndexingSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Events Indexing Settings';
+		return 'Aspen Events Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -71,10 +71,7 @@ class Events_IndexingSettings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission(['Administer Events for All Locations']);
-		}
-		return false;
+		return UserAccount::userHasPermission(['Administer Events for All Locations']);
 	}
 
 	function canBatchEdit(): bool {

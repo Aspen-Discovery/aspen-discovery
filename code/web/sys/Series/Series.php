@@ -174,11 +174,14 @@ class Series extends DataObject {
 	/**
 	 * @return array      of list entries
 	 */
-	function getTitles($sortName = "volume asc") {
+	function getTitles($sortName = "volume asc", $includePlaceholders = true) {
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$seriesMember = new SeriesMember();
 		$seriesMember->seriesId = $this->id;
 		$seriesMember->excluded = 0;
+		if (!$includePlaceholders) {
+			$seriesMember->isPlaceholder = 0;
+		}
 		$seriesMember->orderBy($sortName);
 
 		$seriesMembers = [];
@@ -254,11 +257,13 @@ class Series extends DataObject {
 	 * @param int $start position of first list item to fetch (0 based)
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
+	 * @param string $sortName How the records should be sorted when pulled from the database
+	 * @param boolean $includePlaceholders Default true, whether to include placeholder records
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getSeriesRecords($start, $numItems, $format, $sortName) {
+	public function getSeriesRecords($start, $numItems, $format, $sortName, $includePlaceholders = true) {
 		//Get all entries for the list
-		$seriesMemberInfo = $this->getTitles($sortName);
+		$seriesMemberInfo = $this->getTitles($sortName, $includePlaceholders);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0) {

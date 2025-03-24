@@ -11,7 +11,7 @@
 	{*Left Panel Content*}
 	<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3">
 		{if !empty($recordDriver->getEventCoverUrl())}
-			<div class="panel active">
+			<div class="panel">
 				<div class="panel-body" style="display:flex; justify-content:center">
 					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}" style="max-height: 280px; width: auto"></a>
 				</div>
@@ -40,6 +40,20 @@
 					{foreach from=$recordDriver->getProgramTypes() item=type}
 						<div class="col-xs-12">
 							<a href='/Events/Results?filter[]=program_type_facet%3A"{$type|escape:'url'}"'>{$type}</a>
+						</div>
+					{/foreach}
+				</div>
+			</div>
+		{/if}
+		{if !empty($recordDriver->getOtherEventsInSeries())}
+			<div class="panel active">
+				<div class="panel-heading">
+					{translate text="Other Dates in this Series" isPublicFacing=true}
+				</div>
+				<div class="panel-body">
+					{foreach from=$recordDriver->getOtherEventsInSeries() item=event key=key}
+						<div class="col-xs-12">
+							<a href='/AspenEvents/{$key|escape:'url'}/Event'>{$event|date_format:"%x"}</a>
 						</div>
 					{/foreach}
 				</div>
@@ -113,7 +127,7 @@
 							{/if}
 						</div>
 					{elseif empty($offline) || $enableEContentWhileOffline}
-						<a class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'assabet');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+						<a class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'aspenEvents');">{translate text="Add to Your Events" isPublicFacing=true}</a>
 					{/if}
 				{/if}
 			</div>
@@ -121,7 +135,6 @@
 		{*column for tool buttons & event description*}
 		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
-				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text="More Info" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="More Info" isPublicFacing=true}</a>
 				{if $isStaff && $eventsInLists == 1 || $eventsInLists == 2}
 					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 				{/if}

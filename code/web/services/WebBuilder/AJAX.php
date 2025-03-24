@@ -289,28 +289,36 @@ class WebBuilder_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function checkLinkedObject() {
-		require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
-		$placard = new Placard();
-		$placard->sourceId = $_REQUEST['objectId'];
-		if ($placard->find(true)) {
-			$result = [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Save Linked Object?',
-					'isAdminFacing' => true,
-				]),
-				'modalBody' => translate([
-					'text' => 'This Web Resource is linked to a Placard. Would you like to update the linked placard as well?',
-					'isAdminFacing' => true,
-				]),
-				'modalButtons' => "<button class='tool btn btn-primary modal-btn' onclick='return AspenDiscovery.WebBuilder.saveLinkedObject(true)'>Yes</button><button class='tool btn btn-primary modal-btn' onclick='return AspenDiscovery.WebBuilder.saveLinkedObject(false)'>No</button>",
-			];
+		if (!empty($_REQUEST['objectId']) && is_numeric($_REQUEST['objectId'])) {
+			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+			$placard = new Placard();
+			$placard->sourceId = $_REQUEST['objectId'];
+			if ($placard->find(true)) {
+				$result = [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Save Linked Object?',
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => translate([
+						'text' => 'This Web Resource is linked to a Placard. Would you like to update the linked placard as well?',
+						'isAdminFacing' => true,
+					]),
+					'modalButtons' => "<button class='tool btn btn-primary modal-btn' onclick='return AspenDiscovery.WebBuilder.saveLinkedObject(true)'>Yes</button><button class='tool btn btn-primary modal-btn' onclick='return AspenDiscovery.WebBuilder.saveLinkedObject(false)'>No</button>",
+				];
+			} else {
+				$result = [
+					'success' => true,
+					'noLinkedObject' => true,
+				];
+			}
 		} else {
 			$result = [
 				'success' => true,
 				'noLinkedObject' => true,
 			];
 		}
+
 		return $result;
 
 	}

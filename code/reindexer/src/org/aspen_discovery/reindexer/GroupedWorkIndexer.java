@@ -1424,7 +1424,12 @@ public class GroupedWorkIndexer {
 				HashMap<String, Integer> seriesInDb = new HashMap<>();
 				while (seriesMemberRS.next()) {
 					// Strip diacritics and switch to lowercase for comparing series names to minimize duplicates
-					String normalizedSeriesName = Normalizer.normalize(seriesMemberRS.getString("groupedWorkSeriesTitle").toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{M}", "");
+					String seriesTitle = seriesMemberRS.getString("groupedWorkSeriesTitle");
+					if (seriesTitle == null) {
+						//If the grouped work series title is null, this is a manually created series, so we should skip it.
+						continue;
+					}
+					String normalizedSeriesName = Normalizer.normalize(seriesTitle.toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{M}", "");
 					seriesInDb.put(normalizedSeriesName, seriesMemberRS.getInt("seriesId"));
 				}
 				for (String seriesNameWithVolume : groupedWork.seriesWithVolume.keySet()) {
@@ -1517,7 +1522,7 @@ public class GroupedWorkIndexer {
 				seriesMemberRS.close();
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Unable to update series data", e);
+			logEntry.incErrors("Unable to update series data for grouped work " + groupedWork.getId(), e);
 		}
 	}
 

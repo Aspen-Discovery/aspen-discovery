@@ -1517,10 +1517,11 @@ abstract class MarcRecordProcessor {
 		}
 		groupedWork.addAuthor2Role(contributors);
 
-		//author_display = 100a:110a:260b:710a:245c, first
+		//author_display = 100acq:110a:260b:710a:245c, first
 		//#ARL-95 Do not show display author from the 710 or from the 245c since neither are truly authors
 		//#ARL-200 Do not show display author from the 260b since it is also not the author
-		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100ac:110ab");
+		//DIS-413 Add subfield q to the display
+		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100acq:110ab");
 		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
 			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
 		}
@@ -1556,7 +1557,7 @@ abstract class MarcRecordProcessor {
 
 		//title alt
 		//noinspection SpellCheckingInspection
-		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a"));
+		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a:505t"));
 		//title old
 		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
 		//title new

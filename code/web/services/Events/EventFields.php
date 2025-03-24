@@ -67,10 +67,7 @@ class Events_EventFields extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission(['Administer Field Sets']);
-		}
-		return false;
+		return UserAccount::userHasPermission(['Administer Field Sets']);
 	}
 
 	function canBatchEdit(): bool {

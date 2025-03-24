@@ -856,6 +856,12 @@ abstract class ObjectEditor extends Admin_Admin {
 							'text' => 'This Web Resource is linked to the Placard ',
 							'isAdminFacing' => true,
 						]) . "<a href='$url'>$placard->title</a>";
+					if ($placard->isCustomized){
+						$result .= translate([
+							'text' => ', which has been customized.',
+							'isAdminFacing' => true,
+						]);
+					}
 				}
 			}
 			else if ($_REQUEST['action'] == 'Placards') {
@@ -873,6 +879,12 @@ abstract class ObjectEditor extends Admin_Admin {
 									'text' => 'This Placard is linked to the Web Resource ',
 									'isAdminFacing' => true,
 								]) . "<a href='$url'>$webResource->name</a>";
+							if ($placard->isCustomized){
+								$result .= translate([
+										'text' => ' and has been customized.',
+										'isAdminFacing' => true,
+									]);
+							}
 						}
 					}
 				}

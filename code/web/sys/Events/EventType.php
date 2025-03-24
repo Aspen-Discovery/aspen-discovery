@@ -38,6 +38,7 @@ class EventType extends DataObject {
 				'type' => 'text',
 				'label' => 'Title',
 				'description' => 'The default title for this type of event',
+				'maxLength' => 50,
 			],
 			'titleCustomizable' => [
 				'property' => 'titleCustomizable',
@@ -48,7 +49,8 @@ class EventType extends DataObject {
 			],
 			'description' => [
 				'property' => 'description',
-				'type' => 'text',
+				'type' => 'html',
+				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><br><div><span><sub><sup>',
 				'label' => 'Description',
 				'description' => 'The default description for this type of event',
 			],
@@ -65,6 +67,7 @@ class EventType extends DataObject {
 				'label' => 'Cover',
 				'maxWidth' => 280,
 				'maxHeight' => 280,
+				'maxLength' => 150,
 				'description' => 'The default cover image for this type of event',
 				'hideInLists' => true,
 			],
@@ -255,12 +258,16 @@ class EventType extends DataObject {
 		}
 	}
 
-	public static function getEventTypeList($includeArchived = false): array {
+	public static function getEventTypeList($includeArchived = false, $location = false): array {
 		$typeList = [];
 		$object = new EventType();
 		$object->orderBy('title');
 		if (!$includeArchived) {
 			$object->archived = 0;
+		}
+		if ($location) {
+			$validTypeIdsForLocation = self::getEventTypeIdsForLocation($location);
+			$object->whereAddIn('id', $validTypeIdsForLocation, true);
 		}
 		$object->find();
 		while ($object->fetch()) {
@@ -270,15 +277,44 @@ class EventType extends DataObject {
 		return $typeList;
 	}
 
-	public static function getEventTypeIdsForLocation(string $locationId): array {
+	public static function getEventTypeIdsForLocation(string $locationId, $includeArchived = false): array {
 		$typeIds = [];
 		$typeLocation = new EventTypeLocation();
 		$typeLocation->locationId = $locationId;
 		$typeLocation->find();
 		while ($typeLocation->fetch()) {
-			$typeIds[] = $typeLocation->eventTypeId;
+			if (!$includeArchived && !EventType::isArchived($typeLocation->eventTypeId)) {
+				$typeIds[] = $typeLocation->eventTypeId;
+			}
 		}
 		return $typeIds;
+	}
+
+	public static function getLocationIdsForEventType(string $eventTypeId, $includeArchived = false): array {
+		$locationIds = [];
+		$typeLocation = new EventTypeLocation();
+		$typeLocation->eventTypeId = $eventTypeId;
+		$typeLocation->find();
+		while ($typeLocation->fetch()) {
+			if (!$includeArchived && !EventType::isArchived($typeLocation->eventTypeId)) {
+				$locationIds[] = $typeLocation->locationId;
+			}
+		}
+		return $locationIds;
+	}
+
+	public static function getTypeName(string $typeId): string {
+		$type = new EventType();
+		$type->id = $typeId;
+		$type->find(true);
+		return $type->title;
+	}
+
+	public static function isArchived(string $typeId): bool {
+		$type = new EventType();
+		$type->id = $typeId;
+		$type->find(true);
+		return $type->archived;
 	}
 
 	public function getFieldSetFields() {

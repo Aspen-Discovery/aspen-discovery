@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+require_once ROOT_DIR . '/sys/Events/LibraryEventsFacetSetting.php';
 require_once ROOT_DIR . '/sys/Events/EventsFacet.php';
 
 class EventsFacetGroup extends DataObject {
@@ -157,8 +158,8 @@ class EventsFacetGroup extends DataObject {
     public function getLibraries() {
         if (!isset($this->_libraries) && $this->id) {
             $this->_libraries = [];
-            $library = new LibraryEventsSetting();
-            $library->eventsFacetSettingsId = $this->id;
+            $library = new LibraryEventsFacetSetting();
+            $library->eventsFacetGroupId = $this->id;
             $library->find();
             while ($library->fetch()) {
                 $this->_libraries[$library->libraryId] = $library->libraryId;
@@ -168,11 +169,11 @@ class EventsFacetGroup extends DataObject {
     }
     private function clearLibraries() {
         //Delete links to the libraries
-        $libraryEventSetting = new LibraryEventsSetting();
-        $libraryEventSetting->eventsFacetSettingsId = $this->id;
+        $libraryEventSetting = new LibraryEventsFacetSetting();
+        $libraryEventSetting->eventsFacetGroupId = $this->id;
+		$libraryEventSetting->find();
         while ($libraryEventSetting->fetch()){
-            $libraryEventSetting->eventsFacetSettingsId = "0";
-            $libraryEventSetting->update();
+            $libraryEventSetting->delete();
         }
     }
     public function saveLibraries() {
@@ -180,27 +181,23 @@ class EventsFacetGroup extends DataObject {
             $this->clearLibraries();
 
             foreach ($this->_libraries as $libraryId) {
-                $libraryEventSetting = new LibraryEventsSetting();
+                $libraryEventSetting = new LibraryEventsFacetSetting();
                 $libraryEventSetting->libraryId = $libraryId;
-
-                while ($libraryEventSetting->fetch()){ //if there is no event setting for a library, that library won't save because there's nothing to update
-                    $libraryEventSetting->eventsFacetSettingsId = $this->id;
-                    $libraryEventSetting->update();
-                }
+				$libraryEventSetting->eventsFacetGroupId = $this->id;
+                $libraryEventSetting->update();
             }
             unset($this->_libraries);
         }
     }
 
 	function getAdditionalListJavascriptActions(): array {
-        /* Don't show copy facet button for now until saveLibraries is fixed */
-//		$objectActions[] = [
-//			'text' => 'Copy',
-//			'onClick' => "return AspenDiscovery.Admin.showCopyEventsFacetGroupForm('$this->id')",
-//			'icon' => 'fas fa-copy',
-//		];
-//
-//		return $objectActions;
-        return [];
+		$objectActions[] = [
+			'text' => 'Copy',
+			'onClick' => "return AspenDiscovery.Admin.showCopyEventsFacetGroupForm('$this->id')",
+			'icon' => 'fas fa-copy',
+		];
+
+		return $objectActions;
+//        return [];
 	}
 }

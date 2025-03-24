@@ -62,7 +62,7 @@ class CommunityEngagement_AdminView extends Admin_Dashboard {
 					$milestoneComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
 					$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaign->id, $user->id);
 					$totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
-					$milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id);
+					$milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaign->id);
 					$userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id] = [
 						'milestoneComplete' => $milestoneComplete, 
 						'userProgress' => $userProgress,

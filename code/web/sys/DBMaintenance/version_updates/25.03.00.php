@@ -205,7 +205,51 @@ function getUpdates25_03_00(): array {
 				"ALTER TABLE event ADD COLUMN weekNumber TINYINT DEFAULT 1"
 			]
 		], //add_event_column_week_number
-
+		'separate_library_events_settings_and_library_events_facet_settings' => [
+			'title' => 'Separate library event settings from library event facet settings',
+			'description' => 'Create a separate table to store library event facet settings so that these can be controlled independently',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE library_events_facet_setting (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT NOT NULL,
+					eventsFacetGroupId INT NOT NULL
+				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
+				"INSERT INTO library_events_facet_setting (libraryId, eventsFacetGroupId) SELECT DISTINCT libraryId, eventsFacetSettingsId FROM library_events_setting;"
+			]
+		], //separate_library_events_settings_and_library_events_facet_settings
+		'update_events_character_sets' => [
+			'title' => 'Update Event Character Sets',
+			'description' => 'Update event and event type tables to use multi-byte character sets',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE event CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE event_type CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'
+			]
+		], //update_events_character_sets
+		'remove_system_variable_to_enable_aspen_events' => [
+			'title' => 'Remove enableAspenEvents from System Variables',
+			'description' => 'Do not require Aspen Events to be turned on in System Variables',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables DROP COLUMN enableAspenEvents;'
+			]
+		], //remove_system_variable_to_enable_aspen_events
+		'add_sublocationId_to_event_instances' => [
+			'title' => 'Add sublocation to Event Instances',
+			'description' => 'Add a sublocation field to event instances to allow override of the overall event sublocation',
+			'sql' => [
+				'ALTER TABLE event_instance ADD sublocationId INT'
+			]
+		],
+		'change_event_event_field_and_default_field_value_to_text' => [
+			'title' => 'Change event_event_field value and event_field default value to TEXT',
+			'description' => 'Change the value and default value to TEXT to allow longer entries',
+			'sql' => [
+				'ALTER TABLE event_event_field MODIFY COLUMN value TEXT',
+				'ALTER TABLE event_field MODIFY COLUMN defaultValue TEXT'
+			]
+		],
 		//kirstien - Grove
 
 		//kodi - Grove
@@ -362,6 +406,13 @@ function getUpdates25_03_00(): array {
 				"ALTER TABLE web_builder_resource ADD COLUMN generatePlacard TINYINT(1) DEFAULT 0",
 			],
 		], //web_resource_generate_placard
+		'alter_web_builder_custom_web_resource_page_table' => [
+			'title' => 'Alter Custom Web Resource Page Table',
+			'description' => 'Remove addToIndex column - this is handled in the web_builder_web_resources_to_index table.',
+			'sql' => [
+				"ALTER TABLE web_builder_custom_web_resource_page DROP COLUMN addToIndex",
+			],
+		], //alter_web_builder_custom_web_resource_page_table
 
 		// Leo Stoyanov - BWS
 		'use_original_cover_urls_settings' => [

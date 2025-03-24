@@ -4989,11 +4989,11 @@ class Library extends DataObject {
 
 	protected $_eventFacetSettings = null;
 
-	public function getEventFacetSettings() : ?LibraryEventsSetting {
+	public function getEventFacetSettings() {
 		if ($this->_eventFacetSettings == null) {
 			try {
-				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-				$eventsFacetSetting = new LibraryEventsSetting();
+				require_once ROOT_DIR . '/sys/Events/LibraryEventsFacetSetting.php';
+				$eventsFacetSetting = new LibraryEventsFacetSetting();
 				$eventsFacetSetting->libraryId = $this->libraryId;
 				if ($eventsFacetSetting->find(true)) {
 					$this->_eventFacetSettings = $eventsFacetSetting;

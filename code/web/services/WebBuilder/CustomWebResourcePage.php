@@ -38,6 +38,7 @@ class WebBuilder_CustomWebResourcePage extends Action {
 	function launch() {
 		global $interface;
 		global $activeLanguage;
+		global $library;
 
 		require_once ROOT_DIR . '/sys/WebBuilder/CustomWebResourcePageAudience.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/CustomWebResourcePageCategory.php';
@@ -79,8 +80,13 @@ class WebBuilder_CustomWebResourcePage extends Action {
 					$resourcesForAudience->audienceId = $audienceId;
 					$resourcesForAudience->find();
 					while ($resourcesForAudience->fetch()) {
-						if (!array_key_exists("WebResource:" . $resourcesForAudience->webResourceId, $audienceWebResourceIds)) {
-							$audienceWebResourceIds["\"WebResource:" . $resourcesForAudience->webResourceId . "\""] = "WebResource:" . $resourcesForAudience->webResourceId;
+						$webResourceLibrary = new libraryWebResource();
+						$webResourceLibrary->webResourceId = $resourcesForAudience->webResourceId;
+						$webResourceLibrary->libraryId = $library->libraryId;
+						if ($webResourceLibrary->find()) {
+							if (!array_key_exists("WebResource:" . $resourcesForAudience->webResourceId, $audienceWebResourceIds)) {
+								$audienceWebResourceIds["\"WebResource:" . $resourcesForAudience->webResourceId . "\""] = "WebResource:" . $resourcesForAudience->webResourceId;
+							}
 						}
 					}
 				}
@@ -91,8 +97,13 @@ class WebBuilder_CustomWebResourcePage extends Action {
 					$resourcesForCategory->categoryId = $categoryId;
 					$resourcesForCategory->find();
 					while ($resourcesForCategory->fetch()) {
-						if (!array_key_exists("WebResource:" . $resourcesForCategory->webResourceId, $categoryWebResourceIds)) {
-							$categoryWebResourceIds["\"WebResource:" . $resourcesForCategory->webResourceId . "\""] = "WebResource:" . $resourcesForCategory->webResourceId;
+						$webResourceLibrary = new libraryWebResource();
+						$webResourceLibrary->webResourceId = $resourcesForCategory->webResourceId;
+						$webResourceLibrary->libraryId = $library->libraryId;
+						if ($webResourceLibrary->find()) {
+							if (!array_key_exists("WebResource:" . $resourcesForCategory->webResourceId, $categoryWebResourceIds)) {
+								$categoryWebResourceIds["\"WebResource:" . $resourcesForCategory->webResourceId . "\""] = "WebResource:" . $resourcesForCategory->webResourceId;
+							}
 						}
 					}
 				}
