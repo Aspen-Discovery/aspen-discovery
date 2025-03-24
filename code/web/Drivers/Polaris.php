@@ -1472,7 +1472,7 @@ class Polaris extends AbstractIlsDriver {
 				if ($hold->sourceId == $itemToUpdateId) {
 					if ($hold->pickupLocationId == $location->locationId && !empty($newPickupSublocation)) {
 						$message = translate([
-							'text' => 'To change pickup location within the branch, please contact the library.',
+							'text' => 'To change pickup area within the branch, please contact the library.',
 							'isPublicFacing' => true,
 						]);
 						$result['success'] = false;
@@ -1480,7 +1480,7 @@ class Polaris extends AbstractIlsDriver {
 
 						// Result for API or app use
 						$result['api']['title'] = translate([
-							'text' => 'Unable to update pickup location',
+							'text' => 'Unable to update pickup area',
 							'isPublicFacing' => true,
 						]);
 						$result['api']['message'] = $message;

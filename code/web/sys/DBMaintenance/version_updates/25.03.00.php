@@ -12,6 +12,15 @@ function getUpdates25_03_00(): array {
 			 ]
 		 ], //name*/
 
+		//Yanjun Li - ByWater
+		'prefer_ils_description' => [
+			'title' => 'Prefer ILS Description',
+			'description' => 'Add a new setting to prefer ILS Description over eContent Description',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN preferIlsDescription TINYINT(1) DEFAULT 0",
+			]
+		], //prefer_ils_description
+
 		//mark - Grove
 		'make_app_icons_os_specific' => [
 			'title' => 'Make App Icons OS Specific',
@@ -22,8 +31,8 @@ function getUpdates25_03_00(): array {
 			]
 		], //make_app_icons_os_specific
 		'remove_unused_updates_properties' => [
-			'title' => 'Make App Icons OS Specific',
-			'description' => 'Update settings to store separate icons per OS',
+			'title' => 'Remove unused updates properties',
+			'description' => 'Update system variables to remove unused columns',
 			'continueOnError' => false,
 			'sql' => [
 				'ALTER TABLE system_variables DROP COLUMN allowScheduledUpdates',
@@ -38,6 +47,13 @@ function getUpdates25_03_00(): array {
 				'ALTER TABLE themes ADD COLUMN headerLogoApp VARCHAR(100) DEFAULT NULL',
 			]
 		], //theme_app_header_logo
+		'move_uploaded_list_images' => [
+			'title' => 'Move uploaded images',
+			'description' => "Move uploaded images uploaded to their own directory so they don't conflict with uploaded records",
+			'sql'=> [
+				'moveUploadedListImages'
+			]
+		], //move_list_images
 
 		//katherine - Grove
 
@@ -123,9 +139,44 @@ function getUpdates25_03_00(): array {
 					lastUpdateOfChangedSeries INT(11) DEFAULT 0,
 					lastUpdateOfAllSeries INT(11) DEFAULT 0
 				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
-					"INSERT INTO series_indexing_settings VALUES (1,1,0,0);",
+				"INSERT INTO series_indexing_settings VALUES (1,1,0,0);",
 			]
 		], //add_series_tables
+		'add_excluded_column_to_series_member' => [
+			'title' => 'Add excluded column to series_member',
+			'description' => 'Add excluded column to series_member table',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE series_member ADD COLUMN excluded TINYINT(1) DEFAULT 0;'
+			],
+		], // add_excluded_column_to_series_member
+		'add_series_indexes' => [
+			'title' => 'Add Series Indexes',
+			'description' => 'Add Indexes to series table for efficient querying',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE series_member ADD INDEX groupedWorkPermanentId(groupedWorkPermanentId)',
+				'ALTER TABLE series_member ADD INDEX seriesId(seriesId)',
+    			'ALTER TABLE series_member ADD INDEX volume(volume)',
+				'ALTER TABLE series_member ADD INDEX displayName(displayName)',
+				'ALTER TABLE series_member ADD INDEX author(author)',
+				'ALTER TABLE series ADD INDEX groupedWorkSeriesTitle(groupedWorkSeriesTitle)',
+				'ALTER TABLE series_member ADD INDEX seriesWorkId(seriesId, groupedWorkPermanentId, userAdded)',
+				'ALTER TABLE series ADD INDEX displayName(displayName)',
+				'ALTER TABLE series ADD INDEX author(author)',
+			]
+		], //add_series_indexes
+		'update_series_character_sets' => [
+			'title' => 'Update Series Character Sets',
+			'description' => 'Update series tables to use multi-byte character sets',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE series CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_member CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_indexing_settings CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE series_indexing_log CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'
+			]
+		], //update_series_character_sets
 
 		'track_event_length_in_minutes' => [
 			'title' => 'Track Event Length In Minutes',
@@ -147,7 +198,58 @@ function getUpdates25_03_00(): array {
 				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
 			]
 		], //event_calendar_display_settings
-
+		'add_event_column_week_number' => [
+			'title' => 'Add weekNumber column to Event table',
+			'description' => 'Add weekNumber column to Event table',
+			'sql' => [
+				"ALTER TABLE event ADD COLUMN weekNumber TINYINT DEFAULT 1"
+			]
+		], //add_event_column_week_number
+		'separate_library_events_settings_and_library_events_facet_settings' => [
+			'title' => 'Separate library event settings from library event facet settings',
+			'description' => 'Create a separate table to store library event facet settings so that these can be controlled independently',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE library_events_facet_setting (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT NOT NULL,
+					eventsFacetGroupId INT NOT NULL
+				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
+				"INSERT INTO library_events_facet_setting (libraryId, eventsFacetGroupId) SELECT DISTINCT libraryId, eventsFacetSettingsId FROM library_events_setting;"
+			]
+		], //separate_library_events_settings_and_library_events_facet_settings
+		'update_events_character_sets' => [
+			'title' => 'Update Event Character Sets',
+			'description' => 'Update event and event type tables to use multi-byte character sets',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE event CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci',
+				'ALTER TABLE event_type CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci'
+			]
+		], //update_events_character_sets
+		'remove_system_variable_to_enable_aspen_events' => [
+			'title' => 'Remove enableAspenEvents from System Variables',
+			'description' => 'Do not require Aspen Events to be turned on in System Variables',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables DROP COLUMN enableAspenEvents;'
+			]
+		], //remove_system_variable_to_enable_aspen_events
+		'add_sublocationId_to_event_instances' => [
+			'title' => 'Add sublocation to Event Instances',
+			'description' => 'Add a sublocation field to event instances to allow override of the overall event sublocation',
+			'sql' => [
+				'ALTER TABLE event_instance ADD sublocationId INT'
+			]
+		],
+		'change_event_event_field_and_default_field_value_to_text' => [
+			'title' => 'Change event_event_field value and event_field default value to TEXT',
+			'description' => 'Change the value and default value to TEXT to allow longer entries',
+			'sql' => [
+				'ALTER TABLE event_event_field MODIFY COLUMN value TEXT',
+				'ALTER TABLE event_field MODIFY COLUMN defaultValue TEXT'
+			]
+		],
 		//kirstien - Grove
 
 		//kodi - Grove
@@ -304,33 +406,57 @@ function getUpdates25_03_00(): array {
 				"ALTER TABLE web_builder_resource ADD COLUMN generatePlacard TINYINT(1) DEFAULT 0",
 			],
 		], //web_resource_generate_placard
+		'alter_web_builder_custom_web_resource_page_table' => [
+			'title' => 'Alter Custom Web Resource Page Table',
+			'description' => 'Remove addToIndex column - this is handled in the web_builder_web_resources_to_index table.',
+			'sql' => [
+				"ALTER TABLE web_builder_custom_web_resource_page DROP COLUMN addToIndex",
+			],
+		], //alter_web_builder_custom_web_resource_page_table
 
 		// Leo Stoyanov - BWS
-		'add_ignore_on_order_records_for_title_selection' => [
-			'title' => 'Add ignoreOnOrderRecordsForTitleSelection to indexing profiles',
-			'description' => 'Adds a setting to skip on-order records when selecting titles for display in grouped works (Koha-specific)',
+		'use_original_cover_urls_settings' => [
+			'title' => 'Add Option to Use Original Cover URLs, Last URL Validation to BookCoverInfo, and Original Cover URLs',
+			'description' => 'Add an option to allow the use of original cover URLs and the original URL itself rather than cached images in the file system along with tracking last URL validation.',
+			'continueOnError' => false,
 			'sql' => [
-				"ALTER TABLE indexing_profiles ADD COLUMN ignoreOnOrderRecordsForTitleSelection TINYINT(1) DEFAULT 0"
-			],
-		], // add_ignore_on_order_records_for_title_selection
-		'new_nyt_update_settings' => [
-			'title' => 'Add Run Full Update & Enable Extensive Logging to NYT Settings',
-			'description' => 'Add a setting to force full updates of New York Times lists regardless of modification date and a setting to enable extensive logging.',
-			'sql' => [
-				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS runFullUpdate TINYINT(1) NOT NULL DEFAULT 0",
-				"ALTER TABLE nyt_api_settings ADD COLUMN IF NOT EXISTS enableExtensiveLogging TINYINT(1) NOT NULL DEFAULT 0",
-				"ALTER TABLE nyt_update_log ADD COLUMN haltRequested TINYINT(1) DEFAULT 0 NOT NULL"
-			],
-		], //nyt_force_full_update
+				"ALTER TABLE system_variables ADD COLUMN IF NOT EXISTS useOriginalCoverUrls TINYINT(1) DEFAULT 0",
+				"ALTER TABLE bookcover_info ADD COLUMN IF NOT EXISTS last_url_validation INT(11) DEFAULT NULL",
+				"ALTER TABLE bookcover_info ADD COLUMN IF NOT EXISTS original_url TEXT DEFAULT NULL"
+			]
+		], //use_original_cover_urls_setting
 
 		//alexander - PTFS-Europe
+
 		'filter_books_from_summon_results' => [
 			'title' => 'Filter Books From Summon Results',
 			'description' => 'Add the option of filtering out records with the content type of book or ebook from Summon results',
 			'sql' => [
 				"ALTER TABLE summon_settings ADD COLUMN filterOutBooksAndEbooks TINYINT(1) NOT NULL DEFAULT 0",
 			],
-		],
+		], //filter_books_from_summon_results
+		'allow_filtering_of_linked_users_in_holds' => [
+			'title' => 'Allow Filtering of Linked Users in Holds',
+			'description' => 'Allow libraries the option of allowing users to filter their holds by linked user',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowFilteringOfLinkedAccountsInHolds TINYINT(1) DEFAULT 0',
+			]
+		], //allow_filtering_of_linked_users_in_holds
+		'allow_selecting_holds_to_display' => [
+			'title' => 'Allow Selecting Holds to Display',
+			'description' => 'Allow libraries the option of allowing users to display only selected holds',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowSelectingHoldsToDisplay TINYINT(1) DEFAULT 0',
+			]
+		], //allow_selecting_holds_to_display
+		'allow_selecting_holds_to_export' => [
+			'title' => 'Allow Selecting Holds to Export',
+			'description' => 'Allow libraries the option of allowing users to export only selected holds',
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN allowSelectingHoldsToDisplay',
+				'ALTER TABLE library ADD COLUMN allowSelectingHoldsToExport TINYINT(1) DEFAULT 0'
+			]
+		], //allow_selecting_holds_to_display
 
 		//chloe - PTFS-Europe
 
@@ -338,7 +464,51 @@ function getUpdates25_03_00(): array {
 
 		//Lucas Montoya - Theke Solutions
 
+		//Yanjun Li - ByWater
+		'sierra_self_reg_form_updates' => [
+			'title' => 'Sierra Self Reg updates',
+			'description' => 'Add new fields to Sierra self registration forms',
+			'sql' => [
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegNoticePref CHAR(1) DEFAULT "-"',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegTelephoneField VARCHAR(5) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegExpirationDays INT DEFAULT 30',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode1 VARCHAR(25) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode2 VARCHAR(25) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode3 INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPcode4 INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegPatronMessage VARCHAR(35) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegAgency INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra CHANGE COLUMN selfRegPatronCode selfRegPatronType INT DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodePrefix VARCHAR(10) DEFAULT NULL',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegBarcodeSuffixLength INT DEFAULT 7',
+				'ALTER TABLE self_registration_form_sierra ADD COLUMN selfRegGuardianField VARCHAR(10) DEFAULT NULL',
+			],
+		], //sierra_self_reg_form_updates
+
 		//other
 
 	];
+}
+
+function moveUploadedListImages(&$update) : void {
+	require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+	$uploadedListCovers = new BookCoverInfo();
+	$uploadedListCovers->setRecordType('list');
+	$uploadedListCovers->setImageSource('upload');
+	$uploadedListCovers->find();
+	global $configArray;
+	$originalPath = $configArray['Site']['coverPath'] . '/original/';
+	$newPath = $configArray['Site']['coverPath'] . '/original/lists/';
+
+	$numCoversCopied = 0;
+	while($uploadedListCovers->fetch()) {
+		$listId = $uploadedListCovers->getRecordId();
+		if (file_exists($originalPath . $listId . '.png') && !file_exists($newPath . $listId . '.png')) {
+			copy($originalPath . $listId . '.png', $newPath . $listId . '.png');
+			$numCoversCopied++;
+		}
+	}
+
+	$update['status'] = "Moved $numCoversCopied List covers so they will not conflict with records";
+	$update['success'] = true;
 }

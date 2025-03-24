@@ -17,6 +17,8 @@ class BookCoverInfo extends DataObject {
 	protected $largeLoaded;
 	protected $uploadedImage;
 	protected $disallowThirdPartyCover;
+	protected $original_url;
+	protected $last_url_validation;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -28,6 +30,7 @@ class BookCoverInfo extends DataObject {
 			'largeLoaded',
 			'uploadedImage',
 			'disallowThirdPartyCover',
+			'last_url_validation',
 		];
 	}
 
@@ -73,5 +76,43 @@ class BookCoverInfo extends DataObject {
 	 */
 	public function setRecordId($recordId): void {
 		$this->__set('recordId', $recordId);
+	}
+
+	public function setImageSource($imageSource): void {
+		$this->__set('imageSource', $imageSource);
+	}
+
+	/**
+	 * Get the original URL of the cover image
+	 * @return string|null
+	 */
+	public function getOriginalUrl(): ?string
+	{
+		return $this->original_url;
+	}
+
+	/**
+	 * Set the original URL of the cover image
+	 * @param string $url
+	 */
+	public function setOriginalUrl(string $url): void {
+		$this->__set('original_url', $url);
+	}
+
+	/**
+	 * Get the timestamp when the URL was last validated
+	 * @return int|null
+	 */
+	public function getLastUrlValidation(): ?int
+	{
+		return $this->last_url_validation;
+	}
+
+	/**
+	 * Set the timestamp when the URL was last validated
+	 * @param int $timestamp
+	 */
+	public function setLastUrlValidation(int $timestamp): void {
+		$this->__set('last_url_validation', $timestamp);
 	}
 }

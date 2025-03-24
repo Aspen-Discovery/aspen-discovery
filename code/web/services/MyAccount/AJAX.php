@@ -2557,15 +2557,32 @@ class MyAccount_AJAX extends JSON_Action {
 				$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
 				$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
 				if ($user->getLinkedUsers() != null) {
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $filterLinkedUser->getCatalogDriver()->getAccountSummary($filterLinkedUser);
+
+							$ilsSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+							$ilsSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
 					/** @var User $user */
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
+							$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+							$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+
+						}
+					}
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
 						$ilsSummary->totalFines += $linkedUserSummary->totalFines;
 						$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
 						$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
-						$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
-						$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 						$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
+
 					}
 				}
 				$timer->logTime("Loaded ILS Summary for User and linked users");
@@ -2583,6 +2600,7 @@ class MyAccount_AJAX extends JSON_Action {
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
 				$interface->setFinesRelatedTemplateVariables();
+
 				if ($interface->getVariable('expiredMessage')) {
 					$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
 				}
@@ -2644,11 +2662,26 @@ class MyAccount_AJAX extends JSON_Action {
 				$cloudLibrarySummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
+
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
+							$cloudLibrarySummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+							$cloudLibrarySummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$cloudLibrarySummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+							$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+						}
+					}
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						$cloudLibrarySummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$cloudLibrarySummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-						$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
 				$timer->logTime("Loaded cloudLibrary Summary for User and linked users");
@@ -2686,11 +2719,25 @@ class MyAccount_AJAX extends JSON_Action {
 				$axis360Summary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
+							$axis360Summary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+							$axis360Summary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$axis360Summary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+							$axis360Summary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+						}
+					}
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						$axis360Summary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$axis360Summary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-						$axis360Summary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
 				$timer->logTime("Loaded Boundless Summary for User and linked users");
@@ -2770,11 +2817,27 @@ class MyAccount_AJAX extends JSON_Action {
 				$overDriveSummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
+
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
+							$overDriveSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+							$overDriveSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$overDriveSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+							$overDriveSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						}
+					}
+					
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						$overDriveSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$overDriveSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
-						$overDriveSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 					}
 				}
 				$timer->logTime("Loaded " . $readerName . " Summary for User and linked users");
@@ -2809,11 +2872,25 @@ class MyAccount_AJAX extends JSON_Action {
 				$palaceProjectSummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
+							$palaceProjectSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+							$palaceProjectSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$palaceProjectSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+							$palaceProjectSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						}
+					}
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						$palaceProjectSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$palaceProjectSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-						$palaceProjectSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
 				$timer->logTime("Loaded Palace Project Summary for User and linked users");
@@ -2851,9 +2928,19 @@ class MyAccount_AJAX extends JSON_Action {
 				$vdxSummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$vdxSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+					$selectedLinkedUser = $this->setFilterLinkedUser();
+					if ($selectedLinkedUser) {
+						$filterLinkedUser = new User();
+						$filterLinkedUser->id = $selectedLinkedUser;
+						if ($filterLinkedUser->find(true)) {
+							$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
+							$vdxSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
+						}
+					} else {
+						foreach ($user->getLinkedUsers() as $linkedUser) {
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$vdxSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						}
 					}
 				}
 				$timer->logTime("Loaded VDX Summary for User and linked users");
@@ -3080,8 +3167,15 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($selectedUnavailableSortOption == null) {
 			$selectedUnavailableSortOption = ($showPosition ? 'position' : 'title');
 		}
+		$selectedUser = $this->setFilterLinkedUser();
+		$selectedHolds = isset($_REQUEST['selectedHolds']) ? json_decode($_REQUEST['selectedHolds'], true) : [];
 
-		$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
+		if (!empty($selectedHolds)) {
+			$allHolds = $this->filterHoldsBySelected($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source),$selectedHolds);
+		} else {
+			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source),$selectedUser);
+		}
+
 
 		$showDateWhenSuspending = $user->showDateWhenSuspending();
 
@@ -3550,6 +3644,114 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	private function normalizeRecordId(string $recordId): string {
+		$recordId = urldecode($recordId);
+
+		$recordId = trim($recordId);
+
+		$recordId = strtolower($recordId);
+
+		return $recordId;
+	}
+
+	public function filterHoldsBySelected(array $allHolds, $selectedHolds): array {
+
+		if (!empty($selectedHolds) && !is_array($selectedHolds)) {
+			$selectedHoldsArray = [];
+			parse_str($selectedHolds, $parsedHolds);
+
+			if (isset($parsedHolds['selected'])) {
+				foreach ($parsedHolds['selected'] as $holdKey => $value) {
+
+					if (preg_match('/(\d+)\|([a-zA-Z0-9:._-]+)\|?/', $holdKey, $matches)) {
+						$selectedHoldsArray[] = [
+							'recordId' => $this->normalizeRecordId($matches[2]),
+						];
+					}
+				}
+			}
+			$selectedHolds = $selectedHoldsArray;
+		}
+		$filteredHolds = [
+			'available' => [],
+			'unavailable' => [],
+		];
+	
+		foreach ($allHolds['available'] as $key => $hold) {
+			$hold->recordId = $this->normalizeRecordId($hold->recordId);
+			$matchFound = false;
+			foreach ($selectedHolds as $selectedHold) {
+				if (strval($hold->recordId) === strval($selectedHold['recordId'])) {
+					$matchFound = true;
+					break;
+				}
+			}
+			if ($matchFound) {
+				$filteredHolds['available'][$key] = $hold;
+			}
+		}
+	
+		foreach ($allHolds['unavailable'] as $key => $hold) {
+			$hold->recordId = $this->normalizeRecordId($hold->recordId);
+			$matchFound = false;
+			foreach ($selectedHolds as $selectedHold) {
+				if (strval($hold->recordId) === strval($selectedHold['recordId'])) {
+					$matchFound = true;
+					break;
+				}
+			}
+			if ($matchFound) {
+				$filteredHolds['unavailable'][$key] = $hold;
+			}
+		}
+	
+		return $filteredHolds;
+	}
+	
+
+	public function filterHolds(array $allHolds, string $selectedUser): array {
+
+		$filteredHolds = [
+			'available' => [],
+			'unavailable' => [],
+		];
+	
+		// Check if we're filtering by a specific user
+		$allUsersSelected = (empty($selectedUser) || $selectedUser === "" | $selectedUser === '[""]');
+	
+		foreach ($allHolds['available'] as $key => $hold) {
+			if ($allUsersSelected || intval($hold->userId) === intval($selectedUser)) {
+				$filteredHolds['available'][$key] = $hold;
+			}
+		}
+	
+		foreach ($allHolds['unavailable'] as $key => $hold) {
+			if ($allUsersSelected || intval($hold->userId) === intval($selectedUser)) {
+				$filteredHolds['unavailable'][$key] = $hold;
+			}
+		}
+	
+		return $filteredHolds;
+	}
+
+	public function setFilterLinkedUser() : string {
+
+		$selectedUser = '';
+		if (isset($_REQUEST['selectedUser'])) {
+			$selectedUser = $_REQUEST['selectedUser'];
+			if ($selectedUser == "") {
+				$_SESSION['selectedUser'] = '';
+			} else {
+				$_SESSION['selectedUser'] = $selectedUser;
+			}
+	
+		} elseif (isset($_SESSION['selectedUser'])) {
+			$selectedUser = $_SESSION['selectedUser'];
+		}
+		return (string)$selectedUser;
+	}
+
+
 	/** @noinspection PhpUnused */
 	public function getHolds(): array {
 		global $interface;
@@ -3579,6 +3781,16 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);
 			} else {
+				$selectedUser = $this->setFilterLinkedUser();
+				if ($user->getHomeLibrary() != null) {
+					$allowSelectingHoldsToExport = $user->getHomeLibrary()->allowSelectingHoldsToExport;
+				} else {
+					$allowSelectingHoldsToExport = $library->allowSelectingHoldsToExport;
+				}
+
+				$interface->assign('allowSelectingHoldsToExport', $allowSelectingHoldsToExport);
+
+
 				if ($source != 'interlibrary_loan') {
 					if ($user->getHomeLibrary() != null) {
 						$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
@@ -3634,7 +3846,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$availableHoldSortOptions['location'] = 'Pickup Location';
 				}
 
-				if (count($user->getLinkedUsers()) > 0) {
+				if (count($user->getlinkedUsers()) > 0) {
 					$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
 					$availableHoldSortOptions['libraryAccount'] = 'Library Account';
 				}
@@ -3664,7 +3876,7 @@ class MyAccount_AJAX extends JSON_Action {
 				global $offlineMode;
 				if (!$offlineMode) {
 					if ($user) {
-						$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
+						$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedUser);
 						$interface->assign('recordList', $allHolds);
 					}
 				}
@@ -3689,7 +3901,6 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]);
 		}
-
 		return $result;
 	}
 
@@ -7076,6 +7287,23 @@ class MyAccount_AJAX extends JSON_Action {
 						$userEventsEntry->location = $recordDriver->getBranch();
 						$externalUrl = $recordDriver->getExternalUrl();
 					}
+				} elseif (preg_match('`^aspenEvent_`', $userEventsEntry->sourceId)) {
+					require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+					$recordDriver = new AspenEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = mb_substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()) {
+							$regRequired = 1;
+						} else {
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
+					}
 				}
 				$existingEntry = false;
 
@@ -7544,7 +7772,11 @@ class MyAccount_AJAX extends JSON_Action {
 					} else {
 						$id = htmlspecialchars($_GET["id"]);
 						global $configArray;
-						$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+						$destPath = $configArray['Site']['coverPath'] . '/original/lists/';
+						if (!file_exists($destPath)) {
+							mkdir($destPath, 0755, true);
+						}
+						$destFullPath = $destPath . $id . '.png';
 						$fileType = $uploadedFile["type"];
 						if ($fileType == 'image/png') {
 							if (copy($uploadedFile["tmp_name"], $destFullPath)) {
@@ -7626,7 +7858,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$id = htmlspecialchars($_GET["id"]);
 			global $configArray;
-			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+			$destPath = $configArray['Site']['coverPath'] . '/original/lists/';
+			if (!file_exists($destPath)) {
+				mkdir($destPath, 0755, true);
+			}
+			$destFullPath = $destPath . $id . '.png';
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if ($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
 				$upload = file_put_contents($destFullPath, file_get_contents($url));
@@ -7642,6 +7878,71 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($result['success']) {
 			$this->reloadCover();
 			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return $result;
+	}
+
+	function removeUploadedListCover() : array {
+		$result = [
+			'success' => false,
+			'title' => translate(['text'=>'Removing custom list cover','isAdminFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your cover could not be removed','isAdminFacing'=>true]),
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload List Covers'))) {
+			$id = $_REQUEST['listId'] ?? null;
+			if (empty($id) || !is_numeric($id)) {
+				$result = [
+					'success' => false,
+					'title' => translate(['text'=>'Error','isAdminFacing'=>true]),
+					'message' => translate(['text'=>'Invalid List Id provided','isAdminFacing'=>true]),
+				];
+			}else{
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$userList = new UserList();
+				$userList->id = $id;
+				if ($userList->find(true)) {
+					$activeUser = UserAccount::getActiveUserObj();
+					if ($activeUser->canEditList($userList)){
+						global $configArray;
+						$customCoverPath =  $configArray['Site']['coverPath'] . '/original/lists/' . $id . '.png';
+						if (file_exists($customCoverPath)){
+							$fileRemoved = unlink($customCoverPath);
+						}else{
+							//No file existed, treat this as working
+							$fileRemoved = true;
+						}
+						if ($fileRemoved) {
+							$result = [
+								'success' => true,
+								'title' => translate(['text'=>'Removing Custom Cover','isAdminFacing'=>true]),
+								'message' => translate(['text'=>'The cover was removed successfully','isAdminFacing'=>true]),
+							];
+						}else{
+							$result = [
+								'success' => false,
+								'title' => translate(['text'=>'Error','isAdminFacing'=>true]),
+								'message' => translate(['text'=>'You do not have permissions to edit this list','isAdminFacing'=>true]),
+							];
+						}
+					}else{
+						$result = [
+							'success' => false,
+							'title' => translate(['text'=>'Error','isAdminFacing'=>true]),
+							'message' => translate(['text'=>'You do not have permissions to edit this list','isAdminFacing'=>true]),
+						];
+					}
+				}else{
+					$result = [
+						'success' => false,
+						'title' => translate(['text'=>'Error','isAdminFacing'=>true]),
+						'message' => translate(['text'=>'Incorrect List Id provided','isAdminFacing'=>true]),
+					];
+				}
+			}
+		}
+		if ($result['success']) {
+			$this->reloadCover();
+			$result['message'] = translate(['text'=>'The cover has been removed', 'isAdminFacing' => true]);
 		}
 		return $result;
 	}
@@ -8939,8 +9240,333 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	/** @noinspection PhpUnused */
-	function getYearInReviewSlide(): array {
+	public function enrollCampaign() {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+
+		$campaignId = $_GET['campaignId'] ?? null;
+
+		if (!$campaignId) {
+			return[
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Campaign ID is missing.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		$userId = UserAccount::getActiveUserId();
+		if (!$userId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'User is not logged in.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		$userCampaign = new UserCampaign();
+		$userCampaign->userId = $userId;
+		$userCampaign->campaignId = $campaignId;
+		$campaign = new Campaign();
+		$campaign->id = $campaignId;
+		if (!$campaign->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Campaign not found.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		if ($userCampaign->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Already Enrolled',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'User is already enrolled in this campaign.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		$this->applyCampaignProgress($userId, $campaignId);
+
+		if ($userCampaign->insert()) {
+			$campaign->enrollmentCounter++;
+			$campaign->currentEnrollments++;
+			$campaign->update();
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Success',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'You have enrolled in the campaign successfully.',
+					'isPublicFacing' => true
+				])
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Failed to enroll user in campaign.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+	}
+
+	public function unenrollCampaign() {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
+
+
+		$campaignId = $_GET['campaignId'] ?? null;
+
+		if (!$campaignId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Campaign ID is missing.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		$userId = UserAccount::getActiveUserId();
+		if (!$userId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'User is not logged in.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+
+		$userCampaign = new UserCampaign();
+		$userCampaign->userId = $userId;
+		$userCampaign->campaignId = $campaignId;
+
+		//Find user campaign entry and delete
+		if ($userCampaign->find(true)) {
+			$campaign = new Campaign();
+			$campaign->id = $campaignId;
+			if ($campaign->find(true)) {
+				if ($userCampaign->delete()) {
+					$progressEntry = new CampaignMilestoneProgressEntry();
+					$progressEntry->userId = $userId;
+					$progressEntry->ce_campaign_id = $campaignId;
+					$progressEntry->delete(true);
+
+					$milestoneProgress = new CampaignMilestoneUsersProgress();
+					$milestoneProgress->userId = $userId;
+					$milestoneProgress->ce_campaign_id = $campaignId;
+					$milestoneProgress->delete(true);
+					//Increase unenrollment counter
+					$campaign->unenrollmentCounter++;
+					$campaign->currentEnrollments--;
+					$campaign->update();
+
+					return [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Success',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'You have successfully unenrolled.',
+							'isPublicFacing' => true
+						])
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Failed to unenroll.',
+							'isPublicFacing' => true
+						])
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Campaign not found.',
+						'isPublicFacing' => true
+					])
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'User Not Enrolled',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'User is not enrolled in this campaign.',
+					'isPublicFacing' => true
+				])
+			];
+		}
+	}
+
+	public function getEnrolledCampaigns() {
+		require_once ROOT_DIR . '/sys/UserAccount.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+
+		$userId = UserAccount::getActiveUserId();
+		$enrolledCampaigns = Campaign::getUserEnrolledCampaigns($userId);
+		return [
+			'success' => true,
+			'numCampaigns' => count($enrolledCampaigns)
+		];
+	}	
+
+	public function applyCampaignProgress($userId, $campaignId) {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+    	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
+    	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+		$campaign = new Campaign();
+		$campaign->id = $campaignId;
+		if (!$campaign->find(true)) {
+			return;
+		}
+
+		$campaignStartDate = strtotime($campaign->startDate);
+		$campaignEndDate = strtotime($campaign->endDate);
+
+		$entities = $this->getUserEntities($userId);
+
+		foreach ($entities as $entity) {
+			$entityDate = $entity->date;
+			$entityId = $entity->groupedWorkId;
+
+			if ($entityDate >= $campaignStartDate && $entityDate <= $campaignEndDate) {
+				$this->processCampaignMilestones($entity, $campaignId, $entityDate, $entityId);
+			}
+		}
+	}
+
+	private function getUserEntities($userId) {
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+    	require_once ROOT_DIR . '/sys/User/Checkout.php';
+    	require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$entities = [];
+
+		$hold = new Hold();
+		$hold->userId = $userId;
+		if ($hold->find()) {
+			while ($hold->fetch()) {
+				$hold->type = 'user_hold';
+				$hold->date = $hold->createDate;
+				$hold->groupedWorkId = $hold->groupedWorkId;
+				$entities[] = clone $hold;
+			}
+		}
+
+		$checkout = new Checkout();
+		$checkout->userId = $userId;
+		if ($checkout->find()) {
+			while ($checkout->fetch()) {
+				$checkout->type = 'user_checkout';
+				$checkout->date = $checkout->checkoutDate;
+				$checkout->groupedWorkId = $checkout->groupedWorkId;
+				$entities[] = clone $checkout;
+			}
+		}
+
+		$review = new UserWorkReview();
+		$review->userId = $userId;
+		if ($review->find()) {
+
+			while ($review->fetch()){
+
+				$review->type = 'user_work_review';
+				$review->date = $review->dateRated;
+				$review->groupedWorkId = $review->groupedRecordPermanentId;
+				$entities[] = clone $review;
+			}
+		}
+		return $entities;
+	}
+
+	private function processCampaignMilestones($entity, $campaignId, $entityDate, $entityId) {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/action-hooks.php';
+		
+		$campaignMilestone = new CampaignMilestone();
+		$campaignMilestone->campaignId = $campaignId;
+	
+		if ($campaignMilestone->find()) {
+			while ($campaignMilestone->fetch()) {
+				$milestone = new Milestone();
+				$milestone->id = $campaignMilestone->milestoneId;
+	
+				if (!$milestone->find(true)) {
+					continue;
+				}
+	
+				if ($milestone->milestoneType !== $entity->type) {
+					continue;
+				}
+	
+				if (_campaignMilestoneProgressEntryObjectAlreadyExists($entity, $campaignMilestone)) {
+					continue;
+				}
+	
+				$campaignMilestone->addCampaignMilestoneProgressEntry($entity, $entity->userId, $entityId);
+			}
+		}
+	}
+	
+
+	function getYearInReviewSlide() : array {
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -9042,11 +9668,11 @@ class MyAccount_AJAX extends JSON_Action {
 					if (count($sublocations) > 1) {
 						$success = true;
 						if ($context === 'myPreferences') {
-							$labelText = 'Preferred Pickup Location';
+							$labelText = 'Preferred Pickup Area';
 						} elseif ($context === 'changePickupLocation') {
-							$labelText = 'Select a new location to pickup your hold';
+							$labelText = 'Select a new area to pickup your hold';
 						} else {
-							$labelText = 'Select your pickup location';
+							$labelText = 'Select your pickup area';
 						}
 						$html .= '<label class="control-label" for="pickupSublocation">' . translate([
 								'text' => $labelText,

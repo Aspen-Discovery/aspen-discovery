@@ -1942,6 +1942,20 @@ class CatalogConnection {
 					]),
 				];
 			}
+			$patronPType = $patron->getPTypeObj();
+			if ($patronPType == null || $patronPType->allowLocalIll === 0) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Sorry, your account is not allowed to make requests from other libraries.',
+						'isPublicFacing' => true,
+					]),
+					'title' => translate([
+						'text' => 'Requests not allowed',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
 
 			return $this->driver->submitLocalIllRequest($patron, $localIllForm);
 		} else {

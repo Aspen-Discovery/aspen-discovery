@@ -475,7 +475,7 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->sourceId = $curRow['issue_id'];
 			$allIssueIds[] = $curRow['issue_id'];
 			$curCheckout->userId = $patron->id;
-
+			$curCheckout->checkoutDate = strtotime($curRow['issuedate']);
 			$curCheckout->recordId = $curRow['biblionumber'];
 			$curCheckout->shortId = $curRow['biblionumber'];
 			$curCheckout->barcode = $curRow['barcode'];
@@ -1107,7 +1107,7 @@ class Koha extends AbstractIlsDriver {
 		global $logger;
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT *, borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
+		$sql = "SELECT *, borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy, dateofbirth from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -1236,6 +1236,8 @@ class Koha extends AbstractIlsDriver {
 			$user->_state = $userFromDb['state'];
 			$user->_zip = $userFromDb['zipcode'];
 			$user->phone = $userFromDb['phone'];
+			$user->_dateOfBirth = $userFromDb['dateofbirth'];
+
 
 			$user->_web_note = $userFromDb['opacnote'];
 
@@ -1340,7 +1342,7 @@ class Koha extends AbstractIlsDriver {
 
 	function loadContactInformation(User $user) {
 		$this->initDatabaseConnection();
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->unique_ils_id) . "';";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy, dateofbirth from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->unique_ils_id) . "';";
 
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
@@ -1357,6 +1359,7 @@ class Koha extends AbstractIlsDriver {
 			$user->_state = $userFromDb['state'];
 			$user->_zip = $userFromDb['zipcode'];
 			$user->phone = $userFromDb['phone'];
+			$user->_dateOfBirth = $userFromDb['dateofbirth'];
 		}
 	}
 

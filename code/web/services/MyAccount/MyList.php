@@ -79,6 +79,12 @@ class MyAccount_MyList extends MyAccount {
 		$userObj = UserAccount::getActiveUserObj();
 		if ($userObj != false) {
 			$userCanEdit = $userObj->canEditList($list);
+			if ($userCanEdit && UserAccount::userHasPermission('Upload List Covers')){
+				global $configArray;
+				$customCoverPath =  $configArray['Site']['coverPath'] . '/original/lists/' . $list->id . '.png';
+				$hasUploadedCover = file_exists($customCoverPath);
+				$interface->assign('hasUploadedCover', $hasUploadedCover);
+			}
 		}
 
 		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))) {
@@ -176,7 +182,7 @@ class MyAccount_MyList extends MyAccount {
 		} else {
 			$sidebar = '';
 		}
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate([
+		$this->display('../MyAccount/list.tpl', $list->title ?? translate([
 			'text' => 'My List',
 			'isPublicFacing' => true,
 		]), $sidebar, false);

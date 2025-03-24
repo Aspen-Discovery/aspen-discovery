@@ -25,9 +25,6 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
-		if (!UserAccount::userHasPermission('Administer All Web Resources')) {
-			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryWebResource', 'webResourceId');
-		}
 		$objectList = [];
 		if ($userHasExistingObjects) {
 			$object->find();
@@ -66,14 +63,13 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
-		$breadcrumbs[] = new Breadcrumb('/WebBuilder/WebResources', 'Web Resource Settings');
+		$breadcrumbs[] = new Breadcrumb('/WebBuilder/WebResourceSettings', 'Web Resource Settings');
 		return $breadcrumbs;
 	}
 
 	function canView(): bool {
 		return UserAccount::userHasPermission([
 			'Administer All Web Resources',
-			'Administer Library Web Resources',
 		]);
 	}
 

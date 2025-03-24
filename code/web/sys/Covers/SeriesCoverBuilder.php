@@ -62,7 +62,7 @@ class SeriesCoverBuilder {
 	 * @param array|null $seriesTitle
 	 * @param string $filename
 	 */
-	public function getCover($title, $seriesTitle, $filename) {
+	public function getCover($title, $seriesTitle, $filename) : void {
 		//Create the background image
 		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 
@@ -120,14 +120,68 @@ class SeriesCoverBuilder {
 		imagerectangle($imageCanvas, 10, $this->imageWidth, $this->imageWidth - 10, $this->imageHeight - 10, $textColor);
 
 		//Add the title at the bottom of the cover
-		$this->drawText($imageCanvas, $title, $textColor);
+		$this->drawText($imageCanvas, $title, $textColor, $this->imageWidth + 5);
 
 
 		imagepng($imageCanvas, $filename);
 		imagedestroy($imageCanvas);
 	}
 
-	private function setBackgroundColors($title) {
+	public function getCoverAlt($title, $seriesTitle, $filename) : void {
+		//Create the background image
+		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
+
+		//Define our colors
+		$white = imagecolorallocate($imageCanvas, 255, 255, 255);
+		$this->setBackgroundColors($title);
+		$whiteSemiTransparent = imagecolorallocatealpha($imageCanvas, 255, 255, 255, 30);
+		//Draw a background for the entire image
+		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $white);
+
+		//Draw a few overlapping covers from the list at the top of the cover
+		$numCoversLoaded = 0;
+
+		if (count($seriesTitle) > 0) {
+			$firstSeriesTitle = reset($seriesTitle);
+			$recordDriver = $firstSeriesTitle->getRecordDriver();
+			if ($recordDriver->isValid()) {
+				$bookcoverUrl = $recordDriver->getBookcoverUrl('medium', true);
+				//Load the cover
+				if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)) {
+					$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+					$listEntryWidth = imagesx($listEntryImageResource);
+					$listEntryHeight = imagesy($listEntryImageResource);
+
+					$imageCanvas2 = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
+					if (imagecopyresampled($imageCanvas2, $listEntryImageResource, 0, 0, 0, 0, $this->imageWidth, $this->imageHeight, $listEntryWidth, $listEntryHeight)) {
+						if (imagecopymerge($imageCanvas, $imageCanvas2, 0, 0, 0, 0, $this->imageWidth, $this->imageHeight, 60)) {
+							$numCoversLoaded++;
+						}
+					}
+					imagedestroy($imageCanvas2);
+					imagedestroy($listEntryImageResource);
+				}
+			}
+		}
+
+		//Make sure the borders are preserved
+		//imagefilledrectangle($imageCanvas, $this->imageWidth - 10, 0, $this->imageWidth, $this->imageHeight, $backgroundColor);
+		//imagefilledrectangle($imageCanvas, 0, $this->imageWidth, $this->imageWidth - 10, $this->imageHeight, $backgroundColor);
+
+		$textColor = imagecolorallocate($imageCanvas, 50, 50, 50);
+
+		imagefilledrectangle($imageCanvas, 10, $this->imageHeight / 2 , $this->imageWidth - 10, $this->imageHeight - 10, $whiteSemiTransparent);
+		imagerectangle($imageCanvas, 10, $this->imageHeight / 2, $this->imageWidth - 10, $this->imageHeight - 10, $textColor);
+
+		//Add the title at the bottom of the cover
+		$this->drawText($imageCanvas, $title . " Series", $textColor, $this->imageHeight / 2 + 10);
+
+
+		imagepng($imageCanvas, $filename);
+		imagedestroy($imageCanvas);
+	}
+
+	private function setBackgroundColors($title) : void {
 		if (isset($this->backgroundColor)) {
 			return;
 		}
@@ -144,11 +198,10 @@ class SeriesCoverBuilder {
 		$this->backgroundColor = ColorUtils::colorHSLToRGB(($color_seed + $color_distance) % 360, $base_saturation, $base_brightness);
 	}
 
-	private function drawText($imageCanvas, $title, $textColor) {
+	private function drawText($imageCanvas, $title, $textColor, $y) : void {
 		$title_font_size = $this->imageWidth * 0.09;
 
 		$x = 15;
-		$y = $this->imageWidth + 5;
 		$width = $this->imageWidth - (30);
 		//$height = $title_height;
 

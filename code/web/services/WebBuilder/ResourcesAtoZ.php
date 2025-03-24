@@ -2,7 +2,7 @@
 
 class WebBuilder_ResourcesAtoZ extends Action
 {
-	function launch()
+	function launch() : void
 	{
 		global $interface;
 		global $activeLanguage;
@@ -17,28 +17,29 @@ class WebBuilder_ResourcesAtoZ extends Action
 		require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResourcesSetting.php';
 
-		if ($activeLibrary == null && UserAccount::isLoggedIn()) {
-			$activeLibrary = UserAccount::getLoggedInUser()->getHomeLibrary();
-		}elseif ($activeLibrary == null) {
-			global $library;
-			$activeLibrary = $library;
-		}
+		//For display of web resources, we can use the active library rather than the patron's home library.
+		//The resources may get restricted later if they need to log in or be in the library, but that is handled later.
+		global $library;
 
 		$webResourceSetting = new WebResourcesSetting();
-		$webResourceSetting->webResourceSettingId = $activeLibrary->webResourceSettingId;
-		$setting = $webResourceSetting->find(true);
+		$webResourceSetting->id = $library->webResourcesSettingId;
 
 		//get valid starting letters
 		$startingLetters = new WebResource();
 		$startingLetters->selectAdd();
 		$startingLetters->selectAdd("DISTINCT LEFT(name, 1) AS first_letter");
+		$startingLetterLibrary = new LibraryWebResource();
+		$startingLetterLibrary->libraryId = $library->libraryId;
+		$startingLetters->joinAdd($startingLetterLibrary, 'INNER', 'resourceLibrary', 'id', 'webResourceId');
 		$startingLetters->orderBy('first_letter');
 		$startingLetters->find();
 		$validLetters = [];
 		while ($startingLetters->fetch()) {
+			/** @noinspection PhpUndefinedFieldInspection */
 			if (is_numeric($startingLetters->first_letter)){
 				$validLetters[] = "num";
 			} else {
+				/** @noinspection PhpUndefinedFieldInspection */
 				$validLetters[] = $startingLetters->first_letter;
 			}
 		}
@@ -55,6 +56,7 @@ class WebBuilder_ResourcesAtoZ extends Action
 				$resourcesForAtoZ->whereAdd("name LIKE $escapedFilter");
 			}
 		}
+		$resourcesForAtoZ->joinAdd($startingLetterLibrary, 'INNER', 'resourceLibrary', 'id', 'webResourceId');
 		$resourcesForAtoZ->orderBy('name');
 		$resourcesForAtoZ->find();
 		$webResources = [];
@@ -87,7 +89,7 @@ class WebBuilder_ResourcesAtoZ extends Action
 		$interface->assign('filterArray', $filterArray);
 		$interface->assign('webResources', $webResources);
 		$interface->assign('description', $webResourceSetting->getTextBlockTranslation('descriptionAtoZ', $activeLanguage->code));
-		$this->display('resourcesAtoZ.tpl', '', '', false);
+		$this->display('resourcesAtoZ.tpl', 'Resources A-Z', '', false);
 	}
 
 	function getBreadcrumbs(): array

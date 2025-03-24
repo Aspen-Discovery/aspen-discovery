@@ -14,6 +14,7 @@ class PType extends DataObject {
 	public $isStaff;
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
+	public $allowLocalIll;
 	public $accountLinkingSetting;
 	public $accountLinkRemoveSetting;
 	public $enableReadingHistory;
@@ -32,7 +33,8 @@ class PType extends DataObject {
 			'enableReadingHistory',
 			'canSuggestMaterials',
 			'canRenewOnline',
-			'enableYearInReview'
+			'enableYearInReview',
+			'allowLocalIll'
 		];
 	}
 
@@ -138,6 +140,13 @@ class PType extends DataObject {
 				'maxLength' => 10,
 				'default' => '',
 				'hideInLists' => true,
+			],
+			'allowLocalIll' => [
+				'property' => 'allowLocalIll',
+				'type' => 'checkbox',
+				'label' => 'Allow Local ILL',
+				'description' => 'Allow Local ILL for patrons with this patron type (if allowed by their library).',
+				'default' => 1,
 			],
 			'accountLinkingSetting' => [
 				'property' => 'accountLinkingSetting',

@@ -1,5 +1,5 @@
 {strip}
-	<input type="hidden" name="patronId" value="{$profile->id}"/>
+	<input type="hidden" name="patronId" value="{$userId}"/>
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			<div id="snapPay-button-container{$userId}">

@@ -21,6 +21,24 @@
 		{if !empty($offline) && !$enableEContentWhileOffline}
 			<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 		{else}
+		{if count($linkedUsers) > 0 && $allowFilteringOfLinkedAccountsInHolds}
+			<div class="row">
+				<div class="col-tn-12">
+					<div id="linkedUserOptions" class="form-group">
+						<label class="control-label" for="linkedUsersDropdown">{translate text="Linked Users" isPublicFacing=true}&nbsp;</label>
+						<select name="selectedUser" id="linkedUsersDropdown" class="form-control" onchange="AspenDiscovery.Account.filterOutLinkedUsers();">
+							<option value="" {if $selectedUser == ""}selected{/if}>All</option>
+							<option value="{$currentUserId}" {if $selectedUser == $currentUserId} selected="selected"{/if}>
+								{$currentUserName}
+							</option>
+							{foreach from=$linkedUsers item=user}
+								<option value="{$user->id}"{if $selectedUser == $user->id} selected="selected"{/if}>{$user->displayName}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+			</div>
+		{/if}
 			<ul class="nav nav-tabs" role="tablist" id="holdsTab">
 				{if empty($offline)}
 					<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="holds-placeholder">&nbsp;</span></span></a></li>

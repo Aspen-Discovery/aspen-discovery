@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 
 class HooplaRecordDriver extends GroupedWorkSubDriver {
-	private $id;
+	protected $id;
 	/** @var HooplaExtract */
 	private $hooplaExtract;
 	private $hooplaRawMetadata;

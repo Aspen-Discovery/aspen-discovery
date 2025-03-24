@@ -196,7 +196,7 @@ public class SeriesMain {
 			logEntry.incErrors("Could not load last index time from series_indexing_settings table ", e);
 		}
 
-		seriesProcessor = new SeriesIndexer(serverName, configIni, dbConn, logger);
+		seriesProcessor = new SeriesIndexer(configIni, dbConn, logger);
 
 		return logEntry;
 	}

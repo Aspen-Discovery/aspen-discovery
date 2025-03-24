@@ -320,6 +320,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			doc.addField("description", Util.getCRSeparatedString(description));
 			doc.addField("display_description", displayDescription);
+			doc.addField("ils_description", ilsDescription);
 
 			for (Integer customFacetNumber : customFacetValues.keySet()) {
 				doc.addField("custom_facet_" + customFacetNumber, customFacetValues.get(customFacetNumber));

@@ -232,6 +232,10 @@ try {
 	//Modules are not installed yet
 }
 
+if (array_key_exists('Community Engagement', $enabledModules)) {
+	require_once ROOT_DIR . '/sys/CommunityEngagement/action-hooks.php';
+}
+
 $timer->logTime("Basic Initialization");
 loadLibraryAndLocation();
 

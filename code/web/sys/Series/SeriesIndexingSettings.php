@@ -27,7 +27,7 @@ class SeriesIndexingSettings extends DataObject {
 			'lastUpdateOfChangedSeries' => [
 				'property' => 'lastUpdateOfChangedSeries',
 				'type' => 'timestamp',
-				'label' => 'Last Update of Changed Course Reserves',
+				'label' => 'Last Update of Changed Series',
 				'description' => 'The timestamp when just changes were loaded',
 				'default' => 0,
 			],

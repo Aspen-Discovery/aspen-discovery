@@ -26,6 +26,7 @@ class AspenEvent {
 	private final long locationId;
 	private final String locationCode;
 	private final String sublocationName;
+	private final String sublocationOverride;
 	private final HashSet<String> libraries = new HashSet<>();
 	private final long sublocationId;
 	private final Boolean status;
@@ -45,6 +46,7 @@ class AspenEvent {
 		this.locationId = existingEventsRS.getLong("locationId");
 		this.locationCode = existingEventsRS.getString("displayName");
 		this.sublocationName = existingEventsRS.getString("sublocationName");
+		this.sublocationOverride = existingEventsRS.getString("sublocationOverride");
 		this.sublocationId = existingEventsRS.getLong("sublocationId");
 		this.status = existingEventsRS.getBoolean("status");
 		this.nonPublic = existingEventsRS.getBoolean("private");
@@ -111,7 +113,12 @@ class AspenEvent {
 	}
 
 	public String getSublocationName() {
-		return sublocationName != null ? sublocationName : "";
+		if (sublocationOverride != null) {
+			return sublocationOverride;
+		} else if (sublocationName != null) {
+			return sublocationName;
+		}
+		return "";
 	}
 
 	public long getSublocationId() {
@@ -228,7 +235,7 @@ class AspenEvent {
 		public String getValue() {
 			if (allowableValues.length > 0 && StringUtils.isNumeric(value)) {
 				try {
-					return allowableValues[Integer.parseInt(value)];
+					return allowableValues[Integer.parseInt(value)].trim();
 				}catch (ArrayIndexOutOfBoundsException e) {
 					//MDN 2/6/25 do additional handling and logging if we don't get a good value.
 					return "Unknown";

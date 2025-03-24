@@ -233,3 +233,4 @@ intellij_project
 phpstorm_project
 code/aspen_app/updaterInternal.sh
 code/aspen_app/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
+data_dir_setup/.idea/workspace.xml

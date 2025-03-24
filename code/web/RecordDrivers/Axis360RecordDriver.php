@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
 
 class Axis360RecordDriver extends GroupedWorkSubDriver {
-	private $id;
+	protected $id;
 	/** @var Axis360Title */
 	private $axis360Title;
 	private $axis360RawMetadata;

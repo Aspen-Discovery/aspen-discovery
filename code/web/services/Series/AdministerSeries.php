@@ -51,7 +51,14 @@ class Series_AdministerSeries extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof Series && !empty($existingObject->id)) {
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => '/Series/' . $existingObject->id
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions(): string {
@@ -74,7 +81,24 @@ class Series_AdministerSeries extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Series');
 	}
 
-	function canAddNew() {
-		return $this->getNumObjects() == 0;
+	function canAddNew(): bool{
+		return UserAccount::userHasPermission('Administer Series');
+	}
+
+	function getDefaultFilters(array $filterFields): array {
+		return [
+			'displayName' => [
+				'fieldName' => 'displayName',
+				'filterType' => 'text',
+				'filterValue' => '',
+				'field' => $filterFields['displayName'],
+			],
+			'author' => [
+				'fieldName' => 'author',
+				'filterType' => 'text',
+				'filterValue' => '',
+				'field' => $filterFields['author'],
+			],
+		];
 	}
 }

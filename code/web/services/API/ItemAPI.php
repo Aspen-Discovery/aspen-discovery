@@ -1183,7 +1183,7 @@ class ItemAPI extends AbstractAPI {
 		];
 	}
 
-	function getRecords() {
+	function getRecords() : array {
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format']) || !isset($_REQUEST['source'])) {
 			return [
 				'success' => false,
@@ -1195,16 +1195,38 @@ class ItemAPI extends AbstractAPI {
 		$format = $_REQUEST['format'];
 		$source = $_REQUEST['source'];
 		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+		if (!$recordDriver->isValid) {
+			return [
+				'success' => false,
+				'message' => 'Invalid Grouped Work Id'
+			];
+		}
 		$relatedManifestation = null;
 		$relatedVariation = null;
 		$relatedRecord = null;
 		$records = [];
 		global $interface;
 		global $library;
+		$relatedManifestations = $recordDriver->getRelatedManifestations();
+		if (empty($relatedManifestations)) {
+			return [
+				'success' => false,
+				'message' => 'No records found for the provided grouped work'
+			];
+		}
+		$relatedManifestationFound = false;
 		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
 			if ($relatedManifestation->format == $format) {
+				$relatedManifestationFound = true;
 				break;
 			}
+		}
+		$records = [];
+		if (!$relatedManifestationFound) {
+			return [
+				'success' => false,
+				'message' => 'The specified format did not exist in the work'
+			];
 		}
 		foreach ($relatedManifestation->getRelatedRecords() as $relatedRecord) {
 			if ($relatedRecord->source == $source) {
@@ -1286,6 +1308,32 @@ class ItemAPI extends AbstractAPI {
 
 							if (isset($actionButton['redirectUrl'])) {
 								$buttons[$key]['redirectUrl'] = $actionButton['redirectUrl'];
+							}
+						}
+
+						if ($this->context == 'lida') {
+							require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+							$appGeneralSetting = new GeneralSetting();
+							$appGeneralSetting->id = $library->lidaGeneralSettingId;
+							if($appGeneralSetting->find(true)) {
+								$showMoreInfo = $appGeneralSetting->showMoreInfoBtn;
+							}else{
+								$showMoreInfo = false;
+							}
+
+							if ($showMoreInfo) {
+								$moreInfoButton = [
+									'type' => 'more_info_link',
+									'title' => translate([
+										'text' => 'More Info',
+										'isPublicFacing' => true
+									]),
+									'source' => $relatedRecord->source,
+									'groupedWorkId' => $relatedRecord->getDriver()->getGroupedWorkId(),
+									'module' => $relatedRecord->getDriver()->getModule(),
+									'recordId' => $relatedRecord->getDriver()->getId()
+								];
+								$buttons[] = $moreInfoButton;
 							}
 						}
 

@@ -49,6 +49,11 @@ class BookCoverProcessor {
 				return true;
 			}
 		}
+
+		if ($this->checkForEarlyRedirect()) {
+			return true;
+		}
+
 		if($this->bookCoverInfo->imageSource == 'upload') {
 			if($this->getUploadedRecordCover($this->id)) {
 				return true;
@@ -64,6 +69,10 @@ class BookCoverProcessor {
 			}
 		} elseif ($this->type == 'series') {
 			if ($this->getSeriesCover($this->id)) {
+				return true;
+			}
+		} elseif ($this->type == 'seriesMember') {
+			if ($this->getSeriesMemberCover($this->id)) {
 				return true;
 			}
 		} elseif ($this->type == 'course_reserves') {
@@ -660,6 +669,13 @@ class BookCoverProcessor {
 	}
 
 	private function getCachedCover() {
+		// Always check for cached covers for default and uploaded covers regardless of useOriginalCoverUrls setting.
+		if (SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
+			$this->bookCoverInfo->imageSource !== 'default' &&
+			$this->bookCoverInfo->imageSource !== 'upload') {
+			return false;
+		}
+
 		$hasCachedImage = false;
 		if ($this->bookCoverInfo->getNumResults() == 1) {
 			if ($this->size == 'small' && $this->bookCoverInfo->thumbnailLoaded == 1) {
@@ -739,6 +755,8 @@ class BookCoverProcessor {
 	}
 
 	function processImageURL($source, $url, $attemptRefetch = true) {
+		$url = $this->handleOriginalCoverUrl($source, $url);
+
 		$this->log("Processing $url", Logger::LOG_NOTICE);
 		$context = stream_context_create([
 			'http' => [
@@ -1537,7 +1555,7 @@ class BookCoverProcessor {
 	}
 
 	private function getListCover($id) {
-		//Build a cover based on the titles within list
+		//Build a cover based on the titles within a list
 		require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
 		$coverBuilder = new ListCoverBuilder();
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -1559,7 +1577,7 @@ class BookCoverProcessor {
 	}
 
 	private function getSeriesCover($id) {
-		//Build a cover based on the titles within list
+		//Build a cover based on the titles within series
 		require_once ROOT_DIR . '/sys/Covers/SeriesCoverBuilder.php';
 		$coverBuilder = new SeriesCoverBuilder();
 		require_once ROOT_DIR . '/sys/Series/Series.php';
@@ -1573,6 +1591,28 @@ class BookCoverProcessor {
 				$title = $series->displayName;
 				$seriesTitles = $series->getSeriesMembers();
 				$coverBuilder->getCover($title, $seriesTitles, $this->cacheFile);
+				return $this->processImageURL('default', $this->cacheFile, false);
+			}
+		} else {
+			return false;
+		}
+	}
+
+	private function getSeriesMemberCover($id) {
+		//Build a cover based on the titles within list
+		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+		$coverBuilder = new DefaultCoverImageBuilder();
+		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+		$seriesMember = new SeriesMember();
+		$seriesMember->id = $id;
+
+		if ($seriesMember->find(true)) {
+			if ($this->getUploadedSeriesMemberCover($seriesMember->cover)) {
+				return true;
+			} else {
+				$title = $seriesMember->displayName;
+				$author = $seriesMember->author;
+				$coverBuilder->getCover($title, $author, $this->cacheFile);
 				return $this->processImageURL('default', $this->cacheFile, false);
 			}
 		} else {
@@ -1901,9 +1941,9 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedListCover($id) {
-		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
+		$uploadedImage = $this->bookCoverPath . '/original/lists/' . $id . '.png';
 		$source = $this->bookCoverInfo->imageSource;
-		if ($source == 'upload' && file_exists($uploadedImage)) {
+		if (($source == 'upload' || $source == '') && file_exists($uploadedImage)) {
 			return $this->processImageURL($source, $uploadedImage);
 		}
 		return false;
@@ -1911,6 +1951,14 @@ class BookCoverProcessor {
 
 	private function getUploadedSeriesCover($cover) {
 		$uploadedImage = $this->bookCoverPath . '/original/series/' . $cover;
+		if (file_exists($uploadedImage)) {
+			return $this->processImageURL('upload', $uploadedImage);
+		}
+		return false;
+	}
+
+	private function getUploadedSeriesMemberCover($cover) {
+		$uploadedImage = $this->bookCoverPath . '/original/seriesMember/' . $cover;
 		if (file_exists($uploadedImage)) {
 			return $this->processImageURL('upload', $uploadedImage);
 		}
@@ -1964,10 +2012,13 @@ class BookCoverProcessor {
 				$id,
 			] = explode(':', $id);
 		}
-		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
-		if (file_exists($uploadedImage)) {
-			return $this->processImageURL('upload', $uploadedImage);
+		if ($this->bookCoverInfo->getRecordType() != 'series' && $this->bookCoverInfo->getRecordType() != 'seriesMember' && $this->bookCoverInfo->getRecordType() != 'list') {
+			$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
+			if (file_exists($uploadedImage)) {
+				return $this->processImageURL('upload', $uploadedImage);
+			}
 		}
+
 		return false;
 	}
 
@@ -2095,5 +2146,196 @@ class BookCoverProcessor {
 			}
 		}
 		return $foundTitle;
+	}
+
+	/**
+	 * Validates a cover URL to ensure it returns a valid, usable image.
+	 *
+	 * @param string $url The URL to validate.
+	 * @return bool True if the URL is valid and returns a usable image, false otherwise.
+	 */
+	private function validateCoverUrl(string $url, string $source, bool $forceValidation = false): array|bool {
+		// Check if we should validate the URL or if we can use the cached validation.
+		// Always validate if reload flag is set or if forceValidation is true.
+		if (!$forceValidation && !$this->reload && $this->bookCoverInfo && $this->bookCoverInfo->getLastUrlValidation()) {
+			// Hardcoded expiration time: 24 hours (86400 seconds).
+			$expirationTime = $this->bookCoverInfo->getLastUrlValidation() + 86400;
+			if (time() < $expirationTime) {
+				// URL validation hasn't expired yet, consider it valid.
+				return true;
+			}
+		}
+
+		// Check HTTP headers.
+		$headers = @get_headers($url);
+		if (!$headers || !preg_match('/^HTTP\/\d+\.\d+\s+(200|30[1-9])/', $headers[0])) {
+			$this->log("Cover URL $url did not return a valid HTTP response; falling back.", Logger::LOG_DEBUG);
+			return false;
+		}
+
+		// Fetch the image content (in memory) to perform additional checks.
+		$context = stream_context_create([
+			'http' => [
+				'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n",
+			],
+		]);
+		$image = @file_get_contents($url, false, $context);
+		if ($image === false) {
+			$this->log("Could not retrieve image content from cover URL $url; falling back.", Logger::LOG_DEBUG);
+			return false;
+		}
+
+		// Check against known dummy image MD5 checksums.
+		$imageChecksum = md5($image);
+		$dummyChecksums = [
+			'e89e0e364e83c0ecfba5da41007c9a2c',
+			'f017f94ed618a86d0fa7cecd7112ab7e',
+			'798f904eabf783405079eaf699414801',
+			'dadde13fdb5f3775cdbdd25f34c0389b',
+			'b13e33c0262a3a1f21dd20b826710cbc',
+			'c6ddaf338cf667df0bf60045f05146db',
+			'821d0d442dbee0f51f4c803e8e9fc87a'
+		];
+		if (in_array($imageChecksum, $dummyChecksums)) {
+			$this->log("Cover URL $url returned a known dummy image (checksum: $imageChecksum); falling back.", Logger::LOG_DEBUG);
+			return false;
+		}
+
+		// Verify that the image is not too small.
+		$imageInfo = @getimagesizefromstring($image);
+		if ($imageInfo === false || ($imageInfo[0] < 2 && $imageInfo[1] < 2)) {
+			$this->log("Cover URL $url returned an image that is too small; falling back.", Logger::LOG_DEBUG);
+			return false;
+		}
+
+		// Check the color of the bottom left and bottom right corners.
+		if ($imageResource = @imagecreatefromstring($image)) {
+			$width = $imageInfo[0];
+			$height = $imageInfo[1];
+			$rgbLeft = imagecolorat($imageResource, 0, $height - 1);
+			$rgbRight = imagecolorat($imageResource, $width - 1, $height - 1);
+			imagedestroy($imageResource);
+			if ($rgbLeft == 8421504 && $rgbRight == 8421504) {
+				$this->log("Cover URL $url returned an image with partial gray at the bottom; falling back.", Logger::LOG_DEBUG);
+				return false;
+			}
+
+			$this->setBookCoverInfo($source, $width, $height);
+
+			// Update the last validation timestamp.
+			if ($this->bookCoverInfo) {
+				$this->bookCoverInfo->setLastUrlValidation(time());
+				$this->bookCoverInfo->update();
+			}
+
+			// All checks passed.
+			return true;
+		} else {
+			$this->log("Cover URL $url returned invalid image data; falling back.", Logger::LOG_DEBUG);
+			return false;
+		}
+	}
+
+	/**
+	 * If the system is configured to use the original cover URLs and the source is not an 'upload' or 'default',
+	 * check for a cached URL in the database, write it if not present, and then
+	 * (if the URL appears to be valid and not a dummy) immediately issue a 301 redirect.
+	 *
+	 * @param string $source The source label.
+	 * @param string $url The URL to process.
+	 * @return string Returns the (possibly unmodified) URL.
+	 */
+	private function handleOriginalCoverUrl(string $source, string $url): string {
+		if (SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
+			$source !== 'default' &&
+			$source !== 'upload' &&
+			preg_match('/^https?:\/\//i', $url)
+		) {
+			// Always validate the URL when first storing it or when reload is requested
+			$validationResult = $this->validateCoverUrl($url, $source, true);
+			if ($validationResult !== false) {
+				// All checks passed; store the URL in the database and issue the redirect.
+				// First set the basic cover info to ensure consistency.
+
+				// Now calculate the validation hash with the updated values.
+				$validationFields = [
+					$this->bookCoverInfo->imageSource,
+					$this->bookCoverInfo->sourceWidth,
+					$this->bookCoverInfo->sourceHeight,
+					$this->bookCoverInfo->uploadedImage,
+					$this->bookCoverInfo->disallowThirdPartyCover
+				];
+				$validationHash = md5(implode('|', $validationFields));
+				// Store hash with URL for future validation.
+				$urlToStore = $validationHash . $url;
+				$this->bookCoverInfo->setOriginalUrl($urlToStore);
+				$this->bookCoverInfo->update();
+
+				//$this->log("Using new original URL: $url", Logger::LOG_DEBUG);
+				//$this->log("Debug - Storage: Hash: $validationHash", Logger::LOG_DEBUG);
+				//$this->log("Debug - Storage fields: " . implode('|', $validationFields), Logger::LOG_DEBUG);
+
+				header("HTTP/1.1 301 Moved Permanently");
+				header("Location: $url");
+				$this->addCachingHeader();
+				exit;
+			}
+		}
+		return $url;
+	}
+
+	/**
+	 * If the system is configured to use the original cover URLs and the source is not an 'upload' or 'default',
+	 * check for a valid, cached URL in the database. This bypasses all logic that builds the URL, as
+	 * it is not needed unless certain fields on the BookCoverInfo object have been modified.
+	 *
+	 * Runs if the user's browser has not cached the image.
+	 *
+	 * @return bool Returns true if a redirect was issued, false otherwise.
+	 */
+	private function checkForEarlyRedirect(): bool {
+		if ($this->bookCoverInfo &&
+			!empty($this->bookCoverInfo->getOriginalUrl()) &&
+			SystemVariables::getSystemVariables()->useOriginalCoverUrls
+		) {
+			$validationFields = [
+				$this->bookCoverInfo->imageSource,
+				$this->bookCoverInfo->sourceWidth,
+				$this->bookCoverInfo->sourceHeight,
+				$this->bookCoverInfo->uploadedImage,
+				$this->bookCoverInfo->disallowThirdPartyCover
+			];
+			$currentHash = md5(implode('|', $validationFields));
+
+			// Get stored hash from first 32 characters of originalUrl.
+			$storedHash = substr($this->bookCoverInfo->getOriginalUrl(), 0, 32);
+			$url = substr($this->bookCoverInfo->getOriginalUrl(), 32);
+
+			//$this->log("Debug - Validation check: Current hash: $currentHash, Stored hash: $storedHash", Logger::LOG_DEBUG);
+			//$this->log("Debug - Validation fields: " . implode('|', $validationFields), Logger::LOG_DEBUG);
+			//$this->log("Debug - Original URL: " . $this->bookCoverInfo->getOriginalUrl(), Logger::LOG_DEBUG);
+
+			if ($currentHash === $storedHash && !empty($url)) {
+				// Check if we need to validate the URL based on the expiration time
+				// Force validation if reload flag is set
+				$forceValidation = $this->reload;
+				$validationResult = $this->validateCoverUrl($url, $this->bookCoverInfo->imageSource, $forceValidation);
+				if ($validationResult !== false) {
+					header("HTTP/1.1 301 Moved Permanently");
+					header("Location: $url");
+					$this->addCachingHeader();
+					exit;
+				} else {
+					$this->log("URL validation failed for stored URL: $url", Logger::LOG_DEBUG);
+				}
+			} else {
+				$this->log("Debug - Hash validation failed: " . ($currentHash === $storedHash ? "Hashes match" : "Hashes don't match") . ", URL empty: " . (empty($url) ? "Yes" : "No"), Logger::LOG_DEBUG);
+			}
+		} else {
+			$this->log("Debug - Early conditions failed: BookCoverInfo exists: " . ($this->bookCoverInfo ? "Yes" : "No") .
+				", Original URL exists: " . (!empty($this->bookCoverInfo) && !empty($this->bookCoverInfo->getOriginalUrl()) ? "Yes" : "No") .
+				", useOriginalCoverUrls enabled: " . (SystemVariables::getSystemVariables()->useOriginalCoverUrls ? "Yes" : "No"), Logger::LOG_DEBUG);
+		}
+		return false;
 	}
 }

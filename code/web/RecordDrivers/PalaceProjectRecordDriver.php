@@ -10,7 +10,7 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	/** @var PalaceProjectDriver */
 	private static $driver;
 
-	private $id;
+	protected $id;
 	/** @var PalaceProjectTitle */
 	private $palaceProjectTitle;
 	private $palaceProjectRawMetadata;

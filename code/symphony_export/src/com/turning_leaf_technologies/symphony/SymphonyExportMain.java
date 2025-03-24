@@ -258,12 +258,12 @@ public class SymphonyExportMain {
 			HashMap<String, CourseInfo> existingCourses = new HashMap<>();
 			while (existingCourseReservesRS.next()){
 				CourseInfo courseInfo = new CourseInfo(
-						existingCourseReservesRS.getLong("id"),
-						existingCourseReservesRS.getString("courseLibrary"),
-						existingCourseReservesRS.getString("courseInstructor"),
-						existingCourseReservesRS.getString("courseNumber"),
-						existingCourseReservesRS.getString("courseTitle"),
-						existingCourseReservesRS.getBoolean("deleted")
+					existingCourseReservesRS.getLong("id"),
+					existingCourseReservesRS.getString("courseLibrary"),
+					existingCourseReservesRS.getString("courseInstructor"),
+					existingCourseReservesRS.getString("courseNumber"),
+					existingCourseReservesRS.getString("courseTitle"),
+					existingCourseReservesRS.getBoolean("deleted")
 				);
 				existingCourses.put(courseInfo.toString(), courseInfo);
 			}
@@ -325,12 +325,12 @@ public class SymphonyExportMain {
 							ResultSet generatedKeys = addCourseReserveListStmt.getGeneratedKeys();
 							if (generatedKeys.next()){
 								course = new CourseInfo(
-										generatedKeys.getLong(1),
-										courseLibrary,
-										courseInstructor,
-										courseNumber,
-										courseTitle,
-										false
+									generatedKeys.getLong(1),
+									courseLibrary,
+									courseInstructor,
+									courseNumber,
+									courseTitle,
+									false
 								);
 								course.stillExists = true;
 								existingCourses.put(key, course);
@@ -360,8 +360,8 @@ public class SymphonyExportMain {
 								ResultSet generatedKeys = addWorkToListStmt.getGeneratedKeys();
 								if (generatedKeys.next()){
 									existingTitle = new CourseTitle(
-											generatedKeys.getLong(1),
-											permanentId
+										generatedKeys.getLong(1),
+										permanentId
 									);
 									existingTitle.stillExists = true;
 									course.existingWorks.put(existingTitle.groupedWorkPermanentId, existingTitle);
@@ -863,6 +863,8 @@ public class SymphonyExportMain {
 					UnzipUtility.unzip(unzipFile.getPath(), export.getPath());
 				} catch (IOException e) {
 					logEntry.incErrors("Unable to unzip file " + unzipFile.getPath(), e);
+					// Move the corrupted file to prevent repeated processing attempts.
+					markFileAsCorrupted(unzipFile, "zip");
 				}
 			}
 		}
@@ -887,12 +889,19 @@ public class SymphonyExportMain {
 					String exportFile = gzippedFile.getAbsolutePath().replace(".gz", "");
 					UnzipUtility.gUnzip(gzippedFile, new File(exportFile));
 					//noinspection ResultOfMethodCallIgnored
-					if (!gzippedFile.delete()){
-						logEntry.addNote("Could not delete gzipped file " + gzippedFile.getAbsolutePath());
+					try {
+						if (!gzippedFile.delete()){
+							logEntry.addNote("Could not delete gzipped file " + gzippedFile.getAbsolutePath() + ".");
+							logEntry.saveResults();
+						}
+					} catch (Exception deleteEx) {
+						logEntry.addNote("Error attempting to delete gzipped file " + gzippedFile.getAbsolutePath() + ": " + deleteEx.getMessage() + ".");
 						logEntry.saveResults();
 					}
 				} catch (IOException e) {
 					logEntry.incErrors("Unable to unzip file " + gzippedFile.getPath(), e);
+					// Move the corrupted file to prevent repeated processing attempts.
+					markFileAsCorrupted(gzippedFile, "gzip");
 				}
 			}
 		}
@@ -969,6 +978,9 @@ public class SymphonyExportMain {
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				// Move the corrupted file to prevent repeated processing attempts.
+				markFileAsCorrupted(fullExportFile, "MARC");
+
 				return totalChanges;
 			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
@@ -1127,6 +1139,8 @@ public class SymphonyExportMain {
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				// Move the corrupted file to prevent repeated processing attempts.
+				markFileAsCorrupted(curBibFile, "MARC");
 			}
 			logEntry.addNote("  Read " + numRecordsRead + " records in the file");
 			logEntry.saveResults();
@@ -1447,5 +1461,34 @@ public class SymphonyExportMain {
 			}
 		}
 		return recordNumber;
+	}
+
+	/**
+	 * Utility method to handle marking a file as corrupted by renaming it with a .corrupted extension.
+	 * @param fileToMark The file to mark as corrupted.
+	 * @param fileType Type of file for logging purposes.
+	 */
+	private static void markFileAsCorrupted(File fileToMark, String fileType) {
+		try {
+			File corruptedFile = new File(fileToMark.getAbsolutePath() + ".corrupted");
+			try {
+				if (corruptedFile.exists()) {
+					if (!corruptedFile.delete()) {
+						logEntry.addNote("Could not delete existing corrupted file " + corruptedFile.getAbsolutePath() + ".");
+					}
+				}
+			} catch (Exception deleteEx) {
+				logEntry.addNote("Error attempting to delete existing corrupted file " + corruptedFile.getAbsolutePath() + ": " + deleteEx.getMessage() + ".");
+			}
+
+			if (fileToMark.renameTo(corruptedFile)) {
+				logEntry.addNote("Moved corrupted " + fileType + " file to " + corruptedFile.getAbsolutePath() + ".");
+			} else {
+				logEntry.addNote("Failed to move corrupted " + fileType + " file " + fileToMark.getAbsolutePath() + ".");
+			}
+			logEntry.saveResults();
+		} catch (Exception moveEx) {
+			logEntry.incErrors("Error moving corrupted " + fileType + " file" + ".", moveEx);
+		}
 	}
 }

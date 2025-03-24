@@ -49,6 +49,10 @@ class SharedSession extends DataObject {
 		$page = '/MyAccount/' . $returnTo;
 		if ($returnTo === 'GroupedWork' && $id) {
 			$page = '/GroupedWork/' . $id . '/Home/';
+		}elseif ($returnTo === 'Fines' || $returnTo === 'YearInReview') {
+			$page = '/MyAccount/' . $returnTo;
+		} else if (!empty($id)) {
+			$page = "/$returnTo/$id" ;
 		}
 
 		global $configArray;

@@ -42,6 +42,7 @@ abstract class IndexRecordDriver extends RecordInterface {
 		'collection',
 		'title_proper',
 		'display_description',
+		'ils_description',
 	];
 
 	/**
@@ -53,6 +54,7 @@ abstract class IndexRecordDriver extends RecordInterface {
 	 */
 	protected $snippetCaptions = [
 		'display_description' => 'Description',
+		'ils_description' => 'Description',
 	];
 
 	/**

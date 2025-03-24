@@ -19,6 +19,14 @@
 				</select>
 			</div>
 			<div class="form-group">
+				<label for="fromDate">Start date:</label>
+				<input class="form-control" type="date" {if !empty($fromDate)}value="{$fromDate}"{/if} id="fromDate" name="fromDate">
+			</div>
+			<div class="form-group">
+				<label for="toDate">End date:</label>
+				<input class="form-control" type="date" {if !empty($toDate)}value="{$toDate}"{/if} id="toDate" name="toDate">
+			</div>
+			<div class="form-group">
 				<label for="type">Event Type:</label>
 				<select name="type" id="type" class="form-control">
 					<option {if $eventTypeValue == ''}selected{/if} value="">All Types</option>
@@ -30,7 +38,7 @@
 			<div class="form-group">
 				<label for="type">Location:</label>
 				<select name="location" id="location" class="form-control">
-					<option {if $locationValue == ''}selected{/if} value="">All Locations</option>
+					<option {if $locationValue == ''}selected{/if} value="">All Locations{$libraryRestriction}</option>
 					{foreach $locations as $id => $location}
 						<option {if $locationValue == $id}selected{/if} value="{$id}">{$location}</option>
 					{/foreach}
@@ -64,7 +72,7 @@
 					<label for="field_{$id}">{$select->name}: </label>
 					<select value="{$id}" id="field_{$id}" name="field_{$id}" class="form-control">
 						<option value="">No selection</option>
-						{foreach explode(",", $select->allowableValues) as $index => $option}
+						{foreach explode("\n", $select->allowableValues) as $index => $option}
 							<option {if array_key_exists("field_{$id}", $fields) && $fields["field_{$id}"] == $index}selected{/if} value="{$index}">{$option}</option>
 						{/foreach}
 					</select>

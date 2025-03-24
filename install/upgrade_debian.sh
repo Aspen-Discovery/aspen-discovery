@@ -11,7 +11,7 @@ if [ -z "$2" ]
     exit 1
 fi
 
-service cron stop
+systemctl stop cron
 pkill -9 java
 
 apt-get update
@@ -23,7 +23,7 @@ git pull origin $2
 cd /usr/local/aspen-discovery/install
 if [ -f "/usr/local/aspen-discovery/install/upgrade_debian_$2.sh" ]; then
   echo "Running version updates"
-  /usr/local/aspen-discovery/install/upgrade_debian_$2.sh
+  /usr/local/aspen-discovery/install/upgrade_debian_$2.sh $1
 fi
 
 if [ -f "/usr/local/aspen-discovery/install/updateCron_$2.php" ]; then
@@ -35,15 +35,14 @@ echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver
 
-service mysqld restart
-apachectl restart
+systemctl restart apache2 mysql
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files_debian.sh $1
 
 cd /usr/local/aspen-discovery
 git gc
 
-service cron start
+systemctl start cron
 
 echo "Upgrade completed."
 

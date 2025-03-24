@@ -101,6 +101,7 @@ public class EventsIndexerMain {
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
+				SpringshareLibCalIndexer.cleanOrphanEvents(solrUpdateServer, aspenConn, logger);
 
 				// Communico
 				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from communico_settings");

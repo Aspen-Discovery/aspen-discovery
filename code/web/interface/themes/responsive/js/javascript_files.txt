@@ -61,3 +61,4 @@ aspen/wikipedia.js
 aspen/tab-switcher.js
 aspen/cookieConsent.js
 aspen/palace-project.js
+aspen/communityEngagement.js

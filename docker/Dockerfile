@@ -42,20 +42,30 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
+# Add sury's repo
+RUN wget -O- -q https://packages.sury.org/php/apt.gpg \
+      | gpg --dearmor \
+      | tee /usr/share/keyrings/sury.gpg >/dev/null \
+   && echo "deb [signed-by=/usr/share/keyrings/sury.gpg] https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/sury.list
+
 # Install php deps
 RUN apt -y update \
 	&& apt install -y \
-	  php8.2 \
-	  php8.2-mcrypt \
-	  php8.2-gd \
-	  php8.2-curl \
-	  php8.2-mysql \
-	  php8.2-zip \
-	  php8.2-xml \
-	  php8.2-intl \
-	  php8.2-mbstring \
-	  php8.2-xdebug \
-	  php8.2-imagick \
+	  php8.4 \
+	  php8.4-mcrypt \
+	  php8.4-gd \
+	  php8.4-imagick \
+	  php8.4-curl \
+	  php8.4-mysql \
+	  php8.4-zip \
+	  php8.4-xml \
+	  php8.4-intl \
+	  php8.4-mbstring \
+	  php8.4-soap \
+	  php8.4-pgsql \
+	  php8.4-ssh2 \
+	  php8.4-ldap \
+	  php8.4-xdebug \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 

@@ -2759,6 +2759,7 @@ class SearchAPI extends AbstractAPI {
 	/** @noinspection PhpUnused */
 	function getAppSearchResults(): array {
 		global $configArray;
+		global $library;
 		$results['success'] = true;
 		$results['message'] = '';
 		$searchResults = $this->search();
@@ -2792,7 +2793,11 @@ class SearchAPI extends AbstractAPI {
 					$format = $format . ' - ' . $ccode;
 				}
 
-				$summary = utf8_encode(trim(strip_tags($item['display_description'])));
+				if ($library->getGroupedWorkDisplaySettings()->preferIlsDescription == 1 && !empty($item['ils_description'])) {
+					$summary = utf8_encode(trim(strip_tags($item['ils_description'])));
+				} else {
+					$summary = utf8_encode(trim(strip_tags($item['display_description'])));
+				}
 				$summary = str_replace('&#8211;', ' - ', $summary);
 				$summary = str_replace('&#8212;', ' - ', $summary);
 				$summary = str_replace('&#160;', ' ', $summary);
@@ -2860,7 +2865,7 @@ class SearchAPI extends AbstractAPI {
 	function searchLite() : array {
 		global $timer;
 		global $configArray;
-
+		global $library;
 		$appVersion = false;
 		$isLida = $this->checkIfLiDA();
 		if($isLida) {
@@ -3199,7 +3204,7 @@ class SearchAPI extends AbstractAPI {
 
 		$searchObject->setSearchSource($_REQUEST['source'] ?? 'local');
 
-		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
+		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format,ils_description');
 		$timer->logTime('Setup Search');
 
 		// Process Search
@@ -3338,7 +3343,11 @@ class SearchAPI extends AbstractAPI {
 					$items[$recordKey]['author'] = $record['author_display'];
 					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
 					$items[$recordKey]['language'] = $record['language'][0];
-					$items[$recordKey]['summary'] = $record['display_description'];
+					if ($library->getGroupedWorkDisplaySettings()->preferIlsDescription == 1 && !empty($record['ils_description'])) {
+						$items[$recordKey]['summary'] = $record['ils_description'];
+					} else {
+						$items[$recordKey]['summary'] = $record['display_description'];
+					}
 					$items[$recordKey]['itemList'] = [];
 					$items[$recordKey]['lastCheckOut'] = null;
 					$items[$recordKey]['appearsOnLists'] = [];

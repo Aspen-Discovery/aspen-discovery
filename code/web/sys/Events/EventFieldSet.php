@@ -24,6 +24,7 @@ class EventFieldSet extends DataObject {
 				'type' => 'text',
 				'label' => 'Name',
 				'description' => 'A name for the field',
+				'maxLength' => 50,
 			],
 			'eventFields' => [
 				'property' => 'eventFields',
@@ -170,7 +171,9 @@ class EventFieldSet extends DataObject {
 					'facetName' => $field->facetName,
 				];
 				if ($type == 'enum') {
-					$structure[$field->id]['values'] = explode(",", $field->allowableValues);
+					$structure[$field->id]['values'] = explode("\n", $field->allowableValues);
+				} else if ($type == 'checkbox') {
+					$structure[$field->id]['returnValueForUnchecked'] = true;
 				}
 			}
 		}

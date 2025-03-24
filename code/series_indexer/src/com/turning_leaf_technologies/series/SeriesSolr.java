@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -18,19 +19,15 @@ class SeriesSolr {
 	private final HashSet<String> formatCategories = new HashSet<>();
 	private final HashSet<String> eContentSource = new HashSet<>();
 	private final HashSet<String> subjects = new HashSet<>();
-	private String literaryForm = "";
 	private int fiction = 0;
 	private int nonFiction = 0;
 	private final HashSet<String> languages = new HashSet<>();
 	private String title;
 	private final HashSet<String> contents = new HashSet<>(); //A list of the titles and authors for the list
 	private String description;
-	private String audience;
+	private final HashSet<String> audiences = new HashSet<>();
 	private long numTitles = 0;
 	private long created;
-//	private long owningLibrary;
-//	private String owningLocation;
-//	private boolean ownerCanShareListsInSearchResults = false;
 	private long dateUpdated;
 
 	SeriesSolr(SeriesIndexer seriesIndexer) {
@@ -63,7 +60,7 @@ class SeriesSolr {
 		doc.addField("subject", subjects);
 		doc.addField("literary_form", fiction > nonFiction ? "Fiction" : "Non Fiction");
 		doc.addField("language", languages);
-		doc.addField("audience", audience);
+		doc.addField("audience", audiences);
 
 		doc.addField("table_of_contents", contents);
 		doc.addField("description", description);
@@ -116,15 +113,15 @@ class SeriesSolr {
 		this.description = description;
 	}
 
-	void setAudience(String audience) {
-		this.audience = audience;
+	void setAudiences(String[] audiences) {
+		Collections.addAll(this.audiences, audiences);
 	}
 
-	void setAuthor(String author) {
-		this.authors.add(author);
+	void setAudience(String audiences) {
+		this.audiences.add(audiences);
 	}
 
-	void addListTitle(String source, String groupedWorkId, Object title, Object author, SolrDocument work) {
+	void addListTitle(@SuppressWarnings("SameParameterValue") String source, String groupedWorkId, Object title, Object author, SolrDocument work) {
 		relatedRecordIds.add(source + ":" + groupedWorkId);
 		contents.add(title + " - " + author);
 		authors.add(author.toString());
@@ -173,27 +170,7 @@ class SeriesSolr {
 		this.id = id;
 	}
 
-//	void setOwningLocation(String owningLocation) {
-//		this.owningLocation = owningLocation;
-//	}
-//
-//	void setOwningLibrary(long owningLibrary) {
-//		this.owningLibrary = owningLibrary;
-//	}
-//
-//	void setOwnerCanShareListsInSearchResults(boolean ownerCanShareListsInSearchResults){
-//		this.ownerCanShareListsInSearchResults = ownerCanShareListsInSearchResults;
-//	}
-
-	long getNumTitles(){
-		return numTitles;
-	}
-
 	public void setDateUpdated(long dateUpdated) {
 		this.dateUpdated = dateUpdated;
-	}
-
-	public long getDateUpdated() {
-		return dateUpdated;
 	}
 }

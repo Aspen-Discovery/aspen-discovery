@@ -34,6 +34,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 
 	public abstract function getIdWithSource();
 
+	public function getId() {
+		return $this->id;
+	}
+
 	public function getAcceleratedReaderData() {
 		return $this->getGroupedWorkDriver()->getAcceleratedReaderData();
 	}

@@ -13,7 +13,7 @@
 			{translate text="Minutes" isPublicFacing=true}
 		</label>
 		<input type="number" name='{$propName}_minutes' id='{$propName}_minutes' min='0' class='form-control duration-input' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} value="{$minutes}">
-		<input type="hidden" name="{$propName}" id='{$propName}' min='0' class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.onchange)} onchange="{$property.onchange}"{/if}>
+		<input type="hidden" name="{$propName}" id='{$propName}' min='0' value="{$propValue}" class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.onchange)} onchange="{$property.onchange}"{/if}>
 	</div>
 </fieldset>
 	<script>

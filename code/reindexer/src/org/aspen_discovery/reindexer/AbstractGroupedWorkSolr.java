@@ -37,6 +37,8 @@ public abstract class AbstractGroupedWorkSolr {
 	protected HashSet<String> description = new HashSet<>();
 	protected String displayDescription = "";
 	protected String displayDescriptionFormat = "";
+	protected String ilsDescription = "";
+	protected String ilsDescriptionFormat = "";
 	protected String displayTitle;
 	protected Long earliestPublicationDate = null;
 	protected HashSet<String> editions = new HashSet<>();
@@ -1228,6 +1230,48 @@ public abstract class AbstractGroupedWorkSolr {
 
 	void addKeywords(HashSet<String> keywords) {
 		this.keywords.addAll(keywords);
+	}
+
+	void addIlsDescription(String description, String formatCategory) {
+		if (description == null || description.isEmpty()) {
+			return;
+		}
+		this.description.add(description);
+		boolean updateDescription = false;
+		if (this.ilsDescription == null) {
+			updateDescription = true;
+		} else {
+			//Only overwrite if we get a better format
+			if (formatCategory.equals("Books")) {
+				//We have a book, update if we didn't have a book before
+				if (!formatCategory.equals(ilsDescriptionFormat)) {
+					updateDescription = true;
+					//or update if we had a book before and this Description is longer
+				} else if (description.length() > this.ilsDescription.length()) {
+					updateDescription = true;
+				}
+			} else if (formatCategory.equals("eBook")) {
+				//Update if the format we had before is not a book
+				if (!ilsDescriptionFormat.equals("Books")) {
+					//And the new format was not an eBook or the new Description is longer than what we had before
+					if (!formatCategory.equals(ilsDescriptionFormat)) {
+						updateDescription = true;
+						//or update if we had a book before and this Description is longer
+					} else if (description.length() > this.ilsDescription.length()) {
+						updateDescription = true;
+					}
+				}
+			} else if (!ilsDescriptionFormat.equals("Books") && !ilsDescriptionFormat.equals("eBook")) {
+				//If we don't have a Book or an eBook then we can update the Description if we get a longer Description
+				if (description.length() > this.ilsDescription.length()) {
+					updateDescription = true;
+				}
+			}
+		}
+		if (updateDescription) {
+			this.ilsDescription = description;
+			this.ilsDescriptionFormat = formatCategory;
+		}
 	}
 
 	void addDescription(String description, String formatCategory) {

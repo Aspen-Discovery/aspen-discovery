@@ -1671,14 +1671,16 @@ class Location extends DataObject {
 
 	/**
 	 * Get a list of sublocations where a user can pick up from
-	 * @param ?User $locationId The location to get sublocations for
+	 * @param ?int $locationId The location to get sublocations for - don't limit by location if null
 	 * @return Sublocation[]
 	 */
 	static function getEventSublocations($locationId): array {
 		require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
 		$sublocations = [];
 		$object = new Sublocation();
-		$object->locationId = $locationId;
+		if ($locationId != null) {
+			$object->locationId = $locationId;
+		}
 		$object->isValidEventLocation = 1;
 		$object->orderBy('weight');
 		$object->find();

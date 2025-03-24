@@ -100,14 +100,11 @@ class Events_Events extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		if (SystemVariables::getSystemVariables()->enableAspenEvents) {
-			return UserAccount::userHasPermission([
-				'Administer Events for All Locations',
-				'Administer Events for Home Library Locations',
-				'Administer Events for Home Location'
-			]);
-		}
-		return false;
+		return UserAccount::userHasPermission([
+			'Administer Events for All Locations',
+			'Administer Events for Home Library Locations',
+			'Administer Events for Home Location'
+		]);
 	}
 
 	function canBatchEdit(): bool {
@@ -119,6 +116,6 @@ class Events_Events extends ObjectEditor {
 	}
 
 	public function hasMultiStepAddNew() : bool {
-		return true;
+		return false;
 	}
 }

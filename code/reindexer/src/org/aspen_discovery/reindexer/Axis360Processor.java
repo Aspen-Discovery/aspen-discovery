@@ -56,7 +56,7 @@ class Axis360Processor {
 				String formatType = productRS.getString("formatType");
 				String formatCategory;
 				String primaryFormat;
-				if ("eBook".equals(formatType)) {
+				if ("eBook".equals(formatType) || "Adobe PDF".equals(formatType) || "Adobe EPUB".equals(formatType)) {
 					formatCategory = "eBook";
 					primaryFormat = "eBook";
 					//Check subjects to see if this should be a comic book
@@ -154,7 +154,7 @@ class Axis360Processor {
 
 					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 					itemInfo.setDateAdded(dateAdded);
-					
+
 					boolean available = availabilityRS.getBoolean("available");
 					int ownedQty = availabilityRS.getInt("ownedQty");
 					itemInfo.setNumCopies(ownedQty);

@@ -353,6 +353,7 @@
 		<!-- Descriptions -->
 		<field name="description" type="searchable_text" indexed="true" stored="false"/>
 		<field name="display_description" type="unchanged_string" indexed="false" stored="true"/>
+		<field name="ils_description" type="unchanged_string" indexed="false" stored="true"/>
 		<!-- Total number of holdings for a work -->
 		<field name="num_holdings" type="integer" indexed="true" stored="false"/>
 		<!-- End user rating for a work 2.5 if not set -->

@@ -1241,13 +1241,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	/**
-	 * @param array $items - The items to check
+	 * @param ?array $items - The items to check
 	 * @param HoldGroup[] $holdGroups - The valid hold groups for the patron's hold groups
 	 * @param int|string $variationId - The variation being loaded
 	 * @param string $patronHomeLocationCode - The location code for the patron's home location
 	 * @return bool
 	 */
-	public function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
+	public function oneOrMoreHoldableItemsOwnedByPatronHoldGroups(?array $items, array $holdGroups, int|string $variationId, string $patronHomeLocationCode) : bool {
 		//If no hold groups exist, everything is valid
 		if (count($holdGroups) == 0) {
 			return true;

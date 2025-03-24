@@ -3,10 +3,11 @@
 class WebBuilder_ResourceCategory extends Action
 {
 
-	function launch()
+	function launch() : void
 	{
 		global $interface;
 		global $activeLanguage;
+		global $library;
 
 		require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 		$category = new WebBuilderCategory();
@@ -20,8 +21,13 @@ class WebBuilder_ResourceCategory extends Action
 			$webResources = [];
 			$webResourceIds = [];
 			while ($resourcesForCategory->fetch()) {
-				if (!array_key_exists("WebResource:" . $resourcesForCategory->webResourceId, $webResourceIds)) {
-					$webResourceIds["\"WebResource:" . $resourcesForCategory->webResourceId . "\""] = "WebResource:" . $resourcesForCategory->webResourceId;
+				$webResourceLibrary = new libraryWebResource();
+				$webResourceLibrary->webResourceId = $resourcesForCategory->webResourceId;
+				$webResourceLibrary->libraryId = $library->libraryId;
+				if ($webResourceLibrary->find()) {
+					if (!array_key_exists("WebResource:" . $resourcesForCategory->webResourceId, $webResourceIds)) {
+						$webResourceIds["\"WebResource:" . $resourcesForCategory->webResourceId . "\""] = "WebResource:" . $resourcesForCategory->webResourceId;
+					}
 				}
 			}
 			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
@@ -38,6 +44,10 @@ class WebBuilder_ResourceCategory extends Action
 					'bookCoverUrl' => $webResourceRecordDriver->getBookCoverUrl('medium'),
 				];
 			}
+
+			uasort($webResources, function ($a, $b) {
+				return $a['title'] <=> $b['title'];
+			});
 
 			$interface->assign('webResources', $webResources);
 			$interface->assign('title', $category->name);

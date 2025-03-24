@@ -16,6 +16,7 @@ class SeriesMember extends DataObject {
 	public $weight;
 	public $cover;
 	public $userAdded;
+	public $excluded;
 
 	public static function getObjectStructure($context = ''): array {
 		global $configArray;
@@ -88,13 +89,21 @@ class SeriesMember extends DataObject {
 				'property' => 'weight',
 				'type' => 'numeric',
 				'label' => 'Weight',
-				'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.',
+				'hiddenByDefault' => true,
+				'description' => 'Defines how items are sorted.  Lower weights are displayed higher.',
 			],
 			'userAdded' => [
 				'property' => 'userAdded',
 				'type' => 'hidden',
 				'label' => 'User Added',
 				'readOnly' => true,
+			],
+			'excluded' => [
+				'property' => 'excluded',
+				'type' => 'checkbox',
+				'label' => 'Exclude',
+				'readOnly' => false,
+				'description' => "If excluded, this title won't show up as a member of the series",
 			],
 		];
 		return $structure;
@@ -124,10 +133,42 @@ class SeriesMember extends DataObject {
 			'pubDate',
 			'isPlaceholder',
 			'userAdded',
+			'excluded'
 		];
 	}
 
-	public function getRecordDriver() {
+	function getEditLink($context): string {
+		return '/Series/SeriesMembers?objectAction=edit&id=' . $this->id;
+	}
+
+	function canActiveUserEdit(): bool {
+		if (!$this->userAdded) {
+			return false;
+		}
+		return parent::canActiveUserEdit();
+	}
+
+	public function delete($useWhere = false) : int {
+		if (!$this->userAdded) {
+			$this->deleted = 1;
+			$this->update();
+			return 1;
+		} else {
+			return parent::delete($useWhere);
+		}
+	}
+
+	public function updateStructureForEditingObject($structure) : array {
+		if ($this->userAdded) {
+			$structure['displayName']['readOnly'] = false;
+			$structure['author']['readOnly'] = false;
+			$structure['description']['readOnly'] = false;
+			$structure['groupedWorkPermanentId']['readOnly'] = false;
+		}
+		return $structure;
+	}
+
+	public function getRecordDriver() : ?GroupedWorkDriver {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($this->groupedWorkPermanentId);
 		if (!$recordDriver->isValid()) {
@@ -136,4 +177,14 @@ class SeriesMember extends DataObject {
 		return $recordDriver;
 	}
 
+	public function getSeries() : ?Series {
+		require_once ROOT_DIR . '/sys/Series/Series.php';
+		$series = new Series();
+		$series->id = $this->seriesId;
+		if ($series->find(true)) {
+			return $series;
+		}else{
+			return null;
+		}
+	}
 }

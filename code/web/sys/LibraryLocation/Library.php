@@ -330,6 +330,9 @@ class Library extends DataObject {
 	public $addSMSIndicatorToPhone;
 
 	public $allowLinkedAccounts;
+	public $allowFilteringOfLinkedAccountsInHolds;
+	public $allowSelectingHoldsToExport;
+
 
 	public $maxFinesToAllowAccountUpdates;
 
@@ -1312,6 +1315,24 @@ class Library extends DataObject {
 						'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.',
 						'hideInLists' => true,
 						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
+					'allowFilteringOfLinkedAccountsInHolds' => [
+						'property' => 'allowFilteringOfLinkedAccountsInHolds',
+						'type' => 'checkbox',
+						'label' => 'Allow Filtering of Linked Accounts in Holds',
+						'description' => 'Whether or not users can filter their holds by linked accounts.',
+						'hideInLists' => true,
+						'default' => 0,
+						'permissions' => ['Library ILS Options'],
+					],
+					'allowSelectingHoldsToExport' => [
+						'property' => 'allowSelectingHoldsToExport',
+						'type' => 'checkbox',
+						'label' => 'Allow Ability To Export Only Selected Holds',
+						'description' => 'Whether or not users can export only selected holds.',
+						'hideInLists' => true,
+						'default' => 0,
 						'permissions' => ['Library ILS Options'],
 					],
 					'showLibraryHoursNoticeOnAccountPages' => [
@@ -4968,11 +4989,11 @@ class Library extends DataObject {
 
 	protected $_eventFacetSettings = null;
 
-	public function getEventFacetSettings() : ?LibraryEventsSetting {
+	public function getEventFacetSettings() {
 		if ($this->_eventFacetSettings == null) {
 			try {
-				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-				$eventsFacetSetting = new LibraryEventsSetting();
+				require_once ROOT_DIR . '/sys/Events/LibraryEventsFacetSetting.php';
+				$eventsFacetSetting = new LibraryEventsFacetSetting();
 				$eventsFacetSetting->libraryId = $this->libraryId;
 				if ($eventsFacetSetting->find(true)) {
 					$this->_eventFacetSettings = $eventsFacetSetting;

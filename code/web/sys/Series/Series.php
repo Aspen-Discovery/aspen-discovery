@@ -7,12 +7,14 @@ class Series extends DataObject {
 	public $__table = 'series';
 	public $id;
 	public $displayName;
+	public $groupedWorkSeriesTitle;
 	public $description;
 	public $cover;
 	public $audience;
 	public $author;
 	public $isIndexed;
 	public $dateUpdated;
+	public $created;
 
 	public $_seriesMembers; // grouped works and placeholders
 
@@ -40,8 +42,7 @@ class Series extends DataObject {
 				'type' => 'text',
 				'label' => 'Author',
 				'description' => 'Up to three authors with titles in this series',
-				'readOnly' => true,
-				'note' => "This field can't be edited because it gets overwritten during indexing"
+				'note' => $context == 'addNew' ? '' : "This field may be automatically updated during indexing"
 			],
 			'audience' => [
 				'property' => 'audience',
@@ -63,14 +64,8 @@ class Series extends DataObject {
 				'description' => 'Image to replace the automatically generated series cover',
 				'maxWidth' => 280,
 				'maxHeight' => 280,
-				'path' => "$coverPath/original/Series",
+				'path' => "$coverPath/original/series",
 				'hideInLists' => true,
-			],
-			'created' => [
-				'property' => 'created',
-				'type' => 'timestamp',
-				'label' => 'Date Created',
-				'readOnly' => true,
 			],
 			'dateUpdated' => [
 				'property' => 'dateUpdated',
@@ -99,6 +94,14 @@ class Series extends DataObject {
 				'allowEdit' => true,
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canEdit' => true,
+				'canDelete' => true,
+				'additionalOneToManyActions' => [
+					'showExcluded' => [
+						'text' => 'Show Excluded Series Titles',
+						'url' => '/Series/AdministerSeries?id=$id&amp;objectAction=edit&amp;showExcluded=true',
+					],
+				],
 			],
 		];
 		return $structure;
@@ -120,15 +123,14 @@ class Series extends DataObject {
 		if (empty($this->dateUpdated)) {
 			$this->dateUpdated = time();
 		}
+		if (empty($this->created)) {
+			$this->created = time();
+		}
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveSeriesMembers();
 		}
 		return $ret;
-	}
-
-	function delete($useWhere = false) : int {
-		return false; // Placeholder till Delete is removed as an option
 	}
 
 	public function __set($name, $value) {
@@ -141,7 +143,10 @@ class Series extends DataObject {
 
 	public function __get($name) {
 		if ($name == 'seriesMembers') {
-			return $this->getSeriesMembers();
+			if (!empty($_REQUEST['showExcluded'])) {
+				return $this->getSeriesMembers(true);
+			}
+			return $this->getSeriesMembers(false);
 		} else {
 			return parent::__get($name);
 		}
@@ -162,16 +167,21 @@ class Series extends DataObject {
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$members = new SeriesMember();
 		$members->seriesId = $this->id;
+		$members->excluded = 0;
 		return $members->count();
 	}
 
 	/**
 	 * @return array      of list entries
 	 */
-	function getTitles($sortName = "volume asc") {
+	function getTitles($sortName = "volume asc", $includePlaceholders = true) {
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$seriesMember = new SeriesMember();
 		$seriesMember->seriesId = $this->id;
+		$seriesMember->excluded = 0;
+		if (!$includePlaceholders) {
+			$seriesMember->isPlaceholder = 0;
+		}
 		$seriesMember->orderBy($sortName);
 
 		$seriesMembers = [];
@@ -222,10 +232,16 @@ class Series extends DataObject {
 	/**
 	 * @return array      of series members
 	 */
-	function getSeriesMembers() {
+	function getSeriesMembers($showExcluded = true) {
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+		if (empty($this->id)) {
+			return [];
+		}
 		$seriesMember = new SeriesMember();
 		$seriesMember->seriesId = $this->id;
+		if (!$showExcluded) {
+			$seriesMember->excluded = 0;
+		}
 		$seriesMember->orderBy('weight');
 		$this->_seriesMembers = [];
 		$seriesMember->find();
@@ -241,11 +257,13 @@ class Series extends DataObject {
 	 * @param int $start position of first list item to fetch (0 based)
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
+	 * @param string $sortName How the records should be sorted when pulled from the database
+	 * @param boolean $includePlaceholders Default true, whether to include placeholder records
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getSeriesRecords($start, $numItems, $format, $sortName) {
+	public function getSeriesRecords($start, $numItems, $format, $sortName, $includePlaceholders = true) {
 		//Get all entries for the list
-		$seriesMemberInfo = $this->getTitles($sortName);
+		$seriesMemberInfo = $this->getTitles($sortName, $includePlaceholders);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0) {
@@ -293,7 +311,9 @@ class Series extends DataObject {
 					$interface->assign('listEntrySource', "Series");
 					$interface->assign('seriesMemberId',$seriesMemberInfo['seriesMemberId']);
 					$interface->assign('placeholder', $seriesMemberInfo);
-					$listResults[$listPosition] = $interface->fetch('Series/placeHolderListEntry.tpl');
+					$seriesRecordDriver = new SeriesRecordDriver($seriesMemberInfo['seriesMemberId']);
+					$interface->assign('bookCoverUrl', $seriesRecordDriver->getBookcoverUrl('medium', false, true, $seriesMemberInfo['seriesMemberId']));
+					$listResults[$listPosition] = $interface->fetch('Series/placeholderListEntry.tpl');
 				}
 			}
 		}

@@ -778,11 +778,80 @@ class Evergreen extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade): array {
-		return [
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade): array {
+		$authToken = $this->getAPIAuthToken($patron, true);
+		$userMessages = [
 			'success' => false,
-			'messages' => ['Cannot update patron information with this ILS.'],
+			'messages' => [],
 		];
+
+		if (!$authToken || !$canUpdateContactInfo) {
+			$userMessages['messages'][] = 'Your contact information cannot be updated.';
+			return $userMessages;
+		}
+
+		if (!isset($_REQUEST['email'])) {
+			return $userMessages;
+		}
+
+		$propertyName = 'email';
+		$propertyValue = $_REQUEST['email'];
+		$response = $this->updatePatronPropertyInEvergreen($propertyName, $propertyValue, $patron->ils_password, $authToken);
+
+		if($response['success']) {
+			$patron->email = $propertyValue;
+			$patron->update();
+		}
+
+		$userMessages['messages'][] = $response['success'] ? 'Your email has been updated.' : 'Your email could not be updated. Please contact your library';
+		$userMessages['success'] = $response['success'];
+
+		return $userMessages;
+	}
+
+	private function updatePatronPropertyInEvergreen(string $propertyEvergreenName, string $propertyValue, string $patronIlsPassword, string $authToken): array {
+		$evergreenUrl = $this->accountProfile->patronApiUrl . "/osrf-gateway-v1/$propertyEvergreenName";
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+		];
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		/**The order of the request parameters is crucial
+		 * This Evergreen API only handles unnamed parameters,
+		 * And so it is only their position within the URL that
+		 * determines which is which
+		*/
+		$request = 'service=open-ils.actor';
+		$request .= "&method=open-ils.actor.user.$propertyEvergreenName.update";
+		$requestParams = '&param=' . json_encode($authToken);
+		$requestParams .= '&param=' . json_encode($propertyValue);
+		$requestParams .= '&param=' . json_encode($patronIlsPassword);
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request . $requestParams);
+		ExternalRequestLogEntry::logRequest('evergreen.updatePatronPropertyInEvergreen', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+
+		$responseData = json_decode($apiResponse, true);
+		$response = ['success' => false, 'message' => ['code' => '', 'text' =>  'Evergreen sent an unexpected response']];
+		if (!isset($responseData['payload'])) {
+			return $response;
+		}
+
+		/** It seems the response sent back by the Evergreen API will have a
+		 * status code of 200 even upon failure (eg. if the patron password
+		 * is incorrect.) However, a successful update will always result
+		 * in the "payload" property being set to 1. Check for this instead.
+		*/
+		$response['success'] = $responseData['payload'][0] == 1;
+
+		if (!$response['success']) {
+			global $logger;
+			$logger->log('Error updating patron property ' . $propertyEvergreenName . ': ' . $responseData['payload'][0]['desc'], Logger::LOG_ERROR);
+			$response['message']['code'] = $responseData['payload'][0]['textcode'];
+			$response['message']['text'] = $responseData['payload'][0]['desc'];
+			return $response;
+		}
+
+		$response['message']['text'] = "Patron property update successfull";
+		return $response;
 	}
 
 	public function hasNativeReadingHistory(): bool {

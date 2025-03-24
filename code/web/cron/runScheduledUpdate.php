@@ -59,7 +59,7 @@ if (count($updatesToRun) == 0) {
 					//Prepare the system to be updated
 					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						if ($linuxDistribution == 'debian') {
-							executeCommand('Stopping cron', 'cron stop', $scheduledUpdate);
+							executeCommand('Stopping cron', '/usr/bin/systemctl stop cron', $scheduledUpdate);
 						} else {
 							executeCommand('Stopping cron', '/usr/sbin/service crond stop', $scheduledUpdate);
 							executeCommand('Running system updates', 'yum -y update', $scheduledUpdate);
@@ -115,7 +115,7 @@ if (count($updatesToRun) == 0) {
 						sleep(2);
 						//Start cron
 						if ($linuxDistribution == 'debian') {
-							executeCommand('Starting cron', '/usr/sbin/service cron start', $scheduledUpdate);
+							executeCommand('Starting cron', '/usr/bin/systemctl start cron', $scheduledUpdate);
 						} else {
 							executeCommand('Starting cron', '/usr/sbin/service crond start', $scheduledUpdate);
 						}

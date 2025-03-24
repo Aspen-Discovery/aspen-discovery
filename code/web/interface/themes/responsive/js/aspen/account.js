@@ -142,6 +142,30 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		
+		exportOnlySelectedHolds: function (source, availableHoldsSort, unavailableHoldsSort) {
+			var url = Globals.path + "/MyAccount/AJAX?method=exportHolds&source=" + source;
+			var selectedTitles = AspenDiscovery.getSelectedTitles();
+
+			if (selectedTitles && selectedTitles.length > 0) {
+				sessionStorage.setItem('selectedHolds', JSON.stringify(selectedTitles));
+				url += "&selectedHolds=" + encodeURIComponent(JSON.stringify(selectedTitles));
+			}
+			if (availableHoldsSort !== undefined) {
+				url += "&availableHoldsSort=" + availableHoldsSort;
+			}
+			if (unavailableHoldsSort !== undefined) {
+				url += "&unavailableHoldsSort=" + unavailableHoldsSort;
+			}
+			document.location.href = url;
+			AspenDiscovery.Account.clearSelectedTitles();
+			return false;
+		},
+
+		clearSelectedTitles: function() {
+			$('input[type="checkbox"]:checked').prop('checked', false);
+		},
+
 		followLinkIfLoggedIn: function (trigger, linkDestination) {
 			if (trigger === undefined) {
 				alert("You must provide the trigger to follow a link after logging in.");
@@ -256,9 +280,15 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		loadHolds: function (source, availableHoldSort, unavailableHoldSort, showCovers) {
+		loadHolds: function (source, availableHoldSort, unavailableHoldSort, showCovers, selectedUser) {
 			AspenDiscovery.Account.currentHoldSource = source;
 			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source;
+
+			if (selectedUser || selectedUser == "") {
+				url += "&selectedUser=" + selectedUser;
+			}
+
+
 			if (availableHoldSort !== undefined) {
 				url += "&availableHoldSort=" + availableHoldSort;
 			}
@@ -273,7 +303,8 @@ AspenDiscovery.Account = (function () {
 				source: source,
 				availableHoldSort: availableHoldSort,
 				unavailableHoldSort: unavailableHoldSort,
-				showCovers: showCovers
+				showCovers: showCovers,
+				selectedUser: selectedUser
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
 			if (document.location.href) {
@@ -300,6 +331,7 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
+					AspenDiscovery.Account.loadMenuData();
 				} else {
 					$("#" + source + "HoldsPlaceholder").html(data.message);
 				}
@@ -378,6 +410,7 @@ AspenDiscovery.Account = (function () {
 			var totalCheckouts = 0;
 			var totalHolds = 0;
 			var totalFines = 0;
+			var totalEnrolledCampaigns = 0;
 			if (Globals.hasILSConnection) {
 				var ilsUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataIls&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 				$.getJSON(ilsUrl, function (data) {
@@ -386,7 +419,7 @@ AspenDiscovery.Account = (function () {
 						var summary = data.summary;
 						$(".ils-checkouts-placeholder").html(summary.numCheckedOut);
 						totalCheckouts += parseInt(summary.numCheckedOut);
-						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".checkouts-placeholder").html(totalCheckouts);						
 						if (summary.numOverdue > 0) {
 							$(".ils-overdue-placeholder").html(summary.numOverdue);
 							$(".ils-overdue").show();
@@ -504,7 +537,12 @@ AspenDiscovery.Account = (function () {
 					}
 				});
 			}
-
+			var campaignsUrl = Globals.path + "/MyAccount/AJAX?method=getEnrolledCampaigns&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(campaignsUrl, function (data) {
+				if (data.success) {
+					$(".enrolled-campaigns-placeholder").html(data.numCampaigns);
+				}
+			})
 			return false;
 		},
 
@@ -1310,6 +1348,16 @@ AspenDiscovery.Account = (function () {
 
 			return queryString;
 		},
+
+		filterOutLinkedUsers: function () {
+			var selectedUser = $('#linkedUsersDropdown').val();
+			sessionStorage.setItem('selectedUser', selectedUser);
+			var availableHoldSort = $('#availableHoldSort_' + AspenDiscovery.Account.currentHoldSource).val();
+			var unavailableHoldSort = $('#unavailableHoldSort_' + AspenDiscovery.Account.currentHoldSource).val();
+			var showCovers = $('#showCovers').prop('checked');
+			AspenDiscovery.Account.loadHolds(AspenDiscovery.Account.currentHoldSource, availableHoldSort, unavailableHoldSort, showCovers, selectedUser, []);
+		},
+		
 
 		saveSearch: function (searchId) {
 			if (!Globals.loggedIn) {
@@ -2845,6 +2893,60 @@ AspenDiscovery.Account = (function () {
 				}
 			});
 			return false;
-		}
+		},
+		enroll: function (campaignId, userId) {
+			AspenDiscovery.Account.reloadHolds();
+			AspenDiscovery.Account.reloadCheckouts();
+
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'enrollCampaign',
+					campaignId: campaignId,
+					userId: userId
+				};
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+					AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function() {
+					return AspenDiscovery.Account.enroll(campaignId, userId);
+				}, false);
+			}
+		},
+		unenroll: function (campaignId, userId) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'unenrollCampaign',
+					campaignId: campaignId,
+					userId: userId,
+				};
+				$.getJSON(url, params, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+					AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+				})
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function() {
+					return AspenDiscovery.Account.unenroll(campaignId, userId);
+				}, false);
+			}
+		},
+		seeCampaigns: function () {
+			var url = Globals.path + "/MyAccount/AJAX?method=seeAvailableCampaigns";
+			document.location.href = url;
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));

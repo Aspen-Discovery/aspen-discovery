@@ -65,6 +65,11 @@
 					<a href="/MyAccount/Lists">{translate text='Your Lists' isPublicFacing=true}</a>
 				</div>
 			{/if}
+			{if array_key_exists('Community Engagement', $enabledModules)}
+				<div class="header-menu-option" >
+						<a href="/MyAccount/MyCampaigns">{translate text='Your Campaigns' isPublicFacing=true}</a>
+				</div>
+			{/if}
 			{if !empty($enableSavedSearches)}
 				{* Only highlight saved searches as active if user is logged in: *}
 				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>

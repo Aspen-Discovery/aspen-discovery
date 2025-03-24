@@ -104,6 +104,16 @@
 ##############################################
 # Generate Materials Request Hold Candidates #
 ##############################################
-0 9 * * * root php /usr/local/aspen-discovery/code/web/cron/generateMaterialRequestHoldCandidates.php template.linux
+0 9 * * * root php /usr/local/aspen-discovery/code/web/cron/generateMaterialRequestHoldCandidates.php {sitename}
+
+#######################################
+# Dismiss old Year in Review messages #
+#######################################
+0 3 * * * root php /usr/local/aspen-discovery/code/web/cron/dismissYearInReviewMessages.php {sitename}
+
+###########################
+# Cleanup Shared Sessions #
+###########################
+15 * * * * root php /usr/local/aspen-discovery/code/web/cron/cleanupSharedSessions.php {sitename}
 
 # Debian needs a blank line at the end of cron, make sure to add additional cron lines above this.

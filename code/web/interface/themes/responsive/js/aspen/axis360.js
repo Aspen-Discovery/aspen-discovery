@@ -55,7 +55,7 @@ AspenDiscovery.Axis360 = (function () {
 								AspenDiscovery.closeLightbox(function (){
 									var ret = confirm(data.message);
 									if (ret === true) {
-										AspenDiscovery.Axis360.doHold(patronId, id);
+										AspenDiscovery.Axis360.placeHold(id);
 									}
 								});
 							} else {

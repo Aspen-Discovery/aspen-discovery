@@ -195,7 +195,10 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 			if (str_contains($key, "custom_facet")) {
 				continue;
 			}
-			if (is_array($value) && count($value) > 0) {
+			if (is_array($value)) {
+				if (count($value) == 0 || empty($value[0])) {
+					continue;
+				}
 				if (str_contains($key, "url")) {
 					$html .= "<li>$fieldname: <a href='$value[0]'>$value[0]</a></li>";
 				} else if (str_contains($key, "email")) {
@@ -204,10 +207,12 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 					$html .= "<li>$fieldname: $value[0]</li>";
 				}
 			} else if (str_contains($key, "bool")) {
-				$value = $value == 1 ? "true" : "false";
+				$value = $value == 1 ? "Yes" : "No";
 				$html .= "<li>$fieldname: " . $value . "</li>";
 			} else {
-				$html .= "<li>$fieldname: $value</li>";
+				if (!empty($value)) {
+					$html .= "<li>$fieldname: $value</li>";
+				}
 			}
 		}
 		return $html;
@@ -234,15 +239,25 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getAudiences() {
-		if (array_key_exists('age_group', $this->fields)){
-			return $this->fields['age_group'];
+		if (array_key_exists('age_group_facet', $this->fields)){
+			return $this->fields['age_group_facet'];
 		}
 	}
 
 	public function getProgramTypes() {
-		if (array_key_exists('program_type', $this->fields)){
-			return $this->fields['program_type'];
+		if (array_key_exists('program_type_facet', $this->fields)){
+			return $this->fields['program_type_facet'];
 		}
+	}
+	public function getOtherEventsInSeries() {
+		$eventInstance = $this->getEventObject();
+		$series = $eventInstance->getSeries();
+		$idPrefix = substr($this->getId(), 0, - strlen($this->getIdentifier()));
+		$events = [];
+		foreach ($series as $event) {
+			$events[$idPrefix . $event->id] = strtotime($event->date);
+		}
+		return $events;
 	}
 
 	public function getBranch() {
@@ -270,7 +285,7 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 			global $interface;
 			return $this->getBookcoverUrl('medium', false, "aspenEvent_eventRecord");
 		}
-		return $this->getBookcoverUrl('medium');
+		return null;
 	}
 
 	function getCoverImagePath() {
@@ -421,25 +436,15 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getBypassSetting() {
-		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
-		$eventSettings = new AssabetSetting();
-		$eventSettings->id = $this->getSource();
-		if ($eventSettings->find(true)){
-			return $eventSettings->bypassAspenEventPages;
-		}
-
 		return false;
 	}
 
 	public function getAllowInListsSetting() {
-		require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
-		$eventSettings = new AssabetSetting();
-		$eventSettings->id = $this->getSource();
-		if ($eventSettings->find(true)){
-			return $eventSettings->eventsInLists;
-		}
+		return true;
+	}
 
-		return false;
+	public function getRegistrationModalBody() {
+		return null;
 	}
 
 	public function getSummaryInformation() {

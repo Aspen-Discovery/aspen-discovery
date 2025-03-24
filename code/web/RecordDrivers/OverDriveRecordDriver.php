@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 
 class OverDriveRecordDriver extends GroupedWorkSubDriver {
-	private string $id;
+	protected string $id;
 	//This will be either blank or kindle for now
 	private ?string $subSource = null;
 	private ?OverDriveAPIProduct $overDriveProduct = null;
@@ -177,6 +177,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$seriesData = [
 					'seriesTitle' => $seriesName,
 					'fromNovelist' => false,
+					'fromSeriesIndex' => false
 				];
 			}
 		}
@@ -430,7 +431,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 	/** @noinspection PhpUnused */
 	public function getSubjects() : array {
-		return $this->getOverDriveMetaData()->getDecodedRawData()->subjects;
+		return $this->getOverDriveMetaData()->getDecodedRawData()->subjects ?? [];
 	}
 
 	/**

@@ -847,6 +847,14 @@ $.validator.addMethod('repeat', function(value, element){
 	}
 }, "Repeat fields do not match");
 
+jQuery.validator.addMethod("pinConfirmation", function (value, element) {
+	if (this.optional(element)) {
+		return true;
+	}
+	var pinToMatch = aspenJQ("#pin").val();
+	return value === pinToMatch;
+}, "PINs must match.");
+
 if (!String.prototype.startsWith) {
 	Object.defineProperty(String.prototype, 'startsWith', {
 		value: function(search, rawPos) {

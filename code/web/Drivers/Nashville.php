@@ -8,6 +8,24 @@ class Nashville extends CarlX {
 		parent::__construct($accountProfile);
 	}
 
+	// MSB payments only
+	static $fineTypeTranslations = [
+		'F' => 'Fine',
+		'F2' => 'Processing',
+		'FS' => 'Manual',
+		'L' => 'Lost',
+		'NR' => 'Manual', // NR = Non Resident, a juke to identify Nashville non resident account fees
+	];
+
+	// MSB payments only
+	static $fineTypeSIP2Translations = [
+		'F' => '04',
+		'F2' => '05',
+		'FS' => '01',
+		'L' => '07',
+		'NR' => '01', // NR = Non Resident, a juke to identify Nashville non resident account fees
+	];
+
 	public function completeFinePayment(User $patron, UserPayment $payment): array {
 		global $logger;
 		global $serverName;
@@ -16,54 +34,136 @@ class Nashville extends CarlX {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 
-		// Nashville Non-Resident processing PART 1:
-		// BEFORE recording payments in CarlX,
-		// check if any fines are NON-RESIDENT FEE.
-		// Make an array to cover the case that two or more active non-resident fees are on the account.
-		$carlXFines = $this->getFines($patron);
-		$nonResidentFeeIds = [];
-		foreach ($carlXFines as $fine) {
-			if ($fine['type'] == 'NON-RESIDENT FEE') {
-				// Store nonResidentFee fine id
-				$nonResidentFeeIds[] = $fine['fineId'];
+		global $library;
+		if ($library->finePaymentType == 3) {
+			//Do MSB payment stuff
+			$accountLinesPaid = explode(',', $payment->finesPaid);
+			$patron->id = $payment->userId;
+			$patronId = $patron->ils_barcode;
+			$allPaymentsSucceed = true;
+			foreach ($accountLinesPaid as $line) {
+				// MSB Payments are in the form of fineId|paymentAmount
+				[
+					$feeId,
+					$pmtAmount,
+				] = explode('|', $line);
+				[
+					$feeId,
+					$feeType,
+				] = explode('-', $feeId);
+				$feeTypeSIP = Nashville::$fineTypeSIP2Translations[$feeType];
+				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
+					$feeId = '#' . $feeId;
+				}
+				$response = $this->feePaidViaSIP($feeTypeSIP, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+				// If failed with 'Invalid patron ID', check for changed patron ID
+				if ($response['success'] === false && $response['message'] == 'Invalid patron ID.') {
+					$newPatronIds = $this->getPatronIDChanges($patronId);
+					if ($newPatronIds) {
+						foreach ($newPatronIds as $newPatronId) {
+							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
+							$response = $this->feePaidViaSIP($feeTypeSIP, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
+							if ($response['success'] === false) {
+								$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+								$allPaymentsSucceed = false;
+							} else {
+								$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+								$allPaymentsSucceed = true;
+								break;
+							}
+						}
+					} else {
+						$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup... failed to find patron id change for $patronId", Logger::LOG_ERROR);
+					}
+				}
+				if ($response['success'] === false) {
+					$message = is_array($response['message']) ? implode(', ', $response['message']) : (string)$response['message'];
+					$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $message, Logger::LOG_ERROR);
+					$allPaymentsSucceed = false;
+				} else {
+					$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+					if ($feeType == 'NR') {
+						$this->updateNonResident($patron);
+					}
+				}
 			}
-		}
-
-		$result = parent::completeFinePayment($patron, $payment);
-		if ($result['success'] === false) {
-			$message = "Online payment CarlX update failed for Payment Reference ID $payment->id. See messages.log for details on individual items.";
-			$level = Logger::LOG_ERROR;
+			if ($allPaymentsSucceed === false) {
+				$success = false;
+				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
+				$level = Logger::LOG_ERROR;
+				$payment->completed = 9;
+			} else {
+				$success = true;
+				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
+				$level = Logger::LOG_NOTICE;
+				$payment->completed = 1;
+			}
+			$payment->update();
+			$this->createPatronPaymentNote($patronId, $payment->id, $feeId); // TODO: add $feeId when turning on SnapPay
+			$logger->log($message, $level);
+			if ($level == Logger::LOG_ERROR) {
+				if (!empty($systemVariables->errorEmail)) {
+					$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+				}
+			}
+			return [
+				'success' => $success,
+				'message' => $message,
+			];
+		// End MSB payment stuff
 		} else {
-			$message = "Online payment successfully recorded in CarlX for Payment Reference ID $payment->id.";
-			$level = Logger::LOG_DEBUG;
+			//Do SnapPay stuff
 
-			// Nashville Non-Resident processing PART 2:
-			// AFTER all payments succeed,
-			// Look for Non-Resident Fee associated with patron's account and whether it is included in this payment
-			// If so, update the patron's expiration date
-			if (!empty($nonResidentFeeIds)) {
-				$accountLinesPaid = explode(',', $payment->finesPaid);
-				foreach ($accountLinesPaid as $line) {
-					[$feeId, $pmtAmount] = explode('|', $line);
-					foreach ($nonResidentFeeIds as $nonResidentFeeId) {
-						if ($nonResidentFeeId == $feeId) {
-							$this->updateNonResident($patron);
+			// Nashville Non-Resident processing PART 1:
+			// BEFORE recording payments in CarlX,
+			// check if any fines are NON-RESIDENT FEE.
+			// Make an array to cover the case that two or more active non-resident fees are on the account.
+			$carlXFines = $this->getFines($patron);
+			$nonResidentFeeIds = [];
+			foreach ($carlXFines as $fine) {
+				if ($fine['type'] == 'NON-RESIDENT FEE') {
+					// Store nonResidentFee fine id
+					$nonResidentFeeIds[] = $fine['fineId'];
+				}
+			}
+
+			$result = parent::completeFinePayment($patron, $payment);
+			if ($result['success'] === false) {
+				$message = "Online payment CarlX update failed for Payment Reference ID $payment->id. See messages.log for details on individual items.";
+				$level = Logger::LOG_ERROR;
+			} else {
+				$message = "Online payment successfully recorded in CarlX for Payment Reference ID $payment->id.";
+				$level = Logger::LOG_DEBUG;
+
+				// Nashville Non-Resident processing PART 2:
+				// AFTER all payments succeed,
+				// Look for Non-Resident Fee associated with patron's account and whether it is included in this payment
+				// If so, update the patron's expiration date
+				if (!empty($nonResidentFeeIds)) {
+					$accountLinesPaid = explode(',', $payment->finesPaid);
+					foreach ($accountLinesPaid as $line) {
+						[$feeId, $pmtAmount] = explode('|', $line);
+						foreach ($nonResidentFeeIds as $nonResidentFeeId) {
+							if ($nonResidentFeeId == $feeId) {
+								$this->updateNonResident($patron);
+							}
 						}
 					}
 				}
 			}
-		}
-		$logger->log($message, $level);
+			$logger->log($message, $level);
 
-		if ($level == Logger::LOG_ERROR) {
-			if (!empty($systemVariables->errorEmail)) {
-				$mailer->send($systemVariables->errorEmail, "$serverName Error with online payment", $message);
+			if ($level == Logger::LOG_ERROR) {
+				if (!empty($systemVariables->errorEmail)) {
+					$mailer->send($systemVariables->errorEmail, "$serverName Error with online payment", $message);
+				}
 			}
+			return [
+				'success' => $result['success'],
+				'message' => $message,
+			];
+		// End SnapPay stuff
 		}
-		return [
-			'success' => $result['success'],
-			'message' => $message,
-		];
 	}
 
 	public function canPayFine($system): bool {
@@ -117,20 +217,64 @@ class Nashville extends CarlX {
 	
 	protected function createPatronPaymentNote($patron, $payment, $receiptNumber): void {
 		global $logger;
-		$paymentNote = new stdClass();
-		$paymentNote->Note = new stdClass();
-		$paymentNote->Note->PatronID = $patron->ils_barcode;
-		$paymentNote->Note->NoteType = 2;
-		$paymentNote->Note->NoteText = "$payment->paymentType Aspen Payment: $payment->id; CarlX Receipt: $receiptNumber";
-		$paymentNote->Modifiers = '';
-		$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
-		if ($addPaymentNoteResult) {
-			$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
-			if (!$success) {
-				$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
+		global $library;
+		if ($library->finePaymentType == 3) {
+			// Do MSB payment stuff
+			global $serverName;
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			$systemVariables = SystemVariables::getSystemVariables();
+			$request = new stdClass();
+			$request->Note = new stdClass();
+			$request->Note->PatronID = $patron;
+			$request->Note->NoteType = 2;
+			$request->Note->NoteText = "Nexus Transaction Reference: $payment";
+			$request->Modifiers = '';
+			$result = $this->doSoapRequest('addPatronNote', $request);
+			if ($result) {
+				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+				if (!$success) {
+					$success = false;
+					$message = "Failed to add patron note for payment in CarlX for Reference ID $payment .";
+					$level = Logger::LOG_ERROR;
+				} else {
+					$success = true;
+					$message = "Patron note for payment added successfully in CarlX for Reference ID $payment .";
+					$level = Logger::LOG_NOTICE;
+				}
+			} else {
+				$success = false;
+				$message = "CarlX ILS gave no response when attempting to add patron note for payment Reference ID $payment .";
+				$level = Logger::LOG_ERROR;
 			}
+			$logger->log($message, $level);
+			if ($level == Logger::LOG_ERROR) {
+				if (!empty($systemVariables->errorEmail)) {
+					$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+				}
+			}
+//		return [
+//			'success' => $success,
+//			'message' => $message,
+//		];
+
 		} else {
-			$logger->log("CarlX gave no response when attempting to add patron note for payment Reference ID $payment->id", Logger::LOG_ERROR);
+			// Do SnapPay stuff
+			$paymentNote = new stdClass();
+			$paymentNote->Note = new stdClass();
+			$paymentNote->Note->PatronID = $patron->ils_barcode;
+			$paymentNote->Note->NoteType = 2;
+			$paymentNote->Note->NoteText = "$payment->paymentType Aspen Payment: $payment->id; CarlX Receipt: $receiptNumber";
+			$paymentNote->Modifiers = '';
+			$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
+			if ($addPaymentNoteResult) {
+				$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
+				if (!$success) {
+					$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
+				}
+			} else {
+				$logger->log("CarlX gave no response when attempting to add patron note for payment Reference ID $payment->id", Logger::LOG_ERROR);
+			}
 		}
 	}
 
@@ -170,56 +314,200 @@ class Nashville extends CarlX {
 	}
 
 	public function getFines(User $patron, $includeMessages = false): array {
-		$myFines = parent::getFines($patron, $includeMessages);
-		foreach ($myFines as &$fine) {
-			// Ensure $fine is an object
-			if (is_array($fine)) {
-				$fine = (object)$fine;
-			}
-			$fine->system = $this->getFineSystem($fine->branch);
-			$fine->canPayFine = $this->canPayFine($fine->system);
-			if ($fine->type == 'FS' && stripos($fine->reason, 'COLLECTION') !== false) {
-				$fine->type = 'COLLECTION AGENCY';
-				$fine->reason = 'COLLECTION AGENCY: must be paid last';
-			} elseif ($fine->type == 'FS' && stripos($fine->reason, 'Non Resident Ful') !== false) {
-				$fine->type = 'NON-RESIDENT FEE';
-				$fine->reason = 'NON-RESIDENT FEE: ' . $fine->reason;
-			} else {
-				$fine->type = 'FEE';
-				$fine->reason = 'FEE: ' . $fine->reason;
-			}
-			// Cast back to array
-			$fine = (array)$fine;
-		}
-		unset($fine);
-		// Sort fines by system (MNPS/NPL), then type (with Collection Agency at the bottom), then reason (ehich includes title for Lost items)
-		$sorter = function ($a, $b) {
-			$systemA = $a['system'];
-			$systemB = $b['system'];
-			if ($systemA === $systemB) {
-				$typeA = $a['type'];
-				$typeB = $b['type'];
-				// Check if either type equals 'COLLECTION AGENCY'
-				$isCollectionA = $typeA === 'COLLECTION AGENCY';
-				$isCollectionB = $typeB === 'COLLECTION AGENCY';
-				// If both are 'COLLECTION' or neither are, sort normally
-				if ($isCollectionA && !$isCollectionB) {
-					return 1; // $a should be after $b
-				} elseif (!$isCollectionA && $isCollectionB) {
-					return -1; // $a should be before $b
-				} else {
-					if ($typeA === $typeB) {
-						$reasonA = $a['reason'];
-						$reasonB = $b['reason'];
-						return strcasecmp($reasonA, $reasonB);
+		global $library;
+		if ($library->finePaymentType == 3){
+			// Do MSB payment stuff
+			$myFines = [];
+
+			$request = $this->getSearchbyPatronIdRequest($patron);
+
+			// Fines
+			$request->TransactionType = 'Fine';
+			$result = $this->doSoapRequest('getPatronTransactions', $request);
+			//global $logger;
+			//$logger->log("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true), Logger::LOG_ERROR);
+			if ($result && !empty($result->FineItems->FineItem)) {
+				if (!is_array($result->FineItems->FineItem)) {
+					$result->FineItems->FineItem = [$result->FineItems->FineItem];
+				}
+				foreach ($result->FineItems->FineItem as $fine) {
+					// hard coded Nashville school branch IDs
+					if ($fine->Branch == 0) {
+						$fine->Branch = $fine->TransactionBranch;
 					}
-					return strcasecmp($typeA, $typeB);
+					$fine->System = $this->getFineSystem($fine->Branch);
+					$fine->CanPayFine = $this->canPayFine($fine->System);
+
+					$fine->FineAmountOutstanding = 0;
+					if ($fine->FineAmountPaid > 0) {
+						$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
+					} else {
+						$fine->FineAmountOutstanding = $fine->FineAmount;
+					}
+
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+						$fine->Identifier = substr($fine->Identifier, 9);
+					}
+					$fine->Identifier = str_replace('#', '', $fine->Identifier);
+
+					if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'COLLECTION') !== false) {
+						$fineType = 'COLLECTION AGENCY';
+						$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
+					} elseif ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'Non Resident Ful') !== false) {
+						$fineType = 'FEE';
+						$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+						$fine->TransactionCode = 'NR';
+					} else {
+						$fineType = 'FEE';
+						$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+					}
+
+					$myFines[] = [
+						'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
+						'type' => $fineType,
+						'reason' => $fine->FeeNotes,
+						'amount' => $fine->FineAmount,
+						'amountVal' => $fine->FineAmount,
+						'amountOutstanding' => $fine->FineAmountOutstanding,
+						'amountOutstandingVal' => $fine->FineAmountOutstanding,
+						'message' => $fine->Title,
+						'date' => date('M j, Y', strtotime($fine->FineAssessedDate)),
+						'system' => $fine->System,
+						'canPayFine' => $fine->CanPayFine,
+					];
+
 				}
 			}
-			return strcasecmp($systemA, $systemB);
-		};
-		uasort($myFines, $sorter);
-		return $myFines;
+
+			// Lost Item Fees
+			if ($result && $result->LostItemsCount > 0) {
+				$request->TransactionType = 'Lost';
+				$result = $this->doSoapRequest('getPatronTransactions', $request);
+				//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
+
+				if ($result && !empty($result->LostItems->LostItem)) {
+					if (!is_array($result->LostItems->LostItem)) {
+						$result->LostItems->LostItem = [$result->LostItems->LostItem];
+					}
+					foreach ($result->LostItems->LostItem as $fine) {
+						// hard coded Nashville school branch IDs
+						if ($fine->Branch == 0) {
+							$fine->Branch = $fine->TransactionBranch;
+						}
+						$fine->System = $this->getFineSystem($fine->Branch);
+						$fine->CanPayFine = $this->canPayFine($fine->System);
+
+						$fine->FeeAmountOutstanding = 0;
+						if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+							$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+						} else {
+							$fine->FeeAmountOutstanding = $fine->FeeAmount;
+						}
+
+						if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+							$fine->Identifier = substr($fine->Identifier, 9);
+						}
+
+						$fineType = 'FEE';
+						$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
+						$myFines[] = [
+							'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
+							'type' => $fineType,
+							'reason' => $fine->FeeNotes,
+							'amount' => $fine->FeeAmount,
+							'amountVal' => $fine->FeeAmount,
+							'amountOutstanding' => $fine->FeeAmountOutstanding,
+							'amountOutstandingVal' => $fine->FeeAmountOutstanding,
+							'message' => $fine->Title,
+							'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+							'system' => $fine->System,
+							'canPayFine' => $fine->CanPayFine,
+						];
+
+					}
+					// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
+					$myLostFines = $this->getLostViaSIP($patron->ils_barcode);
+					$myFinesIds = array_column($myFines, 'fineId');
+					foreach ($myLostFines as $myLostFine) {
+						$keys = array_keys($myFinesIds, $myLostFine['fineId'] . '-L');
+						foreach ($keys as $key) {
+							// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
+							if (substr($myFines[$key]['fineId'], -1) == "L") {
+								$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
+								$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
+								break;
+							}
+						}
+					}
+				}
+			}
+			$sorter = function ($a, $b) {
+				$systemA = $a['system'];
+				$systemB = $b['system'];
+				if ($systemA === $systemB) {
+					$messageA = $a['message'];
+					$messageB = $b['message'];
+					return strcasecmp($messageA, $messageB);
+				}
+				return strcasecmp($systemA, $systemB);
+			};
+			uasort($myFines, $sorter);
+			return $myFines;
+			// End MSB payment stuff
+		} else {
+			// Do SnapPay stuff
+			$myFines = parent::getFines($patron, $includeMessages);
+			foreach ($myFines as &$fine) {
+				// Ensure $fine is an object
+				if (is_array($fine)) {
+					$fine = (object)$fine;
+				}
+				$fine->system = $this->getFineSystem($fine->branch);
+				$fine->canPayFine = $this->canPayFine($fine->system);
+				if ($fine->type == 'FS' && stripos($fine->reason, 'COLLECTION') !== false) {
+					$fine->type = 'COLLECTION AGENCY';
+					$fine->reason = 'COLLECTION AGENCY: must be paid last';
+				} elseif ($fine->type == 'FS' && stripos($fine->reason, 'Non Resident Ful') !== false) {
+					$fine->type = 'NON-RESIDENT FEE';
+					$fine->reason = 'NON-RESIDENT FEE: ' . $fine->reason;
+				} else {
+					$fine->type = 'FEE';
+					$fine->reason = 'FEE: ' . $fine->reason;
+				}
+				// Cast back to array
+				$fine = (array)$fine;
+			}
+			unset($fine);
+			// Sort fines by system (MNPS/NPL), then type (with Collection Agency at the bottom), then reason (ehich includes title for Lost items)
+			$sorter = function ($a, $b) {
+				$systemA = $a['system'];
+				$systemB = $b['system'];
+				if ($systemA === $systemB) {
+					$typeA = $a['type'];
+					$typeB = $b['type'];
+					// Check if either type equals 'COLLECTION AGENCY'
+					$isCollectionA = $typeA === 'COLLECTION AGENCY';
+					$isCollectionB = $typeB === 'COLLECTION AGENCY';
+					// If both are 'COLLECTION' or neither are, sort normally
+					if ($isCollectionA && !$isCollectionB) {
+						return 1; // $a should be after $b
+					} elseif (!$isCollectionA && $isCollectionB) {
+						return -1; // $a should be before $b
+					} else {
+						if ($typeA === $typeB) {
+							$reasonA = $a['reason'];
+							$reasonB = $b['reason'];
+							return strcasecmp($reasonA, $reasonB);
+						}
+						return strcasecmp($typeA, $typeB);
+					}
+				}
+				return strcasecmp($systemA, $systemB);
+			};
+			uasort($myFines, $sorter);
+			return $myFines;
+		}
 	}
 
 	public function getFineSystem($branchId): string {

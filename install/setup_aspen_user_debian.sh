@@ -31,3 +31,8 @@ chown -R aspen:aspen_apache /data/aspen-discovery
 #Change file permissions so /var/log/aspen-discovery is owned by the aspen user
 mkdir -p /var/log/aspen-discovery
 chown -R aspen:aspen /var/log/aspen-discovery
+
+# Setup Clam Log
+touch /var/log/aspen-discovery/clam_av.log
+chown root:aspen_apache /var/log/aspen-discovery/clam_av.log
+

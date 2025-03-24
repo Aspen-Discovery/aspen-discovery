@@ -84,6 +84,10 @@
 			<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldSelected()" class="btn btn-sm btn-default">{translate text="Thaw Selected" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Thaw All" isPublicFacing=true}</a>
 			{/if}
+
+			{if $allowSelectingHoldsToExport}
+				<a href="#" onclick="return AspenDiscovery.Account.exportOnlySelectedHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());" class="btn btn-sm btn-default">{translate text="Export Selected to CSV" isPublicFacing=true}</a>
+			{/if}
 		</div>
 		<div class="btn-group">
 			<input type="hidden" name="withSelectedAction" value="">
