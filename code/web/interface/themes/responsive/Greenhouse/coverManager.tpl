@@ -1,18 +1,12 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="Cover Manager" isAdminFacing=true}</h1>
+		<h1 id="pageTitle"> {translate text={$pageTitleShort} isAdminFacing=true}</h1>
 		<div class="adminHomeOptions">
 			<div class="alert alert-info">
 				{translate text="Use this tool to reload covers of different types. For most sources, this will remove the cover information so it will be regenerated the next time it's needed. For uploaded covers, this will mark them for reloading while preserving the uploaded file." isAdminFacing=true}
 			</div>
 
 			<div id="coverReloadResult" class="alert alert-success hidden"></div>
-
-			{if !empty($reloadMessage)}
-				<div class="alert alert-success">
-					{$reloadMessage}
-				</div>
-			{/if}
 
 			<div class="row">
 				<div class="col-xs-12">
