@@ -12,28 +12,28 @@ require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 /**
  * Class NYTListsUpdateService
  *
- * Handles updating New York Times best seller lists
- * Can be used both from command line scripts and directly from PHP
+ * Handles updating New York Times best seller lists.
  */
 class NYTListsUpdateService {
 	/** @var NYTUpdateLogEntry */
-	private $nytUpdateLog;
+	private NYTUpdateLogEntry $nytUpdateLog;
 
 	/** @var bool */
-	private $success = false;
+	private bool $success = false;
 
 	/** @var string */
-	private $message = '';
+	private string $message = '';
 
 	/** @var int|null */
-	private $logId = null;
+	private ?int $logId = null;
 
 	/**
-	 * Check if this update has been requested to halt
+	 * Check if this update has been requested to halt.
 	 *
-	 * @return bool True if a halt has been requested
+	 * @return bool True if a halt has been requested.
 	 */
-	private function isHaltRequested() {
+	private function isHaltRequested(): bool
+	{
 		if ($this->nytUpdateLog) {
 			// Reload the log entry to check for halt flag
 			$logEntry = new NYTUpdateLogEntry();
@@ -46,24 +46,23 @@ class NYTListsUpdateService {
 	}
 
 	/**
-	 * Run the NYT lists update process
+	 * Run the NYT lists update process.
 	 *
-	 * @return array Result with success status, message, and log ID
+	 * @return array Result with success status, message, and log ID.
 	 */
 	public function update(): array
 	{
 		try {
-			// Create a NYTUpdateLogEntry
+			// Create a NYTUpdateLogEntry.
 			$this->nytUpdateLog = new NYTUpdateLogEntry();
 			$this->nytUpdateLog->startTime = time();
 			$this->nytUpdateLog->insert();
 			$this->logId = $this->nytUpdateLog->id;
 			$this->nytUpdateLog->addNote("Starting NYT list update process.");
 
-			// Check for halt requests periodically throughout the process
+			// Check for halt requests periodically throughout the process.
 			set_time_limit(0);
 
-			global $configArray;
 			$nytSettings = new NewYorkTimesSetting();
 			if (!$nytSettings->find(true)) {
 				$this->nytUpdateLog->addError("No settings found, not updating lists.");
@@ -85,7 +84,7 @@ class NYTListsUpdateService {
 				}
 
 				// Pass the log entry to the API, so we can update it there.
-				$nyt_api = new NYTApi($nytSettings->booksApiKey, $this->nytUpdateLog);
+				$nyt_api = new NYTApi($nytSettings->booksApiKey);
 
 				$retry = true;
 				$numTries = 0;
@@ -113,31 +112,25 @@ class NYTListsUpdateService {
 								if (strpos($availableLists->fault->faultstring, 'quota violation')) {
 									$retry = ($numTries <= 3);
 									if ($retry) {
-										$this->nytUpdateLog->addExtensiveNote("Hit quota limit, retrying after sleep (attempt $numTries)");
+										$this->nytUpdateLog->addExtensiveNote("Hit quota limit, retrying after sleep (attempt $numTries).");
 										sleep(rand(60, 300));
 									} else {
-										if ($this->nytUpdateLog != null) {
-											$this->nytUpdateLog->addError("Did not get a good response from the API. {$availableLists->fault->faultstring}");
-											$this->message = "API quota violation: {$availableLists->fault->faultstring}";
-										}
+										$this->nytUpdateLog->addError("Did not get a good response from the API: {$availableLists->fault->faultstring}.");
+										$this->message = "API quota violation: {$availableLists->fault->faultstring}";
 									}
 								} else {
-									if ($this->nytUpdateLog != null) {
-										$this->nytUpdateLog->addError("Did not get a good response from the API. {$availableLists->fault->faultstring}");
-										$this->message = "API error: {$availableLists->fault->faultstring}";
-									}
+									$this->nytUpdateLog->addError("Did not get a good response from the API: {$availableLists->fault->faultstring}.");
+									$this->message = "API error: {$availableLists->fault->faultstring}.";
 								}
 							} else {
-								if ($this->nytUpdateLog != null) {
-									$this->nytUpdateLog->addError("Did not get a good response from the API");
-									$this->message = "Invalid API response";
-								}
+								$this->nytUpdateLog->addError("Did not get a good response from the API.");
+								$this->message = "Invalid API response";
 							}
 						} else {
-							$this->nytUpdateLog->addNote("Successfully retrieved " . count($availableLists->results) . " available NYT lists");
+							$this->nytUpdateLog->addNote("Successfully retrieved " . count($availableLists->results) . " available NYT lists.");
 						}
 					} catch (Exception $e) {
-						$this->nytUpdateLog->addError("Error retrieving lists from the API: " . $e->getMessage());
+						$this->nytUpdateLog->addError("Error retrieving lists from the API: " . $e->getMessage() . ".");
 						$this->message = "Error retrieving lists: " . $e->getMessage();
 						$availableLists = null;
 						break;
@@ -161,7 +154,7 @@ class NYTListsUpdateService {
 					$this->nytUpdateLog->update();
 					$this->nytUpdateLog->addNote("Processing " . count($allListsNames) . " NYT lists that are newer than $prevYear.");
 
-					// Final check before starting list processing
+					// Final check before starting list processing.
 					if ($this->isHaltRequested()) {
 						$this->nytUpdateLog->addNote("Update halted by user request before list processing began.");
 						$this->message = "Update halted by user request";
@@ -171,7 +164,7 @@ class NYTListsUpdateService {
 					}
 
 					foreach ($allListsNames as $listName) {
-						// Check if a halt has been requested
+						// Check if a halt has been requested.
 						if ($this->isHaltRequested()) {
 							$this->nytUpdateLog->addNote("Update halted by user request, stopping processing.");
 							break;
@@ -187,13 +180,13 @@ class NYTListsUpdateService {
 						$this->nytUpdateLog->lastUpdate = time();
 						$this->nytUpdateLog->update();
 
-						// Check if a halt has been requested after processing each list
+						// Check if a halt has been requested after processing each list.
 						if ($this->isHaltRequested()) {
 							$this->nytUpdateLog->addNote("Update halted by user request - stopping processing");
 							break;
 						}
 
-						//Make sure we don't hit our quota.  Wait between updates
+						// Make sure we don't hit our quota.  Wait between updates.
 						sleep(7);
 					}
 
@@ -207,14 +200,14 @@ class NYTListsUpdateService {
 
 				$nyt_api = null;
 
-				// Reset the force full update flag if it was enabled
+				// Reset the force full update flag if it was enabled.
 				if ($forceFullUpdate) {
 					$nytSettings->runFullUpdate = 0;
 					$nytSettings->update();
 					$this->nytUpdateLog->addNote("Force Full Update setting has been reset.");
 				}
 
-				// Reset the extensive logging flag if it was enabled
+				// Reset the extensive logging flag if it was enabled.
 				if ($extensiveLoggingEnabled) {
 					$nytSettings->enableExtensiveLogging = 0;
 					$nytSettings->update();
@@ -230,19 +223,17 @@ class NYTListsUpdateService {
 			$nytSettings = null;
 
 			$this->nytUpdateLog->__destruct();
-			$this->nytUpdateLog = null;
 
 			global $aspen_db;
 			$aspen_db = null;
-
 		} catch (Exception $e) {
-			// Log any uncaught exceptions
+			// Log any uncaught exceptions.
 			if (isset($this->nytUpdateLog)) {
 				$this->nytUpdateLog->addError("Uncaught exception: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 				$this->nytUpdateLog->endTime = time();
 				$this->nytUpdateLog->update();
 			} else {
-				// If we couldn't even create the log entry, write to error_log
+				// If we couldn't even create the log entry, write to error_log.
 				error_log("NYT Update Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 			}
 			$this->message = "Exception: " . $e->getMessage();
@@ -253,9 +244,9 @@ class NYTListsUpdateService {
 	}
 
 	/**
-	 * Get the result array for this update operation
+	 * Get the result array for this update operation.
 	 *
-	 * @return array Result with success status, message, and log ID
+	 * @return array Result with success status, message, and log ID.
 	 */
 	private function getResult(): array
 	{
@@ -267,15 +258,15 @@ class NYTListsUpdateService {
 	}
 
 	/**
-	 * Check if an update is currently running
+	 * Check if an update is currently running.
 	 *
-	 * @return array Information about the running update or null if none is running
+	 * @return array Information about the running update or null if none is running.
 	 */
 	public static function isUpdateRunning(): array
 	{
 		$logEntry = new NYTUpdateLogEntry();
-		$logEntry->whereAdd('endTime IS NULL'); // Look for unfinished updates
-		$logEntry->whereAdd('startTime > ' . (time() - 3600)); // Started in the last hour
+		$logEntry->whereAdd('endTime IS NULL'); // Look for unfinished updates.
+		$logEntry->whereAdd('startTime > ' . (time() - 3600)); // Started in the last hour.
 		$logEntry->orderBy('id DESC');
 		$logEntry->limit(0, 1);
 
@@ -283,18 +274,18 @@ class NYTListsUpdateService {
 
 		if ($logEntry->find(true)) {
 			// Auto-cleanup for updates running too long.
-			// If no activity for 5 minutes (300 seconds), consider it stalled
+			// If no activity for 5 minutes (300 seconds), consider it stalled.
 			$staleThreshold = 300;
 			$lastActivity = $logEntry->lastUpdate ?? $logEntry->startTime;
 			$timeSinceLastActivity = time() - $lastActivity;
 
 			if ($timeSinceLastActivity > $staleThreshold) {
-				$logEntry->addNote("Automatically halted stalled update - no activity for " .
-					floor($timeSinceLastActivity / 60) . " minutes");
+				$logEntry->addNote("Automatically halted stalled update; no activity for " .
+					floor($timeSinceLastActivity / 60) . " minutes.");
 				$logEntry->endTime = time();
 				$logEntry->update();
 			} else {
-				// Active update within the threshold
+				// Active update within the threshold.
 				$result = [
 					'isRunning' => true,
 					'logId' => $logEntry->id,
@@ -312,10 +303,10 @@ class NYTListsUpdateService {
 	}
 
 	/**
-	 * Attempt to halt a currently running update
+	 * Attempt to halt a currently running update.
 	 *
-	 * @param int $logId The ID of the update log entry to halt
-	 * @return bool Whether the update was successfully halted
+	 * @param int $logId The ID of the update log entry to halt.
+	 * @return bool Whether the update was successfully halted.
 	 */
 	public static function haltUpdate(int $logId): bool
 	{
@@ -326,7 +317,7 @@ class NYTListsUpdateService {
 
 		if ($logEntry->find(true)) {
 			if ($logEntry->endTime === null) {
-				// Set the halt flag instead of trying to kill processes
+				// Set the halt flag instead of trying to kill processes.
 				$logEntry->haltRequested = 1;
 				$logEntry->addExtensiveNote("Update halt requested by user via Greenhouse web interface.");
 				$logEntry->update();

@@ -1833,9 +1833,9 @@ class ListAPI extends AbstractAPI {
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->numUpdated++;
 				if ($forceFullUpdate) {
-					$nytUpdateLog->addNote("Force updating list '$selectedListTitle' regardless of modification date.");
+					$nytUpdateLog->addExtensiveNote("Force updating list '$selectedListTitle' regardless of modification date.");
 				} else {
-					$nytUpdateLog->addNote("Updating list '$selectedListTitle' from last modified: {$nytList->nytListModified} to: $lastModifiedDay.");
+					$nytUpdateLog->addExtensiveNote("Updating list '$selectedListTitle' from last modified: {$nytList->nytListModified} to: $lastModifiedDay.");
 				}
 			}
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
@@ -1977,7 +1977,7 @@ class ListAPI extends AbstractAPI {
 		}
 
 		if ($results['success']) {
-			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list.";
+			$results['message'] .= "<br/>  Final Results: Added $numTitlesAdded titles to the list.";
 			if ($listExistsInAspen) {
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}

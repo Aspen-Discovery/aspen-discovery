@@ -10,7 +10,7 @@ class Greenhouse_NYTListUpdater extends Admin_Admin
 	{
 		global $interface;
 
-		// Check if the NYT API is configured
+		// Check if the NYT API is configured.
 		$nytSettings = new NewYorkTimesSetting();
 		$hasSettings = $nytSettings->find(true);
 		$interface->assign('hasSettings', $hasSettings);
@@ -38,10 +38,8 @@ class Greenhouse_NYTListUpdater extends Admin_Admin
 
 	function canView(): bool
 	{
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
-				return true;
-			}
+		if (UserAccount::isLoggedIn() && UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			return true;
 		}
 		return false;
 	}

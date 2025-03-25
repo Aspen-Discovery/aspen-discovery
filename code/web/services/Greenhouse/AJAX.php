@@ -621,6 +621,8 @@ class Greenhouse_AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function runNYTUpdate(): array
 	{
+		global $logger;
+		$logger->log("Called to run update!", Logger::LOG_ERROR);
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 			return ['success' => false, 'message' => 'You must be logged in as an Aspen Administrator to run this update.'];
 		}
@@ -629,7 +631,7 @@ class Greenhouse_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
-			return ['success' => false, 'message' => 'New York Times API is not configured'];
+			return ['success' => false, 'message' => 'New York Times API is not configured.'];
 		}
 
 		// First check if any updates are already running and handle them
@@ -652,28 +654,26 @@ class Greenhouse_AJAX extends Action {
 			// Create the updater and run it directly
 			$updater = new NYTListsUpdateService();
 			$result = $updater->update();
-
+			$logger->log("Ran update!", Logger::LOG_ERROR);
 			// Return results to the browser
 			if ($result['success']) {
+				$logger->log("Success update!", Logger::LOG_ERROR);
 				$logId = $result['logId'];
 				return [
 					'success' => true,
 					'message' => 'NYT Lists updated successfully',
 					'logId' => $logId,
-					'clearedPrevious' => $currentStatus['isRunning']
 				];
 			} else {
 				return [
 					'success' => false,
 					'message' => 'Error updating NYT Lists: ' . $result['message'],
-					'clearedPrevious' => $currentStatus['isRunning']
 				];
 			}
 		} catch (Exception $e) {
 			return [
 				'success' => false,
 				'message' => 'Exception during NYT update: ' . $e->getMessage(),
-				'clearedPrevious' => $currentStatus['isRunning']
 			];
 		}
 	}
@@ -681,7 +681,6 @@ class Greenhouse_AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function getNYTUpdateStatus(): array
 	{
-
 		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
 		$status = NYTListsUpdateService::isUpdateRunning();
 
@@ -706,7 +705,7 @@ class Greenhouse_AJAX extends Action {
 	{
 		// Check permissions
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
-			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists'];
+			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists.'];
 		}
 
 		$logId = isset($_REQUEST['logId']) ? (int)$_REQUEST['logId'] : 0;
@@ -720,8 +719,7 @@ class Greenhouse_AJAX extends Action {
 		if ($result) {
 			return [
 				'success' => true,
-				'message' => 'NYT update has been halted. The process will stop at the next safe point.',
-				'details' => 'The update will finish its current operation and then stop. This may take a few seconds.'
+				'message' => 'NYT update has been halted. The process will stop at the next safe point, which may take a few seconds.',
 			];
 		} else {
 			return [
@@ -736,7 +734,7 @@ class Greenhouse_AJAX extends Action {
 	{
 		// Check permissions
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
-			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists settings'];
+			return ['success' => false, 'message' => 'You do not have permission to update New York Times Lists settings.'];
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';

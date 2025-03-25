@@ -137,6 +137,15 @@ if (!$nightlyReindexRunning && $solrRunning) {
 	}
 }
 
+// Check if a NYT full update has been requested.
+require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+$nytSettings = new NewYorkTimesSetting();
+if ($nytSettings->find(true) && $nytSettings->runFullUpdate == 1) {
+	require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
+	$updater = new NYTListsUpdateService();
+	$updater->update();
+}
+
 //if (strlen($results) > 0) {
 //	//For debugging
 //	try {
