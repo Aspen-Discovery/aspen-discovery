@@ -21,7 +21,7 @@
 						</div>
 						<div class="panel-body">
 							<div class="form-group">
-								<label>{translate text="API Key" isAdminFacing=true}</label>
+								<label>{translate text="API Key (Truncated)" isAdminFacing=true}</label>
 								<div class="form-control-static">{$apiKey}</div>
 								<p class="help-block">
 									<small>{translate text="To modify this key, please visit the full settings page." isAdminFacing=true}</small>
@@ -54,7 +54,7 @@
 
 							<div class="form-group">
 								<p>
-									<a href="/Enrichment/NewYorkTimesSettings" class="btn btn-default">
+									<a href="/Enrichment/NewYorkTimesSettings" class="btn btn-default" target="_blank">
 										<i class="fas fa-cog"></i> {translate text="Advanced Settings" isAdminFacing=true}
 									</a>
 								</p>
@@ -70,12 +70,14 @@
 						</div>
 						<div class="panel-body">
 							<p>{translate text="Click the button below to run the NYT lists updater now. This will execute the command on the server and may take several minutes to complete." isAdminFacing=true}</p>
-							<button id="runNytUpdateBtn" onclick="return AspenDiscovery.Greenhouse.runNYTUpdate();" class="btn btn-primary">
-								<i class="fas fa-sync"></i> {translate text="Run NYT Lists Update Now" isAdminFacing=true}
+							<button id="runNytUpdateBtn" onclick="return AspenDiscovery.Greenhouse.runNYTUpdate();" class="btn btn-primary"
+									data-original-text="<i class='fas fa-sync'></i> {translate text="Run NYT Lists Update" isAdminFacing=true}"
+									data-running-text="{translate text="Update Running..." isAdminFacing=true}">
+								<i class="fas fa-sync"></i> {translate text="Run NYT Lists Update" isAdminFacing=true}
 							</button>
 
 							<div class="form-group" style="margin-top: 20px;">
-								<a href="/UserLists/NYTUpdatesLog" class="btn btn-default">
+								<a href="/UserLists/NYTUpdatesLog" class="btn btn-default" target="_blank">
 									<i class="fas fa-history"></i> {translate text="View All Update Logs" isAdminFacing=true}
 								</a>
 							</div>

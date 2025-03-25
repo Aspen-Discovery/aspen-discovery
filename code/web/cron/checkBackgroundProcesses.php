@@ -142,8 +142,15 @@ require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 $nytSettings = new NewYorkTimesSetting();
 if ($nytSettings->find(true) && $nytSettings->runFullUpdate == 1) {
 	require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
-	$updater = new NYTListsUpdateService();
-	$updater->update();
+	// Check if an update is already running.
+	$updateStatus = NYTListsUpdateService::isUpdateRunning();
+	if (!$updateStatus['isRunning']) {
+		$updater = new NYTListsUpdateService();
+		$updater->update();
+	} else {
+		$results .= "NYT update was requested but another update is already running (started " .
+			floor((time() - $updateStatus['startTime']) / 60) . " minutes ago). Skipping this run.\r\n";
+	}
 }
 
 //if (strlen($results) > 0) {

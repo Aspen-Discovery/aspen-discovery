@@ -36,7 +36,6 @@ aspen/dpla.js
 aspen/ebsco.js
 aspen/econtent-record.js
 aspen/events.js
-aspen/modals.js
 aspen/greenhouse.js
 aspen/grouped-work.js
 aspen/lists.js

@@ -187,7 +187,7 @@ class NYTListsUpdateService {
 						}
 
 						// Make sure we don't hit our quota.  Wait between updates.
-						sleep(7);
+						sleep(13);
 					}
 
 					// Set success flag
@@ -223,9 +223,6 @@ class NYTListsUpdateService {
 			$nytSettings = null;
 
 			$this->nytUpdateLog->__destruct();
-
-			global $aspen_db;
-			$aspen_db = null;
 		} catch (Exception $e) {
 			// Log any uncaught exceptions.
 			if (isset($this->nytUpdateLog)) {

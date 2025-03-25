@@ -4,33 +4,43 @@ require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 /***************************************
  * Simple class to retrieve feed of NYT best sellers
  * documentation:
- * http://developer.nytimes.com/docs/read/best_sellers_api
+ * https://developer.nytimes.com/docs/books-product/1/overview
  *
- * Last Updated: 2016-02-26 JN
+ * Last Updated: March, 2025
  ***************************************
  */
 class NYTApi {
 
-	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/';
-	protected $api_key;
+	const BASE_URI = 'https://api.nytimes.com/svc/books/v3/lists/';
+	protected string $api_key;
 
-	static $allListsInfo = null;
+	static string|false|null $allListsInfo = null;
 
 	/**
 	 * NYTApi constructor.
 	 * @param string $key
 	 */
-	public function __construct($key) {
+	public function __construct(string $key) {
 		$this->api_key = $key;
 	}
 
-	protected function build_url($list_name) {
+	protected function build_url($list_name): string
+	{
 		$url = self::BASE_URI . $list_name;
+		// For v3 API, we need to use the format: lists/{date}/{list_name}.json.
+		// Special case for the 'names' endpoint, which doesn't need a date.
+		if ($list_name == 'names') {
+			$url = self::BASE_URI . 'names.json';
+		} else {
+			// Use "current" for date to get the most recent list.
+			$url = self::BASE_URI . 'current/' . $list_name . '.json';
+		}
 		$url .= '?api-key=' . $this->api_key;
 		return $url;
 	}
 
-	public function get_list($list_name) {
+	public function get_list($list_name): bool|string|null
+	{
 		if ($list_name == 'names' && isset(NYTApi::$allListsInfo)) {
 			return NYTApi::$allListsInfo;
 		}
@@ -59,8 +69,8 @@ class NYTApi {
 		$response = curl_exec($curl);
 		// Close request to clear up some resources
 		curl_close($curl);
-		//NYT recommends sleeping for 6 seconds between API calls to avoid rate limits.
-		sleep(7);
+		//NYT recommends sleeping for 12 seconds between API calls to avoid rate limits.
+		sleep(13);
 
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
 			NYTApi::$allListsInfo = $response;

@@ -54,12 +54,12 @@ class Enrichment_NYTLists extends Admin_Admin {
 					$listApi = new ListAPI();
 					try {
 						$results = $listApi->createUserListFromNYT($selectedList, null);
-						if ($results['success'] == false) {
+						if (!$results['success']) {
 							$interface->assign('error', $results['message']);
 						} else {
 							$interface->assign('successMessage', $results['message']);
 						}
-						sleep(7);
+						sleep(13);
 					} catch (Exception $e) {
 						$interface->assign('error', $e->getMessage());
 					}

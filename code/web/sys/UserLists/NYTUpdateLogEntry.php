@@ -39,7 +39,7 @@ class NYTUpdateLogEntry extends BaseLogEntry {
 	public function addError(string $error): void
 	{
 		$this->numErrors++;
-		$this->addNote($error);
+		$this->addNote("ERROR: " . $error);
 		$this->update();
 	}
 

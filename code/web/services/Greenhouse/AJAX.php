@@ -621,8 +621,6 @@ class Greenhouse_AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function runNYTUpdate(): array
 	{
-		global $logger;
-		$logger->log("Called to run update!", Logger::LOG_ERROR);
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 			return ['success' => false, 'message' => 'You must be logged in as an Aspen Administrator to run this update.'];
 		}
@@ -654,10 +652,9 @@ class Greenhouse_AJAX extends Action {
 			// Create the updater and run it directly
 			$updater = new NYTListsUpdateService();
 			$result = $updater->update();
-			$logger->log("Ran update!", Logger::LOG_ERROR);
+
 			// Return results to the browser
 			if ($result['success']) {
-				$logger->log("Success update!", Logger::LOG_ERROR);
 				$logId = $result['logId'];
 				return [
 					'success' => true,

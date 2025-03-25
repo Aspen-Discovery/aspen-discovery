@@ -1686,7 +1686,7 @@ class ListAPI extends AbstractAPI {
 			}
 			return [
 				'success' => false,
-				'message' => "We did not find list '{$selectedList}' in The New York Times API",
+				'message' => "We did not find list '{$selectedList}' in The New York Times API.",
 			];
 		}
 
@@ -1872,20 +1872,30 @@ class ListAPI extends AbstractAPI {
 		$numTitlesAttempted = 0;
 		$numTitlesNotFound = 0;
 
-		if (!isset($listTitles->results) || !is_array($listTitles->results) || count($listTitles->results) == 0) {
+		// Check for the new v3 API response structure.
+		if (isset($listTitles->results->books) && is_array($listTitles->results->books)) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'.");
+				$nytUpdateLog->addNote("Processing v3 API response with " . count($listTitles->results->books) . " books.");
+			}
+			$titleResults = $listTitles->results->books;
+		} else if (isset($listTitles->results) && is_array($listTitles->results)) {
+			// Old v2 API structure - results is the array of books
+			$titleResults = $listTitles->results;
+		} else {
+			$titleResults = [];
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'");
 			}
 		}
 
-		foreach ($listTitles->results as $titleResult) {
+		foreach ($titleResults as $titleResult) {
 			$numTitlesAttempted++;
 			$aspenID = null;
 			// go through each list item
 			if (!empty($titleResult->isbns)) {
 				$isbnsChecked = [];
 				foreach ($titleResult->isbns as $isbns) {
-					$isbn = isset($isbns->isbn13) && !empty($isbns->isbn13) ? $isbns->isbn13 : ($isbns->isbn10 ?? '');
+					$isbn = !empty($isbns->isbn13) ? $isbns->isbn13 : ($isbns->isbn10 ?? '');
 					if ($isbn) {
 						$isbnsChecked[] = $isbn;
 						//look the title up by ISBN

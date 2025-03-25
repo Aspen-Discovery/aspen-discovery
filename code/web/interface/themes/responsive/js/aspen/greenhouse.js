@@ -1,28 +1,27 @@
 AspenDiscovery.Greenhouse = (function () {
     let nytUpdateStatusInterval = null;
     let currentUpdateLogId = null;
+    const MAX_STATUS_CHECK_ATTEMPTS = 10; // Max attempts to find a running update.
 
     return {
         runNYTUpdate: function () {
             $('#nytUpdateResult').removeClass('hidden alert-danger').addClass('alert-info')
                 .html('<i class="fas fa-spinner fa-spin fa-lg"></i> Running the update. Please wait...');
 
-            // Disable the update button
-            $('#runNytUpdateBtn').prop('disabled', true);
+            AspenDiscovery.Greenhouse.updateButtonState('running');
 
-            // Show temporary status
             let statusHtml = '<div class="alert alert-warning">';
-            statusHtml += '<h4><i class="fas fa-sync fa-spin"></i> NYT Update Starting...</h4>';
-            statusHtml += '<p>' + new Date().toLocaleString() + '</p>';
-            statusHtml += '<p>Please wait while the update initializes...</p>';
+            statusHtml += '<h4><i id="nytStatusIcon" class="fas fa-sync fa-spin"></i> <span id="nytStatusTitle">NYT Update Starting...</span></h4>';
+            statusHtml += '<div id="nytStatusDetails">Please wait while the update initializes...</div>';
+            statusHtml += '<div id="nytStatusControls"></div>';
             statusHtml += '</div>';
             $('#nytUpdateStatus').html(statusHtml).show();
 
-            // Track if running update is found
+            // Track if running update is found.
             let foundRunningUpdate = false;
             let statusCheckAttempts = 0;
 
-            // Initial status check interval
+            // Initial status check interval.
             const initCheckInterval = setInterval(function () {
                 $.ajax({
                     url: '/Greenhouse/AJAX',
@@ -38,22 +37,33 @@ AspenDiscovery.Greenhouse = (function () {
                             AspenDiscovery.Greenhouse.startUpdateStatusCheck();
                         } else {
                             statusCheckAttempts++;
+                            // Stop checking after MAX_STATUS_CHECK_ATTEMPTS if no running update found.
+                            if (statusCheckAttempts >= MAX_STATUS_CHECK_ATTEMPTS && !foundRunningUpdate) {
+                                clearInterval(initCheckInterval);
+                                if (!foundRunningUpdate) {
+                                    // Update only the parts that need to change
+                                    $('#nytStatusIcon').removeClass('fa-sync fa-spin').addClass('fa-exclamation-circle');
+                                    $('#nytStatusTitle').text('Waiting for Update');
+                                    $('#nytStatusDetails').html('<p>The system is still processing your update request.</p>' +
+                                        '<p>If the update doesn\'t start within a minute, please check the logs or try again.</p>');
+                                }
+                            }
                         }
                     }
                 });
             }, 1000);
 
-            console.log("Calling JS to run NYT update.");
             $.ajax({
                 url: '/Greenhouse/AJAX',
                 method: 'GET',
                 dataType: 'json',
+                timeout: 30000, // 30 seconds
                 data: { method: 'runNYTUpdate' },
                 success: function (response) {
-                    console.log("Responded!");
                     if (response.success) {
-                        $('#nytUpdateResult').removeClass('alert-info').addClass('alert-success')
-                            .html('<i class="fas fa-check"></i> ' + response.message);
+                        $('#nytUpdateResult').removeClass('alert-info');
+                        $('#forceFullUpdate').prop('checked', false);
+                        $('#enableExtensiveLogging').prop('checked', false);
 
                         if (response.logId) {
                             currentUpdateLogId = response.logId;
@@ -62,7 +72,7 @@ AspenDiscovery.Greenhouse = (function () {
                         $('#nytUpdateResult').removeClass('alert-info').addClass('alert-danger')
                             .html('<i class="fas fa-exclamation-triangle"></i> ' + response.message);
 
-                        $('#runNytUpdateBtn').prop('disabled', false);
+                        AspenDiscovery.Greenhouse.updateButtonState('normal');
                         clearInterval(initCheckInterval);
                     }
                 },
@@ -70,12 +80,10 @@ AspenDiscovery.Greenhouse = (function () {
                     $('#nytUpdateResult').removeClass('alert-info').addClass('alert-danger')
                         .html('<i class="fas fa-exclamation-triangle"></i> Error communicating with the server. Please try again.');
 
-                    $('#runNytUpdateBtn').prop('disabled', false);
+                    AspenDiscovery.Greenhouse.updateButtonState('normal');
                     clearInterval(initCheckInterval);
                 }
             });
-
-
         },
 
         /**
@@ -89,58 +97,66 @@ AspenDiscovery.Greenhouse = (function () {
                     const status = response.status;
 
                     if (status.isRunning) {
-                        // Update is running
                         currentUpdateLogId = status.logId;
 
-                        // Update the UI to show running status
                         const elapsedTime = status.elapsedTime;
                         const minutes = Math.floor(elapsedTime / 60);
                         const seconds = elapsedTime % 60;
                         const timeDisplay = minutes + 'm ' + seconds + 's';
 
-                        let statusHtml = '<div class="alert ' + (status.haltRequested ? 'alert-warning' : 'alert-info') + '">';
-
-                        if (status.haltRequested) {
-                            statusHtml += '<h4><i class="fas fa-hand-stop-o"></i> NYT Update Halting</h4>';
-                            statusHtml += '<p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p>';
+                        // Check if status div exists, create if not.
+                        if ($('#nytUpdateStatus div.alert').length === 0) {
+                            // Create the initial structure
+                            let statusHtml = '<div class="alert ' + (status.haltRequested ? 'alert-warning' : 'alert-info') + '">';
+                            statusHtml += '<h4><i id="nytStatusIcon" class="' + (status.haltRequested ? '' : 'fas fa-sync fa-spin') + '"></i>';
+                            statusHtml += '<span id="nytStatusTitle">' + (status.haltRequested ? 'NYT Update Halting' : ' NYT Update Running') + '</span></h4>';
+                            statusHtml += '<div id="nytStatusMessage">' + (status.haltRequested ? '<p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p>' : '') + '</div>';
+                            statusHtml += '<div id="nytStatusContent" class="row">';
+                            statusHtml += '<div id="nytStatusDetails" class="col-xs-12 col-sm-7">';
+                            statusHtml += '<div id="nytStatusControls"></div>';
+                            statusHtml += '</div>';
+                            $('#nytUpdateStatus').html(statusHtml).show();
                         } else {
-                            statusHtml += '<h4><i class="fas fa-sync fa-spin"></i> NYT Update Running</h4>';
+                            $('#nytUpdateStatus div.alert').removeClass('alert-info alert-warning')
+                                .addClass(status.haltRequested ? 'alert-warning' : 'alert-info');
+
+                            $('#nytStatusIcon').removeClass('fas fa-sync fa-spin')
+                                .addClass(status.haltRequested ? '' : 'fas fa-sync fa-spin');
+                            $('#nytStatusTitle').text(status.haltRequested ? 'NYT Update Halting' : ' NYT Update Running');
+
+                            if (status.haltRequested) {
+                                if ($('#nytStatusMessage').length === 0) {
+                                    $('<div id="nytStatusMessage"><p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p></div>')
+                                        .insertAfter($('#nytStatusTitle').closest('h4'));
+                                }
+                            } else {
+                                $('#nytStatusMessage').remove();
+                            }
                         }
 
-                        statusHtml += '<div class="row">';
-
-                        // Left column - Status info
-                        statusHtml += '<div class="col-xs-12 col-sm-7">';
-                        statusHtml += '<p><strong>Started:</strong> ' + new Date(status.startTime * 1000).toLocaleString() + '</p>';
-                        statusHtml += '<p><strong>Running for:</strong> ' + timeDisplay + '</p>';
-
+                        let detailsHtml = '<p><strong>Started:</strong> ' + new Date(status.startTime * 1000).toLocaleString() + '</p>';
+                        detailsHtml += '<p><strong>Running for:</strong> ' + timeDisplay + '</p>';
                         if (status.numLists) {
-                            statusHtml += '<p><strong>Processing:</strong> ' + status.numLists + ' lists</p>';
+                            detailsHtml += '<p><strong>Processing:</strong> ' + status.numLists + ' lists</p>';
                         }
+                        $('#nytStatusDetails').html(detailsHtml);
 
-                        // Add halt button only if not already halting
+                        let controlsHtml = '';
                         if (!status.haltRequested) {
-                            statusHtml += '<button class="btn btn-danger" onclick="return AspenDiscovery.Greenhouse.haltNYTUpdate(' + status.logId + ');">';
-                            statusHtml += '<i class="fas fa-stop-circle"></i> Halt Update</button> ';
+                            controlsHtml += '<button class="btn btn-danger" onclick="return AspenDiscovery.Greenhouse.haltNYTUpdate(' + status.logId + ');">';
+                            controlsHtml += '<i class="fas fa-stop-circle"></i> Halt Update</button> ';
                         } else {
-                            statusHtml += '<button class="btn btn-danger" disabled>';
-                            statusHtml += '<i class="fas fa-stop-circle"></i> Halting...</button> ';
+                            controlsHtml += '<button class="btn btn-danger" disabled>';
+                            controlsHtml += '<i class="fas fa-stop-circle"></i> Halting...</button> ';
                         }
+                        $('#nytStatusControls').html(controlsHtml);
 
-                        statusHtml += '</div>';
-
-                        $('#nytUpdateStatus').html(statusHtml).show();
-
-                        // Disable the update button
-                        $('#runNytUpdateBtn').prop('disabled', true).attr('title', 'An update is already running');
+                        AspenDiscovery.Greenhouse.updateButtonState('running');
                     } else {
-                        // No update running
                         $('#nytUpdateStatus').html('').hide();
 
-                        // Enable the update button
-                        $('#runNytUpdateBtn').prop('disabled', false).attr('title', 'Run NYT Lists Update');
+                        AspenDiscovery.Greenhouse.updateButtonState('normal');
 
-                        // Stop checking for updates
                         if (nytUpdateStatusInterval !== null) {
                             clearInterval(nytUpdateStatusInterval);
                             nytUpdateStatusInterval = null;
@@ -166,17 +182,29 @@ AspenDiscovery.Greenhouse = (function () {
          * Halt a running NYT update
          */
         haltNYTUpdate: function(logId) {
-            AspenDiscovery.Modals.showConfirmActionModal({
-                title: 'Confirm Halt',
-                prompt: 'Are you sure you want to halt the running update?',
-                description: 'The update will be stopped at the next safe point.',
-                confirmLabel: 'Halt Update',
-                confirmButtonClass: 'btn-danger',
-                onConfirm: function() {
-                    // Execute the halt request after confirmation
-                    AspenDiscovery.Greenhouse.executeHaltNYTUpdate(logId);
-                }
-            });
+            const modalBody = `
+                <p class="lead">Are you sure you want to halt the running update? The update will be stopped at the next safe point.</p>
+            `;
+
+            const modalButtons = `
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" 
+                        class="btn btn-danger" 
+                        onclick="AspenDiscovery.Greenhouse.executeHaltNYTUpdate(${logId}); $('#modalDialog').modal('hide');">
+                    Halt Update
+                </button>
+            `;
+
+            AspenDiscovery.showMessageWithButtons(
+                'Confirm Halt',
+                modalBody,
+                modalButtons,
+                false,
+                undefined,
+                false,
+                false,
+                true
+            );
 
             return false;
         },
@@ -185,23 +213,38 @@ AspenDiscovery.Greenhouse = (function () {
          * Execute the halt request after confirmation
          */
         executeHaltNYTUpdate: function(logId) {
+            // First check if the update is still running
             $.getJSON('/Greenhouse/AJAX', {
-                method: 'haltNYTUpdate',
-                logId: logId
-            }, function(response) {
-                if (response.success) {
-                    let message = response.message;
-                    if (response.details) {
-                        message += '<br/><small>' + response.details + '</small>';
-                    }
-                    AspenDiscovery.showMessage('Update Halted', message, true);
-                    // Refresh status
-                    AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
+                method: 'getNYTUpdateStatus'
+            }, function(statusResponse) {
+                if (statusResponse.success && statusResponse.status && statusResponse.status.isRunning) {
+                    // Update is still running, proceed with halt
+                    $.getJSON('/Greenhouse/AJAX', {
+                        method: 'haltNYTUpdate',
+                        logId: logId
+                    }, function(response) {
+                        if (response.success) {
+                            let message = response.message;
+                            if (response.details) {
+                                message += '<br/><small>' + response.details + '</small>';
+                            }
+                            AspenDiscovery.showMessage('Update Halted', message, true);
+                            // Refresh status
+                            AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
+                        } else {
+                            AspenDiscovery.showMessage('Error', response.message, false);
+                        }
+                    }).fail(function() {
+                        AspenDiscovery.showMessage('Error', 'Error communicating with the server. Please try again.', false);
+                    });
                 } else {
-                    AspenDiscovery.showMessage('Error', response.message, false);
+                    // Update is no longer running
+                    AspenDiscovery.showMessage('Notice', 'The update is no longer running. It may have completed or been halted already.', true);
+                    // Refresh status display
+                    AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
                 }
             }).fail(function() {
-                AspenDiscovery.showMessage('Error', 'Error communicating with the server. Please try again.', false);
+                AspenDiscovery.showMessage('Error', 'Could not verify update status. Please refresh the page and try again.', false);
             });
         },
 
@@ -232,12 +275,32 @@ AspenDiscovery.Greenhouse = (function () {
                 // Reset toggle state.
                 $(element).prop('checked', !isChecked);
             });
-        }
+        },
+
+        /**
+         * Update the state and text of the NYT update button.
+         * @param {string} state - Either 'running' or 'normal'.
+         */
+        updateButtonState: function(state) {
+            const $updateBtn = $('#runNytUpdateBtn');
+
+            if (state === 'running') {
+                $updateBtn.prop('disabled', true)
+                $updateBtn.contents().filter(function() {
+                    return this.nodeType === 3; // Text node
+                }).replaceWith(' ' + $updateBtn.data('running-text'));
+            } else {
+                $updateBtn.prop('disabled', false)
+                $updateBtn.contents().filter(function() {
+                    return this.nodeType === 3; // Text node
+                }).replaceWith(' ' + $updateBtn.data('original-text').split('</i>')[1]);
+            }
+        },
     };
 }());
 
-// Check for updates when the page loads
-$(document).ready(function() {
+// Check for updates when the page loads.
+$(function() {
     if ($('#nytUpdateStatus').length) {
         AspenDiscovery.Greenhouse.startUpdateStatusCheck();
     }
