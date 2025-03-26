@@ -200,7 +200,10 @@
                                         {if $campaign.isEnrolled}
                                             <button class="btn btn-primary btn-sm" aria-label="{translate text="Unenroll user from {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
                                         {else}
-                                            <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll user into {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                            {$campaign.canEnroll}
+                                            {if $campaign.canEnroll}
+                                                <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll user into {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                            {/if}
                                         {/if}
                                     </td>
                                     <td>
@@ -318,9 +321,11 @@
                                     <button class="btn btn-primary btn-sm" aria-label="{translate text="Unenroll from {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
                                 </td>
                             {else}
-                                <td>
-                                    <button class="btn btn-sm btn-primary" aria-label="{translate text="Enroll in  {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
-                                </td>
+                                {if $campaign->canEnroll}
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" aria-label="{translate text="Enroll in  {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                    </td>
+                                {/if}
                             {/if}
                             <td>
                                 <button class="btn btn-primary btn-sm" aria-label="{translate text="See data for {$campaign->name}" isPublicFacing=true}" onclick="toggleActiveCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
@@ -438,9 +443,11 @@
                                     <button class="btn btn-primary btn-sm" aria-label="{translate text="Unenroll from  {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
                                 </td>
                             {else}
-                                <td>
-                                    <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll in  {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
-                                </td>
+                                {if $campaign->canEnroll}
+                                    <td>
+                                        <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll in  {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                    </td>
+                                {/if}
                             {/if}
                                 <td>
                                     <button class="btn btn-primary btn-sm" aria-label="{translate text="See data for {$campaign->name}" isPublicFacing=true}" onclick="toggleUpcomingCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>

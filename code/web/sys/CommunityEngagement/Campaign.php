@@ -973,6 +973,12 @@ class Campaign extends DataObject {
                 // $campaign->numCompletedMilestones = $completedMilestonesCount;
                 $campaign->numCampaignMilestones = $numCampaignMilestones;
 
+				$currentDate = date('Y-m-d');
+				$canEnroll = (
+					(!$campaign->enrollmentStartDate || $currentDate >= $campaign->enrollmentStartDate) &&
+					(!$campaign->enrollmentEndDate || $currentDate <= $campaign->enrollmentEndDate)
+				);
+				$campaign->canEnroll = $canEnroll;
                 $userCampaign = new UserCampaign();
                 $userCampaign->userId = $userId;
                 $userCampaign->campaignId = $campaignId;
@@ -1045,6 +1051,11 @@ class Campaign extends DataObject {
                     $startDate = $campaign->startDate;
                     $endDate = $campaign->endDate;
 
+					$currentDate = date('Y-m-d');
+					$canEnroll = (
+						(!$campaign->enrollmentStartDate || $currentDate >= $campaign->enrollmentStartDate) &&
+						(!$campaign->enrollmentEndDate || $currentDate <= $campaign->enrollmentEndDate)
+					);
                     $milestones = CampaignMilestone::getMilestoneByCampaign($campaign->id);
                     $numCampaignMilestones = count($milestones);
                     $numCompletedMilestones = 0;
@@ -1088,7 +1099,8 @@ class Campaign extends DataObject {
                         'numCompletedMilestones' => $numCompletedMilestones,
                         'numCampaignMilestones' => $numCampaignMilestones,
                         'startDate' => $startDate,
-                        'endDate' => $endDate
+                        'endDate' => $endDate,
+						'canEnroll' => $canEnroll
                     ];
                 }
             }
