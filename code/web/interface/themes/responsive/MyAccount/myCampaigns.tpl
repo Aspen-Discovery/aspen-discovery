@@ -345,8 +345,6 @@
                                         <tr>
                                             <th>{translate text="Milestone" isPublicFacing=true}</th>
                                             <th>{translate text="Milestone Reward" isPublicFacing=true}</th>
-                                            <th>{translate text="Progress Towards Milestone" isPublicFacing=true}</th>
-                                            <th>{translate text="Progress Percentage" isPublicFacing=true}</th>
                                         </tr>
                                     </thead>
                                         <tbody>
@@ -359,36 +357,6 @@
                                                     {/if}
                                                     {if $milestone->rewardType == 1 && $milestone->rewardExists}
                                                         <img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="max-width:100px; max-height:100px;" />
-                                                    {/if}
-                                                </td>
-                                                <td>
-                                                    {if $milestone->completedGoals <= $milestone->totalGoals}
-                                                        {$milestone->completedGoals} / {$milestone->totalGoals}
-                                                    {else}
-                                                        {$milestone->totalGoals} / {$milestone->totalGoals}
-                                                    {/if}
-                                                    {foreach from=$milestone->progressData item="progressData"}
-                                                    <div style="padding:10px;">
-                                                        {if isset($progressData['title'])}
-                                                            {$progressData['title']}
-                                                        {/if}
-                                                    </div>
-                                                    {/foreach}
-                                                </td>
-                                                <td>
-                                                    <div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
-                                                        <div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
-                                                        aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
-                                                            {$milestone->progress}%
-                                                        </div>
-                                                    </div>
-
-                                                    {if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
-                                                        <div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
-                                                            <span style="background-color: #3174AF;  color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
-                                                                {$milestone->extraProgress}%
-                                                            </span>
-                                                        </div>
                                                     {/if}
                                                 </td>
                                             </tr>                                 
