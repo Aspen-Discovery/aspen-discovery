@@ -24,13 +24,15 @@
                                         <div style="margin-right: 20px;">
                                             {translate text="Complete" isAdminFacing=true}
                                         </div>
-                                    <div>                          
-                                        {if $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['milestoneRewardGiven'] == 0}
-                                            <button class="btn btn-primary set-reward-btn-milestone" data-user-id="{$user->id}" data-campaign-id="{$campaign->id}" data-milestone-id="{$milestone->id}" onclick="AspenDiscovery.CommunityEngagement.milestoneRewardGiven({$user->id}, {$campaign->id}, {$milestone->id});">
-                                                {translate text="Give Reward" isAdminFacing=true}
-                                            </button>
-                                        {else}
-                                            {translate text="Reward Given" isAdminFacing=true}
+                                    <div>
+                                        {if $milestone->rewardType == 0 || $milestone->rewardType == 1 && $milestone->awardAutomatically == 0}
+                                            {if $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id]['milestoneRewardGiven'] == 0}
+                                                <button class="btn btn-primary set-reward-btn-milestone" data-user-id="{$user->id}" data-campaign-id="{$campaign->id}" data-milestone-id="{$milestone->id}" onclick="AspenDiscovery.CommunityEngagement.milestoneRewardGiven({$user->id}, {$campaign->id}, {$milestone->id});">
+                                                    {translate text="Give Reward" isAdminFacing=true}
+                                                </button>
+                                            {else}
+                                                {translate text="Reward Given" isAdminFacing=true}
+                                            {/if}
                                         {/if}
                                     </div>
                                 </div>
@@ -60,7 +62,9 @@
                             {/if}
                             </td>
                             <td>
-                                {if $userCampaigns[$campaign->id][$user->id]['rewardGiven'] == 0}
+                                {if $campaign->rewardType == 1 && $campaign->awardAutomatically == 1 && $userCampaigns[$campaign->id][$user->id]['isCampaignComplete']}
+                                    {translate text="Rewarded Automatically" isAdminFacing=true}
+                                {elseif $userCampaigns[$campaign->id][$user->id]['rewardGiven'] == 0}
                                     <button class="btn btn-primary set-reward-btn" data-user-id="{$user->id}" data-campaign-id="{$campaign->id}" onclick="AspenDiscovery.CommunityEngagement.campaignRewardGiven({$user->id}, {$campaign->id});">
                                         {translate text="Give Reward" isAdminFacing=true}
                                     </button>

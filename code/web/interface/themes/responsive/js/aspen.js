@@ -18396,16 +18396,17 @@ AspenDiscovery.CommunityEngagement = function() {
 			})
 		},
 		updateRewardFields: function () {
-			console.log("update reward");
 			let rewardType = document.querySelector('[name="rewardType"]').value;
 			let displayRewardNameControl = document.getElementById('propertyRowdisplayName');
-
+			let automaticRewardControl = document.getElementById('propertyRowawardAutomatically');
 
 
 			if (rewardType == 0) {
 				displayRewardNameControl.style.display = 'none';
+				automaticRewardControl.style.display = 'none';
 			} else {
 				displayRewardNameControl.style.display = '';
+				automaticRewardControl.style.display = '';
 			}
 		},
 

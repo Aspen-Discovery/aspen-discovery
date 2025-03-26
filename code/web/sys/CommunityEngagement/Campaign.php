@@ -302,6 +302,7 @@ class Campaign extends DataObject {
 				'badgeImage' => $reward->getDisplayUrl(),
 				'rewardExists' => !empty($reward->badgeImage),
 				'displayName' => $reward->displayName,
+				'awardAutomatically' =>$reward->awardAutomatically,
 			];
 		}
 		return null;
@@ -567,6 +568,7 @@ class Campaign extends DataObject {
 					$pastCampaignList[$campaign->id]->displayName = $campaignReward->displayName;
 					$pastCampaignList[$campaign->id]->rewardType = $campaignReward->rewardType;
 					$pastCampaignList[$campaign->id]->rewardImage = $campaignReward->getDisplayUrl();
+					$pastCampaignList[$campaign->id]->awardAutomatically = $campaignReward->awardAutomatically;
 					if (!empty($campaignReward->badgeImage)) {
 						$pastCampaignList[$campaign->id]->rewardExists = true;
 					}
@@ -588,6 +590,7 @@ class Campaign extends DataObject {
 					if ($userCampaign->find(true)) {
 						$milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
 						$pastCampaignList[$campaign->id]->campaignRewardGiven = (int)$userCampaign->rewardGiven;
+						$pastCampaignList[$campaign->id]->isComplete = $userCampaign->checkCompletionStatus();
 
     
                         // Update milestone details based on user progress
@@ -943,6 +946,7 @@ class Campaign extends DataObject {
 				$campaign->badgeImage = $rewardDetails['badgeImage'];
 				$campaign->rewardExists = $rewardDetails['rewardExists'];
                 $campaign->displayName = $rewardDetails['displayName'];
+                $campaign->awardAutomatically = $rewardDetails['awardAutomatically'];
 			}
 
 				//Fetch milestones for this campaign
@@ -968,10 +972,17 @@ class Campaign extends DataObject {
                     $milestone->completedGoals = $milestoneProgress['completed'];
                     $milestone->totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestoneId);
                     $milestone->progressData = $progressData;
+
+					if ($milestone->completedGoals >= $milestone->totalGoals) {
+						$milestone->milestoneComplete = true;
+					} else {
+						$milestone->milestoneComplete = false;
+					}
                 }
                 //Add completed milestones count to campaign object
                 // $campaign->numCompletedMilestones = $completedMilestonesCount;
                 $campaign->numCampaignMilestones = $numCampaignMilestones;
+				
 
 				$currentDate = date('Y-m-d');
 				$canEnroll = (
@@ -984,6 +995,7 @@ class Campaign extends DataObject {
                 $userCampaign->campaignId = $campaignId;
                 $userCampaign->find();
                 while($userCampaign->fetch()) {
+					$campaign->isComplete = $userCampaign->checkCompletionStatus();
                     if ($userCampaign->optInToCampaignLeaderboard === null) {
                         $campaign->optInToCampaignLeaderboard = $user->optInToAllCampaignLeaderboards;
                     }else{
@@ -1076,6 +1088,7 @@ class Campaign extends DataObject {
                             'milestoneName' => $milestone->name,
                             'rewardName' => $milestone->rewardName, 
                             'rewardType' => $milestone->rewardType, 
+                            'awardAutomatically' => $milestone->awardAutomatically, 
                             'displayName' => $milestone->displayName,
                             'badgeImage' => $milestone->rewardImage,
                             'rewardExists' => $milestone->rewardExists,

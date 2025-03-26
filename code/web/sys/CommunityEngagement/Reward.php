@@ -8,6 +8,7 @@ class Reward extends DataObject {
 	public $description;
 	public $rewardType;
 	public $badgeImage;
+	public $awardAutomatically;
 
 	public static function getObjectStructure($context = ''):array {
 		global $serverName;
@@ -49,6 +50,13 @@ class Reward extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Display Name',
 				'description' => 'Whether or not to display the reward name to patrons',
+				'default' => true,
+			],
+			'awardAutomatically' => [
+				'property' => 'awardAutomatically',
+				'type' => 'checkbox',
+				'label' => 'Award Automatically',
+				'description' => 'Whether or not to give this award automatically upon campaign or milestone completion',
 				'default' => true,
 			],
 			'badgeImage' => [

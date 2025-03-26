@@ -367,5 +367,12 @@ function getCommunityEngagementUpdates() {
                 "ALTER TABLE library ADD COLUMN sendStaffEmailOnCampaignCompletion TINYINT(1) DEFAULT 0",
             ],
         ],
+        'add_control_over_whether_reward_is_given_automatically' => [
+            'title' =>'Add Control Over Whether Reward Is Given Automatically',
+            'description' => 'Add control over whether digital reward is given automatically',
+            'sql' => [
+                "ALTER TABLE ce_reward ADD COLUMN awardAutomatically TINYINT(1) DEFAULT 1"
+            ],
+        ],
     ];
 }
