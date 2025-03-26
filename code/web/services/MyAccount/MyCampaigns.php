@@ -38,6 +38,9 @@ class MyCampaigns extends MyAccount {
         $url = $this->getBaseUrl();
         $interface->assign('url', $url);
 
+        $userCanAdvertise = $this->userCanAdvertise();
+        $interface->assign('userCanAdvertise', $userCanAdvertise);
+
 		$this->display('../MyAccount/myCampaigns.tpl', 'My Campaigns');
 	}
 
@@ -62,6 +65,13 @@ class MyCampaigns extends MyAccount {
     public function getBaseUrl(): string {
         global $configArray;
         return $configArray['Site']['url'];
+    }
+
+    public function userCanAdvertise() {
+        $user = UserAccount::getActiveUserObj();
+        if ($user->isAspenAdminUser() || $user->isUserAdmin()){
+            return true;
+        }
     }
 
 

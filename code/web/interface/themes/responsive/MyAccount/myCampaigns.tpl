@@ -303,7 +303,12 @@
                 {foreach from=$campaignList item="campaign" key="resultIndex"}
                     {if $campaign->isActive}
                         <tr>
-                            <td>{$campaign->name}</td>
+                            <td>
+                                {$campaign->name}
+                                {if $userCanAdvertise}
+                                    <a href="/Search/AdvertiseCampaigns?campaignId={$campaign->id}"><br/>{translate text="Advertise" isAdminFacing=true}</a>
+                                {/if}
+                            </td>
                             <td>
                                 {if $campaign->displayName}
                                     {$campaign->rewardName}
@@ -393,7 +398,12 @@
                 {foreach from=$campaignList item="campaign" key="resultIndex"}
                     {if $campaign->isUpcoming}
                         <tr>
-                            <td>{$campaign->name}</td>
+                            <td>
+                                {$campaign->name}
+                                {if $userCanAdvertise}
+                                    <a href="/Search/AdvertiseCampaigns?campaignId={$campaign->id}"><br/>{translate text="Advertise" isAdminFacing=true}</a>
+                                {/if}
+                            </td>
                             <td>
                                 {if $campaign->displayName}
                                     {$campaign->rewardName}
