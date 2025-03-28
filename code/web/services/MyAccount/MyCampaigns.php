@@ -12,6 +12,7 @@ class MyCampaigns extends MyAccount {
 	function launch() {
 		global $interface;
 		global $library;
+        global $enabledModules;
 
         $campaign = new Campaign();
         //Get User
@@ -24,6 +25,8 @@ class MyCampaigns extends MyAccount {
         $linkedCampaigns = $campaign->getLinkedUserCampaigns($userId);
         $interface->assign('linkedCampaigns', $linkedCampaigns);
 
+        $webBuilderEnabled = array_key_exists('Web Builder', $enabledModules);
+        $interface->assign('webBuilderEnabled', $webBuilderEnabled);
 		//Get Campaigns
 		$campaignList = $campaign->getCampaigns();
 		$interface->assign('campaignList', $campaignList);
