@@ -2128,10 +2128,21 @@ class Sierra extends Millennium {
 				if (strpos($line2, ',')) {
 					$user->_city = substr($line2, 0, strrpos($line2, ','));
 					$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
-					$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
-					$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
+					if (strpos($stateZip, ' ')) {
+						$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
+						$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
+					} else {
+						$user->_state = trim($stateZip); 
+					}
 				} else {
-					$user->_city = $line2;
+					$parts = preg_split('/\s+/', $line2);
+					if (count($parts) >= 3) {
+						$user->_zip = array_pop($parts);
+						$user->_state = array_pop($parts);
+						$user->_city = implode(' ', $parts);
+					} else {
+						$user->_city = $line2;
+					}
 				}
 			}
 		}
