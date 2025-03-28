@@ -34,7 +34,7 @@
                             <td>{$campaign->endDate}</td>
                             <td>
                                 {if $campaign->displayName}
-                                    {$campaign->rewardName}
+                                    {$campaign->rewardName}<br>
                                 {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
@@ -311,7 +311,7 @@
                             </td>
                             <td>
                                 {if $campaign->displayName}
-                                    {$campaign->rewardName}
+                                    {$campaign->rewardName}<br>
                                 {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
@@ -405,7 +405,7 @@
                             </td>
                             <td>
                                 {if $campaign->displayName}
-                                    {$campaign->rewardName}
+                                    {$campaign->rewardName}<br>
                                 {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
@@ -488,7 +488,7 @@
                         <td>{$campaign->endDate}</td>
                         <td>
                             {if $campaign->displayName}
-                                {$campaign->rewardName}
+                                {$campaign->rewardName}<br>
                             {/if}
                             {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                 <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />
@@ -558,7 +558,7 @@
                                 <td>{$campaign->endDate}</td>
                                 <td>
                                 {if $campaign->displayName}
-                                    {$campaign->rewardName}
+                                    {$campaign->rewardName}<br>
                                 {/if}
                                 {if $campaign->rewardType == 1 && $campaign->rewardExists}
                                     <img src="{$campaign->rewardImage}" alt="{$campaign->rewardName}" style="max-width:100px; max-height:100px;" />

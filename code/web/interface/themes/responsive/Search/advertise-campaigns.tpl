@@ -4,8 +4,9 @@
 			<div class="col-12 col-md-8">
 				<h2 class="text-center mb-4">{$campaignName}</h2>
 				<h3 class="text-center mb-4">{$campaignDescription}</h3>
-				<a class="text-center mb-4" href="/services/MyAccount/MyCampaigns">{translate text="Visit your campaigns section to join!" isPublicFacing=true}</a>
-
+				<div class="text-center mb-4">
+					<a href="/services/MyAccount/MyCampaigns">{translate text="Visit your campaigns section to join!" isPublicFacing=true}</a>
+				</div>
 				{if $campaignMilestones && count($campaignMilestones) > 0}
 					<div class="row">
 						<div class="col-12">

@@ -18225,7 +18225,6 @@ AspenDiscovery.CommunityEngagement = function() {
 				console.error("AJAX Error: ", textStatus, errorThrown);
 			});
 		},
-		//TODO:: REMOVE VAR DUMPS AND ERROR LOGS ETC AND ADD BLOCKS FOR GRAPES
 		getSavedLeaderboardCss: function() {
 			var url = Globals.path + "/CommunityEngagement/AJAX?method=getLeaderboardData";
 			var cssData = '';
@@ -18257,10 +18256,6 @@ AspenDiscovery.CommunityEngagement = function() {
 			const leaderboardHTML = mainContent.innerHTML;
 			let leaderboardCSS = '';
 
-			// const styleTags = document.getElementsByTagName('style');
-			// for (let i = 0; i < styleTags.length; i++) {
-			// 	leaderboardCSS += styleTags[i].innerHTML;
-			// }
 			leaderboardCSS = AspenDiscovery.CommunityEngagement.getSavedLeaderboardCss();
 
 			const editor = grapesjs.init({
@@ -18300,6 +18295,26 @@ AspenDiscovery.CommunityEngagement = function() {
 			editor.on('load', () => {
 				editor.setComponents(leaderboardHTML);
 				editor.setStyle(leaderboardCSS);
+
+				const topPanel = editor.Panels.getPanel('options');
+				if (topPanel) {
+					topPanel.view.$el.css({
+						'flex-wrap': 'nowrap',
+						'overflow': 'visible',
+						'min-height': '40px',
+						'justify-content': 'flex-start'
+					});
+				}
+
+				editor.Panels.getPanels().forEach(panel => {
+					panel.get('buttons').forEach(button => {
+						button.set({
+							attributes: { 
+								style: 'width: auto; min-width: 10px; min-height: 10px; display: flex; align-items: center; justify-content: center;'
+							}
+						});
+					});
+				});
 			})
 		},
 
@@ -18399,7 +18414,6 @@ AspenDiscovery.CommunityEngagement = function() {
 			let rewardType = document.querySelector('[name="rewardType"]').value;
 			let displayRewardNameControl = document.getElementById('propertyRowdisplayName');
 			let automaticRewardControl = document.getElementById('propertyRowawardAutomatically');
-
 
 			if (rewardType == 0) {
 				displayRewardNameControl.style.display = 'none';
