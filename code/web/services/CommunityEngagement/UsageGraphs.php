@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 
 class CommunityEngagement_UsageGraphs extends Admin_Admin {
-    function launch() {
+	function launch() {
 		global $interface;
 		$title = "Community Engagement Usage Graph";
 		$stat = $_REQUEST['stat'] ?? 'enrollments';
@@ -81,7 +81,7 @@ class CommunityEngagement_UsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $title);
 	}
 
-    function canView(): bool {
+	function canView(): bool {
 		return UserAccount::userHasPermission([
 			'View Community Engagement Dashboard',
 		]);
