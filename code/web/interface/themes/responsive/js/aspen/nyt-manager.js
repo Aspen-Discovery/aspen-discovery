@@ -166,11 +166,13 @@ AspenDiscovery.NYTManager = (function () {
 				`;
 				$('#nytStatusDetails').html(detailsHtml);
 
-				const controlsHtml = status.haltRequested ? `<button class="btn btn-danger" disabled>
-					<i class="fas fa-stop-circle"></i> Halting...
-				   </button>` : `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
-					<i class="fas fa-stop-circle"></i> Halt Update
-				   </button>
+				const controlsHtml = status.haltRequested ?
+					`<button class="btn btn-danger" disabled>
+						<i class="fas fa-stop-circle"></i> Halting...
+				   	</button>` :
+					`<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
+						<i class="fas fa-stop-circle"></i> Halt Update
+				   	</button>
 				`;
 				$('#nytStatusControls').html(controlsHtml);
 
