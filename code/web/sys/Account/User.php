@@ -3872,8 +3872,14 @@ class User extends DataObject {
 	}
 
 	function getPickupLocation() {
+		//Check if the library allows patrons to update their pickup locaton, if not, pickup location is always the home location
+		$allowCustomPickupLocation = false;
+		$homeLocation = $this->getHomeLocation();
+		if ($homeLocation != null && $homeLocation->getParentLibrary() != null) {
+			$allowCustomPickupLocation = $homeLocation->getParentLibrary()->allowPickupLocationUpdates;
+		}
 		//Always check if a preferred pickup location has been selected. If not, use the home location
-		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
+		if ($allowCustomPickupLocation && $this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
 			$pickupBranch = $this->pickupLocationId;
 			$locationLookup = new Location();
 			$locationLookup->locationId = $pickupBranch;
@@ -3881,10 +3887,10 @@ class User extends DataObject {
 			if ($locationLookup->find(true) && $locationLookup->validHoldPickupBranch != 2) {
 				$pickupBranch = $locationLookup;
 			} else {
-				$pickupBranch = $this->getHomeLocation();
+				$pickupBranch = $homeLocation;
 			}
 		} else {
-			$pickupBranch = $this->getHomeLocation();
+			$pickupBranch = $homeLocation;
 		}
 
 		return $pickupBranch;
@@ -5819,7 +5825,7 @@ class User extends DataObject {
 			}
 			$requestStartDate = date_create_from_format('m-d-Y', "$calendarStartMonthDay-$requestStartYear");
 			$requestStartTime = $requestStartDate->getTimestamp();
-			$materialsRequest->whereAdd("dateCreated >= $requestStartTime");
+			$materialsRequests->whereAdd("dateCreated >= $requestStartTime");
 		}
 
 		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';

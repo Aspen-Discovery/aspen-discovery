@@ -231,16 +231,16 @@
 								{if !$record->isIll}
 									{if $record->frozen}
 										<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);"
-												class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
+												class="btn btn-sm btn-default thawButton">{translate text="Thaw Hold" isPublicFacing=true}</button>
 									{else}
 										<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if}, this);"
-												class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
+												class="btn btn-sm btn-default freezeButton">{translate text="Freeze Hold" isPublicFacing=true}</button>
 									{/if}
 								{/if}
 							{/if}
 							{if $record->locationUpdateable && $numPickupBranches > 1}
 								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->source}');"
-										class="btn btn-sm btn-default btn-wrap"
+										class="btn btn-sm btn-default btn-wrap changePickupLocationButton"
 								">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
 							{/if}
 							{if $record->cancelable}
@@ -249,29 +249,29 @@
 								{else}
 									{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
 									<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});"
-											class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+											class="btn btn-sm btn-warning cancelButton">{translate text="Cancel Hold" isPublicFacing=true}</button>
 								{/if}
 							{/if}
 						{else}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
 								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});"
-										class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+										class="btn btn-sm btn-warning cancelButton">{translate text="Cancel Hold" isPublicFacing=true}</button>
 							{/if}
 							{if $record->canFreeze}
 								{if !$record->isIll}
 									{if $record->frozen}
 										<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);"
-												class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
+												class="btn btn-sm btn-default thawButton">{translate text="Thaw Hold" isPublicFacing=true}</button>
 									{else}
 										<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if}, this);"
-												class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
+												class="btn btn-sm btn-default freezeButton">{translate text="Freeze Hold" isPublicFacing=true}</button>
 									{/if}
 								{/if}
 							{/if}
 							{if $record->locationUpdateable && $numPickupBranches > 1}
 								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->source}');"
-										class="btn btn-sm btn-default btn-wrap"
+										class="btn btn-sm btn-default btn-wrap changePickupLocationButton"
 								">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
 							{/if}
 						{/if}

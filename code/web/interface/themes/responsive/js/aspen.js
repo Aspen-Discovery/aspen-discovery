@@ -15117,6 +15117,17 @@ AspenDiscovery.Record = (function () {
 						return false;
 					}
 				}
+				var volumeId;
+				var volumeIdField = $('#volumeId');
+				var volumeIdSelectField = $('#volumeIdSelect option:selected');
+				var volumeSelected = false;
+				if (volumeIdSelectField !== undefined) {
+					volumeId = volumeIdSelectField.val()
+					volumeSelected = true;
+				} else if (volumeIdField !== undefined) {
+					volumeId = volumeIdField.val();
+					volumeSelected = true;
+				}
 				var params = {
 					'method': 'submitLocalIllRequest',
 					title: $('#title').val(),
@@ -15129,7 +15140,8 @@ AspenDiscovery.Record = (function () {
 					pickupLocation: $('#pickupLocationSelect').val(),
 					catalogKey: $('#catalogKey').val(),
 					note: $('#note').val(),
-					volumeId: $('#volumeId').val()
+					volumeId: volumeId,
+					volumeSelected: volumeSelected
 				};
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitLocalIllRequest";
 				$.getJSON(url, params, function (data) {

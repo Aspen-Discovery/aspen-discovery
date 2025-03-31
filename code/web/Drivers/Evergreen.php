@@ -1172,6 +1172,33 @@ class Evergreen extends AbstractIlsDriver {
 		return $holds;
 	}
 
+	public function updateEditableUsername(User $patron, string $username): array {
+		$authToken = $this->getAPIAuthToken($patron, true);
+		$response = $this->updatePatronPropertyInEvergreen('username', $username, $patron->ils_password, $authToken);
+
+		if ($response['success']) {
+			$patron->ils_username = $username;
+			$patron->update();
+			return ['message' => 'Your username has been updated.', 'success' => true];
+		}
+
+		if($response['message']['code'] == 'USERNAME_EXISTS') {
+			$userMessages['message'] = 'This username is already in use. Please choose another username.';
+			return $userMessages;
+		}
+
+		$userMessages['message'] = 'Your username could not be updated. Please contact your library';
+		return $userMessages;
+	}
+
+	public function getEditableUsername(User $user) {
+		return $user->ils_username;
+	}
+
+	public function hasEditableUsername() {
+		return true;
+	}
+
 	/**
 	 * @inheritDoc
 	 */
@@ -1731,6 +1758,7 @@ class Evergreen extends AbstractIlsDriver {
 			$user->ils_password = $password;
 		}
 		$user->email = $userData['email'];
+		$user->ils_username = $userData['usrname'];
 		if (!empty($userData['day_phone'])) {
 			$user->phone = $userData['day_phone'];
 		} elseif (!empty($userData['evening_phone'])) {

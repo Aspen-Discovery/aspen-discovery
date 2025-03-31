@@ -500,6 +500,10 @@ function moveUploadedListImages(&$update) : void {
 	$originalPath = $configArray['Site']['coverPath'] . '/original/';
 	$newPath = $configArray['Site']['coverPath'] . '/original/lists/';
 
+	if (!file_exists($newPath)) {
+		mkdir($newPath, 0755, true);
+	}
+
 	$numCoversCopied = 0;
 	while($uploadedListCovers->fetch()) {
 		$listId = $uploadedListCovers->getRecordId();

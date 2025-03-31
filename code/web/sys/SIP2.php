@@ -106,6 +106,10 @@ class sip2 {
 	private $msgBuild = '';
 	private $noFixed = false;
 
+	/* Diagnostic information */
+	public $lastMessageSent;
+	public $lastResponse;
+
 	function msgPatronStatusRequest() {
 		/* Server Response: Patron Status Response message. */
 		$this->_newMessage('23');
@@ -683,6 +687,7 @@ class sip2 {
 
 		$this->_debugmsg('SIP2: Sending SIP2 request...');
 		$this->_debugmsg($message);
+		$this->lastMessageSent = $message;
 		socket_write($this->socket, $message, strlen($message));
 		$this->Sleep();
 
@@ -690,7 +695,9 @@ class sip2 {
 
 		//Read from the socket one byte at a time until we read a carriage return
 		//Or until the connection receives an error ($nr === false).
-		while ($terminator != "\x0D" && $nr !== FALSE) {
+		$connectionTimeout = 10;
+		$curTime = time();
+		while ($terminator != "\x0D" && $nr !== FALSE && (time() - $curTime < $connectionTimeout)) {
 			$nr = socket_recv($this->socket, $terminator, 1, 0);
 			$result = $result . $terminator;
 		}
@@ -702,6 +709,7 @@ class sip2 {
 		}
 
 		$this->_debugmsg("SIP2: {$result}");
+		$this->lastResponse = $result;
 
 		/* test message for CRC validity */
 		if ($this->_check_crc($result)) {

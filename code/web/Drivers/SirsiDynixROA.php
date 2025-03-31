@@ -4183,7 +4183,31 @@ class SirsiDynixROA extends HorizonAPI {
 				$okToProcess = false;
 			}
 			if ($okToProcess) {
-				$holdResult = $this->placeSirsiHold($patron, $catalogKey, '', $volumeId, $pickupLocation, 'request', null, false, true);
+				$forceVolumeHold = false;
+				$itemId = '';
+				if (array_key_exists('volumeSelected', $_REQUEST)) {
+					$forceVolumeHold = boolval($_REQUEST['volumeSelected']);
+					if (empty($volumeId)) {
+						//To place a volume hold on a blank volume, we need to find an item without a volume, preferably owned by this system.
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$marcRecord = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $catalogKey);
+						$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+						$itemIdToUse = null;
+						//Check all items to get the item id we want
+						foreach ($relatedRecord->getItems() as $item) {
+							//we only care about items with no volume
+							if (empty($item->volume) && !$item->isEContent) {
+								if ($item->libraryOwned || $item->locallyOwned) {
+									$itemId = $item->itemId;
+									break;
+								}elseif ($itemIdToUse == null){
+									$itemId = $item->itemId;
+								}
+							}
+						}
+					}
+				}
+				$holdResult = $this->placeSirsiHold($patron, $catalogKey, $itemId, $volumeId, $pickupLocation, 'request', null, $forceVolumeHold, true);
 				if ($holdResult['success']) {
 					$result['success'] = true;
 					$result['title'] = translate(['text' => 'Success', 'isPublicFacing' => true]);
