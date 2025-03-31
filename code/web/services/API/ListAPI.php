@@ -1854,7 +1854,7 @@ class ListAPI extends AbstractAPI {
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
 			];
 			$nytList->searchable = 1;
-			//We already have a list, clear the contents so we don't have titles from last time
+			// We already have a list, clear the contents so we don't have titles from last time.
 			$nytList->removeAllListEntries();
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->addExtensiveNote("Cleared existing entries from list '$selectedListTitle'.");
@@ -1875,30 +1875,26 @@ class ListAPI extends AbstractAPI {
 		// Check for the new v3 API response structure.
 		if (isset($listTitles->results->books) && is_array($listTitles->results->books)) {
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addNote("Processing v3 API response with " . count($listTitles->results->books) . " books.");
+				$nytUpdateLog->addExtensiveNote("Processing v3 API response with " . count($listTitles->results->books) . " books.");
 			}
 			$titleResults = $listTitles->results->books;
-		} else if (isset($listTitles->results) && is_array($listTitles->results)) {
-			// Old v2 API structure - results is the array of books
-			$titleResults = $listTitles->results;
 		} else {
 			$titleResults = [];
 			if ($nytUpdateLog != null) {
-				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'");
+				$nytUpdateLog->addError("NYT API returned empty results array for list '$selectedList'.");
 			}
 		}
 
 		foreach ($titleResults as $titleResult) {
 			$numTitlesAttempted++;
 			$aspenID = null;
-			// go through each list item
 			if (!empty($titleResult->isbns)) {
 				$isbnsChecked = [];
 				foreach ($titleResult->isbns as $isbns) {
 					$isbn = !empty($isbns->isbn13) ? $isbns->isbn13 : ($isbns->isbn10 ?? '');
 					if ($isbn) {
 						$isbnsChecked[] = $isbn;
-						//look the title up by ISBN
+						// Look the title up by ISBN.
 						/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 						$searchObject = SearchObjectFactory::initSearchObject();
 						$searchObject->init();
@@ -1916,7 +1912,7 @@ class ListAPI extends AbstractAPI {
 							}
 						}
 					}
-					//break if we found a aspen id for the title
+					// Break if we found a aspen id for the title.
 					if ($aspenID != null) {
 						break;
 					}
@@ -1934,7 +1930,8 @@ class ListAPI extends AbstractAPI {
 					$nytUpdateLog->addExtensiveNote("No ISBNs found for title '{$title}' by {$author}.");
 					$numTitlesNotFound++;
 				}
-			}//Done checking ISBNs
+			}
+
 			if ($aspenID != null) {
 				$rank = $titleResult->rank ?? 'N/A';
 				$displayName = $titleResult->display_name ?? 'NYT';
@@ -1989,7 +1986,7 @@ class ListAPI extends AbstractAPI {
 		if ($results['success']) {
 			$results['message'] .= "<br/>  Final Results: Added $numTitlesAdded titles to the list.";
 			if ($listExistsInAspen) {
-				$nytList->update(); // set a new update time on the main list when it already exists
+				$nytList->update(); // Set a new update time on the main list when it already exists.
 			}
 		}
 

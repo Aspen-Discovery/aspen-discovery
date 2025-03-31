@@ -1,10 +1,9 @@
 <?php
-require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 /***************************************
  * Simple class to retrieve feed of NYT best sellers.
- * documentation:
- * https://developer.nytimes.com/docs/books-product/1/overview
+ * Developer FAQ: https://developer.nytimes.com/faq
+ * API Documentation: https://developer.nytimes.com/docs/books-product/1/overview
  *
  * Last Updated: March, 2025
  ***************************************
@@ -26,8 +25,7 @@ class NYTApi {
 
 	protected function build_url($list_name): string
 	{
-		$url = self::BASE_URI . $list_name;
-		// For v3 API, we need to use the format: lists/{date}/{list_name}.json.
+		// For v3 API, use the format: lists/{date}/{list_name}.json.
 		// Special case for the 'names' endpoint, which doesn't need a date.
 		if ($list_name == 'names') {
 			$url = self::BASE_URI . 'names.json';

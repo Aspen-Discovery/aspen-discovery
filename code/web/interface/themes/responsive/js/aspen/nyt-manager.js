@@ -1,9 +1,16 @@
+/**
+ * Aspen Discovery NYT List Manager JavaScript Module
+ */
+
 AspenDiscovery.NYTManager = (function () {
     let nytUpdateStatusInterval = null;
     let currentUpdateLogId = null;
     const MAX_STATUS_CHECK_ATTEMPTS = 10; // Max attempts to find a running update.
 
     return {
+        /**
+         * Run a NYT List update.
+         */
         runNYTUpdate: function () {
             $('#nytUpdateResult').removeClass('hidden alert-danger').addClass('alert-info')
                 .html('<i class="fas fa-spinner fa-spin fa-lg"></i> Running the update. Please wait...');
@@ -87,87 +94,100 @@ AspenDiscovery.NYTManager = (function () {
         },
 
         /**
-         * Check the status of any running NYT update
+         * Check the status of any running NYT List update.
          */
-        checkNYTUpdateStatus: function() {
-            $.getJSON('/Greenhouse/AJAX', {
-                method: 'getNYTUpdateStatus'
-            }, function(response) {
-                if (response.success) {
-                    const status = response.status;
+        checkNYTUpdateStatus() {
+            $.getJSON('/Greenhouse/AJAX', { method: 'getNYTUpdateStatus' }, (response) => {
+                if (!response.success) return;
 
-                    if (status.isRunning) {
-                        currentUpdateLogId = status.logId;
+                const status = response.status;
+                const $nytUpdateStatus = $('#nytUpdateStatus');
 
-                        const elapsedTime = status.elapsedTime;
-                        const minutes = Math.floor(elapsedTime / 60);
-                        const seconds = elapsedTime % 60;
-                        const timeDisplay = minutes + 'm ' + seconds + 's';
+                if (!status.isRunning) {
+                    $nytUpdateStatus.empty().hide();
+                    AspenDiscovery.NYTManager.updateButtonState('normal');
 
-                        // Check if status div exists, create if not.
-                        if ($('#nytUpdateStatus div.alert').length === 0) {
-                            // Create the initial structure
-                            let statusHtml = '<div class="alert ' + (status.haltRequested ? 'alert-warning' : 'alert-info') + '">';
-                            statusHtml += '<h4><i id="nytStatusIcon" class="' + (status.haltRequested ? '' : 'fas fa-sync fa-spin') + '"></i>';
-                            statusHtml += '<span id="nytStatusTitle">' + (status.haltRequested ? 'NYT Update Halting' : ' NYT Update Running') + '</span></h4>';
-                            statusHtml += '<div id="nytStatusMessage">' + (status.haltRequested ? '<p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p>' : '') + '</div>';
-                            statusHtml += '<div id="nytStatusContent" class="row">';
-                            statusHtml += '<div id="nytStatusDetails" class="col-xs-12 col-sm-7">';
-                            statusHtml += '<div id="nytStatusControls"></div>';
-                            statusHtml += '</div>';
-                            $('#nytUpdateStatus').html(statusHtml).show();
-                        } else {
-                            $('#nytUpdateStatus div.alert').removeClass('alert-info alert-warning')
-                                .addClass(status.haltRequested ? 'alert-warning' : 'alert-info');
+                    if (nytUpdateStatusInterval !== null) {
+                        clearInterval(nytUpdateStatusInterval);
+                        nytUpdateStatusInterval = null;
+                    }
+                    return;
+                }
 
-                            $('#nytStatusIcon').removeClass('fas fa-sync fa-spin')
-                                .addClass(status.haltRequested ? '' : 'fas fa-sync fa-spin');
-                            $('#nytStatusTitle').text(status.haltRequested ? 'NYT Update Halting' : ' NYT Update Running');
+                currentUpdateLogId = status.logId;
+                const elapsedTime = status.elapsedTime;
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                const timeDisplay = `${minutes}m ${seconds}s`;
 
-                            if (status.haltRequested) {
-                                if ($('#nytStatusMessage').length === 0) {
-                                    $('<div id="nytStatusMessage"><p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p></div>')
-                                        .insertAfter($('#nytStatusTitle').closest('h4'));
-                                }
-                            } else {
-                                $('#nytStatusMessage').remove();
-                            }
+                const alertClass = status.haltRequested ? 'alert-warning' : 'alert-info';
+                const iconClass = status.haltRequested ? '' : 'fas fa-sync fa-spin';
+                const titleText = status.haltRequested ? 'NYT Update Halting' : ' NYT Update Running';
+                const haltMessageHtml = '<p class="text-warning">A halt has been requested. The update will stop at the next safe point.</p>';
+
+                const $alertDiv = $nytUpdateStatus.find('div.alert');
+
+                if ($alertDiv.length === 0) {
+                    const statusHtml = `
+                        <div class="alert ${alertClass}">
+                            <h4>
+                                <i id="nytStatusIcon" class="${iconClass}"></i>
+                                <span id="nytStatusTitle">${titleText}</span>
+                            </h4>
+                            <div id="nytStatusMessage">
+                                ${status.haltRequested ? haltMessageHtml : ''}
+                            </div>
+                            <div id="nytStatusContent" class="row">
+                                <div id="nytStatusDetails" class="col-xs-12 col-sm-7">
+                                    <div id="nytStatusControls"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $nytUpdateStatus.html(statusHtml).show();
+                } else {
+                    const $statusIcon = $('#nytStatusIcon');
+                    const $statusTitle = $('#nytStatusTitle');
+                    const $statusMessage = $('#nytStatusMessage');
+
+                    $alertDiv.removeClass('alert-info alert-warning').addClass(alertClass);
+                    $statusIcon.removeClass('fas fa-sync fa-spin').addClass(iconClass);
+                    $statusTitle.text(titleText);
+
+                    if (status.haltRequested) {
+                        if ($statusMessage.length === 0) {
+                            $('<div id="nytStatusMessage"></div>')
+                                .html(haltMessageHtml)
+                                .insertAfter($statusTitle.closest('h4'));
                         }
-
-                        let detailsHtml = '<p><strong>Started:</strong> ' + new Date(status.startTime * 1000).toLocaleString() + '</p>';
-                        detailsHtml += '<p><strong>Running for:</strong> ' + timeDisplay + '</p>';
-                        if (status.numLists) {
-                            detailsHtml += '<p><strong>Processing:</strong> ' + status.numLists + ' lists</p>';
-                        }
-                        $('#nytStatusDetails').html(detailsHtml);
-
-                        let controlsHtml = '';
-                        if (!status.haltRequested) {
-                            controlsHtml += '<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(' + status.logId + ');">';
-                            controlsHtml += '<i class="fas fa-stop-circle"></i> Halt Update</button> ';
-                        } else {
-                            controlsHtml += '<button class="btn btn-danger" disabled>';
-                            controlsHtml += '<i class="fas fa-stop-circle"></i> Halting...</button> ';
-                        }
-                        $('#nytStatusControls').html(controlsHtml);
-
-                        AspenDiscovery.NYTManager.updateButtonState('running');
                     } else {
-                        $('#nytUpdateStatus').html('').hide();
-
-                        AspenDiscovery.NYTManager.updateButtonState('normal');
-
-                        if (nytUpdateStatusInterval !== null) {
-                            clearInterval(nytUpdateStatusInterval);
-                            nytUpdateStatusInterval = null;
-                        }
+                        $statusMessage.remove();
                     }
                 }
+
+                const detailsHtml = `
+                    <p><strong>Started:</strong> ${new Date(status.startTime * 1000).toLocaleString()}</p>
+                    <p><strong>Running for:</strong> ${timeDisplay}</p>
+                    ${status.numLists ? `<p><strong>Processing:</strong> ${status.numLists} lists</p>` : ''}
+                `;
+                $('#nytStatusDetails').html(detailsHtml);
+
+                const controlsHtml = status.haltRequested
+                    ? `<button class="btn btn-danger" disabled>
+                            <i class="fas fa-stop-circle"></i> Halting...
+                       </button>`
+                    : `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
+                        <i class="fas fa-stop-circle"></i> Halt Update
+                       </button>
+                    `;
+                $('#nytStatusControls').html(controlsHtml);
+
+                AspenDiscovery.NYTManager.updateButtonState('running');
             });
         },
 
         /**
-         * Start checking for updates periodically
+         * Start checking for NYT List updates periodically.
          */
         startUpdateStatusCheck: function() {
             // Check immediately
@@ -179,7 +199,7 @@ AspenDiscovery.NYTManager = (function () {
         },
 
         /**
-         * Halt a running NYT update
+         * Halt a running NYT List update.
          */
         haltNYTUpdate: function(logId) {
             const modalBody = `
@@ -210,7 +230,7 @@ AspenDiscovery.NYTManager = (function () {
         },
 
         /**
-         * Execute the halt request after confirmation
+         * Execute the halt request after confirmation.
          */
         executeHaltNYTUpdate: function(logId) {
             // First check if the update is still running
@@ -249,7 +269,7 @@ AspenDiscovery.NYTManager = (function () {
         },
 
         /**
-         * Toggle settings for the NYT updater
+         * Toggle settings for the NYT updater.
          */
         toggleNYTSetting: function(setting, element) {
             const isChecked = $(element).is(':checked');
