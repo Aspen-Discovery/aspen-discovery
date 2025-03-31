@@ -182,7 +182,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		return $tokenData;
 	}
 
-	private function _connectToAPI(Library $activeLibrary, OverDriveSetting $settings, bool $forceNewConnection, string $methodName) : false|stdClass {
+	private function _connectToAPI(Library $activeLibrary, OverDriveSetting $settings, bool $forceNewConnection, string $methodName) : false|stdClass|null {
 		global $memCache;
 		$tokenData = $memCache->get('overdrive_token_' . $settings->id . '_' . $activeLibrary->libraryId);
 		if ($forceNewConnection || $tokenData === false) {

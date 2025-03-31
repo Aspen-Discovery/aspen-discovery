@@ -50,6 +50,8 @@ class Grouping_Record {
 
 	/** @var  IlsVolumeInfo[] */
 	private $_volumeData;
+	private $_unsuppressedVolumeData = null;
+	private $_unsuppressedLocalVolumeData = null;
 
 	//Is the record an OverDrive record?
 	//If so, the number of owned and available copies are already set.
@@ -472,7 +474,41 @@ class Grouping_Record {
 	}
 
 	public function sortItemSummary($variationId): void {
-		ksort($this->_itemSummary[$variationId], SORT_NATURAL);
+		global $library;
+		$ils = 'Unknown';
+		if ($library->getAccountProfile() != null) {
+			$ils = $library->getAccountProfile()->ils;
+
+		}
+		$isPeriodical = false;
+		$format = $this->format;
+		require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
+		if ($ils == 'sierra' || $ils == 'millennium') {
+			$formatValue = new FormatMapValue();
+			$formatValue->format = $format;
+			$formatValue->displaySierraCheckoutGrid = 1;
+			if ($formatValue->find(true)) {
+				$isPeriodical = true;
+			}
+		} else {
+			if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
+				$isPeriodical = true;
+			}
+		}
+		if ($isPeriodical) {
+			$sorter = function ($a, $b){
+				if ($a['shelfLocation'] == $b['shelfLocation']) {
+					if ($a['callNumber'] == $b['callNumber']) {
+						return 0;
+					}
+					return strnatcasecmp($b['callNumber'], $a['callNumber']);
+				}
+				return strnatcasecmp($a['shelfLocation'], $b['shelfLocation']);
+			};
+			uasort($this->_itemSummary[$variationId], $sorter);
+		} else {
+			ksort($this->_itemSummary[$variationId], SORT_NATURAL);
+		}
 	}
 
 	/**
@@ -737,6 +773,42 @@ class Grouping_Record {
 	 */
 	public function getVolumeData() : array{
 		return $this->_volumeData;
+	}
+
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getUnsuppressedVolumeData() : array{
+		if (is_null($this->_unsuppressedVolumeData)) {
+			$this->_unsuppressedVolumeData = [];
+			foreach ($this->_volumeData as $key => $volumeInfo) {
+				foreach ($this->_items as $item) {
+					if ($item->volumeId == $volumeInfo->volumeId) {
+						$this->_unsuppressedVolumeData[$key] = $volumeInfo;
+						break;
+					}
+				}
+			}
+		}
+		return $this->_unsuppressedVolumeData;
+	}
+
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getUnsuppressedLocallyOwnedVolumes() : array{
+		if (is_null($this->_unsuppressedLocalVolumeData)) {
+			$this->_unsuppressedLocalVolumeData = [];
+			foreach ($this->_volumeData as $key => $volumeInfo) {
+				foreach ($this->_items as $item) {
+					if ($item->volumeId == $volumeInfo->volumeId && $this->isLocallyOwned()) {
+						$this->_unsuppressedLocalVolumeData[$key] = $volumeInfo;
+						break;
+					}
+				}
+			}
+		}
+		return $this->_unsuppressedLocalVolumeData;
 	}
 
 	/**

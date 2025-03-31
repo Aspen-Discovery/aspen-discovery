@@ -225,22 +225,24 @@ public class GroupedWork implements Cloneable {
 	private String removeBracketedPartOfTitle(String groupingTitle) {
 		if (!groupingTitle.contains("[")) {
 			return groupingTitle;
-		}
-		//Remove any bracketed parts of the title
-		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
-		//Make sure we don't strip the entire title
-		if (!tmpTitle.isEmpty()){
-			//And make sure we don't have just special characters
-			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
-			if (!tmpTitle.isEmpty()) {
-				groupingTitle = tmpTitle;
-			//}else{
-			//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
-			}
 		}else{
-			//The entire title is in brackets, just remove the brackets
 			groupingTitle = groupingTitle.replace("[", "").replace("]","");
 		}
+		//Remove any bracketed parts of the title
+//		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
+//		//Make sure we don't strip the entire title
+//		if (!tmpTitle.isEmpty()){
+//			//And make sure we don't have just special characters
+//			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
+//			if (!tmpTitle.isEmpty()) {
+//				groupingTitle = tmpTitle;
+//			//}else{
+//			//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
+//			}
+//		}else{
+//			//The entire title is in brackets, just remove the brackets
+//			groupingTitle = groupingTitle.replace("[", "").replace("]","");
+//		}
 		return groupingTitle;
 	}
 

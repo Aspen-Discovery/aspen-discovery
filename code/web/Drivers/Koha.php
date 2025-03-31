@@ -391,6 +391,11 @@ class Koha extends AbstractIlsDriver {
 						$error = str_replace('</h3>', '</h4>', $error);
 						$result['success'] = true;
 						$result['messages'][] = trim($error);
+					} elseif (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $postResults, $messageInformation)) {
+						$error = $messageInformation[1];
+						$error = str_replace('<h3>', '<h4>', $error);
+						$error = str_replace('</h3>', '</h4>', $error);
+						$result['messages'][] = trim($error);
 					} elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
 						$error = $messageInformation[1];
 						$result['messages'][] = trim($error);

@@ -811,7 +811,7 @@ class ItemAPI extends AbstractAPI {
 							}
 						}
 
-						$recordVolumes = $relatedRecord->getVolumeData();
+						$recordVolumes = $relatedRecord->getUnsuppressedVolumeData();
 
 						$holdable = $relatedRecord->isHoldable();
 						$record = [

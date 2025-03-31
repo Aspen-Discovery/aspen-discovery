@@ -74,6 +74,9 @@ class SearchObjectFactory {
 			case 'series' :
 				$engine = 'Series';
 				break;
+			case 'course_reserves':
+				$engine = 'CourseReserves';
+				break;
 			default:
 				$systemVariables = SystemVariables::getSystemVariables();
 				if ($systemVariables->searchVersion == 1) {
@@ -142,6 +145,9 @@ class SearchObjectFactory {
 				break;
 			case 'series' :
 				$source = 'Series';
+				break;
+			case 'course_reserves':
+				$source = 'CourseReserves';
 				break;
 			default:
 				$source = 'GroupedWork';

@@ -1,5 +1,18 @@
 <?php
 
+function getUntitledVolumeHoldAction($module, $source, $id, $variationId) : array {
+	return [
+		'title' => translate([
+			'text' => 'Place Hold',
+			'isPublicFacing' => true,
+		]),
+		'url' => '',
+		'id' => "actionButton$id",
+		'onclick' => "return AspenDiscovery.Record.showPlaceHold('$module', '$source', '$id', '~untitled~', '$variationId');",
+		'requireLogin' => false,
+		'type' => 'ils_hold',
+	];
+}
 //Regular ILS holds
 function getHoldRequestAction($module, $source, $id, $variationId) : array {
 	return [
@@ -44,6 +57,21 @@ function getMultiVolumeHoldAction($module, $source, $id) : array {
 	];
 }
 
+function getMultiVolumeRequestAction($module, $source, $id) : array {
+	return [
+		'title' => translate([
+			'text' => 'Request',
+			'isPublicFacing' => true,
+		]),
+		'url' => '',
+		'id' => "actionButton$id",
+		'onclick' => "return AspenDiscovery.Record.showLocalIllRequest('$module', '$source', '$id');",
+		'requireLogin' => false,
+		'type' => 'local_ill_request',
+		'btnType' => 'btn-local-ill-request btn-action'
+	];
+}
+
 //Local ILL Requests
 function getSpecificVolumeLocalIllRequestAction($module, $source, $id, $volumeInfo) : array {
 	//Check to see if the user can do local ILL by PType
@@ -54,19 +82,24 @@ function getSpecificVolumeLocalIllRequestAction($module, $source, $id, $volumeIn
 			return [];
 		}
 	}
+	$title = translate([
+		'text' => '%1% Request Unavailable',
+		1 => $volumeInfo['volumeName'],
+		'isPublicFacing' => true,
+	]);
+	$message = translate([
+		'text' => "Titles with volumes cannot be requested from other libraries via the catalog. Please contact the library to request this title.",
+		'isPublicFacing' => true,
+		'inAttribute' => true,
+	]);
 	return [
-		'title' => translate([
-			'text' => 'Request %1%',
-			1 => $volumeInfo['volumeName'],
-			'isPublicFacing' => true,
-		]),
+		'title' => $title,
 		'url' => '',
 		'id' => "actionButton$id",
-		'onclick' => "return AspenDiscovery.Record.showLocalIllRequest('$module', '$source', '$id', '{$volumeInfo['volumeId']}');",
+		'onclick' => "AspenDiscovery.showMessage('$title', '$message');return false;",
 		'requireLogin' => false,
 		'type' => 'local_ill_request',
-		'volumeId' => $volumeInfo['volumeId'],
-		'volumeName' => $volumeInfo['volumeName']
+		'btnType' => 'btn-local-ill-request btn-action'
 	];
 }
 

@@ -612,7 +612,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => "Are you sure you want to cancel this hold?",
 				'isPublicFacing' => true,
 			]),
-			'buttons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</button>",
+			'buttons' => "<button type='button' class='tool btn btn-primary confirmCancelButton' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</button>",
 		];
 	}
 
@@ -3717,7 +3717,7 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	
 		// Check if we're filtering by a specific user
-		$allUsersSelected = (empty($selectedUser) || $selectedUser === "" | $selectedUser === '[""]');
+		$allUsersSelected = (empty($selectedUser) || $selectedUser === "" || $selectedUser === '[""]');
 	
 		foreach ($allHolds['available'] as $key => $hold) {
 			if ($allUsersSelected || intval($hold->userId) === intval($selectedUser)) {
@@ -3846,7 +3846,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$availableHoldSortOptions['location'] = 'Pickup Location';
 				}
 
-				if (count($user->getlinkedUsers()) > 0) {
+				if (count($user->getLinkedUsers()) > 0) {
 					$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
 					$availableHoldSortOptions['libraryAccount'] = 'Library Account';
 				}
@@ -6354,7 +6354,7 @@ class MyAccount_AJAX extends JSON_Action {
 					// TO DO: allow N too
 					'enableemailreceipt' => 'Y',
 					// TO DO: allow N too
-					'redirectionurl' => $configArray['Site']['url'] . "/MyAccount/SnapPayComplete",
+					'redirectionurl' => $configArray['Site']['url'] . "/SnapPay/Complete",
 					// TO DO: documentation: FISERV pdf has 'redirectionurl'; error has 'redirecturl'; 'redirectionurl ' is correct
 					'signature' => $HmacValue,
 					// TO DO: documentation: FISERV pdf has 'signature'; error has 'Signature'; 'signature' is correct

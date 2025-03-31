@@ -138,6 +138,7 @@ public class EventsIndexerMain {
 				while (eventsSitesRS.next()) {
 					AspenEventsIndexer indexer = new AspenEventsIndexer(
 						eventsSitesRS.getLong("id"),
+						eventsSitesRS.getString("name"),
 						eventsSitesRS.getInt("numberOfDaysToIndex"),
 						eventsSitesRS.getBoolean("runFullUpdate"),
 						eventsSitesRS.getLong("lastUpdateOfAllEvents"),

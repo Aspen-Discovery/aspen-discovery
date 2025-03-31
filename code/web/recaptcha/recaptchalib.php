@@ -146,6 +146,9 @@ function recaptcha_check_answer($privkey, $remoteip, $response, $extra_params = 
 			) + $extra_params
 	);
 
+	global $logger;
+	$logger->log("reCAPTCHA raw response: " . substr($response[1], 0, 200) . (strlen($response[1]) > 200 ? '...' : ''), Logger::LOG_DEBUG);
+
 	$php_friendly_data = str_replace('"error-codes"', '"error_codes"', $response[1]);
 	//error-codes can't be a valid name for a property
 	$answers = json_decode($php_friendly_data);

@@ -463,13 +463,13 @@ public abstract class AbstractGroupedWorkSolr {
 
 			if (updateTitle || isDisplayInfo) {
 				//Strip out anything in brackets unless that would cause us to show nothing
-				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (!tmpTitle.isEmpty()) {
-					shortTitle = tmpTitle;
-				}
+//				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
+//				if (!tmpTitle.isEmpty()) {
+//					shortTitle = tmpTitle;
+//				}
 				//Do not remove common subtitle from display info
 				//if (!isDisplayInfo) {
-					tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
+					String tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
 					if (!tmpTitle.isEmpty()) {
 						shortTitle = tmpTitle;
 					}
@@ -477,10 +477,10 @@ public abstract class AbstractGroupedWorkSolr {
 				this.title = shortTitle;
 				this.titleFormat = formatCategory;
 				//Strip out anything in brackets unless that would cause us to show nothing
-				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-				if (!tmpTitle.isEmpty()) {
-					sortableTitle = tmpTitle;
-				}
+//				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
+//				if (!tmpTitle.isEmpty()) {
+//					sortableTitle = tmpTitle;
+//				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
 				if (!tmpTitle.isEmpty()) {
@@ -520,10 +520,10 @@ public abstract class AbstractGroupedWorkSolr {
 			subTitle = AspenStringUtils.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
-			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
-			if (!tmpTitle.isEmpty()) {
-				subTitle = tmpTitle;
-			}
+//			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
+//			if (!tmpTitle.isEmpty()) {
+//				subTitle = tmpTitle;
+//			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}

@@ -547,7 +547,7 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				if ($configArray['System']['operatingSystem'] == 'windows') {
 					$output = [];
 					if (file_exists("c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz")) {
-						exec("tar -xzf c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz $sideLoads->marcPath", $output);
+						exec("tar -xzf c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz -C $sideLoads->marcPath", $output);
 					}
 				} else {
 					$output = [];

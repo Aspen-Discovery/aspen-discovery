@@ -39,11 +39,16 @@ class WebBuilder_SubmitForm extends Action {
 					$interface->assign('submissionError', 'You must be logged in to submit a response, please login and try again.');
 					$processForm = false;
 				}
-			}
-			$user = UserAccount::getLoggedInUser();
-			$samePatron = true;
-			if ($_REQUEST['patronIdCheck'] != 0 && $_REQUEST['patronIdCheck'] != $user->id){
-				$processForm = false;
+			} else {
+				$user = UserAccount::getLoggedInUser();
+				$samePatron = true;
+				if ($_REQUEST['patronIdCheck'] != 0 && $_REQUEST['patronIdCheck'] != $user->id) {
+					$processForm = false;
+					$interface->assign('submissionError', translate([
+						'text' => 'Wrong account credentials, please try again.',
+						'isPublicFacing' => true,
+					]));
+				}
 			}
 
 			if ($processForm) {
@@ -113,11 +118,6 @@ class WebBuilder_SubmitForm extends Action {
 				} else {
 					$interface->assign('submissionResultText', $this->form->submissionResultText);
 				}
-			}else{
-				$interface->assign('submissionError', translate([
-					'text' => 'Wrong account credentials, please try again.',
-					'isPublicFacing' => true,
-				]));
 			}
 		} else {
 			$interface->assign('submissionError', translate([
