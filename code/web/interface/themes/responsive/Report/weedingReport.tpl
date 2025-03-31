@@ -126,6 +126,7 @@
 				<th class="sorter-false">Publish Date</th>
 				<th class="sorter-false">Cumulative Circulation</th>
 				<th class="sorter-false">Last Return Date</th>
+				<th class="sorter-false">Creation Date</th>
 				<th class="filter-select filter-onlyAvail">ACTION</th>
 				<th class="filter-select filter-onlyAvail">GRUBBY?</th>
 			</tr>
@@ -143,6 +144,7 @@
 					<td>{$dataRow.PUBLISHINGDATE}</td>
 					<td>{$dataRow.CUMULATIVEHISTORY}</td>
 					<td>{$dataRow.RETURNDATE}</td>
+					<td>{$dataRow.CREATIONDATE}</td>
 					<td>{$dataRow.ACTION}</td>
 					<td>{$dataRow.GRUBBY}</td>
 				</tr>

@@ -1133,6 +1133,7 @@ EOT;
 					, s.description as status
 					, i.cumulativehistory
 					, i.bid
+					, to_char(i.creationdate, 'MM/DD/YYYY') as creationdate
 				from item_v2 i
 				left join media_v2 m on i.media = m.mednumber
 				left join location_v2 l on i.location = l.locnumber
@@ -1837,6 +1838,7 @@ EOT;
 				, x.publishingdate
 				, x.cumulativehistory
 				, x.returndate
+				, x.creationdate
 				, case
 					when validate_conversion(publishingdate as number) != 1 then 'FIX PUB DATE'
 					when publishingdate is null then 'FIX PUB DATE'
