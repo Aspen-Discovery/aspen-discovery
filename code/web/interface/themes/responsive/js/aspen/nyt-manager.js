@@ -123,21 +123,21 @@ AspenDiscovery.NYTManager = (function () {
 
 				if ($alertDiv.length === 0) {
 					const statusHtml = `
-                        <div class="alert ${alertClass}">
-                            <h4>
-                                <i id="nytStatusIcon" class="${iconClass}"></i>
-                                <span id="nytStatusTitle">${titleText}</span>
-                            </h4>
-                            <div id="nytStatusMessage">
-                                ${status.haltRequested ? haltMessageHtml : ''}
-                            </div>
-                            <div id="nytStatusContent" class="row">
-                                <div id="nytStatusDetails" class="col-xs-12 col-sm-7">
-                                    <div id="nytStatusControls"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+						<div class="alert ${alertClass}">
+							<h4>
+								<i id="nytStatusIcon" class="${iconClass}"></i>
+								<span id="nytStatusTitle">${titleText}</span>
+							</h4>
+							<div id="nytStatusMessage">
+								${status.haltRequested ? haltMessageHtml : ''}
+							</div>
+							<div id="nytStatusContent" class="row">
+								<div id="nytStatusDetails" class="col-xs-12 col-sm-7">
+									<div id="nytStatusControls"></div>
+								</div>
+							</div>
+						</div>
+					`;
 					$nytUpdateStatus.html(statusHtml).show();
 				} else {
 					const $statusIcon = $('#nytStatusIcon');
@@ -160,18 +160,18 @@ AspenDiscovery.NYTManager = (function () {
 				}
 
 				const detailsHtml = `
-                    <p><strong>Started:</strong> ${new Date(status.startTime * 1000).toLocaleString()}</p>
-                    <p><strong>Running for:</strong> ${timeDisplay}</p>
-                    ${status.numLists ? `<p><strong>Processing:</strong> ${status.numLists} lists</p>` : ''}
-                `;
+					<p><strong>Started:</strong> ${new Date(status.startTime * 1000).toLocaleString()}</p>
+					<p><strong>Running for:</strong> ${timeDisplay}</p>
+					${status.numLists ? `<p><strong>Processing:</strong> ${status.numLists} lists</p>` : ''}
+				`;
 				$('#nytStatusDetails').html(detailsHtml);
 
 				const controlsHtml = status.haltRequested ? `<button class="btn btn-danger" disabled>
-                            <i class="fas fa-stop-circle"></i> Halting...
-                       </button>` : `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
-                        <i class="fas fa-stop-circle"></i> Halt Update
-                       </button>
-                    `;
+					<i class="fas fa-stop-circle"></i> Halting...
+				   </button>` : `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
+					<i class="fas fa-stop-circle"></i> Halt Update
+				   </button>
+				`;
 				$('#nytStatusControls').html(controlsHtml);
 
 				AspenDiscovery.NYTManager.updateButtonState('running');
@@ -195,17 +195,17 @@ AspenDiscovery.NYTManager = (function () {
 		 */
 		haltNYTUpdate: function (logId) {
 			const modalBody = `
-                <p class="lead">Are you sure you want to halt the running update? The update will be stopped at the next safe point.</p>
-            `;
+				<p class="lead">Are you sure you want to halt the running update? The update will be stopped at the next safe point.</p>
+			`;
 
 			const modalButtons = `
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" 
-                        class="btn btn-danger" 
-                        onclick="AspenDiscovery.NYTManager.executeHaltNYTUpdate(${logId}); $('#modalDialog').modal('hide');">
-                    Halt Update
-                </button>
-            `;
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button type="button" 
+						class="btn btn-danger" 
+						onclick="AspenDiscovery.NYTManager.executeHaltNYTUpdate(${logId}); $('#modalDialog').modal('hide');">
+					Halt Update
+				</button>
+			`;
 
 			AspenDiscovery.showMessageWithButtons('Confirm Halt', modalBody, modalButtons, false, undefined, false, false, true);
 
