@@ -1,8 +1,8 @@
 /**
- * Aspen Discovery Greenhouse JavaScript Module
+ * Aspen Discovery Cover Manager JavaScript Module
  */
 
-AspenDiscovery.Greenhouse = (function () {
+AspenDiscovery.CoverManager = (function () {
 	return {
 		/**
 		 * Submit the cover reload form via AJAX.

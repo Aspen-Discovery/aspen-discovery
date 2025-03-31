@@ -69,7 +69,7 @@
 								</div>
 
 								<div class="form-group mt-4">
-									<button type="button" id="processCoversBtn" class="btn btn-primary" style="margin-right: 10px;" onclick="return AspenDiscovery.Greenhouse.reloadCoverSources();">{translate text="Process Selected Sources" isAdminFacing=true}</button>
+									<button type="button" id="processCoversBtn" class="btn btn-primary" style="margin-right: 10px;" onclick="return AspenDiscovery.CoverManager.reloadCoverSources();">{translate text="Process Selected Sources" isAdminFacing=true}</button>
 									<button type="button" id="selectAll" class="btn btn-default" style="margin-right: 10px;">{translate text="Select All" isAdminFacing=true}</button>
 									<button type="button" id="deselectAll" class="btn btn-default">{translate text="Deselect All" isAdminFacing=true}</button>
 								</div>

@@ -9,13 +9,6 @@ class Greenhouse_CoverManager extends Admin_Admin
 {
 	function launch(): void
 	{
-		global $interface;
-
-		// Process form submission for multiple sources
-		if (isset($_POST['submit']) && isset($_POST['sources']) && is_array($_POST['sources'])) {
-			$this->reloadMultipleCoverSources($_POST['sources']);
-		}
-
 		$this->display('coverManager.tpl', 'Cover Manager');
 	}
 
