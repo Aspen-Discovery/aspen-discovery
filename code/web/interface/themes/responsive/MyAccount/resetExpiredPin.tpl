@@ -38,8 +38,9 @@
 		{if !isset($showSubmitButton) || $showSubmitButton == true}
 			<div class="form-group">
 				<div class="col-xs-8 col-xs-offset-4">
-					<input id="resetPinSubmit" name="submit" class="btn btn-primary" type="submit"
-						   value="{translate text="Reset My PIN" isPublicFacing=true}">
+					<button type="submit" id="resetPinSubmit" name="submit" class="btn btn-primary">
+						{translate text="Reset My PIN" isPublicFacing=true}
+					</button>
 				</div>
 			</div>
 		{/if}

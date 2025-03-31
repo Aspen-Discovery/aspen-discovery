@@ -423,6 +423,9 @@ class IPAddress extends DataObject {
 			} else {
 				IPAddress::$_showDebuggingInformation = false;
 			}
+			if (isset($_REQUEST['noDebug'])) {
+				IPAddress::$_showDebuggingInformation = false;
+			}
 		}
 		return IPAddress::$_showDebuggingInformation;
 	}

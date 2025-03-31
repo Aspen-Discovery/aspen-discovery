@@ -22,7 +22,9 @@
 			</div>
 			<div class="form-group">
 				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-					<input id="emailPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN' isPublicFacing=true}">
+					<button type="submit" id="emailPinSubmit" name="submit" class="btn btn-primary">
+						{translate text="Reset My PIN" isPublicFacing=true}
+					</button>
 					{if !empty($resendEmail)}
 						<input type="hidden" name="resendEmail" value="true">
 					{/if}

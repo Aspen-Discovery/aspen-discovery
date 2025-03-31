@@ -430,7 +430,9 @@ class CatalogConnection {
 			$userToResetPin->ils_barcode = $barcode;
 			if (!$userToResetPin->find(true)) {
 				$accountProfileDriver = $accountProfileInfo['driver'];
-				$userToResetPin = $accountProfileDriver->findNewUser($barcode, '');
+				require_once ROOT_DIR . '/CatalogFactory.php';
+				$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($accountProfileDriver, $accountProfile);
+				$userToResetPin = $catalogConnectionInstance->findNewUser($barcode, '');
 			}
 		}elseif ($accountProfile->authenticationMethod == 'db') {
 			//Check anything we do database authentication for

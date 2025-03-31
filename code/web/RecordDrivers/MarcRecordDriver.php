@@ -1099,7 +1099,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if ($isHoldable && $showHoldButton) {
 				$source = $this->profileType;
 				if ($volumeData == null) {
-					$volumeData = $relatedRecord->getVolumeData();
+					$volumeData = $relatedRecord->getUnsuppressedVolumeData();
 				}
 				list($interLibraryLoanType, $treatHoldAsInterLibraryLoanRequest, $homeLocation, $holdGroups) = $this->getInterLibraryLoanIntegrationInformation($relatedRecord, $variationId);
 
@@ -1166,10 +1166,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 										//VDX does not support volumes, we'll just prompt for a regular VDX
 										$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
 									} elseif ($interLibraryLoanType == 'localIll') {
-										$this->_actions[$variationId][] = getLocalIllRequestAction($this->getModule(), $source, $id);
+										$this->_actions[$variationId][] = getMultiVolumeRequestAction($this->getModule(), $source, $id);
 									}
 								}else{
-									$this->_actions[$variationId][] = getHoldRequestAction($this->getModule(), $source, $id, $variationId);
+									$this->_actions[$variationId][] = getUntitledVolumeHoldAction($this->getModule(), $source, $id, $variationId);
 								}
 							} else {
 								//The button will show a message to the patron no volumes can be requested
@@ -1625,11 +1625,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 
 		//If this is a periodical we may have additional information
+		$isPeriodical = false;
 		if ($this->isPeriodical()) {
 			global $library;
 			$interface->assign('showCheckInGrid', $library->getGroupedWorkDisplaySettings()->showCheckInGrid);
 			$issues = $this->loadPeriodicalInformation();
 			$interface->assign('periodicalIssues', $issues);
+			$isPeriodical = true;
 		}
 		$links = $this->getLinks();
 		if (Library::getActiveLibrary()->libKeySettingId != -1  && !empty($links[0]['url'])) {

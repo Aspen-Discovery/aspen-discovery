@@ -50,6 +50,8 @@ class Grouping_Record {
 
 	/** @var  IlsVolumeInfo[] */
 	private $_volumeData;
+	private $_unsuppressedVolumeData = null;
+	private $_unsuppressedLocalVolumeData = null;
 
 	//Is the record an OverDrive record?
 	//If so, the number of owned and available copies are already set.
@@ -771,6 +773,42 @@ class Grouping_Record {
 	 */
 	public function getVolumeData() : array{
 		return $this->_volumeData;
+	}
+
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getUnsuppressedVolumeData() : array{
+		if (is_null($this->_unsuppressedVolumeData)) {
+			$this->_unsuppressedVolumeData = [];
+			foreach ($this->_volumeData as $key => $volumeInfo) {
+				foreach ($this->_items as $item) {
+					if ($item->volumeId == $volumeInfo->volumeId) {
+						$this->_unsuppressedVolumeData[$key] = $volumeInfo;
+						break;
+					}
+				}
+			}
+		}
+		return $this->_unsuppressedVolumeData;
+	}
+
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getUnsuppressedLocallyOwnedVolumes() : array{
+		if (is_null($this->_unsuppressedLocalVolumeData)) {
+			$this->_unsuppressedLocalVolumeData = [];
+			foreach ($this->_volumeData as $key => $volumeInfo) {
+				foreach ($this->_items as $item) {
+					if ($item->volumeId == $volumeInfo->volumeId && $this->isLocallyOwned()) {
+						$this->_unsuppressedLocalVolumeData[$key] = $volumeInfo;
+						break;
+					}
+				}
+			}
+		}
+		return $this->_unsuppressedLocalVolumeData;
 	}
 
 	/**

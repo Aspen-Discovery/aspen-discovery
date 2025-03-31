@@ -941,7 +941,7 @@ public class SierraExportAPIMain {
 		final JSONObject[] bibsResults = {null};
 		//noinspection CodeBlock2Expr
 		Thread getBibsResultsThread = new Thread(() -> {
-			bibsResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs?id=" + id + "&fields=marc,fixedFields", id);
+			bibsResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs?id=" + id + "&fields=marc,fixedFields,locations", id);
 		});
 		final JSONObject[] itemIds = {null};
 		//noinspection CodeBlock2Expr
@@ -1001,6 +1001,10 @@ public class SierraExportAPIMain {
 				JSONObject bibsData = bibsResults[0].getJSONArray("entries").getJSONObject(0);
 				
 				//Get Marc data from bibs response
+				if (!bibsData.has("marc")) {
+					logEntry.incInvalidRecords("Record " + id + " has no MARC data");
+					return true;
+				}
 				JSONObject marcData = bibsData.getJSONObject("marc");
 				String leader = "";
 				if (marcData.has("leader")) {
@@ -1092,11 +1096,13 @@ public class SierraExportAPIMain {
 							if (bibsFixedFields.has("26")) {
 								String location = bibsFixedFields.getJSONObject("26").getString("value");
 								if (location.equalsIgnoreCase("multi")) {
-									JSONArray locationsJSON = bibsFixedFields.getJSONArray("locations");
-									for (int k = 0; k < locationsJSON.length(); k++) {
-										location = locationsJSON.getJSONObject(k).getString("code");
-										fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
-									}
+									if (bibsData.has("locations")) {
+										JSONArray locationsJSON = bibsData.getJSONArray("locations");
+										for (int k = 0; k < locationsJSON.length(); k++) {
+											location = locationsJSON.getJSONObject(k).getString("code");
+											fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
+										}
+									}	
 								} else {
 									fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
 								}

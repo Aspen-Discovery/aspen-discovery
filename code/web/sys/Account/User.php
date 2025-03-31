@@ -5819,7 +5819,7 @@ class User extends DataObject {
 			}
 			$requestStartDate = date_create_from_format('m-d-Y', "$calendarStartMonthDay-$requestStartYear");
 			$requestStartTime = $requestStartDate->getTimestamp();
-			$materialsRequest->whereAdd("dateCreated >= $requestStartTime");
+			$materialsRequests->whereAdd("dateCreated >= $requestStartTime");
 		}
 
 		require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';

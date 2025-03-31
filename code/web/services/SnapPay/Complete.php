@@ -1,7 +1,6 @@
 <?php
-require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_SnapPayComplete extends MyAccount {
+class SnapPay_Complete extends Action {
 	public function launch() {
 		global $interface;
 		global $logger;
@@ -12,7 +11,7 @@ class MyAccount_SnapPayComplete extends MyAccount {
 		require_once ROOT_DIR . '/sys/ECommerce/SnapPaySetting.php';
 		$snapPaySetting = new SnapPaySetting();
 		$snapPaySetting->id = $library->snapPaySettingId;
-		if($snapPaySetting->find(true)) {
+		if ($snapPaySetting->find(true)) {
 			// determine whether SnapPay settings have email notifications enabled
 			$emailNotifications = $snapPaySetting->emailNotifications;
 		}
@@ -49,12 +48,20 @@ class MyAccount_SnapPayComplete extends MyAccount {
 				}
 			}
 		}
-		if ($error === true) {
+		if ($error === true && $result['cancelled'] === true) {
+			$interface->assign('error', $message);
+			$logger->log($message, Logger::LOG_ERROR);
+			if ($emailNotifications === 2) { // emailNotifications 0 = Do not send email; 1 = Email errors; 2 = Email all transactions
+				$mailer->send($emailNotificationsAddresses, "$serverName Error with SnapPay Payment", $message);
+			}
+			$this->display('paymentResult.tpl', 'Payment Cancelled');
+		} elseif ($error === true) {
 			$interface->assign('error', $message);
 			$logger->log($message, Logger::LOG_ERROR);
 			if ($emailNotifications > 0) { // emailNotifications 0 = Do not send email; 1 = Email errors; 2 = Email all transactions
 				$mailer->send($emailNotificationsAddresses, "$serverName Error with SnapPay Payment", $message);
 			}
+			$this->display('paymentResult.tpl', 'Payment Error');
 		} else {
 			if (empty($message)) {
 				$message = "SnapPay Payment completed with no message for Payment Reference ID $paymentId.";
@@ -64,8 +71,8 @@ class MyAccount_SnapPayComplete extends MyAccount {
 			if ($emailNotifications === 2) { // emailNotifications 0 = Do not send email; 1 = Email errors; 2 = Email all transactions
 				$mailer->send($emailNotificationsAddresses, "$serverName SnapPay Payment", $message);
 			}
+			$this->display('paymentResult.tpl', 'Payment Completed');
 		}
-		$this->display('paymentCompleted.tpl');
 	}
 
 	function validateSnapPayHMAC(string $signatureFromSnapPay, $hppHMACParamValue): string {
@@ -102,6 +109,7 @@ class MyAccount_SnapPayComplete extends MyAccount {
 			return $hmacHeader;
 		}
 	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');

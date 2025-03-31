@@ -506,7 +506,7 @@ class Record_AJAX extends Action {
 				//Check to see if we need to override this to an item hold because there are volumes being handled with an item level hold
 				if ($holdType == 'bib') {
 					$relatedRecord = $marcRecord->getRelatedRecord();
-					if (count($relatedRecord->getVolumeData()) > 0) {
+					if (count($relatedRecord->getUnsuppressedVolumeData()) > 0) {
 						$catalogDriver = $marcRecord->getCatalogDriver();
 						if ($catalogDriver->treatVolumeHoldsAsItemHolds()) {
 							$holdType = 'item';
@@ -748,6 +748,8 @@ class Record_AJAX extends Action {
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$interface->assign('id', $marcRecord->getId());
 
+			list($interLibraryLoanType, $treatHoldAsInterLibraryLoanRequest, $homeLocation, $holdGroups) = $marcRecord->getInterLibraryLoanIntegrationInformation($relatedRecord, 'any');
+
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)) {
 				return [
 					'holdFormBypassed' => false,
@@ -772,6 +774,7 @@ class Record_AJAX extends Action {
 
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
+
 			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
@@ -832,7 +835,11 @@ class Record_AJAX extends Action {
 						$blankVolume->relatedItems .= $item->itemId . '|';
 					}
 				}
-				$volumeData[] = $blankVolume;
+
+				//Don't add untitled if we there are not local items
+				if ($interLibraryLoanType != 'localIll' || $blankVolume->hasLocalItems()) {
+					$volumeData[] = $blankVolume;
+				}
 
 				$interface->assign('hasItemsWithoutVolumes', false);
 				$interface->assign('majorityOfItemsHaveVolumes', true);
@@ -985,6 +992,10 @@ class Record_AJAX extends Action {
 					if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $pickupBranch, $cancelDate, $pickupSublocation);
 					} else {
+						if ($_REQUEST['volume'] == '~untitled~') {
+							$holdType = 'volume';
+							$_REQUEST['volume'] = '';
+						}
 						if (isset($_REQUEST['volume']) && $holdType == 'volume') {
 							if ($_REQUEST['volume'] === 'unselected') {
 								return [

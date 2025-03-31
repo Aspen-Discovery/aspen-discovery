@@ -1095,7 +1095,11 @@ class UserPayment extends DataObject {
 			$userPayment->message = '';
 			$userPayment->transactionId = $payload['paymenttransactionid'];
 			if ($payload['transactionstatus'] != 'Y') { // SnapPay payment transaction failed
-				$userPayment->error = true;
+				if (!empty($payload['returnmessage']) && $payload['returnmessage'] == 'Action cancelled.') { // user canceled transaction ('x-ed out' of SnapPay Hosted Payment Page)
+					$userPayment->cancelled = true;
+				} else {
+					$userPayment->error = true; // SnapPay payment transaction failed for reasons other than user cancellation
+				}
 				$userPayment->message = translate(
 					[
 						'text' => 'Unable to process payment. SnapPay server returned message: ',

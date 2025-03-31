@@ -249,6 +249,30 @@ public class KohaExportMain {
 		System.exit(0);
 	}
 
+	private static MarcReader streamMarcData(ResultSet resultSet, String marcFormat) throws SQLException {
+		MarcReader reader  = null;
+		try {
+			if (marcFormat == "marc"){
+				InputStream stream = resultSet.getBinaryStream(marcFormat);
+				reader = new MarcStreamReader(resultSet.getBinaryStream(marcFormat), "UTF8");
+				
+			} else {
+				String marcXML = resultSet.getString(marcFormat);
+				marcXML = AspenStringUtils.stripNonValidXMLCharacters(marcXML);
+				InputStream stream = new ByteArrayInputStream(marcXML.getBytes(StandardCharsets.UTF_8));
+				reader = new MarcXmlReader(stream);
+			}
+		} catch (Exception e){
+			logEntry.addNote("Streaming failed for " + marcFormat);
+		}
+
+		if (marcFormat == null) {
+			throw new IllegalArgumentException("Streaming failed: marcFormat is null.");
+		}
+
+		return reader;
+	}
+
 	private static void exportAuthorAuthorities(Connection dbConn, Connection kohaConn) {
 		int numAuthoritiesExported = 0;
 		try{
@@ -256,21 +280,31 @@ public class KohaExportMain {
 			long curTime = new Date().getTime() / 1000;
 			Timestamp lastUpdateOfAuthorities = new Timestamp(indexingProfile.getLastUpdateOfAuthorities() * 1000);
 			//noinspection SpellCheckingInspection
-			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT authid, modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			float kohaVersion = getKohaVersion(kohaConn);
+			PreparedStatement getAuthorAuthoritiesStmt = null;
+			String marcFormat = "marcxml";
+
+			if(kohaVersion < 24.1200011 ){
+				marcFormat = "marc";
+			} 
+
+			getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT authid, modification_time, authtypecode, " + marcFormat + " from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
+			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
 			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement getAuthorIdStmt = dbConn.prepareStatement("SELECT id from author_authority where author = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addAlternativeNameStmt = dbConn.prepareStatement("INSERT INTO author_authority_alternative (id, authorId, alternativeAuthor) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
-			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
+			
 			while (getAuthorAuthoritiesRS.next()){
 				String authId = getAuthorAuthoritiesRS.getString("authid");
 				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
 				//noinspection SpellCheckingInspection
 				if (authTypeCode.equals("PERSO_NAME") || authTypeCode.equals("CORPO_NAME")) {
-					MarcReader catalogReader = new MarcStreamReader(getAuthorAuthoritiesRS.getBinaryStream("marc"), "UTF8");
-					if (catalogReader.hasNext()) {
-						try {
-							Record marcRecord = catalogReader.next();
+					MarcReader marcReader  = streamMarcData(getAuthorAuthoritiesRS, marcFormat);
+					if (marcReader.hasNext()){
+						try{
+							Record marcRecord = marcReader.next();
 							String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
 							if (author != null) {
 								Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
@@ -302,7 +336,7 @@ public class KohaExportMain {
 									}
 								}
 							}
-						}catch (Exception e) {
+						} catch (Exception e) {
 							logEntry.addNote("Could not read MARC record for authority " + authId + ", skipping to next record");
 						}
 					}
@@ -1608,7 +1642,6 @@ public class KohaExportMain {
 			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
-
 	private static void updateBibRecord(String curBibId) throws SQLException {
 		//Load the existing marc record from file
 		try {

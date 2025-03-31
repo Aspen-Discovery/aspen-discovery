@@ -115,7 +115,7 @@
 					<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume" isPublicFacing=true}">
 						<option value="unselected" selected disabled>{translate text="Please select a volume from the list below" isPublicFacing=true}</option>
 						{foreach from=$volumes item=volume}
-							<option value="{$volume->volumeId}" {if $volume->needsIllRequest()}disabled{/if}>{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}({translate text="Owned by %1%" 1=$localSystemName isPublicFacing=true}){/if} {if $volume->needsIllRequest()}{translate text="Not Requestable" isPublicFacing=true}{/if}</option>
+							<option value="{$volume->volumeId}" {if $volume->needsIllRequest()}disabled{/if}>{$volume->displayLabel}{if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()} ({translate text="Owned by %1%" 1=$localSystemName isPublicFacing=true}){/if}{if $volume->needsIllRequest()} {translate text="Not Requestable" isPublicFacing=true}{/if}</option>
 						{/foreach}
 					</select>
 				</div>
