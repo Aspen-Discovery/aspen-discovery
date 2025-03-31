@@ -31,11 +31,11 @@
 							<div class="form-group">
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" id="forceFullUpdate" onchange="AspenDiscovery.Greenhouse.toggleNYTSetting('forceFullUpdate', this);" {if $forceFullUpdate}checked{/if}>
+										<input type="checkbox" id="forceFullUpdate" onchange="AspenDiscovery.NYTManager.toggleNYTSetting('forceFullUpdate', this);" {if $forceFullUpdate}checked{/if}>
 										{translate text="Force Full Update" isAdminFacing=true}
 									</label>
 									<p class="help-block">
-										<small>{translate text="When enabled, all lists will be completely rebuilt regardless of the last modified date." isAdminFacing=true}</small>
+										<small><i class="fas fa-info-circle"></i> {translate text="When enabled, all lists will be completely rebuilt regardless of the last modified date. Do not run full updates often because there are rate limits to the NYT API. Regular updates run once a week." isAdminFacing=true}</small>
 									</p>
 								</div>
 							</div>
@@ -43,11 +43,11 @@
 							<div class="form-group">
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" id="enableExtensiveLogging" onchange="AspenDiscovery.Greenhouse.toggleNYTSetting('enableExtensiveLogging', this);" {if $enableExtensiveLogging}checked{/if}>
+										<input type="checkbox" id="enableExtensiveLogging" onchange="AspenDiscovery.NYTManager.toggleNYTSetting('enableExtensiveLogging', this);" {if $enableExtensiveLogging}checked{/if}>
 										{translate text="Enable Extensive Logging" isAdminFacing=true}
 									</label>
 									<p class="help-block">
-										<small>{translate text="When enabled, more detailed logs will be generated during the update process." isAdminFacing=true}</small>
+										<small><i class="fas fa-info-circle"></i> {translate text="When enabled, more detailed logs will be generated during the update process." isAdminFacing=true}</small>
 									</p>
 								</div>
 							</div>
@@ -69,8 +69,8 @@
 							<h2 class="panel-title">{translate text="Run Update" isAdminFacing=true}</h2>
 						</div>
 						<div class="panel-body">
-							<p>{translate text="Click the button below to run the NYT lists updater now. This will execute the command on the server and may take several minutes to complete." isAdminFacing=true}</p>
-							<button id="runNytUpdateBtn" onclick="return AspenDiscovery.Greenhouse.runNYTUpdate();" class="btn btn-primary"
+							<p>{translate text="Click the button below to run the NYT lists updater now. This may take several minutes to complete." isAdminFacing=true}</p>
+							<button id="runNytUpdateBtn" onclick="return AspenDiscovery.NYTManager.runNYTUpdate();" class="btn btn-primary"
 									data-original-text="<i class='fas fa-sync'></i> {translate text="Run NYT Lists Update" isAdminFacing=true}"
 									data-running-text="{translate text="Update Running..." isAdminFacing=true}">
 								<i class="fas fa-sync"></i> {translate text="Run NYT Lists Update" isAdminFacing=true}

@@ -31,6 +31,7 @@ class NewYorkTimesSetting extends DataObject {
 				'label' => 'Run Full Update',
 				'description' => 'When checked, forces a full update of all NYT lists regardless of modification date. This setting will be automatically unchecked after the update completes.',
 				'default' => 0,
+				'note' =>"Do not run full updates often because there are rate limits to the NYT API. Regular updates run once a week.",
 			],
 			'enableExtensiveLogging' => [
 				'property' => 'enableExtensiveLogging',

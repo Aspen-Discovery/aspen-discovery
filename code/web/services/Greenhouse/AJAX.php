@@ -611,13 +611,6 @@ class Greenhouse_AJAX extends Action {
 		];
 	}
 
-	function getBreadcrumbs(): array {
-		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('', 'Greenhouse AJAX Handling');
-		return $breadcrumbs;
-	}
-
 	/** @noinspection PhpUnused */
 	function runNYTUpdate(): array
 	{
@@ -625,31 +618,31 @@ class Greenhouse_AJAX extends Action {
 			return ['success' => false, 'message' => 'You must be logged in as an Aspen Administrator to run this update.'];
 		}
 
-		// Check for API settings
+		// Check for API settings.
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
 			return ['success' => false, 'message' => 'New York Times API is not configured.'];
 		}
 
-		// First check if any updates are already running and handle them
+		// First check if any updates are already running and handle them.
 		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
 		$currentStatus = NYTListsUpdateService::isUpdateRunning();
 
-		// If there's a running update, force clear it to prevent interface lockups
+		// If there's a running update, force clear it to prevent interface lockups.
 		if ($currentStatus['isRunning']) {
 			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 			$existingLog = new NYTUpdateLogEntry();
 			$existingLog->id = $currentStatus['logId'];
 			if ($existingLog->find(true)) {
-				$existingLog->addNote("Previous update was forcibly cleared to allow a new update to run");
+				$existingLog->addNote("Previous update was forcibly cleared to allow a new update to run.");
 				$existingLog->endTime = time();
 				$existingLog->update();
 			}
 		}
 
 		try {
-			// Create the updater and run it directly
+			// Create the updater and run it directly.
 			$updater = new NYTListsUpdateService();
 			$result = $updater->update();
 
@@ -658,7 +651,6 @@ class Greenhouse_AJAX extends Action {
 				$logId = $result['logId'];
 				return [
 					'success' => true,
-					'message' => 'NYT Lists updated successfully',
 					'logId' => $logId,
 				];
 			} else {
@@ -681,7 +673,7 @@ class Greenhouse_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Enrichment/NYTListsUpdateService.php';
 		$status = NYTListsUpdateService::isUpdateRunning();
 
-		// Get the log entry to check for haltRequested flag
+		// Get the log entry to check for haltRequested flag.
 		if ($status['isRunning'] && isset($status['logId'])) {
 			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 			$logEntry = new NYTUpdateLogEntry();
@@ -741,7 +733,7 @@ class Greenhouse_AJAX extends Action {
 			$nytSettings->insert();
 		}
 
-		// Only update specific settings from the updater page
+		// Only update specific settings from the updater page.
 		if (isset($_REQUEST['forceFullUpdate'])) {
 			$nytSettings->runFullUpdate = (int)($_REQUEST['forceFullUpdate'] === 'true');
 		}
@@ -759,5 +751,12 @@ class Greenhouse_AJAX extends Action {
 				'enableExtensiveLogging' => (bool)$nytSettings->enableExtensiveLogging
 			]
 		];
+	}
+
+	function getBreadcrumbs(): array {
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('', 'Greenhouse AJAX Handling');
+		return $breadcrumbs;
 	}
 }

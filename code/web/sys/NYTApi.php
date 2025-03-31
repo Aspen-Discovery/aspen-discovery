@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 /***************************************
- * Simple class to retrieve feed of NYT best sellers
+ * Simple class to retrieve feed of NYT best sellers.
  * documentation:
  * https://developer.nytimes.com/docs/books-product/1/overview
  *
@@ -69,7 +69,7 @@ class NYTApi {
 		$response = curl_exec($curl);
 		// Close request to clear up some resources
 		curl_close($curl);
-		//NYT recommends sleeping for 12 seconds between API calls to avoid rate limits.
+		// NYT recommends sleeping for 12 seconds between API calls to avoid rate limits.
 		sleep(13);
 
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {

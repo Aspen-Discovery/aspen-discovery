@@ -1,4 +1,4 @@
-AspenDiscovery.Greenhouse = (function () {
+AspenDiscovery.NYTManager = (function () {
     let nytUpdateStatusInterval = null;
     let currentUpdateLogId = null;
     const MAX_STATUS_CHECK_ATTEMPTS = 10; // Max attempts to find a running update.
@@ -8,7 +8,7 @@ AspenDiscovery.Greenhouse = (function () {
             $('#nytUpdateResult').removeClass('hidden alert-danger').addClass('alert-info')
                 .html('<i class="fas fa-spinner fa-spin fa-lg"></i> Running the update. Please wait...');
 
-            AspenDiscovery.Greenhouse.updateButtonState('running');
+            AspenDiscovery.NYTManager.updateButtonState('running');
 
             let statusHtml = '<div class="alert alert-warning">';
             statusHtml += '<h4><i id="nytStatusIcon" class="fas fa-sync fa-spin"></i> <span id="nytStatusTitle">NYT Update Starting...</span></h4>';
@@ -34,7 +34,7 @@ AspenDiscovery.Greenhouse = (function () {
                             currentUpdateLogId = response.status.logId;
                             clearInterval(initCheckInterval);
 
-                            AspenDiscovery.Greenhouse.startUpdateStatusCheck();
+                            AspenDiscovery.NYTManager.startUpdateStatusCheck();
                         } else {
                             statusCheckAttempts++;
                             // Stop checking after MAX_STATUS_CHECK_ATTEMPTS if no running update found.
@@ -72,7 +72,7 @@ AspenDiscovery.Greenhouse = (function () {
                         $('#nytUpdateResult').removeClass('alert-info').addClass('alert-danger')
                             .html('<i class="fas fa-exclamation-triangle"></i> ' + response.message);
 
-                        AspenDiscovery.Greenhouse.updateButtonState('normal');
+                        AspenDiscovery.NYTManager.updateButtonState('normal');
                         clearInterval(initCheckInterval);
                     }
                 },
@@ -80,7 +80,7 @@ AspenDiscovery.Greenhouse = (function () {
                     $('#nytUpdateResult').removeClass('alert-info').addClass('alert-danger')
                         .html('<i class="fas fa-exclamation-triangle"></i> Error communicating with the server. Please try again.');
 
-                    AspenDiscovery.Greenhouse.updateButtonState('normal');
+                    AspenDiscovery.NYTManager.updateButtonState('normal');
                     clearInterval(initCheckInterval);
                 }
             });
@@ -143,7 +143,7 @@ AspenDiscovery.Greenhouse = (function () {
 
                         let controlsHtml = '';
                         if (!status.haltRequested) {
-                            controlsHtml += '<button class="btn btn-danger" onclick="return AspenDiscovery.Greenhouse.haltNYTUpdate(' + status.logId + ');">';
+                            controlsHtml += '<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(' + status.logId + ');">';
                             controlsHtml += '<i class="fas fa-stop-circle"></i> Halt Update</button> ';
                         } else {
                             controlsHtml += '<button class="btn btn-danger" disabled>';
@@ -151,11 +151,11 @@ AspenDiscovery.Greenhouse = (function () {
                         }
                         $('#nytStatusControls').html(controlsHtml);
 
-                        AspenDiscovery.Greenhouse.updateButtonState('running');
+                        AspenDiscovery.NYTManager.updateButtonState('running');
                     } else {
                         $('#nytUpdateStatus').html('').hide();
 
-                        AspenDiscovery.Greenhouse.updateButtonState('normal');
+                        AspenDiscovery.NYTManager.updateButtonState('normal');
 
                         if (nytUpdateStatusInterval !== null) {
                             clearInterval(nytUpdateStatusInterval);
@@ -171,10 +171,10 @@ AspenDiscovery.Greenhouse = (function () {
          */
         startUpdateStatusCheck: function() {
             // Check immediately
-            AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
+            AspenDiscovery.NYTManager.checkNYTUpdateStatus();
 
             if (nytUpdateStatusInterval === null) {
-                nytUpdateStatusInterval = setInterval(AspenDiscovery.Greenhouse.checkNYTUpdateStatus, 1000);
+                nytUpdateStatusInterval = setInterval(AspenDiscovery.NYTManager.checkNYTUpdateStatus, 1000);
             }
         },
 
@@ -190,7 +190,7 @@ AspenDiscovery.Greenhouse = (function () {
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" 
                         class="btn btn-danger" 
-                        onclick="AspenDiscovery.Greenhouse.executeHaltNYTUpdate(${logId}); $('#modalDialog').modal('hide');">
+                        onclick="AspenDiscovery.NYTManager.executeHaltNYTUpdate(${logId}); $('#modalDialog').modal('hide');">
                     Halt Update
                 </button>
             `;
@@ -230,7 +230,7 @@ AspenDiscovery.Greenhouse = (function () {
                             }
                             AspenDiscovery.showMessage('Update Halted', message, true);
                             // Refresh status
-                            AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
+                            AspenDiscovery.NYTManager.checkNYTUpdateStatus();
                         } else {
                             AspenDiscovery.showMessage('Error', response.message, false);
                         }
@@ -241,7 +241,7 @@ AspenDiscovery.Greenhouse = (function () {
                     // Update is no longer running
                     AspenDiscovery.showMessage('Notice', 'The update is no longer running. It may have completed or been halted already.', true);
                     // Refresh status display
-                    AspenDiscovery.Greenhouse.checkNYTUpdateStatus();
+                    AspenDiscovery.NYTManager.checkNYTUpdateStatus();
                 }
             }).fail(function() {
                 AspenDiscovery.showMessage('Error', 'Could not verify update status. Please refresh the page and try again.', false);
@@ -302,6 +302,6 @@ AspenDiscovery.Greenhouse = (function () {
 // Check for updates when the page loads.
 $(function() {
     if ($('#nytUpdateStatus').length) {
-        AspenDiscovery.Greenhouse.startUpdateStatusCheck();
+        AspenDiscovery.NYTManager.startUpdateStatusCheck();
     }
 });
