@@ -51,8 +51,7 @@ AspenDiscovery.NYTManager = (function () {
 									// Update only the parts that need to change
 									$('#nytStatusIcon').removeClass('fa-sync fa-spin').addClass('fa-exclamation-circle');
 									$('#nytStatusTitle').text('Waiting for Update');
-									$('#nytStatusDetails').html('<p>The system is still processing your update request.</p>' +
-										'<p>If the update doesn\'t start within a minute, please check the logs or try again.</p>');
+									$('#nytStatusDetails').html('<p>The system is still processing your update request.</p>' + '<p>If the update doesn\'t start within a minute, please check the logs or try again.</p>');
 								}
 							}
 						}
@@ -61,12 +60,8 @@ AspenDiscovery.NYTManager = (function () {
 			}, 1000);
 
 			$.ajax({
-				url: '/Greenhouse/AJAX',
-				method: 'GET',
-				dataType: 'json',
-				timeout: 30000, // 30 seconds
-				data: {method: 'runNYTUpdate'},
-				success: function (response) {
+				url: '/Greenhouse/AJAX', method: 'GET', dataType: 'json', timeout: 30000, // 30 seconds
+				data: {method: 'runNYTUpdate'}, success: function (response) {
 					if (response.success) {
 						$('#nytUpdateResult').removeClass('alert-info');
 						$('#forceFullUpdate').prop('checked', false);
@@ -82,8 +77,7 @@ AspenDiscovery.NYTManager = (function () {
 						AspenDiscovery.NYTManager.updateButtonState('normal');
 						clearInterval(initCheckInterval);
 					}
-				},
-				error: function () {
+				}, error: function () {
 					$('#nytUpdateResult').removeClass('alert-info').addClass('alert-danger')
 						.html('<i class="fas fa-exclamation-triangle"></i> Error communicating with the server. Please try again.');
 
@@ -172,11 +166,9 @@ AspenDiscovery.NYTManager = (function () {
                 `;
 				$('#nytStatusDetails').html(detailsHtml);
 
-				const controlsHtml = status.haltRequested
-					? `<button class="btn btn-danger" disabled>
+				const controlsHtml = status.haltRequested ? `<button class="btn btn-danger" disabled>
                             <i class="fas fa-stop-circle"></i> Halting...
-                       </button>`
-					: `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
+                       </button>` : `<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
                         <i class="fas fa-stop-circle"></i> Halt Update
                        </button>
                     `;
@@ -215,16 +207,7 @@ AspenDiscovery.NYTManager = (function () {
                 </button>
             `;
 
-			AspenDiscovery.showMessageWithButtons(
-				'Confirm Halt',
-				modalBody,
-				modalButtons,
-				false,
-				undefined,
-				false,
-				false,
-				true
-			);
+			AspenDiscovery.showMessageWithButtons('Confirm Halt', modalBody, modalButtons, false, undefined, false, false, true);
 
 			return false;
 		},
@@ -240,8 +223,7 @@ AspenDiscovery.NYTManager = (function () {
 				if (statusResponse.success && statusResponse.status && statusResponse.status.isRunning) {
 					// Update is still running, proceed with halt
 					$.getJSON('/Greenhouse/AJAX', {
-						method: 'haltNYTUpdate',
-						logId: logId
+						method: 'haltNYTUpdate', logId: logId
 					}, function (response) {
 						if (response.success) {
 							let message = response.message;
@@ -277,8 +259,7 @@ AspenDiscovery.NYTManager = (function () {
 			settingData[setting] = isChecked;
 
 			$.getJSON('/Greenhouse/AJAX', {
-				method: 'saveNYTSettings',
-				[setting]: isChecked
+				method: 'saveNYTSettings', [setting]: isChecked
 			}, function (response) {
 				if (response.success) {
 					// Refresh the toggle state based on actual server value.
