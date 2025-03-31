@@ -169,10 +169,10 @@ AspenDiscovery.NYTManager = (function () {
 				const controlsHtml = status.haltRequested ?
 					`<button class="btn btn-danger" disabled>
 						<i class="fas fa-stop-circle"></i> Halting...
-				   	</button>` :
+					</button>` :
 					`<button class="btn btn-danger" onclick="return AspenDiscovery.NYTManager.haltNYTUpdate(${status.logId});">
 						<i class="fas fa-stop-circle"></i> Halt Update
-				   	</button>
+					</button>
 				`;
 				$('#nytStatusControls').html(controlsHtml);
 
