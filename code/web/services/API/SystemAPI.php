@@ -597,7 +597,7 @@ class SystemAPI extends AbstractAPI {
 				$fileName = $app->logoAppIcon;
 			} elseif ($type === "appIconAndroid") {
 				//Fall back to the app icon if an android-specific icon isn't provided
-				$fileName = $app->logoAppIconAndroid ?? $app->logoLogin;
+				$fileName = $app->logoAppIconAndroid ?? $app->logoAppIcon;
 			} elseif ($type === "appNotification") {
 				$fileName = $app->logoNotification;
 			} else {
