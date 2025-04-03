@@ -115,4 +115,23 @@ class BookCoverInfo extends DataObject {
 	public function setLastUrlValidation(int $timestamp): void {
 		$this->__set('last_url_validation', $timestamp);
 	}
+
+	/**
+	 * Pull all distinct image sources.
+	 *
+	 * @return array An array of image source names.
+	 */
+	public function getDistinctImageSources(): array {
+		$query = "SELECT DISTINCT imageSource FROM {$this->__table} WHERE imageSource IS NOT NULL AND imageSource != '' ORDER BY imageSource";
+		$result = $this->query($query);
+
+		$sources = [];
+		if ($result) {
+			while ($row = $this->fetchAssoc()) {
+				$sources[] = $row['imageSource'];
+			}
+		}
+
+		return $sources;
+	}
 }

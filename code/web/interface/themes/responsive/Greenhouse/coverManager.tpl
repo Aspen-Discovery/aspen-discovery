@@ -17,56 +17,27 @@
 						<div class="panel-body">
 
 							<form id="coverReloadForm">
+								<h3>{translate text="Cover Sources" isAdminFacing=true}</h3>
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" name="sources[]" value="default"> {translate text="Default Covers" isAdminFacing=true}
+										<input type="checkbox" name="sources[]" value="default"> default
 									</label>
 								</div>
 								<div class="checkbox">
 									<label>
-										<input type="checkbox" name="sources[]" value="syndetics"> {translate text="Syndetics Covers" isAdminFacing=true}
+										<input type="checkbox" name="sources[]" value="upload"> upload
 									</label>
 								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="marcRecord"> {translate text="MARC Record Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="omdb_title"> {translate text="OMDB Title Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="omdb_title_year"> {translate text="OMDB Title + Year Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="coce_amazon"> {translate text="COCE Amazon Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="coce_google_books"> {translate text="COCE Google Books Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="coce_open_library"> {translate text="COCE Open Library Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="overdrive"> {translate text="OverDrive Covers" isAdminFacing=true}
-									</label>
-								</div>
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="sources[]" value="upload"> {translate text="Uploaded Covers" isAdminFacing=true}
-									</label>
-								</div>
+
+								{foreach from=$coverSources item=source}
+									{if $source != 'default' && $source != 'upload'}
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" name="sources[]" value="{$source}"> {$source}
+											</label>
+										</div>
+									{/if}
+								{/foreach}
 
 								<div class="form-group mt-4">
 									<button type="button" id="processCoversBtn" class="btn btn-primary" style="margin-right: 10px;" onclick="return AspenDiscovery.CoverManager.reloadCoverSources();">{translate text="Process Selected Sources" isAdminFacing=true}</button>

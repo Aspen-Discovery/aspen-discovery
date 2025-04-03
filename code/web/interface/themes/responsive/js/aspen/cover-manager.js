@@ -26,7 +26,7 @@ AspenDiscovery.CoverManager = (function () {
 			$coverReloadResult
 				.removeClass('hidden alert-danger alert-success')
 				.addClass('alert-info')
-				.html('<i class="fas fa-spinner fa-spin fa-lg"></i> Processing selected sources. Please wait...');
+				.html('<i class="fas fa-spinner fa-spin fa-lg"></i> Processing selected source(s). Please wait...');
 
 			$processCoversBtn.prop('disabled', true);
 
