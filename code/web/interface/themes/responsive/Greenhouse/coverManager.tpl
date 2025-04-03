@@ -3,7 +3,7 @@
 		<h1 id="pageTitle"> {translate text={$pageTitleShort} isAdminFacing=true}</h1>
 		<div class="adminHomeOptions">
 			<div class="alert alert-info">
-				{translate text="Use this tool to reload covers of different types. For most sources, this will remove the cover information so it will be regenerated the next time it's needed. For uploaded covers, this will mark them for reloading while preserving the uploaded file." isAdminFacing=true}
+				{translate text="Use this tool to reload covers of different types. For most sources, this will remove the cover information so it will be regenerated the next time it's needed. For uploaded covers, this will mark them for reloading while preserving the uploaded file. Note that only sources present in the database will appear in the list below, so some may disappear as they are deleted and may reappear later as they are reloaded." isAdminFacing=true}
 			</div>
 
 			<div id="coverReloadResult" class="alert alert-success hidden"></div>
@@ -47,12 +47,12 @@
 							</form>
 
 							<script type="text/javascript">
-								$(document).ready(function() {
-									$('#selectAll').click(function() {
+								$(function () {
+									$('#selectAll').on('click', function () {
 										$('input[name="sources[]"]').prop('checked', true);
 									});
 
-									$('#deselectAll').click(function() {
+									$('#deselectAll').on('click', function () {
 										$('input[name="sources[]"]').prop('checked', false);
 									});
 								});
