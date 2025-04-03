@@ -116,15 +116,6 @@ for dir in "${directories[@]}"; do
 	echo "%   * Created symlink: $source → $dest"
 done
 
-# Ensure the hostname is only added once
-if ! grep -q "$SITE_NAME" /etc/hosts; then
-    echo "127.0.0.1    $SITE_NAME" >> /etc/hosts
-fi
-
-# Run any pending database updates
-#echo "%   * Triggering pending database updates"
-#curl -v -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
-
 sudo -u www-data	php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php $SITE_NAME >/proc/1/fd/1 2>/proc/1/fd/2
 
 echo "Starting PHP-FPM..."

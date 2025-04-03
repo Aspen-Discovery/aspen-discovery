@@ -123,11 +123,9 @@ try {
 //Copy from docker directory
 	copy("$dockerDir/files/php_fpm/php-fpm.conf",$siteDir . "/conf/php-fpm.conf");
 	copy("$dockerDir/files/cron/crontab", "$siteDir/conf/crontab");
-	copy("$dockerDir/files/apache/data-alias.conf", "$apacheDir/conf-available/data-alias.conf");
 
 	replaceVariables($siteDir . "/conf/php-fpm.conf", $variables);
 	replaceVariables($siteDir . "/conf/crontab", $variables);
-	replaceVariables($apacheDir . "/conf-available/data-alias.conf", $variables);
 
 //Set timezone
 	exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');
