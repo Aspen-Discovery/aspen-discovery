@@ -202,16 +202,15 @@
                                     <td>{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
                                     <td>
                                         {if $campaign.isEnrolled}
-                                            <button class="btn btn-primary btn-sm" aria-label="{translate text="Unenroll user from {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
+                                            <button class="btn btn-primary btn-sm" aria-label="{translate text="Unenroll user from {$campaign.campaignName}" isPublicFacing=true}" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
                                         {else}
-                                            {$campaign.canEnroll}
                                             {if $campaign.canEnroll}
-                                                <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll user into {$campaign->name}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
+                                                <button class="btn btn-primary btn-sm" aria-label="{translate text="Enroll user into {$campaign.campaignName}" isPublicFacing=true}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
                                             {/if}
                                         {/if}
                                     </td>
                                     <td>
-                                        <button class="btn btn-primary btn-sm" aria-label="{translate text="See data for {$campaign->name}" isPublicFacing=true}" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
+                                        <button class="btn btn-primary btn-sm" aria-label="{translate text="See data for {$campaign.campaignName}" isPublicFacing=true}" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
                                     </td>
                                 </tr>
                                 <tr id="linkedUserCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
@@ -241,7 +240,7 @@
                                                         {/if}
                                                     </td>
                                                     <td>
-                                                        {if $milestone.completedGoals <= $milestone->totalGoals}
+                                                        {if $milestone.completedGoals <= $milestone.totalGoals}
                                                             {$milestone.completedGoals} / {$milestone.totalGoals}
                                                         {else}
                                                             {$milestone.totalGoals} / {$milestone.totalGoals}

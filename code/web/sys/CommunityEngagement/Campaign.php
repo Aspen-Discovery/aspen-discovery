@@ -1073,6 +1073,8 @@ class Campaign extends DataObject {
                         $milestoneProgress = CampaignMilestone::getMilestoneProgress($campaign->id, $linkedUser->id, $milestone->id);
                         $completedGoals = $milestoneProgress['completed'];
                         $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
+						$progressData = CampaignMilestoneProgressEntry::getUserProgressDataByMilestoneId($linkedUser->id, $milestone->id, $campaign->id);
+
 
                         if ($milestoneProgress['progress'] == 100) {
                             $numCompletedMilestones++;
@@ -1092,7 +1094,8 @@ class Campaign extends DataObject {
                             'extraProgress' => $milestoneProgress['extraProgress'],
                             'completedGoals' => $completedGoals,
                             'totalGoals' => $totalGoals,
-                            'progressData' => $milestoneProgress['data'],
+                            'progressData' => $progressData,
+                            // 'progressData' => $milestoneProgress['data'],
                             'progressBeyondOneHundredPercent' => $milestone->progressBeyondOneHundredPercent,
                             'allowPatronProgressInput' => $milestone->allowPatronProgressInput
                         ];
