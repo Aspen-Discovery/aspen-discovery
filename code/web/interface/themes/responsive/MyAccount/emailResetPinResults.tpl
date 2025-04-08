@@ -10,6 +10,9 @@
 					</div>
 				{elseif !empty($result.message)}
 					<div class="alert alert-success">{$result.message}</div>{* Translation should be done prior to display *}
+					<p class="alert alert-warning">
+						{translate text="If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin." isPublicFacing=true}
+					</p>
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in' isPublicFacing=true}</a>
 					</p>
