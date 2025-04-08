@@ -8,6 +8,7 @@ class ProPaySetting extends DataObject {
 	public $id;
 	public $name;
 	public $useTestSystem;
+	public $forceDebugLog;
 	public $authenticationToken;
 	public $billerAccountId;
 	public $merchantProfileId;
@@ -40,6 +41,14 @@ class ProPaySetting extends DataObject {
 				'label' => 'Use Test System',
 				'description' => 'Whether or not users to use ProPay test system',
 				'hideInLists' => true,
+			],
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'authenticationToken' => [
 				'property' => 'authenticationToken',

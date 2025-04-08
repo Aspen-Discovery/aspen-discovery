@@ -6,6 +6,7 @@ class SquareSetting extends DataObject {
 	public $id;
 	public $name;
 	public $sandboxMode;
+	public $forceDebugLog;
 	public $applicationId;
 	public $accessToken;
 	public $locationId;
@@ -36,6 +37,14 @@ class SquareSetting extends DataObject {
 				'description' => 'Whether or not to use Square in Sandbox mode',
 				'hideInLists' => false,
 				'note' => 'This is for testing only! No funds will be received by the library.',
+			],
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'applicationId' => [
 				'property' => 'applicationId',

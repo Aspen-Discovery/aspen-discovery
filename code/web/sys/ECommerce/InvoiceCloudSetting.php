@@ -10,6 +10,7 @@ class InvoiceCloudSetting extends DataObject {
 	public $apiKey;
 	public $invoiceTypeId;
 	public $ccServiceFee;
+	public $forceDebugLog;
 
 	private $_libraries;
 
@@ -58,6 +59,15 @@ class InvoiceCloudSetting extends DataObject {
 				'hideInLists' => true,
 				'maxLength' => 50,
 			],
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',

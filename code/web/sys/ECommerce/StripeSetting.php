@@ -5,6 +5,7 @@ class StripeSetting extends DataObject {
 	public $__table = 'stripe_settings';
 	public $id;
 	public $name;
+	public $forceDebugLog;
 	public $stripePublicKey;
 	public $stripeSecretKey;
 
@@ -44,6 +45,14 @@ class StripeSetting extends DataObject {
 				'hideInLists' => true,
 				'default' => '',
 				'size' => 100,
+			],
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => true,
 			],
 			'libraries' => [
 				'property' => 'libraries',
@@ -154,6 +163,12 @@ class StripeSetting extends DataObject {
 
 		$url = $baseUrl . '/v1/payment_intents';
 		$paymentIntent = $paymentIntentSetup->curlPostPage($url, $postParams);
+
+		$forceDebugLog = $this->forceDebugLog;
+		if (IPAddress::showDebuggingInformation() || $forceDebugLog){
+			ExternalRequestLogEntry::logRequest('stripeSettings.createPaymentIntent', 'POST', $url, $paymentIntentSetup->getHeaders(), json_encode($postParams), $paymentIntentSetup->getResponseCode(), $paymentIntent, []);
+		}
+
 		return json_decode($paymentIntent, true);
 	}
 
@@ -180,6 +195,11 @@ class StripeSetting extends DataObject {
 		], true);
 
 		$paymentTransaction = $paymentRequest->curlPostBodyData($url, null);
+
+		$forceDebugLog = $this->forceDebugLog;
+		if (IPAddress::showDebuggingInformation() || $forceDebugLog){
+			ExternalRequestLogEntry::logRequest('stripeSettings.createPaymentIntent', 'POST', $url, $paymentRequest->getHeaders(),'', $paymentRequest->getResponseCode(), $paymentTransaction, []);
+		}
 
 		$paymentResponse = json_decode($paymentTransaction, true);
 		if ($paymentRequest->getResponseCode() == 200) {

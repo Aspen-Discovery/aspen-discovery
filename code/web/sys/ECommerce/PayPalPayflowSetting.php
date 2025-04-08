@@ -10,6 +10,7 @@ class PayPalPayflowSetting extends DataObject {
 	public $vendor;
 	public $user;
 	public $password;
+	public $forceDebugLog;
 
 	private $_libraries;
 
@@ -75,7 +76,15 @@ class PayPalPayflowSetting extends DataObject {
 				'default' => '',
 				'size' => 72,
 			],
-
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
