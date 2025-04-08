@@ -3437,15 +3437,28 @@ class Koha extends AbstractIlsDriver {
 
 		$username = isset($_REQUEST['username']) ? strip_tags($_REQUEST['username']) : '';
 		$email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
+		// Check if this is a resend email request from the form shown to the user.
+		$isResendRequest = isset($_REQUEST['op']) && $_REQUEST['op'] === 'cud-resendEmail';
+
 		if ($kohaVersion >= 24.05) {
-			$postVariables = [
-				'koha_login_context' => 'opac',
-				'username' => $username,
-				'email' => $email,
-				'op' => 'cud-sendEmail',
-				'csrf_token' => $csrfToken
-			];
-		}else{
+			if ($isResendRequest) {
+				$postVariables = [
+					'koha_login_context' => 'opac',
+					'username' => $username,
+					'email' => $email,
+					'op' => 'cud-resendEmail',
+					'csrf_token' => $csrfToken
+				];
+			} else {
+				$postVariables = [
+					'koha_login_context' => 'opac',
+					'username' => $username,
+					'email' => $email,
+					'op' => 'cud-sendEmail',
+					'csrf_token' => $csrfToken
+				];
+			}
+		} else {
 			$postVariables = [
 				'koha_login_context' => 'opac',
 				'username' => $username,
@@ -3458,7 +3471,6 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl', $postVariables);
-
 		$messageInformation = [];
 		if ($postResults == 'Internal Server Error') {
 			if (isset($_REQUEST['resendEmail'])) {
@@ -3478,14 +3490,25 @@ class Koha extends AbstractIlsDriver {
 				$error = str_replace('<h3>', '<h4>', $error);
 				$error = str_replace('</h3>', '</h4>', $error);
 				$error = str_replace('/cgi-bin/koha/opac-password-recovery.pl', '/MyAccount/EmailResetPin', $error);
-				if ($kohaVersion >= 24.05) {
-					$error = str_replace('#', '/MyAccount/EmailResetPin', $error);
+
+				if (preg_match('/<a href="#" id="resendmail">Get new password recovery link<\/a>.*?<form method="post" id="resendform".*?<input type="hidden" name="email" value="(.*?)" \/>.*?<input type="hidden" name="username" value="(.*?)" \/>/s', $error, $resendMatches)) {
+					$email = $resendMatches[1];
+					$username = $resendMatches[2];
+					$resendLink = '/MyAccount/EmailResetPin?username=' . urlencode($username) . '&email=' . urlencode($email) . '&op=cud-resendEmail&submit=true';
+
+					// Replace both the link and the form so PHP does not interpret the hidden form inputs as a form submission.
+					$error = preg_replace('/<a href="#" id="resendmail">Get new password recovery link<\/a>.*?<\/form>/s',
+						'<a href="' . $resendLink . '">Get new password recovery link</a>',
+						$error);
 				}
 				$result['error'] = trim($error);
 			} elseif (preg_match('%<div id="password-recovery">\s+<div class="alert alert-info">(.*?)<a href="/cgi-bin/koha/opac-main.pl">Return to the main page</a>\s+</div>\s+</div>%s', $postResults, $messageInformation)) {
 				$message = $messageInformation[1];
 				$result['success'] = true;
-				$result['message'] = trim($message);
+				$result['message'] = translate([
+					'text' => trim($message),
+					'isPublicFacing' => true,
+				]);
 			}
 		}
 
