@@ -12,12 +12,15 @@ class MyAccount_EmailResetPinResults extends Action {
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-		if($_REQUEST['success']) {
+		if(isset($_REQUEST['success']) && $_REQUEST['success']) {
 			$result['success'] = true;
+			if(!empty($_REQUEST['message'])) {
+				$result['message'] = $_REQUEST['message'];
+			}
 		} else {
 			$result['success'] = false;
 			$result['error'] = '';
-			if($_REQUEST['error']) {
+			if(isset($_REQUEST['error']) && $_REQUEST['error']) {
 				$result['error'] = $_REQUEST['error'];
 			}
 		}
