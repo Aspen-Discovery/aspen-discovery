@@ -5037,18 +5037,21 @@ class MyAccount_AJAX extends JSON_Action {
 				"Accept-Language: en_US",
 				"Authorization: Basic $authInfo",
 			], true);
-			$postParams = ['grant_type' => 'client_credentials',];
+			$postParams = ['grant_type' => 'client_credentials'];
 
 			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
 			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
+			$decodedAccessTokenResults = json_decode($accessTokenResults);
+
+			ExternalRequestLogEntry::logRequest('myaccount_ajax.createPayPalOrder', 'POST', $accessTokenUrl, $payPalAuthRequest->getHeaders(), json_encode($postParams), $payPalAuthRequest->getResponseCode(), $accessTokenResults, ['client_secret' => $clientSecret]);
+		
+			if (empty($decodedAccessTokenResults->access_token)) {
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.',
 				];
 			} else {
-				$accessToken = $accessTokenResults->access_token;
+				$accessToken = $decodedAccessTokenResults->access_token;
 			}
 
 			global $library;
@@ -5081,9 +5084,11 @@ class MyAccount_AJAX extends JSON_Action {
 			];
 
 			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-			$paymentResponse = json_decode($paymentResponse);
-
-			if ($paymentResponse->status != 'CREATED') {
+			$decodedPaymentResponse = json_decode($paymentResponse);
+			
+			ExternalRequestLogEntry::logRequest('myaccount_ajax.createPayPalOrder', 'POST', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(), json_encode($postParams), $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
+			
+			if ($decodedPaymentResponse->status != 'CREATED') {
 				return [
 					'success' => false,
 					'message' => 'Unable to create your order in PayPal.',
@@ -5091,13 +5096,13 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			//Log the request in the database so we can validate it on return
-			$payment->orderId = $paymentResponse->id;
+			$payment->orderId = $decodedPaymentResponse->id;
 			$payment->update();
 
 			return [
 				'success' => true,
 				'orderInfo' => $paymentResponse,
-				'orderID' => $paymentResponse->id,
+				'orderID' => $decodedPaymentResponse->id,
 			];
 		}
 	}
@@ -5176,18 +5181,21 @@ class MyAccount_AJAX extends JSON_Action {
 				"Accept-Language: en_US",
 				"Authorization: Basic $authInfo",
 			], true);
-			$postParams = ['grant_type' => 'client_credentials',];
+			$postParams = ['grant_type' => 'client_credentials'];
 
 			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
 			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
+			$decodedAccessTokenResults = json_decode($accessTokenResults);
+			
+			ExternalRequestLogEntry::logRequest('myaccount_ajax.completePayPalOrder', 'POST', $accessTokenUrl, $payPalAuthRequest->getHeaders(), json_encode($postParams), $payPalAuthRequest->getResponseCode(), $accessTokenResults, ['client_secret' => $clientSecret]);
+			
+			if (empty($decodedAccessTokenResults->access_token)) {
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.',
 				];
 			} else {
-				$accessToken = $accessTokenResults->access_token;
+				$accessToken = $decodedAccessTokenResults->access_token;
 			}
 
 			$payPalPaymentRequest = new CurlWrapper();
@@ -5201,9 +5209,11 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
 
 			$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
-			$paymentResponse = json_decode($paymentResponse);
+			$decodedPaymentResponse = json_decode($paymentResponse);
 
-			$purchaseUnits = $paymentResponse->purchase_units;
+			ExternalRequestLogEntry::logRequest('myaccount_ajax.completePayPalOrder', 'GET', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(),'', $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
+
+			$purchaseUnits = $decodedPaymentResponse->purchase_units;
 			if (!empty($purchaseUnits)) {
 				$firstItem = reset($purchaseUnits);
 				$payments = $firstItem->payments;
@@ -5406,9 +5416,12 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$paymentUrl = $baseUrl . '/v2/payments';
 				$paymentRequestResults = $paymentRequest->curlPostBodyData($paymentUrl, $body);
-				$paymentRequestResults = json_decode($paymentRequestResults);
-				if ($paymentRequestResults->payment) {
-					$paymentResults = $paymentRequestResults->payment;
+				$decodedPaymentRequestResults = json_decode($paymentRequestResults);
+
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.completeSquareOrder', 'POST', $paymentUrl, $paymentRequest->getHeaders(), json_encode($body), $paymentRequest->getResponseCode(), $paymentRequestResults, []);
+				
+				if ($decodedPaymentRequestResults->payment) {
+					$paymentResults = $decodedPaymentRequestResults->payment;
 					if ($paymentResults->status == 'COMPLETED' || $paymentResults->status == 'APPROVED') {
 						if ($transactionType == 'donation') {
 							$payment->completed = 1;
@@ -5459,7 +5472,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 					}
 				} else {
-					$error = $paymentRequestResults->error;
+					$error = $decodedPaymentRequestResults->error;
 					$payment->error = 1;
 					$payment->message = $error->detail;
 					$payment->update();
@@ -5810,6 +5823,9 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$createPayerResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createPayer));
+
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($createPayer), $curlWrapper->getResponseCode(), $createPayerResponse, []);
+
 					if ($createPayerResponse && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($createPayerResponse);
 						if ($patron != null) {
@@ -5849,6 +5865,9 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$createMerchantProfileResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createMerchantProfile));
+						
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($createMerchantProfile), $curlWrapper->getResponseCode(), $createMerchantProfileResponse, []);
+
 					if ($createMerchantProfileResponse && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($createMerchantProfileResponse);
 						$proPaySetting->merchantProfileId = $jsonResponse->ProfileId;
@@ -5902,6 +5921,9 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 
 					$response = $curlWrapper->curlSendPage($url, 'PUT', json_encode($requestElements));
+
+					ExternalRequestLogEntry::logRequest('myaccount_ajax.createpropayorder', 'PUT', $url, $curlWrapper->getHeaders(), json_encode($requestElements), $curlWrapper->getResponseCode(), $response, []);
+
 					if ($response && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($response);
 						$transactionIdentifier = $jsonResponse->HostedTransactionIdentifier;
@@ -6229,8 +6251,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$resultJSON = $newRedirectRequest->curlPostBodyData($url, $postParams, true);
 				$result = json_decode($resultJSON);
-				ExternalRequestLogEntry::logRequest('ncr.createNCROrder', 'POST', $url, $newRedirectRequest->getHeaders(), json_encode($postParams), $newRedirectRequest->getResponseCode(), $resultJSON, []);
 
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.createNCROrder', 'POST', $url, $newRedirectRequest->getHeaders(), json_encode($postParams), $newRedirectRequest->getResponseCode(), $resultJSON, []);
+			
 				if ($result->status != "ok") {
 					return [
 						'success' => false,
@@ -6482,8 +6505,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$tokenResults = $payflowTokenRequest->curlSendPage($tokenRequestUrl, 'POST', $params);
 			$tokenResults = PayPalPayflowSetting::parsePayflowString($tokenResults);
+
 			if ($tokenResults['RESULT'] != 0) {
-				ExternalRequestLogEntry::logRequest('getPayflowToken', 'POST', $tokenRequestUrl, $payflowTokenRequest->getHeaders(), $params, $payflowTokenRequest->getResponseCode(), $tokenResults, []);
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.getPayflowToken', 'POST', $tokenRequestUrl, $payflowTokenRequest->getHeaders(), $params, $payflowTokenRequest->getResponseCode(), $tokenResults, []);
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with Payflow, please try again in a few minutes.',
@@ -6698,8 +6722,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$url = 'https://www.invoicecloud.com/api/v1/biller/status';
 				$authResponse = $authRequest->curlGetPage($url);
-				$authResponse = json_decode($authResponse);
-				if (!$authResponse->Active) {
+				$decodedAuthResponse = json_decode($authResponse);
+
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.createInvoiceCloudOrder','GET', $url, $authRequest->getHeaders(),'', $authRequest->getResponseCode(), $authResponse, []);
+
+				if (!$decodedAuthResponse->Active) {
 					return [
 						'success' => false,
 						'message' => 'Unable to create your order in InvoiceCloud. Library has an inactive account.'
@@ -6745,14 +6772,17 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$url = 'https://www.invoicecloud.com/cloudpaymentsapi/v2';
 				$paymentResponse = $paymentRequest->curlPostBodyData($url, $postParams);
-				$paymentResponse = json_decode($paymentResponse);
-				if ($paymentResponse->Message != 'SUCCESS') {
+				$decodedPaymentResponse = json_decode($paymentResponse);
+
+				ExternalRequestLogEntry::logRequest('myaccount_ajax.createInvoiceCloudOrder','POST', $url, $paymentRequest->getHeaders(),json_encode($postParams), $paymentRequest->getResponseCode(), $paymentRegitsponse, []);
+
+				if ($decodedPaymentResponse->Message != 'SUCCESS') {
 					return [
 						'success' => false,
-						'message' => 'Unable to create your order in InvoiceCloud. ' . $paymentResponse->Message
+						'message' => 'Unable to create your order in InvoiceCloud. ' . $decodedPaymentResponse->Message
 					];
 				}
-				$paymentRequestUrl = $paymentResponse->Data->CloudPaymentURL;
+				$paymentRequestUrl = $decodedPaymentResponse->Data->CloudPaymentURL;
 
 				return [
 					'success' => true,

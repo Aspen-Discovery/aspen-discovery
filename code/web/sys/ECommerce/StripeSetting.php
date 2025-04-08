@@ -163,12 +163,9 @@ class StripeSetting extends DataObject {
 
 		$url = $baseUrl . '/v1/payment_intents';
 		$paymentIntent = $paymentIntentSetup->curlPostPage($url, $postParams);
-
-		$forceDebugLog = $this->forceDebugLog;
-		if (IPAddress::showDebuggingInformation() || $forceDebugLog){
-			ExternalRequestLogEntry::logRequest('stripeSettings.createPaymentIntent', 'POST', $url, $paymentIntentSetup->getHeaders(), json_encode($postParams), $paymentIntentSetup->getResponseCode(), $paymentIntent, []);
-		}
-
+	
+		ExternalRequestLogEntry::logRequest('myaccount_ajax.createPaymentIntent', 'POST', $url, $paymentIntentSetup->getHeaders(), json_encode($postParams), $paymentIntentSetup->getResponseCode(), $paymentIntent, []);
+		
 		return json_decode($paymentIntent, true);
 	}
 

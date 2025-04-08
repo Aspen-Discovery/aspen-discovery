@@ -401,10 +401,7 @@ class ACISpeedpaySetting extends DataObject {
 
 		$paymentTransaction = $paymentRequest->curlPostBodyData($url, $postData);
 
-		$forceDebugLog = $this->forceDebugLog;
-		if (IPAddress::showDebuggingInformation() || $forceDebugLog){
-			ExternalRequestLogEntry::logRequest('aciSpeedPaySetting', 'POST', $url, $paymentRequest->getHeaders(), json_encode($postData), $paymentRequest->getResponseCode(), $paymentTransaction, []);
-		}
+		ExternalRequestLogEntry::logRequest('myaccount_ajax.aciSpeedPaySetting', 'POST', $url, $paymentRequest->getHeaders(), json_encode($postData), $paymentRequest->getResponseCode(), $paymentTransaction, []);
 
 		$paymentResponse = json_decode($paymentTransaction, true);
 		if ($paymentRequest->getResponseCode() == 200) {

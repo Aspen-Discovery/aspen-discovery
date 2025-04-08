@@ -248,7 +248,7 @@ class UserPayment extends DataObject {
 							if ($hostedTransactionResultsResponse && $curlWrapper->getResponseCode() == 200) {
 								$jsonResponse = json_decode($hostedTransactionResultsResponse);
 							}
-							ExternalRequestLogEntry::logRequest('ncr.completeNCROrder', 'GET', $url, $curlWrapper->getHeaders(), false, $curlWrapper->getResponseCode(), $hostedTransactionResultsResponse, []);
+							ExternalRequestLogEntry::logRequest('myaccount_ajax.completeNCROrder', 'GET', $url, $curlWrapper->getHeaders(), false, $curlWrapper->getResponseCode(), $hostedTransactionResultsResponse, []);
 
 							if ($jsonResponse->status == "ok") {
 								if($userPayment->transactionType == 'donation') {
@@ -506,6 +506,9 @@ class UserPayment extends DataObject {
 							'Authorization: ' . $authorization,
 						], true);
 						$hostedTransactionResultsResponse = $curlWrapper->curlGetPage($url);
+
+						ExternalRequestLogEntry::logRequest('myaccount_ajax.completeProPayPayment', 'GET', $url, $curlWrapper->getHeaders(),"", $curlWrapper->getResponseCode(), $hostedTransactionResultsResponse, []);
+						
 						$jsonResponse = null;
 						if ($hostedTransactionResultsResponse && $curlWrapper->getResponseCode() == 200) {
 							$jsonResponse = json_decode($hostedTransactionResultsResponse);
