@@ -95,7 +95,7 @@ class ExternalRequestLogEntry extends DataObject {
 	 */
 	static function logRequest(string $requestType, string $method, string $url, $headers, string $body, string $responseCode, ?string $response, array $dataToSanitize) {
 		try {
-			if (IPAddress::showDebuggingInformation()) {
+			if (IPAddress::showDebuggingInformation() || (self::getForceDebuggingLogStatus() && str_starts_with($requestType,"myaccount_ajax"))) {
 				require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
 				$externalRequest = new ExternalRequestLogEntry();
 				$externalRequest->requestType = $requestType;
@@ -122,6 +122,88 @@ class ExternalRequestLogEntry extends DataObject {
 			global $logger;
 			$logger->log("Error logging request " . $e->getMessage(), Logger::LOG_ERROR);
 		}
+	}
+
+	/**
+	 * Get the status of the toggle 'Force Debugging Log' for a set ecommerce application.
+	 * 
+	 * @return  bool     True if 'Force Debugging Log' is enabled for that ecommerce or False if not.
+	 * @access  private
+	 */
+	private static function getForceDebuggingLogStatus(){
+		
+		global $library;
+		$finePaymentType = $library->finePaymentType;
+		$settings = null;
+		$status = false;
+
+		switch($finePaymentType){
+			case 2:
+				require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+				$settings = new PayPalSetting();
+				$settings->id = $library->payPalSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 5:
+				require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+				$settings = new ProPaySetting();
+				$settings->id = $library->proPaySettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 8:
+				require_once ROOT_DIR . '/sys/ECommerce/ACISpeedpaySetting.php';
+				$settings = new ACISpeedpaySetting();
+				$settings->id = $library->aciSpeedpaySettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 9:
+				require_once ROOT_DIR . '/sys/ECommerce/InvoiceCloudSetting.php';
+				$settings = new InvoiceCloudSetting();
+				$settings->id = $library->invoiceCloudSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				};
+				break;
+			case 11:
+				require_once ROOT_DIR . '/sys/ECommerce/PayPalPayflowSetting.php';
+				$settings = new PayPalPayflowSetting();
+				$settings->id = $library->paypalPayflowSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 12:
+				require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+				$settings = new SquareSetting();
+				$settings->id = $library->squareSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 13:
+				require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+				$settings = new StripeSetting();
+				$settings->id = $library->stripeSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+			case 14:
+				require_once ROOT_DIR . '/sys/ECommerce/NCRPaymentsSetting';
+				$settings = new NCRPaymentsSetting();
+				$settings->id = $library->ncrSettingId;
+				if($settings->find(true)){
+					$status = $settings->forceDebugLog;
+				}
+				break;
+		}
+		return $status;
 	}
 
 	private static function sanitize($field, $dataToSanitize) {
