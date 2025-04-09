@@ -3890,6 +3890,18 @@ class SirsiDynixROA extends HorizonAPI {
 						'text' => 'Check Out successful',
 						'isPublicFacing' => true,
 					]);
+
+					$checkouts = $this->getCheckouts($patron);
+					foreach ($checkouts as $checkout) {
+						if ($checkout->barcode == $barcode) {
+							$result['itemData'] = [
+								'title' => $checkout->getTitle(),
+								'due' => date('M j Y', $checkout->dueDate),
+								'barcode' => $barcode,
+							];
+							break;
+						}
+					}
 				}
 
 				$result['api']['message'] = $checkOutMessage;
@@ -3927,6 +3939,18 @@ class SirsiDynixROA extends HorizonAPI {
 			'itemData' => []
 		];
 
+		//Find the item in the list of checkouts
+		$checkouts = $this->getCheckouts($patron);
+		foreach ($checkouts as $checkout) {
+			if ($checkout->barcode == $barcode) {
+				$result['itemData'] = [
+					'title' => $checkout->getTitle(),
+					'barcode' => $barcode,
+				];
+				break;
+			}
+		}
+
 		//Find the correct stat group to use
 		$doCheckout = false;
 		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
@@ -3941,7 +3965,6 @@ class SirsiDynixROA extends HorizonAPI {
 			$doCheckIn = true;
 		}else {
 			$doCheckIn = true;
-
 		}
 
 		if ($doCheckIn) {
