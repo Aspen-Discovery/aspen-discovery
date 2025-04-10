@@ -13,7 +13,7 @@ class MyAccount_EmailResetPin extends Action {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		if (isset($_REQUEST['submit'])) {
 			$emailResult = $catalog->processEmailResetPinForm();
-			header('Location: /MyAccount/EmailResetPinResults?success=' . $emailResult['success'] . '&error=' . urlencode($emailResult['error']) ?? '');
+			header('Location: /MyAccount/EmailResetPinResults?success=' . $emailResult['success'] . '&error=' . urlencode($emailResult['error'] ?? '') . '&message=' . urlencode($emailResult['message'] ?? ''));
 		} else {
 			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'), '');
 		}
