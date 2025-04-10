@@ -1466,8 +1466,8 @@ public class GroupedWorkIndexer {
 						} else {
 							// Add the series first
 							String[] displayTitle = groupedWork.seriesWithVolume.get(seriesNameWithVolume).split("\\|");
-							addSeriesStmt.setString(1, AspenStringUtils.trimTo(750, displayTitle[0])); //displayTitle (user can edit)
-							addSeriesStmt.setString(6,  AspenStringUtils.trimTo(750, displayTitle[0])); //groupedWorkSeriesTitle (to match on)
+							addSeriesStmt.setString(1, AspenStringUtils.trimTo(500, displayTitle[0])); //displayTitle (user can edit)
+							addSeriesStmt.setString(6,  AspenStringUtils.trimTo(500, displayTitle[0])); //groupedWorkSeriesTitle (to match on)
 							addSeriesStmt.setString(2, groupedWork.getTargetAudiencesAsString());
 							addSeriesStmt.setLong(3, timeNow);
 							addSeriesStmt.setLong(4, timeNow);
