@@ -33,6 +33,9 @@
 				{/if}
 				{if !empty($userHasCatalogConnection)}
 					<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
+					{if array_key_exists('Community Engagement', $enabledModules) && $highlightCommunityEngagement}
+						{include file='campaign-highlight.tpl'}
+					{/if}
 					{if !empty($offline)}
 						<div>
 							<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
@@ -77,7 +80,7 @@
 							</div>
 						</div>
 					</div>
-					{if array_key_exists('Community Engagement', $enabledModules)}
+					{if array_key_exists('Community Engagement', $enabledModules) && !$highlightCommunityEngagement}
 						<div class="row">
 							<div class="col-sm-12">&nbsp;</div>
 						</div>

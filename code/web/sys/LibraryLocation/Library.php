@@ -67,6 +67,7 @@ class Library extends DataObject {
 	public $headerText;
 	public $footerText;
 	public $systemMessage;
+	public $highlightCommunityEngagement;
 
 	//Explore More Bar Display
 	public $displayExploreMoreBarInSummon;
@@ -1068,6 +1069,15 @@ class Library extends DataObject {
 						'description' => 'Whether to display the language and display settings in the page header',
 						'hideInLists' => true,
 						'default' => true,
+						'permissions' => ['Library Theme Configuration'],
+					],
+					'highlightCommunityEngagement' => [
+						'property' => 'highlightCommunityEngagement',
+						'type' => 'checkbox',
+						'label' => 'Highlight Campaign in Account Page',
+						'description' => 'Whether or not to add a box highlighting campaigns to the top of the account page.',
+						'hideInLists' => true,
+						'default' => false,
 						'permissions' => ['Library Theme Configuration'],
 					],
 					'themes' => [
