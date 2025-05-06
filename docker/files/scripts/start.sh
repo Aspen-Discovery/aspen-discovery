@@ -116,6 +116,12 @@ for dir in "${directories[@]}"; do
 	echo "%   * Created symlink: $source → $dest"
 done
 
+# Check if data-alias.conf is enabled 
+file="/etc/apache2/conf-enabled/data-alias.conf"
+if [ ! -f "$file"  ]; then
+	a2enconf data-alias
+fi
+
 echo "%   * Starting Apache"
 # Start apache
 service apache2 start
