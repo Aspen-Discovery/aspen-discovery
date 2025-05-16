@@ -16,8 +16,8 @@
 						<div class="col-lg-12 itemLocationDetails" data-shelfLocation="{$item.shelfLocation|escape:"javascript"}" data-subLocation="{$item.subLocation|escape:"javascript"}" data-callNumber="{$item.callNumber|escape:"javascript"}">
 							<span class="notranslate" >{if empty($item.isEContent)}<strong>{$item.shelfLocation}</strong>{/if}
 							<br>{$item.callNumber}
-								<br>{if $item.availableCopies < 999}
-									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
+							<br>{if $item.availableCopies < 999}
+									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}{if !empty($item.statusFull)} &mdash; {translate text=$item.statusFull isPublicFacing=true}{/if}
 								{/if}
 							</span>
 						</div>
