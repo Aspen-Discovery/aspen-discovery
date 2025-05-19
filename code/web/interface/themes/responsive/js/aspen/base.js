@@ -45,7 +45,19 @@ var AspenDiscovery = (function(){
 			}
 		});
 
+		// Handle search box clear button visibility.
+		const $lookfor = aspenJQ("#lookfor");
+		const $clearAddon = $lookfor.siblings('.clear-search');
 
+		$lookfor.on("input", function() {
+			if (aspenJQ(this).val().length > 0) {
+				$clearAddon.css('display', 'block');
+			} else {
+				$clearAddon.css('display', 'none');
+			}
+		});
+		// Set initial visibility.
+		$lookfor.trigger("input");
 	});
 
 	return {
@@ -88,14 +100,17 @@ var AspenDiscovery = (function(){
 
 		changeSort: function(){
 			var url = window.location.href;
-			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
-				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + aspenJQ("#sort").val());
+			if (url.match(/[&?]sort=([A-Za-z_+]|%20)+/)) {
+				url = url.replace(/sort=([A-Za-z_+]|%20)+/, "sort=" + aspenJQ("#sort").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
 					url = url+ "&sort=" + aspenJQ("#sort").val();
 				}else{
 					url = url+ "?sort=" + aspenJQ("#sort").val();
 				}
+			}
+			if (url.match(/[&?]page=(\d)+/)) {
+				url = url.replace(/page=(\d)+/, "page=1");
 			}
 			window.location.href = url;
 			return false;
@@ -714,7 +729,11 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		resetSearchBox: function() {
-			document.getElementById("lookfor").value = "";
+			const $lookfor = aspenJQ("#lookfor");
+			$lookfor.val("");
+			$lookfor.trigger("focus");
+			$lookfor.siblings('.clear-search').css('display', 'none');
+			return false;
 		},
 		autoOpenPanel: function() {
 			var hash = window.location.hash.substr(1);

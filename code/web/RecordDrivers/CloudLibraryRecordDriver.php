@@ -28,9 +28,9 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	}
 
 	/**
-	 * @return File_MARC_Record
+	 * @return ?File_MARC_Record
 	 */
-	public function getMarcRecord() {
+	public function getMarcRecord(): ?File_MARC_Record {
 		if ($this->marcRecord == null) {
 			$marcData = $this->cloudLibraryProduct->rawResponse;
 			$marcRecordList = new File_MARC($marcData, File_MARC::SOURCE_STRING);

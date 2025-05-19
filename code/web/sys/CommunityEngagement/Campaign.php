@@ -742,22 +742,24 @@ class Campaign extends DataObject {
        if (!$campaignId) {
         return [];
        }
+
        $userCampaign->whereAdd("campaignId = '$campaignId'");
        $userCampaign->find();
        while ($userCampaign->fetch()) {
         $userCampaignRecords[] = clone $userCampaign;
        }
+
        foreach ($userCampaignRecords as $userCampaignRecord) {
-		if ($userCampaignRecord->optInToCampaignLeaderboard != 1) {
+        $user = new User();
+    	$user->id = $userCampaignRecord->userId;
+		if (!$user->find(true)) {
+			return;
+		}
+
+		if ($userCampaignRecord->optInToCampaignLeaderboard === 0 ||($userCampaignRecord->optInToCampaignLeaderboard === null && $user->optInToAllCampaignLeaderboards === 0)) {
 			continue;
 		}
             $milestoneCompletionStatus = $userCampaignRecord->checkMilestoneCompletionStatus();
-            $userId = $userCampaignRecord->userId;
-            $user = new User();
-            $user->id = $userId;
-            if (!$user->find(true)) {
-                continue;
-            }
             $completedMilestones = count(array_filter($milestoneCompletionStatus, function($status) {
                 return $status === true;
             }));
@@ -788,6 +790,7 @@ class Campaign extends DataObject {
        }
        return $leaderboard;
     }
+	
     private function getRankDisplayed($completedMilestones) {
         $suffix = 'th';
         if ($completedMilestones % 10 == 1 && $completedMilestones % 100 != 11) {

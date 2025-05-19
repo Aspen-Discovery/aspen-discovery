@@ -13,7 +13,7 @@ class CloudLibrary_IndexingLog extends Admin_IndexingLog {
 	}
 
 	public function getTitle(): string {
-		return 'cloudLibrary Export Log';
+		return 'CloudLibrary Export Log';
 	}
 
 	function getModule(): string {

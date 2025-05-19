@@ -28,8 +28,8 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 		super(groupedWorkIndexer, "cloud_library", dbConn, logger);
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT * from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getAvailabilityStmt = dbConn.prepareStatement("SELECT * from cloud_library_availability where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT * FROM cloud_library_title WHERE cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAvailabilityStmt = dbConn.prepareStatement("SELECT * FROM cloud_library_availability WHERE cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up cloudLibrary processor", e);
 		}

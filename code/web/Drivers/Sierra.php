@@ -1470,17 +1470,95 @@ class Sierra extends Millennium {
 		$summary->resetCounters();
 		$patronInfo = $this->getPatronInfoByBarcode($patron->getBarcode());
 		if ($patronInfo) {
-			$checkouts = $this->getCheckouts($patron);
-			$summary->numCheckedOut = count($checkouts);
-			foreach ($checkouts as $checkout) {
-				if ($checkout->isOverdue()) {
-					$summary->numOverdue++;
+			//To save time, we don't want to load full details on the checkouts. Instead we can call the APIs just to get counts
+			$numCheckoutsProcessed = 0;
+			$numOverdue = 0;
+			$totalCheckouts = -1;
+
+			while ($numCheckoutsProcessed < $totalCheckouts || $totalCheckouts == -1) {
+				$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id . "/checkouts?fields=default&limit=100&offset={$numCheckoutsProcessed}";
+				$checkouts = $this->_callUrl('sierra.getCheckouts', $sierraUrl);
+				if ($totalCheckouts == -1) {
+					$totalCheckouts = $checkouts->total;
+				}
+				foreach ($checkouts->entries as $i => $entry) {
+					$checkoutDueDate = strtotime($entry->dueDate);
+					$dueDate = strtotime('midnight', $checkoutDueDate);
+					$today = strtotime('midnight');
+					$daysUntilDue = ceil(($dueDate - $today) / (24 * 60 * 60));
+					$overdue = $daysUntilDue < 0;
+					if ($overdue) {
+						$numOverdue++;
+					}
+				}
+				$numCheckoutsProcessed += $checkouts->total;
+			}
+			$summary->numCheckedOut = $totalCheckouts;
+			$summary->numOverdue = $numOverdue;
+
+			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id . "/holds?fields=default&limit=1000";
+			$holds = $this->_callUrl('sierra.getHolds', $sierraUrl);
+			$numAvailableHolds = 0;
+			$numUnavailableHolds = 0;
+			if ($holds->total > 0) {
+				foreach ($holds->entries as $sierraHold) {
+					$available = false;
+					$isInnReach = false;
+					$recordStatus = $sierraHold->status->code;
+					// check item record status
+					if (preg_match($this->urlIdRegExp, $sierraHold->record, $m)) {
+						$recordId = $m[1];
+					} else {
+						$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
+					}
+					if ($sierraHold->recordType == 'i') {
+						$recordItemStatus = $sierraHold->status->code;
+						// If this is an inn-reach exclude from check -- this comes later
+						if (!str_contains($recordId, "@")) {
+							// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+							// the "on hold shelf" status is for another patron.
+							if ($recordItemStatus != "!" && $recordStatus != '0') {
+								// check for in transit status see
+								if ($recordItemStatus == 't') {
+									if (isset($sierraHold->priority) && (int)$sierraHold->priority == 1) {
+										$recordStatus = 't';
+									}
+								}
+							}
+						} else {
+							// inn-reach status
+							$isInnReach = true;
+							$recordStatus = $recordItemStatus;
+						}
+					}
+					switch ((string)$recordStatus) {
+						case '0':
+						case '-':
+							if ($isInnReach) {
+								if (!empty($sierraHold->pickupByDate)) {
+									$available = true;
+								}
+							}
+							break;
+						case 'b':
+						case 'j':
+						case 'i':
+						case '!':
+						case "#": // inn-reach status
+							$available = true;
+							break;
+						default:
+							//$available = false
+					}
+					if ($available) {
+						$numAvailableHolds++;
+					} else {
+						$numUnavailableHolds++;
+					}
 				}
 			}
-
-			$holds = $this->getHolds($patron);
-			$summary->numAvailableHolds = count($holds['available']);
-			$summary->numUnavailableHolds = count($holds['unavailable']);
+			$summary->numAvailableHolds = $numAvailableHolds;
+			$summary->numUnavailableHolds = $numUnavailableHolds;
 
 			$summary->totalFines = $patronInfo->moneyOwed;
 

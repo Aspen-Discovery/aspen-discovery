@@ -311,12 +311,19 @@ class MyAccount_MyList extends MyAccount {
 					$firstDoc = $results['response']['docs'][0];
 					//Get the id of the document
 					$id = $firstDoc['id'];
-					$numAdded++;
+
+					//Check to see if the title has already been added to the list
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					$userListEntry->source = 'GroupedWork';
 					$userListEntry->sourceId = $id;
+					if ($userListEntry->find(true)) {
+						//Title already exists, skip it
+						$existingEntry = true;
+						continue;
+					}
 					$userListEntry->weight = $totalRecords++;
+					$numAdded++;
 
 					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					$groupedWork = new GroupedWork();
@@ -325,17 +332,9 @@ class MyAccount_MyList extends MyAccount {
 						$userListEntry->title = mb_substr($groupedWork->full_title, 0, 50);
 					}
 
-					$existingEntry = false;
-					if ($userListEntry->find(true)) {
-						$existingEntry = true;
-					}
 					$userListEntry->notes = '';
 					$userListEntry->dateAdded = time();
-					if ($existingEntry) {
-						$userListEntry->update();
-					} else {
-						$userListEntry->insert();
-					}
+					$userListEntry->insert();
 				} else {
 					$notes[] = "Could not find a title matching " . $titleSearch;
 				}

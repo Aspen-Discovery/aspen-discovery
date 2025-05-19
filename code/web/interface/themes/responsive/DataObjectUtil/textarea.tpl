@@ -17,8 +17,8 @@
 				toolbar3: '',
 				toolbar: 'image',
 			{else}
-				plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace spellchecker table textcolor textpattern toc visualblocks visualchars wordcount tinymceEmoji',
-				toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor | tinymceEmoji',
+				plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace table textcolor textpattern toc visualblocks visualchars wordcount tinymceEmoji',
+				toolbar1: 'code | cut copy paste pastetext | undo redo searchreplace | image table hr codesample insertdatetime | link anchor | tinymceEmoji',
 				toolbar2: 'bold italic underline strikethrough | formatselect fontselect fontsizeselect forecolor backcolor',
 				toolbar3: 'numlist bullist toc | alignleft aligncenter alignright | preview visualblocks fullscreen help',
 				toolbar: 'image',
@@ -36,6 +36,7 @@
 			],
 			emoji_show_groups: false,
 			emoji_show_subgroups: false,
+			browser_spellcheck: true,
 			{/literal}
 			readonly:{if !empty($property.readOnly)}1,{else}0,{/if}
 			{literal}

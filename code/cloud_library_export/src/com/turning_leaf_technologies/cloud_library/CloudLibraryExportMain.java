@@ -29,14 +29,31 @@ public class CloudLibraryExportMain {
 	private static String serverName;
 
 	public static void main(String[] args) {
+		boolean extractSingleRecord = false;
+		String singleRecordId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleRecordResponse = AspenStringUtils.getInputFromCommandLine("Process a single record? (y/N)");
+			if (extractSingleRecordResponse.equalsIgnoreCase("y")) {
+				extractSingleRecord = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleRecord")){
+					extractSingleRecord = true;
+					if (args.length > 2) {
+						singleRecordId = args[2];
+					}
+				}
+			}
+		}
+		if (extractSingleRecord && singleRecordId == null) {
+			singleRecordId = AspenStringUtils.getInputFromCommandLine("Enter the id of the record to extract");
 		}
 
 		logger = LoggingUtil.setupLogging(serverName, processName);
@@ -69,7 +86,12 @@ public class CloudLibraryExportMain {
 			}
 
 			//Do the actual work here
-			int numChanges = extractCloudLibraryData();
+			int numChanges;
+			if (singleRecordId == null) {
+				numChanges = extractCloudLibraryData();
+			} else {
+				numChanges = extractSingleCloudLibraryRecord(singleRecordId);
+			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
@@ -101,6 +123,11 @@ public class CloudLibraryExportMain {
 			//Disconnect from the database
 			disconnectDatabase(aspenConn);
 
+			// If we're extracting a single record, we're done.
+			if (extractSingleRecord) {
+				break;
+			}
+
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
 				//Quit and we will restart after if finishes
@@ -121,6 +148,37 @@ public class CloudLibraryExportMain {
 		}
 
 		System.exit(0);
+	}
+
+	/**
+	 * Extracts a single CloudLibrary record using the specified record ID.
+	 *
+	 * @param singleRecordId The unique identifier of the CloudLibrary record to extract.
+	 * @return The total number of changes resulting from the record extraction across all settings.
+	 * @throws RuntimeException If a database error occurs while loading settings.
+	 */
+	private static int extractSingleCloudLibraryRecord(String singleRecordId) {
+		logger.info("Extracting single CloudLibrary record: {}.", singleRecordId);
+		int numChanges = 0;
+
+		try {
+			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * FROM cloud_library_settings");
+			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
+			int numSettings = 0;
+			while (getSettingsRS.next()) {
+				CloudLibrarySettings settings = new CloudLibrarySettings(getSettingsRS);
+				numSettings++;
+				CloudLibraryExporter exporter = new CloudLibraryExporter(serverName, configIni, settings, logger, aspenConn);
+				numChanges += exporter.extractSingleRecord(singleRecordId);
+			}
+			if (numSettings == 0) {
+				logger.error("Unable to find settings for CloudLibrary; please add settings to the database.");
+			}
+		} catch (SQLException e) {
+			logger.error("Failed to load CloudLibrary setting(s) from the database:", e);
+		}
+
+		return numChanges;
 	}
 
 	private static int extractCloudLibraryData() {

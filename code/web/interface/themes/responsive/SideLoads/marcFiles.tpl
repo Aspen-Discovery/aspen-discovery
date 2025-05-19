@@ -32,8 +32,10 @@
 				</tr>
 			{/foreach}
 		</table>
-		<a class="btn btn-primary" href="/SideLoads/UploadMarc?id={$id}">
-			{translate text="Upload MARC file" isAdminFacing=true}
-		</a>
+		{if !$sideload->isReadOnly()}
+			<a class="btn btn-primary" href="/SideLoads/UploadMarc?id={$id}">
+				{translate text="Upload MARC file" isAdminFacing=true}
+			</a>
+		{/if}
 	</div>
 {/strip}

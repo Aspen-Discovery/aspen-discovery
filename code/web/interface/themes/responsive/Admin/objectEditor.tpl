@@ -1,5 +1,5 @@
-<script src="/tinymce/plugins/tinymceEmoji/plugin.min.js"></script>
 <script src="/tinymce/tinymce.min.js"></script>
+<script src="/tinymce/plugins/tinymceEmoji/plugin.min.js"></script>
 {if !empty($updateMessage)}
 	<div class="alert {if !empty($updateMessageIsError)}alert-danger{else}alert-info{/if}">
 		{$updateMessage}
@@ -48,7 +48,7 @@
 					{/if}
 				</div>
 				<div class="btn-group" role="group">
-					{if !empty($id) && $id > 0 && $canDelete}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("{translate text='Are you sure you want to delete this %1%?' 1=$objectType inAttribute=true isAdminFacing=true}")'><i class="fas fa-trash" role="presentation"></i> {translate text="Delete" isAdminFacing=true}</a>{/if}
+					{if !empty($id) && $id > 0 && $canDelete && $object->canActiveUserDelete()}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("{translate text='Are you sure you want to delete this %1%?' 1=$objectType inAttribute=true isAdminFacing=true}")'><i class="fas fa-trash" role="presentation"></i> {translate text="Delete" isAdminFacing=true}</a>{/if}
 				</div>
 			</div>
 		</div>

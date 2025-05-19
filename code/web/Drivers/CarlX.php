@@ -701,6 +701,7 @@ class CarlX extends AbstractIlsDriver {
 					$curTitle->showFineButton = true;
 				}
 				$curTitle->renewIndicator = $chargeItem->ItemNumber;
+				$curTitle->callNumber = $chargeItem->CallNumberFull;
 				$curTitle->format = 'Unknown';
 				if (!empty($carlID)) {
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';

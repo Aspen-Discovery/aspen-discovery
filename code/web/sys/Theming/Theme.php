@@ -1860,7 +1860,7 @@ class Theme extends DataObject {
 								'description' => 'Hover Border Color',
 								'required' => false,
 								'hideInLists' => true,
-								'primary' => Theme::$defaultPrimaryButtonHoverBorderColor,
+								'default' => Theme::$defaultPrimaryButtonHoverBorderColor,
 							],
 						],
 					],

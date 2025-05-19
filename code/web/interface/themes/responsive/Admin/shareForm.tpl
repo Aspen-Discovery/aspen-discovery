@@ -1,5 +1,3 @@
-<script src="/tinymce/tinymce-emoji/plugin.min.js"></script>
-<script src="/tinymce/tinymce.min.js"></script>
 {strip}
 	<div class="col-xs-12">
 		<div class="row">

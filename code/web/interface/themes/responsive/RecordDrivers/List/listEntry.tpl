@@ -82,7 +82,7 @@
 
 
 			<div class="resultActions row">
-				{include file='Lists/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
+				{include file='Lists/result-tools.tpl' recordUrl=$summUrl}
 			</div>
 		</div>
 

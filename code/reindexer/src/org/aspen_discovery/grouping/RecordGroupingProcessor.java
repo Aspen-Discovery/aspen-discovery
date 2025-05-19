@@ -10,8 +10,11 @@ import org.aspen_discovery.format_classification.FormatInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -56,6 +59,7 @@ public class RecordGroupingProcessor {
 
 	private PreparedStatement getAxis360DetailsForRecordStmt;
 	private PreparedStatement getCloudLibraryDetailsForRecordStmt;
+	private PreparedStatement getCloudLibraryRecordStmt;
 	private PreparedStatement getHooplaRecordStmt;
 	private PreparedStatement getPalaceProjectRecordStmt;
 
@@ -124,6 +128,7 @@ public class RecordGroupingProcessor {
 
 			getAxis360DetailsForRecordStmt.close();
 			getCloudLibraryDetailsForRecordStmt.close();
+			getCloudLibraryRecordStmt.close();
 			getHooplaRecordStmt.close();
 			getPalaceProjectRecordStmt.close();
 			getProductIdForPalaceProjectIdStmt.close();
@@ -165,7 +170,9 @@ public class RecordGroupingProcessor {
 				} else {
 					result.deleteWork = true;
 				}
+				getAdditionalPrimaryIdentifierForWorkRS.close();
 			}//If not true, already deleted skip this
+			getWorkForPrimaryIdentifierRS.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Error processing deleted bibs", e);
 		}
@@ -185,7 +192,9 @@ public class RecordGroupingProcessor {
 				if (getPermanentIdByWorkIdRS.next()) {
 					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 				}
+				getPermanentIdByWorkIdRS.close();
 			}
+			getWorkForPrimaryIdentifierRS.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Error getting permanent id for record " + source + " " + id, e);
 		}
@@ -211,6 +220,8 @@ public class RecordGroupingProcessor {
 					lookupAuthorAuthoritiesInDB = false;
 				}
 			}
+			numAuthorAuthoritiesRS.close();
+			getNumAuthorAuthoritiesStmt.close();
 			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT author_authority.normalized from author_authority inner join author_authority_alternative on author_authority.id = authorId WHERE author_authority_alternative.normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement getNumTitleAuthoritiesStmt = dbConnection.prepareStatement("SELECT count(*) as numAuthorities from title_authorities", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet numTitleAuthoritiesRS = getNumTitleAuthoritiesStmt.executeQuery();
@@ -223,8 +234,11 @@ public class RecordGroupingProcessor {
 					while (getAllTitleAuthoritiesRS.next()){
 						titleAuthorities.put(getAllTitleAuthoritiesRS.getString("originalName"), getAllTitleAuthoritiesRS.getString("authoritativeName"));
 					}
+					getAllTitleAuthoritiesRS.close();
 				}
 			}
+			numTitleAuthoritiesRS.close();
+			getNumTitleAuthoritiesStmt.close();
 			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
@@ -240,7 +254,8 @@ public class RecordGroupingProcessor {
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
 			getAxis360DetailsForRecordStmt = dbConnection.prepareStatement("SELECT title, subtitle, primaryAuthor, formatType, rawResponse from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format FROM cloud_library_title WHERE cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getCloudLibraryRecordStmt = dbConnection.prepareStatement("SELECT rawResponse FROM cloud_library_title WHERE cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductIdForPalaceProjectIdStmt = dbConnection.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -377,6 +392,7 @@ public class RecordGroupingProcessor {
 
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
+			existingIdRS.close();
 
 			//Update identifiers
 			if (addPrimaryIdentifierToWork) {
@@ -396,8 +412,11 @@ public class RecordGroupingProcessor {
 			getWorkByAlternateTitleAuthorStmt.setString(3, groupedWork.getGroupingCategory());
 			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
 			if (getWorkByAlternateTitleAuthorRS.next()){
-				return getWorkByAlternateTitleAuthorRS.getString("permanent_id");
+				String permanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
+				getWorkByAlternateTitleAuthorRS.close();
+				return permanentId;
 			}
+			getWorkByAlternateTitleAuthorRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
 		}
@@ -417,6 +436,7 @@ public class RecordGroupingProcessor {
 				while (getAdditionalPrimaryIdentifierForWorkRS.next()){
 					numPrimaryIdentifiers++;
 				}
+				getAdditionalPrimaryIdentifierForWorkRS.close();
 				//At the point this is called, we have not removed the record from the work so count should be 1
 				if (numPrimaryIdentifiers <= 1) {
 					//If there are no items attached to the old record
@@ -502,6 +522,7 @@ public class RecordGroupingProcessor {
 			}else{
 				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
 			}
+			getWorkIdByPermanentIdRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error moving enrichment", e);
 		}
@@ -674,6 +695,7 @@ public class RecordGroupingProcessor {
 					reloadAuthorAuthorities = false;
 				}
 			}
+			numAuthorAuthorities.close();
 			if (reloadAuthorAuthorities) {
 				PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
@@ -704,6 +726,7 @@ public class RecordGroupingProcessor {
 					reloadTitleAuthorities = false;
 				}
 			}
+			numTitleAuthorities.close();
 			if (reloadTitleAuthorities) {
 				PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
@@ -740,6 +763,9 @@ public class RecordGroupingProcessor {
 				setNormalizedAuthorStmt.setLong(2, getNonNormalizedAuthorsRS.getLong("id"));
 				setNormalizedAuthorStmt.executeUpdate();
 			}
+			getNonNormalizedAuthorsRS.close();
+			getNonNormalizedAuthorsStmt.close();
+			setNormalizedAuthorStmt.close();
 			PreparedStatement getNonNormalizedAuthorAlternativesStmt = dbConn.prepareStatement("SELECT id, alternativeAuthor FROM author_authority_alternative where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement setNormalizedAlternativeAuthorStmt = dbConn.prepareStatement("UPDATE author_authority_alternative set normalized = ? where id = ?");
 			ResultSet getNonNormalizedAuthorAlternativesRS = getNonNormalizedAuthorAlternativesStmt.executeQuery();
@@ -750,6 +776,9 @@ public class RecordGroupingProcessor {
 				setNormalizedAlternativeAuthorStmt.setLong(2, getNonNormalizedAuthorAlternativesRS.getLong("id"));
 				setNormalizedAlternativeAuthorStmt.executeUpdate();
 			}
+			getNonNormalizedAuthorAlternativesRS.close();
+			getNonNormalizedAuthorAlternativesStmt.close();
+			setNormalizedAlternativeAuthorStmt.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error normalizing authorities", e);
 		}
@@ -766,9 +795,10 @@ public class RecordGroupingProcessor {
 					if (!normalizedAuthoritativeAuthor.equals(originalAuthor)) {
 						numAuthorAuthoritiesUsed++;
 					}
-
+					authoritativeAuthorRS.close();
 					return normalizedAuthoritativeAuthor;
 				}
+				authoritativeAuthorRS.close();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error getting authoritative author", e);
 			}
@@ -783,8 +813,11 @@ public class RecordGroupingProcessor {
 					getTitleAuthorityStmt.setString(1, originalTitle);
 					ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
 					if (authorityRS.next()) {
-						return authorityRS.getString("authoritativeName");
+						String authoritativeName = authorityRS.getString("authoritativeName");
+						authorityRS.close();
+						return authoritativeName;
 					}
+					authorityRS.close();
 				} catch (SQLException e) {
 					logEntry.incErrors("Error getting authoritative title", e);
 				}
@@ -831,12 +864,13 @@ public class RecordGroupingProcessor {
 				try {
 					JSONObject itemDetails = new JSONObject(rawResponse);
 					String primaryAuthor = getItemDetailsForRecordRS.getString("primaryAuthor");
+					getItemDetailsForRecordRS.close();
 					return groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
 				}catch (JSONException e){
 					logEntry.incErrors("Could not parse item details for record to reload " + axis360Id);
 				}
 			}else{
-				logEntry.incErrors("Could not get details for Axis360 Record " + axis360Id);
+				logEntry.addNote("Could not get details for Axis360 Record " + axis360Id);
 			}
 			getItemDetailsForRecordRS.close();
 		}catch (SQLException e){
@@ -871,6 +905,51 @@ public class RecordGroupingProcessor {
 		return processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, language, true);
 	}
 
+	/**
+	 * Fetches the raw MARC data for the given CloudLibrary record ID from the database,
+	 * attempts to parse it into a MARC record, and then delegates the grouping process to
+	 * overloaded method {@link #groupCloudLibraryRecord(String, org.marc4j.marc.Record)}.
+	 *
+	 * @param cloudLibraryId The unique identifier of the CloudLibrary record to group.
+	 * @return A string representing the grouped record result, or {@code null} if parsing or grouping fails.
+	 */
+	public String groupCloudLibraryRecord(String cloudLibraryId) {
+		try {
+			getCloudLibraryRecordStmt.setString(1, cloudLibraryId);
+			ResultSet cloudLibraryRS = getCloudLibraryRecordStmt.executeQuery();
+			if (cloudLibraryRS.next()) {
+				String rawResponse = cloudLibraryRS.getString("rawResponse");
+				if (rawResponse != null && !rawResponse.isEmpty()) {
+					try {
+						MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawResponse.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+						Record marcRecord;
+						if (reader.hasNext()) {
+							marcRecord = reader.next();
+							return groupCloudLibraryRecord(cloudLibraryId, marcRecord);
+						} else {
+							logEntry.incErrors("Error parsing MARC record for CloudLibrary record " + cloudLibraryId + ".");
+						}
+					} catch (Exception e) {
+						logEntry.incErrors("Could not parse MARC data for CloudLibrary record " + cloudLibraryId + ":", e);
+					}
+				} else {
+					logEntry.incErrors("No rawResponse data found for CloudLibrary record " + cloudLibraryId + ".");
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error grouping CloudLibrary record " + (cloudLibraryId != null ? cloudLibraryId : "NULL") + ":", e);
+			logEntry.incErrors("Error grouping CloudLibrary record " + cloudLibraryId + ":", e);
+		}
+		return null;
+	}
+
+	/**
+	 * Groups a CloudLibrary MARC record with the provided metadata from the database.
+	 *
+	 * @param cloudLibraryId The unique identifier of the CloudLibrary record.
+	 * @param cloudLibraryRecord The parsed MARC record associated with the CloudLibrary item.
+	 * @return A string representing the grouped record, or {@code null} if metadata lookup fails or an error occurs.
+	 */
 	public String groupCloudLibraryRecord(String cloudLibraryId, org.marc4j.marc.Record cloudLibraryRecord){
 		try{
 			getCloudLibraryDetailsForRecordStmt.setString(1, cloudLibraryId);
@@ -881,9 +960,9 @@ public class RecordGroupingProcessor {
 				String author = getItemDetailsForRecordRS.getString("author");
 				String format = getItemDetailsForRecordRS.getString("format");
 				RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
-
 				String primaryLanguage = getLanguageBasedOnMarcRecord(cloudLibraryRecord);
 
+				getItemDetailsForRecordRS.close();
 				return processRecord(primaryIdentifier, title, subTitle, author, format, primaryLanguage, true);
 			}else{
 				logEntry.incErrors("Could not get details for Cloud Library record " + cloudLibraryId);
@@ -924,9 +1003,12 @@ public class RecordGroupingProcessor {
 			if (getHooplaRecordRS.next()){
 				String rawResponseString = new String(getHooplaRecordRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
 				JSONObject rawResponse = new JSONObject(rawResponseString);
+
+				getHooplaRecordRS.close();
 				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
 				return groupHooplaRecord(rawResponse, Long.parseLong(hooplaId));
 			}
+			getHooplaRecordRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error grouping hoopla record " + hooplaId, e);
 		}
@@ -998,6 +1080,7 @@ public class RecordGroupingProcessor {
 				if (getProductIdForPalaceProjectIdRS.next()) {
 					palaceProjectId = getProductIdForPalaceProjectIdRS.getLong("id");
 				}else{
+					getProductIdForPalaceProjectIdRS.close();
 					logEntry.incErrors("Could not find palace project identifier " + identifier + " in the database");
 					return null;
 				}
@@ -1010,9 +1093,11 @@ public class RecordGroupingProcessor {
 			if (getPalaceProjectRecordRS.next()){
 				String rawResponseString = new String(getPalaceProjectRecordRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
 				JSONObject rawResponse = new JSONObject(rawResponseString);
+				getPalaceProjectRecordRS.close();
 				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
 				return groupPalaceProjectRecord(rawResponse, palaceProjectId);
 			}
+			getPalaceProjectRecordRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error grouping palace project record " + identifier, e);
 		}

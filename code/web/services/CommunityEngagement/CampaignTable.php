@@ -87,7 +87,9 @@ class CommunityEngagement_CampaignTable extends Admin_Dashboard {
 	}
 
 	function canView(): bool {
-		return true;
+		return UserAccount::userHasPermission([
+			'View Community Engagement Dashboard',
+		]);
 	}
 
 	function getActiveAdminSection(): string

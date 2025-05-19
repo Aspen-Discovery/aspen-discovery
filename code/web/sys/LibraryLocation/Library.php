@@ -3775,7 +3775,7 @@ class Library extends DataObject {
 					'campaignLeaderboardDisplay' => [
 						'property' => 'campaignLeaderboardDisplay',
 						'type' => 'enum',
-						'label' => 'Campaign Leaderbaord Display',
+						'label' => 'Campaign Leaderboard Display',
 						'description' => 'Whether to display the rank on the leaderboard by branch or by user',
 						'values' => [
 							'displayBranch' => 'Display Branch',
@@ -5267,11 +5267,20 @@ class Library extends DataObject {
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
 
+	private static $_filteredList = null;
+	private static $_fullList = null;
 	/**
 	 * @param boolean $restrictByHomeLibrary whether only the patron's home library should be returned
 	 * @return array
 	 */
 	static function getLibraryList(bool $restrictByHomeLibrary, $accountProfileId = -1): array {
+		if ($accountProfileId == -1) {
+			if ($restrictByHomeLibrary && !is_null(Library::$_filteredList)) {
+				return Library::$_filteredList;
+			}elseif (!is_null(Library::$_fullList)){
+				return Library::$_fullList;
+			}
+		}
 		$library = new Library();
 		$library->orderBy('displayName');
 		if ($accountProfileId != -1) {
@@ -5301,6 +5310,13 @@ class Library extends DataObject {
 		$libraryList = [];
 		while ($library->fetch()) {
 			$libraryList[$library->libraryId] = $library->displayName;
+		}
+		if ($accountProfileId == -1) {
+			if ($restrictByHomeLibrary) {
+				return Library::$_filteredList = $libraryList;
+			}else{
+				return Library::$_fullList = $libraryList;
+			}
 		}
 		return $libraryList;
 	}

@@ -507,6 +507,9 @@ public abstract class AbstractGroupedWorkSolr {
 				}
 			}
 
+			//replace apostrophes in contractions
+			shortTitle = shortTitle.replaceAll("(\\w)'(\\w)", "$1$2");
+
 			//Create an alternate title for searching by replacing ampersands with the word and.
 			String tmpTitle = shortTitle.replace("&", " and ").replace("  ", " ");
 			if (!tmpTitle.equals(shortTitle)) {

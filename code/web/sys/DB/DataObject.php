@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/Hooks/registry.php';
 /**
  * Class DataObject
@@ -872,36 +873,86 @@ abstract class DataObject implements JsonSerializable {
 		$this->_data = null;
 	}
 
-	protected function saveOneToManyOptions($oneToManySettings, $keyOther) {
-		/** @var DataObject $oneToManyDBObject */
-		foreach ($oneToManySettings as $oneToManyDBObject) {
-			if ($oneToManyDBObject->_deleteOnSave) {
-				if ($oneToManyDBObject->getPrimaryKeyValue() > 0) {
-					$oneToManyDBObject->delete();
-				}
-			} else {
-				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})) { // (negative ids need processed with insert)
-					if ($oneToManyDBObject->{$oneToManyDBObject->__primaryKey} <= 0) {
+	/**
+	 * Saves "one to many" options that optionally take into account the values that an administrator has the ability to change.
+	 * This ensures that options that a user does not have access to are not cleared or saved incorrectly.
+	 *
+	 * @param $newValues [] An array of data objects to be updated
+	 * @param $keyOther [] A string that identifies this property used to link this object to the other object. I.e., if saving a Grouped Work Display Setting, the key in the Library table is groupedWorkSettingId
+	 * @param $allowableValues ?array An array of values that the current user can administrator (can be null if they can administer all, or if the list is not limited by permissions)
+	 * @param $oneToManyDBObjectClassName ?string The name of the object being linked to. Only needed if allowable values is supplied.
+	 * @return void
+	 */
+	protected function saveOneToManyOptions(array $newValues, string $keyOther, ?array $allowableValues = null, ?string $oneToManyDBObjectClassName = null) : void {
+		if ($allowableValues == null) {
+			/** @var DataObject $oneToManyDBObject */
+			foreach ($newValues as $oneToManyDBObject) {
+				if ($oneToManyDBObject->_deleteOnSave) {
+					if ($oneToManyDBObject->getPrimaryKeyValue() > 0) {
+						$oneToManyDBObject->delete();
+					}
+				} else {
+					if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})) { // (negative ids need processed with insert)
+						if ($oneToManyDBObject->{$oneToManyDBObject->__primaryKey} <= 0) {
+							$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
+							$oneToManyDBObject->insert();
+						} else {
+							if ($oneToManyDBObject->hasChanges()) {
+								$oneToManyDBObject->update();
+							}
+						}
+					} else {
 						$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 						$oneToManyDBObject->insert();
+					}
+				}
+			}
+		} else {
+			foreach ($allowableValues as $id => $value) {
+				$oneToManyDBObject = new $oneToManyDBObjectClassName();
+				$oneToManyDBObject->{$oneToManyDBObject->getPrimaryKey()} = $id;
+				if ($oneToManyDBObject->find(true)) {
+					if (in_array($id, $newValues)) {
+						//We want to apply the scope to this library
+						if ($oneToManyDBObject->$keyOther != $this->getPrimaryKeyValue()) {
+							$oneToManyDBObject->$keyOther = $this->getPrimaryKeyValue();
+							$oneToManyDBObject->update();
+						}
 					} else {
-						if ($oneToManyDBObject->hasChanges()) {
+						//It should not be applied to this scope. Only change if it was applied to the scope
+						if ($oneToManyDBObject->$keyOther == $this->getPrimaryKeyValue()) {
+							$oneToManyDBObject->$keyOther = -1;
 							$oneToManyDBObject->update();
 						}
 					}
-				} else {
-					$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
-					$oneToManyDBObject->insert();
 				}
 			}
 		}
 	}
 
-	protected function clearOneToManyOptions($oneToManyDBObjectClassName, $keyOther) {
-		/** @var DataObject $oneToManyDBObject */
-		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
-		$oneToManyDBObject->delete(true);
+	/**
+	 * Clear all options for the given object. If Allowable Values are passed, only entries within the list of allowable values will be cleared.
+	 *
+	 * @param $oneToManyDBObjectClassName : string
+	 * @param $keyOther : string
+	 * @param $allowableValues [] - An array of allowable values based on current permissions with the key of the other object as the key of the array.
+	 * @return void
+	 */
+	protected function clearOneToManyOptions(string $oneToManyDBObjectClassName, string $keyOther, ?array $allowableValues = null) : void {
+		if ($allowableValues == null) {
+			/** @var DataObject $oneToManyDBObject */
+			$oneToManyDBObject = new $oneToManyDBObjectClassName();
+			$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
+			$oneToManyDBObject->delete(true);
+		}else{
+			foreach ($allowableValues as $valueId => $value) {
+				/** @var DataObject $oneToManyDBObject */
+				$oneToManyDBObject = new $oneToManyDBObjectClassName();
+				$oneToManyDBObject->{$oneToManyDBObject->__primaryKey} = $valueId;
+				$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
+				$oneToManyDBObject->delete(true);
+			}
+		}
 	}
 
 	public function __clone() {

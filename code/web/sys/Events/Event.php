@@ -576,6 +576,7 @@ class Event extends DataObject {
 			'dateUpdated',
 			'sublocationId',
 			'weekNumber',
+			'deleted'
 		];
 	}
 

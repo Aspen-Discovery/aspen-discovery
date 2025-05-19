@@ -4712,7 +4712,19 @@ var AspenDiscovery = (function(){
 			}
 		});
 
+		// Handle search box clear button visibility.
+		const $lookfor = aspenJQ("#lookfor");
+		const $clearAddon = $lookfor.siblings('.clear-search');
 
+		$lookfor.on("input", function() {
+			if (aspenJQ(this).val().length > 0) {
+				$clearAddon.css('display', 'block');
+			} else {
+				$clearAddon.css('display', 'none');
+			}
+		});
+		// Set initial visibility.
+		$lookfor.trigger("input");
 	});
 
 	return {
@@ -4755,14 +4767,17 @@ var AspenDiscovery = (function(){
 
 		changeSort: function(){
 			var url = window.location.href;
-			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
-				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + aspenJQ("#sort").val());
+			if (url.match(/[&?]sort=([A-Za-z_+]|%20)+/)) {
+				url = url.replace(/sort=([A-Za-z_+]|%20)+/, "sort=" + aspenJQ("#sort").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
 					url = url+ "&sort=" + aspenJQ("#sort").val();
 				}else{
 					url = url+ "?sort=" + aspenJQ("#sort").val();
 				}
+			}
+			if (url.match(/[&?]page=(\d)+/)) {
+				url = url.replace(/page=(\d)+/, "page=1");
 			}
 			window.location.href = url;
 			return false;
@@ -5381,7 +5396,11 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		resetSearchBox: function() {
-			document.getElementById("lookfor").value = "";
+			const $lookfor = aspenJQ("#lookfor");
+			$lookfor.val("");
+			$lookfor.trigger("focus");
+			$lookfor.siblings('.clear-search').css('display', 'none');
+			return false;
 		},
 		autoOpenPanel: function() {
 			var hash = window.location.hash.substr(1);
@@ -5876,6 +5895,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Boundless Holds';
 				} else if (source === 'palace_project') {
 					label = 'Palace Project Holds';
+				} else if (source === 'hoopla') {
+					label = 'Hoopla Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -6045,6 +6066,13 @@ AspenDiscovery.Account = (function () {
 						$(".hoopla-checkouts-placeholder").html(data.summary.numCheckedOut);
 						totalCheckouts += parseInt(data.summary.numCheckedOut);
 						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".hoopla-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".hoopla-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".hoopla-available-holds").show();
+						}
 					}
 				});
 			}
@@ -10827,7 +10855,6 @@ AspenDiscovery.Admin = (function () {
 			if (isUnbound) {
 				$("#propertyRowunboundAccountNumber").show();
 				$("#propertyRowunboundInstanceNumber").show();
-				$("#propertyRowsyndeticsKey").hide();
 				$("#propertyRowhasSummary").hide();
 				$("#propertyRowhasAvSummary").hide();
 				$("#propertyRowhasAvProfile").hide();
@@ -10839,7 +10866,6 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$("#propertyRowunboundAccountNumber").hide();
 				$("#propertyRowunboundInstanceNumber").hide();
-				$("#propertyRowsyndeticsKey").show();
 				$("#propertyRowhasSummary").show();
 				$("#propertyRowhasAvSummary").show();
 				$("#propertyRowhasAvProfile").show();
@@ -10984,6 +11010,7 @@ AspenDiscovery.Admin = (function () {
 							missingLabels.add(ptypeLabel);
 
 							if ((!changedTarget || changedTarget === 'staff') && ptypeValue === selectedStaffType && $staffTypeSelect.length > 0) {
+								$(staffWarningId).remove();
 								$staffTypeSelect.closest(".form-group").after(`
 									<div id="staff_warning" class="alert alert-danger mt-2">
 										<strong>Warning:</strong> The selected staff patron type "${ptypeLabel}" does not exist in the admin_sso profile.
@@ -10997,6 +11024,7 @@ AspenDiscovery.Admin = (function () {
 							}
 
 							if ((!changedTarget || changedTarget === 'fallback') && ptypeValue === selectedFallbackType) {
+								$(fallbackWarningId).remove();
 								$fallbackSelect.closest(".form-group").after(`
 									<div id="fallback_warning" class="alert alert-danger mt-2">
 										<strong>Warning:</strong> The selected fallback patron type "${ptypeLabel}" is not assigned to the admin_sso profile.
@@ -11009,6 +11037,7 @@ AspenDiscovery.Admin = (function () {
 				}
 
 				if (!changedTarget) {
+					$(warningId).remove();
 					const availablePatronTypes = Object.values(adminSSOPatronTypes || {});
 					let warningHtml = `
 						<div id="ssoAuthOnly_warning" class="alert alert-warning mt-2">
@@ -11051,6 +11080,7 @@ AspenDiscovery.Admin = (function () {
 			return true;
 
 			function showError(message) {
+				$(warningId).remove();
 				$formGroup.after(`
 					<div id="ssoAuthOnly_warning" class="alert alert-warning mt-2">
 						<p><strong>${message}</strong></p>
@@ -11063,6 +11093,7 @@ AspenDiscovery.Admin = (function () {
 			}
 
 			function showMissingProfileError() {
+				$(warningId).remove();
 				$formGroup.after(`
 					<div id="ssoAuthOnly_warning" class="alert alert-danger alert-outline mt-2">
 						<strong>Error:</strong> The "admin_sso" account profile has not been created yet. 
@@ -14966,44 +14997,55 @@ AspenDiscovery.OpenArchives = (function () {
 }(AspenDiscovery.OpenArchives || {}));
 AspenDiscovery.Hoopla = (function(){
 	return {
-		checkOutHooplaTitle: function (hooplaId, patronId) {
+		checkOutHooplaTitle: function (hooplaId, patronId, hooplaType) {
 			if (Globals.loggedIn) {
 				if (typeof patronId === 'undefined') {
-					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
+					patronId = $('#patronId', '#pickupLocationOptions').val();
 				}
 				var url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
 				var params = {
 					'method' : 'checkOutHooplaTitle',
-					patronId : patronId
+					patronId : patronId,
+					hooplaType : hooplaType
 				};
 				if ($('#stopHooplaConfirmation').prop('checked')){
 					params['stopHooplaConfirmation'] = true;
 				}
 				$.getJSON(url, params, function (data) {
-					if (data.success) {
+					if (data.buttons) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
-						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
+					}
+					if (data.success) {
+						AspenDiscovery.Account.loadMenuData();
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
+					AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, patronId, hooplaType);
 				}, false);
 			}
 			return false;
 		},
 
-		getCheckOutPrompts: function (hooplaId) {
+		getCheckOutPrompts: function (hooplaId, hooplaType) {
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getCheckOutPrompts";
-				$.getJSON(url, function (data) {
-					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+				var params = {
+					'method' : 'getCheckOutPrompts',
+					hooplaType : hooplaType
+				};
+				$.getJSON(url, params, function (data) {
+					if (data.flexDirectCheckout) {
+						AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, data.patronId, data.hooplaType);
+					} else {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+					}
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Hoopla.getCheckOutPrompts(hooplaId);
+					AspenDiscovery.Hoopla.getCheckOutPrompts(hooplaId, hooplaType);
 				}, false);
 			}
 			return false;
@@ -15040,8 +15082,108 @@ AspenDiscovery.Hoopla = (function(){
 			return false;
 		},
 
+		getHoldPrompts: function(id) {
+			var url = Globals.path + "/Hoopla/" + id + "/AJAX?method=getHoldPrompts";
+			var result = false;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function(data) {
+					result = data;
+					if (data.promptNeeded) {
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function() {
+					AspenDiscovery.showMessage("Error", "An error occurred processing your request in Hoopla. Please try again in a few minutes.");
+				}
+			});
+			return result;
+		},
+
+		placeHold: function(id) {
+			if (Globals.loggedIn) {
+				var promptInfo = AspenDiscovery.Hoopla.getHoldPrompts(id);
+				if (!promptInfo.promptNeeded){
+					AspenDiscovery.Hoopla.doHold(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function() {
+					AspenDiscovery.Hoopla.placeHold(id);
+				});
+			}
+			return false;
+		},
+
+		doHold: function(patronId, id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/Hoopla/AJAX";
+				var params = {
+					method: 'placeHold',
+					patronId: patronId,
+					id: id
+				};
+				if ($('#stopHooplaHoldConfirmation').prop('checked')){
+					params['stopHooplaHoldConfirmation'] = true;
+				}
+				$.ajax({
+					url: url,
+					data: params,
+					cache: false,
+					success: function(data) {
+						AspenDiscovery.closeLightbox(function() {
+							if (data.buttons) {
+								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+							} else {
+								AspenDiscovery.showMessage("Error", data.message);
+							}
+							if (data.success) {
+								AspenDiscovery.Account.loadMenuData();
+							}
+						});
+					},
+					dataType: 'json',
+					error: function() {
+						AspenDiscovery.showMessage("Error", "An error occurred placing your hold. Please try again in a few minutes.");
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function() {
+					AspenDiscovery.Hoopla.doHold(patronId, id);
+				});
+			}
+			return false;
+		},
+
+		cancelHold: function(patronId, recordId) {
+			if (confirm('Are you sure you want to cancel this hold?')) {
+				var url = Globals.path + "/Hoopla/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId;
+				$.ajax({
+					url: url,
+					cache: false,
+					success: function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+							$(".hooplaHold_" + recordId + "_" + patronId).hide();
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function() {
+						AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Hoopla. Please try again in a few minutes.", false);
+					}
+				});
+			}
+			return false;
+		},
 	}
 }(AspenDiscovery.Hoopla || {}));
+
 AspenDiscovery.InterLibraryLoan = (function(){
 	return {
 		getInnReachResults: function(innReachNumTitlesToLoad, innReachSavedSearchId){

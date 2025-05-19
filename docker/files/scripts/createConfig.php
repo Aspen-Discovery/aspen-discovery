@@ -84,6 +84,7 @@ if ($emptyVariables > 0) {
 $templateDir = "/usr/local/aspen-discovery/sites/template.linux";
 $defaultDir = "/usr/local/aspen-discovery/sites/default";
 $dockerDir = "/usr/local/aspen-discovery/docker";
+$apacheDir = "/etc/apache2";
 
 if (!file_exists($templateDir)) {
 	echo "ERROR: The template directory '" . $templateDir . "' does not exists.\n";
@@ -119,7 +120,9 @@ try {
 
 //Copy from docker directory
 	copy("$dockerDir/files/cron/crontab", "$siteDir/conf/crontab");
+	copy("$dockerDir/files/apache/data-alias.conf", "$apacheDir/conf-available/data-alias.conf");
 	replaceVariables($siteDir . "/conf/crontab", $variables);
+	replaceVariables($apacheDir . "/conf-available/data-alias.conf", $variables);
 
 //Set timezone
 	exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');

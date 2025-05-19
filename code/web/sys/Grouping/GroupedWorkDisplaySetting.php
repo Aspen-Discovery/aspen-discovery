@@ -951,24 +951,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public function saveLibraries() : void {
 		if (isset ($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
-			foreach ($libraryList as $libraryId => $displayName) {
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)) {
-					//We want to apply the scope to this library
-					if ($library->groupedWorkDisplaySettingId != $this->id) {
-						$library->groupedWorkDisplaySettingId = $this->id;
-						$library->update();
-					}
-				} else {
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->groupedWorkDisplaySettingId == $this->id) {
-						$library->groupedWorkDisplaySettingId = -1;
-						$library->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_libraries, 'groupedWorkDisplaySettingId', $libraryList, 'Library');
 			unset($this->_libraries);
 		}
 	}
@@ -976,31 +959,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public function saveLocations() : void {
 		if (isset ($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
-			/**
-			 * @var int $locationId
-			 * @var Location $location
-			 */
-			foreach ($locationList as $locationId => $displayName) {
-				$location = new Location();
-				$location->locationId = $locationId;
-				$location->find(true);
-				if (in_array($locationId, $this->_locations)) {
-					//We want to apply the scope to this library
-					if ($location->groupedWorkDisplaySettingId != $this->id) {
-						$location->groupedWorkDisplaySettingId = $this->id;
-						$location->update();
-					}
-				} else {
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->groupedWorkDisplaySettingId == $this->id) {
-						$library = new Library();
-						$library->libraryId = $location->libraryId;
-						$library->find(true);
-						$location->groupedWorkDisplaySettingId = -1;
-						$location->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_locations, 'groupedWorkDisplaySettingId', $locationList, 'Location');
 			unset($this->_locations);
 		}
 	}
@@ -1031,13 +990,15 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public function clearLibraries() : void {
-		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
+		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId', $libraryList);
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
 	public function clearLocations() : void {
-		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
+		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId', $locationList);
 		unset($this->_locations);
 	}
 

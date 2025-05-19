@@ -5891,6 +5891,26 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	/**
+	 * Check if the patron is debarred (frozen).
+	 *
+	 * The debarment status could be useful to allow or disallow the user to perform certain actions.
+	 * @param User $patron
+	 * @return bool $debarmentStatus
+	 */
+	public function getDebarmentStatus(User $patron) {
+		$debarmentStatus = false;
+		$borrowerNumber = $patron->unique_ils_id;
+		$endpoint = "/api/v1/patrons/$borrowerNumber";
+		$response = $this->kohaApiUserAgent->get($endpoint,'koha.getDebarmentStatus',[],[]);
+		if($response){
+			if($response['code'] == 200){
+				$debarmentStatus = $response['content']['restricted'];
+			}
+		}
+		return $debarmentStatus;
+	}
+
+	/**
 	 * @param array $postFields
 	 * @param string $postFieldName
 	 * @param string $requestFieldName
@@ -6614,6 +6634,19 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		}
+
+		//Check if the patron is frozen
+		if($this->getDebarmentStatus($patron)){
+			$result['isEligible'] = false;
+			if (strlen($result['message']) > 0) {
+				$result['message'] .= '<br/>';
+			}
+			$result['message'] .= translate([
+				'text' => 'Sorry, your account is debarred and you are not able to place holds.',
+				'isPublicFacing' => true,
+			]);
+		}
+
 
 		//Check if the patron is expired
 		if ($accountSummary->isExpired()) {
@@ -7362,6 +7395,8 @@ class Koha extends AbstractIlsDriver {
 			$message .= 'Item is an onsite checkout';
 		} elseif ($code == "has_fine") {
 			$message .= 'Item has an outstanding fine';
+		} elseif (!empty($code)) {
+			$message = 'Unknown error:' . $code;
 		} else {
 			$message = 'Unknown error';
 		}
@@ -8276,10 +8311,8 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
-		//Last seen only updates once a day so only do this check if we're running the nightly update
+		// Last seen only updates once a day so only do this check if we're running the nightly update.
 		if (!$isNightlyUpdate) {
-			return false;
-		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
 			$sql = "SELECT lastseen, dateexpiry FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
@@ -8289,26 +8322,26 @@ class Koha extends AbstractIlsDriver {
 			if ($results !== false) {
 				while ($curRow = $results->fetch_assoc()) {
 					if (!is_null($curRow['lastseen'])) {
-						$lastSeenDate =  strtotime($curRow['lastseen']);
+						$lastSeenDate = strtotime($curRow['lastseen']);
 					}
 					if (!is_null($curRow['dateexpiry'])) {
-						$expirationDate =  strtotime($curRow['dateexpiry']);
+						$expirationDate = strtotime($curRow['dateexpiry']);
 					}
 				}
 
 				$results->close();
 			}
 
-			//Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history
+			// Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history.
 			$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
 			if ($lastSeenDate != null && ($lastSeenDate > $lastReadingHistoryUpdate)) {
-				//Also do not update if the patron's account expired more than 4 weeks ago.
+				// Do not update if the patron's account expired more than 4 weeks ago.
 				if ($expirationDate == null || ($expirationDate > (time() - 4 * 7 * 24 * 60 * 60))) {
-					return false;
+					return true;
 				}
 			}
-			return true;
 		}
+		return false;
 	}
 
 	public function hasAPICheckout() : bool {

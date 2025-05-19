@@ -55,6 +55,7 @@ Disallow: /SideLoads/AJAX
 Disallow: /SnapPay/Complete
 Disallow: /cgi-bin/
 Disallow: /images/fiveStar/
+Disallow: /bookcover.php
 
 User-agent: SemrushBot
 Disallow: /

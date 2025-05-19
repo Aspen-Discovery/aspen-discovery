@@ -20,21 +20,23 @@
 			<div class="row">
 				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
 					<div class="input-group">
-					<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
-					{* Main Search Term Box *}
-					<input type="text" class="form-control"{/strip}
-						id="lookfor"
-						name="lookfor"
-						title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
-						onfocus="$(this).select()"
-						autocomplete="off"
-						aria-labelledby="lookfor-label"
-						aria-required="true"
-						{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
-					{strip}>
-						{*<span class="input-group-btn">
-							<button class="btn btn-default" type="button" onclick="return AspenDiscovery.resetSearchBox();"><i class="fas fa-times"></i></button>
-						</span>*}
+						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
+						{* Main Search Term Box *}
+						<input type="text" class="form-control"{/strip}
+							id="lookfor"
+							name="lookfor"
+							title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
+							onfocus="$(this).select()"
+							autocomplete="off"
+							aria-labelledby="lookfor-label"
+							aria-required="true"
+							{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
+						{strip}>
+						<span class="input-group-addon clear-search" onclick="AspenDiscovery.resetSearchBox();" title="{translate text="Clear search" isPublicFacing=true inAttribute=true}" aria-label="{translate text="Clear search" isPublicFacing=true}" style="display:none;cursor:pointer;">
+							<svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+								<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+							</svg>
+						</span>
 					</div>
 				</div>
 

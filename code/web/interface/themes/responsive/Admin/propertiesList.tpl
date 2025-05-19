@@ -160,9 +160,13 @@
 									{assign var=propDisplayFormat value=$property.displayFormat}
 									${$propValue|string_format:$propDisplayFormat}
 								{elseif $property.type == 'enum'}
-									{foreach from=$property.values item=propertyName key=propertyValue}
-										{if $propValue == $propertyValue}{$propertyName|escape}{/if}
-									{/foreach}
+									{if array_key_exists($propValue,$property.values)}
+										{$property.values.$propValue}
+									{elseif !empty($property.allValues) && array_key_exists($propValue,$property.allValues)}
+										{$property.allValues.$propValue}
+									{else}
+										{*No value provided, leave blank*}
+									{/if}
 								{elseif $property.type == 'multiSelect'}
 									{if is_array($propValue) && count($propValue) > 0}
 										{foreach from=$property.values item=propertyName key=propertyValue}

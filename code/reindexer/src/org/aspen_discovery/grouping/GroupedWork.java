@@ -170,6 +170,8 @@ public class GroupedWork implements Cloneable {
 		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and");
 
 		groupingTitle = apostropheStrip.matcher(groupingTitle).replaceAll("s");
+		//replace apostrophes in contractions
+		groupingTitle = groupingTitle.replaceAll("(\\w)'(\\w)", "$1$2");
 		groupingTitle = specialCharacterStrip.matcher(groupingTitle).replaceAll(" ").toLowerCase();
 
 		//Replace consecutive spaces

@@ -22,6 +22,21 @@ add_action('after_object_insert', 'after_checkout_insert', function ($value) {
 		return;
 
 	while ($campaignMilestone->fetch()) {
+		$campaign = new Campaign();
+		$campaign->id = $campaignMilestone->campaignId;
+		if (!$campaign->find(true)) {
+			continue;
+		}
+		$checkoutDate = $value->checkoutDate;
+		$campaignEndDate = strtotime($campaign->endDate);
+
+		$campaignStartDate = strtotime($campaign->startDate);
+
+
+		if ($checkoutDate < $campaignStartDate || $checkoutDate > $campaignEndDate) {
+			continue;
+		}
+
 		if (_campaignMilestoneProgressEntryObjectAlreadyExists($value, $campaignMilestone))
 			return;
 
@@ -50,6 +65,19 @@ add_action('after_object_insert', 'after_hold_insert', function ($value) {
 		return;
 
 	while ($campaignMilestone->fetch()) {
+		$campaign = new Campaign();
+		$campaign->id = $campaignMilestone->campaignId;
+		if (!$campaign->find(true)) {
+			continue;
+		}
+		$holdDate = $value->createDate;
+		$campaignStartDate = strtotime($campaign->startDate);
+		$campaignEndDate = strtotime($campaign->endDate);
+
+		if ($holdDate < $campaignStartDate || $holdDate > $campaignEndDate) {
+			continue;
+		}
+
 		if (_campaignMilestoneProgressEntryObjectAlreadyExists($value, $campaignMilestone))
 			return;
 
@@ -98,6 +126,19 @@ add_action('after_object_insert', 'after_work_review_insert', function ($value) 
 		return;
 
 	while ($campaignMilestone->fetch()) {
+		$campaign = new Campaign();
+		$campaign->id = $campaignMilestone->campaignId;
+		if (!$campaign->find(true)) {
+			continue;
+		}
+		$ratingDate = $value->dateRated;
+
+		$campaignStartDate = strtotime($campaign->startDate);
+		$campaignEndDate = strtotime($campaign->endDate);
+
+		if ($ratingDate < $campaignStartDate || $ratingDate > $campaignEndDate) {
+			continue;
+		}
 		$campaignMilestone->addCampaignMilestoneProgressEntry($value, $value->userId, $value->groupedRecordPermanentId);
 
 		$userCampaign = new UserCampaign();

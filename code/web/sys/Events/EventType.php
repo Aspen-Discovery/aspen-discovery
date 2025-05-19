@@ -147,14 +147,32 @@ class EventType extends DataObject {
 	function delete($useWhere = false) : int {
 		$event = new Event();
 		$event->eventTypeId = $this->id;
-		$event->deleted = 0;
+		$event->deleted = "0";
 		if ($event->count() == 0) {
 			//Delete links to libraries and locations as well
 			$this->clearLocations();
 			$this->clearLibraries();
 			return parent::delete($useWhere);
+		} else{
+			//Cannot delete event types that have events created for them
 		}
 		return 0;
+	}
+
+	public function getDeletionBlockInformation(array $structure) : array {
+		$deletionBlock = parent::getDeletionBlockInformation($structure);
+		if ($deletionBlock['preventDeletion']) {
+			return $deletionBlock;
+		}else{
+			$event = new Event();
+			$event->eventTypeId = $this->id;
+			$event->deleted = "0";
+			if ($event->count() > 0) {
+				$deletionBlock['preventDeletion'] = true;
+				$deletionBlock['message'] = translate(['text' => 'This Event Type is in use by one or more events that have not been deleted. Please delete the events prior to deleting this event type.', 'isAdminFacing'=>true]);
+			}
+		}
+		return $deletionBlock;
 	}
 
 	public function __set($name, $value) {

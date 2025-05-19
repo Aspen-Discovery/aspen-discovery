@@ -475,8 +475,9 @@ public class Axis360Extractor {
 			for (Axis360Title axis360Title : existingRecords.values()) {
 				if (!axis360Title.isDeleted() && !axis360Title.isProcessed()) {
 					//Remove Axis360 availability
-					deleteAxis360AvailabilityStmt.setString(1, axis360Title.getAxis360Id());
+					deleteAxis360AvailabilityStmt.setLong(1, axis360Title.getId());
 					deleteAxis360AvailabilityStmt.setLong(2, setting.getId());
+					deleteAxis360AvailabilityStmt.executeUpdate();
 
 					getExistingSettingsForAxis360TitleStmt.setLong(1, axis360Title.getId());
 					ResultSet getExistingSettingsForAxis360TitleRS = getExistingSettingsForAxis360TitleStmt.executeQuery();

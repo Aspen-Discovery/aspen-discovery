@@ -440,3 +440,36 @@
     display: block;
   }
 }
+
+.input-group-addon.clear-search {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  display: none;
+  cursor: pointer;
+  color: #aaa;
+  background: none;
+  border: none;
+  padding: 0;
+  z-index: 2;
+
+  @media (max-width: @screen-sm-min) {
+    // Increase right offset slightly on smaller screens.
+    right: 20px;
+  }
+}
+.input-group-addon.clear-search svg {
+  width: 20px;
+  height: 20px;
+  fill: #555;
+}
+.input-group-addon.clear-search:hover svg {
+  fill: #222;
+}
+
+// Ensure the clear icon does not overlap the input text.
+#horizontal-search-box .input-group input#lookfor,
+#home-search-box .input-group input#lookfor {
+  padding-right: 30px !important;
+}

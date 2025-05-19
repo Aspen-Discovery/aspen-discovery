@@ -87,7 +87,7 @@
                                 {/if}
                             {/foreach}
                             <tr id="yourCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
-                                <td colspan="4">
+                                <td colspan="8">
                                     {* <h4>{translate text="Milestones"}</h4> *}
                                     <table class="table table-bordered">
                                     <thead>
@@ -342,7 +342,7 @@
                             {* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
                             <tr id="activeCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
 
-                                <td colspan="4">
+                                <td colspan="6">
                                     {* <h4>{translate text="Milestones"}</h4> *}
                                     <table class="table table-bordered">
 
@@ -434,7 +434,7 @@
                                 </td>
                         </tr>
                         <tr id="upcomingCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
-                                <td colspan="4">
+                                <td colspan="6">
                                     {* <h4>{translate text="Milestones"}</h4> *}
                                     <table class="table table-bordered">
                                     <thead>
@@ -500,7 +500,7 @@
                         </td>
                     </tr>
                     <tr id="pastCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
-                        <td col="4">
+                        <td colspan="5">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -582,7 +582,7 @@
                                 </td>
                             </tr>
                             <tr id="yourPastCampaigns_{$resultIndex}" style="display:none;">
-                                <td colspan="4">
+                                <td colspan="5">
                                     <table class="table table-bordered">
                                         <thead>
                                             <th>{translate text="Milestone" isPublicFacing=true}</th>
@@ -656,7 +656,7 @@
            function toggleYourCampaignInfo(index) {
             var campaignInfoDiv = document.getElementById('yourCampaigns_' + index);
             if (campaignInfoDiv.style.display === 'none') {
-                campaignInfoDiv.style.display = 'block';
+                campaignInfoDiv.style.display = 'table-row';
             } else {
                 campaignInfoDiv.style.display = 'none';
             }
@@ -665,7 +665,7 @@
         function toggleActiveCampaignInfo(index) {
             var campaignInfoDiv = document.getElementById('activeCampaigns_' + index);
             if (campaignInfoDiv.style.display === 'none') {
-                campaignInfoDiv.style.display = 'block';
+                campaignInfoDiv.style.display = 'table-row';
             } else {
                 campaignInfoDiv.style.display = 'none';
             }
@@ -674,7 +674,7 @@
         function toggleUpcomingCampaignInfo(index) {
             var campaignInfoDiv = document.getElementById('upcomingCampaigns_' + index);
             if (campaignInfoDiv.style.display === 'none') {
-                campaignInfoDiv.style.display = 'block';
+                campaignInfoDiv.style.display = 'table-row';
             } else {
                 campaignInfoDiv.style.display = 'none';
             }
@@ -683,7 +683,7 @@
         function togglePastCampaignInfo(index) {
             var campaignInfoDiv = document.getElementById('pastCampaigns_' + index);
             if (campaignInfoDiv.style.display === 'none') {
-                campaignInfoDiv.style.display = 'block';
+                campaignInfoDiv.style.display = 'table-row';
             } else {
                 campaignInfoDiv.style.display = 'none';
             }
@@ -692,7 +692,7 @@
         function toggleYourPastCampaignInfo(index) {
             var campaignInfoDiv = document.getElementById('yourPastCampaigns_' + index);
             if (campaignInfoDiv.style.display === 'none') {
-                campaignInfoDiv.style.display = 'block';
+                campaignInfoDiv.style.display = 'table-row';
             } else {
                 campaignInfoDiv.style.display = 'none';
             }

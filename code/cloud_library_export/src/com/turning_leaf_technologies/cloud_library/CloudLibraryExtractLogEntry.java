@@ -21,6 +21,7 @@ class CloudLibraryExtractLogEntry implements BaseIndexingLogEntry {
 	private int numUpdated = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
+	private int numRegrouped = 0;
 	private int numInvalidRecords = 0;
 	private final Logger logger;
 
@@ -30,7 +31,7 @@ class CloudLibraryExtractLogEntry implements BaseIndexingLogEntry {
 		this.settingId = settingsId;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into cloud_library_export_log (settingId, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE cloud_library_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE cloud_library_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ?, numRegrouped = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -94,6 +95,7 @@ class CloudLibraryExtractLogEntry implements BaseIndexingLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
+				updateLogEntry.setInt(++curCol, numRegrouped);
 				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
@@ -162,5 +164,12 @@ class CloudLibraryExtractLogEntry implements BaseIndexingLogEntry {
 	public void incInvalidRecords(String invalidRecordId){
 		this.numInvalidRecords++;
 		this.addNote("Invalid Record found: " + invalidRecordId);
+	}
+
+	public void incRecordsRegrouped() {
+		numRegrouped++;
+		if (numRegrouped % 1000 == 0){
+			this.saveResults();
+		}
 	}
 }
