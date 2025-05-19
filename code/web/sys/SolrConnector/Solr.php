@@ -1907,8 +1907,8 @@ abstract class Solr {
 		//Remove any semi-colons that Solr will handle incorrectly.
 		$input = str_replace(';', ' ', $input);
 
-		// Remove any double hyphens that Solr will handle incorrectly.
-		$input = str_replace('--', ' ', $input);
+		// Remove any double hyphens not surrounded by spaces that Solr will handle incorrectly.
+		$input = preg_replace('/(?<!\s)--(?!\s)/', ' ', $input);
 
 		//Remove slashes occur in the middle of a word that Solr will handle incorrectly.
 		$input = preg_replace("/([0-9a-zA-Z])([\/])([0-9a-zA-Z])/", "$1 $3", $input);
