@@ -2,7 +2,7 @@
 	<div id="main-content" class="col-md-12">
 		<h1>{translate text="Boundless Export Log" isAdminFacing=true}</h1>
 
-		{include file='Axis360/axis360ExportLogFilters.tpl' additionalFiltersFile='Admin/axis360ExportLogFilters.tpl'}
+		{include file='Axis360/axis360ExportLogFilters.tpl'}
 		<div class="adminTableRegion fixed-height-table">
 			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
 				<thead>

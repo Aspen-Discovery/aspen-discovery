@@ -6,4 +6,7 @@
 			<option value='{$propertyValue}'{if isset($propValue) && ($propValue == $propertyValue)} selected='selected'{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if}>{if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing}{else}{$propertyName|escape}{/if}</option>
 		{/if}
 	{/foreach}
+	{if !empty($property.allValues) && !empty($propValue) && !in_array($propValue, $property.values)}
+		<option value='{$propValue}' selected='selected'}>{if !empty($property.translateValues)}{translate text=$property.allValues.$propValue|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing}{else}{$property.allValues.$propValue|escape}{/if}</option>
+	{/if}
 </select>

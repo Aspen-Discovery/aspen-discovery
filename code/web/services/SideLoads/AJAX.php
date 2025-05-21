@@ -4,11 +4,21 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class SideLoads_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function deleteMarc() {
-		if (UserAccount::userHasPermission('Administer Side Loads')) {
+		if (UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library'])) {
 			$id = $_REQUEST['id'];
 			$sideLoadConfiguration = new SideLoad();
 			$sideLoadConfiguration->id = $id;
 			if ($sideLoadConfiguration->find(true) && !empty($sideLoadConfiguration->marcPath)) {
+				if (!UserAccount::userHasPermission(['Administer Side Loads'])) {
+					$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+					$libraryId = $library == null ? -1 : $library->libraryId;
+					if (($sideLoadConfiguration->owningLibrary != -1 && $sideLoadConfiguration->owningLibrary != $libraryId) || ($sideLoadConfiguration->owningLibrary == -1 && $sideLoadConfiguration->sharing != 1)) {
+						return [
+							'success' => false,
+							'message' => 'You do not have permissions to perform this action.',
+						];
+					}
+				}
 				$marcPath = $sideLoadConfiguration->marcPath;
 				$file = $_REQUEST['file'];
 				$fullName = $marcPath . DIRECTORY_SEPARATOR . $file;

@@ -10427,6 +10427,17 @@ AspenDiscovery.Admin = (function () {
 					}
 				}
 			});
+			var oneToManyCells = $(".oneToManyCell");
+			oneToManyCells.each(function () {
+				if ($(this).attr("data-related-ils") !== undefined){
+					var relatedIls = $(this).data("related-ils");
+					if (relatedIls.includes("~" + activeIls + "~")) {
+						$(this).show();
+					}else{
+						$(this).hide();
+					}
+				}
+			});
 		},
 
 		setAccountProfileDefaultsByIls: function () {

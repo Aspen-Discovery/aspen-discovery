@@ -74,14 +74,15 @@ class ListCoverBuilder {
 		//Draw a background for the entire image
 		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $backgroundColor);
 
-		//Draw a few overlapping covers from the list at the top of the cover
-		$numCoversLoaded = 0;
-
+		$isListOfLists = false;
 		$validListEntries = [];
 		/** @var UserListEntry $curListEntry */
 		foreach ($listTitles as $curListEntry) {
 			$recordDriver = $curListEntry->getRecordDriver();
 			if ($recordDriver != null) {
+				if (get_class($recordDriver) === 'ListsRecordDriver') {
+					$isListOfLists = true;
+				}
 				$validListEntries[] = $recordDriver;
 			}
 
@@ -89,7 +90,11 @@ class ListCoverBuilder {
 				break;
 			}
 		}
-		for ($i = min(count($validListEntries) - 1, 3); $i >= 0; $i--) {
+
+		$maxIndex = $isListOfLists
+			? min(count($validListEntries) - 1, 2) // Up to 3 covers for lists-of-lists,
+			: min(count($validListEntries) - 1, 3); // Up to 4 covers for standard lists.
+		for ($i = $maxIndex; $i >= 0; $i--) {
 			$recordDriver = $validListEntries[$i];
 			$bookcoverUrl = $recordDriver->getBookcoverUrl('medium', true);
 			//Load the cover
@@ -99,12 +104,29 @@ class ListCoverBuilder {
 				$listEntryWidth = imagesx($listEntryImageResource);
 				$listEntryHeight = imagesy($listEntryImageResource);
 
-				//Put a white background beneath the cover
-				$coverLeft = 10 + (40 * (3 - $i));
-				$coverTop = 10 + (35 * (3 - $i));
-				imagefilledrectangle($imageCanvas, $coverLeft, $coverTop, $listEntryWidth + $coverLeft, $listEntryHeight + $coverTop, $white);
-				if (imagecopyresampled($imageCanvas, $listEntryImageResource, $coverLeft, $coverTop, 0, 0, $listEntryWidth, $listEntryHeight, $listEntryWidth, $listEntryHeight)) {
-					$numCoversLoaded++;
+				if ($isListOfLists) {
+					// For lists of lists, use a different placement strategy: make covers larger and more spaced out.
+					$coverLeft = 10 + (45 * (2 - $i));
+					$coverTop = 10 + (20 * (2 - $i));
+
+					$newWidth = $listEntryWidth * 1.2;
+					$newHeight = $listEntryHeight * 1.2;
+
+					if (imagecopyresampled($imageCanvas, $listEntryImageResource, $coverLeft, $coverTop, 0, 0, $newWidth, $newHeight, $listEntryWidth, $listEntryHeight)) {
+						$borderColor = imagecolorallocate($imageCanvas, 0, 0, 0);
+						imagerectangle($imageCanvas, $coverLeft, $coverTop, $newWidth + $coverLeft, $newHeight + $coverTop, $borderColor);
+					} else {
+						global $logger;
+						$logger->log(sprintf(
+							"ListCoverBuilder [getCover()]: imagecopyresampled failed for cover URL '%s' (src %dx%d -> dest %dx%d at %d,%d).",
+							$bookcoverUrl, $listEntryWidth, $listEntryHeight, $newWidth, $newHeight, $coverLeft, $coverTop
+						), Logger::LOG_ERROR);
+					}
+				} else {
+					$coverLeft = 10 + (40 * (3 - $i));
+					$coverTop = 10 + (35 * (3 - $i));
+					imagefilledrectangle($imageCanvas, $coverLeft, $coverTop, $listEntryWidth + $coverLeft, $listEntryHeight + $coverTop, $white);
+					imagecopyresampled($imageCanvas, $listEntryImageResource, $coverLeft, $coverTop, 0, 0, $listEntryWidth, $listEntryHeight, $listEntryWidth, $listEntryHeight);
 				}
 				imagedestroy($listEntryImageResource);
 			}

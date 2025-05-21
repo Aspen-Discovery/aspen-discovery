@@ -606,6 +606,7 @@ abstract class ObjectEditor extends Admin_Admin {
 						if (UserAccount::userHasPermission('Lock Administration Fields')) {
 							$fieldLocks = null;
 						}
+						$structure = $curObject->updateStructureForEditingObject($structure);
 						$validationResults = $this->updateFromUI($curObject, $structure, $fieldLocks);
 						if ($validationResults['validatedOk']) {
 							//Always save since has changes does not check sub objects for changes (which it should)

@@ -35,8 +35,10 @@ public class DateUtils {
 	static LinkedHashSet<String> timeSinceAddedSixMonths = new LinkedHashSet<>();
 	static LinkedHashSet<String> timeSinceAddedYear = new LinkedHashSet<>();
 	static LinkedHashSet<String> timeSinceAddedNone = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedInProcess = new LinkedHashSet<>();
 	static {
 		timeSinceAddedOnOrder.add("On Order");
+		timeSinceAddedInProcess.add("In Processing");
 		timeSinceAddedUnderConsideration.add("Under Consideration");
 		timeSinceAddedYear.add("Year");
 		timeSinceAddedSixMonths.add("Six Months");
@@ -56,24 +58,26 @@ public class DateUtils {
 		// System.out.println("Time Difference Days: " + timeDifferenceDays);
 		if (timeDifferenceDays == Integer.MAX_VALUE) {
 			return timeSinceAddedUnderConsideration;
-		}else if (timeDifferenceDays < 0) {
+		} else if (timeDifferenceDays == -2) {
+			return timeSinceAddedInProcess;
+		} else if (timeDifferenceDays < 0) {
 			return timeSinceAddedOnOrder;
-		}else {
+		} else {
 			if (timeDifferenceDays <= 1) {
 				return timeSinceAddedDay;
-			}else if (timeDifferenceDays <= 7) {
+			} else if (timeDifferenceDays <= 7) {
 				return timeSinceAddedWeek;
-			}else if (timeDifferenceDays <= 30) {
+			} else if (timeDifferenceDays <= 30) {
 				return timeSinceAddedMonth;
-			}else if (timeDifferenceDays <= 60) {
+			} else if (timeDifferenceDays <= 60) {
 				return timeSinceAdded2Months;
-			}else if (timeDifferenceDays <= 90) {
+			} else if (timeDifferenceDays <= 90) {
 				return timeSinceAddedQuarter;
-			}else if (timeDifferenceDays <= 180) {
+			} else if (timeDifferenceDays <= 180) {
 				return timeSinceAddedSixMonths;
-			}else if (timeDifferenceDays <= 365) {
+			} else if (timeDifferenceDays <= 365) {
 				return timeSinceAddedYear;
-			}else{
+			} else {
 				return timeSinceAddedNone;
 			}
 		}

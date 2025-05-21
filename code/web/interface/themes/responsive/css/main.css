@@ -8744,6 +8744,24 @@ a.placard-link {
 .stripPopup .cookieContainer abbr {
   color: white;
 }
+#account-menu-label {
+  justify-content: left;
+  text-align: left;
+}
+#sidebar-collapse {
+  display: block;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 100;
+}
+#sidebar-expand {
+  display: block;
+  position: absolute;
+  top: 20px;
+  left: -15px;
+  z-index: 100;
+}
 .swiper {
   width: 100%;
 }

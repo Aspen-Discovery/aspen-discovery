@@ -1,5 +1,5 @@
 {strip}
-	{if count($libraryLocations) > 1}
+	{if count($libraryLocations) > 1 && !isset($useStaticLocation)}}
 		<form role="form">
 			<div class="form-group">
 				<label for="selectLibraryHours">{translate text="Select a Location" isPublicFacing=true}</label>

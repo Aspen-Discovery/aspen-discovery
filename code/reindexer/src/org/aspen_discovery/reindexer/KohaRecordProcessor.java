@@ -172,40 +172,40 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	private final HashSet<String> additionalStatuses = new HashSet<>();
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected ItemStatus getItemStatus(DataField itemField, String recordIdentifier){
 		String itemIdentifier = MarcUtil.getItemSubfieldData(settings.getItemRecordNumberSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (inTransitItems.contains(itemIdentifier)){
-			return "In Transit";
+			return new ItemStatus("In Transit", ItemStatus.FROM_OTHER, this, recordIdentifier);
 		}
 		if (onHoldShelfItems.contains(itemIdentifier)){
-			return "On Hold Shelf";
+			return new ItemStatus("On Hold Shelf", ItemStatus.FROM_OTHER, this, recordIdentifier);
 		}
 
 		String subLocationData = MarcUtil.getItemSubfieldData(settings.getSubLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (subLocationData != null && subLocationData.equalsIgnoreCase("ON-ORDER")){
-			return "On Order";
+			return new ItemStatus("On Order", ItemStatus.FROM_OTHER, this, recordIdentifier);
 		}
 
 		//Determining status for Koha relies on a number of different fields
 		String status = getStatusFromSubfield(itemField, '0', "Withdrawn");
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
 		status = getStatusFromSubfield(itemField, '1', "Lost");
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
 		status = getStatusFromSubfield(itemField, '4', "Damaged");
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
 		status = getStatusFromSubfield(itemField, 'q', "Checked Out");
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
 		status = getStatusFromSubfield(itemField, '7', "Library Use Only"); //not for loan
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
 		status = getStatusFromSubfield(itemField, 'k', null);
-		if (status != null) return status;
+		if (status != null) return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 
-		return "On Shelf";
+		return new ItemStatus("On Shelf", ItemStatus.FROM_OTHER, this, recordIdentifier);
 	}
 
 	private String getStatusFromSubfield(DataField itemField, char subfield, String defaultStatus) {

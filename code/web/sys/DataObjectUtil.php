@@ -195,18 +195,18 @@ class DataObjectUtil {
 			'pin',
 			'pinConfirmation'
 		])) {
-			if (isset($_REQUEST[$propertyName])) {
-				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {
-					$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
-				} else {
-					$newValue = strip_tags(trim($_REQUEST[$propertyName]));
-					if ($newValue != null) {
-						$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+			if (empty($property['readOnly'])) {
+				if (isset($_REQUEST[$propertyName])) {
+					if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {
+						$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
+					} else {
+						$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+						if ($newValue != null) {
+							$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+						}
+						$object->setProperty($propertyName, $newValue, $property);
 					}
-					$object->setProperty($propertyName, $newValue, $property);
-				}
-			} else {
-				if (empty($property['readOnly'])) {
+				} else {
 					$object->setProperty($propertyName, "", $property);
 				}
 			}

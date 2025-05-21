@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';
 
 class SideLoads_Scopes extends ObjectEditor {
-	function launch() {
+	function launch() : void {
 		if (isset($_REQUEST['id'])) {
 			$sideLoadScope = new SideLoadScope();
 			$sideLoadScope->id = $_REQUEST['id'];
@@ -40,9 +40,23 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
+		//Get the sideloads the user has access to
+		$sideLoad = new SideLoad();
+		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer Side Loads')) {
+			$libraryList = Library::getLibraryList(true);
+			$sideLoad->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
+			$sideLoad->whereAdd("sharing = 1", "OR");
+		}
+		$sideLoad->find();
+		$availableSideLoadIds = [];
+		while ($sideLoad->fetch()) {
+			$availableSideLoadIds[$sideLoad->id] = $sideLoad->id;
+		}
+
 		$object = new SideLoadScope();
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->whereAddIn('sideLoadId', $availableSideLoadIds, false);
 		$this->applyFilters($object);
 		$object->find();
 		$objectList = [];
@@ -84,6 +98,10 @@ class SideLoads_Scopes extends ObjectEditor {
 		if ($sideLoadScope->find(true)) {
 			$existingLibrariesSideLoadScopes = $sideLoadScope->getLibraries();
 			$library = new Library();
+			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$library->libraryId = $library == null ? -1 : $library->libraryId;
+			}
 			$library->find();
 			while ($library->fetch()) {
 				$alreadyAdded = false;
@@ -124,6 +142,11 @@ class SideLoads_Scopes extends ObjectEditor {
 		if ($sideLoadScope->find(true)) {
 			$existingLocationSideLoadScopes = $sideLoadScope->getLocations();
 			$location = new Location();
+			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$library->libraryId = $library == null ? -1 : $library->libraryId;
+				$location->libraryId = $library->libraryId;
+			}
 			$location->find();
 			while ($location->fetch()) {
 				$alreadyAdded = false;
@@ -171,7 +194,13 @@ class SideLoads_Scopes extends ObjectEditor {
 		return 'side_loads';
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer Side Loads',
+		]);
+	}
+
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Side Loads');
+		return UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
 	}
 }

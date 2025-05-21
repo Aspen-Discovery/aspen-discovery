@@ -222,6 +222,7 @@ class SideFacets implements RecommendationInterface {
 //			}
 			$sortOrder = [
 				'On Order' => null,
+				'In Processing' => null,
 				'Day' => null,
 				'Week' => null,
 				'Month' => null,

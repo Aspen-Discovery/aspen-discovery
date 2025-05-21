@@ -141,7 +141,7 @@ class OverDriveProcessor {
 						Date publishDate = null;
 						if (rawMetadataDecoded != null) {
 							if (rawMetadataDecoded.has("onSaleDate")) {
-								@SuppressWarnings("unused") 
+								@SuppressWarnings("unused")
 								String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
 							} else if (rawMetadataDecoded.has("publishDateText")) {
 								String publishDateText = rawMetadataDecoded.getString("publishDateText");
@@ -242,17 +242,34 @@ class OverDriveProcessor {
 						if (rawMetadataDecoded != null) {
 							if (validFormats.contains("OverDrive Read") || validFormats.contains("Kindle Book")) {
 								//Check to see if this is a comic book instead of a regular eBook
+								boolean isEComic = false;
 								if (rawMetadataDecoded.has("subjects")) {
 									JSONArray subjects = rawMetadataDecoded.getJSONArray("subjects");
 									for (int i = 0; i < subjects.length(); i++) {
 										String curSubject = subjects.getJSONObject(i).getString("value");
 										if (curSubject.equals("Comic and Graphic Books")) {
-											validFormats.clear();
-											validFormats.add("eComic");
-											primaryFormat = "eComic";
-											if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Overrode format based on a subject of " + curSubject, 2);}
+											isEComic = true;
+											if (groupedWork.isDebugEnabled()) {
+												groupedWork.addDebugMessage("Overrode format based on a subject of " + curSubject, 2);
+											}
 											break;
 										}
+									}
+								}
+								if (isEComic) {
+									if (rawMetadataDecoded.has("edition")) {
+										if (rawMetadataDecoded.getString("edition").equalsIgnoreCase("Light Novel")){
+											isEComic = false;
+											if (groupedWork.isDebugEnabled()) {
+												groupedWork.addDebugMessage("Resetting format back to eBook due to an edition of Light Novel", 2);
+											}
+										}
+									}
+
+									if (isEComic) {
+										validFormats.clear();
+										validFormats.add("eComic");
+										primaryFormat = "eComic";
 									}
 								}
 							}

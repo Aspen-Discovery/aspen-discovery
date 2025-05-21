@@ -117,6 +117,6 @@ class SideLoads_UploadMarc extends Admin_Admin {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Side Loads');
+		return UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library']);
 	}
 }

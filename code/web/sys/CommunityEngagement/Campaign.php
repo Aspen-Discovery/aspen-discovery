@@ -753,7 +753,7 @@ class Campaign extends DataObject {
         $user = new User();
     	$user->id = $userCampaignRecord->userId;
 		if (!$user->find(true)) {
-			return;
+			continue;
 		}
 
 		if ($userCampaignRecord->optInToCampaignLeaderboard === 0 ||($userCampaignRecord->optInToCampaignLeaderboard === null && $user->optInToAllCampaignLeaderboards === 0)) {

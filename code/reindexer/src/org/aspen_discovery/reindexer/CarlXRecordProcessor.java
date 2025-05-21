@@ -30,12 +30,12 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected ItemStatus getItemStatus(DataField itemField, String recordIdentifier){
 		String statusCode = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (statusCode.length() > 2){
 			statusCode = translateValue("status_codes", statusCode, recordIdentifier);
 		}
-		return statusCode;
+		return new ItemStatus(statusCode, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {

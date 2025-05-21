@@ -83,13 +83,13 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 		return new ResultWithNotes(false, suppressionNotes);
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected ItemStatus getItemStatus(DataField itemField, String recordIdentifier){
 		String status = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (status == null || status.isEmpty()){
 			status = "On Shelf";
 		} else if (status.startsWith("Due on")) {
 			status = "Checked Out";
 		}
-		return status;
+		return new ItemStatus(status, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 	}
 }

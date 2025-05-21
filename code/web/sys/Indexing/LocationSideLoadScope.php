@@ -17,16 +17,11 @@ class LocationSideLoadScope extends DataObject {
 		while ($sideLoadScope->fetch()) {
 			$sideLoadScopes[$sideLoadScope->id] = $sideLoadScope->name;
 		}
-		$locationsList = [];
-		$location = new Location();
-		$location->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Locations')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$location->libraryId = $homeLibrary->libraryId;
-		}
-		$location->find();
-		while ($location->fetch()) {
-			$locationsList[$location->locationId] = $location->displayName;
+		$allLocationsList = Location::getLocationList(false);
+		if (!UserAccount::userHasPermission('Administer Side Loads')) {
+			$locationsList = Location::getLocationList(true);
+		}else{
+			$locationsList = $allLocationsList;
 		}
 		return [
 			'id' => [
@@ -46,6 +41,7 @@ class LocationSideLoadScope extends DataObject {
 			'locationId' => [
 				'property' => 'locationId',
 				'type' => 'enum',
+				'allValues' => $allLocationsList,
 				'values' => $locationsList,
 				'label' => 'Location',
 				'description' => 'The Location to associate the scope to',

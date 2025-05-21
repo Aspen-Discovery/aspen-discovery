@@ -7,6 +7,8 @@ AspenDiscovery.WebBuilder = function () {
 		getPortalCellValuesForSource: function () {
 			var portalCellId = $("#id").val();
 			var sourceType = $("#sourceTypeSelect").val();
+			const $staticLocationSelector = $('#propertyRowstaticLocationId');
+			$($staticLocationSelector).hide();
 			if (sourceType === 'markdown') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
@@ -41,6 +43,7 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowcustomImage').hide();
 				$('#propertyRowhideDescription').hide();
 			}else if (sourceType === 'hours_locations') {
+				$($staticLocationSelector).show();
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
@@ -52,6 +55,7 @@ AspenDiscovery.WebBuilder = function () {
 				$('#propertyRowcustomImage').hide();
 				$('#propertyRowhideDescription').hide();
 			}else {
+				$($staticLocationSelector).hide();
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();

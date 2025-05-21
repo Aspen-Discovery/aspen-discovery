@@ -157,17 +157,6 @@ class SpringshareLibCalIndexer {
 			return;
 		}
 
-		//We do not need to delete from the index proactively, because we delete existing records individually below
-//		try {
-//			solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
-//			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-//		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
-//			logEntry.incErrors("Solr is not running properly, try restarting " + rse);
-//			System.exit(-1);
-//		} catch (Exception e) {
-//			logEntry.incErrors("Error deleting from index ", e);
-//		}
-
 		Date lastDateToIndex = new Date();
 		long numberOfDays = numberOfDaysToIndex * 24L;
 		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
@@ -429,6 +418,27 @@ class SpringshareLibCalIndexer {
 			System.exit(-3);
 		}
 
+		// Close prepared statements.
+		try {
+			if (addEventStmt != null) {
+				addEventStmt.close();
+			}
+			if (updateEventStmt != null) {
+				updateEventStmt.close();
+			}
+			if (deleteEventStmt != null) {
+				deleteEventStmt.close();
+			}
+			if (addRegistrantStmt != null) {
+				addRegistrantStmt.close();
+			}
+			if (deleteRegistrantStmt != null) {
+				deleteRegistrantStmt.close();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error closing prepared statements: ", e);
+		}
+
 		logEntry.setFinished();
 	}
 
@@ -458,15 +468,15 @@ class SpringshareLibCalIndexer {
 				if (curEvent.get(keyName) instanceof JSONObject){
 					JSONObject keyObj = curEvent.getJSONObject(keyName);
 					if (keyObj.has("name")) {
-						return keyObj.getString("name");
+						return AspenStringUtils.trimTrailingPunctuation(keyObj.getString("name"));
 					}else{
 						for (String objKey: keyObj.keySet()){
-							return keyObj.getString(objKey);
+							return AspenStringUtils.trimTrailingPunctuation(keyObj.getString(objKey));
 						}
 						return null;
 					}
 				}else{
-					return curEvent.get(keyName).toString();
+					return AspenStringUtils.trimTrailingPunctuation(curEvent.get(keyName).toString());
 				}
 			}
 		}else{
@@ -480,13 +490,13 @@ class SpringshareLibCalIndexer {
 			if (curEvent.get(keyName) instanceof JSONObject) {
 				JSONObject keyObj = curEvent.getJSONObject(keyName);
 				for (String keyValue : keyObj.keySet()) {
-					values.add(keyObj.getString(keyValue));
+					values.add(AspenStringUtils.trimTrailingPunctuation(keyObj.getString(keyValue)));
 				}
 			}else{
 				JSONArray keyArray = curEvent.getJSONArray(keyName);
 				for (int i = 0; i < keyArray.length(); i++){
 					if (keyArray.get(i) instanceof JSONObject && keyArray.getJSONObject(i).has("name")) {
-						values.add(keyArray.getJSONObject(i).getString("name"));
+						values.add(AspenStringUtils.trimTrailingPunctuation(keyArray.getJSONObject(i).getString("name")));
 					}
 				}
 			}

@@ -80,8 +80,8 @@
 					</div>
 				</div>
 
-				{if $showRatings == 1}
-					{if !empty($record.existsInCatalog) && $record.ratingData}
+				{if !empty($showRatings)}
+					{if !empty($record.existsInCatalog) && !empty($record.ratingData)}
 						<div class="row">
 							<div class="result-label col-tn-3">{translate text="Rating" isPublicFacing=true}</div>
 							<div class="result-value col-tn-9">

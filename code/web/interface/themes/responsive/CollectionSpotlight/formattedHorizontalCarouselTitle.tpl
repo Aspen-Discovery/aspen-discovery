@@ -15,7 +15,8 @@
 				</div>
 			{/if}
 		</a>
-		{* show ratings check in the template *}
-		{include file="GroupedWork/title-rating.tpl" showNotInterested=false}
+		{if !empty($showRatings)}
+			{include file="GroupedWork/title-rating.tpl" id=$id summId=$id ratingData=$ratingData showNotInterested=$showNotInterested}
+		{/if}
 	</div>
 {/strip}

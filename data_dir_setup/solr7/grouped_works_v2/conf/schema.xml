@@ -20,7 +20,7 @@
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
 				<filter class="solr.ICUFoldingFilterFactory" />
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
-<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -47,7 +47,7 @@
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
-<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
 				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
@@ -78,7 +78,7 @@
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.KStemFilterFactory"/>
@@ -106,7 +106,7 @@
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
-				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>

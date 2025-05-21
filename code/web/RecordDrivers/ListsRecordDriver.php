@@ -31,7 +31,7 @@ class ListsRecordDriver extends IndexRecordDriver {
 		return $this->valid;
 	}
 
-	function getBookcoverUrl($size = 'small', $absolutePath = false) {
+	function getBookcoverUrl($size = 'small', $absolutePath = false): string {
 		global $configArray;
 		if ($absolutePath) {
 			$bookCoverUrl = $configArray['Site']['url'];
@@ -39,8 +39,7 @@ class ListsRecordDriver extends IndexRecordDriver {
 			$bookCoverUrl = '';
 		}
 		$id = $this->getId();
-		$bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
-		return $bookCoverUrl;
+		return $bookCoverUrl . "/bookcover.php?type=list&id={$id}&size={$size}";
 	}
 
 	/**

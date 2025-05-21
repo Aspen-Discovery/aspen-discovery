@@ -10,9 +10,9 @@
 	{* Information about the search *}
 	<div class="result-head">
 		{if !empty($replacementTerm)}
-			<div id="replacement-search-info-block">
-				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for" isPublicFacing=true}</span> {$replacementTerm}</div>
-				<div id="original-search-info"><span class="replacement-search-info-text">{translate text="Search instead for" isPublicFacing=true} </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
+			<div id="replacement-search-info-block" class="alert alert-info" role="alert">
+				<p>{translate text="No results were found for \"%1%\". Showing results for \"%2%\" instead." isPublicFacing=true 1=$oldTerm 2=$replacementTerm}</p>
+				<p><a href="{$oldSearchUrl}">{translate text="Search for \"%1%\" instead." isPublicFacing=true 1=$oldTerm}</a></p>
 			</div>
 		{/if}
 

@@ -194,6 +194,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		translationMaps.put(itemStatusMap.getMapName(), itemStatusMap);
 		TranslationMap itemGroupedStatusMap = new TranslationMap(profileType, "item_grouped_status", false, logger);
 		translationMaps.put(itemGroupedStatusMap.getMapName(), itemGroupedStatusMap);
+		TranslationMap itemStatusAltMap = new TranslationMap(profileType, "item_status_alt", false, logger);
+		translationMaps.put(itemStatusAltMap.getMapName(), itemStatusAltMap);
+		TranslationMap itemGroupedStatusAltMap = new TranslationMap(profileType, "item_grouped_status_alt", false, logger);
+		translationMaps.put(itemGroupedStatusAltMap.getMapName(), itemGroupedStatusAltMap);
 		while (statusMapRS.next()){
 			String status = statusMapRS.getString("value");
 			if (statusMapRS.getBoolean("suppress")){
@@ -202,8 +206,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusMapRS.getBoolean("inLibraryUseOnly")){
 				inLibraryUseOnlyStatuses.add(status);
 			}
-			itemStatusMap.addValue(status, statusMapRS.getString("status"), indexer.getLogEntry());
-			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"), indexer.getLogEntry());
+			if (statusMapRS.getBoolean("appliesToStatusSubfield")) {
+				itemStatusMap.addValue(status, statusMapRS.getString("status"), indexer.getLogEntry());
+				itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"), indexer.getLogEntry());
+			}
+			if (statusMapRS.getBoolean("appliesToStatusAltSubfield")) {
+				itemStatusAltMap.addValue(status, statusMapRS.getString("status"), indexer.getLogEntry());
+				itemGroupedStatusAltMap.addValue(status, statusMapRS.getString("groupedStatus"), indexer.getLogEntry());
+			}
 		}
 		statusMapRS.close();
 	}
@@ -824,7 +834,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private SimpleDateFormat lastCheckInFormatter = null;
-	protected final HashSet<String> unhandledFormatBoosts = new HashSet<>();
 	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, DataField itemField, StringBuilder suppressionNotes) {
 		if (lastCheckInFormatter == null && settings.getLastCheckinFormat() != null && !settings.getLastCheckinFormat().isEmpty()){
 			lastCheckInFormatter = new SimpleDateFormat(settings.getLastCheckinFormat());
@@ -839,8 +848,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		itemInfo.setItemIdentifier(itemIdentifier);
 
-		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
-		if (statusesToSuppress.contains(itemStatus)){
+		ItemStatus itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
+		if (statusesToSuppress.contains(itemStatus.getOriginalValue())){
 			suppressionNotes.append(itemInfo.getItemIdentifier()).append(" status matched suppression table<br/>");
 			return new ItemInfoWithNotes(null, suppressionNotes);
 		}
@@ -894,8 +903,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		//set status towards the end - so we can access date added and other things that may need to
-		itemInfo.setStatusCode(itemStatus);
-		if (itemStatus != null) {
+		itemInfo.setItemStatus(itemStatus);
+		if (itemStatus.getOriginalValue() != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
 		}
 
@@ -1114,13 +1123,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
+	@SuppressWarnings("unused")
+	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, ItemStatus itemStatus, String identifier) {
 		//See if we need to override based on the last check in date
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
 			itemInfo.setDetailedStatus(overriddenStatus);
 		}else {
-			itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
+			itemInfo.setDetailedStatus(itemStatus.getStatus());
 		}
 	}
 
@@ -1150,7 +1160,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (overriddenStatus != null) {
 			return overriddenStatus;
 		}else {
-			return translateValue("item_grouped_status", itemInfo.getStatusCode(), identifier);
+			return itemInfo.getItemStatus().getGroupedStatus();
 		}
 	}
 
@@ -1159,7 +1169,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (overriddenStatus != null) {
 			return overriddenStatus;
 		}else {
-			return translateValue("item_status", itemInfo.getStatusCode(), identifier);
+			return translateValue("item_status", itemInfo.getItemStatus().getStatus(), identifier);
 		}
 	}
 
@@ -1191,7 +1201,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemPopularity;
 	}
 
-	protected boolean isItemInvalid(String itemStatus, String itemLocation) {
+	protected boolean isItemInvalid(ItemStatus itemStatus, String itemLocation) {
 		return itemStatus == null && itemLocation == null;
 	}
 
@@ -1380,8 +1390,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return location;
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		return MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
+	protected ItemStatus getItemStatus(DataField itemField, String recordIdentifier){
+		String statusValue = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
+		return new ItemStatus(statusValue, ItemStatus.FROM_STATUS_FIELD, this, recordIdentifier);
 	}
 
 	protected abstract boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus);
@@ -1389,7 +1400,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, org.marc4j.marc.Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		if (settings.getIndex856Links() == 1 || settings.getIndex856Links() == 2) {
-			boolean hasEContentItems = !mainRecordInfo.getRelatedItems().isEmpty() && mainRecordInfo.getRelatedItems().stream().anyMatch(curItem->curItem.isEContent());
+			boolean hasEContentItems = !mainRecordInfo.getRelatedItems().isEmpty() && mainRecordInfo.getRelatedItems().stream().anyMatch(ItemInfo::isEContent);
 			if (settings.getIndex856Links() == 2 && hasEContentItems) {
 				return unsuppressedEcontentRecords;
 			}
@@ -1522,6 +1533,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes, boolean suppressBlankStatuses) {
+		if (settings.getItemStatusAltSubfield() != ' ') {
+			Subfield statusAltSubfield = curItem.getSubfield(settings.getItemStatusAltSubfield());
+			if (statusAltSubfield != null) {
+				String statusAltValue = statusAltSubfield.getData();
+				if (statusesToSuppress.contains(statusAltValue)){
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - status alt suppressed in Indexing Profile<br>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
+			}
+		}
 		if (settings.getItemStatusSubfield() != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(settings.getItemStatusSubfield());
 			if (statusSubfield == null) {
@@ -1851,8 +1872,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Could not find target audience based on item - checking the bib record", 1);}
 				super.loadTargetAudiences(groupedWork, record, printItems, identifier,  settings.getTreatUnknownAudienceAs());
 			}else {
-				groupedWork.addTargetAudiences(translatedAudiences);
-				groupedWork.addTargetAudiencesFull(translatedAudiences);
+				if (groupedWork != null) {
+					groupedWork.addTargetAudiences(translatedAudiences);
+					groupedWork.addTargetAudiencesFull(translatedAudiences);
+				}
 			}
 		}
 	}
@@ -1872,8 +1895,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							String translatedValue = translateValue("literary_form", subfield.getData(), identifier, true);
 							if (translatedValue != null) {
 								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Subfield " + settings.getLiteraryFormSubfield() + " for item " + printItem.getItemIdentifier() + " is " + subfield.getData() + " which maps to " + translatedValue, 2);}
-								groupedWork.addLiteraryForm(translatedValue);
-								groupedWork.addLiteraryFormFull(translatedValue);
+								if (groupedWork != null) {
+									groupedWork.addLiteraryForm(translatedValue);
+									groupedWork.addLiteraryFormFull(translatedValue);
+								}
 							}
 						}
 					}

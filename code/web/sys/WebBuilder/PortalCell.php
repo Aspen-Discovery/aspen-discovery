@@ -39,6 +39,7 @@ class PortalCell extends DataObject {
 	public $imgAlt;
 	public $colorScheme;
 	public $invertColor;
+	public $staticLocationId;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -48,7 +49,7 @@ class PortalCell extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['frameHeight', 'invertColor'];
+		return ['frameHeight', 'invertColor', 'staticLocationId'];
 	}
 
 	static function getObjectStructure($context = ''): array {
@@ -93,6 +94,16 @@ class PortalCell extends DataObject {
 			'2' => 'Open a URL in the same tab',
 			'3' => 'Enlarge the image in a pop-up modal',
 		];
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$locationOptions = [];
+		$tmpLocation = new Location();
+		$tmpLocation->showInLocationsAndHoursList = 1;
+		$tmpLocation->orderBy('isMainBranch DESC, displayName');
+		$tmpLocation->find();
+		while ($tmpLocation->fetch()) {
+			$locationOptions[$tmpLocation->locationId] = $tmpLocation->displayName;
+		}
 
 		return [
 			'id' => [
@@ -232,6 +243,14 @@ class PortalCell extends DataObject {
 				'values' => [],
 				'label' => 'Source Id',
 				'description' => 'Source for the content of cell',
+			],
+			'staticLocationId' => [
+				'property' => 'staticLocationId',
+				'type' => 'enum',
+				'values' => ['-1' => 'Dynamic (Allow User Selection)'] + $locationOptions,
+				'label' => 'Static Location',
+				'description' => 'Select a location to display (static). Leave as Dynamic to allow user selection.',
+				'default' => -1,
 			],
 			'hideDescription' => [
 				'property' => 'hideDescription',
@@ -487,23 +506,33 @@ class PortalCell extends DataObject {
 			}
 		} elseif ($this->sourceType == 'hours_locations') {
 			global $library;
-			$tmpLocation = new Location();
-			$tmpLocation->libraryId = $library->libraryId;
-			$tmpLocation->showInLocationsAndHoursList = 1;
-			$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 			$libraryLocations = [];
-			$tmpLocation->find();
-			if ($tmpLocation->getNumResults() == 0) {
-				//Get all locations
-				$tmpLocation = new Location();
-				$tmpLocation->showInLocationsAndHoursList = 1;
-				$tmpLocation->orderBy('displayName');
-				$tmpLocation->find();
-			}
 
+			// Check if using static location or dynamic selection.
 			$locationsToProcess = [];
-			while ($tmpLocation->fetch()) {
-				$locationsToProcess[] = clone $tmpLocation;
+			$tmpLocation = new Location();
+			if (!empty($this->staticLocationId) && $this->staticLocationId != -1) {
+				// Get a single specific location.
+				$tmpLocation->locationId = $this->staticLocationId;
+				if ($tmpLocation->find(true)) {
+					$locationsToProcess[] = clone $tmpLocation;
+				}
+			} else {
+				// Get all locations as before (dynamic selection).
+				$tmpLocation->libraryId = $library->libraryId;
+				$tmpLocation->showInLocationsAndHoursList = 1;
+				$tmpLocation->orderBy('isMainBranch DESC, displayName');
+				$tmpLocation->find();
+				if ($tmpLocation->getNumResults() == 0) {
+					$tmpLocation = new Location();
+					$tmpLocation->showInLocationsAndHoursList = 1;
+					$tmpLocation->orderBy('displayName');
+					$tmpLocation->find();
+				}
+
+				while ($tmpLocation->fetch()) {
+					$locationsToProcess[] = clone $tmpLocation;
+				}
 			}
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
@@ -590,6 +619,9 @@ class PortalCell extends DataObject {
 
 			global $interface;
 			$interface->assign('libraryLocations', $libraryLocations);
+			if (!empty($this->staticLocationId) && $this->staticLocationId != -1) {
+				$interface->assign('useStaticLocation', true);
+			}
 			$contents .= $interface->fetch('WebBuilder/libraryHoursAndLocations.tpl');
 		}
 		if ($this->makeCellAccordion == '1') {

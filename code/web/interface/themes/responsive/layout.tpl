@@ -139,6 +139,7 @@
 							</div>
 						{/if}
 						<div role="main">
+							<div id="sidebar-expand" style="display: none"><button class="btn btn-default btn-sm" aria-label="{translate text="Expand Sidebar" inAttribute=true isAdminFacing=true}"  title="{translate text="Expand Sidebar" inAttribute=true isAdminFacing=true}" onclick="$('#side-bar').show();$('#main-content-with-sidebar').removeClass('col-sm-12').removeClass('col-md-12').removeClass('col-lg-12').addClass('col-sm-8').addClass('col-md-9'){if !empty($fullWidthTheme) && !empty($showContentAsFullWidth)}.addClass('col-lg-10'){else}.addClass('col-lg-9'){/if};$('#sidebar-expand').hide();"><i class="fas fa-angle-double-right"></i></button></div>
 							{if !empty($module)}
 								{include file="$module/$pageTemplate"}
 							{else}

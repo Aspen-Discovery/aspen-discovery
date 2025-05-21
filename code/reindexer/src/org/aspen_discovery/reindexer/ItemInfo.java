@@ -34,6 +34,7 @@ public class ItemInfo{
 	private String eContentFilename;
 	private String eContentUrl;
 	private String statusCode;
+	private ItemStatus itemStatus;
 	private String detailedStatus;
 	private String dueDate;
 	private String collection;
@@ -71,11 +72,17 @@ public class ItemInfo{
 	}
 
 	public String getStatusCode() {
-		return statusCode;
+		return itemStatus.getOriginalValue();
 	}
 
-	void setStatusCode(String statusCode) {
-		this.statusCode = statusCode;
+	public void setItemStatus(ItemStatus itemStatus) {
+		this.itemStatus = itemStatus;
+		this.detailedStatus = itemStatus.getStatus();
+		this.groupedStatus = itemStatus.getGroupedStatus();
+	}
+
+	public ItemStatus getItemStatus() {
+		return itemStatus;
 	}
 
 	void setDetailedStatus(String detailedStatus) {

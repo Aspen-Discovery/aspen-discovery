@@ -2,13 +2,14 @@
 	<div id="main-content" class="col-md-12">
 		<h1>{translate text=$pageTitleShort isAdminFacing=true}</h1>
 
-		{include file='Admin/exportLogFilters.tpl'}
+		{include file='CloudLibrary/cloudLibraryExportLogFilters.tpl'}
 		<div class="adminTableRegion fixed-height-table">
 			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>
 						<th>{translate text="Setting ID" isAdminFacing=true}</th>
+						<th>{translate text="Setting Name" isAdminFacing=true}</th>
 						<th>{translate text="Started" isAdminFacing=true}</th>
 						<th>{translate text="Last Update" isAdminFacing=true}</th>
 						<th>{translate text="Finished" isAdminFacing=true}</th>
@@ -29,6 +30,7 @@
 						<tr>
 							<td>{$logEntry->id}</td>
 							<td>{$logEntry->settingId}</td>
+							<td>{$settings.{$logEntry->settingId}}</td>
 							<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>

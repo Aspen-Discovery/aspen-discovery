@@ -158,10 +158,10 @@
 								{if $activePickupLocationId > 0 && !empty($pickupSublocations.$activePickupLocationId) && count($pickupSublocations.$activePickupLocationId) > 1}
 									{if $profile->pickupLocationId}
 										<div id="sublocationSelectPlaceHolder">
-											<label class="control-label" for="pickupSublocation">{translate text='Preferred Pickup Location' isPublicFacing=true}</label>
+											<label class="control-label" for="pickupSublocation">{translate text='Preferred Pickup Area' isPublicFacing=true}</label>
 											<div class="controls">
 												<select name="pickupSublocation" id="pickupSublocation" class="form-control">
-													<option value="0default">{translate text='Please Select a Location' isPublicFacing=true}</option>
+													<option value="0default">{translate text='Please Select an Area' isPublicFacing=true}</option>
 													{foreach from=$pickupSublocations.$activePickupLocationId item=sublocation}
 														<option value="{$sublocation->id}" {if $sublocation->id == $profile->pickupSublocationId}selected="selected"{/if}>{$sublocation->name}</option>
 													{/foreach}

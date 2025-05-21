@@ -1,5 +1,5 @@
 {strip}
-	{if $isEContent}
+	{if !empty($isEContent)}
 		<div class="itemSummary">
 			<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{else}{$format}{/if}', '{$itemSummaryId}');">
 				{translate text="where_is_it_button" defaultText="Where is it?" isPublicFacing=true}
@@ -11,10 +11,10 @@
 		{if $showQuickCopy != 3}
 		{foreach from=$summary item="item"}
 			{if !empty($item.displayByDefault) && $numRowsShown<3}
-				{if $item.isEContent == false}
+				{if empty($item.isEContent)}
 					<div class="itemSummary row" style="margin: 0">
 						<div class="col-lg-12 itemLocationDetails" data-shelfLocation="{$item.shelfLocation|escape:"javascript"}" data-subLocation="{$item.subLocation|escape:"javascript"}" data-callNumber="{$item.callNumber|escape:"javascript"}">
-							<span class="notranslate" >{if empty($item.isEContent)}<strong>{$item.shelfLocation}</strong>{/if}
+							<span class="notranslate" ><strong>{$item.shelfLocation}</strong>
 							<br>{$item.callNumber}
 							<br>{if $item.availableCopies < 999}
 									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}{if !empty($item.statusFull)} &mdash; {translate text=$item.statusFull isPublicFacing=true}{/if}

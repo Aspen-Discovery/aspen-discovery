@@ -5,9 +5,9 @@
 		<tr>
 			<th>{translate text="Available Copies" isPublicFacing=true}</th>
 			<th>{translate text="Location" isPublicFacing=true}</th>
-			{if !$isEContent}
+			{if empty($isEContent)}
 				<th>{translate text="Call #" isPublicFacing=true}</th>
-			{elseif $showEContentHoldCounts}
+			{elseif !empty($showEContentHoldCounts)}
 				<th>{translate text="Holds" isPublicFacing=true}</th>
 			{/if}
 		</tr>
@@ -35,7 +35,7 @@
 					<td class="notranslate">
 						{$item.callNumber}
 					</td>
-				{elseif $showEContentHoldCounts}
+				{elseif !empty($showEContentHoldCounts)}
 					<td class="notranslate">
 						{if $item.availableCopies <= 9999}
 							{$item.numHolds}

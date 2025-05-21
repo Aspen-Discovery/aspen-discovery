@@ -15,11 +15,11 @@ function addSearch(group, term, field)
 			+ '</div>';
 
 	// Terms
-	newSearch += "<div class='input-group col-sm-10'><input type='text' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "' aria-label='Search Term for Group " + group + "'>";
+	newSearch += "<div class='input-group col-sm-10'><input type='text' class='form-control' name='lookfor" + group + "[" + groupSearches[group] + "]'  value='" + jsEntityEncode(term) + "' aria-label='Search Term for Group " + group + "' >";
 
 	// Field
 	newSearch += "<span class='input-group-addon'>" + searchFieldLabel + " </span>";
-	newSearch += "<select class='form-control' name='type" + group + "[]' aria-label='Search Type for group " + group + "'>";
+	newSearch += "<select class='form-control' name='type" + group + "[" + groupSearches[group] + "]' aria-label='Search Type for group " + group + "' >";
 	for (key in searchFields) {
 			newSearch += "<option value='" + key + "'";
 			if (key == field) {

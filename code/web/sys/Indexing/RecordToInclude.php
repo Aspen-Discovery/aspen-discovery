@@ -214,7 +214,7 @@ class RecordToInclude extends DataObject {
 				'type' => 'regularExpression',
 				'label' => 'Collection Codes to Exclude (Regex)',
 				'description' => 'A regular expression for collection codes to exclude',
-				'maxLength' => '100',
+				'maxLength' => '500',
 				'required' => false,
 				'forcesReindex' => true,
 			],

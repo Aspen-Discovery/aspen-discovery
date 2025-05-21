@@ -1,10 +1,11 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 
 class CloudLibrarySetting extends DataObject {
 	public $__table = 'cloud_library_settings';    // table name
 	public $id;
+	public $name;
 	public $apiUrl;
 	public $userInterfaceUrl;
 	public $libraryId;
@@ -26,6 +27,13 @@ class CloudLibrarySetting extends DataObject {
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'A name for the setting to distinguish it from others when many are defined in an instance.',
+				'maxLength' => 100
 			],
 			'apiUrl' => [
 				'property' => 'apiUrl',

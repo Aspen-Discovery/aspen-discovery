@@ -9,7 +9,7 @@
 				{/if}
 				{foreach from=$property.structure item=subProperty}
 					{if (in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'date', 'time', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label', 'multiSelect')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList')) && empty($subProperty.hideInLists) }
-						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
+						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if} class="oneToManyCell" {if !empty($subProperty.relatedIls)}data-related-ils="~{implode subject=$subProperty.relatedIls glue='~'}~"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
 				{if !empty($property.canDelete) || !empty($property.editLink) || !empty($property.canEdit)}
@@ -30,7 +30,7 @@
 					{/if}
 					{foreach from=$property.structure item=subProperty}
 						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'time', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label', 'multiSelect'))  && empty($subProperty.hideInLists)}
-							<td>
+							<td class="oneToManyCell" {if !empty($subProperty.relatedIls)}data-related-ils="~{implode subject=$subProperty.relatedIls glue='~'}~"{/if}>
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
@@ -204,7 +204,7 @@
 			{foreach from=$property.structure item=subProperty}
 				{if empty($subProperty.hideInLists)}
 					{if in_array($subProperty.type, array('text', 'regularExpression','multilineRegularExpression', 'enum', 'date', 'time', 'checkbox', 'integer', 'textarea', 'html', 'dynamic_label')) }
-						newRow += "<td>";
+						newRow += "<td class='oneToManyCell' {if !empty($subProperty.relatedIls)}data-related-ils='~{implode subject=$subProperty.relatedIls glue='~'}~'{/if}>";
 						{assign var=subPropName value=$subProperty.property}
 						{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='multilineRegularExpression' || $subProperty.type=='integer' || $subProperty.type=='textarea'|| $subProperty.type=='html'}
 							{if ($subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression')}
@@ -231,7 +231,7 @@
 						newRow += "</td>";
 					{elseif $subProperty.type == 'multiSelect'}
 						{if $subProperty.listStyle == 'checkboxList'}
-							newRow += '<td>';
+							newRow += '<td class='oneToManyCell' {if !empty($subProperty.relatedIls)}data-related-ils='~{implode subject=$subProperty.relatedIls glue='~'}~'{/if}>';
 							newRow += '<div class="checkbox">';
 							{*this assumes a simple array, eg list *}
 							{assign var=subPropName value=$subProperty.property}
@@ -258,6 +258,8 @@
 					});
 				});
 			}
+
+			AspenDiscovery.Admin.toggleIlsSpecificFields();
 		}
 		{/literal}
 	</script>

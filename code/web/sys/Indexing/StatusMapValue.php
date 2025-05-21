@@ -1,16 +1,22 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class StatusMapValue extends DataObject {
 	public $__table = 'status_map_values';    // table name
 	public $id;
 	public $indexingProfileId;
 	public $value;
+	/** @noinspection PhpUnused */
+	public $appliesToStatusSubfield;
+	/** @noinspection PhpUnused */
+	public $appliesToStatusAltSubfield;
 	public $status;
+	/** @noinspection PhpUnused */
 	public $groupedStatus;
 	public $suppress;
 	public /** @noinspection PhpUnused */
 		$inLibraryUseOnly;
 
+	/** @noinspection PhpUnusedParameterInspection */
 	static function getObjectStructure($context = ''): array {
 		$groupedStatuses = [
 			'Currently Unavailable' => 'Currently Unavailable',
@@ -53,6 +59,24 @@ class StatusMapValue extends DataObject {
 				'maxLength' => '255',
 				'required' => true,
 				'forcesReindex' => true,
+			],
+			'appliesToStatusSubfield' => [
+				'property' => 'appliesToStatusSubfield',
+				'type' => 'checkbox',
+				'label' => 'Applies To Status Subfield',
+				'description' => 'Whether the status applies to values in the status subfield',
+				'default' => 1,
+				'forcesReindex' => true,
+				'relatedIls' => ['symphony']
+			],
+			'appliesToStatusAltSubfield' => [
+				'property' => 'appliesToStatusAltSubfield',
+				'type' => 'checkbox',
+				'label' => 'Applies To Status-Alt Subfield',
+				'description' => 'Whether the status applies to values in the status alt subfield',
+				'default' => 0,
+				'forcesReindex' => true,
+				'relatedIls' => ['symphony']
 			],
 			'groupedStatus' => [
 				'property' => 'groupedStatus',

@@ -19,7 +19,18 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		return super.isItemSuppressed(curItem, itemIdentifier, suppressionNotes, false);
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected ItemStatus getItemStatus(DataField itemField, String recordIdentifier){
+		if (settings.getItemStatusAltSubfield() != ' ') {
+			//Check to see if we can get a status based on status alt
+			String statusAltFieldData = MarcUtil.getItemSubfieldData(settings.getItemStatusAltSubfield(), itemField, indexer.getLogEntry(), logger);
+			if (statusAltFieldData != null) {
+				statusAltFieldData = statusAltFieldData.toLowerCase().trim();
+				if (hasTranslation("item_status_alt", statusAltFieldData)) {
+					return new ItemStatus(statusAltFieldData, ItemStatus.FROM_STATUS_ALT_FIELD, this, recordIdentifier);
+				}
+			}
+		}
+		int statusSource = ItemStatus.FROM_STATUS_FIELD;
 		String statusFieldData = MarcUtil.getItemSubfieldData(settings.getItemStatusSubfield(), itemField, indexer.getLogEntry(), logger);
 		String shelfLocationData = MarcUtil.getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField, indexer.getLogEntry(), logger);
 		if (shelfLocationData != null){
@@ -28,9 +39,11 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			shelfLocationData = "";
 		}
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER") || shelfLocationData.equalsIgnoreCase("ONORDER")) {
+			statusSource = ItemStatus.FROM_OTHER;
 			statusFieldData = "On Order";
 		}else {
 			if (statusFieldData == null) {
+				statusSource = ItemStatus.FROM_OTHER;
 				if (hasTranslation("item_status", shelfLocationData)){
 					//We are treating the shelf location as a status i.e. DISPLAY
 					statusFieldData = shelfLocationData;
@@ -50,7 +63,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 		}
-		return statusFieldData;
+		return new ItemStatus(statusFieldData, statusSource, this, recordIdentifier);
 	}
 
 	@Override

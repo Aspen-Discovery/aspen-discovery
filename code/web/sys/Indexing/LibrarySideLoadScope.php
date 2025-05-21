@@ -8,16 +8,11 @@ class LibrarySideLoadScope extends DataObject {
 	public $sideLoadScopeId;
 
 	static function getObjectStructure($context = ''): array {
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
+		$allLibraryList = Library::getLibraryList(false);
+		if (!UserAccount::userHasPermission('Administer Side Loads')) {
+			$libraryList = Library::getLibraryList(true);
+		}else{
+			$libraryList = $allLibraryList;
 		}
 
 		$sideLoadScopes = [];
@@ -52,6 +47,7 @@ class LibrarySideLoadScope extends DataObject {
 			'libraryId' => [
 				'property' => 'libraryId',
 				'type' => 'enum',
+				'allValues' => $allLibraryList,
 				'values' => $libraryList,
 				'label' => 'Library',
 				'description' => 'The id of a library',

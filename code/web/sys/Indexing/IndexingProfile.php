@@ -70,6 +70,7 @@ class IndexingProfile extends DataObject {
 		$nonHoldableLocations;
 	public /** @noinspection PhpUnused */
 		$locationsToSuppress;
+	/** @noinspection PhpUnused */
 	public $subLocation;
 	public /** @noinspection PhpUnused */
 		$shelvingLocation;
@@ -82,6 +83,8 @@ class IndexingProfile extends DataObject {
 	public $itemUrlDescription;
 	public $barcode;
 	public $status;
+	/** @noinspection PhpUnused */
+	public $statusAlt;
 	public /** @noinspection PhpUnused */
 		$nonHoldableStatuses;
 	public /** @noinspection PhpUnused */
@@ -160,7 +163,9 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$regroupAllRecords;
 	public $runFullUpdate;
+	/** @noinspection PhpUnused */
 	public $lastUpdateOfChangedRecords;
+	/** @noinspection PhpUnused */
 	public $lastUpdateOfAllRecords;
 	public /** @noinspection PhpUnused */
 		$lastChangeProcessed;
@@ -1209,7 +1214,7 @@ class IndexingProfile extends DataObject {
 						'type' => 'text',
 						'label' => 'eContent Descriptor',
 						'maxLength' => 1,
-						'description' => 'Subfield to indicate Tthat the item should be processed as eContent and how to process it',
+						'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it',
 						'forcesReindex' => true,
 						'relatedIls' => ['evergreen','evolve','sierra']
 					],
@@ -1314,6 +1319,15 @@ class IndexingProfile extends DataObject {
 						'description' => 'Subfield for status',
 						'forcesReindex' => true,
 						'relatedIls' => ['carlx','evergreen','evolve','polaris','sierra','symphony']
+					],
+					'statusAlt' => [
+						'property' => 'statusAlt',
+						'type' => 'text',
+						'label' => 'Status - Alternate',
+						'maxLength' => 1,
+						'description' => 'Subfield for status',
+						'forcesReindex' => true,
+						'relatedIls' => ['symphony']
 					],
 					'subLocation' => [
 						'property' => 'subLocation',

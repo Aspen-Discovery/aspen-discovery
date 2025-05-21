@@ -42,11 +42,10 @@ class AssabetIndexer {
 	private final HashMap<String, AssabetEvent> existingEvents = new HashMap<>();
 	private final HashSet<String> librariesToShowFor = new HashSet<>();
 	private final static CRC32 checksumCalculator = new CRC32();
+	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
-
-	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
 	AssabetIndexer(long settingsId, String name, String baseUrl, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
@@ -105,7 +104,6 @@ class AssabetIndexer {
 
 			try {
 				solrUpdateServer.deleteByQuery("type:event AND source:" + this.settingsId);
-				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logEntry.incErrors("Solr is not running properly, try restarting " + rse);
 				System.exit(-1);
@@ -215,12 +213,18 @@ class AssabetIndexer {
 
 						if (curEvent.get("categories") instanceof JSONArray) {
 							JSONArray categoriesArray = curEvent.getJSONArray("categories");
-							if (!categoriesArray.isEmpty()){
-								JSONObject categoriesForCurEvent = categoriesArray.getJSONObject(0);
-								if (!categoriesForCurEvent.isEmpty()) {
-									String categories = getStringForKey(categoriesForCurEvent, "category_name");
-									solrDocument.addField("age_group", AspenStringUtils.trimTrailingPunctuation(categories));
+							HashSet<String> ageGroups = new HashSet<>();
+							for (int j = 0; j < categoriesArray.length(); j++) {
+								JSONObject categoryObj = categoriesArray.getJSONObject(j);
+								if (!categoryObj.isEmpty()) {
+									String categoryName = getStringForKey(categoryObj, "category_name");
+									if (categoryName != null) {
+										ageGroups.add(AspenStringUtils.trimTrailingPunctuation(categoryName));
+									}
 								}
+							}
+							if (!ageGroups.isEmpty()) {
+								solrDocument.addField("age_group", ageGroups);
 							}
 						}
 
@@ -305,6 +309,18 @@ class AssabetIndexer {
 				logEntry.saveResults();
 				System.exit(-3);
 			}
+		}
+
+		// Close prepared statements.
+		try {
+			if (addEventStmt != null) {
+				addEventStmt.close();
+			}
+			if (deleteEventStmt != null) {
+				deleteEventStmt.close();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error closing database statements: ", e);
 		}
 
 		logEntry.setFinished();

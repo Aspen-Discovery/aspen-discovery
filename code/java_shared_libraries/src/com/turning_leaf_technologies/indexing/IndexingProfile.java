@@ -37,6 +37,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	Pattern collectionsToSuppressPattern = null;
 	boolean includeLocationNameInDetailedLocation;
 	private char itemStatusSubfield;
+	private char itemStatusAltSubfield;
 	private Pattern statusesToSuppressPattern;
 	private Pattern nonHoldableStatuses;
 	private boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
@@ -156,6 +157,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 		}
 		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
+		this.setItemStatusAltSubfield(getCharFromRecordSet(indexingProfileRS,"statusAlt"));
 		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
 		if (statusesToSuppress != null && !statusesToSuppress.isEmpty()){
 			this.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
@@ -564,6 +566,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setItemStatusSubfield(char itemStatusSubfield) {
 		this.itemStatusSubfield = itemStatusSubfield;
+	}
+
+	public char getItemStatusAltSubfield() {
+		return itemStatusAltSubfield;
+	}
+
+	private void setItemStatusAltSubfield(char itemStatusAltSubfield) {
+		this.itemStatusAltSubfield = itemStatusAltSubfield;
 	}
 
 	public Pattern getStatusesToSuppressPattern() {

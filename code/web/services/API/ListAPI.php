@@ -226,13 +226,9 @@ class ListAPI extends AbstractAPI {
 	 * @noinspection PhpUnused
 	 */
 	function getUserLists() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 
-		if ($user == false) {
+		if ($user === false) {
 			return [
 				'success' => false,
 				'message' => 'Sorry, we could not find a user with those credentials.',
@@ -847,16 +843,7 @@ class ListAPI extends AbstractAPI {
 	function getSavedSearches($userId = null): array {
 
 		if (!UserAccount::isLoggedIn()) {
-			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
-				return [
-					'success' => false,
-					'message' => 'The username and password must be provided to load saved searches.',
-				];
-			}
-
-			$username = $_REQUEST['username'];
-			$password = $_REQUEST['password'];
-			$user = UserAccount::validateAccount($username, $password);
+			$user = $this->getUserForApiCall();
 
 			if ($user == false) {
 				return [
@@ -866,12 +853,12 @@ class ListAPI extends AbstractAPI {
 			}
 
 			$id = $user->id;
-		}
-
-		if ($userId) {
-			$id = $userId;
-		} else {
-			$id = UserAccount::getActiveUserId();
+		}else{
+			if ($userId) {
+				$id = $userId;
+			} else {
+				$id = UserAccount::getActiveUserId();
+			}
 		}
 
 		$checkIfValid = "true";
