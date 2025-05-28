@@ -38,7 +38,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'label asc';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {

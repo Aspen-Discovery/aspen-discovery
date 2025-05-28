@@ -36,7 +36,7 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'name asc';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {

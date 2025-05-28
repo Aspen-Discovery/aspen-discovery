@@ -31,7 +31,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'source asc';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {

@@ -20,7 +20,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 	}
 
 	function getDefaultSort(): string {
-		return 'templateName';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {

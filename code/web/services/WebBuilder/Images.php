@@ -34,7 +34,7 @@ class WebBuilder_Images extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'title asc';
+		return 'id desc';
 	}
 
 	function updateFromUI($object, $structure, $fieldLocks) {

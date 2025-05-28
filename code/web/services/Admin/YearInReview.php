@@ -61,7 +61,7 @@ class Admin_YearInReview extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'name asc';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {

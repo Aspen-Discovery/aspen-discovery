@@ -84,6 +84,6 @@ class Websites_WebsitePages extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'url asc';
+		return 'id desc';
 	}
 }

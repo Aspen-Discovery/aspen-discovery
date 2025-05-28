@@ -39,7 +39,7 @@ class WebBuilder_BasicPages extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'title asc';
+		return 'id desc';
 	}
 
 	function getObjectStructure($context = ''): array {
