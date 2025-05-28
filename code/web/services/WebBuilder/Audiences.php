@@ -33,7 +33,7 @@ class WebBuilder_Audiences extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'id desc';
+		return 'name asc';
 	}
 
 	function getObjectStructure($context = ''): array {
