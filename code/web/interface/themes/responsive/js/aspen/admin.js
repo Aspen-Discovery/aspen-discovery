@@ -2031,7 +2031,7 @@ AspenDiscovery.Admin = (function () {
 						var numVisibleActions = 0;
 						adminLinksInSection.each(function () {
 							var curMenuLink = $(this);
-							var title = curMenuLink.find(".adminLink").text();
+							var title = curMenuLink.find("a").text();
 							var titleMatches = searchRegex.test(title);
 							if (!titleMatches) {
 								curMenuLink.hide();
