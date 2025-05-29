@@ -309,7 +309,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 		require_once ROOT_DIR.'/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 		$GroupedWorksSolrConnector2 = new GroupedWorksSolrConnector2($configArray['Index']['url']);
 
-		$recordData = $this->process($recordData, $textQuery); //TODO LAUREN add api limit error into process()
+		$recordData = $this->process($recordData, $textQuery);
 
 		if (is_array($recordData)) {
 			$this->lastSearchResults = $recordData;
@@ -337,7 +337,6 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 				$record = new TalpaRecordDriver($current);
 
 				$groupedWorkIds = $current['groupedworkidA'];
-				var_dump($groupedWorkIds);
 				$foundLibraryResult = false;
 				foreach ($groupedWorkIds  as $groupedWorkId) {
 					if ($inLibraryResults[$groupedWorkId]) {
@@ -490,7 +489,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 			}
 
 			$_resultList = $this->lastSearchResults['response']['resultlist'];
-//			var_dump($_resultList); //TODO LAUREN why is Money management still showing up
+
 			//used in getSearchResult() to generate item url to return to talpa search results page
 			$interface->assign('searchSource', 'talpa');
 
@@ -967,7 +966,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 		$settings = $this->getSettings();
 
 		$queryString = $this->searchTerms[0]['lookfor']?:'The man with the yellow hat';
-
+		$this->query = $queryString;
 		// Perform preliminary search of the library catalog
 		$preliminaryResults = $this->performPreliminarySearch($queryString);
 		$this->preliminarySearchResults = $preliminaryResults;
@@ -1055,6 +1054,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 			}
 			SearchObject_TalpaSearcher::$searchOptions = json_decode($input, true);
 			$resultsList = SearchObject_TalpaSearcher::$searchOptions ['response']['resultlist'];
+			$warnings = SearchObject_TalpaSearcher::$searchOptions ['response']['warnings'];
 
 			if (!SearchObject_TalpaSearcher::$searchOptions) {
 				SearchObject_TalpaSearcher::$searchOptions = array(
@@ -1063,11 +1063,11 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 					'errors' => array(
 						array(
 							'code' => 'PHP-Internal',
-							'message' => 'Cannot decode JSON response: ' . $input.' '.$textQuery
+							'message' => 'Cannot decode JSON response.'
 						)
 					)
 				);
-			} elseif(!is_array(SearchObject_TalpaSearcher::$searchOptions))
+			} elseif( !is_array(SearchObject_TalpaSearcher::$searchOptions))
 			{
 				SearchObject_TalpaSearcher::$searchOptions = array(
 					'recordCount' => 0,
@@ -1079,7 +1079,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 						)
 					)
 				);
-			} elseif(!$resultsList || count($resultsList) == 0)
+			} elseif( empty($resultsList) && !$warnings)
 			{
 				SearchObject_TalpaSearcher::$searchOptions = array(
 					'recordCount' => 0,
@@ -1095,15 +1095,70 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 
 			$talpaSettings = $this -> getSettings();
 			$searchSourceString = $talpaSettings->talpaSearchSourceString?:'Talpa Search';
+			require_once ROOT_DIR . '/services/Talpa/TalpaWarning.php';
 
 			// Detect errors
 			if (isset(SearchObject_TalpaSearcher::$searchOptions['errors']) && is_array(SearchObject_TalpaSearcher::$searchOptions['errors'])) {
 				foreach (SearchObject_TalpaSearcher::$searchOptions['errors'] as $current) {
 					$errors[] = "{$current['code']}: {$current['message']}";
+
+					$msg = $searchSourceString.' encountered an error while processing your request: '. $current['message'];
 				}
-				$msg = $searchSourceString.' encountered an error while processing your request: '. $current['message'];
-//					implode('<br />', $errors); //add this in for debugging, but not for public display.
-				AspenError::raiseError(new AspenError($msg));
+
+
+				$retryLink = '';
+				if (!empty($this->searchTerms[0]['lookfor'])) {
+					$retryLink = $this->renderSearchUrl();
+					$retryLink = str_replace('/Search/Results','/Union/Search', $retryLink);
+				}
+
+
+
+				$TalpaWarning = new TalpaWarning();
+				$TalpaWarning->launchError($msg, $retryLink);
+				exit();
+			}
+			elseif (isset($warnings) && is_array($warnings))
+			{
+				foreach ($warnings as $current) {
+					$header = 'Unable to display results.';
+					$msg = $current['wording'];
+
+					if($current['reason'] =='selfharm') {
+						$header = 'Help is available.';
+						$msg = preg_replace('/Help is available\./', '', $msg);
+					}elseif ($header == $msg)
+					{
+						$msg = '';
+					}
+
+					global $interface;
+					$interface->assign('header', $header);
+					$interface->assign('msg', $msg);
+
+
+				if($current['stop'] || empty($resultsList)) {
+				SearchObject_TalpaSearcher::$searchOptions = array(
+						'recordCount' => 0,
+						'documents' => array(),
+						'warnings' => array(
+							array(
+								'code' => 'API Offensive Warning',
+								'message' => $current['wording'],
+								'stop'	=> $current['stop'],
+								'reason' => $current['reason']
+							)
+						)
+					);
+
+					$TalpaWarning = new TalpaWarning();
+					$TalpaWarning->launch();
+					exit();
+				} else {
+					$interface->assign('talpa_warning', $current['wording']);
+					$_SESSION['talpa_warning'] = $current['wording'];
+					}
+				}
 			}
 			if (SearchObject_TalpaSearcher::$searchOptions) {
 				return SearchObject_TalpaSearcher::$searchOptions;
@@ -1137,21 +1192,20 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 
 		$requestUrl = $baseUrl.'?'.http_build_query($params);
 
-// Add preliminary search results to the API call if available //TODO LAUREN cleanup
+
 		if ($this->preliminarySearchResults) {
 			$isbns = $this->preliminarySearchResults['isbns'];
 			$groupedWorkIds = $this->preliminarySearchResults['groupedWorkIds'];
 
-			if (!empty($isbns)) {
-				$isbnParam = '&isbns=' . urlencode(implode(',', $isbns));
-				$requestUrl .= $isbnParam;
-			}
-
-//			if (!empty($groupedWorkIds)) {
-//				$groupedWorkParam = '&grouped_work_ids=' . urlencode(implode(',', $groupedWorkIds));
-//				$requestUrl .= $groupedWorkParam;
+//			if (!empty($isbns)) {
+//				$isbnParam = '&isbns=' . urlencode(implode(',', $isbns));
+//				$requestUrl .= $isbnParam;
 //			}
-//			print_r($requestUrl);
+
+			if (!empty($groupedWorkIds)) {
+				$groupedWorkParam = '&grouped_work_ids=' . urlencode(implode(',', $groupedWorkIds));
+				$requestUrl .= $groupedWorkParam;
+			}
 		}
 		$curlConnection = $this->getCurlConnection();
 		$curlOptions = array(

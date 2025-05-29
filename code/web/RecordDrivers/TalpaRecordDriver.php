@@ -31,24 +31,6 @@ class TalpaRecordDriver extends RecordInterface {
 
 	}
 
-	public function isInLibrary() {
-		$lt_workcode = $this ->record['work_id'];
-		if($lt_workcode){ //get the corresponding groupedWorkID, if we have it.
-			require_once ROOT_DIR . '/sys/Talpa/TalpaData.php';
-			$talpaData = new TalpaData();
-			$talpaData->whereAdd();
-			$talpaData->whereAdd("lt_workcode=".$lt_workcode);
-			if ($talpaData->find(true)) {
-				$groupedWorkID = $talpaData->groupedRecordPermanentId;
-				return $groupedWorkID;
-			}
-			else
-			{
-			return false;
-			}
-		}
-	}
-
 	public function isValid()
 	{
 		return (!empty($this->record['isbns']) || !empty($this->record['upcs']));

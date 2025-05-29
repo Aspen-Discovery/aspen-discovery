@@ -121,6 +121,12 @@
 ####################################
 0 1 * * * root php /usr/local/aspen-discovery/code/web/cron/talpaWorksCron.php {sitename}
 
+####################################
+# Recalculate grouped works for TalpaAI (monthly) #
+####################################
+0 2 1 * * root php /usr/local/aspen-discovery/code/web/cron/talpaRecalculationCron.php {sitename}
+
+
 ##############################################
 # Send Campaign Emails #
 ##############################################
