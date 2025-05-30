@@ -76,6 +76,10 @@ class Talpa_Results extends ResultsAction {
 		if (isset($_REQUEST['queryId']) && $_SESSION['last_recordData'] && ($_SESSION['last_query_id']== $_REQUEST['queryId']) ) {
 			$result = unserialize($_SESSION['last_recordData']);
 			$searchObject->processRepeatedSearch($result);
+
+			if(isset($_SESSION['talpa_warning'])) {
+				$interface->assign('talpa_warning', $_SESSION['talpa_warning']);
+			}
 		}
 		elseif( isset($_REQUEST['queryId']) && ($_SESSION['last_query_id']!= $_REQUEST['queryId'])){ //two concurrent sessions, request new results
 			$result = $searchObject->sendRequest($_REQUEST['queryId']);
@@ -84,6 +88,7 @@ class Talpa_Results extends ResultsAction {
 		{
 			$result = $searchObject->sendRequest();
 		}
+
 
 
 		//Assign vars for Talpa Summaries to be ajaxed in.

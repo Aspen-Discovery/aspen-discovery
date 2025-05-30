@@ -6,6 +6,10 @@
 			{include file=$recommendations}
 		{/foreach}
 	{/if}
+	{if $talpa_warning}
+{*		<h4 class="talpa-warning">{$talpa_warning}</h4>*}
+		<p class="alert alert-warning">{$talpa_warning}</p>
+	{/if}
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
 		{if !empty($replacementTerm)}

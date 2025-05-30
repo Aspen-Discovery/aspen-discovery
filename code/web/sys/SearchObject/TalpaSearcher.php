@@ -1160,6 +1160,50 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 					}
 				}
 			}
+			elseif (isset($warnings) && is_array($warnings))
+			{
+				foreach ($warnings as $current) {
+					$header = 'Unable to display results.';
+					$msg = $current['wording'];
+
+					if($current['reason'] =='selfharm') {
+						$header = 'Help is available.';
+						$msg = preg_replace('/Help is available\./', '', $msg);
+					}elseif ($header == $msg)
+					{
+						$msg = '';
+					}
+
+					global $interface;
+					$interface->assign('header', $header);
+					$interface->assign('msg', $msg);
+
+
+				if($current['stop'] || empty($resultsList)) {
+				SearchObject_TalpaSearcher::$searchOptions = array(
+						'recordCount' => 0,
+						'documents' => array(),
+						'warnings' => array(
+							array(
+								'code' => 'API Offensive Warning',
+								'message' => $current['wording'],
+								'stop'	=> $current['stop'],
+								'reason' => $current['reason']
+							)
+						)
+					);
+
+
+					require_once ROOT_DIR . '/services/Talpa/TalpaWarning.php';
+					$TalpaWarning = new TalpaWarning();
+					$TalpaWarning->launch();
+					exit();
+				} else {
+					$interface->assign('talpa_warning', $current['wording']);
+					$_SESSION['talpa_warning'] = $current['wording'];
+					}
+				}
+			}
 			if (SearchObject_TalpaSearcher::$searchOptions) {
 				return SearchObject_TalpaSearcher::$searchOptions;
 			} else {
