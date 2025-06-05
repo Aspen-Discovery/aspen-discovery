@@ -9338,6 +9338,18 @@ a.placard-link {
 .browse-category div:focus {
   outline: none;
 }
+
+.browse-category:focus {
+  outline: none;
+  border: 6px solid #3174af;
+  box-shadow: 0 0 2px 6px rgba(26, 115, 232, 0.4);
+}
+
+.browse-category.selected:focus {
+  border: 6px solid #3174af;
+  box-shadow: 0 0 2px 6px rgba(26, 115, 232, 0.4);
+}
+
 .browse-category div:hover {
   text-decoration: underline;
 }
