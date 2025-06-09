@@ -26,7 +26,7 @@ function getTalpaUpdates() {
 					talpaExplainerText MEDIUMTEXT,
 					includeTalpaLogoSwitch TINYINT(1) UNSIGNED DEFAULT 1,
 					includeTalpaOtherResultsSwitch TINYINT(1) UNSIGNED DEFAULT 1,
-					talpaOtherResultsExplainerText VARCHAR(180) DEFAULT 'Talpa found these other results.'
+					talpaOtherResultsExplainerText VARCHAR(180) DEFAULT 'Talpa Search found these other results not owned by your library.'
 				) ENGINE=INNODB",
 				'ALTER TABLE library ADD COLUMN talpaSettingsId INT(11) DEFAULT -1',
 			],

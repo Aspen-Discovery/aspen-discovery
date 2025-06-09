@@ -24,7 +24,7 @@ class Talpa_Results extends ResultsAction {
 
 		$defaultTalpaSearchSourceString = 'Talpa Search';
 
-		$defaultTalpaOtherResultsExplainerText = 'Talpa found these other results.';
+		$defaultTalpaOtherResultsExplainerText = 'Talpa Search found these other results not owned by your library.';
 
 		require_once ROOT_DIR . '/sys/Talpa/TalpaSettings.php';
 		if ($library->talpaSettingsId != -1) {
@@ -86,6 +86,7 @@ class Talpa_Results extends ResultsAction {
 		}
 		else //performing a new search
 		{
+			unset($_SESSION['talpa_warning']);
 			$result = $searchObject->sendRequest();
 		}
 

@@ -6,7 +6,7 @@
 			<img src="https://lt-pics.s3.amazonaws.com/pics/talpa/5/talpa-logo-title_393.png" height="90px" alt="Talpa Logo">
 		{/if}
 		<div id="talpaExplainerTextTruncated" ">
-			{$talpaExplainerText|truncate:100:"..."}
+			{$talpaExplainerText|truncate:330:"..."}
 			<a onClick="talpaExplainerShowMore(); return false;">(show more)</a>
 		</div>
 		<div id="talpaExplainerTextFull" style="display: none; ">
