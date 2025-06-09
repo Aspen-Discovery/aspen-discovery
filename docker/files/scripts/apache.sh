@@ -45,14 +45,14 @@ until curl -sf http://"$SITE_NAME" > /dev/null; do
 	((tries++))
 
 	if [ $tries -eq 10 ] ; then
-		echo "ERROR: "
+		echo "ERROR: Apache could not initialize correctly"
 		exit 1
 	fi
 done
 
 # Run any pending database updates
 echo "%   * Triggering pending database updates"
-curl -v -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
+curl -k http://"$SITE_NAME"/API/SystemAPI?method=runPendingDatabaseUpdates
 
 echo "%"
 echo "%   Aspen Discovery ready to use!"
