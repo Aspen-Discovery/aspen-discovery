@@ -62,3 +62,6 @@ $updateUserStmt->execute();
 
 $postSupportingCompanyStmt = $aspenDatabase->prepare("UPDATE system_variables set supportingCompany=" . $aspenDatabase->quote($supportingCompany));
 $postSupportingCompanyStmt->execute();
+
+// Close connection 
+$aspenDatabase = null;
