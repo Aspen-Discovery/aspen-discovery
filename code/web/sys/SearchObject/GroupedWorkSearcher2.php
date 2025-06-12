@@ -394,6 +394,11 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
 			$this->facetOptions["f.format_category.facet.method"] = 'enum';
 			$this->facetOptions["f.format.facet.method"] = 'enum';
+			//Limit the number of formats returned to the total number we have indexed so all can show.
+			require_once ROOT_DIR . "/sys/Indexing/IndexedFormat.php";
+			$indexedFormat = new IndexedFormat();
+			$numFormats = $indexedFormat->count();
+			$this->facetOptions["f.format.facet.limit"] = $numFormats;
 			$this->facetOptions["f.availability_toggle.facet.method"] = 'enum';
 			$this->facetOptions["f.local_time_since_added_$solrScope.facet.method"] = 'enum';
 			$this->facetOptions["f.owning_library.facet.method"] = 'enum';
