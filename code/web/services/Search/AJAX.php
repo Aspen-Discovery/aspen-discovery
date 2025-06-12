@@ -652,7 +652,7 @@ class AJAX extends Action {
 
 					$allFacets = $restoredSearch->getFacetList();
 					$topResults = $allFacets[$facetName];
-					asort($topResults['list']);
+					ksort($topResults['list'], SORT_NATURAL | SORT_FLAG_CASE);
 					$interface->assign('topResults', $topResults['list']);
 					$buttons = '';
 					if ($isMultiSelect) {
