@@ -83,6 +83,6 @@ class CommunityEngagement_Milestones extends ObjectEditor {
 	}
 
 	function getInitializationJs(): string {
-		return 'AspenDiscovery.CommunityEngagement.updateManualMilestoneFields();';
+		return 'AspenDiscovery.CommunityEngagement.updateManualMilestoneFields(); AspenDiscovery.CommunityEngagement.updateConditionalOperator()';
 	}
 }

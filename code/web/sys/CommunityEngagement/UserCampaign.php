@@ -256,7 +256,7 @@ class UserCampaign extends DataObject {
                 foreach ($milestones as $milestone) {
                     $milestoneProgress = new CampaignMilestoneUsersProgress();
                     $milestoneProgress->userId = $userId;
-                    $milestoneProgress->ce_milestone_id = $milestoneId;
+                    $milestoneProgress->ce_milestone_id = $milestone->milestoneId;
                     $milestoneProgress->ce_campaign_id = $campaignId;
 
                     if ($milestoneProgress->find(true)) {

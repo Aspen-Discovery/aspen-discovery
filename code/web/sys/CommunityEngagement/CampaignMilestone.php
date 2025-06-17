@@ -290,8 +290,12 @@ class CampaignMilestone extends DataObject {
 
 		if (!$groupedWorkId)
 			return false;
-		if( $milestone->conditionalField == 'user_list' && is_numeric($milestone->conditionalValue) ) {
-			return $this->conditionalsListCheck($groupedWorkId);
+		if( $milestone->conditionalField == 'user_list') {
+			$listIds = explode('|', $milestone->conditionalValue);
+			$valid = array_filter($listIds, 'is_numeric');
+			if (count($valid) > 0) {
+				return $this->conditionalsListCheck($groupedWorkId);
+			}
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -342,13 +346,44 @@ class CampaignMilestone extends DataObject {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$milestone = new Milestone();
 		$milestone->id = $this->milestoneId;
-		if ($milestone->find(true)) {
-			$listEntry = new UserListEntry();
-			$listEntry->whereAdd("source ='GroupedWork'");
-			$listEntry->whereAdd("sourceId ='" . $groupedWorkId . "'");
-			$whereOp = $milestone->conditionalOperator == 'is_not' ? '!=' : '=';
-			$listEntry->whereAdd('listId '.$whereOp. ' ' . $milestone->conditionalValue);
-			return $listEntry->find(true);
+	
+		if (!$milestone->find(true)) {
+			return false;
+		}
+	
+		$listIds = explode('|', $milestone->conditionalValue);
+		$validListIds = array_filter(array_map('trim', $listIds), 'is_numeric');
+	
+		if (empty($validListIds)) {
+			return false;
+		}
+	
+		$listEntry = new UserListEntry();
+		$listEntry->whereAdd("source ='GroupedWork'");
+		$listEntry->whereAdd("sourceId ='" . $groupedWorkId . "'");
+		$listEntry->find();
+	
+		$matchedListIds = [];
+		while ($listEntry->fetch()) {
+			$matchedListIds[] = $listEntry->listId;
+		}
+	
+		if ($milestone->conditionalOperator == 'equals') {
+			foreach ($validListIds as $listId) {
+				if (in_array($listId, $matchedListIds)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	
+		if ($milestone->conditionalOperator == 'is_not') {
+			foreach ($validListIds as $listId) {
+				if (in_array($listId, $matchedListIds)) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}

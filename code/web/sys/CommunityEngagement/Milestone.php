@@ -68,6 +68,7 @@ class Milestone extends DataObject {
 					'user_list' => 'List (id)',
 				],
 				'required' => false,
+				'onchange' => 'AspenDiscovery.CommunityEngagement.updateConditionalOperator()',
 			],
 			'conditionalOperator' => [
 				'property' => 'conditionalOperator',
