@@ -823,6 +823,7 @@ CREATE TABLE `ce_campaign_milestone_progress_entries` (
   `tableName` varchar(100) DEFAULT NULL,
   `processed` tinyint(4) DEFAULT 0,
   `object` mediumtext DEFAULT NULL,
+  `timestamp` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 DROP TABLE IF EXISTS ce_campaign_milestone_users_progress;

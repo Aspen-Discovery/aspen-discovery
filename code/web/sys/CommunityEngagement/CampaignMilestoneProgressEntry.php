@@ -12,6 +12,7 @@ class CampaignMilestoneProgressEntry extends DataObject
 	public $tableName;
 	public $processed;
 	public $object;
+	public $timestamp;
 
 	/**
 	 * Initializes a new CampaignMilestoneProgressEntry object by setting its ce_milestone_id to the provided milestone object
