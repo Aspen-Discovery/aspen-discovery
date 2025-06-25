@@ -179,6 +179,8 @@
 
 	{include file="tracking.tpl"}
 
+	{include file="sse.tpl"}
+
 	{if !empty($semanticData)}
 		{include file="jsonld.tpl"}
 	{/if}

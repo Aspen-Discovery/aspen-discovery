@@ -9947,6 +9947,160 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	/**
+	 * Sends server-sent events (SSE) notifications about community engagement milestones and campaigns.
+	 */
+
+	public function CommunityEngagementSSE() {
+		$debug = false; // Set to true to enable debug mode. true for dev only.
+		if (UserAccount::isLoggedIn()) {
+
+			$patron = UserAccount::getActiveUserObj();
+
+			require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+			require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
+			require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
+			require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+			require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
+			require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+
+			header("X-Accel-Buffering: no");
+			header("Content-Type: text/event-stream");
+			header("Cache-Control: no-cache");
+
+			echo "event: established\n";
+			echo "data: connection established\n\n";
+
+			ob_end_flush();
+
+			$interval = 10;
+
+			while (true) {
+
+				if( $debug ){
+					global $logger;
+					$logger->log("RUNNING SSE ", Logger::LOG_ERROR);
+				}
+				// Break the loop if the client aborted the connection (closed the page)
+				if (connection_status() != CONNECTION_NORMAL || connection_aborted()) exit();
+
+				$campaignMilestoneProgressEntry = new CampaignMilestoneProgressEntry();
+				$campaignMilestoneProgressEntry->userId = $patron->id;
+				if(!$debug){
+					$campaignMilestoneProgressEntry->whereAdd("timestamp >= DATE_SUB(NOW(), INTERVAL " . $interval . " SECOND)");
+				}
+
+				if ($campaignMilestoneProgressEntry->find()) {
+					while ($campaignMilestoneProgressEntry->fetch()) {
+
+						# Prepare data
+						$campaign = new Campaign();
+						$campaign->id = $campaignMilestoneProgressEntry->ce_campaign_id;
+						$campaign->find(true);
+
+						$milestone = new Milestone();
+						$milestone->id = $campaignMilestoneProgressEntry->ce_milestone_id;
+						$milestone->find(true);
+
+						$campaignMilestoneUsersProgress = new CampaignMilestoneUsersProgress();
+						$campaignMilestoneUsersProgress->id = $campaignMilestoneProgressEntry->ce_campaign_milestone_users_progress_id;
+						$campaignMilestoneUsersProgress->find(true);
+
+						$campaignMilestone = new CampaignMilestone();
+						$campaignMilestone->campaignId = $campaignMilestoneProgressEntry->ce_campaign_id;
+						$campaignMilestone->milestoneId = $campaignMilestoneProgressEntry->ce_milestone_id;
+						$campaignMilestone->find(true);
+
+						$userCampaign = new UserCampaign();
+						$userCampaign->userId = $patron->id;
+						$userCampaign->campaignId = $campaignMilestoneProgressEntry->ce_campaign_id;
+						$userCampaign->find(true);
+
+						# Handle milestone progress notification
+						echo "event: ce_notification\n";
+						echo "data: " . json_encode(
+							array(
+								'id'=> $campaignMilestoneProgressEntry->id . '_ce_milestone_progress',
+								'title'=> translate(
+										[
+											'text' => 'Milestone progress! Good job!',
+											'isPublicFacing' => true
+										]
+									),
+								'body' => $campaignMilestoneUsersProgress->progress.'/'.$campaignMilestone->goal.' ' .$milestone->name,
+								'icon' => "fa-chart-line",
+								'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
+										[
+											'text' => 'View all campaigns',
+											'isPublicFacing' => true
+										]
+									)]
+							)
+						) . "\n\n";
+
+						# Handle milestone completion notification
+						if ($campaignMilestoneUsersProgress->progress >= $campaignMilestone->goal ) {
+							echo "event: ce_notification\n";
+							echo "data: " . json_encode(
+								array(
+									'id'=> $campaignMilestoneProgressEntry->id . '_ce_milestone_completed',
+									'title'=> translate(
+										[
+											'text' => 'Milestone completed! Well done!',
+											'isPublicFacing' => true
+										]
+									),
+									'body' => $milestone->name,
+									'icon' => "fa-clipboard-check",
+									'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
+										[
+											'text' => 'View all campaigns',
+											'isPublicFacing' => true
+										]
+									)]
+								)
+							) . "\n\n";
+						}
+
+						# Handle campaign completion notification
+						if ($userCampaign->completed) {
+							echo "event: ce_notification\n";
+							echo "data: " . json_encode(
+								array(
+									'id'=> $campaignMilestoneProgressEntry->id . '_ce_campaign_completed',
+									'title'=> translate(
+										[
+											'text' => 'Campaign completed! Awesome!',
+											'isPublicFacing' => true
+										]
+									),
+									'body' => $campaign->name,
+									'icon' => "fa-medal",
+									'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
+										[
+											'text' => 'View all campaigns',
+											'isPublicFacing' => true
+										]
+									)]
+								)
+							) . "\n\n";
+						}
+					}
+				}else{
+					echo "event: heart_beat\n";
+					echo "data: No notifications found\n\n";
+				}
+
+				if (ob_get_contents()) {
+					ob_end_flush();
+				}
+				flush();
+
+				sleep($interval);
+			}
+		}
+	}
+
 	function getYearInReviewSlide() : array {
 		$result = [
 			'success' => false,
