@@ -25,6 +25,7 @@ lib/swiper-bundle.min.js
 lib/tabs-manual.js
 aspen/globals.js
 aspen/base.js
+aspen/toast-notifications.js
 aspen/account.js
 aspen/admin.js
 aspen/authors.js
