@@ -40,8 +40,10 @@ class CampaignMilestoneProgressEntry extends DataObject
 		$this->userId = $args['userId'];
 		$this->ce_campaign_milestone_users_progress_id = $args['campaignMilestoneUsersProgress']->id;
 		$this->processed = 0;
-		$this->tableName = $args['object']->__table;
-		$this->object = json_encode($args['object']);
+		if($args['object']){
+			$this->tableName = $args['object']->__table;
+			$this->object = json_encode($args['object']);
+		}
 		$this->insert();
 	}
 
