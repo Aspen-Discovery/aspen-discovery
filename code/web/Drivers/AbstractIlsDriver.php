@@ -946,10 +946,11 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	 * Update account notifications for the user. At this point, the system has verified that the user can receive push notifications
 	 * and that they are opted in to getting account notifications.
 	 *
-	 * @param User $user
+	 * @param User $user - the user to update notifications for
+	 * @param ILSNotificationSetting $ilsNotificationSetting - the settings to base notifications on
 	 * @return array
 	 */
-	public function updateAccountNotifications(User $user): array {
+	public function updateAccountNotifications(User $user, ILSNotificationSetting $ilsNotificationSetting): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',

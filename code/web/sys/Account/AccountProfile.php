@@ -231,7 +231,7 @@ class AccountProfile extends DataObject {
 						'type' => 'section',
 						'label' => 'ILS Messages Information',
 						'hideInLists' => true,
-						'relatedIls' => ['koha'],
+						'relatedIls' => ['koha', 'sierra'],
 						'properties' => [
 							'enableFetchingIlsMessages' => [
 								'property' => 'enableFetchingIlsMessages',
@@ -239,7 +239,7 @@ class AccountProfile extends DataObject {
 								'label' => 'Enable Fetching Messages from the ILS',
 								'description' => 'Whether or not messages from the ILS will be fetched for use in notifications Discovery and LiDA',
 								'default' => false,
-								'relatedIls' => ['koha']
+								'relatedIls' => ['koha', 'sierra']
 							],
 						],
 					],

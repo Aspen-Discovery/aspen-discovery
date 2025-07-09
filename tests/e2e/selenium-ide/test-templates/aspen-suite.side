@@ -1,0 +1,631 @@
+{
+	"id": "aspen-e2e-suite",
+	"version": "2.0",
+	"name": "Aspen Discovery E2E Suite",
+	"url": "${url}",
+	"tests": [
+		{
+			"id": "010-open",
+			"name": "010 Open",
+			"commands": [
+				{
+					"id": "open-site",
+					"comment": "Open the Aspen Discovery site",
+					"command": "open",
+					"target": "/",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "020-sign-in",
+			"name": "020 Sign in",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the site",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "run-sign-out",
+					"comment": "Ensure user is signed out",
+					"command": "run",
+					"target": "992 Sign out",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-login-btn",
+					"command": "waitForElementPresent",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "click-login-btn",
+					"command": "click",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-username",
+					"command": "waitForElementPresent",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "waitForEditable-username",
+					"command": "waitForElementEditable",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "type-username",
+					"command": "type",
+					"target": "id=username",
+					"targets": [],
+					"value": "${patron.username}"
+				},
+				{
+					"id": "type-password",
+					"command": "type",
+					"target": "id=password",
+					"targets": [],
+					"value": "${patron.password}"
+				},
+				{
+					"id": "click-login-submit",
+					"command": "click",
+					"target": "id=loginFormSubmit",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-account-btn",
+					"command": "waitForElementPresent",
+					"target": "id=account-menu-dropdown",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "assert-account-btn",
+					"command": "assertElementPresent",
+					"target": "id=account-menu-dropdown",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "021-sign-in-invalid-username",
+			"name": "021 Sign in - Invalid Username",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the site",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "verify-login-btn",
+					"command": "verifyElementPresent",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-login-btn",
+					"command": "click",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-username",
+					"command": "waitForElementPresent",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "waitForEditable-username",
+					"command": "waitForElementEditable",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "type-invalid-username",
+					"command": "type",
+					"target": "id=username",
+					"targets": [],
+					"value": "${patron.invalidUsername}"
+				},
+				{
+					"id": "type-password",
+					"command": "type",
+					"target": "id=password",
+					"targets": [],
+					"value": "${patron.Password}"
+				},
+				{
+					"id": "click-login-submit-invalid",
+					"command": "click",
+					"target": "id=loginFormSubmit",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "022-sign-in-invalid-password",
+			"name": "022 Sign in - Invalid Password",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the site",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "verify-login-btn",
+					"command": "verifyElementPresent",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-login-btn",
+					"command": "click",
+					"target": "id=login-button-label",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-username",
+					"command": "waitForElementPresent",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "waitForEditable-username",
+					"command": "waitForElementEditable",
+					"target": "id=username",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "type-username",
+					"command": "type",
+					"target": "id=username",
+					"targets": [],
+					"value": "${patron.username}"
+				},
+				{
+					"id": "type-invalid-password",
+					"command": "type",
+					"target": "id=password",
+					"targets": [],
+					"value": "${patron.invalidPassword}"
+				},
+				{
+					"id": "click-login-submit-invalid",
+					"command": "click",
+					"target": "id=loginFormSubmit",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "030-place-hold",
+			"name": "030 Place hold",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the browser to the site URL",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "run-sign-in",
+					"comment": "Ensure user is signed in",
+					"command": "run",
+					"target": "020 Sign in",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "book-grouped-work",
+					"command": "open",
+					"target": "/GroupedWork/${holdBook.groupedWorkId}",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-place-hold",
+					"command": "click",
+					"target": "linkText=Place Hold",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "wait-request-title",
+					"command": "waitForElementPresent",
+					"target": "id=requestTitleButton",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "click-request-title",
+					"command": "click",
+					"target": "id=requestTitleButton",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "close-modal",
+					"command": "click",
+					"target": "css=.modal-footer > .btn",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "034-view-hold",
+			"name": "034 View hold",
+			"commands": [
+				{
+					"id": "open-holds",
+					"command": "open",
+					"target": "/MyAccount/Holds?source=all",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-hold-details",
+					"command": "assertText",
+					"target": "css=.result:nth-child(1) .title",
+					"targets": [],
+					"value": "${holdBook.title}"
+				}
+			]
+		},
+		{
+			"id": "035-freeze-hold",
+			"name": "035 Freeze hold",
+			"commands": [
+				{
+					"id": "open-holds-freeze",
+					"command": "open",
+					"target": "/MyAccount/Holds?source=all",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-freeze-btn",
+					"command": "assertText",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.freezeButton",
+					"targets": [],
+					"value": "Freeze Hold"
+				},
+				{
+					"id": "click-freeze-btn",
+					"command": "click",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.freezeButton",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-reactivation-date",
+					"command": "click",
+					"target": "id=reactivationDate",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "set-reactivation-date",
+					"command": "executeScript",
+					"target": "function addDays(date, days) {   var result = new Date(date);   result.setDate(result.getDate() + days);   return result; }  var d=new Date();   d=addDays(d,28);   var r = d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0'); return r;",
+					"targets": [],
+					"value": "rDate"
+				},
+				{
+					"id": "type-reactivation-date",
+					"command": "type",
+					"target": "id=reactivationDate",
+					"targets": [],
+					"value": "${rDate}"
+				},
+				{
+					"id": "submit-freeze",
+					"command": "click",
+					"target": "id=doFreezeHoldWithReactivationDate",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-freeze-success",
+					"command": "assertElementPresent",
+					"target": "css=.alert-success",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "036-thaw-hold",
+			"name": "036 Thaw hold",
+			"commands": [
+				{
+					"id": "open-holds-thaw",
+					"command": "open",
+					"target": "/MyAccount/Holds?source=all",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-thaw-btn",
+					"command": "assertText",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.thawButton",
+					"targets": [],
+					"value": "Thaw Hold"
+				},
+				{
+					"id": "click-thaw-btn",
+					"command": "click",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.thawButton",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-thaw-success",
+					"command": "assertElementPresent",
+					"target": "css=.alert-success",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "037-change-pickup-location",
+			"name": "037 Change pickup location",
+			"commands": [
+				{
+					"id": "open-holds-change-pickup",
+					"command": "open",
+					"target": "/MyAccount/Holds?source=all",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-change-pickup",
+					"command": "click",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.changePickupLocationButton",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "select-new-pickup",
+					"command": "click",
+					"target": "id=newPickupLocation",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "choose-new-pickup",
+					"command": "select",
+					"target": "id=newPickupLocation",
+					"targets": [],
+					"value": "index=1"
+				},
+				{
+					"id": "submit-change-pickup",
+					"command": "click",
+					"target": "css=.tool",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "verify-change-pickup-success",
+					"command": "verifyText",
+					"target": "css=.modal-body",
+					"targets": [],
+					"value": "The hold has been updated"
+				}
+			]
+		},
+		{
+			"id": "038-cancel-hold",
+			"name": "038 Cancel hold",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the site",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "open-holds",
+					"command": "open",
+					"target": "/MyAccount/Holds?source=all",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-cancel-hold",
+					"command": "click",
+					"target": "css=div[class*=\"ilsHold_${holdBook.bibRecordId}\"] button.cancelButton",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-cancel-modal",
+					"command": "assertText",
+					"target": "css=.tool",
+					"targets": [],
+					"value": "Confirm Cancel Hold"
+				},
+				{
+					"id": "confirm-cancel",
+					"command": "click",
+					"target": "css=.tool",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "assert-success",
+					"command": "assertElementPresent",
+					"target": "css=.alert-success",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "992-sign-out",
+			"name": "992 Sign out",
+			"commands": [
+				{
+					"id": "run-open",
+					"comment": "Open the site",
+					"command": "run",
+					"target": "010 Open",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "check-login-link",
+					"comment": "Check if loginLink exists",
+					"command": "executeScript",
+					"target": "return document.querySelector('#loginLink') !== null;",
+					"value": "isLoginLinkPresent"
+				},
+				{
+					"id": "if-login-link-false",
+					"comment": "If loginLink does not exist",
+					"command": "if",
+					"target": "${isLoginLinkPresent} == false",
+					"value": ""
+				},
+				{
+					"id": "verify-account-btn",
+					"command": "verifyElementPresent",
+					"target": "id=account-menu-dropdown",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "click-account-btn",
+					"command": "click",
+					"target": "id=account-menu-dropdown",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-login-btn",
+					"command": "waitForElementPresent",
+					"target": "id=logoutLink",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "waitFor-logout-btn",
+					"command": "waitForElementPresent",
+					"target": "id=logoutLink",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "click-logout-btn",
+					"command": "click",
+					"target": "id=logoutLink",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "waitFor-login-link",
+					"command": "waitForElementPresent",
+					"target": "id=loginLink",
+					"targets": [],
+					"value": "5000"
+				},
+				{
+					"id": "assert-login-link",
+					"command": "assertElementPresent",
+					"target": "id=loginLink",
+					"targets": [],
+					"value": ""
+				},
+				{
+					"id": "end-if-login-link-false",
+					"command": "end",
+					"targets": [],
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "999-close-browser",
+			"name": "999 Close Browser",
+			"commands": [
+				{
+					"id": "close-browser",
+					"comment": "Close the browser window",
+					"command": "close",
+					"target": "",
+					"targets": [],
+					"value": ""
+				}
+			]
+		}
+	],
+	"suites": [
+		{
+			"id": "aspen-basic-suite",
+			"name": "Aspen Discovery Basic Operations Suite",
+			"persistSession": false,
+			"parallel": false,
+			"timeout": 600,
+			"tests": [
+				"020-sign-in",
+				"992-sign-out",
+				"999-close-browser"
+			]
+		},
+		{
+			"id": "aspen-holds-suite",
+			"name": "Aspen Discovery Holds Suite",
+			"persistSession": false,
+			"parallel": false,
+			"timeout": 600,
+			"tests": [
+				"030-place-hold",
+				"035-freeze-hold",
+				"036-thaw-hold",
+				"037-change-pickup-location",
+				"038-cancel-hold"
+			]
+		}
+	],
+	"urls": [
+		"${url}/"
+	]
+}

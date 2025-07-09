@@ -41,7 +41,9 @@
 		{/if}
 
 		{foreach from=$structure item=property}
-			{include file="DataObjectUtil/property.tpl"}
+			{if is_array($property) && isset($property.property) && isset($property.type)}
+				{include file="DataObjectUtil/property.tpl"}
+			{/if}
 		{/foreach}
 
 		{if (!isset($canSave) || ($canSave == true))}

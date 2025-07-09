@@ -9,7 +9,7 @@ class LibrarySideLoadScope extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		$allLibraryList = Library::getLibraryList(false);
-		if (!UserAccount::userHasPermission('Administer Side Loads')) {
+		if (!UserAccount::userHasPermission('Administer All Side Loads')) {
 			$libraryList = Library::getLibraryList(true);
 		}else{
 			$libraryList = $allLibraryList;

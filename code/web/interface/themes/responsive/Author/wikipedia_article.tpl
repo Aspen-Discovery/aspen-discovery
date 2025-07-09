@@ -7,7 +7,7 @@
 		{$info.description|truncate_html:4500:"...":false}
 		<div class="row smallText">
 			<div class="col-xs-12">
-				<a href="http://{$wiki_lang}.wikipedia.org/wiki/{$info.name|escape:"url"}" rel="external" onclick="window.open (this.href, 'child'); return false"><span class="note">{translate text='Provided by Wikipedia' isPublicFacing=true}</span></a>
+				<a href="https://{$wiki_lang}.wikipedia.org/wiki/{$info.name|escape:"url"}" rel="external" onclick="window.open (this.href, 'child'); return false"><span class="note">{translate text='Provided by Wikipedia' isPublicFacing=true}</span></a>
 			</div>
 		</div>
 	</div>

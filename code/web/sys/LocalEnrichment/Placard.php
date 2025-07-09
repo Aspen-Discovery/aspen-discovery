@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
@@ -50,6 +50,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 			'web_resource' => 'Web Resource',
 		];
 
+		/** @noinspection HtmlRequiredAltAttribute */
 		return [
 			'id' => [
 				'property' => 'id',
@@ -185,7 +186,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 	}
 
 	/**
-	 * @return int[]
+	 * @return ?int[]
 	 */
 	public function getLibraries(): ?array {
 		if (!isset($this->_libraries) && $this->id) {
@@ -201,7 +202,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 	}
 
 	/**
-	 * @return int[]
+	 * @return ?int[]
 	 */
 	public function getLocations(): ?array {
 		if (!isset($this->_locations) && $this->id) {
@@ -308,7 +309,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function saveTriggers() {
+	public function saveTriggers() : void {
 		if (isset ($this->_triggers) && is_array($this->_triggers)) {
 			/** @var PlacardTrigger $trigger */
 			foreach ($this->_triggers as $trigger) {

@@ -57,13 +57,13 @@ class ImageUpload extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id within the database',
+				'description' => 'The unique id within the database.',
 			],
 			'title' => [
 				'property' => 'title',
 				'type' => 'text',
 				'label' => 'Title',
-				'description' => 'The title of the image',
+				'description' => 'The title of the image.',
 				'size' => '40',
 				'maxLength' => 255,
 			],
@@ -71,7 +71,7 @@ class ImageUpload extends DataObject {
 				'property' => 'type',
 				'type' => 'text',
 				'label' => 'Type',
-				'description' => 'The type of image being uploaded',
+				'description' => 'The type of image being uploaded.',
 				'maxLength' => 50,
 			],
 			'owningLibrary' => [
@@ -80,7 +80,7 @@ class ImageUpload extends DataObject {
 				'values' => $libraryList,
 				'allValues' => $allLibraryList,
 				'label' => 'Owning Library',
-				'description' => 'Which library owns this content.',
+				'description' => 'Which library owns this image.',
 				'onchange' => "return AspenDiscovery.Admin.toggleLibrarySharingOptions();",
 			],
 			'sharing' => [
@@ -89,7 +89,7 @@ class ImageUpload extends DataObject {
 				'values' => $allowableSharingOptions,
 				'allValues' => $allSharingOptions,
 				'label' => 'Share With',
-				'description' => 'Who the content should be shared with.',
+				'description' => 'With whom the image should be shared.',
 				'onchange' => "return AspenDiscovery.Admin.toggleLibrarySharingOptions();",
 			],
 			'sharedWithLibrary' => [
@@ -98,21 +98,21 @@ class ImageUpload extends DataObject {
 				'values' => $libraryListForSharing,
 				'allValues' => $allLibraryList,
 				'label' => 'Library to Share With',
-				'description' => 'Which library this content is shared with.',
+				'description' => 'With which library to share this image.',
 			],
 			'fullSizePath' => [
 				'property' => 'fullSizePath',
 				'type' => 'image',
 				'label' => 'Full Size Image',
-				'description' => 'The full size image (max width 1068px)',
+				'description' => 'The full size image (max width 1068px).',
 				'maxWidth' => 1068,
 				'maxHeight' => 1068,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full',
 				'displayUrl' => '/WebBuilder/ViewImage?size=full&id=',
 				'hideInLists' => true,
 				'required' => true,
-				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
-				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
+				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateXLargeSize' => [
 				'property' => 'generateXLargeSize',
@@ -125,14 +125,14 @@ class ImageUpload extends DataObject {
 				'property' => 'xLargeSizePath',
 				'type' => 'image',
 				'label' => 'X-Large Size Image',
-				'description' => 'The x-large size image (max width 1100 px)',
+				'description' => 'The x-large size image (max width 1100 px).',
 				'maxWidth' => ImageUpload::$xLargeSize,
 				'maxHeight' => ImageUpload::$xLargeSize,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=x-large&id=',
 				'hideInLists' => true,
-				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
-				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
+				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateLargeSize' => [
 				'property' => 'generateLargeSize',
@@ -145,14 +145,14 @@ class ImageUpload extends DataObject {
 				'property' => 'largeSizePath',
 				'type' => 'image',
 				'label' => 'Large Size Image',
-				'description' => 'The medium size image (max width 600px)',
+				'description' => 'The medium size image (max width 600px).',
 				'maxWidth' => ImageUpload::$largeSize,
 				'maxHeight' => ImageUpload::$largeSize,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=large&id=',
 				'hideInLists' => true,
-				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
-				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
+				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateMediumSize' => [
 				'property' => 'generateMediumSize',
@@ -165,14 +165,14 @@ class ImageUpload extends DataObject {
 				'property' => 'mediumSizePath',
 				'type' => 'image',
 				'label' => 'Medium Size Image',
-				'description' => 'The medium size image (max width 400px)',
+				'description' => 'The medium size image (max width 400px).',
 				'maxWidth' => ImageUpload::$mediumSize,
 				'maxHeight' => ImageUpload::$mediumSize,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium',
 				'displayUrl' => '/WebBuilder/ViewImage?size=medium&id=',
 				'hideInLists' => true,
-				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
-				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
+				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
 			],
 			'generateSmallSize' => [
 				'property' => 'generateSmallSize',
@@ -185,13 +185,13 @@ class ImageUpload extends DataObject {
 				'property' => 'smallSizePath',
 				'type' => 'image',
 				'label' => 'Small Size Image',
-				'description' => 'The small size image (max width 200px)',
+				'description' => 'The small size image (max width 200px).',
 				'maxWidth' => ImageUpload::$smallSize,
 				'maxHeight' => ImageUpload::$smallSize,
 				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small',
 				'displayUrl' => '/WebBuilder/ViewImage?size=small&id=',
-				'note' => translate(['text' => 'Allowed formats: JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
-				'validTypes' => ['image/jpeg', 'image/png', 'image/svg+xml']
+				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
+				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
 			],
 		];
 	}
@@ -236,7 +236,7 @@ class ImageUpload extends DataObject {
 				}
 				$xLargeFile = $xLargeFilePath . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $xLargeFilePath . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $xLargeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -252,7 +252,7 @@ class ImageUpload extends DataObject {
 				}
 				$largeFile = $largeFilePath . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $largeFilePath . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $largeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -268,7 +268,7 @@ class ImageUpload extends DataObject {
 				}
 				$mediumFile = $mediumFilePath . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $mediumFilePath . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $mediumFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -284,7 +284,7 @@ class ImageUpload extends DataObject {
 				}
 				$smallFile = $smallFilePath . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $smallFilePath . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $smallFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}

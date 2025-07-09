@@ -41,14 +41,15 @@ if (!$nytSettings->find(true)) {
 		$listAPI = new ListAPI();
 		foreach ($availableLists as $list) {
 			$listName = $list->display_name;
-			try {
-				$listAPI->createUserListFromNYT($list->list_name_encoded, $nytUpdateLog);
-			} catch (Exception $e) {
-				$nytUpdateLog->addError("Error updating $listName " . $e->getMessage());
+			if (!empty($listName)) {
+				try {
+					$listAPI->createUserListFromNYT($list->list_name_encoded, $nytUpdateLog);
+				} catch (Exception $e) {
+					$nytUpdateLog->addError("Error updating $listName " . $e->getMessage());
+				}
+				$nytUpdateLog->lastUpdate = time();
+				$nytUpdateLog->update();
 			}
-			$nytUpdateLog->lastUpdate = time();
-			$nytUpdateLog->update();
-			//We now get all information in a single call, so there is no need to wait between calls
 		}
 	}
 

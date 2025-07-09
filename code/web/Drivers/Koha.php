@@ -8539,7 +8539,7 @@ class Koha extends AbstractIlsDriver {
 
 	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		// Last seen only updates once a day so only do this check if we're running the nightly update.
-		if (!$isNightlyUpdate) {
+		if ($isNightlyUpdate) {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
 			$sql = "SELECT lastseen, dateexpiry FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "'";
@@ -8559,15 +8559,25 @@ class Koha extends AbstractIlsDriver {
 				$results->close();
 			}
 
-			// Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history.
-			$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
-			if ($lastSeenDate != null && ($lastSeenDate > $lastReadingHistoryUpdate)) {
-				// Do not update if the patron's account expired more than 4 weeks ago.
-				if ($expirationDate == null || ($expirationDate > (time() - 4 * 7 * 24 * 60 * 60))) {
-					return true;
-				}
+			// Bypass if the patron has no activity according to Koha.
+			if ($lastSeenDate == null) {
+				return true;
+			}
+			// Bypass if the patron's account expired more than 4 weeks ago (expiration takes precedence).
+			if ($expirationDate != null && ($expirationDate <= (time() - 4 * 7 * 24 * 60 * 60))) {
+				return true;
+			}
+			/* The check cannot be between $lastSeenDate and $lastReadingHistoryUpdate because the patron may have activity according to Koha,
+			but never view his or her reading history, which is what prompts updates to it when logged in. Thus, the reading history
+			must be kept up to date in the background; otherwise, patrons will report gaps in their reading history. */
+			//$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
+			//if ($lastSeenDate <= $lastReadingHistoryUpdate) {}
+			// Bypass reading history update if the patron hasn't been seen in the last 2 weeks (inactive patron).
+			if ($lastSeenDate <= (time() - 2 * 7 * 24 * 60 * 60)) {
+				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -8780,13 +8790,13 @@ class Koha extends AbstractIlsDriver {
 		$results = mysqli_query($this->dbConnection, $sql);
 		$transports = [];
 		if($results) {
-			$i = 0;
 			while ($curRow = $results->fetch_assoc()) {
-				$transports[$curRow['module']][$i]['module'] = $curRow['module'];
-				$transports[$curRow['module']][$i]['code'] = $curRow['code'];
-				$transports[$curRow['module']][$i]['branch'] = $curRow['branchcode'];
-				$transports[$curRow['module']][$i]['name'] = $curRow['name'];
-				$i++;
+				$transports[] = [
+					'module' => $curRow['module'],
+					'code' => $curRow['code'],
+					'branch' => $curRow['branchcode'],
+					'name' => $curRow['name']
+				];
 			}
 			$results->close();
 		}
@@ -8798,16 +8808,14 @@ class Koha extends AbstractIlsDriver {
 	 * Update account notifications for the user. At this point, the system has verified that the user can receive push notifications
 	 * and that they are opted in to getting account notifications.
 	 *
-	 * @param User $user
+	 * @param User $user - the user to update notifications for
+	 * @param ILSNotificationSetting $ilsNotificationSetting - the settings to base notifications on
 	 * @return array
 	 */
-	public function updateAccountNotifications(User $user): array {
+	public function updateAccountNotifications(User $user, ILSNotificationSetting $ilsNotificationSetting): array {
 		$this->initDatabaseConnection();
 
-		//Since the number of users logged who are opted in to Push Notifications will be significantly smaller than
-		// the number of users in Koha, first get all users that are opted in to push notifications, and then get
-		// the notifications for them.
-		//Get a list of all messages that have been queued in the last 24 hours
+		//Get a list of all messages that have been queued in the last 24 hours for the user
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM message_queue where message_transport_type = 'email' and time_queued > DATE_SUB(NOW(), INTERVAL 1 DAY) AND borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->unique_ils_id) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);

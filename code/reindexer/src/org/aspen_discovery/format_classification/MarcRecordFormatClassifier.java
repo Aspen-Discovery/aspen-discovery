@@ -1095,6 +1095,9 @@ public class MarcRecordFormatClassifier {
 				} else if (editionData.contains("gamecube")) {
 					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format GameCube based on 250 edition", 2);}
 					result.add("GameCube");
+				} else if (editionData.contains("nintendo switch 2")) {
+					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format NintendoSwitch2 based on 250 edition", 2);}
+					result.add("NintendoSwitch2");
 				} else if (editionData.contains("nintendo switch")) {
 					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format NintendoSwitch based on 250 edition", 2);}
 					result.add("NintendoSwitch");
@@ -1224,6 +1227,8 @@ public class MarcRecordFormatClassifier {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch 2")) {
+			return "NintendoSwitch2";
 		} else if (value.contains("nintendo switch")) {
 			return "NintendoSwitch";
 		} else if (value.contains("nintendo ds")) {
@@ -1490,7 +1495,7 @@ public class MarcRecordFormatClassifier {
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5") || printFormats.contains("PlayStationVita")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
 				|| printFormats.contains("3DS") || printFormats.contains("WindowsGame")
-				|| printFormats.contains("NintendoSwitch") || printFormats.contains("NintendoDS")){
+				|| printFormats.contains("NintendoSwitch2") || printFormats.contains("NintendoSwitch") || printFormats.contains("NintendoDS")){
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");

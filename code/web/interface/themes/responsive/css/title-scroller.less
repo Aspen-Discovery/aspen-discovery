@@ -15,7 +15,7 @@
   }
 }
 .titleScrollerViewMore{
-  padding-right: 5px;
+  padding-right: 10px;
   float: right;
 }
 
@@ -30,28 +30,27 @@
   clear: both;
   position: relative;
 }
-// combined rules
-.leftScrollerButton,.rightScrollerButton{
-  display: inline-block;
-  height: 135px;
-  line-height: 115px;
-  vertical-align: middle;
+.leftScrollerButton, .rightScrollerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   width: 25px;
-  float: left;
   cursor: pointer;
-  margin-left: 5px;
-  margin-top: 5px;
-  zoom: 1;
-  *display: inline;
+  margin: 0 10px;
 }
 .leftScrollerButton{
-  float: left;
-  margin-left: 5px; // TODO: not needed, I believe. plb 2-10-16
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
 }
 .rightScrollerButton{
-  float: right;
-  margin-right: 5px;
-  z-index: 100;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  z-index: 100; /* Needed for "Single Title with a Next Button" style */
 }
 // combined rules
 .scrollerButtonUp, .scrollerButtonDown{
@@ -77,12 +76,14 @@
   text-align: center;
   font-weight: bold;
   color: #00125E;
+  padding-left: 20px;
 }
 .titleScrollerSelectedAuthor{
   width: 100%;
   text-align: center;
   font-weight: bold;
   color: #A9A9A9;
+  padding-left: 20px;
 }
 .scrollerBodyContainer{
   position: relative;
@@ -192,8 +193,9 @@
 .scrollerTitle{
   display: inline-block;
   margin: 2px;
-  vertical-align:middle;
+  vertical-align: middle;
   padding: 3px;
+  text-align: center;
   max-width: 129px;
   zoom: 1;
   *display: inline;
@@ -308,10 +310,10 @@
       max-width: none;
     }
   }  .scrollerBody{
-    height: 215px;
-  }
+       height: 215px;
+     }
   &.scrollerWithRatings .scrollerBody{
-    height: 230px;
+    height: 245px;
   }
   .leftScrollerButton, .rightScrollerButton{
     line-height: 200px;
@@ -319,4 +321,9 @@
   .scrollerButtonUp, .scrollerButtonDown{
     width: 223px;
   }
+}
+
+/* Ensure the "View More" link appears above the bottom border when using tabs. */
+.collectionSpotlight.horizontal .tab-content {
+  padding-bottom: 30px;
 }

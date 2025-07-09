@@ -1,0 +1,16 @@
+{
+	"siteName": "example",
+	"url": "https://example.library.org",
+	"patron": {
+		"description": "A test patron with hold and checkout privileges in your ILS",
+		"username": "1234567",
+		"password": "example_password",
+		"invalidPassword": "wrong_password"
+	},
+	"holdBook": {
+		"description": "A grouped work with a book with a bibliographic record in your ILS that can be placed on hold",
+		"title": "AspenDiscovery testBook",
+		"groupedWorkId": "9e673c23-4099-caf3-37da-8016252e7dc9-eng",
+		"bibRecordId": "CARL0000968955"
+	}
+}

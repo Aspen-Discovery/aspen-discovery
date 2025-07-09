@@ -4057,8 +4057,9 @@ class Library extends DataObject {
 					'enableWebBuilder' => [
 						'property' => 'enableWebBuilder',
 						'type' => 'checkbox',
-						'label' => 'Allow searching locally created web content',
-						'description' => 'Whether or not information from indexed local web content is shown.',
+						'label' => 'Index Local Web Builder Content',
+						'description' => 'Include content created with the local Web Builder in the catalog search results. This setting must be enabled for Web Builder pages (e.g., Basic Pages, Custom Pages, etc.) to be indexed and appear in &quot;Library Website&quot; search results.',
+						'note' => 'When disabled, this library will show as "(Indexing Disabled)" in Web Builder library selection lists, and its locations will show as "(Library Indexing Disabled)" in location selection lists.',
 						'hideInLists' => true,
 						'default' => 0,
 					],
@@ -4969,7 +4970,7 @@ class Library extends DataObject {
 		if ($allThemes !== false && !empty($allThemes)) {
 			return reset($allThemes);
 		}else{
-			return null;
+			return $this->getOrSetDefaultLibraryTheme();
 		}
 	}
 
@@ -4991,6 +4992,22 @@ class Library extends DataObject {
 			}
 		}
 		return $this->_themes;
+	}
+	
+	/**
+	 * Find or create a default theme for use in cases where a library or location has no LibraryTheme or LocationTheme
+	 */
+	public function getOrSetDefaultLibraryTheme(): LibraryTheme {
+		require_once ROOT_DIR . '/sys/Theming/Theme.php';
+		$defaultTheme = new Theme;
+		$defaultLibraryTheme = new LibraryTheme;
+
+		$defaultLibraryTheme->themeId = $defaultTheme->getDefaultTheme()->id;
+		$defaultLibraryTheme->libraryId = $this->libraryId;
+		if(!$defaultLibraryTheme->find()) {
+			$defaultLibraryTheme->insert();
+		}
+		return $defaultLibraryTheme;
 	}
 
 	/**
@@ -5334,11 +5351,13 @@ class Library extends DataObject {
 
 	private static $_filteredList = null;
 	private static $_fullList = null;
+
 	/**
 	 * @param boolean $restrictByHomeLibrary whether only the patron's home library should be returned
+	 * @param int $accountProfileId
 	 * @return array
 	 */
-	static function getLibraryList(bool $restrictByHomeLibrary, $accountProfileId = -1): array {
+	static function getLibraryList(bool $restrictByHomeLibrary, int $accountProfileId = -1): array {
 		if ($accountProfileId == -1) {
 			if ($restrictByHomeLibrary && !is_null(Library::$_filteredList)) {
 				return Library::$_filteredList;
@@ -5423,6 +5442,24 @@ class Library extends DataObject {
 			}
 		}
 		return Library::$libraryListAsObjects;
+	}
+
+	/**
+	 * Get library list with Web Builder indexing status indicators.
+	 * @param boolean $restrictByHomeLibrary Whether only the patron's home library should be returned.
+	 * @return array An associative array with libraryId => "Library Name [status]".
+	 */
+	static function getLibraryListWithWebBuilderStatus(bool $restrictByHomeLibrary): array {
+		$libraryObjects = Library::getLibraryListAsObjects($restrictByHomeLibrary);
+		$libraryList = [];
+		foreach ($libraryObjects as $libraryId => $library) {
+			$displayName = $library->displayName;
+			if ($library->enableWebBuilder == 0) {
+				$displayName .= ' (Indexing Disabled)';
+			}
+			$libraryList[$libraryId] = $displayName;
+		}
+		return $libraryList;
 	}
 
 	/** @var OverDriveScope[] */
@@ -5682,7 +5719,7 @@ class Library extends DataObject {
 			'enableForgotPasswordLink' => $this->enableForgotPasswordLink,
 			'enableForgotBarcode' => $this->enableForgotBarcode,
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
-			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
+			'discoveryVersion' => $interface->getVariable('aspenVersion'),
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Library Card Number',
 			'passwordLabel' => $this->loginFormPasswordLabel ?? 'PIN or Password',
 			'code' => $this->ilsCode,

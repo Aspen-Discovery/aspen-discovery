@@ -97,7 +97,7 @@ class SideLoad extends DataObject {
 		$allowableSharingOptions = $allSharingOptions;
 		$allLibraryList[-1] = 'All Libraries';
 		$allLibraryList = $allLibraryList + Library::getLibraryList(false);
-		if (!UserAccount::userHasPermission('Administer Side Loads') && (UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library'))) {
+		if (!UserAccount::userHasPermission('Administer All Side Loads') && (UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library'))) {
 			$libraryList = Library::getLibraryList(true);
 			unset($allowableSharingOptions[1]);
 		}else{
@@ -172,7 +172,7 @@ class SideLoad extends DataObject {
 					'description' => 'The Module to use within the URL',
 					'required' => true,
 					'default' => '{Change based on name}',
-					'readOnly' => !UserAccount::userHasPermission(['Administer Side Loads']),
+					'readOnly' => !UserAccount::userHasPermission(['Administer All Side Loads']),
 				],
 				'deletedRecordsIds' => [
 					'property' => 'deletedRecordsIds',
@@ -190,7 +190,7 @@ class SideLoad extends DataObject {
 					'required' => true,
 					'default' => "/data/aspen-discovery/$serverName/{sideload_name}/marc",
 					'forcesReindex' => true,
-					'readOnly' => !UserAccount::userHasPermission(['Administer Side Loads']),
+					'readOnly' => !UserAccount::userHasPermission(['Administer All Side Loads']),
 				],
 			];
 		}
@@ -607,7 +607,7 @@ class SideLoad extends DataObject {
 				$allScope->insert();
 				
 				//If the user has access to only create side loads for their own library, automatically assign to all libraries and locations. 
-				if (!UserAccount::userHasPermission('Administer Side Loads')) {
+				if (!UserAccount::userHasPermission('Administer All Side Loads')) {
 					$libraryList = Library::getLibraryList(true);
 					$libraryScopeLinks = [];
 					foreach ($libraryList as $libraryId => $name) {
@@ -676,7 +676,7 @@ class SideLoad extends DataObject {
 	 */
 	public function canActiveUserEdit() : bool {
 		//Active user can edit if they have permission to edit everything or this is for their home location or sharing allows editing
-		if (UserAccount::userHasPermission('Administer Side Loads')) {
+		if (UserAccount::userHasPermission('Administer All Side Loads')) {
 			return true;
 		}elseif (UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')){
 			//If we see it, we can edit it, but it might be read-only
@@ -697,7 +697,7 @@ class SideLoad extends DataObject {
 	public function isReadOnly() : bool {
 		if ($this->_isReadOnly === null) {
 			//Active user can edit if they have permission to edit everything or this is for their home location or sharing allows editing
-			if (UserAccount::userHasPermission('Administer Side Loads')) {
+			if (UserAccount::userHasPermission('Administer All Side Loads')) {
 				$this->_isReadOnly = false;
 			}elseif (UserAccount::userHasPermission('Administer Side Loads for Home Library')){
 				$allowableLibraries = Library::getLibraryList(true);

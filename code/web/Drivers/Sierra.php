@@ -3165,4 +3165,214 @@ class Sierra extends Millennium {
 
 		return $result;
 	}
+
+	public function supportAccountNotifications() : bool {
+		return true;
+	}
+
+	/**
+	 * Update account notifications for the user. At this point, the system has verified that the user can receive push notifications
+	 * and that they are opted in to getting account notifications.
+	 *
+	 * @param User $user - the user to update notifications for
+	 * @param ILSNotificationSetting $ilsNotificationSetting - the settings to base notifications on
+	 * @return array
+	 */
+	public function updateAccountNotifications(User $user, ILSNotificationSetting $ilsNotificationSetting): array {
+		require_once ROOT_DIR . '/sys/Account/UserILSMessage.php';
+
+		$numMessagesAdded = 0;
+
+		$sierraDnaConnection = $this->connectToSierraDNA();
+		if (!$sierraDnaConnection) {
+			return [
+				'success' => false,
+				'message' => 'Could not connect to the Sierra database'
+			];
+		}
+		$datetimeNow = new DateTime();
+		$formattedTimeNow = $datetimeNow->format('Y-m-d H:i:s P');
+		$datetime24HoursAgo = new DateTime();
+		date_sub($datetime24HoursAgo, new DateInterval('PT24H'));
+		$formattedTime24HoursAgo = $datetime24HoursAgo->format('Y-m-d H:i:s P');
+		$dateTime24HoursFromNow = new DateTime();
+		$dateTime24HoursFromNow->add(new DateInterval('P1D'));
+		$formattedTime24HoursFromNow = $dateTime24HoursFromNow->format('Y-m-d H:i:s P');
+		$dateTime3DaysFromNow = new DateTime();
+		$dateTime3DaysFromNow->add(new DateInterval('P3D'));
+		$datetime7DaysAgo = new DateTime();
+		date_sub($datetime7DaysAgo, new DateInterval('P7D'));
+		$datetime14DaysAgo = new DateTime();
+		date_sub($datetime14DaysAgo, new DateInterval('P14D'));
+		$datetime21DaysAgo = new DateTime();
+		date_sub($datetime14DaysAgo, new DateInterval('P21D'));
+		$loadHoldReadyForPickup = $user->canReceiveILSNotification('hold_ready');
+		$loadHoldExpiresSoon = $user->canReceiveILSNotification('hold_expire');
+		$numMessagesAdded = 0;
+		if ($loadHoldReadyForPickup || $loadHoldExpiresSoon) {
+			//Look for holds for the patron that have been put on the hold shelf in the last 24 hours
+			// or that will expire in the next 24 hours (but are not currently expired)
+			$getHoldsNeedingNoticesStmt = "select sierra_view.hold.*, record_num as patron_record_num from sierra_view.hold inner join sierra_view.record_metadata on patron_record_id = sierra_view.record_metadata.id where (hold.on_holdshelf_gmt >= $1 OR (expire_holdshelf_gmt >= $2 AND expire_holdshelf_gmt <= $3)) and record_num = $4";
+			$getHoldsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getHoldsNeedingNoticesStmt, [$formattedTime24HoursAgo, $formattedTimeNow, $formattedTime24HoursFromNow, $user->unique_ils_id]);
+			if ($getHoldsNeedingNoticesRS === false) {
+				return [
+					'success' => false,
+					'message' => 'Error querying Sierra DNA for holds needing notices'
+				];
+			}else{
+				while ($curRow = pg_fetch_array($getHoldsNeedingNoticesRS, NULL, PGSQL_ASSOC)) {
+					$existingMessage = new UserILSMessage();
+					$existingMessage->userId = $user->id;
+					//For Sierra, we will use the message id as the hold or checkout
+					$existingMessage->messageId = $curRow['id'];
+					$onHoldshelfTime = strtotime($curRow['on_holdshelf_gmt']);
+					$expireHoldshelfTime = strtotime($curRow['expire_holdshelf_gmt']);
+					if ($onHoldshelfTime > $dateTime24HoursFromNow->getTimestamp()) {
+						if ($loadHoldReadyForPickup) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'hold_ready', $ilsNotificationSetting, $existingMessage);
+						}
+					}elseif ($expireHoldshelfTime >= $datetimeNow->getTimestamp() && $expireHoldshelfTime <= $dateTime24HoursFromNow) {
+						if ($loadHoldExpiresSoon) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'hold_expire', $ilsNotificationSetting, $existingMessage);
+						}
+					}
+				}
+			}
+		}
+		$loadCheckoutDueSoon = $user->canReceiveILSNotification('checkout_due_soon');
+		$loadOverdue1 = $user->canReceiveILSNotification('overdue_1');
+		$loadOverdue7 = $user->canReceiveILSNotification('overdue_7');
+		$loadOverdue14 = $user->canReceiveILSNotification('overdue_14');
+		$loadBilled = $user->canReceiveILSNotification('billed');
+		if ($loadCheckoutDueSoon || $loadOverdue1 || $loadOverdue7 || $loadOverdue14 || $loadBilled) {
+			//Load checkouts for the patron
+			$getCheckoutsNeedingNoticesStmt = "select sierra_view.checkout.*, record_num as patron_record_num from sierra_view.checkout inner join sierra_view.record_metadata on patron_record_id = sierra_view.record_metadata.id where due_gmt < $1 AND record_num = $2";
+			$getCheckoutsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getCheckoutsNeedingNoticesStmt, [$formattedTimeNow, $user->unique_ils_id]);
+			if ($getCheckoutsNeedingNoticesRS === false) {
+				return [
+					'success' => false,
+					'message' => 'Error querying Sierra DNA for checkouts needing notices'
+				];
+			}else{
+				while ($curRow = pg_fetch_array($getCheckoutsNeedingNoticesRS, NULL, PGSQL_ASSOC)) {
+					$existingMessage = new UserILSMessage();
+					$existingMessage->userId = $user->id;
+					//For Sierra, we will use the message id as the hold or checkout
+					$existingMessage->messageId = $curRow['id'];
+					$dueDateTime = strtotime($curRow['due_gmt']);
+					if ($dueDateTime <= $datetime21DaysAgo->getTimestamp()) {
+						if ($loadBilled) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'billed', $ilsNotificationSetting, $existingMessage);
+						}
+					}elseif ($dueDateTime <= $datetime14DaysAgo->getTimestamp()) {
+						if ($loadOverdue14) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'overdue_14', $ilsNotificationSetting, $existingMessage);
+						}
+					}elseif ($dueDateTime <= $datetime7DaysAgo->getTimestamp()) {
+						if ($loadOverdue7) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'overdue_7', $ilsNotificationSetting, $existingMessage);
+						}
+					}elseif ($dueDateTime <= $datetime24HoursAgo->getTimestamp()) {
+						if ($loadOverdue1) {
+							$numMessagesAdded += $this->createIlsMessage($user, 'overdue_1', $ilsNotificationSetting, $existingMessage);
+						}
+					}elseif ($dueDateTime <= $dateTime3DaysFromNow->getTimestamp()) {
+						if (!$loadCheckoutDueSoon) {
+							continue;
+						}
+						$existingMessage->type = 'checkout_due_soon';
+						if (!$existingMessage->find(true)) {
+							$existingMessage->status = 'pending';
+							$existingMessage->title = 'Items Due Soon';
+							$existingMessage->defaultContent = 'Some materials are your account are due soon. Some materials may automatically may renew. If renewed, the Due Date has been updated.';
+							$existingMessage->content = 'Some materials are your account are due soon. Some materials may automatically may renew. If renewed, the Due Date has been updated.';
+							$existingMessage->dateQueued = $datetimeNow->getTimestamp();
+							$existingMessage->insert();
+						}
+					}
+				}
+			}
+		}
+
+		return [
+			'success' => true,
+			'message' => 'Added ' . $numMessagesAdded . ' to message queue',
+			'numMessagesAdded' => $numMessagesAdded
+		];
+	}
+
+	public function getMessageTypes(): array {
+		$messageTypes = [];
+		$messageTypes[] = [
+			'name' => 'Hold Ready for Pickup',
+			'module' => '',
+			'code' => 'hold_ready',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Hold Ready to Expire',
+			'module' => '',
+			'code' => 'hold_expire',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Checkout Due Soon',
+			'module' => '',
+			'code' => 'checkout_due_soon',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Checkout 1 day overdue',
+			'module' => '',
+			'code' => 'overdue_1',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Checkout 7 days overdue',
+			'module' => '',
+			'code' => 'overdue_7',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Checkout 14 days overdue',
+			'module' => '',
+			'code' => 'overdue_14',
+			'branch' => ''
+		];
+		$messageTypes[] = [
+			'name' => 'Bill for unreturned item',
+			'module' => '',
+			'code' => 'billed',
+			'branch' => ''
+		];
+
+		return $messageTypes;
+	}
+
+	/**
+	 * Creates the ILS message within Aspen unless one already exists.
+	 *
+	 * @param User $user
+	 * @param string $messageCode
+	 * @param ILSMessageType|null $ilsMessageType
+	 * @param UserILSMessage $existingMessage
+	 * @return int
+	 */
+	private function createIlsMessage(User $user, string $messageCode, ILSNotificationSetting $ilsNotificationSetting, UserILSMessage $existingMessage) : int {
+		$existingMessage->type = $messageCode;
+		if (!$existingMessage->find(true)) {
+			$ilsMessageType = $ilsNotificationSetting->getMessageTypeByCode($messageCode);
+			if ($ilsMessageType != null) {
+				$existingMessage->status = 'pending';
+				$existingMessage->title = $ilsMessageType->getTextBlockTranslation('message_title', $user->interfaceLanguage, true);
+				$existingMessage->content = $ilsMessageType->getTextBlockTranslation('message_body', $user->interfaceLanguage, true);
+				$existingMessage->dateQueued = time();
+				if ($existingMessage->insert()) {
+					return 1;
+				}
+			}
+		}
+		return 0;
+	}
+
 }

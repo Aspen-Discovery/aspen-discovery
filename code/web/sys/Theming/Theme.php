@@ -553,8 +553,8 @@ class Theme extends DataObject {
 	public $placardImageMaxHeight;
 
 
-	private $_libraries;
-	private $_locations;
+	protected $_libraries;
+	protected $_locations;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -3629,5 +3629,28 @@ class Theme extends DataObject {
 			unset($structure['extendsTheme']['values'][$this->themeName]);
 		}
 		return $structure;
+	}
+
+	protected $_defaultTheme = null;
+
+	/**
+	 * Get the default theme or, failing that, get the first theme stored in the database
+	 */
+	public function getDefaultTheme( bool $resetTheme = false ): Theme {
+		if ($this->_defaultTheme != null && !$resetTheme) {
+			return $this->_defaultTheme;
+		}
+
+		$defaultTheme = new Theme;
+		$defaultTheme->themeName = 'default';
+
+		if (!$defaultTheme->find(true)) {
+			unset($defaultTheme->themeName);
+			$defaultTheme->find(true);
+		}
+
+		$this->_defaultTheme = clone $defaultTheme;
+
+		return $this->_defaultTheme;
 	}
 }

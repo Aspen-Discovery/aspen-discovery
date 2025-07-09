@@ -1906,7 +1906,7 @@ class CatalogConnection {
 		return $this->driver->getMessageTypes();
 	}
 
-	public function updateAccountNotifications(): array {
+	public function updateAccountNotifications(ILSNotificationSetting $ilsNotificationSetting): array {
 		if ($this->supportAccountNotifications()) {
 			//Get a list of all users that have account notifications turned on
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
@@ -1927,7 +1927,7 @@ class CatalogConnection {
 				$user->id = $userNotificationToken->userId;
 				if ($user->find(true)) {
 					if ($user->canReceiveNotifications('notifyAccount')) {
-						$userResult = $this->driver->updateAccountNotifications($user);
+						$userResult = $this->driver->updateAccountNotifications($user, $ilsNotificationSetting);
 						if ($userResult['success']) {
 							$result['numUpdates']++;
 							$result['numMessagesAdded'] +=  $userResult['numMessagesAdded'];

@@ -14,6 +14,11 @@ class Admin_ReleaseNotes extends Action {
 			if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $releaseNoteFile)) {
 				$releaseNoteFile = str_replace('.MD', '', $releaseNoteFile);
 				$releaseNotes[$releaseNoteFile] = $releaseNoteFile;
+			} elseif (strcasecmp('Supplemental.MD', $releaseNoteFile) === 0) {
+				if (filesize($releaseNotesPath . '/' . $releaseNoteFile) > 0) {
+					$releaseNoteFile = str_replace('.MD', '', $releaseNoteFile);
+					$releaseNotes[$releaseNoteFile] = $releaseNoteFile;
+				}
 			}
 		}
 

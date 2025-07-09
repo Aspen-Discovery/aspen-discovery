@@ -51,7 +51,7 @@ class CurbsidePickupSetting extends DataObject {
 				'label' => 'Patron Instructions for Curbside Pickup',
 				'description' => 'General instructions shown to patrons during check-in for curbside pickups at the selected libraries.',
 				'maxLength' => 255,
-				'note' => 'For custom instructions per location/branch, edit this mirrored field under the ILS/Account Integration section of the <a href="/Admin/Locations">Location settings</a>.',
+				'note' => 'For custom instructions per location/branch, edit this mirrored field under the ILS/Account Integration section of the <a href="/Admin/Locations" target="_blank">Location settings</a>.',
 			],
 			'timeAllowedBeforeCheckIn' => [
 				'property' => 'timeAllowedBeforeCheckIn',

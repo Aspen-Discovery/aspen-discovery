@@ -1377,6 +1377,41 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowsourceCourseReserveId").hide();
 			}
 		},
+		updateCollectionSpotlightFields() {
+			const collSpotStyle = $("#styleSelect option:selected").val();
+			const rowsToHide = [
+				"#propertyRowshowTitle",
+				"#propertyRowshowAuthor",
+				"#propertyRowshowRatings",
+				"#propertyRowautoRotate"
+			];
+			rowsToHide.forEach(selector => $(selector).hide());
+
+			switch (collSpotStyle) {
+				case "text-list":
+					// All rows already hidden.
+					break;
+				case "horizontal-carousel":
+					[
+						"#propertyRowshowTitle",
+						"#propertyRowshowAuthor",
+						"#propertyRowshowRatings"
+					].forEach(selector => $(selector).show());
+					break;
+				default:
+					// Show all for other styles.
+					rowsToHide.forEach(selector => $(selector).show());
+					break;
+			}
+
+			if ($("#showViewMoreLink").is(":checked")) {
+				$("#propertyRowviewMoreLinkMode").show();
+			} else {
+				$("#propertyRowviewMoreLinkMode").hide();
+			}
+
+			return false;
+		},
 		updateGroupedWorkDisplayFields: function () {
 			var showSearchTools = $('#showSearchTools');
 			if (showSearchTools.is(":checked")) {

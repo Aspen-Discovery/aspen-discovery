@@ -39,9 +39,10 @@ code/web/sitemaps/*.xml
 code/web/sitemaps/*.txt
 code/web/node_modules
 tests/jmeter/results/*
-tests/selenium/*
 tests/conf/config.ini
-tests/e2e/site-test-config.json
+tests/e2e/selenium-ide/sites/**
+!tests/e2e/selenium-ide/sites/example/conf/
+!tests/e2e/selenium-ide/sites/example/conf/**
 data-import
 config.pwd.ini
 author_authorities.properties.temp
@@ -237,3 +238,4 @@ code/aspen_app/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
 data_dir_setup/.idea/workspace.xml
 sites/nashville.aspenlocal
 sites/nashville.production
+

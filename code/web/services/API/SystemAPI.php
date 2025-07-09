@@ -370,9 +370,9 @@ class SystemAPI extends AbstractAPI {
 	/** @noinspection PhpUnused */
 	public function getCurrentVersion(): array {
 		global $interface;
-		$gitBranch = $interface->getVariable('gitBranchWithCommit');
+		$aspenVersion = $interface->getVariable('aspenVersion');
 		return [
-			'version' => $gitBranch,
+			'version' => $aspenVersion,
 		];
 	}
 

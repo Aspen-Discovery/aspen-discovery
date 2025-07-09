@@ -25,8 +25,8 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 
 		$object = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
-			$patronLibrary = Library::getPatronHomeLibrary();
-			$object->libraryId = $patronLibrary->libraryId;
+			$homeLibrary = Library::getPatronHomeLibrary();
+			$object->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 		}
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -55,16 +55,16 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
-		//Collection spotlights should be added from search results.
+	function canAddNew(): bool {
+		// Collection Spotlights should be added from search results.
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete(): bool {
 		return true;
 	}
 
-	function launch() {
+	function launch(): void {
 		global $interface;
 
 		$interface->assign('canAddNew', $this->canAddNew());
@@ -72,19 +72,13 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
-		//Figure out what mode we are in
-		if (isset($_REQUEST['objectAction'])) {
-			$objectAction = $_REQUEST['objectAction'];
-		} else {
-			$objectAction = 'list';
-		}
+		$objectAction = $_REQUEST['objectAction'] ?? 'list';
 
 		if ($objectAction == 'delete' && isset($_REQUEST['id'])) {
 			parent::launch();
 			exit();
 		}
 
-		//Get all available spotlights
 		$availableSpotlights = [];
 		$collectionSpotlight = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
@@ -98,7 +92,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		}
 		$interface->assign('availableSpotlights', $availableSpotlights);
 
-		//Get the selected spotlight
+		// Get the selected spotlight.
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
 			$spotlight = $availableSpotlights[$_REQUEST['id']];
 			$interface->assign('object', $spotlight);
@@ -106,8 +100,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			$spotlight = null;
 		}
 
-		//Do actions that require pre-processing
-		if ($objectAction == 'save') {
+		if ($objectAction === 'save') {
 			if (!isset($spotlight)) {
 				$spotlight = new CollectionSpotlight();
 			}
@@ -115,56 +108,68 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			if (UserAccount::userHasPermission('Lock Administration Fields')) {
 				$fieldLocks = null;
 			}
-			DataObjectUtil::updateFromUI($spotlight, $collectionSpotlight->getObjectStructure(), $fieldLocks);
-			$validationResults = DataObjectUtil::saveObject($collectionSpotlight->getObjectStructure(), "CollectionSpotlight", $fieldLocks);
+			$structure = $collectionSpotlight->getObjectStructure();
+			DataObjectUtil::updateFromUI($spotlight, $structure, $fieldLocks);
+			// Validate (includes validateName, which skips current id).
+			$validationResults = DataObjectUtil::validateObject($structure, $spotlight);
 			if (!$validationResults['validatedOk']) {
 				$interface->assign('object', $spotlight);
 				$interface->assign('errors', $validationResults['errors']);
 				$objectAction = 'edit';
 			} else {
-				$interface->assign('object', $validationResults['object']);
-				$objectAction = 'view';
+				// Commit the update; CollectionSpotlight->update() handles saving lists.
+				$saveOk = $spotlight->update();
+				$interface->assign('object', $spotlight);
+				if (!$saveOk) {
+					$interface->assign('errors', ['An error occurred saving the collection spotlight.']);
+					$objectAction = 'edit';
+				} else {
+					$objectAction = 'view';
+				}
 			}
 
 		}
 
-		if ($objectAction == 'list') {
-			$interface->setTemplate('collectionSpotlights.tpl');
-		} else {
-			if ($objectAction == 'edit' || $objectAction == 'add') {
-				if (isset($_REQUEST['id'])) {
-					$interface->assign('spotlightId', $_REQUEST['id']);
-					$interface->assign('id', $_REQUEST['id']);
-				}
-				$editForm = DataObjectUtil::getEditForm($collectionSpotlight->getObjectStructure());
-				$interface->assign('editForm', $editForm);
-				$interface->setTemplate('collectionSpotlightEdit.tpl');
-			} else {
-				// Set some default sizes for the iframe we embed on the view page
-				switch ($spotlight->style) {
-					case 'horizontal':
-						$width = 650;
-						$height = ($spotlight->coverSize == 'medium') ? 325 : 275;
-						break;
-					case 'vertical' :
-						$width = ($spotlight->coverSize == 'medium') ? 275 : 175;
-						$height = ($spotlight->coverSize == 'medium') ? 700 : 400;
-						break;
-					case 'text-list' :
-						$width = 500;
-						$height = 200;
-						break;
-					case 'single' :
-					case 'single-with-next' :
-					default:
-						$width = ($spotlight->coverSize == 'medium') ? 300 : 225;
-						$height = ($spotlight->coverSize == 'medium') ? 350 : 275;
-						break;
-				}
-				$interface->assign('width', $width);
-				$interface->assign('height', $height);
-				$interface->setTemplate('collectionSpotlight.tpl');
+		if ($objectAction == 'edit' || $objectAction == 'add') {
+			if (isset($_REQUEST['id'])) {
+				$interface->assign('spotlightId', $_REQUEST['id']);
+				$interface->assign('id', $_REQUEST['id']);
 			}
+			$interface->assign('initializationJs', $this->getInitializationJs());
+			$editForm = DataObjectUtil::getEditForm($collectionSpotlight->getObjectStructure());
+			$interface->assign('editForm', $editForm);
+			$interface->setTemplate('collectionSpotlightEdit.tpl');
+		} elseif ($objectAction === 'view') {
+			// Set some default sizes for the iframe we embed on the view page.
+			switch ($spotlight->style) {
+				case 'horizontal':
+					$width = 650;
+					$height = ($spotlight->coverSize == 'medium') ? 350 : 300;
+					if ($spotlight->getNumLists() > 1) {
+						$height += 40;
+					}
+					break;
+				case 'vertical' :
+					$width = ($spotlight->coverSize == 'medium') ? 275 : 175;
+					$height = ($spotlight->coverSize == 'medium') ? 700 : 400;
+					break;
+				case 'text-list' :
+					$width = 500;
+					$height = 200;
+					break;
+				case 'single' :
+				case 'single-with-next' :
+				default:
+					$width = ($spotlight->coverSize == 'medium') ? 300 : 225;
+					$height = ($spotlight->coverSize == 'medium') ? 350 : 275;
+					break;
+			}
+			$interface->assign('width', $width);
+			$interface->assign('height', $height);
+			$interface->setTemplate('collectionSpotlight.tpl');
+		} else {
+			parent::launch();
+			exit();
 		}
 
 		$this->display($interface->getTemplate(), 'Collection Spotlights');
@@ -187,5 +192,15 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			'Administer All Collection Spotlights',
 			'Administer Library Collection Spotlights',
 		]);
+	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Collection Spotlights',
+		]);
+	}
+
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.Admin.updateCollectionSpotlightFields();';
 	}
 }

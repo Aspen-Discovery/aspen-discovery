@@ -90,6 +90,6 @@
 {/if}
 {/strip}
 
-{if !empty($talpaSearchLink) && !empty(tryThisSearchInTalpaSidebarSwitch) && $tryThisSearchInTalpaSidebarSwitch == 1 }
+{if !empty($talpaSearchLink) && !empty($tryThisSearchInTalpaSidebarSwitch) && $tryThisSearchInTalpaSidebarSwitch == 1 }
 	{include file="Search/tryThisSearchOnTalpa.tpl"}
 {/if}

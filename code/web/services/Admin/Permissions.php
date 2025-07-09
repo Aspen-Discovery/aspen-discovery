@@ -3,9 +3,11 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Administration/Role.php';
 require_once ROOT_DIR . '/sys/Administration/Permission.php';
+require_once ROOT_DIR . '/sys/Administration/PermissionGroup.php';
+require_once ROOT_DIR . '/sys/Administration/PermissionGroupPermission.php';
 
 class Admin_Permissions extends Admin_Admin {
-	function launch() {
+	function launch(): void {
 		global $interface;
 		global $enabledModules;
 
@@ -25,7 +27,28 @@ class Admin_Permissions extends Admin_Admin {
 			}
 		}
 		$interface->assign('selectedRole', $selectedRole);
+		// Load definitions for mutually exclusive permission groups.
+		$permissionGroups = self::loadPermissionGroups();
+		$interface->assign('permissionGroups', $permissionGroups);
 		if (isset($_REQUEST['submit']) && $selectedRole != null) {
+			if (isset($_REQUEST['permissionGroup'])) {
+				foreach ($_REQUEST['permissionGroup'] as $groupKey => $selectedPermId) {
+					if (isset($permissionGroups[$groupKey])) {
+						// Remove any other permissions in this group.
+						foreach ($permissionGroups[$groupKey]['permissions'] as $permName) {
+							$permObj = new Permission();
+							$permObj->name = $permName;
+							if ($permObj->find(true)) {
+								unset($_REQUEST['permission'][$permObj->id]);
+							}
+						}
+						// Apply the selected permission if one was selected (i.e., not "None").
+						if (!empty($selectedPermId)) {
+							$_REQUEST['permission'][$selectedPermId] = 1;
+						}
+					}
+				}
+			}
 			$selectedPermissions = [];
 			foreach ($_REQUEST['permission'] as $permissionId => $selected) {
 				if ($selected) {
@@ -61,6 +84,43 @@ class Admin_Permissions extends Admin_Admin {
 
 		$this->display('permissions.tpl', 'Permissions');
 
+	}
+
+	/**
+	 * Loads mutually exclusive permission groups from the database.
+	 * Each group contains sectionName, label, description, and a list of permission names.
+	 *
+	 * @return array<string,array{sectionName:string,label:string,description:string,permissions:string[]}>
+	 */
+	private static function loadPermissionGroups(): array {
+		$groups = [];
+		$groupLookup = [];
+
+		$groupObj = new PermissionGroup();
+		$groupObj->find();
+		while ($groupObj->fetch()) {
+			$groups[$groupObj->groupKey] = [
+				'sectionName' => $groupObj->sectionName,
+				'label' => $groupObj->label,
+				'description' => $groupObj->description,
+				'permissions' => [],
+			];
+			$groupLookup[$groupObj->id] = $groupObj->groupKey;
+		}
+
+		$mapping = new PermissionGroupPermission();
+		$mapping->find();
+		while ($mapping->fetch()) {
+			if (isset($groupLookup[$mapping->groupId])) {
+				$groupKey = $groupLookup[$mapping->groupId];
+				$permObj = new Permission();
+				$permObj->id = $mapping->permissionId;
+				if ($permObj->find(true)) {
+					$groups[$groupKey]['permissions'][] = $permObj->name;
+				}
+			}
+		}
+		return $groups;
 	}
 
 	function getBreadcrumbs(): array {

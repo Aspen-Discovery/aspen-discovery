@@ -986,35 +986,61 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	public function redirectToCloudLibrary(User $patron, CloudLibraryRecordDriver $recordDriver) {
 		$settings = $this->getSettings($patron);
 		$userInterfaceUrl = $settings->userInterfaceUrl;
+
+		//Setup the default redirection paths
+		$redirectDetailUrl = $userInterfaceUrl . '/detail/' . $recordDriver->getId();
+
+		//Generate redirect URL to Cloud Library with password
+		$redirectUrl = $this->generateRedirectUrl($patron, $recordDriver, true);
+
+		if (!$redirectUrl) {
+			//Some libraries do not require PIN to login cloud library
+			//Generate redirect URL to cloud library without password
+			$redirectUrl = $this->generateRedirectUrl($patron, $recordDriver, false);
+		}
+
+		if (!$redirectUrl) {
+			//Fall back to record detail page
+			$redirectUrl = $redirectDetailUrl;
+		}
+
+		header('Location:' . $redirectUrl);
+		die();
+
+	}
+
+	private function generateRedirectUrl(User $patron, CloudLibraryRecordDriver $recordDriver, $includePassword = false) {
+		$settings = $this->getSettings($patron);
+		$userInterfaceUrl = $settings->userInterfaceUrl;
 		if (substr($userInterfaceUrl, -1) == '/') {
 			$userInterfaceUrl = substr($userInterfaceUrl, 0, -1);
 		}
 
-		//Setup the default redirection paths
-		//These URLs no longer work
-//		if ($recordDriver->getPrimaryFormat() == 'MP3') {
-//			$redirectUrl = $userInterfaceUrl . '/AudioPlayer/' . $recordDriver->getId();
-//		} else {
-//			$redirectUrl = $userInterfaceUrl . '/EPubRead/' . $recordDriver->getId();
-//		}
-		$redirectUrl = $userInterfaceUrl . '/detail/' . $recordDriver->getId();
-
 		//Login the user to CloudLibrary
 		$loginUrl = "{$userInterfaceUrl}/login";
-		$postParams = [
-			'username' => $this->getPatronId($patron),
-			'password' => $this->getCloudLibraryPasswordOrPin($patron),
-			'eula' => 'eula',
-			'login_form' => 'true',
-			'library_id' => $settings->accountId,
-		];
+		if ($includePassword) {
+			$postParams = [
+				'username' => $this->getPatronId($patron),
+				'password' => $this->getCloudLibraryPasswordOrPin($patron),
+				'eula' => 'eula',
+				'login_form' => 'true',
+				'library_id' => $settings->accountId,
+			];
+		} else {
+			$postParams = [
+				'username' => $this->getPatronId($patron),
+				'eula' => 'eula',
+				'login_form' => 'true',
+				'library_id' => $settings->accountId,
+			];
+		}
 		$curlWrapper = new CurlWrapper();
 		$headers = [
 			'Content-Type: application/x-www-form-urlencoded',
 		];
 		$curlWrapper->addCustomHeaders($headers, false);
 		$response = $curlWrapper->curlPostPage($loginUrl, $postParams, [CURLOPT_HEADER => true]);
-		ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), '', $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
+		ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), json_encode($postParams), $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
 		if ($response) {
 			preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
 			$cookies = [];
@@ -1024,20 +1050,21 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			}
 			foreach ($cookies as $name => $value) {
 				if (strpos($name, 'sessionid_') === 0) {
-//					if ($recordDriver->getPrimaryFormat() == 'MP3') {
-//						//TODO: Need a new URL from CloudLibrary for audio books
-//						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
-//					} else {
-//						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
-//					}
-					$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
-
-					break;
+					if ($recordDriver->getPrimaryFormat() == 'MP3') {
+						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
+					} else {
+						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
+					}
+					$redirectUrlCurlWrapper = new CurlWrapper();
+					$redirectUrlCurlWrapper->curlGetPage($redirectUrl);
+					$redirectUrlCURLResponseCode = $redirectUrlCurlWrapper->getResponseCode();
+					if ($redirectUrlCURLResponseCode == 200) {
+						return $redirectUrl;
+					}
 				}
 			}
 		}
-		header('Location:' . $redirectUrl);
-		die();
+		return null;
 	}
 
 	public function getCloudLibraryUrl(User $patron, CloudLibraryRecordDriver $recordDriver) {

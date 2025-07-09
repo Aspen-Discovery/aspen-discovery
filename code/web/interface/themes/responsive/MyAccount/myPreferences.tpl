@@ -34,14 +34,14 @@
 
 					<div id="preferences-accordion" class="panel-group">
 						<div class="panel" id="accountPreferencesPanel">
-							<a data-toggle="collapse" href="#accountPreferencesPanelBody">
+							<a data-toggle="collapse" href="#accountPreferencesPanelBody" class="active">
 								<div class="panel-heading">
 									<div class="panel-title">
 										<h2>{translate text="Account" isPublicFacing=true}</h2>
 									</div>
 								</div>
 							</a>
-							<div id="accountPreferencesPanelBody" class="panel-collapse collapse">
+							<div id="accountPreferencesPanelBody" class="panel-collapse in">
 								<div class="panel-body">
 									{if !empty($showAutoRenewSwitch)}
 										<div class="form-group propertyRow">
@@ -114,13 +114,12 @@
 										</div>
 									</div>
 								</a>
-								<div id="articlesAndDatabasesPreferencesPanelBody" class="panel-collapse collapse">
+								<div id="articlesAndDatabasesPreferencesPanelBody" class="panel-collapse collapse in">
 									<div class="panel-body">
 										{if !empty($validEdsSorts)}
 											<div class="form-group propertyRow">
 												<label for="defaultEdsSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
 												<select name="defaultEdsSort" id="defaultEdsSort" class="form-control">
-													<option value="" {if empty($defaultEbscoEDSSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
 													{foreach from=$validEdsSorts key="sortValue" item="sortName"}
 														<option value="{$sortValue}" {if $defaultEbscoEDSSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
 													{/foreach}
@@ -131,7 +130,6 @@
 											<div class="form-group propertyRow">
 												<label for="defaultEbscohostSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
 												<select name="defaultEbscohostSort" id="defaultEbscohostSort" class="form-control">
-													<option value="" {if empty($defaultEbscoHostSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
 													{foreach from=$validEbscohostSorts key="sortValue" item="sortName"}
 														<option value="{$sortValue}" {if $defaultEbscoHostSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
 													{/foreach}
@@ -142,7 +140,6 @@
 											<div class="form-group propertyRow">
 												<label for="defaultSummonSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
 												<select name="defaultSummonSort" id="defaultSummonSort" class="form-control">
-													<option value="" {if empty($defaultSummonSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
 													{foreach from=$validSummonSorts key="sortValue" item="sortName"}
 														<option value="{$sortValue}" {if $defaultSummonSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
 													{/foreach}
@@ -164,49 +161,16 @@
 							</div>
 						{/if}
 
-						<div class="panel" id="catalogSearchPreferencesPanel">
-							<a data-toggle="collapse" href="#catalogSearchPreferencesPanelBody">
-								<div class="panel-heading">
-									<div class="panel-title">
-										<h2>{translate text="Catalog Search" isPublicFacing=true}</h2>
-									</div>
-								</div>
-							</a>
-							<div id="catalogSearchPreferencesPanelBody" class="panel-collapse collapse">
-								<div class="panel-body">
-									<div class="form-group propertyRow">
-										<label for="defaultCatalogSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-										<select name="defaultCatalogSort" id="defaultCatalogSort" class="form-control">
-											<option value="" {if empty($defaultCatalogSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-											{foreach from=$validCatalogSorts key="sortValue" item="sortName"}
-												<option value="{$sortValue}" {if $defaultCatalogSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-											{/foreach}
-										</select>
-									</div>
-									{if !empty($isAssociatedWithILS)}
-										<div class="form-group propertyRow">
-											<label for="disableCirculationActions" class="control-label">{translate text='Show Checkouts and Holds in Results' isPublicFacing=true}</label>&nbsp;
-											{if $edit == true}
-												<input type="checkbox" class="form-control" name="disableCirculationActions" id="disableCirculationActions" {if $profile->disableCirculationActions==0}checked='checked'{/if} data-switch="">
-											{else}
-												&nbsp;{if $profile->disableCirculationActions==1} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
-											{/if}
-										</div>
-									{/if}
-								</div>
-							</div>
-						</div>
-
 						{if array_key_exists('Community Engagement', $enabledModules)}
 							<div class="panel" id="communityEngagementPreferencesPanel">
-								<a data-toggle="collapse" href="#communityEngagementPreferencesPanelBody">
+								<a data-toggle="collapse" href="#communityEngagementPreferencesPanelBody" class="active">
 									<div class="panel-heading">
 										<div class="panel-title">
 											<h2>{translate text="Community Engagement" isPublicFacing=true}</h2>
 										</div>
 									</div>
 								</a>
-								<div id="communityEngagementPreferencesPanelBody" class="panel-collapse collapse">
+								<div id="communityEngagementPreferencesPanelBody" class="panel-collapse collapse in">
 									<div class="panel-body">
 										<div class="form-group propertyRow">
 											<label for="campaignNotificationsByEmail" class="control-label">{translate text="Get Campaign Notifications By Email" isPublicFacing=true}</label>&nbsp;
@@ -223,43 +187,24 @@
 							</div>
 						{/if}
 
-						{if !empty($validCourseReservesSorts)}
-							<div class="panel" id="courseReservesPreferencesPanel">
-								<a data-toggle="collapse" href="#courseReservesPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="CourseReserves" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="courseReservesPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validCourseReservesSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultCourseReservesSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultCourseReservesSort" id="defaultCourseReservesSort" class="form-control">
-													<option value="" {if empty($defaultCourseReservesSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validCourseReservesSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultCourseReservesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/if}
-
 						{if count($allActiveThemes) > 1 || count($validLanguages) > 1}
 							<div class="panel" id="displayPreferencesPanel">
-								<a data-toggle="collapse" href="#displayPreferencesPanelBody">
+								<a data-toggle="collapse" href="#displayPreferencesPanelBody" class="active">
 									<div class="panel-heading">
 										<div class="panel-title">
-											<h2>{translate text="Display" isPublicFacing=true}</h2>
+											<h2>
+												{if count($validLanguages) > 1 && count($allActiveThemes) > 1}
+													{translate text="Languages & Display" isPublicFacing=true}
+												{elseif count($validLanguages) > 1}
+													{translate text="Languages" isPublicFacing=true}
+												{else}
+													{translate text="Display" isPublicFacing=true}
+												{/if}
+											</h2>
 										</div>
 									</div>
 								</a>
-								<div id="displayPreferencesPanelBody" class="panel-collapse collapse">
+								<div id="displayPreferencesPanelBody" class="panel-collapse collapse in">
 									<div class="panel-body">
 										{if count($allActiveThemes) > 1}
 											<div class="form-group propertyRow">
@@ -285,96 +230,6 @@
 												</select>
 											</div>
 										{/if}
-
-										<div class="form-group propertyRow" id="searchPreferenceLanguageGroup" {if $profile->interfaceLanguage=='en'}style="display:none"{/if}>
-											<label for="searchPreferenceLanguage" class="control-label">{translate text="Do you want prefer materials in %1%?" 1=$userLang->displayName|escape isPublicFacing=true}</label>
-											<select name="searchPreferenceLanguage" id="searchPreferenceLanguage" class="form-control">
-												<option value="0" {if $profile->searchPreferenceLanguage == 0}selected{/if}>{translate text="No, show interfiled with other languages" isPublicFacing=true}</option>
-												<option value="1" {if $profile->searchPreferenceLanguage == 1}selected{/if}>{translate text="Yes, show above other languages" isPublicFacing=true}</option>
-												<option value="2" {if $profile->searchPreferenceLanguage == 2}selected{/if}>{translate text="Yes, only show my preferred language" isPublicFacing=true}</option>
-											</select>
-										</div>
-									</div>
-								</div>
-							</div>
-						{/if}
-
-						{if !empty($validEventsSorts)}
-							<div class="panel" id="eventsPreferencesPanel">
-								<a data-toggle="collapse" href="#eventsPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="Events" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="eventsPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validEventsSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultEventsSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultEventsSort" id="defaultEventsSort" class="form-control">
-													<option value="" {if empty($defaultEventsSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validEventsSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultEventsSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/if}
-
-						{if !empty($validGenealogySorts)}
-							<div class="panel" id="genealogyPreferencesPanel">
-								<a data-toggle="collapse" href="#genealogyPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="Genealogy" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="genealogyPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validGenealogySorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultGenealogySort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultGenealogySort" id="defaultGenealogySort" class="form-control">
-													<option value="" {if empty($defaultGenealogySort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validGenealogySorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultGenealogySort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/if}
-
-						{if !empty($validOpenArchivesSorts)}
-							<div class="panel" id="openArchivesPreferencesPanel">
-								<a data-toggle="collapse" href="#openArchivesPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="History & Archives" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="openArchivesPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validOpenArchivesSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultOpenArchivesSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultOpenArchivesSort" id="defaultOpenArchivesSort" class="form-control">
-													<option value="" {if empty($defaultOpenArchivesSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validOpenArchivesSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultOpenArchivesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
 									</div>
 								</div>
 							</div>
@@ -382,14 +237,14 @@
 
 						{if !empty($isAssociatedWithILS) && ((!empty($allowRememberPickupLocation) && count($pickupLocations) > 1) || !empty($showAlternateLibraryOptions) || !empty($allowRememberPickupLocation))}
 							<div class="panel" id="holdPreferencesPanel">
-								<a data-toggle="collapse" href="#holdPreferencesPanelBody">
+								<a data-toggle="collapse" href="#holdPreferencesPanelBody" class="active">
 									<div class="panel-heading">
 										<div class="panel-title">
 											<h2>{translate text="Holds" isPublicFacing=true}</h2>
 										</div>
 									</div>
 								</a>
-								<div id="holdPreferencesPanelBody" class="panel-collapse collapse">
+								<div id="holdPreferencesPanelBody" class="panel-collapse in">
 									<div class="panel-body">
 										{if !empty($allowRememberPickupLocation) && count($pickupLocations) > 1 && !empty($isAssociatedWithILS)}
 											{* Allow editing the pickup location *}
@@ -475,43 +330,16 @@
 							</div>
 						{/if}
 
-						{if !empty($validListsSorts)}
-							<div class="panel" id="listsPreferencesPanel">
-								<a data-toggle="collapse" href="#listsPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="Lists" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="listsPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validListsSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultListsSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultListsSort" id="defaultListsSort" class="form-control">
-													<option value="" {if empty($defaultListsSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validListsSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultListsSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/if}
-
 						{if !empty($showRatings) && $showComments}
 							<div class="panel" id="ratingsPreferencesPanel">
-								<a data-toggle="collapse" href="#ratingsPreferencesPanelBody">
+								<a data-toggle="collapse" href="#ratingsPreferencesPanelBody" class="active">
 									<div class="panel-heading">
 										<div class="panel-title">
 											<h2>{translate text="Ratings" isPublicFacing=true}</h2>
 										</div>
 									</div>
 								</a>
-								<div id="ratingsPreferencesPanelBody" class="panel-collapse collapse">
+								<div id="ratingsPreferencesPanelBody" class="panel-collapse collapse in">
 									<div class="panel-body">
 										{if !empty($showRatings) && $showComments}
 											<div class="form-group propertyRow">
@@ -531,60 +359,129 @@
 							</div>
 						{/if}
 
-						{if !empty($validSeriesSorts)}
-							<div class="panel" id="seriesPreferencesPanel">
-								<a data-toggle="collapse" href="#seriesPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="Series" isPublicFacing=true}</h2>
-										</div>
-									</div>
-								</a>
-								<div id="seriesPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validSeriesSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultSeriesSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultSeriesSort" id="defaultSeriesSort" class="form-control">
-													<option value="" {if empty($defaultSeriesSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validSeriesSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultSeriesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
+						<div class="panel" id="searchPreferencesPanel">
+							<a data-toggle="collapse" href="#searchPreferencesPanelBody" class="active">
+								<div class="panel-heading">
+									<div class="panel-title">
+										<h2>{translate text="Searching" isPublicFacing=true}</h2>
 									</div>
 								</div>
-							</div>
-						{/if}
-
-						{if !empty($validWebsitesSorts)}
-							<div class="panel" id="websitesPreferencesPanel">
-								<a data-toggle="collapse" href="#websitesPreferencesPanelBody">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>{translate text="Website Searches" isPublicFacing=true}</h2>
+							</a>
+							<div id="searchPreferencesPanelBody" class="panel-collapse collapse in">
+								<div class="panel-body">
+									{* Catalog Search *}
+									<div class="form-group propertyRow">
+										<label for="defaultCatalogSort" class="control-label">{translate text='Catalog Search Default Sort' isPublicFacing=true}</label>&nbsp;
+										<select name="defaultCatalogSort" id="defaultCatalogSort" class="form-control">
+											<option value="" {if empty($defaultCatalogSort)}selected{/if}>{translate text="Default based on search index" isPublicFacing=true inAttribuge=true}</option>
+											{foreach from=$validCatalogSorts key="sortValue" item="sortName"}
+												<option value="{$sortValue}" {if $defaultCatalogSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+											{/foreach}
+										</select>
+									</div>
+									{if !empty($isAssociatedWithILS)}
+										<div class="form-group propertyRow">
+											<label for="disableCirculationActions" class="control-label">{translate text='Show Checkouts and Holds in Results' isPublicFacing=true}</label>&nbsp;
+											{if $edit == true}
+												<input type="checkbox" class="form-control" name="disableCirculationActions" id="disableCirculationActions" {if $profile->disableCirculationActions==0}checked='checked'{/if} data-switch="">
+											{else}
+												&nbsp;{if $profile->disableCirculationActions==1} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+											{/if}
 										</div>
+									{/if}
+									<div class="form-group propertyRow" id="searchPreferenceLanguageGroup" {if $profile->interfaceLanguage=='en'}style="display:none"{/if}>
+										<label for="searchPreferenceLanguage" class="control-label">{translate text="Prefer materials in %1%?" 1=$userLang->displayName|escape isPublicFacing=true}</label>
+										<select name="searchPreferenceLanguage" id="searchPreferenceLanguage" class="form-control">
+											<option value="0" {if $profile->searchPreferenceLanguage == 0}selected{/if}>{translate text="No, show interfiled with other languages" isPublicFacing=true}</option>
+											<option value="1" {if $profile->searchPreferenceLanguage == 1}selected{/if}>{translate text="Yes, show above other languages" isPublicFacing=true}</option>
+											<option value="2" {if $profile->searchPreferenceLanguage == 2}selected{/if}>{translate text="Yes, only show my preferred language" isPublicFacing=true}</option>
+										</select>
 									</div>
-								</a>
-								<div id="websitesPreferencesPanelBody" class="panel-collapse collapse">
-									<div class="panel-body">
-										{if !empty($validWebsitesSorts)}
-											<div class="form-group propertyRow">
-												<label for="defaultWebsitesSort" class="control-label">{translate text='Default Sort For New Searches' isPublicFacing=true}</label>&nbsp;
-												<select name="defaultWebsitesSort" id="defaultWebsitesSort" class="form-control">
-													<option value="" {if empty($defaultWebsitesSort)}selected{/if}>{translate text="System Default" isPublicFacing=true inAttribuge=true}</option>
-													{foreach from=$validWebsitesSorts key="sortValue" item="sortName"}
-														<option value="{$sortValue}" {if $defaultWebsitesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-									</div>
+
+									{* Course Reserves *}
+									{if !empty($validCourseReservesSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultCourseReservesSort" class="control-label">{translate text='Course Reserves Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultCourseReservesSort" id="defaultCourseReservesSort" class="form-control">
+												{foreach from=$validCourseReservesSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultCourseReservesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{* Events *}
+									{if !empty($validEventsSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultEventsSort" class="control-label">{translate text='Events Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultEventsSort" id="defaultEventsSort" class="form-control">
+												{foreach from=$validEventsSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultEventsSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{* Genealogy *}
+									{if !empty($validGenealogySorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultGenealogySort" class="control-label">{translate text='Genealogy Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultGenealogySort" id="defaultGenealogySort" class="form-control">
+												{foreach from=$validGenealogySorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultGenealogySort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{* Open Archives *}
+									{if !empty($validOpenArchivesSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultOpenArchivesSort" class="control-label">{translate text='History & Archives Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultOpenArchivesSort" id="defaultOpenArchivesSort" class="form-control">
+												{foreach from=$validOpenArchivesSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultOpenArchivesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{* User Lists *}
+									{if !empty($validListsSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultListsSort" class="control-label">{translate text='List Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultListsSort" id="defaultListsSort" class="form-control">
+												{foreach from=$validListsSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultListsSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{if !empty($validSeriesSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultSeriesSort" class="control-label">{translate text='Series Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultSeriesSort" id="defaultSeriesSort" class="form-control">
+												{foreach from=$validSeriesSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultSeriesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+
+									{if !empty($validWebsitesSorts)}
+										<div class="form-group propertyRow">
+											<label for="defaultWebsitesSort" class="control-label">{translate text='Website Search Default Sort' isPublicFacing=true}</label>&nbsp;
+											<select name="defaultWebsitesSort" id="defaultWebsitesSort" class="form-control">
+												{foreach from=$validWebsitesSorts key="sortValue" item="sortName"}
+													<option value="{$sortValue}" {if $defaultWebsitesSort == $sortValue}selected{/if}>{translate text=$sortName isPublicFacing=true inAttribuge=true}</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
 								</div>
 							</div>
-						{/if}
-
+						</div>
 					</div>
 
 					{if empty($offline) && $edit == true}

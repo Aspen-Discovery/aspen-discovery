@@ -63,13 +63,13 @@ class Talpa_TalpaSettings extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#talpa', 'Talpa');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
 		$breadcrumbs[] = new Breadcrumb('/Talpa/Talpa Settings', 'Settings');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'talpa';
+		return 'third_party_enrichment';
 	}
 
 	function canView(): bool {

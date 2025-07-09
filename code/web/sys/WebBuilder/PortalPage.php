@@ -32,7 +32,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
+		$libraryList = Library::getLibraryListWithWebBuilderStatus(!UserAccount::userHasPermission('Administer All Custom Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		$patronTypeList = PType::getPatronTypeList();

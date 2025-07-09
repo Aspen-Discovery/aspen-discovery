@@ -1,309 +1,202 @@
 <?php
 
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+
+/**
+ * WikipediaParser
+ *
+ * Parses the HTML returned by the REST API endpoint. Rather than the
+ * heavy wikitext logic, the browser-ready markup is in the payload.
+ * API Documentation: https://en.wikipedia.org/api/rest_v1/#
+ */
 class WikipediaParser {
-	private $lang;
+	private string $lang;
 
 	public function __construct($lang) {
-		if ($lang) {
-			if ($lang == 'pi' || $lang == 'ub') {
-				$lang = 'en';
+		$this->lang = (!empty($lang) && !in_array($lang, ['pi', 'ub'])) ? $lang : 'en';
+	}
+
+	/**
+	 * Parses the lead section of a Wikipedia HTML page and extracts the description and infobox image.
+	 *
+	 * @param string $html Raw HTML from the Wikipedia REST endpoint.
+	 * @param string $title Original page title (for alt text and fallback).
+	 * @return array|null Canonical info: ['name', 'description', 'image', 'altimage'] or null if not found.
+	 */
+	private function parseWikipedia(string $html, string $title): ?array {
+		$dom = new DOMDocument();
+		// Silence warnings triggered by malformed HTML fragments.
+		@$dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_COMPACT);
+		$xpath = new DOMXPath($dom);
+		if ($description = $this->disambiguate($xpath, $dom)) {
+			return [
+				'name' => $title,
+				'description' => $description,
+				'image' => null,
+				'altimage' => null,
+			];
+		}
+
+		// Grab the lead (i.e., main introductory content).
+		$leadSection = $xpath->query('//section[@data-mw-section-id="0"]')->item(0);
+		if (!$leadSection) {
+			return null;
+		}
+
+		foreach ($xpath->query('.//*[contains(@class,"nowraplinks") or contains(@class,"ext-phonos")]', $leadSection) as $n) {
+			$n->parentNode->removeChild($n);
+		}
+
+		$this->rewriteInternalLinks($leadSection, $xpath);
+
+		$leadParas = [];
+		foreach ($xpath->query('.//p', $leadSection) as $p) {
+			$text = trim($p->textContent);
+			// Skip known empty markers.
+			if ($p->hasAttribute('class') &&
+				str_contains($p->getAttribute('class'), 'mw-empty-elt')) {
+				continue;
 			}
-			$this->lang = $lang;
-		} else {
-			$this->lang = 'en';
+			// Skip stubs and nav headings (<40 chars or no period).
+			if (mb_strlen($text) < 40 || !str_contains($text, '.')) {
+				continue;
+			}
+			// Strip citation superscripts (e.g., "[1]").
+			foreach ($xpath->query('.//sup[contains(@class,"reference")]', $p) as $sup) {
+				$sup->parentNode->removeChild($sup);
+			}
+			$leadParas[] = $dom->saveHTML($p);
+
+			// Break after two paragraphs because the leads could be several paragraphs and clutter the display.
+			if (count($leadParas) === 2) {
+				break;
+			}
+		}
+
+		if (!$leadParas) {
+			return null;
+		}
+
+		$description = implode("\n", $leadParas);
+
+		$imgNode = $xpath->query('//body//figure[contains(@class,"infobox")]//img | //body//table[contains(@class,"infobox")]//img')->item(0);
+		$image = null;
+		$altImage = null;
+		if ($imgNode instanceof DOMElement && $imgNode->hasAttribute('src')) {
+			$src = $imgNode->getAttribute('src');
+			$image = (str_starts_with($src, '//') ? 'https:' : '') . $src;
+			$altImage = $imgNode->getAttribute('alt') ?: $title;
+		}
+
+		return [
+			'name' => $title,
+			'description' => $description,
+			'image' => $image,
+			'altimage'=> $altImage,
+		];
+	}
+
+	/**
+	 * Fetches a Wikipedia page by URL, handles errors, and parses its content.
+	 *
+	 * @param string $pageUrl HTTPS URL of the Wikipedia REST endpoint.
+	 * @param string $title Original title requested (used for fallback).
+	 * @return array|null Canonical info array or null on error/failure.
+	 */
+	public function getWikipediaPage(string $pageUrl, string $title): ?array {
+		$curlWrapper = new CurlWrapper();
+		$html = $curlWrapper->curlGetPage($pageUrl);
+
+		if ($curlWrapper->getResponseCode() >= 400) {
+			global $logger;
+			$logger->log(sprintf('Wikipedia fetch failed (%d) for %s.', $curlWrapper->getResponseCode(), $pageUrl), Logger::LOG_DEBUG);
+			return null;
+		}
+
+		return $this->parseWikipedia($html, $title);
+	}
+
+	/**
+	 * Rewrites or unwraps internal Wikipedia links inside a DOM node.
+	 * - Converts internal article links to local catalog searches.
+	 * - Unwraps (removes) non-article or special Wikipedia links, preserving their content.
+	 *
+	 * @param DOMNode $section The node within which to rewrite links.
+	 * @param DOMXPath $xp The XPath object for running queries.
+	 * @return void
+	 */
+	private function rewriteInternalLinks(DOMNode $section, DOMXPath $xp): void
+	{
+		foreach ($xp->query('.//a', $section) as $a) {
+			$href = $a->getAttribute('href');
+
+			if (!str_contains($href, ':')) {
+				$term = rawurlencode('"' . trim($a->textContent) . '"');
+				$a->setAttribute('href', "/Search/Results?lookfor=$term&type=Keyword");
+				$a->removeAttribute('rel');
+				$a->removeAttribute('title');
+				$a->removeAttribute('class');
+				continue;
+			}
+			// Unwraps the anchor while leaving its inner nodes,
+			// and move the child out and drop the empty <a>.
+			// This is to keep the <img> element, even without its link.
+			while ($a->firstChild) {
+				$a->parentNode->insertBefore($a->firstChild, $a);
+			}
+			$a->parentNode->removeChild($a);
 		}
 	}
 
 	/**
-	 * parseWikipedia
+	 * Return a HTML description for Wikipedia disambiguation pages.
 	 *
-	 * This method is responsible for parsing the output from the Wikipedia
-	 * REST API.
+	 * If the DOM represents a "may refer to" page, gather the lead
+	 * sentence and every list-item link and turn each into an external
+	 * anchor that opens in a new tab.
+	 * - Example output: "Jane Smith may refer to: <a …>Jane Smith (diver)</a>; ..."
 	 *
-	 * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
-	 * @param string $lang
-	 * @param array $body JSON formatted data to be parsed
-	 * @return  array|AspenError
-	 * @access  private
+	 * @param DOMXPath $xp XPath helper bound to the same DOM.
+	 * @param DOMDocument $dom The loaded page’s DOM.
+	 * @return string|null HTML fragment or null when the page is not a disambiguation or contains no options.
 	 */
-	public function parseWikipedia($body, $lang = 'en') {
-		// Check if data exists or not
-		if (!isset($body['query']['pages']) || isset($body['query']['pages']['-1'])) {
-			return new AspenError('No page found');
+	private function disambiguate(DOMXPath $xp, DOMDocument $dom): ?string
+	{
+		// Discard if no <meta property="mw:PageProp/disambiguation">.
+		if (!$xp->query('//meta[@property="mw:PageProp/disambiguation"]')->length) {
+			return null;
 		}
 
-		// Get the default page
-		$body = array_shift($body['query']['pages']);
-		$info['name'] = $body['title'];
+		$lead = $xp->query('//section[@data-mw-section-id="0"]/p')->item(0);
+		if (!$lead) {
+			return null;
+		}
+		$intro = trim($dom->saveHTML($lead));
 
-		// Get the latest revision
-		$body = array_shift($body['revisions']);
-		// Check for redirection
-		$as_lines = explode("\n", $body['*']);
-		if (stristr($as_lines[0], '#REDIRECT')) {
-			preg_match('/\[\[(.*)\]\]/', $as_lines[0], $matches);
-			$url = "http://{$lang}.wikipedia.org/w/api.php" . '?action=query&prop=revisions&rvprop=content&format=json' . '&titles=' . urlencode($matches[1]);
-			return $this->getWikipediaPage($url, $lang);
+		// Build the option list.
+		$options = [];
+		foreach ($xp->query('//section[contains(@id,"mw")]//li[.//a]') as $li) {
+			$a = $xp->query('.//a', $li)->item(0);
+			/** @var DOMElement $a */
+			$href = $a->getAttribute('href');
+			$label = trim($a->textContent);
+			$absUrl = 'https://' . $this->lang . '.wikipedia.org/wiki' . substr($href, 1);
+			$context = trim($li->textContent);
+			$context = preg_replace('/^' . preg_quote($label, '/') . '\s*/', '', $context);
+
+			$options[] = sprintf(
+				'<a href="%s" rel="external" target="_blank">%s</a>%s',
+				htmlspecialchars($absUrl, ENT_QUOTES, 'UTF-8'),
+				htmlspecialchars($label,  ENT_QUOTES, 'UTF-8'),
+				$context ? ' ' . htmlspecialchars($context, ENT_QUOTES, 'UTF-8') : ''
+			);
 		}
 
-		/**
-		 * **************
-		 *
-		 *   Infobox
-		 *
-		 */ // We are looking for the infobox inside "{{...}}"
-		//   It may contain nested blocks too, thus the recursion
-		preg_match_all('/\{([^{}]++|(?R))*\}/s', $body['*'], $matches);
-		$firstInfoBox = null;
-		foreach ($matches[1] as $m) {
-			// If this is the Infobox
-			if (substr($m, 0, 8) == "{Infobox" || substr($m, 0, 9) == "{ infobox") {
-				// Keep the string for later, we need the body block that follows it
-				$infoboxStr = "{" . $m . "}";
-				if ($firstInfoBox == null) {
-					$firstInfoBox = $infoboxStr;
-				}
-				// Get rid of the last pair of braces and split
-				$infobox = explode("\n|", substr($m, 1, -1));
-				// Look through every row of the infobox
-				foreach ($infobox as $row) {
-					$data = explode("=", $row);
-					$key = trim(array_shift($data));
-					$value = trim(join("=", $data));
-
-					// At the moment we only want stuff related to the image.
-					switch (strtolower($key)) {
-						case "img":
-						case "image":
-						case "image:":
-						case "image_name":
-							$imageName = str_replace(' ', '_', $value);
-							break;
-						case "caption":
-						case "img_capt":
-						case "image_caption":
-							$image_caption = $value;
-							break;
-						default:         /* Nothing else... yet */ break;
-					}
-				}
-			}
+		if (!$options) {
+			return null;
 		}
 
-		/**
-		 * **************
-		 *
-		 *   Image
-		 *
-		 */ // If we didn't successfully extract an image from the infobox, let's see if we
-		// can find one in the body -- we'll just take the first match:
-		if (!isset($imageName)) {
-			$pattern = '/(\x5b\x5b)Image:([^\x5d]*)(\x5d\x5d)/U';
-			preg_match_all($pattern, $body['*'], $matches);
-			if (isset($matches[2][0])) {
-				$parts = explode('|', $matches[2][0]);
-				$imageName = str_replace(' ', '_', $parts[0]);
-				if (count($parts) > 1) {
-					$image_caption = strip_tags(preg_replace('/({{).*(}})/U', '', $parts[count($parts) - 1]));
-				}
-			}
-		}
-
-		// Given an image name found above, look up the associated URL:
-		if (isset($imageName)) {
-			$imageUrl = $this->getWikipediaImageURL($imageName);
-		}
-
-		/**
-		 * **************
-		 *
-		 *   Body
-		 *
-		 */
-		if (isset($firstInfoBox)) {
-			// Start of the infobox
-			$start = strpos($body['*'], $firstInfoBox);
-			// + the length of the infobox
-			$offset = strlen($firstInfoBox);
-			// Every after the infobox
-			$body = substr($body['*'], $start + $offset);
-		} else {
-			// No infobox -- use whole thing:
-			$body = $body['*'];
-		}
-		// Find the first heading
-		$end = strpos($body, "==");
-		// Now cull our content back to everything before the first heading
-		$body = trim(substr($body, 0, $end));
-
-		// Remove unwanted image/file links
-		// Nested brackets make this annoying: We can't add 'File' or 'Image' as mandatory
-		//    because the recursion fails, or as optional because then normal links get hit.
-		//    ... unless there's a better pattern? TODO
-		// eg. [[File:Johann Sebastian Bach.jpg|thumb|Bach in a 1748 portrait by [[Elias Gottlob Haussmann|Haussmann]]]]
-		$open = "\\[";
-		$close = "\\]";
-		$content = "(?>[^\\[\\]]+)";  // Anything but [ or ]
-		$recursive_match = "($content|(?R))*"; // We can either find content or recursive brackets
-		preg_match_all("/" . $open . $recursive_match . $close . "/Us", $body, $new_matches);
-		// Loop through every match (link) we found
-		if (is_array($new_matches)) {
-			foreach ($new_matches as $nm) {
-				// Might be an array of arrays
-				if (is_array($nm)) {
-					foreach ($nm as $n) {
-						// If it's a file link get rid of it
-						if (strtolower(substr($n, 0, 7)) == "[[file:" || strtolower(substr($n, 0, 8)) == "[[image:") {
-							$body = str_replace($n, "", $body);
-						}
-					}
-					// Or just a normal array
-				} else {
-					// If it's a file link get rid of it
-					if (isset($n)) {
-						if (strtolower(substr($n, 0, 7)) == "[[file:" || strtolower(substr($n, 0, 8)) == "[[image:") {
-							$body = str_replace($nm, "", $body);
-						}
-					}
-				}
-			}
-		}
-
-		// Initialize arrays of processing instructions
-		$pattern = [];
-		$replacement = [];
-
-		//Strip out taxobox
-		$pattern[] = '/{{Taxobox.*}}\n\n/Us';
-		$replacement[] = "";
-
-		//Strip out embedded Infoboxes
-		$pattern[] = '/{{Infobox.*}}\n\n/Us';
-		$replacement[] = "";
-
-		//Strip out anything like {{!}}
-		$pattern[] = '/{{!}}/Us';
-		$replacement[] = "";
-
-		// Convert wikipedia links
-		$pattern[] = '/(\x5b\x5b)([^\x5d|]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$2</a>';
-		$pattern[] = '/(\x5b\x5b)([^\x5d]*)\x7c([^\x5d]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$3</a>';
-
-		// Fix pronunciation guides
-		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';
-		$replacement[] = translate([
-				'text' => "pronounced",
-				'isPublicFacing' => true,
-			]) . " /$2/";
-
-		// Removes citations
-		$pattern[] = '/({{)[^}]*(}})/Us';
-		$replacement[] = "";
-		//  <ref ... > ... </ref> OR <ref> ... </ref>
-		$pattern[] = '/<ref[^\/]*>.*<\/ref>/Us';
-		$replacement[] = "";
-		//    <ref ... />
-		$pattern[] = '/<ref.*\/>/Us';
-		$replacement[] = "";
-
-		// Removes comments followed by carriage returns to avoid excess whitespace
-		$pattern[] = '/<!--.*-->\n*/Us';
-		$replacement[] = '';
-
-		// Formatting
-		$pattern[] = "/'''([^']*)'''/Us";
-		$replacement[] = '<strong>$1</strong>';
-
-		// Trim leading newlines (which can result from leftovers after stripping
-		// other items above).  We want this to be greedy.
-		$pattern[] = '/^\n*/s';
-		$replacement[] = '';
-
-		// Convert multiple newlines into two breaks
-		// We DO want this to be greedy
-		$pattern[] = "/\n{2,}/s";
-		$replacement[] = '<br/><br/>';
-
-		$body = preg_replace($pattern, $replacement, $body);
-
-		//Clean up spaces within hrefs
-		$body = preg_replace_callback('/href="(.*?)"/si', [
-			$this,
-			'fix_whitespace',
-		], $body);
-
-		$body = str_replace('<br>', '<br/>', $body);
-
-		if (isset($imageUrl) && $imageUrl != false) {
-			$info['image'] = $imageUrl;
-			if (isset($image_caption)) {
-				$info['altimage'] = $image_caption;
-			}
-		}
-		$info['description'] = $body;
-
-		return $info;
+		return $intro . ' ' . implode('; ', $options) . '.';
 	}
 
-	function fix_whitespace($matches) {
-		// as usual: $matches[0] is the complete match
-		// $matches[1] the match for the first sub pattern
-		// enclosed in '(...)' and so on
-		return str_replace(' ', '+', $matches[0]);
-	}
-
-	/**
-	 * getWikipediaImageURL
-	 *
-	 * This method is responsible for obtaining an image URL based on a name.
-	 *
-	 * @param string $imageName The image name to look up
-	 * @return  mixed               URL on success, false on failure
-	 * @access  private
-	 */
-	private function getWikipediaImageURL($imageName) {
-		$url = "http://{$this->lang}.wikipedia.org/w/api.php" . '?prop=imageinfo&action=query&iiprop=url&iiurlwidth=150&format=json' . '&titles=Image:' . $imageName;
-
-		$response = file_get_contents($url);
-
-		if ($response) {
-
-			if ($imageinfo = json_decode($response, true)) {
-				if (isset($imageinfo['query']['pages']['-1']['imageinfo'][0]['url'])) {
-					$imageUrl = $imageinfo['query']['pages']['-1']['imageinfo'][0]['url'];
-				}
-
-				// Hack for wikipedia api, just in case we couldn't find it
-				//   above look for a http url inside the response.
-				if (!isset($imageUrl)) {
-					preg_match('/\"http:\/\/(.*)\"/', $response, $matches);
-					if (isset($matches[1])) {
-						$imageUrl = 'http://' . substr($matches[1], 0, strpos($matches[1], '"'));
-					}
-				}
-			}
-		}
-
-		return isset($imageUrl) ? $imageUrl : false;
-	}
-
-	/**
-	 * @param string $pageUrl
-	 * @param string $lang
-	 * @return array|AspenError|null
-	 */
-	public function getWikipediaPage($pageUrl, $lang) {
-		if (filter_var($pageUrl, FILTER_VALIDATE_URL)) {
-			$result = file_get_contents($pageUrl);
-			$jsonResult = json_decode($result, true);
-			$info = $this->parseWikipedia($jsonResult, $lang);
-			if (!($info instanceof AspenError)) {
-				return $info;
-			}
-		}
-		return null;
-
-	}
 }

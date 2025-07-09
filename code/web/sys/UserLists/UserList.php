@@ -908,23 +908,18 @@ class UserList extends DataObject {
 
 	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight): array {
 		$allEntries = $this->getListTitles();
-
 		$results = [];
-		/**
-		 * @var string $key
-		 * @var UserListEntry $entry
-		 */
-		foreach ($allEntries as $key => $entry) {
+		$index = 0;
+		foreach ($allEntries as $entry) {
 			$recordDriver = $entry->getRecordDriver();
-			if ($recordDriver != null && $recordDriver->isValid()) {
-				$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
-			}
-
-			if (count($results) == $collectionSpotlight->numTitlesToShow) {
-				break;
+			if ($recordDriver !== null && $recordDriver->isValid()) {
+				$results[$index] = $recordDriver->getSpotlightResult($collectionSpotlight, $index);
+				$index++;
+				if ($index >= $collectionSpotlight->numTitlesToShow) {
+					break;
+				}
 			}
 		}
-
 		return $results;
 	}
 

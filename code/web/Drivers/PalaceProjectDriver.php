@@ -873,17 +873,17 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	private function getPalaceProjectHeaders(User $patron) {
 		global $interface;
 		if ($interface != null) {
-			$gitBranch = $interface->getVariable('gitBranch');
-			if (substr($gitBranch, -1) == "\n") {
-				$gitBranch = substr($gitBranch, 0, -1);
+			$aspenVersion = $interface->getVariable('aspenVersion');
+			if (substr($aspenVersion, -1) == "\n") {
+				$aspenVersion = substr($aspenVersion, 0, -1);
 			}
 		} else {
-			$gitBranch = 'Primary';
+			$aspenVersion = 'Primary';
 		}
 		return [
 			'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
 			'Accept: application/opds+json',
-			'User-Agent: Aspen Discovery ' . $gitBranch,
+			'User-Agent: Aspen Discovery ' . $aspenVersion,
 		];
 	}
 

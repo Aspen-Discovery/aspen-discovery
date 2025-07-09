@@ -64,7 +64,7 @@ class SideLoads_SideLoads extends ObjectEditor {
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer Side Loads')) {
+		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer All Side Loads')) {
 			$libraryList = Library::getLibraryList(true);
 			$object->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
 			$object->whereAdd("sharing != 0", "OR");
@@ -131,15 +131,15 @@ class SideLoads_SideLoads extends ObjectEditor {
 
 	function canBatchEdit(): bool {
 		return UserAccount::userHasPermission([
-			'Administer Side Loads',
+			'Administer All Side Loads',
 		]);
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
+		return UserAccount::userHasPermission(['Administer All Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
 	}
 
 	function canAddNew() : bool {
-		return UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library']);
+		return UserAccount::userHasPermission(['Administer All Side Loads', 'Administer Side Loads for Home Library']);
 	}
 }

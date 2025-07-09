@@ -18,7 +18,7 @@ class LocationSideLoadScope extends DataObject {
 			$sideLoadScopes[$sideLoadScope->id] = $sideLoadScope->name;
 		}
 		$allLocationsList = Location::getLocationList(false);
-		if (!UserAccount::userHasPermission('Administer Side Loads')) {
+		if (!UserAccount::userHasPermission('Administer All Side Loads')) {
 			$locationsList = Location::getLocationList(true);
 		}else{
 			$locationsList = $allLocationsList;

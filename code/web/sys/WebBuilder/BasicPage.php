@@ -32,8 +32,8 @@ class BasicPage extends DB_LibraryLinkedObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Basic Pages'));
-		$locationsList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Basic Pages'));
+		$libraryList = Library::getLibraryListWithWebBuilderStatus(!UserAccount::userHasPermission('Administer All Basic Pages'));
+		$locationsList = Location::getLocationListWithWebBuilderStatus(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		$patronTypeList = PType::getPatronTypeList();

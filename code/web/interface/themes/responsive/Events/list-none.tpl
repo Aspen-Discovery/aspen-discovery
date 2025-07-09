@@ -57,7 +57,7 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && count($userPemisssions) > 0)}
+	{if $showSearchTools || ($loggedIn && !empty($userPermissions))}
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 			{if !empty($showSearchTools)}

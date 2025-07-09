@@ -291,15 +291,22 @@ class Grouping_Record {
 				return 'Map';
 
 			case 'Nintendo 3DS':
+			case 'Nintendo DS':
+			case 'Nintendo Switch':
+			case 'Nintendo Switch 2':
 			case 'Nintendo Wii':
 			case 'Nintendo Wii U':
 			case 'PlayStation':
+			case 'PlayStation 2':
 			case 'PlayStation 3':
 			case 'PlayStation 4':
+			case 'PlayStation 5':
+			case 'PlayStation Vita':
 			case 'Windows Game':
 			case 'Xbox 360':
 			case 'Xbox 360 Kinect':
 			case 'Xbox One':
+			case 'Xbox Series X':
 				return 'Game';
 
 			case 'Web Content':

@@ -149,7 +149,7 @@ class Role extends DataObject {
 					'Administer RBdigital',
 					'Administer Amazon SES',
 					'Administer SendGrid',
-					'Administer Side Loads',
+					'Administer All Side Loads',
 					'Administer Springshare LibCal',
 					'Administer System Variables',
 					'Administer Third Party Enrichment API Keys',

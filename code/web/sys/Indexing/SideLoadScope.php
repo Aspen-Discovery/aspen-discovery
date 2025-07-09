@@ -33,7 +33,7 @@ class SideLoadScope extends DataObject {
 		$allSideLoads = $sideLoad->fetchAll('id', 'name');
 		$sideLoad = new SideLoad();
 		$sideLoad->orderBy('name');
-		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer Side Loads')) {
+		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer All Side Loads')) {
 			$libraryList = Library::getLibraryList(true);
 			$sideLoad->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
 			$sideLoad->whereAdd("sharing = 1", "OR");
@@ -218,7 +218,7 @@ class SideLoadScope extends DataObject {
 	public function __get($name) {
 		if ($name == "libraries") {
 			if (!isset($this->_libraries) && $this->id) {
-				$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Side Loads'));
+				$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Side Loads'));
 				$this->_libraries = [];
 				$obj = new LibrarySideLoadScope();
 				$obj->whereAddIn('libraryId', array_keys($libraryList), false);
@@ -231,7 +231,7 @@ class SideLoadScope extends DataObject {
 			return $this->_libraries;
 		} elseif ($name == "locations") {
 			if (!isset($this->_locations) && $this->id) {
-				$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Side Loads'));
+				$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Side Loads'));
 				$this->_locations = [];
 				$obj = new LocationSideLoadScope();
 				$obj->whereAddIn('locationId', array_keys($locationList), false);
@@ -317,7 +317,7 @@ class SideLoadScope extends DataObject {
 	}
 
 	public function clearLibraries($forceClearAll) : void {
-		if (!$forceClearAll && UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
+		if (!$forceClearAll && UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
 			$librarySideLoadScopes = [];
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$librarySideLoadScope = new LibrarySideLoadScope();
@@ -335,8 +335,8 @@ class SideLoadScope extends DataObject {
 	}
 
 	public function clearLocations($forceClearAll) : void {
-		if (!$forceClearAll && UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Side Loads'));
+		if (!$forceClearAll && UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Side Loads'));
 			$locationSideLoadScopes = [];
 			foreach ($locationList as $locationId => $value) {
 				$locationSideLoadScope = new LocationSideLoadScope();
@@ -393,7 +393,7 @@ class SideLoadScope extends DataObject {
 	public function isReadOnly() : bool {
 		if ($this->_isReadOnly === null) {
 			//Active user can edit if they have permission to edit everything or this is for their home location or sharing allows editing
-			if (UserAccount::userHasPermission('Administer Side Loads')) {
+			if (UserAccount::userHasPermission('Administer All Side Loads')) {
 				$this->_isReadOnly = false;
 			}elseif (UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')){
 				$parentSideLoad = $this->getParentSideLoad();

@@ -280,7 +280,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				$this->apiCurlWrapper->addCustomHeaders([
 					"Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
+					"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
 				], true);
 
 				$patronBarcode = urlencode($patronBarcode);
@@ -340,7 +340,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 			global $interface;
 			$this->apiCurlWrapper->addCustomHeaders([
 				"Authorization: $tokenData->token_type $tokenData->access_token",
-				"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
+				"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
 			], true);
 
 			$content = $this->apiCurlWrapper->curlGetPage($url);
@@ -406,7 +406,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				global $interface;
 				$this->apiCurlWrapper->addCustomHeaders([
 					"Authorization: $authorizationData",
-					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
+					"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
 					"Host: $patronApiHost",
 				], true);
 			} else {
@@ -494,12 +494,12 @@ class OverDriveDriver extends AbstractEContentDriver {
 			$patronApiHost = $this->getPatronApiHost($settings);
 			$this->apiCurlWrapper->addCustomHeaders([
 				"Authorization: $authorizationData",
-				"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
+				"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
 				"Host: $patronApiHost",
 			], true);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
-				"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
+				"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
 				"Host: {$this->getOverDriveApiHost($settings)}",
 			], true);
 		}

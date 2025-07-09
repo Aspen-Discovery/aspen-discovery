@@ -63,7 +63,7 @@ class SystemAPITests extends TestCase {
 	}
 
 	public function test_getCurrentVersion() {
-		getGitBranch();
+		getAspenVersion();
 
 		require_once __DIR__ . '/../../../../../code/web/services/API/SystemAPI.php';
 		$systemAPI = new SystemAPI();

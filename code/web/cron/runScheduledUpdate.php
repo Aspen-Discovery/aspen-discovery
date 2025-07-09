@@ -33,7 +33,10 @@ if (count($updatesToRun) == 0) {
 			$scheduledUpdate->update();
 
 			$versionToUpdateTo = $scheduledUpdate->updateToVersion;
-			$currentVersion = getGitBranch();
+			$currentVersion = getAspenVersion();
+			if (str_contains($currentVersion, ' ')) {
+				$currentVersion  = substr($currentVersion, 0, strpos($currentVersion, ' '));
+			}
 
 			if (!preg_match('/\d{2}\.\d{2}\.\d{2}/', $versionToUpdateTo)) {
 				$scheduledUpdate->notes = "FAILED: Bad version to update to $versionToUpdateTo \n";

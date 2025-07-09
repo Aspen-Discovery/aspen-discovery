@@ -66,6 +66,6 @@ class Admin_HeyCentricSettings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer HeyCentric Settings');
+		return UserAccount::userHasPermission('Administer HeyCentric');
 	}
 }

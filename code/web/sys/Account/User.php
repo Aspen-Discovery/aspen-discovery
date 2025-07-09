@@ -4347,7 +4347,12 @@ class User extends DataObject {
 			'Administer Library Browse Categories',
 			'Administer Selected Browse Category Groups'
 		]);
-		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define spotlights that can be embedded within Aspen custom pages or other websites.', '/Admin/CollectionSpotlights'), [
+		$collectionSpotlightsAction = new AdminAction('Collection Spotlights', 'Define spotlights that can be embedded within Aspen custom pages or other websites.', '/Admin/CollectionSpotlights');
+		$sections['local_enrichment']->addAction($collectionSpotlightsAction, [
+			'Administer All Collection Spotlights',
+			'Administer Library Collection Spotlights',
+		]);
+		$collectionSpotlightsAction->addSubAction(new AdminAction('Collection Spotlight Lists', 'Define lists within each spotlight.', '/Admin/CollectionSpotlightLists'), [
 			'Administer All Collection Spotlights',
 			'Administer Library Collection Spotlights',
 		]);
@@ -4413,7 +4418,7 @@ class User extends DataObject {
 		//PROPAY $sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
 		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
-		$sections['ecommerce']->addAction(new AdminAction('HeyCentric Settings', 'Define Settings for HeyCentric.', '/Admin/HeyCentricSettings'), 'Administer HeyCentric Settings');
+		$sections['ecommerce']->addAction(new AdminAction('HeyCentric Settings', 'Define Settings for HeyCentric.', '/Admin/HeyCentricSettings'), 'Administer HeyCentric');
 		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');
 		$sections['ecommerce']->addAction(new AdminAction('Certified Payments by Deluxe Settings', 'Define Settings for Certified Payments by Deluxe.', '/Admin/CertifiedPaymentsByDeluxeSettings'), 'Administer Certified Payments by Deluxe');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
@@ -4448,9 +4453,11 @@ class User extends DataObject {
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'koha' || $accountProfile->ils == 'sierra') {
+				$allowILSMessaging = true;
+			}
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
-				$allowILSMessaging = true;
 			}
 			if ($accountProfile->ils == 'symphony' || $accountProfile->ils == 'carlx' || $accountProfile->ils == 'sierra') {
 				$customSelfRegForms = true;
@@ -4658,10 +4665,10 @@ class User extends DataObject {
 			$sections['side_loads'] = new AdminSection('Side Loads');
 			$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');
 			$sideLoadsScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/SideLoads/Scopes');
-			if ($sections['side_loads']->addAction($sideLoadsSettingsAction, ['Administer Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library'])) {
-				$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, ['Administer Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
+			if ($sections['side_loads']->addAction($sideLoadsSettingsAction, ['Administer All Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library'])) {
+				$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, ['Administer All Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
 			} else {
-				$sections['side_loads']->addAction($sideLoadsScopesAction, ['Administer Side Loads', 'Administer Side Load Scopes for Home Library']);
+				$sections['side_loads']->addAction($sideLoadsScopesAction, ['Administer All Side Loads', 'Administer Side Load Scopes for Home Library']);
 			}
 			$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), [
 				'View System Reports',
@@ -4882,6 +4889,8 @@ class User extends DataObject {
 				} elseif ($permissionName == 'Administer Home Library Locations' && (in_array('Administer All Locations', $guidingUserPermissions))) {
 					$validPermissions[] = $permissionName;
 				} elseif ($permissionName == 'Administer Home Library' && (in_array('Administer All Libraries', $guidingUserPermissions))) {
+					$validPermissions[] = $permissionName;
+				} elseif (($permissionName == 'Administer Side Loads for Home Library' || 'Administer Side Load Scopes for Home Library') && (in_array('Administer All Side Loads', $guidingUserPermissions))) {
 					$validPermissions[] = $permissionName;
 				}
 			}

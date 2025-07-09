@@ -19,7 +19,7 @@ foreach ($accountProfiles as $accountProfileInfo) {
 			if (!empty($catalogDriver)) {
 				$catalog = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 				try {
-					$catalog->updateAccountNotifications();
+					$catalog->updateAccountNotifications($ilsNotificationSetting);
 				} catch (PDOException $e) {
 					echo("Could not update message queue for library $library->libraryId.");
 				}

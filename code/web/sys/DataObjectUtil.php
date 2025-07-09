@@ -11,7 +11,7 @@ class DataObjectUtil {
 	 *
 	 * @return string and HTML Snippet representing the form for display.
 	 */
-	static function getEditForm($objectStructure) {
+	static function getEditForm(array $objectStructure) : string {
 		global $interface;
 
 		//Define the structure of the object.
@@ -23,7 +23,7 @@ class DataObjectUtil {
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
-	static function getFormContentType($structure, $contentType = null) {
+	static function getFormContentType(array $structure, ?string $contentType = null) : ?string {
 		if ($contentType != null) {
 			return $contentType;
 		}
@@ -39,65 +39,14 @@ class DataObjectUtil {
 	}
 
 	/**
-	 * Save the object to the database (and optionally solr) based on the structure of the object
-	 * Takes care of determining whether the object is new or not.
-	 *
-	 * @param array $structure The structure of the data object
-	 * @param string $dataType The class of the data object
-	 * @param array $fieldLocks A list of locks that apply to the object
-	 * @return array
-	 */
-	static function saveObject($structure, $dataType, $fieldLocks) {
-		//Check to see if we have a new object or an exiting object to update
-		/** @var DataObject $object */
-		$object = new $dataType();
-		DataObjectUtil::updateFromUI($object, $structure, $fieldLocks);
-		$primaryKey = $object->__primaryKey;
-		$primaryKeySet = !empty($object->$primaryKey);
-
-		$validationResults = DataObjectUtil::validateObject($structure, $object);
-		$validationResults['object'] = $object;
-
-		if ($validationResults['validatedOk']) {
-			//Check to see if we need to insert or update the object.
-			//We can tell which to do based on whether or not the primary key is set
-
-			if ($primaryKeySet) {
-				$result = $object->update();
-				$validationResults['saveOk'] = ($result == 1);
-			} else {
-				$result = $object->insert();
-				$validationResults['saveOk'] = $result;
-			}
-			if (!$validationResults['saveOk']) {
-				$error = $object->getLastError();
-				if (isset($error)) {
-					$validationResults['errors'][] = 'Save failed ' . $error;
-				} else {
-					$validationResults['errors'][] = 'Save failed';
-				}
-			}
-		}
-		return $validationResults;
-	}
-
-	/**
-	 * Delete an object from the database (and optionally solr).
-	 *
-	 * @param $dataObject
-	 * @param $form
-	 */
-	static function deleteObject($structure, $dataType) {}
-
-	/**
 	 * Validate that the inputs for the data object are correct prior to saving the object.
 	 *
-	 * @param $dataObject
+	 * @param array $structure
 	 * @param $object - The object to validate
 	 *
 	 * @return array Results of validation
 	 */
-	static function validateObject($structure, $object) {
+	static function validateObject(array $structure, $object) : array {
 		//Setup validation return array
 		$validationResults = [
 			'validatedOk' => true,
@@ -143,7 +92,7 @@ class DataObjectUtil {
 		return $validationResults;
 	}
 
-	static function updateFromUI($object, $structure, $fieldLocks) {
+	static function updateFromUI($object, $structure, $fieldLocks) : void {
 		foreach ($structure as $property) {
 			if (($fieldLocks != null && !in_array($property['property'], $fieldLocks)) || $fieldLocks == null) {
 				DataObjectUtil::processProperty($object, $property, $fieldLocks);
@@ -151,7 +100,30 @@ class DataObjectUtil {
 		}
 	}
 
-	static function processProperty(DataObject $object, $property, $fieldLocks) {
+	static function structureContainsImagesOrFiles($structure) : bool {
+		foreach ($structure as $property) {
+			if ($property['type'] == 'image' || $property['type'] == 'file') {
+				return true;
+			}elseif ($property['type'] == 'section') {
+				if (DataObjectUtil::structureContainsImagesOrFiles($property['properties'])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	static function updateImagesAndFilesAfterInsert($object, $structure) : void {
+		foreach ($structure as $property) {
+			if ($property['type'] == 'image' || $property['type'] == 'file') {
+				DataObjectUtil::processProperty($object, $property, null);
+			}elseif ($property['type'] == 'section') {
+				DataObjectUtil::updateImagesAndFilesAfterInsert($object, $property['properties']);
+			}
+		}
+	}
+
+	static function processProperty(DataObject $object, $property, $fieldLocks) : void {
 		global $logger;
 		$propertyName = $property['property'];
 		if ($property['type'] == 'section') {
@@ -240,12 +212,14 @@ class DataObjectUtil {
 						if (!empty($property['allowableTags'])) {
 							$allowableTags = $property['allowableTags'];
 						} else {
+							/** @noinspection HtmlRequiredAltAttribute */
 							$allowableTags = '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span>';
 						}
 					}
 
 				} else {
 					// set defaults if system variables do not exist
+					/** @noinspection HtmlRequiredAltAttribute */
 					$allowableTags = '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span>';
 				}
 
@@ -408,7 +382,7 @@ class DataObjectUtil {
 							'seriesImage' => 'series_image',
 							'libraryWebsiteImage' => 'library_website_image',
 							'historyArchivesImage' => 'history_archives_image',
-							default => $property['property'],
+							default => get_class($object) . '_' . $property['property'],
 						};
 						if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'Placards') {
 							$objectType = 'placard_image';
@@ -418,7 +392,7 @@ class DataObjectUtil {
 						}
 					}
 					if (isset($property['storagePath'])) {
-						$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : $_FILES[$propertyName]["name"];
+						$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
 						$destFolder = $property['storagePath'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
@@ -427,14 +401,14 @@ class DataObjectUtil {
 						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
 						if (isset($property['path'])) {
 							$destFolder = $property['path'];
-							$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : $_FILES[$propertyName]["name"];
+							$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
 							if (!file_exists($destFolder)) {
 								mkdir($destFolder, 0755, true);
 							}
 							$pathToThumbs = $destFolder . '/thumbnail';
 							$pathToMedium = $destFolder . '/medium';
 						} else {
-							$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : $_FILES[$propertyName]["name"];
+							$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
 							$destFolder = $configArray['Site']['local'] . '/files/original';
 							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
 							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
@@ -442,7 +416,7 @@ class DataObjectUtil {
 
 						$destFullPath = $destFolder . '/' . $destFileName;
 						//check for previous upload that needs to be overwritten to new naming convention
-						$prevUpload = $destFolder . '/' . $_FILES[$propertyName]["name"];
+						$prevUpload = $destFolder . '/' . "Temp_" . $_FILES[$propertyName]["name"];
 						if (file_exists($prevUpload)) {
 							rename($prevUpload, $destFullPath);
 						}
@@ -500,7 +474,7 @@ class DataObjectUtil {
 					$fileType = ".pdf";
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
-					$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : $_FILES[$propertyName]["name"];
+					$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
 					if (!file_exists($destFolder)) {
 						mkdir($destFolder, 0775, true);
@@ -513,9 +487,14 @@ class DataObjectUtil {
 
 					$destFullPath = $destFolder . '/' . $destFileName;
 					//check for previous upload that needs to be overwritten to new naming convention
-					$prevUpload = $destFolder . '/' . $_FILES[$propertyName]["name"];
+					$prevUpload = $destFolder . '/' . "Temp_" . $_FILES[$propertyName]["name"];
 					if (file_exists($prevUpload)) {
 						rename($prevUpload, $destFullPath);
+						// Remove any old thumbnail for this PDF.
+						$thumbPath = $prevUpload . '.jpg';
+						if (file_exists($thumbPath)) {
+							@unlink($thumbPath);
+						}
 					}
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult) {
@@ -582,7 +561,7 @@ class DataObjectUtil {
 				}
 				$object->setProperty($propertyName, $newValue, $property);
 			}
-		} elseif ($property['type'] == 'translatableTextBlock') {
+		} elseif ($property['type'] == 'translatableTextBlock' || $property['type'] == 'translatablePlainTextBlock') {
 			//Set all the translations for
 			$allTranslations = [];
 			foreach ($_REQUEST as $requestName => $propertyValue) {

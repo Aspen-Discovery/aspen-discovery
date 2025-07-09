@@ -1,21 +1,10 @@
 <?php
 
-class Author_AJAX {
-	function launch() {
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			//JSON Encoded data
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		} else {
-			echo json_encode(['error' => 'invalid_method']);
-		}
-	}
+require_once ROOT_DIR . '/JSON_Action.php';
 
+class Author_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
-	function getEnrichmentInfo() {
+	function getEnrichmentInfo(): array {
 		global $interface;
 		global $memoryWatcher;
 
@@ -38,11 +27,11 @@ class Author_AJAX {
 			$memoryWatcher->logMemory('Loaded Similar authors from NoveList');
 		}
 
-		return json_encode($enrichmentResult);
+		return $enrichmentResult;
 	}
 
 	/** @noinspection PhpUnused */
-	function getWikipediaData() {
+	function getWikipediaData(): array {
 		global $configArray;
 		global $library;
 		global $interface;
@@ -63,9 +52,11 @@ class Author_AJAX {
 			$authorEnrichment = new AuthorEnrichment();
 			$authorEnrichment->authorName = $authorName;
 			$doLookup = true;
+			$errorType = '';
 			if ($authorEnrichment->find(true)) {
 				if ($authorEnrichment->hideWikipedia) {
 					$doLookup = false;
+					$errorType = 'lookup_disabled';
 				} else {
 					require_once ROOT_DIR . '/sys/WikipediaParser.php';
 					$wikipediaUrl = $authorEnrichment->wikipediaUrl;
@@ -78,23 +69,37 @@ class Author_AJAX {
 				$wiki_lang = substr($activeLanguage->code, 0, 2);
 				$interface->assign('wiki_lang', $wiki_lang);
 				$authorInfo = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}");
-				if ($authorInfo == false || isset($_REQUEST['reload'])) {
+				if (!$authorInfo || isset($_REQUEST['reload'])) {
 					require_once ROOT_DIR . '/services/Author/Wikipedia.php';
 					$wikipediaParser = new Author_Wikipedia();
 					$authorInfo = $wikipediaParser->getWikipedia($authorName, $wiki_lang);
 					$memCache->set("wikipedia_article_{$authorName}_{$wiki_lang}", $authorInfo, $configArray['Caching']['wikipedia_article']);
 				}
-				$returnVal['success'] = true;
+
+				$returnVal['searchedName'] = $authorName;
 				$returnVal['article'] = $authorInfo;
-				$interface->assign('info', $authorInfo);
-				$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
+				if ($authorInfo) {
+					$returnVal['success'] = true;
+					$interface->assign('info', $authorInfo);
+					$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
+				} else {
+					$returnVal['success'] = false;
+					$errorType = 'not_found';
+				}
 			} else {
+				$returnVal['searchedName'] = $authorName;
 				$returnVal['success'] = false;
 			}
+
+			if (!$returnVal['success'] && IPAddress::showDebuggingInformation() && !empty($errorType)) {
+				$returnVal['debugMessage'] = 'Wikipedia search for "' . $authorName . '" returned no result (' . $errorType . '). ' .
+					'Consider using Wikipedia Integration (Author Enrichment) to correct the Wikipedia search or to prevent Wikipedia searching for this author.';
+			}
+
 		} else {
 			$returnVal['success'] = false;
 		}
-		return json_encode($returnVal);
+		return $returnVal;
 	}
 
 	function getBreadcrumbs(): array {

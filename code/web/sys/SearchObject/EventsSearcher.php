@@ -42,8 +42,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 
 		// Load sort preferences (or defaults if none in .ini file):
 		$this->sortOptions = [
-			'start_date_sort asc' => 'Event Date',
 			'relevance' => 'Best Match',
+			'start_date_sort asc' => 'Event Date',
 			'title_sort' => 'Title',
 		];
 

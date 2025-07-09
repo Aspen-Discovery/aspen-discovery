@@ -11,10 +11,10 @@ class InitializationTests extends TestCase {
 		$this->assertEquals('C:\web\aspen-discovery\code\web', ROOT_DIR);
 	}
 
-	public function test_getGitBranch() {
-		$gitBranch = getGitBranch();
-		$this->assertNotNull($gitBranch);
-		$this->assertMatchesRegularExpression('/\d\d\.\d\d\.\d\d/', $gitBranch);
+	public function test_getAspenVersion() {
+		$aspenVersion = getAspenVersion();
+		$this->assertNotNull($aspenVersion);
+		$this->assertMatchesRegularExpression('/\d\d\.\d\d\.\d\d/', $aspenVersion);
 	}
 
 	public function test_solrRunning() {

@@ -90,14 +90,19 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 	}
 
+	public function supportsLoginWithUsername() : bool {
+		return true;
+	}
+
 	function findNewUser($patronBarcode, $patronUsername): User|bool {
-		// Creates a new user like patronLogin but looks up user by barcode.
+		// Creates a new user like patronLogin and looks up user by barcode or username.
 		// Note: The user pin is not supplied in the Account Info Lookup call.
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
 			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=ID:' . $patronBarcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
+			$searchString = $patronBarcode != null ? 'ID:' . $patronBarcode : 'ALT_ID:' . $patronUsername;
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=' . $searchString . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];

@@ -161,13 +161,17 @@ class SideFacets implements RecommendationInterface {
 			//Process other searchers to add more facet popup
 			foreach ($sideFacets as $facetKey => $facet) {
 				/** @var FacetSetting $facetSetting */
+				$facetSetting = $this->facetSettings[$facetKey];
 				if ($facetKey == 'start_date') {
 					$startDateFacet = $this->updateStartDateRatingsFacet($facet);
 					$sideFacets[$facetKey] = $startDateFacet;
+					$sideFacets[$facetKey]['hasApplied'] = isset($startDateFacet['start']) || isset($startDateFacet['end']);
 				}else {
-					$facetSetting = $this->facetSettings[$facetKey];
 					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
 				}
+				$sideFacets[$facetKey]['collapseByDefault'] = $facetSetting->collapseByDefault;
+				$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
+				$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
 			}
 		} elseif ($this->searchObject instanceof SearchObject_ListsSearcher) {
 			foreach ($sideFacets as $facetKey => $facet) {

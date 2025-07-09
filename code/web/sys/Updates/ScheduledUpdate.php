@@ -19,7 +19,10 @@ class ScheduledUpdate extends DataObject {
 
 	public static function getObjectStructure($context = ''): array {
 		global $interface;
-		$currentRelease = $interface->getVariable('gitBranch');
+		$currentRelease = $interface->getVariable('aspenVersion');
+		if (str_contains($currentRelease, ' ')) {
+			$currentRelease = substr($currentRelease, 0, strpos($currentRelease, ' '));
+		}
 		$updateTypes = [
 			'patch' => 'Patch',
 			'complete' => 'Complete',

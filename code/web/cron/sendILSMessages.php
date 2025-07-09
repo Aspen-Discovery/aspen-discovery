@@ -33,11 +33,12 @@ foreach ($notifications as $notification) {
 							'channelId' => 'accountAlert',
 						];
 
-						if(str_contains($ilsMessage->type, 'HOLD')) {
+						$typeUpper = strtoupper($ilsMessage->type);
+						if(str_contains($typeUpper, 'HOLD')) {
 							$body['data'] = [
 								'url' => urlencode(LocationSetting::getDeepLinkByName('user/holds', '')),
 							];
-						} elseif(str_contains($ilsMessage->type, 'CHECKOUT')) {
+						} elseif(str_contains($typeUpper, 'CHECKOUT') || str_contains('OVERDUE') || str_contains('BILLED')) {
 							$body['data'] = [
 								'url' => urlencode(LocationSetting::getDeepLinkByName('user/checkouts', '')),
 							];

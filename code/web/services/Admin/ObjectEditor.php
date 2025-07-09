@@ -185,26 +185,14 @@ abstract class ObjectEditor extends Admin_Admin {
 		$validationResults = $this->updateFromUI($newObject, $structure, null);
 		if ($validationResults['validatedOk']) {
 			$ret = $newObject->insert($this->getContext());
-			//for images we need to also update the object to assign correct image names
-			switch ($objectType) {
-				case 'WebResource':
-				case 'ImageUpload':
-				case 'FileUpload':
-				case 'Placard':
-				case 'Theme':
-					$doUpdate = true;
-					break;
-				default:
-					$doUpdate = false;
-					break;
+			$doImageAndFileUpdateAfterInsert = DataObjectUtil::structureContainsImagesOrFiles($structure);
+			//for images and files, we need to also update the object to assign correct image names
+			if ($ret && $doImageAndFileUpdateAfterInsert) {
+				$this->updateImagesAndFilesAfterInsert($newObject, $structure);
+				$ret = $newObject->update('updateImagesAndFilesAfterInsert');
 			}
-			if ($ret && $doUpdate) {
-				$validationResults = $this->updateFromUI($newObject, $structure, null);
-				if ($validationResults['validatedOk']) {
-					$ret = $newObject->update($this->getContext());
-				}
-			}
-			if (!$ret) {
+			// Strict comparison because the update() above could return 0, as no rows changed.
+			if ($ret === false) {
 				global $logger;
 				if ($newObject->getLastError()) {
 					$errorDescription = $newObject->getLastError();
@@ -254,6 +242,11 @@ abstract class ObjectEditor extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateFromUI($object, $structure, $fieldLocks);
 		return DataObjectUtil::validateObject($structure, $object);
+	}
+
+	function updateImagesAndFilesAfterInsert($object, $structure) {
+		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
+		DataObjectUtil::updateImagesAndFilesAfterInsert($object, $structure);
 	}
 
 	function viewExistingObjects($structure) {

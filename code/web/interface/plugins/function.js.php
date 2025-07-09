@@ -72,5 +72,5 @@ function smarty_function_js($params, &$smarty) {
 
 	// We found the file -- build the script tag:
 	global $interface;
-	return "<script type=\"text/javascript\" src=\"{$js}?v=" . urlencode($interface->getVariable('gitBranch')) . '.' . urlencode($interface->getVariable('cssJsCacheCounter')) . "\"></script>";
+	return "<script type=\"text/javascript\" src=\"{$js}?v=" . urlencode($interface->getVariable('aspenVersion')) . '.' . urlencode($interface->getVariable('cssJsCacheCounter')) . "\"></script>";
 }

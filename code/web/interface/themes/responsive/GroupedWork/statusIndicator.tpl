@@ -25,7 +25,7 @@
 			{/if}
 		{/if}
 	{elseif $statusInformation->isAvailableLocally()}
-		{if $statusInformation->isAllLibraryUseOnly()}
+		{if $statusInformation->isAllLibraryUseOnly() || $statusInformation->getGroupedStatus() == 'Library Use Only'}
 			<div class="related-manifestation-shelf-status status-library-use-only label label-success label-wrap">{translate text='Library Use Only' isPublicFacing=true}</div>
 		{else}
 			<div class="related-manifestation-shelf-status status-on-shelf label label-success label-wrap">{translate text='On Shelf' isPublicFacing=true}</div>

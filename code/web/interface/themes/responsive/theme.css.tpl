@@ -221,7 +221,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 .facetTitle.expanded, .exploreMoreTitle.expanded,.active .panel-heading,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#preferences-accordion .active .panel-heading,#preferences-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading,.adminSection .adminPanel .adminSectionLabel, .facetLock.pull-right a{ldelim}
     color: {$openPanelForegroundColor};
 {rdelim}
-.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn),.adminSection .adminPanel{ldelim}
+.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,#preferences-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn),.adminSection .adminPanel{ldelim}
     background-color: {$panelBodyBackgroundColor};
     color: {$panelBodyForegroundColor};
 {rdelim}
@@ -920,7 +920,7 @@ color: {$bodyTextColor};
 		filter: invert(1);
 	{rdelim}
 
-	#more-details-accordion .panel-body, #preferences-accordion .panel-body, .itemSummary{ldelim}
+	#more-details-accordion .panel-body, .itemSummary{ldelim}
         font-size: 85%;
     {rdelim}
 {/if}

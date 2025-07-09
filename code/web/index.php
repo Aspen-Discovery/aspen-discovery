@@ -46,7 +46,7 @@ if ($activeSessionObject != null) {
 }
 
 global $locationSingleton;
-getGitBranch();
+getAspenVersion();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
 $interface->assign('cssJsCacheCounter', 47);
 

@@ -435,29 +435,17 @@ function getValidServerNames(): array {
 	return $validServerNames;
 }
 
-function getGitBranch() {
+function getAspenVersion() {
 	global $interface;
 
-	$files = [];
-	foreach (glob(ROOT_DIR . '/release_notes/*.MD') as $filename) {
-		if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $filename)) {
-			$tmp = str_replace('.MD', '', $filename);
-			/** @noinspection RegExpRedundantEscape */
-			$tmp = preg_replace('~.*release_notes[\\/]~', '', $tmp);
-			$files[] = $tmp;
-		}
-	}
-	asort($files);
-
-	$branchName = end($files);
-	$branchNameWithCommit = end($files);
+	$versionData = json_decode(file_get_contents(ROOT_DIR . '/version.json'));
+	$aspenVersion = trim($versionData->version . ' ' . $versionData->stage);
 
 	if (!empty($interface)) {
-		$interface->assign('gitBranch', $branchName);
-		$interface->assign('gitBranchWithCommit', $branchNameWithCommit);
+		$interface->assign('aspenVersion', $aspenVersion);
 	}
 
-	return $branchName;
+	return $aspenVersion;
 }
 
 //Look for spammy user agents and kill them

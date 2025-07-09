@@ -124,7 +124,7 @@
 					</div>
 				{/if}
 			{else}
-				<label for='{$propName}' {if !empty($property.description)}aria-describedby="{$propName}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</label>
+				<label {if $property.type != 'translatableTextBlock' && $property.type != 'translatablePlainTextBlock'}for='{$propName}'{/if}  {if !empty($property.description)}aria-describedby="{$propName}Tooltip" {/if}>{translate text=$property.label isAdminFacing=true}</label>
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" id="{$propName}Tooltip" class="text-info" role="tooltip" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required)}
@@ -573,7 +573,7 @@
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{elseif $property.type == 'portalRow'}
 			{include file="DataObjectUtil/portalRows.tpl"}
-		{elseif $property.type == 'translatableTextBlock'}
+		{elseif $property.type == 'translatableTextBlock' || $property.type == 'translatablePlainTextBlock'}
 			<ul class="nav nav-tabs" role="tablist" id="{$propName}_language_tab">
 				{if !empty($property.defaultTextFile)}
 					<li role="presentation" class="active"><a href="#{$propName}_default_tab" aria-controls="{$propName}_default_tab" role="tab" data-toggle="tab">{translate text="Default" isAdminFacing=true}</a></li>
@@ -610,7 +610,11 @@
 							<div class="form-group">
 								<div class="btn-group btn-group-sm">
 									{if !empty($property.defaultTextFile)}
-										<a class="btn btn-sm btn-default" onclick="tinyMCE.get('{$localPropName}').setContent(tinyMCE.get('{$propName}_default').getContent());return false;">{translate text="Copy From Default" isAdminFacing=true}</a>
+										{if $property.type == 'translatableTextBlock'}
+											<a class="btn btn-sm btn-default" onclick="tinyMCE.get('{$localPropName}').setContent(tinyMCE.get('{$propName}_default').getContent());return false;">{translate text="Copy From Default" isAdminFacing=true}</a>
+										{else}
+											<a class="btn btn-sm btn-default" onclick="$('#{$localPropName}').val($('#{$propName}_default').val());return false;">{translate text="Copy From Default" isAdminFacing=true}</a>
+										{/if}
 									{/if}
 									<a class="btn btn-sm btn-danger" onclick="tinyMCE.get('{$localPropName}').setContent('');return false;">{translate text="Clear" isAdminFacing=true}</a>
 								</div>

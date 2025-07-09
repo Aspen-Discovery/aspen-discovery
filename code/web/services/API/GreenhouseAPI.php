@@ -447,7 +447,10 @@ class GreenhouseAPI extends AbstractAPI {
 			$library = new Library();
 			$library->libraryId = $location->libraryId;
 			if ($library->find(true)) {
-				$version = $interface->getVariable('gitBranch');
+				$version = $interface->getVariable('aspenVersion');
+				if (str_contains($version, ' ')) {
+					$version  = substr($version, 0, strpos($version, ' '));
+				}
 				if ($version >= "22.09.00") {
 					require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 					$appSettings = new LocationSetting();

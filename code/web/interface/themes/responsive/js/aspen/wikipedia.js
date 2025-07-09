@@ -1,13 +1,26 @@
-AspenDiscovery.Wikipedia = (function(){
-	return{
-		getWikipediaArticle: function(articleName){
-			var url = Globals.path + "/Author/AJAX?method=getWikipediaData&articleName=" + articleName;
-			$.getJSON(url, function(data){
-				if (data.success) {
-					// noinspection JSUnresolvedVariable
-					$("#wikipedia_placeholder").html(data.formatted_article).fadeIn();
+AspenDiscovery.Wikipedia = (() => {
+	return {
+		getWikipediaArticle(articleName) {
+			const url = `${Globals.path}/Author/AJAX?method=getWikipediaData&articleName=${encodeURIComponent(articleName)}`;
+			$.getJSON(url)
+			.done((data) => {
+				const { success, formatted_article, debugMessage } = data || {};
+				const $placeholder = $("#wikipedia_placeholder");
+				if (success && formatted_article) {
+					$placeholder.html(formatted_article).fadeIn();
+				} else if (debugMessage) {
+					$placeholder.append(
+						'<div ' + 'class="smallText text-muted" style="font-style:italic">' +
+						debugMessage +
+						'</div>'
+					).fadeIn();
 				}
+			})
+			.fail((jqXHR, textStatus) => {
+				$("#wikipedia_placeholder")
+					.html(`<div class="alert alert-danger">Failed to load article: ${textStatus}</div>`)
+					.fadeIn();
 			});
 		}
 	};
-}(AspenDiscovery.Wikipedia));
+})();

@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class UserILSMessage extends DataObject {
 	public $__table = 'user_ils_messages';
 	public $id;
-	public $messageId;
+	public $messageId; //For some ILSs this is the message ID retrieved from the underlying ILS. For others, where we generate our own message, it is the hold id or checkout id.
 	public $userId;
 	public $type;
 	public $status;
@@ -50,7 +50,7 @@ class UserILSMessage extends DataObject {
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : void {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];

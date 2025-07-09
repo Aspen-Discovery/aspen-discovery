@@ -1368,17 +1368,22 @@ abstract class DataObject implements JsonSerializable {
 		}
 		if ($loadDefault) {
 			$objectStructure = $this::getObjectStructure();
+			$objectStructure = $this->updateStructureForEditingObject($objectStructure);
 			$fieldDefinition = $this->getFieldDefinition($fieldName, $objectStructure);
 			if ($fieldDefinition === false) {
 				$this->_data[$key] = '';
 			} else {
-				$defaultFile = $fieldDefinition['defaultTextFile'];
+				$defaultFile = $fieldDefinition['defaultTextFile'] ?? null;
 				if (empty($defaultFile) || !file_exists(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile)) {
 					$this->_data[$key] = '';
 				}else {
-					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-					$parsedown = AspenParsedown::instance();
-					$this->_data[$key] = $parsedown->parse(file_get_contents(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile));
+					if ($fieldDefinition['type'] == 'translatablePlainTextBlock') {
+						$this->_data[$key] = file_get_contents(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile);
+					}else{
+						require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+						$parsedown = AspenParsedown::instance();
+						$this->_data[$key] = $parsedown->parse(file_get_contents(ROOT_DIR . '/default_translatable_text_fields/' . $defaultFile));
+					}
 				}
 			}
 		}else{

@@ -1,0 +1,1 @@
+The materials checked out on your library account are now 7 days overdue. At 14 days overdue, your borrowing privileges will be suspended until these materials are returned. No overdue fines will be charged.

@@ -14,12 +14,12 @@ class CurlWrapper {
 	public function __construct() {
 		global $interface;
 		if ($interface != null) {
-			$gitBranch = $interface->getVariable('gitBranch');
-			if (substr($gitBranch, -1) == "\n") {
-				$gitBranch = substr($gitBranch, 0, -1);
+			$aspenVersion = $interface->getVariable('aspenVersion');
+			if (substr($aspenVersion, -1) == "\n") {
+				$aspenVersion = substr($aspenVersion, 0, -1);
 			}
 		} else {
-			$gitBranch = 'Primary';
+			$aspenVersion = 'Primary';
 		}
 
 		$header = [];
@@ -28,7 +28,7 @@ class CurlWrapper {
 		$header[] = "Connection: keep-alive";
 		$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
 		$header[] = "Accept-Language: en-us,en;q=0.5";
-		$header[] = "User-Agent: Aspen Discovery " . $gitBranch;
+		$header[] = "User-Agent: Aspen Discovery " . $aspenVersion;
 		$this->headers = $header;
 
 		$default_options = [

@@ -381,7 +381,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 
 		$userCampaign = new UserCampaign();
-		$userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
+		$userCampaign->userId = $userId;
+		$userCampaign->campaignId = $campaignId;
+		if ($userCampaign->find(true)) {
+			$userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
+		}
 		
 		echo json_encode([
 			'title' => translate([

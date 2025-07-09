@@ -42,7 +42,7 @@ class SideLoads_Scopes extends ObjectEditor {
 	function getAllObjects($page, $recordsPerPage): array {
 		//Get the sideloads the user has access to
 		$sideLoad = new SideLoad();
-		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer Side Loads')) {
+		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer All Side Loads')) {
 			$libraryList = Library::getLibraryList(true);
 			$sideLoad->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
 			$sideLoad->whereAdd("sharing = 1", "OR");
@@ -98,7 +98,7 @@ class SideLoads_Scopes extends ObjectEditor {
 		if ($sideLoadScope->find(true)) {
 			$existingLibrariesSideLoadScopes = $sideLoadScope->getLibraries();
 			$library = new Library();
-			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
+			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
 				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 				$library->libraryId = $library == null ? -1 : $library->libraryId;
 			}
@@ -142,7 +142,7 @@ class SideLoads_Scopes extends ObjectEditor {
 		if ($sideLoadScope->find(true)) {
 			$existingLocationSideLoadScopes = $sideLoadScope->getLocations();
 			$location = new Location();
-			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer Side Loads')) {
+			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
 				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 				$library->libraryId = $library == null ? -1 : $library->libraryId;
 				$location->libraryId = $library->libraryId;
@@ -196,11 +196,11 @@ class SideLoads_Scopes extends ObjectEditor {
 
 	function canBatchEdit(): bool {
 		return UserAccount::userHasPermission([
-			'Administer Side Loads',
+			'Administer All Side Loads',
 		]);
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission(['Administer Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
+		return UserAccount::userHasPermission(['Administer All Side Loads', 'Administer Side Loads for Home Library', 'Administer Side Load Scopes for Home Library']);
 	}
 }

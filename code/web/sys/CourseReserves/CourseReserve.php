@@ -461,35 +461,20 @@ class CourseReserve extends DataObject {
 		return CourseReserve::$__courseReserveSortOptions;
 	}
 
-	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight) {
+	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight): array {
 		$allEntries = $this->getReserveTitles();
-
 		$results = [];
-		/**
-		 * @var string $key
-		 * @var UserListEntry $entry
-		 */
-		foreach ($allEntries as $key => $entry) {
+		$index = 0;
+		foreach ($allEntries as $entry) {
 			$recordDriver = $entry->getRecordDriver();
-			if ($recordDriver == null) {
-				//Don't show this result because it no lonnger exists in teh catalog.
-				/*$results[$key] = [
-					'title' => 'Unhandled Source ' . $entry->source,
-					'author' => '',
-					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-				];*/
-			} else {
-				if ($recordDriver->isValid()) {
-					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
+			if ($recordDriver !== null && $recordDriver->isValid()) {
+				$results[$index] = $recordDriver->getSpotlightResult($collectionSpotlight, $index);
+				$index++;
+				if ($index >= $collectionSpotlight->numTitlesToShow) {
+					break;
 				}
 			}
-
-			if (count($results) == $collectionSpotlight->numTitlesToShow) {
-				break;
-			}
 		}
-
 		return $results;
 	}
 

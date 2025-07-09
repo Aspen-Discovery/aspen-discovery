@@ -26,9 +26,7 @@
 			{/if}
 		</div>
 		{if !empty($showViewMoreLink) && strlen($fullListLink) > 0}
-			<div class="linkTab" style="float:right">
-				<a href='{$fullListLink}'><span class="seriesLink">{translate text="View More" isPublicFacing=true}</span></a>
-			</div>
+			<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 		{/if}
 	</div>
 </div>

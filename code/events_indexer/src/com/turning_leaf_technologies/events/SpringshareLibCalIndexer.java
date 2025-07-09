@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -47,6 +48,11 @@ class SpringshareLibCalIndexer {
 	private final HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
 	private final HashSet<String> librariesToShowFor = new HashSet<>();
 	private static final CRC32 checksumCalculator = new CRC32();
+	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
+		.setConnectTimeout(10000)
+		.setConnectionRequestTimeout(10000)
+		.setSocketTimeout(60000)
+		.build();
 
 	private PreparedStatement addEventStmt;
 	private PreparedStatement updateEventStmt;
@@ -516,8 +522,10 @@ class SpringshareLibCalIndexer {
 	}
 
 	private JSONArray getLibCalEvents() {
-		try {
-			CloseableHttpClient httpclient = HttpClients.createDefault();
+		try (CloseableHttpClient httpclient = HttpClients.custom()
+			.setDefaultRequestConfig(REQUEST_CONFIG)
+			.build()) {
+
 			HttpRequestBase apiRequest;
 			String authTokenUrl = baseUrl + "/1.1/oauth/token";
 			ArrayList<NameValuePair> params = new ArrayList<>();
@@ -582,7 +590,10 @@ class SpringshareLibCalIndexer {
 	private JSONArray getRegistrations(Integer eventId) {
 		try {
 			JSONArray eventRegistrations;
-			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+			try (CloseableHttpClient httpclient = HttpClients.custom()
+				.setDefaultRequestConfig(REQUEST_CONFIG)
+				.build()) {
+
 				HttpRequestBase apiRequest;
 
 				eventRegistrations = new JSONArray();

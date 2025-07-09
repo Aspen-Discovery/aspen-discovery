@@ -6,9 +6,11 @@ require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
 class Author_Home extends ResultsAction {
-	function launch() {
+	function launch(): void {
 		global $interface;
 		global $library;
+
+		$interface->assign('ipDebugEnabled', IPAddress::showDebuggingInformation());
 
 		if (!isset($_GET['author'])) {
 			$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');

@@ -723,12 +723,10 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 			$hasIsbnB = !empty($result['hasIsbnB']) ? $result['hasIsbnB'] : 0;
 			$talpaResultB = $hasIsbnB && $talpaSettings->includeTalpaOtherResultsSwitch; //if library allows Other Results
 
-			if($inLibraryB)
-			{
+			if($inLibraryB) {
 				$solrRecord = $result['solrRecord'];
-				$availableAt = $solrRecord['available_at'];
-				if($availableAt)
-				{
+				$availableAt = array_key_exists('available_at', $solrRecord) ? $solrRecord['available_at'] : false;
+				if($availableAt) {
 					$facetCounts['global']['count']++;
 					$allFacets['availability_toggle'][]= array('global', 1);
 				}
