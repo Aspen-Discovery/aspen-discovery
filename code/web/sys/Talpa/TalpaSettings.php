@@ -18,6 +18,8 @@ class TalpaSettings extends DataObject {
 
 	public $includeTalpaOtherResultsSwitch;
 	public $talpaOtherResultsExplainerText;
+	public $sendCatalogItemsToTalpaOnSave;
+
 
 	public static function getObjectStructure($context = ''): array {
 		$buttonOptions = [
@@ -159,6 +161,23 @@ class TalpaSettings extends DataObject {
 						'description' => 'If &rdquo;Other Results&rdquo; is enabled, this text appears under the filter and explains the results that Talpa found that are not held by your library. Leave blank to use the default value (Talpa Search found these other results not owned by your library).',
 						'hideInLists' => true,
 						'default' => 'Talpa Search found these other results not owned by your library.',
+					],
+				],
+			],
+			//Catalog Integration
+			'talpaCatalogIntegrationSection' => [
+				'property' => 'talpaCatalogIntegrationSection',
+				'type' => 'section',
+				'label' => 'Share Holdings',
+				'hideInLists' => true,
+				'properties' => [
+					'sendCatalogItemsToTalpaOnSave' => [
+						'property' => 'sendCatalogItemsToTalpaOnSave',
+						'type' => 'checkbox',
+						'label' => 'Send holdings to Talpa Search upon save',
+						'description' => 'Holdings are sent automatically to Talpa Search once a day. Check this box and save settings to immediately trigger a one-time sending of holdings.',
+						'hideInLists' => true,
+						'default' => 0,
 					],
 				],
 			],

@@ -42,6 +42,13 @@ function getUpdates25_08_00(): array {
 		//other
 
 		//Talpa Search
-		
+		'addSendCatalogItemsToTalpaOnSave' => [
+			'title' => 'Add Send Catalog Items to Talpa Search setting',
+			'description' => 'Add a new setting to allow a one-time, immediate sharing of holdings with Talpa Search.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE talpa_settings ADD COLUMN sendCatalogItemsToTalpaOnSave TINYINT(1) UNSIGNED DEFAULT 0",
+			],
+		], //addSendCatalogItemsToTalpaOnSave
 	];
 }
