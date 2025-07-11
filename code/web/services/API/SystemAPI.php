@@ -543,6 +543,14 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	public function updateCssForAllThemes() : array {
+		Theme::updateCssForAllThemes();
+		return [
+			'success' => true,
+			'message' => "Updated CSS for All Themes",
+		];
+	}
+
 	public function checkWhichUpdatesHaveRun($availableUpdates) {
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {

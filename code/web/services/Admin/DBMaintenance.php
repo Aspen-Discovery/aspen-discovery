@@ -33,7 +33,7 @@ class Admin_DBMaintenance extends Admin_Admin {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			SystemVariables::forceNightlyIndex();
 
-			$this->updateAllThemes();
+			Theme::updateCssForAllThemes();
 		}
 
 		//Check to see which updates have already been performed.
@@ -80,38 +80,5 @@ class Admin_DBMaintenance extends Admin_Admin {
 		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
 
-	function updateAllThemes() {
-		set_time_limit(0);
-		//Make sure themes are only updated once
-		$themeIdsUpdated = [];
-		$theme = new Theme();
-		$theme->find();
-		while ($theme->fetch()) {
-			if($theme->getParentTheme()) {
-				$parentTheme = $theme->getParentTheme();
-				$themeIdsUpdated = $this->updateCssForParent($parentTheme, $themeIdsUpdated);
-				if (!in_array($parentTheme->id, $themeIdsUpdated)) {
-					$themeIdsUpdated[] = $parentTheme->id;
-					$parentTheme->generateCss(true);
-				}
-			}
-			if (!in_array($theme->id, $themeIdsUpdated)) {
-				$themeIdsUpdated[] = $theme->id;
-				$theme->generateCss(true);
-			}
-		}
-	}
-
-	private function updateCssForParent(Theme $theme, array $themeIdsUpdated) :array {
-		if($theme->getParentTheme()) {
-			$parentTheme = $theme->getParentTheme();
-			$themeIdsUpdated = $this->updateCssForParent($parentTheme, $themeIdsUpdated);
-			if (!in_array($parentTheme->id, $themeIdsUpdated)) {
-				$themeIdsUpdated[] = $parentTheme->id;
-				$parentTheme->generateCss(true);
-			}
-		}
-		return $themeIdsUpdated;
-	}
 
 }

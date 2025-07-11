@@ -34,8 +34,17 @@ class BookCoverInfo extends DataObject {
 		];
 	}
 
-	public function reloadAllDefaultCovers() {
-		$this->query("UPDATE " . $this->__table . " SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 where imageSource = 'default'");
+	private static $_allCoversReloadedThisSession = false;
+
+	/**
+	 * Reloads all default covers, will only reload them once per session to improve performance when updating all themes etc.
+	 * @return void
+	 */
+	public function reloadAllDefaultCovers() : void {
+		if (!self::$_allCoversReloadedThisSession) {
+			$this->query("UPDATE " . $this->__table . " SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 where imageSource = 'default'");
+			self::$_allCoversReloadedThisSession = true;
+		}
 	}
 
 	public function reloadOMDBCovers() {

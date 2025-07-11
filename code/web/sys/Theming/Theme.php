@@ -2722,64 +2722,70 @@ class Theme extends DataObject {
 	}
 
 	public function update($context = '') {
-		$this->generatedCss = $this->generateCss();
+		if ($context != 'saveGeneratedCss') {
+			$this->generatedCss = $this->generateCss();
+		}
 		$this->clearDefaultCovers();
-		$updateDerivedThemes = false;
-		$oldThemeName = null;
-		if (!empty($this->_changedFields)) {
-			if (in_array('themeName', $this->_changedFields)) {
-				//Need to update all the themes that extend this theme to make sure they have the new correct name for what they are extending.
-				$originalTheme = new Theme();
-				$originalTheme->id = $this->id;
-				if ($originalTheme->find(true)) {
-					$oldThemeName = $originalTheme->themeName;
-					$updateDerivedThemes = true;
+		if ($context != 'saveGeneratedCss') {
+			$updateDerivedThemes = false;
+			$oldThemeName = null;
+			if (!empty($this->_changedFields)) {
+				if (in_array('themeName', $this->_changedFields)) {
+					//Need to update all the themes that extend this theme to make sure they have the new correct name for what they are extending.
+					$originalTheme = new Theme();
+					$originalTheme->id = $this->id;
+					if ($originalTheme->find(true)) {
+						$oldThemeName = $originalTheme->themeName;
+						$updateDerivedThemes = true;
+					}
 				}
 			}
 		}
 
 		$ret = parent::update();
 		if ($ret !== FALSE) {
-			$validationChangedTheme = $this->validateExtendsTheme();
-			// If validation changed the extendsTheme, save the object again.
-			if ($validationChangedTheme) {
-				parent::update();
-			}
+			if ($context != 'saveGeneratedCss') {
+				$validationChangedTheme = $this->validateExtendsTheme();
+				// If validation changed the extendsTheme, save the object again.
+				if ($validationChangedTheme) {
+					parent::update();
+				}
 
-			// Update any themes that extend this theme to give them the correct name
-			if ($updateDerivedThemes) {
-				$childTheme = new Theme();
-				$childTheme->extendsTheme = $oldThemeName;
-				$childThemes = $childTheme->fetchAll();
-				foreach ($childThemes as $childTheme) {
-					$tmpChildTheme = new Theme();
-					$tmpChildTheme->id = $childTheme->id;
-					if ($tmpChildTheme->find(true)) {
-						$tmpChildTheme->extendsTheme = $this->themeName;
-						$tmpChildTheme->update();
+				// Update any themes that extend this theme to give them the correct name
+				if ($updateDerivedThemes) {
+					$childTheme = new Theme();
+					$childTheme->extendsTheme = $oldThemeName;
+					$childThemes = $childTheme->fetchAll();
+					foreach ($childThemes as $childTheme) {
+						$tmpChildTheme = new Theme();
+						$tmpChildTheme->id = $childTheme->id;
+						if ($tmpChildTheme->find(true)) {
+							$tmpChildTheme->extendsTheme = $this->themeName;
+							$tmpChildTheme->update();
+						}
 					}
 				}
-			}
 
-			$this->saveLibraries();
-			$this->saveLocations();
+				$this->saveLibraries();
+				$this->saveLocations();
 
-			//Check to see what has been derived from this theme and regenerate CSS for those themes as well
-			$extendedThemeIds = [];
-			$childTheme = new Theme();
-			$childTheme->extendsTheme = $this->themeName;
-			$childTheme->find();
-			while ($childTheme->fetch()) {
-				if ($childTheme->id != $this->id) {
-					$extendedThemeIds[] = $childTheme->id;
+				//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+				$extendedThemeIds = [];
+				$childTheme = new Theme();
+				$childTheme->extendsTheme = $this->themeName;
+				$childTheme->find();
+				while ($childTheme->fetch()) {
+					if ($childTheme->id != $this->id) {
+						$extendedThemeIds[] = $childTheme->id;
+					}
 				}
-			}
 
-			foreach ($extendedThemeIds as $themeId) {
-				$child = new Theme();
-				$child->id = $themeId;
-				if ($child->find(true)) {
-					$child->generateCss(true);
+				foreach ($extendedThemeIds as $themeId) {
+					$child = new Theme();
+					$child->id = $themeId;
+					if ($child->find(true)) {
+						$child->generateCss(true);
+					}
 				}
 			}
 		}
@@ -3148,36 +3154,49 @@ class Theme extends DataObject {
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$this->__set('generatedCss', $interface->fetch('theme.css.tpl'));
-		if ($saveChanges) {
-			$this->update();
+		$previousCss = $this->generatedCss;
+		$updatedCss = $interface->fetch('theme.css.tpl');
+		if ($updatedCss != $previousCss) {
+			$this->__set('generatedCss', $updatedCss);
+			if ($saveChanges) {
+				$this->update('saveGeneratedCss');
+			}
 		}
+
 		return $this->generatedCss;
 	}
 
+	private $_allAppliedThemes = null;
 	/**
 	 * @return Theme[]
 	 */
 	public function getAllAppliedThemes() {
-		$allAppliedThemes = [];
-		$primaryTheme = clone($this);
-		$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
-		$theme = $primaryTheme;
-		$extendsName = $theme->extendsTheme;
-		while (!empty($extendsName)) {
-			if (!array_key_exists($extendsName, $allAppliedThemes)) {
-				$theme = new Theme();
-				$theme->themeName = $extendsName;
-				if ($theme->find(true)) {
-					$allAppliedThemes[$theme->themeName] = clone $theme;
-					$extendsName = $theme->extendsTheme;
+		if ($this->_allAppliedThemes == null) {
+			$allAppliedThemes = [];
+			$primaryTheme = clone($this);
+			$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
+			$theme = $primaryTheme;
+			$extendsName = $theme->extendsTheme;
+			while (!empty($extendsName)) {
+				if (!array_key_exists($extendsName, $allAppliedThemes)) {
+					$theme = new Theme();
+					$theme->themeName = $extendsName;
+					if ($theme->find(true)) {
+						$allAppliedThemes[$theme->themeName] = clone $theme;
+						$extendsName = $theme->extendsTheme;
+					}
+				} else {
+					//We have a recursive situation
+					break;
 				}
-			} else {
-				//We have a recursive situation
-				break;
+			}
+			$this->_allAppliedThemes = $allAppliedThemes;
+			if ($this->_themeHierarchy == null) {
+				$this->_themeHierarchy = array_reverse($this->_allAppliedThemes, true);
 			}
 		}
-		return $allAppliedThemes;
+
+		return $this->_allAppliedThemes;
 	}
 
 	protected $_parentTheme = null;
@@ -3204,7 +3223,7 @@ class Theme extends DataObject {
 		return $this->_parentTheme;
 	}
 
-	private function clearDefaultCovers() {
+	private function clearDefaultCovers() : void {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$covers = new BookCoverInfo();
 		$covers->reloadAllDefaultCovers();
@@ -3652,5 +3671,68 @@ class Theme extends DataObject {
 		$this->_defaultTheme = clone $defaultTheme;
 
 		return $this->_defaultTheme;
+	}
+
+	public static function updateCssForAllThemes() : void {
+		set_time_limit(0);
+		//Make sure themes are only updated once
+		$themeIdsUpdated = [];
+		$allThemesByName = [];
+		$theme = new Theme();
+		$theme->find();
+		while ($theme->fetch()) {
+			$allThemesByName[$theme->themeName] = clone $theme;
+		}
+		//We need to make sure that all parent themes are updated before the child.
+		// Will also need to look for recursion
+		while (count($themeIdsUpdated) != count($allThemesByName)) {
+			foreach ($allThemesByName as $theme) {
+				$parentThemes = $theme->getThemeHierarchy($allThemesByName, []);
+				/** @var Theme $parentTheme */
+				foreach ($parentThemes as $parentTheme) {
+					if (!array_key_exists($parentTheme->id, $themeIdsUpdated)) {
+						$parentTheme->generateCss(true);
+						$themeIdsUpdated[$parentTheme->id] = $parentTheme->id;
+					}
+				}
+			}
+		}
+	}
+
+	private $_themeHierarchy = null;
+	/**
+	 * Returns an array of the theme hierarchy from the farthest grandparent to the current theme.
+	 * I.e. if C extends B which extends A, it will return an array of C, B, A.
+	 * If a theme does not extend anything, an array with only the theme will be returned
+	 * If recursion is found, C extends B which extends C, the recursion will be stopped and an array of C, B will be returned
+	 *
+	 * @param Theme[] $allThemesByName an array of all themes in the system with a key of the name
+	 * @param Theme[] $existingHierarchy an array of the hierarchy that has been built so far
+	 * @return Theme[]
+	 */
+	private function getThemeHierarchy(array $allThemesByName, array $existingHierarchy = []) : array {
+		if ($this->_themeHierarchy == null) {
+			$this->_themeHierarchy = $existingHierarchy;
+			if (array_key_exists($this->themeName, $existingHierarchy)) {
+				//We have a recursive situation, quit
+			}else{
+				if (empty($this->extendsTheme)) {
+					$this->_themeHierarchy[$this->themeName] = $this;
+				}else{
+					$directParentName = $this->extendsTheme;
+					if (array_key_exists($directParentName, $existingHierarchy)) {
+						//We have a recursive situation, quit
+					}else{
+						$existingHierarchy = array_merge([$this->themeName => $this], $existingHierarchy);
+						$parentTheme = $allThemesByName[$directParentName];
+						$this->_themeHierarchy = array_merge($parentTheme->getThemeHierarchy($allThemesByName, $existingHierarchy), $existingHierarchy);
+					}
+				}
+			}
+			if ($this->_allAppliedThemes == null) {
+				$this->_allAppliedThemes = array_reverse($this->_themeHierarchy, true);
+			}
+		}
+		return $this->_themeHierarchy;
 	}
 }
