@@ -100,25 +100,29 @@ class Record_Home extends GroupedWorkSubRecordHomeAction {
 				$interface->assign('editionsThis', $editionsThis);
 			}
 
-			$marcFields = $marcRecord->getFields('300');
-			if ($marcFields) {
-				$physicalDescriptions = [];
-				foreach ($marcFields as $marcField) {
-					$description = $this->concatenateSubfieldData($marcField, [
-						'a',
-						'b',
-						'c',
-						'e',
-						'f',
-						'g',
-					]);
-					if ($description != 'p. cm.') {
-						$description = preg_replace("/[\/|;:]$/", '', $description);
-						$description = preg_replace('/\bp\./', 'pages', $description);
-						$physicalDescriptions[] = $description;
+			if ($this->recordDriver instanceof MarcRecordDriver) {
+				$interface->assign('physicalDescriptions', $this->recordDriver->getPhysicalDescriptions());
+			}else{
+				$marcFields = $marcRecord->getFields('300');
+				if ($marcFields) {
+					$physicalDescriptions = [];
+					foreach ($marcFields as $marcField) {
+						$description = $this->concatenateSubfieldData($marcField, [
+							'a',
+							'b',
+							'c',
+							'e',
+							'f',
+							'g',
+						]);
+						if ($description != 'p. cm.') {
+							$description = preg_replace("/[\/|;:]$/", '', $description);
+							$description = preg_replace('/\bp\./', 'pages', $description);
+							$physicalDescriptions[] = $description;
+						}
 					}
+					$interface->assign('physicalDescriptions', $physicalDescriptions);
 				}
-				$interface->assign('physicalDescriptions', $physicalDescriptions);
 			}
 
 			// Get ISBN for cover and review use

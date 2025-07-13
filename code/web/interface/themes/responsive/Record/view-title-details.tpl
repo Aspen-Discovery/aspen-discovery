@@ -40,16 +40,16 @@
 					{/if}
 					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
 					{if !empty($contributor.roles)}
-						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true}
+						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true removeTrailingPunctuationFromTerms=true}
 					{/if}
 					{if !empty($contributor.title)}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 						{if !empty($contributor.agr)}
 							<span class="agrContributor">
-								({$contributor.agr.name|escape}
+								&nbsp;({$contributor.agr.name|escape}
 								{if !empty($contributor.agr.roles)}
-									&nbsp;{implode subject=$contributor.agr.roles glue=", " translate=true isPublicFacing=true}
+									&nbsp;{implode subject=$contributor.agr.roles glue=", " translate=true isPublicFacing=true removeTrailingPunctuationFromTerms=true}
 								{/if}
 								{if !empty($contributor.agr.title)}
 									&nbsp;{$contributor.agr.title}

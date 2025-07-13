@@ -402,7 +402,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array
 	 */
-	public function getPublicationDetails() {
+	public function getPublicationDetails() : array {
 		// $places = $this->getPlacesOfPublication();
 		$placesOfPublication = $this->getPlacesOfPublication();
 		$names = $this->getPublishers();
