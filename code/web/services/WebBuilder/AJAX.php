@@ -129,6 +129,15 @@ class WebBuilder_AJAX extends JSON_Action {
 				$object = new ImageUpload();
 				$object->type = 'web_builder_image';
 				$object->orderBy('title');
+				if (!UserAccount::userHasPermission('Administer All Web Content') && (UserAccount::userHasPermission('Administer Web Content for Home Library'))) {
+					$libraryList = Library::getLibraryList(true);
+					$object->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
+					$object->whereAdd("owningLibrary = -1", "OR");
+					$object->whereAdd("sharing = 2 OR sharing = 3", "OR");
+					if (Library::getLibraryList(true)){
+						$object->whereAdd("sharing = 1 AND sharedWithLibrary IN (" . implode(array_keys($libraryList)) . ")", "OR");
+					}
+				}
 				$object->find();
 				while ($object->fetch()) {
 					$list[$object->id] = $object->title;
@@ -145,6 +154,15 @@ class WebBuilder_AJAX extends JSON_Action {
 				$object = new FileUpload();
 				$object->type = 'web_builder_pdf';
 				$object->orderBy('title');
+				if (!UserAccount::userHasPermission('Administer All Web Content') && (UserAccount::userHasPermission('Administer Web Content for Home Library'))) {
+					$libraryList = Library::getLibraryList(true);
+					$object->whereAddIn("owningLibrary", array_keys($libraryList), false, "OR");
+					$object->whereAdd("owningLibrary = -1", "OR");
+					$object->whereAdd("sharing = 2 OR sharing = 3", "OR");
+					if (Library::getLibraryList(true)){
+						$object->whereAdd("sharing = 1 AND sharedWithLibrary IN (" . implode(array_keys($libraryList)) . ")", "OR");
+					}
+				}
 				$object->find();
 				while ($object->fetch()) {
 					$list[$object->id] = $object->title;
