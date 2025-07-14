@@ -138,4 +138,22 @@ class ILSMessageType extends DataObject {
 		}
 		return $this->_ilsNotificationSetting;
 	}
+
+	public function insert($context = '') {
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('messageTitle');
+			$this->saveTextBlockTranslations('messageBody');
+		}
+		return $ret;
+	}
+
+	public function update($context = '') {
+		$ret = parent::update();
+		if ($ret !== FALSE) {
+			$this->saveTextBlockTranslations('messageTitle');
+			$this->saveTextBlockTranslations('messageBody');
+		}
+		return $ret;
+	}
 }
