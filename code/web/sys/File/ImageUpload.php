@@ -334,7 +334,7 @@ class ImageUpload extends DataObject {
 					$this->_isReadOnly = false;
 				}else{
 					//Ok if shared by everyone
-					if ($this->sharing == 2) {
+					if ($this->sharing == 2 || $this->owningLibrary == -1) {
 						$this->_isReadOnly = false;
 					}else{
 						$this->_isReadOnly = true;
