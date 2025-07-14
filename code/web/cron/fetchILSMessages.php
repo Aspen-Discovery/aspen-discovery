@@ -13,7 +13,7 @@ foreach ($accountProfiles as $accountProfileInfo) {
 	$accountProfile = $accountProfileInfo['accountProfile'];
 	if ($accountProfile->enableFetchingIlsMessages) {
 		$ilsNotificationSetting = new ILSNotificationSetting();
-		$ilsNotificationSetting->accountProfileId =  $accountProfileInfo->id;
+		$ilsNotificationSetting->accountProfileId =  $accountProfile->id;
 		if ($ilsNotificationSetting->find(true)) {
 			$catalogDriver = trim($accountProfile->driver);
 			if (!empty($catalogDriver)) {
