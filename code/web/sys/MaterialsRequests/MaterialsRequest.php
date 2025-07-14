@@ -434,7 +434,7 @@ class MaterialsRequest extends DataObject {
 	function sendStaffNewMaterialsRequestEmail() : void {
 		global $configArray;
 		global $interface;
-		if ($this->getCreatedByUser() !== false && $this->createdEmailSent == 0) {
+		if ($this->getCreatedByUser() !== false && empty($this->createdEmailSent)) {
 			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
 			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
 				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
@@ -886,5 +886,13 @@ class MaterialsRequest extends DataObject {
 	public function automaticCheckForExistingRecordNeedsToBeDone() : bool {
 		//Automatically check for existing records if it has been an hour and an existing record with the same format has not been found.
 		return ((time() - $this->lastCheckForExistingRecord) > 60 * 60) && !$this->hasExistingRecord;
+	}
+
+	public function insert($context = '') : int|bool {
+		$ret = parent::insert($context);
+		if ($ret) {
+			$this->sendStaffNewMaterialsRequestEmail();
+		}
+		return $ret;
 	}
 }
