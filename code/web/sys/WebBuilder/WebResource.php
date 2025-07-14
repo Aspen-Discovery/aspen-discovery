@@ -524,7 +524,7 @@ class WebResource extends DB_LibraryLinkedObject {
 		$placard->sourceType = 'web_resource';
 		$placard->sourceId = $this->id;
 		if (!$placard->find(true)){//if placard exists don't update (user will be prompted separately)
-			$fileType = substr($this->logo, 0, -3);
+			$fileType = substr($this->logo, -3);
 			$fileType = match ($fileType) {
 				'gif' => ".gif",
 				'png' => ".png",
