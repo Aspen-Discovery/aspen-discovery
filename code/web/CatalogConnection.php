@@ -1918,7 +1918,7 @@ class CatalogConnection {
 			$result = [
 				'success' => true,
 				'message' => '',
-				'numUsersUpdates' => 0,
+				'numUserUpdates' => 0,
 				'numFailedUserUpdates' => 0,
 				'numMessagesAdded' => 0,
 			];
@@ -1929,10 +1929,10 @@ class CatalogConnection {
 					if ($user->canReceiveNotifications('notifyAccount')) {
 						$userResult = $this->driver->updateAccountNotifications($user, $ilsNotificationSetting);
 						if ($userResult['success']) {
-							$result['numUpdates']++;
+							$result['numUserUpdates']++;
 							$result['numMessagesAdded'] +=  $userResult['numMessagesAdded'];
 						} else {
-							$result['numFailedUpdates']++;
+							$result['numFailedUserUpdates']++;
 							$result['success'] = false;
 						}
 					}
