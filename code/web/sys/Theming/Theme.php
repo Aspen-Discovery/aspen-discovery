@@ -2723,6 +2723,7 @@ class Theme extends DataObject {
 
 	public function update($context = '') {
 		if ($context != 'saveGeneratedCss') {
+			//No need to regenerate CSS because that is called upstream.
 			$this->generatedCss = $this->generateCss();
 		}
 		$this->clearDefaultCovers();
@@ -3173,7 +3174,7 @@ class Theme extends DataObject {
 	public function getAllAppliedThemes() {
 		if ($this->_allAppliedThemes == null) {
 			$allAppliedThemes = [];
-			$primaryTheme = clone($this);
+			$primaryTheme = $this;
 			$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
 			$theme = $primaryTheme;
 			$extendsName = $theme->extendsTheme;
