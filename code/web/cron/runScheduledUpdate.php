@@ -230,6 +230,10 @@ function updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, Sc
 }
 
 function updateCssForAllThemes($scheduledUpdate, ?CompanionSystem $companionSystem = null) : void {
+	//Make sure we have an interface available to do the updates
+	global $interface;
+	$interface = new UInterface();
+
 	$scheduledUpdate->notes .= "Updating CSS for all Themes\n";
 
 	require_once ROOT_DIR . '/services/API/SystemAPI.php';
