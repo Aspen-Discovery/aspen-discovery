@@ -50,6 +50,17 @@ function getUpdates25_08_00(): array {
 				"ALTER TABLE library ADD COLUMN allowAdminToEnrollUsersInAdminView TINYINT(1) DEFAULT 0",
 			],
 		], //allow_admin_to_enroll_users_via_admin_view
+		'create_campaign_location_access' => [
+			'title' => 'Create Campaign Location Access',
+			'description' => 'Add table for location campaign access',
+			'sql' => [
+				"CREATE TABLE ce_campaign_location_access (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					campaignId INT NOT NULL,
+					locationId INT NOT NULL
+				) ENGINE = InnoDB",
+			],
+		], //create_campaign_location_access
 
 		//chloe - Open Fifth
 
