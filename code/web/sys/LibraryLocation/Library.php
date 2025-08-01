@@ -5915,14 +5915,17 @@ class Library extends DataObject {
 			$theme->id = $libraryTheme->themeId;
 			if ($theme->find(true)) {
 				$theme->applyDefaults();
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				
 				if ($theme->logoName) {
-					$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+					$apiInfo['logo'] = $storageManager->getImageUrl('theme', $theme->logoName, 'logos');
 				}
 				if ($theme->favicon) {
-					$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+					$apiInfo['favicon'] = $storageManager->getImageUrl('theme', $theme->favicon, 'favicons');
 				}
 				if ($theme->logoApp) {
-					$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoApp;
+					$apiInfo['logoApp'] = $storageManager->getImageUrl('theme', $theme->logoApp, 'logos');
 				}
 				if ($theme->headerLogoApp) {
 					$apiInfo['headerLogoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->headerLogoApp;

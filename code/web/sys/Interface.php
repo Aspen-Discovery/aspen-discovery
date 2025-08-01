@@ -428,11 +428,13 @@ class UInterface extends Smarty {
 				}
 			}
 			if (!empty($logoName)) {
-				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			    $storageManager = StorageManager::getInstance();
+			    $this->assign('responsiveLogo', $storageManager->getImageUrl('theme', $logoName, 'logos'));
 			} else {
-				if (isset($configArray['Site']['responsiveLogo'])) {
-					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-				}
+			    if (isset($configArray['Site']['responsiveLogo'])) {
+			        $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+			    }
 			}
 
 			//Get Footer Logo
@@ -1073,11 +1075,13 @@ class UInterface extends Smarty {
 				}
 			}
 			if (!empty($logoName)) {
-				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			    $storageManager = StorageManager::getInstance();
+			    $this->assign('responsiveLogo', $storageManager->getImageUrl('theme', $logoName, 'logos'));
 			} else {
-				if (isset($configArray['Site']['responsiveLogo'])) {
-					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-				}
+			    if (isset($configArray['Site']['responsiveLogo'])) {
+			        $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+			    }
 			}
 
 			//Get Footer Logo

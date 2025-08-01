@@ -46,7 +46,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
 #header-wrapper{ldelim}
     background-color: {$headerBackgroundColor};
     {if !empty($headerBackgroundImage)}
-        background-image: url('/files/original/{$headerBackgroundImage}');
+        background-image: url('/images/themes/backgrounds/original/{$headerBackgroundImage}');
         background-size: {$headerBackgroundImageSize};
         background-repeat: {$headerBackgroundImageRepeat};
     {else}

@@ -86,36 +86,6 @@ if ! php createDirs.php ; then
 	exit 1
 fi
 
-# FIXME: This seems to be creating dirs like images/images, etc
-#        It should be put outside the codebase, and mounted accordingly
-
-# Move and create temporarily sym-links to data directory
-dataDir="/data/aspen-discovery/$SITE_NAME"
-localDir="/usr/local/aspen-discovery/code/web"
-
-directories=(files images fonts)
-for dir in "${directories[@]}"; do
-
-	source="$localDir/$dir"
-    dest="$dataDir/$dir"
-
-    # Ensure persistent target directory exists
-    mkdir -p "$dest"
-
-    # Move original data only if target is empty
-    if [ -d "$source" ] && [ "$(ls -A "$dest")" == "" ]; then
-        mv "$source"/* "$dest"/
-    fi
-
-    # Remove the source directory or symlink
-	rm -rf "$source"
-
-    # Create symlink
-    ln -s "$dest" "$source"
-
-	echo "%   * Created symlink: $source → $dest"
-done
-
 # Check if data-alias.conf is enabled 
 file="/etc/apache2/conf-enabled/data-alias.conf"
 if [ ! -f "$file"  ]; then

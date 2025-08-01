@@ -713,6 +713,7 @@ class Theme extends DataObject {
 				'thumbWidth' => 750,
 				'maxWidth' => 1170,
 				'maxHeight' => 250,
+				'path' => self::getThemeImagePath('logos'),
 				'hideInLists' => true,
 			],
 			'favicon' => [
@@ -723,6 +724,7 @@ class Theme extends DataObject {
 				'required' => false,
 				'maxWidth' => 32,
 				'maxHeight' => 32,
+				'path' => self::getThemeImagePath('favicons'),
 				'hideInLists' => true,
 			],
 			'defaultCover' => [
@@ -733,6 +735,7 @@ class Theme extends DataObject {
 				'required' => false,
 				'maxWidth' => 280,
 				'maxHeight' => 280,
+				'path' => self::getThemeImagePath('backgrounds'),
 				'hideInLists' => true,
 			],
 			'coverStyle' => [
@@ -860,6 +863,7 @@ class Theme extends DataObject {
 				'hideInLists' => true,
 				'thumbWidth' => 750,
 				'maxWidth' => 1170,
+				'path' => self::getThemeImagePath('backgrounds'),
 			],
 			'headerBackgroundImageSize' => [
 				'property' => 'headerBackgroundImageSize',
@@ -3458,11 +3462,13 @@ class Theme extends DataObject {
 
 	public function getApiInfo() : Theme {
 		global $configArray;
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = StorageManager::getInstance();
 
 		$apiInfo = $this;
-		$this->logoName = $configArray['Site']['url'] . '/files/original/' . $this->logoName;
-		$this->favicon = $configArray['Site']['url'] . '/files/original/' . $this->favicon;
-		$this->headerLogoApp = $configArray['Site']['url'] . '/files/original/' . $this->headerLogoApp;
+		$this->logoName = $storageManager->getImageUrl('theme', $this->logoName, 'logos');
+		$this->favicon = $storageManager->getImageUrl('theme', $this->favicon, 'favicons');
+		$this->headerLogoApp = $storageManager->getImageUrl('theme', $this->headerLogoApp, 'logos');
 		unset($this->additionalCssType);
 		unset($this->additionalCss);
 		unset($this->generatedCss);
@@ -3474,7 +3480,16 @@ class Theme extends DataObject {
 		return $apiInfo;
 	}
 
-	public function prepareForSharingToCommunity() : void {
+	/**
+	 * Get storage path for theme images using StorageManager
+	 */
+	private static function getThemeImagePath($subtype) {
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = StorageManager::getInstance();
+		return $storageManager->getImagePath('theme', $subtype);
+	}
+
+	public function prepareForSharingToCommunity() {
 		parent::prepareForSharingToCommunity();
 		unset($this->logoName);
 		unset($this->_libraries);
