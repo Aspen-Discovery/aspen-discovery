@@ -104,7 +104,7 @@
 					{if !$record.isIll}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record.existsInCatalog)}
-								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}', '{$record.format}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
 							{/if}
 						</div>
 					{/if}

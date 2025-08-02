@@ -520,6 +520,10 @@ abstract class DataObject implements JsonSerializable {
 			$logger->log($updateQuery, Logger::LOG_ERROR);
 		}
 		$timer->logTime($updateQuery);
+		
+		// Clear changed fields after update (successful or failed).
+		$this->_changedFields = [];
+		
 		return $response;
 	}
 

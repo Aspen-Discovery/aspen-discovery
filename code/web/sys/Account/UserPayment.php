@@ -228,8 +228,9 @@ class UserPayment extends DataObject {
 					$NCRPaymentsSetting->id = $userLibrary->ncrSettingId;
 
 					if ($NCRPaymentsSetting->find(true)) {
-
-						if (str_ends_with($_SERVER['REQUEST_URI'],"0")){  //payment was cancelled
+						$status = $_REQUEST['status'] ?? null;
+						// Status = 0: Payment Cancelled
+						if ($status === '0') {
 							$error = translate([
 								'text' => 'Payment was cancelled.',
 								'isPublicFacing' => true,

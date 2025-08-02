@@ -3883,6 +3883,27 @@ class SirsiDynixROA extends HorizonAPI {
 			}
 		}
 
+		//For patrons that have fines, but that are not at the fine threshold, we need to add an override.
+		$totalFines = $patron->getTotalFines(false);
+		if ($totalFines > 0) {
+			$userProfileResponse = $this->getWebServiceResponse('getUserProfile', $webServiceURL . '/policy/userProfile/key/' . $patron->patronType, null, $sessionToken);
+			if ($userProfileResponse) {
+				if ($totalFines < $userProfileResponse->fields->billThreshold->amount) {
+					$addOverrideCode = true;
+				}else{
+					$result['message'] = translate([
+						'text' => 'Your account has too many fines to check out this title.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your account has too many fines to check out this title.',
+						'isPublicFacing' => true,
+					]);
+					$doCheckout = false;
+				}
+			}
+		}
+
 		if ($doCheckout) {
 			$checkOutParams = [
 				'itemBarcode' => $barcode,
@@ -3892,6 +3913,7 @@ class SirsiDynixROA extends HorizonAPI {
 			$additionalHeaders = [
 				'SD-Preferred-Role: STAFF'
 			];
+
 			//For titles that are on hold, we need to add an override.
 			if ($addOverrideCode && !empty($this->accountProfile->overrideCode)) {
 				$additionalHeaders[] = 'SD-Prompt-Return: CKOBLOCKS/' . $this->accountProfile->overrideCode;

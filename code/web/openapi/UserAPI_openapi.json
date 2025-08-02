@@ -1,0 +1,4768 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aspen Discovery User API",
+    "version": "1.0.0",
+    "description": "OpenAPI documentation for the Aspen Discovery User API endpoints. These endpoints allow user authentication, account management, holds, checkouts, notifications, reading history, linked accounts, materials requests, preferences, and other user actions through the API."
+  },
+  "servers": [
+    {
+      "url": "https://{aspenDomain}/API/UserAPI?method=",
+      "variables": {
+        "aspenDomain": {
+          "default": "example.aspendiscovery.org",
+          "description": "The URL of the Aspen instance"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication & Session",
+      "description": "Endpoints for user authentication and session management"
+    },
+    {
+      "name": "Profile",
+      "description": "User profile and preferences management"
+    },
+    {
+      "name": "Holds",
+      "description": "Place, manage and monitor item holds"
+    },
+    {
+      "name": "Checkouts",
+      "description": "Check out items and manage loans"
+    },
+    {
+      "name": "Reading History",
+      "description": "View and manage reading history"
+    },
+    {
+      "name": "Fines & Payments",
+      "description": "View fines and payment history"
+    },
+    {
+      "name": "Notifications & ILS Messages",
+      "description": "Manage notification preferences, push tokens, and ILS messages"
+    },
+    {
+      "name": "Linked Accounts",
+      "description": "Link and manage multiple library accounts"
+    },
+    {
+      "name": "Materials Requests",
+      "description": "Submit and manage materials acquisition requests"
+    },
+    {
+      "name": "Misc, Preferences, Utility",
+      "description": "Miscellaneous user preferences and utility functions"
+    },
+    {
+      "name": "Interlibrary Loan",
+      "description": "Submit and manage interlibrary loan requests (ILL)"
+    },
+    {
+      "name": "Browse Categories",
+      "description": "View and manage browse categories"
+    },
+    {
+      "name": "Aspen LiDA",
+      "description": "Endpoints for Aspen LiDA mobile app integration"
+    }
+  ],
+  "paths": {
+    "validateAccount": {
+      "post": {
+        "tags": ["Authentication & Session"],
+        "summary": "Validate user account",
+        "description": "Validate whether or not an account is valid based on the barcode and pin number provided.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "127848793122"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "password": {
+                              "type": "string"
+                            },
+                            "firstname": {
+                              "type": "string"
+                            },
+                            "lastname": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            },
+                            "cat_username": {
+                              "type": "string"
+                            },
+                            "cat_password": {
+                              "type": "string"
+                            },
+                            "homeLocationId": {
+                              "type": "string",
+                              "default": null
+                            },
+                            "myLocation1Id": {
+                              "type": "string",
+                              "default": null
+                            },
+                            "myLocation2Id": {
+                              "type": "string",
+                              "default": null
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "loginToLiDA": {
+      "post": {
+        "tags": ["Authentication & Session", "Aspen LiDA"],
+        "summary": "Validate account for LiDA (mobile app)",
+        "description": "Validates an account based on the username and PIN provided, while returning errors such as expired PINs.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Login successful"
+                        },
+                        "resetToken": {
+                          "type": "string",
+                          "description": "Token to reset PIN if expired (only returned if an action needs taken to log in, like an expired pin)",
+                          "example": "reset_token_123"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "description": "User ID associated with the account (only returned if an action needs taken to log in, like an expired pin)",
+                          "example": "127848793122"
+                        },
+                        "session": {
+                          "type": "string",
+                          "example": "session_token_123"
+                        },
+                        "validUntil": {
+                          "type": "string",
+                          "example": "2023-10-01T12:00:00Z"
+                        },
+                        "lang": {
+                          "type": "string",
+                          "example": "en"
+                        },
+                        "homeLocationId": {
+                          "type": "string",
+                          "example": "28"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "resetExpiredPin": {
+      "post": {
+        "tags": ["Authentication & Session"],
+        "summary": "Reset expired PIN",
+        "description": "Resets a user's expired PIN using a reset token.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "pin1": {
+                    "type": "string"
+                  },
+                  "pin2": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PIN reset response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "resetPassword": {
+      "post": {
+        "tags": ["Authentication & Session"],
+        "summary": "Initiate PIN/password reset",
+        "description": "Initiates a PIN/password reset request for a user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reset password response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "validateSession": {
+      "post": {
+        "tags": ["Authentication & Session"],
+        "summary": "Validate user session",
+        "description": "Validates if the current session is valid and re-authenticates if expired.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Validate session response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "prepareSharedSession": {
+      "post": {
+        "tags": ["Authentication & Session", "Aspen LiDA"],
+        "summary": "Prepare shared session",
+        "description": "Validates and prepares a shared session for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Shared session response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "session": {
+                          "type": "string",
+                          "example": "session_token_123"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "validateUserCredentials": {
+      "post": {
+        "tags": ["Authentication & Session"],
+        "summary": "Validate user credentials",
+        "description": "Checks if user credentials are still valid after password/barcode change.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Validate user credentials response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "valid": {
+                          "type": "boolean",
+                          "example": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronProfile": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get patron profile",
+        "description": "Gets the profile information for a user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Profile information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "profile": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getAppPreferencesForUser": {
+      "post": {
+        "tags": ["Aspen LiDA"],
+        "summary": "Get app preferences for user",
+        "description": "This is called from LiDA to get information about a patron's app preferences. The same information is also available within getPatronProfile so if that data has already been loaded, this call is redundant.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "App preferences information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "onboardAppNotifications": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "shouldAskBrightness": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "notification_preferences": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateScreenBrightnessStatus": {
+      "post": {
+        "tags": ["Aspen LiDA"],
+        "summary": "Update screen brightness prompt status",
+        "description": "Updates user preference for screen brightness prompt.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Updates user preference for screen brightness prompt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "saveLanguage": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Set user language preference",
+        "description": "Saves the user's preferred interface language.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Updates user preference for screen brightness prompt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronHolds": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Get patron holds",
+        "description": "Gets all holds for a patron (ILS, eContent).",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Return eContent and ILS holds for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "sortMethods": {
+                          "type": "object",
+                          "properties": {
+                            "unavailableSort": {
+                              "type": "string"
+                            },
+                            "availableSort": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "holds": {
+                          "type": "object",
+                          "properties": {
+                            "unavailable": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "available": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronHoldsOverDrive": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Get OverDrive holds",
+        "description": "Gets OverDrive eContent holds for a patron.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Return OverDrive eContent holds for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "holds": {
+                          "type": "object",
+                          "properties": {
+                            "unavailable": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "available": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronOverDriveSummary": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get OverDrive summary",
+        "description": "Gets summary (holds, wishlist, checked out) for OverDrive account.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "OverDrive summary response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "summary": {
+                          "type": "object",
+                          "properties": {
+                            "numAvailableHolds": {
+                              "type": "integer"
+                            },
+                            "numUnavailableHolds": {
+                              "type": "integer"
+                            },
+                            "numCheckedOut": {
+                              "type": "integer"
+                            },
+                            "numWishlistItems": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getILSMessages": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get ILS messages",
+        "description": "Gets messages for a patron from the ILS.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns ILS messages for the patron.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "messages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "placeHold": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Place a hold on an item",
+        "description": "Places a hold on an item for the user in the ILS or eContent.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bibId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "recordId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "volumeId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ils",
+                "overdrive",
+                "cloud_library",
+                "axis360",
+                "palace_project",
+                "hoopla"
+              ],
+              "default": "ils"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickupBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickupSublocation",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "campus",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Place hold response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        },
+                        "confirmationNeeded": {
+                          "type": "boolean"
+                        },
+                        "confirmationId": {
+                          "type": "string"
+                        },
+                        "shouldBeItemHold": {
+                          "type": "boolean"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "needsIllRequest": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cancelHold": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Cancel a hold",
+        "description": "Cancels a hold for the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "recordId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cancelId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "isIll",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ils",
+                "overdrive",
+                "cloud_library",
+                "axis360",
+                "palace_project",
+                "hoopla"
+              ],
+              "default": "ils"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hold cancellation response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "freezeHold": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Freeze (suspend) a hold",
+        "description": "Freezes a hold for the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "holdId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+
+          {
+            "in": "query",
+            "name": "reactivationDate",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "overDriveId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["ils", "overdrive", "axis360"],
+              "default": "ils"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Freeze hold response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "activateHold": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Activate (thaw) a hold",
+        "description": "Activates a suspended hold for the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "holdId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "overDriveId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["ils", "overdrive", "axis360"],
+              "default": "ils"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activate hold response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "confirmHold": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Confirm a hold",
+        "description": "Confirms a hold if confirmation is required.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "confirmationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hold confirmation response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "changeHoldPickUpLocation": {
+      "post": {
+        "tags": ["Holds"],
+        "summary": "Change hold pickup location",
+        "description": "Changes the pickup location for an existing hold.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "holdId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "newLocation",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "newSublocation",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Change hold pickup location response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getValidPickupLocations": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get valid pickup locations for patron",
+        "description": "Gets a list of valid pickup locations for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Valid pickup locations response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "pickupLocations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getValidSublocations": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get valid pickup sublocations",
+        "description": "Gets valid pickup sublocations for user/location.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Valid sublocations response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "sublocations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "ilsId": {
+                                "type": "string"
+                              },
+                              "displayName": {
+                                "type": "string"
+                              },
+                              "locationCode": {
+                                "type": "string"
+                              },
+                              "locationId": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronCheckedOutItems": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get patron checked out items",
+        "description": "Gets all checked out items for a patron (ILS, eContent).",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Patron checked out items response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "checkedOutItems": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "checkoutItem": {
+      "post": {
+        "tags": ["Checkouts"],
+        "summary": "Checkout item",
+        "description": "Checks out an item for the user (ILS, eContent).",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "itemId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ils",
+                "overdrive",
+                "cloud_library",
+                "axis360",
+                "palace_project",
+                "hoopla"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "overDriveId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "barcode",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locationId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkout item results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        },
+                        "itemData": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "returnCheckout": {
+      "post": {
+        "tags": ["Checkouts"],
+        "summary": "Return a checked out item",
+        "description": "Returns a checked out item for the user (ILS, eContent).",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "itemId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "overDriveId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "overdrive",
+                "cloud_library",
+                "axis360",
+                "palace_project",
+                "hoopla"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return checkout response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "renewItem": {
+      "post": {
+        "tags": ["Checkouts"],
+        "summary": "Renew a checked out item",
+        "description": "Renews a checked out item for the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemBarcode",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemSource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ils",
+                "overdrive",
+                "cloud_library",
+                "axis360",
+                "palace_project"
+              ],
+              "default": "ils"
+            }
+          },
+          {
+            "in": "query",
+            "name": "overDriveId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Renew a checked out item response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        },
+                        "confirmRenewalFee": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "renewAll": {
+      "post": {
+        "tags": ["Checkouts"],
+        "summary": "Renew all checked out items",
+        "description": "Renews all checked out items for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Renew all checkouts response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        },
+                        "confirmRenewalFee": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronReadingHistory": {
+      "post": {
+        "tags": ["Reading History"],
+        "summary": "Get patron reading history",
+        "description": "Gets the reading history for a patron.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patron reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "totalResults": {
+                          "type": "integer"
+                        },
+                        "page_current": {
+                          "type": "integer"
+                        },
+                        "page_total": {
+                          "type": "integer"
+                        },
+                        "sort": {
+                          "type": "string"
+                        },
+                        "readingHistory": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updatePatronReadingHistory": {
+      "get": {
+        "tags": ["Reading History"],
+        "summary": "Update reading history from current checkouts",
+        "description": "Updates the user's reading history based on current checkouts.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update patron reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "skipped": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "optIntoReadingHistory": {
+      "post": {
+        "tags": ["Reading History"],
+        "summary": "Opt into reading history",
+        "description": "Allows reading history to be collected for the patron.  If this option is not selected, no reading history for the patron will be stored.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Enable reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "optOutOfReadingHistory": {
+      "post": {
+        "tags": ["Reading History"],
+        "summary": "Opt out of reading history",
+        "description": "Stops collecting reading history for the patron and removes any reading history entries that have been collected already.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Disable reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteAllFromReadingHistory": {
+      "post": {
+        "tags": ["Reading History"],
+        "summary": "Delete all reading history",
+        "description": "Clears the user's reading history, but does not stop the collection of new data.  If items are currently checked out to the user they will be added to the reading history the next time cron runs.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Delete all from reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteSelectedFromReadingHistory": {
+      "post": {
+        "tags": ["Reading History"],
+        "summary": "Delete selected reading history",
+        "description": "Removes one or more titles from the user's reading history.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "selected",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete selected items from reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResultOnlyMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getReadingHistorySortOptions": {
+      "get": {
+        "tags": ["Reading History"],
+        "summary": "Get reading history sort options",
+        "description": "Gets the available sort options for reading history.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patron reading history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "label": {
+                            "type": "string"
+                          },
+                          "sort": {
+                            "type": "string"
+                          },
+                          "default": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPatronFines": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get patron fines",
+        "description": "Gets fines for a patron from the ILS.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Patron fine response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "fines": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "totalOwed": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPaymentHistory": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get payment history",
+        "description": "Gets payment history for a user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Patron payment history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "totalResults": {
+                          "type": "integer"
+                        },
+                        "page_current": {
+                          "type": "integer"
+                        },
+                        "page_total": {
+                          "type": "integer"
+                        },
+                        "paymentHistory": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "explanationText": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getPaymentDetails": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Get payment details",
+        "description": "Gets detailed information about a specific payment.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "paymentId",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Patron payment history response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "payment": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "saveNotificationPushToken": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Save notification push token",
+        "description": "Stores the push token for notifications for a user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "password": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "pushToken": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "deviceModel": {
+                    "required": false,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response for saving notification push token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteNotificationPushToken": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Delete notification push token",
+        "description": "Deletes the push token for notifications.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "password": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "pushToken": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "deviceModel": {
+                    "required": false,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response for deleting notification push token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getNotificationPushToken": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Get notification push tokens",
+        "description": "Gets all push tokens for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting notification push tokens.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "tokens": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "userId": {
+                                "type": "string"
+                              },
+                              "pushToken": {
+                                "type": "string"
+                              },
+                              "deviceModel": {
+                                "type": "string"
+                              },
+                              "notifySavedSearch": {
+                                "type": "boolean"
+                              },
+                              "notifyCustom": {
+                                "type": "boolean"
+                              },
+                              "notifyAccount": {
+                                "type": "boolean"
+                              },
+                              "onboardAppNotifications": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getNotificationPreferences": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Get notification preferences for device",
+        "description": "Gets notification preferences for a given push token/device.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "pushToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response getting a users notification preferences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "savedPreferences": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "userId": {
+                                "type": "string"
+                              },
+                              "pushToken": {
+                                "type": "string"
+                              },
+                              "deviceModel": {
+                                "type": "string"
+                              },
+                              "notifySavedSearch": {
+                                "type": "boolean"
+                              },
+                              "notifyCustom": {
+                                "type": "boolean"
+                              },
+                              "notifyAccount": {
+                                "type": "boolean"
+                              },
+                              "onboardAppNotifications": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getNotificationPreference": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Get notification preference for type",
+        "description": "Gets notification preference for a type and device.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "pushToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for a users notification preference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "allow": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "setNotificationPreference": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Set notification preference for type",
+        "description": "Sets notification preference for a type and device.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pushToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "value",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for saving users notification preference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateNotificationOnboardingStatus": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Update notification onboarding status",
+        "description": "Updates onboarding status for notification push token.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for updating onboarding status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getLinkedAccounts": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Get linked accounts",
+        "description": "Gets accounts linked to the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting linked accounts for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "linkedAccounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "displayName": {
+                                "type": "string"
+                              },
+                              "homeLocation": {
+                                "type": "string"
+                              },
+                              "barcode": {
+                                "type": "string"
+                              },
+                              "barcodeStyle": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "expired": {
+                                "type": "boolean"
+                              },
+                              "expires": {
+                                "type": "string"
+                              },
+                              "ils_barcode": {
+                                "type": "string"
+                              },
+                              "alternateLibraryCard": {
+                                "type": "string"
+                              },
+                              "alternateLibraryCardPassword": {
+                                "type": "string"
+                              },
+                              "alternateLibraryCardOptions": {
+                                "type": "object",
+                                "properties": {
+                                  "showAlternateLibraryCard": {
+                                    "type": "boolean"
+                                  },
+                                  "alternateLibraryCardFormMessage": {
+                                    "type": "string"
+                                  },
+                                  "alternateLibraryCardLabel": {
+                                    "type": "string"
+                                  },
+                                  "alternateLibraryCardStyle": {
+                                    "type": "string"
+                                  },
+                                  "alternateLibraryCardPasswordLabel": {
+                                    "type": "string"
+                                  },
+                                  "showAlternateLibraryCardPassword": {
+                                    "type": "boolean"
+                                  },
+                                  "useAlternateLibraryCardForCloudLibrary": {
+                                    "type": "boolean"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getViewers": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Get viewers",
+        "description": "Gets viewers (accounts with access to user's account).",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting viewer accounts for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "viewers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "displayName": {
+                                "type": "string"
+                              },
+                              "homeLocation": {
+                                "type": "string"
+                              },
+                              "barcode": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "addAccountLink": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Add linked account",
+        "description": "Adds a linked account for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "accountToLinkUsername": {
+                    "type": "string"
+                  },
+                  "accountToLinkPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response for adding a linked account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "removeAccountLink": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Remove linked account",
+        "description": "Removes a linked account from the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "idToRemove",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for removing a linked account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "removeViewerLink": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Remove viewer link",
+        "description": "Removes a viewer (managing account) from the user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "idToRemove",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for removing a viewer account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "disableAccountLinking": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Disable account linking",
+        "description": "Disables account linking for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for disabling account linking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "enableAccountLinking": {
+      "post": {
+        "tags": ["Linked Accounts"],
+        "summary": "Enable account linking",
+        "description": "Enables account linking for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for enabling account linking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getMaterialsRequests": {
+      "post": {
+        "tags": ["Materials Requests"],
+        "summary": "Get materials requests",
+        "description": "Gets all materials requests for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting materials requests for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "requests": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "maxActiveRequests": {
+                          "type": "integer"
+                        },
+                        "maxRequestsPerYear": {
+                          "type": "integer"
+                        },
+                        "requestsThisYear": {
+                          "type": "integer"
+                        },
+                        "openRequests": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getMaterialsRequestDetails": {
+      "post": {
+        "tags": ["Materials Requests"],
+        "summary": "Get materials request details",
+        "description": "Gets details for a specific materials request.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting a specific materials request for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "createMaterialsRequest": {
+      "post": {
+        "tags": ["Materials Requests"],
+        "summary": "Create materials request",
+        "description": "Creates a new materials request for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "phone",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "email",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "title",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "magazineTitle",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "magazineDate",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "magazineVolume",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "magazineNumber",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "magazinePageNumbers",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "author",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ageLevel",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bookType",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "isbn",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "upc",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "issn",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "oclcNumber",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publisher",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publicationYear",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "about",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "comments",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "placeHoldWhenAvailable",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "holdPickupLocation",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bookmobileStop",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "illItem",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ebookFormat",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "eaudioFormat",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "abridged",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for creating a materials request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "summary": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cancelMaterialsRequest": {
+      "post": {
+        "tags": ["Materials Requests"],
+        "summary": "Cancel materials request",
+        "description": "Cancels a specific materials request for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for canceling a materials request for a user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateSortPreferences": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Update sort preferences",
+        "description": "Updates the active account sort method for a user for account related functionality.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "availableHoldSort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unavailableHoldSort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for updating a users sort preferences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateHoldPickupPreferences": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Update hold pickup preferences",
+        "description": "Updates hold pickup preferences for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rememberHoldPickupLocation",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickupLocationId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "myLocation1Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "myLocation2Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sublocation",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for updating a users hold pickup location preferences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteAspenUser": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Delete Aspen user",
+        "description": "Deletes the Aspen user account.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for deleting a user from the Aspen database.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getBarcodeForPatron": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get barcode for patron",
+        "description": "Gets the barcode for a patron given their Aspen or ILS ID.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "patronId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for getting a patrons barcode.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getUserByBarcode": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get user by barcode",
+        "description": "Gets user info given a barcode.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for getting a user by barcode.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "patronId": {
+                          "type": "string"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getHiddenBrowseCategories": {
+      "post": {
+        "tags": ["Browse Categories"],
+        "summary": "Get hidden browse categories",
+        "description": "Gets all browse categories hidden by the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for a users hidden browse categories.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "categories": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dismissBrowseCategory": {
+      "post": {
+        "tags": ["Browse Categories"],
+        "summary": "Dismiss browse category",
+        "description": "Dismisses/hides a browse category for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "browseCategoryId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for a user dismissing a browse category.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "showBrowseCategory": {
+      "post": {
+        "tags": ["Browse Categories"],
+        "summary": "Show browse category",
+        "description": "Shows/unhides a browse category for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "browseCategoryId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for a user showing a hidden browse category.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateBrowseCategoryStatus": {
+      "post": {
+        "tags": ["Browse Categories"],
+        "summary": "Update browse category status",
+        "description": "Updates the browse category dismissal status for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "browseCategoryId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for a user updating a browse category status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getInbox": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Get user message inbox",
+        "description": "Gets the user's message inbox from ILS.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for getting user inbox messages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "page_current": {
+                          "type": "integer"
+                        },
+                        "page_total": {
+                          "type": "integer"
+                        },
+                        "totalResults": {
+                          "type": "integer"
+                        },
+                        "inbox": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "messageId": {
+                                "type": "string"
+                              },
+                              "userId": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "content": {
+                                "type": "string"
+                              },
+                              "defaultContent": {
+                                "type": "string"
+                              },
+                              "dateQueued": {
+                                "type": "string"
+                              },
+                              "dateSent": {
+                                "type": "string"
+                              },
+                              "isRead": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "markMessageAsRead": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Mark message as read",
+        "description": "Marks a user message as read.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for marking a message as read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "markMessageAsUnread": {
+      "post": {
+        "tags": ["Notifications & ILS Messages"],
+        "summary": "Mark message as unread",
+        "description": "Marks a user message as unread.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for marking a message as unread.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateAlternateLibraryCard": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Update alternate library card",
+        "description": "Updates or deletes the user's alternate library card.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "alternateLibraryCard",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "alternateLibraryCardPassword",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "deleteAlternateLibraryCard",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for updating a users alternate library card.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "submitVdxRequest": {
+      "post": {
+        "tags": ["Interlibrary Loan"],
+        "summary": "Submit VDX ILL request",
+        "description": "Submits a VDX interlibrary loan request.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "catalogKey",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "title",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickupLocation",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "author",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publisher",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "isbn",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "acceptFee",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "note",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for creating a VDX ILL request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cancelVdxRequest": {
+      "post": {
+        "tags": ["Interlibrary Loan"],
+        "summary": "Cancel VDX ILL request",
+        "description": "Cancels a VDX ILL request.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sourceId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cancelId",
+
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for canceling a users VDX ILL request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "submitLocalILLRequest": {
+      "post": {
+        "tags": ["Interlibrary Loan"],
+        "summary": "Submit local ILL request",
+        "description": "Submits a local ILL request for the user.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "catalogKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "volumeId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "acceptFee",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "default": false
+          },
+          {
+            "in": "query",
+            "name": "pickupLocation",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "responses": {
+          "200": {
+            "description": "Response for creating a local ILL request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "BasicUserAuth": {
+        "required": true,
+        "content": {
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid method or parameters",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "invalid_method"
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - Request requires authentication",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "unauthorized_access"
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The specified resource was not found.",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BasicResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BasicResultOnlyMessage": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

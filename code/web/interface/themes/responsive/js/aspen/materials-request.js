@@ -275,6 +275,13 @@ AspenDiscovery.MaterialsRequest = (function(){
 				return false;
 			}
 			return true;
+		},
+
+		showRedirectToMaterialsRequestForm: function(title, message, buttonText, url){
+			var buttons = "<button type='button' class='btn btn-primary' onclick='window.location.href=\"" + url + "\"'>" + buttonText + "</button>";
+
+			AspenDiscovery.showMessageWithButtons(title, message, buttons);
+			return false;
 		}
 	};
 }(AspenDiscovery.MaterialsRequest || {}));

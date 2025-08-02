@@ -159,7 +159,7 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getInitializationJs(): string {
-		return 'AspenDiscovery.Admin.updateMaterialsRequestFields();';
+		return 'AspenDiscovery.Admin.updateMaterialsRequestFields(); return AspenDiscovery.Admin.updateHoldCancellationDateFields();';
 	}
 
 	function getBreadcrumbs(): array {

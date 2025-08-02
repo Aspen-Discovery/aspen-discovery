@@ -199,6 +199,8 @@
 										<td>{$request->bookmobileStop}</td>
 									{elseif $column == 'assignedTo'}
 										<td>{$request->getAssigneeName()|escape}</td>
+									{elseif $column == 'source'}
+										<td>{if $request->source == 1}{translate text="Materials Request" isAdminFacing=true}{else}{translate text="Local ILL" isAdminFacing=true}{/if}</td>
 									{else}
 										{* All columns that can be displayed with out special handling *}
 										<td>{$request->$column}</td>

@@ -215,6 +215,8 @@ class Author_Home extends ResultsAction {
 		$interface->assign('viewList', $searchObject->getViewList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
+		$interface->assign('page', $searchObject->getPage());
+
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;

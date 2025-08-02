@@ -17,6 +17,7 @@
 					<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldSelected()" class="btn btn-sm btn-default" aria-description="{translate text="Click here to thaw selected holds in the $sectionLabel section"}">{translate text="Thaw Selected $sectionLabel" isPublicFacing=true}</a>
 					<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldAll('{$userId}')" class="btn btn-sm btn-default" aria-description="{translate text="Click here to thaw all holds in the $sectionLabel section"}">{translate text="Thaw All $sectionLabel" isPublicFacing=true}</a>
 				{/if}
+				<a href="#" onclick="AspenDiscovery.Account.confirmChangePickupLocationAll('{$userId}')" class="btn btn-sm btn-default" aria-description="{translate text="Click here to change the pickup location for all holds in the $sectionLabel section"}">{translate text="Change Pickup Loc. for All $sectionLabel" isPublicFacing=true}</a>
 				{if $allowSelectingHoldsToExport}
 					<a href="#" onclick="return AspenDiscovery.Account.exportOnlySelectedHolds('{$source}', $('#{$sectionKey}HoldSort_{$source} option:selected').val()" class="btn btn-sm btn-default" aria-description="{translate text="Click here to export selected holds in the $sectionLabel section to CSV"}">{translate text="Export Selected $sectionLabel to CSV" isPublicFacing=true}</a>
 				{/if}

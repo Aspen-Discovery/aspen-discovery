@@ -259,7 +259,7 @@
 						{if !$record->isIll}
 							<div class="btn-group btn-group-vertical btn-block">
 								{if !empty($record->getGroupedWorkId())}
-									<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
+									<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}', '{$record->format}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
 								{/if}
 							</div>
 						{/if}

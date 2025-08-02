@@ -553,10 +553,11 @@ class ListAPI extends AbstractAPI {
 				}
 			}
 
-			$appVersion = null;
 			$isLida = $this->checkIfLiDA();
-			if($isLida) {
+			if ($isLida) {
 				$appVersion = $this->getLiDAVersion();
+			} else {
+				$appVersion = 0;
 			}
 
 			//if LiDA we don't want to include events list entries in the list count

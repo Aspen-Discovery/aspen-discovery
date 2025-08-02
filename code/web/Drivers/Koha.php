@@ -1142,7 +1142,11 @@ class Koha extends AbstractIlsDriver {
 		global $library;
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT *, borrowernumber, cardnumber, surname, firstname, preferred_name, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy, dateofbirth from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
+		if ($this->getKohaVersion() >= 24.11) {
+			$sql = "SELECT *, borrowernumber, cardnumber, surname, firstname, preferred_name, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy, dateofbirth from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
+		} else {
+			$sql = "SELECT *, borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy, dateofbirth from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
+		}
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -1199,6 +1203,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$firstName = $userFromDb['firstname'];
 			}
+
 			if ($user->firstname != $firstName) {
 				$user->firstname = $firstName ?? '';
 				$forceDisplayNameUpdate = true;
@@ -1209,6 +1214,7 @@ class Koha extends AbstractIlsDriver {
 					$forceDisplayNameUpdate = true;
 				}
 			}
+
 			$lastName = $userFromDb['surname'];
 			if ($user->lastname != $lastName) {
 				$user->lastname = $lastName ?? '';
@@ -1220,14 +1226,17 @@ class Koha extends AbstractIlsDriver {
 					$forceDisplayNameUpdate = true;
 				}
 			}
-			$userPreferredName = $userFromDb['preferred_name'];
-			if ($user->userPreferredName != $userPreferredName) {
-				$user->userPreferredName = $userPreferredName ?? '';
-				$forceDisplayNameUpdate = true;
-			} else {
-				if (!$user->userPreferredName) {
-					$user->userPreferredName = '';
+
+			if ($this->getKohaVersion() >= 24.11) {
+				$userPreferredName = $userFromDb['preferred_name'];
+				if ($user->userPreferredName != $userPreferredName) {
+					$user->userPreferredName = $userPreferredName ?? '';
 					$forceDisplayNameUpdate = true;
+				} else {
+					if (!$user->userPreferredName) {
+						$user->userPreferredName = '';
+						$forceDisplayNameUpdate = true;
+					}
 				}
 			}
 
@@ -5194,6 +5203,7 @@ class Koha extends AbstractIlsDriver {
 				'label' => 'Title',
 				'description' => 'The title of the item to be purchased',
 				'maxLength' => 255,
+				'default' => isset($_REQUEST['title']) ? urldecode($_REQUEST['title']) : '',
 				'required' => true,
 			],
 			[
@@ -5202,6 +5212,7 @@ class Koha extends AbstractIlsDriver {
 				'label' => 'Author',
 				'description' => 'The author of the item to be purchased',
 				'maxLength' => 80,
+				'default' => isset($_REQUEST['author']) ? urldecode($_REQUEST['author']) : '',
 				'required' => false,
 			],
 			[
@@ -5276,6 +5287,7 @@ class Koha extends AbstractIlsDriver {
 				'type' => 'textarea',
 				'label' => 'Note',
 				'description' => '',
+				'default' => isset($_REQUEST['volume']) ? 'Volume ' . urldecode($_REQUEST['volume']) : '',
 				'required' => false,
 			],
 		];

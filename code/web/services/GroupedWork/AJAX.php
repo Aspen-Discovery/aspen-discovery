@@ -335,9 +335,11 @@ class GroupedWork_AJAX extends JSON_Action {
 		global $memoryWatcher;
 
 		$id = $_REQUEST['id'];
+		$format = $_REQUEST['activeFormat'];
+		$interface->assign('activeFormat', $format);
 
 		global $library;
-		if (!$library->showWhileYouWait) {
+		if (!$library->showYouMightAlsoLike) {
 			$interface->assign('numTitles', 0);
 		} else {
 			//Get all the titles to ignore, everything that has been rated, in reading history, or that the user is not interested in
@@ -347,10 +349,22 @@ class GroupedWork_AJAX extends JSON_Action {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			/** @var SearchObject_AbstractGroupedWorkSearcher $db */
 			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$searchObject->disableScoping();
+			if ($library->showYouMightAlsoLike == 1) {
+				$searchObject->init();
+				$searchObject->disableScoping();
+				$interface->assign('activeSearchSource', 'global');
+			} else {
+				$searchObject->init('local');
+				$interface->assign('activeSearchSource', 'local');
+			}
 			UserAccount::getActiveUserObj();
-			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
+			if ($library->showYouMightAlsoLike == 3 && !empty($_REQUEST['activeFormat'])) {
+				$format = $_REQUEST['activeFormat'];
+				$interface->assign('activeFormat', $format);
+				$similar = $searchObject->getMoreLikeThis($id, false, true, 3, $format);
+			} else{
+				$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
+			}
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
 			// to force it to be an array or things will not display correctly.

@@ -405,24 +405,7 @@ class Campaign extends DataObject {
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
 		if (!UserAccount::isLoggedIn() || UserAccount::getActiveUserObj()->isAspenAdminUser() || UserAccount::getActiveUserObj()->isUserAdmin())
 			 return parent::find($fetchFirst, $requireOneMatchToReturn);
-		$this->joinAdd(new CampaignPatronTypeAccess(), 'LEFT', 'ce_campaign_patron_type_access', 'id', 'campaignId');
-		$this->whereAdd("ce_campaign_patron_type_access.patronTypeId = '" . UserAccount::getActiveUserObj()->getPTypeObj()->id . "' OR ce_campaign_patron_type_access.patronTypeId IS NULL");
-		$this->joinAdd(new CampaignLibraryAccess(), 'LEFT', 'ce_campaign_library_access', 'id', 'campaignId');
-		$this->whereAdd("ce_campaign_library_access.libraryId = '" . UserAccount::getActiveUserObj()->getHomeLibrary()->libraryId . "' OR NOT EXISTS (SELECT 1 FROM ce_campaign_library_access WHERE ce_campaign_library_access.campaignId = ce_campaign.id)");
-		$userAge = (int)UserAccount::getActiveUserObj()->getAge();
-		$ageCondition = "(
-			userAgeRange IS NULL OR
-			userAgeRange = '' OR
-			userAgeRange = 'All Ages' OR
-			(userAgeRange LIKE 'Under %' AND $userAge < CAST(SUBSTRING_INDEX(userAgeRange, ' ', -1) AS UNSIGNED)) OR
-			(userAgeRange LIKE 'Over %' AND $userAge > CAST(SUBSTRING_INDEX(userAgeRange, ' ', -1) AS UNSIGNED)) OR
-			(userAgeRange LIKE '%+' AND $userAge >= CAST(LEFT(userAgeRange, LOCATE('+', userAgeRange) -1) AS UNSIGNED)) OR
-			(userAgeRange LIKE '%-%' AND $userAge BETWEEN
-				CAST(LEFT(userAgeRange, LOCATE('-', userAgeRange) -1) AS UNSIGNED) AND
-				CAST(SUBSTRING_INDEX(userAgeRange, '-', -1) AS UNSIGNED)
-			)
-		)";
-		$this->whereAdd($ageCondition);
+		$this->applyUserFiltering(UserAccount::getActiveUserObj());
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}
 
@@ -968,17 +951,29 @@ class Campaign extends DataObject {
 		return $leaderboard;
 	}
 
-	function getCampaigns() {
+	function getCampaigns($userId = null, $applyUserFiltering = false) {
 		global $activeLanguage;
 
 		$campaign = new Campaign();
 		$campaignList = [];
 
-		if (!UserAccount::isLoggedIn()) {
-			return $campaignList;
+		if ($userId === null) {
+			if (!UserAccount::isLoggedIn()) {
+				return $campaignList;
+			}
+			$user = UserAccount::getLoggedInUser();
+			$userId = $user->id;
+		} else {
+			$user = new User();
+			$user->id = $userId;
+			if (!$user->find(true)) {
+				return $campaignList;
+			}
 		}
-		$user = UserAccount::getLoggedInUser();
-		$userId = $user->id;
+
+		if ($applyUserFiltering) {
+			$campaign->applyUserFiltering($user);
+		}
 
 		//Get active campaigns
 		$activeCampaigns = Campaign::getActiveCampaignsList();
@@ -1028,7 +1023,9 @@ class Campaign extends DataObject {
 					//Calculate milestone progress
 					$milestoneProgress = CampaignMilestone::getMilestoneProgress($campaignId, $userId, $milestone->id);
 					$progressData = CampaignMilestoneProgressEntry::getUserProgressDataByMilestoneId($userId, $milestoneId, $campaignId);
-
+					usort($progressData, function ($a, $b) {
+						return $a['checkoutDate'] <=> $b['checkoutDate'];
+					});
 					$milestone->progress = $milestoneProgress['progress'];
 					$milestone->extraProgress = $milestoneProgress['extraProgress'];
 					$milestone->completedGoals = $milestoneProgress['completed'];
@@ -1147,7 +1144,9 @@ class Campaign extends DataObject {
 						$completedGoals = $milestoneProgress['completed'];
 						$totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
 						$progressData = CampaignMilestoneProgressEntry::getUserProgressDataByMilestoneId($linkedUser->id, $milestone->id, $campaign->id);
-
+						usort($progressData, function ($a, $b) {
+							return $a['checkoutDate'] <=> $b['checkoutDate'];
+						});
 
 						if ($milestoneProgress['progress'] >= 100) {
 							$numCompletedMilestones++;
@@ -1235,6 +1234,29 @@ class Campaign extends DataObject {
 			'campaignReward' => $campaignReward,
 			'milestoneSummary' => $milestoneSummary,
 		];
+	}
+
+		private function applyUserFiltering($user) {
+		$this->joinAdd(new CampaignPatronTypeAccess(), 'LEFT', 'ce_campaign_patron_type_access', 'id', 'campaignId');
+		$this->whereAdd("ce_campaign_patron_type_access.patronTypeId = '" . $user->getPTypeObj()->id . "' OR ce_campaign_patron_type_access.patronTypeId IS NULL");
+		
+		$this->joinAdd(new CampaignLibraryAccess(), 'LEFT', 'ce_campaign_library_access', 'id', 'campaignId');
+		$this->whereAdd("ce_campaign_library_access.libraryId = '" . $user->getHomeLibrary()->libraryId . "' OR NOT EXISTS (SELECT 1 FROM ce_campaign_library_access WHERE ce_campaign_library_access.campaignId = ce_campaign.id)");
+		
+		$userAge = (int)$user->getAge();
+		$ageCondition = "(
+			userAgeRange IS NULL OR
+			userAgeRange = '' OR
+			userAgeRange = 'All Ages' OR
+			(userAgeRange LIKE 'Under %' AND $userAge < CAST(SUBSTRING_INDEX(userAgeRange, ' ', -1) AS UNSIGNED)) OR
+			(userAgeRange LIKE 'Over %' AND $userAge > CAST(SUBSTRING_INDEX(userAgeRange, ' ', -1) AS UNSIGNED)) OR
+			(userAgeRange LIKE '%+' AND $userAge >= CAST(LEFT(userAgeRange, LOCATE('+', userAgeRange) -1) AS UNSIGNED)) OR
+			(userAgeRange LIKE '%-%' AND $userAge BETWEEN
+				CAST(LEFT(userAgeRange, LOCATE('-', userAgeRange) -1) AS UNSIGNED) AND
+				CAST(SUBSTRING_INDEX(userAgeRange, '-', -1) AS UNSIGNED)
+			)
+		)";
+		$this->whereAdd($ageCondition);
 	}
 	
 }

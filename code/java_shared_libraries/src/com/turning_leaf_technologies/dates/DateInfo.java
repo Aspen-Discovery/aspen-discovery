@@ -24,6 +24,7 @@ public class DateInfo {
 	private static final SimpleDateFormat format5 = new SimpleDateFormat("M/d/yyyy H:mm:ss");
 	private static final SimpleDateFormat format6 = new SimpleDateFormat("M/d/yyyy");
 	private static final SimpleDateFormat format7 = new SimpleDateFormat("yyyy-MM");
+	private static final SimpleDateFormat format8 = new SimpleDateFormat("yyyy-MM-dd"); // ISO date format for OAI feeds.
 	private static final SimpleDateFormat solrFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	
 	public DateInfo(int day, int month, int year){
@@ -107,6 +108,20 @@ public class DateInfo {
 		}
 		try {
 			Date tmpDate = format6.parse(originalDate);
+			if (tmpDate != null){
+				parsedDate = Calendar.getInstance();
+				parsedDate.setTime(tmpDate);
+				daySet = true;
+				monthSet = true;
+				yearSet = true;
+				notSet = false;
+				return;
+			}
+		} catch (ParseException e) {
+			//Ignore and check the next format.
+		}
+		try {
+			Date tmpDate = format8.parse(originalDate);
 			if (tmpDate != null){
 				parsedDate = Calendar.getInstance();
 				parsedDate.setTime(tmpDate);

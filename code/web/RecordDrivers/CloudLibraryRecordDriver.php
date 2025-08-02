@@ -344,12 +344,32 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 * load in order to display the full record information on the Staff
 	 * View tab of the record view page.
 	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return string Name of Smarty template file to display.
 	 */
-	public function getStaffView() {
+	public function getStaffView(): string {
 		global $interface;
-		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			if ($groupedWorkDriver->isValid()) {
+				$interface->assign('hasValidGroupedWork', true);
+				$groupedWorkDriver->assignGroupedWorkStaffView();
+
+				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+				$nonGroupedRecord = new NonGroupedRecord();
+				$nonGroupedRecord->source = $this->getRecordType();
+				$nonGroupedRecord->recordId = $this->id;
+				if ($nonGroupedRecord->find(true)) {
+					$interface->assign('isUngrouped', true);
+					$interface->assign('ungroupingId', $nonGroupedRecord->id);
+				} else {
+					$interface->assign('isUngrouped', false);
+				}
+			} else {
+				$interface->assign('hasValidGroupedWork', false);
+			}
+		} else {
+			$interface->assign('hasValidGroupedWork', false);
+		}
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 

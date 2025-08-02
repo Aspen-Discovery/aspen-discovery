@@ -16,7 +16,7 @@
 				{/if}
 			</div>
 			<div class="col-xs-12 col-md-3 help-link">
-				{if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle" role="presentation"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
+				{if !empty($instructions)}<a href="{$instructions}" target="_blank"><i class="fas fa-question-circle" role="presentation"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
 			</div>
 		</div>
 		<div class="row">

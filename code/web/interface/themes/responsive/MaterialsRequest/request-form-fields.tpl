@@ -353,7 +353,15 @@
 							</select>
 						</div>
 					</div>
-
+				{elseif $formField->fieldType == 'source'}
+					{if (!empty($materialsRequest->source))}
+						<div class="row form-group">
+							<label for="source" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
+							<div class="request_detail_field_value col-sm-9">
+								{if $materialsRequest->source == 1}{translate text="Materials Request" isAdminFacing=true}{else}{translate text="Local ILL" isAdminFacing=true}{/if}
+							</div>
+						</div>
+					{/if}
 				{/if}
 
 			{/foreach}
@@ -378,6 +386,9 @@
 	{* Make Sure Id is always included when set, even if it isn't displayed *}
 	{if empty($hasId) && !empty($materialsRequest->id)}
 		<input type="hidden" name="id" id="id" value="{$materialsRequest->id}">
+	{/if}
+	{if !empty($materialsRequest->source)}
+		<input type="hidden" name="source" value="{$materialsRequest->source}"/>
 	{/if}
 </div>
 	<script>

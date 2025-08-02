@@ -2,11 +2,11 @@
 	<div class="related-manifestations">
 		{assign var=hasHiddenFormats value=false}
 		{foreach from=$relatedManifestations item=relatedManifestation}
-			{if $relatedManifestation->hasHiddenFormats()}
+			{if $relatedManifestation->hasHiddenFormats() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}
 				{assign var=hasHiddenFormats value=true}
 			{/if}
 			{* Display the manifestation (the format being displayed) *}
-			<div class="row related-manifestation grouped {if $relatedManifestation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation->isHideByDefault()}style="display: none"{/if}>
+			<div class="row related-manifestation grouped {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}hiddenManifestation_{$workId}{/if}" {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}style="display: none"{/if}>
 				{* Display information about the format *}
 				{if $relatedManifestation->getNumVariations() == 1}
 					{include file="GroupedWork/singleVariationManifestion.tpl" workId=$workId}

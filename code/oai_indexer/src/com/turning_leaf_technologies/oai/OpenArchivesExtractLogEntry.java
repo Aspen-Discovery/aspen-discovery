@@ -22,6 +22,8 @@ class OpenArchivesExtractLogEntry implements BaseLogEntry {
 	private int numUpdated = 0;
 	private int numSkipped = 0;
 	private final Logger logger;
+	private int saveCounter = 0;
+	private static final int SAVE_FREQUENCY = 500;
 
     OpenArchivesExtractLogEntry(String collectionName, Connection dbConn, Logger logger){
 		this.logger = logger;
@@ -31,7 +33,7 @@ class OpenArchivesExtractLogEntry implements BaseLogEntry {
 			insertLogEntry = dbConn.prepareStatement("INSERT into open_archives_export_log (collectionName, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateLogEntry = dbConn.prepareStatement("UPDATE open_archives_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numRecords = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
-			logger.error("Error creating prepared statements to update log", e);
+			logger.error("Error creating prepared statements to update log: ", e);
 		}
 		saveResults();
 	}
@@ -100,6 +102,15 @@ class OpenArchivesExtractLogEntry implements BaseLogEntry {
 			return false;
 		}
 	}
+
+	private void saveResultsPeriodically() {
+		saveCounter++;
+		if (saveCounter >= SAVE_FREQUENCY) {
+			saveResults();
+			saveCounter = 0;
+		}
+	}
+
 	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished Open Archives extraction");
@@ -119,15 +130,19 @@ class OpenArchivesExtractLogEntry implements BaseLogEntry {
 	}
 	void incAdded(){
 		numAdded++;
+		saveResultsPeriodically();
 	}
 	void incDeleted(){
 		numDeleted++;
+		saveResultsPeriodically();
 	}
 	void incSkipped(){
 		numSkipped++;
+		saveResultsPeriodically();
 	}
 	void incUpdated(){
 		numUpdated++;
+		saveResultsPeriodically();
 	}
 	@SuppressWarnings("unused")
 	void setNumRecords(int size) {

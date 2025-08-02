@@ -118,53 +118,48 @@
 						</div>
 
 					{elseif $formField->fieldType == 'status'}
-					<div class="request_detail_field row">
-						<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
-						<div class=" request_detail_field_value col-sm-9">
-							{translate text=$materialsRequest->statusLabel isPublicFacing=true isAdminFacing=true}
+						<div class="request_detail_field row">
+							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
+							<div class=" request_detail_field_value col-sm-9">
+								{translate text=$materialsRequest->statusLabel isPublicFacing=true isAdminFacing=true}
+							</div>
 						</div>
-					</div>
 
-					{elseif
-					$formField->fieldType == 'dateCreated'||
-					$formField->fieldType == 'dateUpdated'}
-					{* Date Fields *}
-					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
-					<div class="request_detail_field row">
-						<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
-						<div class="request_detail_field_value col-sm-9">
-							{$materialsRequest->$materialRequestTableColumnName|date_format}
+					{elseif $formField->fieldType == 'dateCreated'|| $formField->fieldType == 'dateUpdated'}
+						{* Date Fields *}
+						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
+						<div class="request_detail_field row">
+							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
+							<div class="request_detail_field_value col-sm-9">
+								{$materialsRequest->$materialRequestTableColumnName|date_format}
+							</div>
 						</div>
-					</div>
 
-					{elseif $formField->fieldType == 'emailSent' ||
-					$formField->fieldType == 'holdsCreated'}
-					{* Yes / No Fields *}
-					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
-					<div class="request_detail_field row">
-						<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
-						<div class="request_detail_field_value col-sm-9">
-							{if $materialsRequest->$materialRequestTableColumnName == 1}{translate text="Yes" isPublicFacing=true isAdminFacing=true}
-							{elseif $materialsRequest->$materialRequestTableColumnName == 0}{translate text="No" isPublicFacing=true isAdminFacing=true}
-							{/if}
+					{elseif $formField->fieldType == 'emailSent' || $formField->fieldType == 'holdsCreated'}
+						{* Yes / No Fields *}
+						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
+						<div class="request_detail_field row">
+							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
+							<div class="request_detail_field_value col-sm-9">
+								{if $materialsRequest->$materialRequestTableColumnName == 1}{translate text="Yes" isPublicFacing=true isAdminFacing=true}
+								{elseif $materialsRequest->$materialRequestTableColumnName == 0}{translate text="No" isPublicFacing=true isAdminFacing=true}
+								{/if}
+							</div>
 						</div>
-					</div>
 
 					{* USER INFORMATION FIELDS  *}
 
 					{elseif $formField->fieldType == 'createdBy'}
-					{if !empty($showUserInformation)}
-						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
-							<div class="request_detail_field_value col-sm-9">
-								{$requestUser->firstname|escape} {$requestUser->lastname|escape}
+						{if !empty($showUserInformation)}
+							<div class="request_detail_field row">
+								<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
+								<div class="request_detail_field_value col-sm-9">
+									{$requestUser->firstname|escape} {$requestUser->lastname|escape}
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
 
-					{elseif
-					$formField->fieldType == 'phone' ||
-					$formField->fieldType == 'email'}
+					{elseif $formField->fieldType == 'phone' || $formField->fieldType == 'email'}
 						{if !empty($showUserInformation)}
 							{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 							<div class="request_detail_field row">
@@ -175,10 +170,8 @@
 							</div>
 						{/if}
 
-					{elseif
-					$formField->fieldType == 'illItem' ||
-					$formField->fieldType == 'placeHoldWhenAvailable'}
-					{* Yes / No  User Information Fields *}
+					{elseif $formField->fieldType == 'illItem' || $formField->fieldType == 'placeHoldWhenAvailable'}
+						{* Yes / No  User Information Fields *}
 						{if !empty($showUserInformation)}
 							{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 							<div class="request_detail_field row">
@@ -201,7 +194,7 @@
 								</div>
 							</div>
 						{/if}
-						{elseif $formField->fieldType == 'libraryCardNumber'}
+					{elseif $formField->fieldType == 'libraryCardNumber'}
 						{if !empty($showUserInformation)}
 							{if !empty($barCodeColumn)}
 								<div class="row form-group">
@@ -212,6 +205,13 @@
 								</div>
 							{/if}
 						{/if}
+					{elseif $formField->fieldType == 'source'}
+						<div class="row form-group">
+							<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
+							<div class="request_detail_field_value col-sm-9">
+								{if $materialsRequest->source == 1}{translate text="Materials Request" isAdminFacing=true}{else}{translate text="Local ILL" isAdminFacing=true}{/if}
+							</div>
+						</div>
 					{/if}
 				{/foreach}
 			</fieldset>

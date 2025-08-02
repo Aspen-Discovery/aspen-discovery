@@ -24,7 +24,7 @@
 					<td><a href="/SideLoads/DownloadMarc?id={$id}&file={$file|urlencode}">{$file}</a></td>
 					<td>{$fileData.date|date_format:"%D %T"}</td>
 					<td>{$fileData.size|number_format}</td>
-					<td><a class="btn btn-sm btn-danger" onclick="return AspenDiscovery.SideLoads.deleteMarc('{$id}', '{$file}', {$fileData.index});">{translate text="Delete" isAdminFacing=true}</a> </td>
+					<td><a class="btn btn-sm btn-danger" onclick="return AspenDiscovery.SideLoads.deleteMarc('{$id}', '{$file|escape:"javascript"}', {$fileData.index});">{translate text="Delete" isAdminFacing=true}</a></td>
 				</tr>
 			{foreachelse}
 				<tr>

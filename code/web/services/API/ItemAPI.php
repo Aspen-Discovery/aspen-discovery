@@ -721,6 +721,8 @@ class ItemAPI extends AbstractAPI {
 							$action['volumeId'] = $recordAction['volumeId'] ?? null;
 							$action['volumeName'] = $recordAction['volumeName'] ?? null;
 
+							$action['message'] = $recordAction['message'] ?? null;
+
 							$actions[] = $action;
 						}
 
@@ -1140,10 +1142,12 @@ class ItemAPI extends AbstractAPI {
 				$actionButtons[$key]['formatId'] = $action['formatId'] ?? null;
 				$actionButtons[$key]['volumeId'] = $action['volumeId'] ?? null;
 				$actionButtons[$key]['volumeName'] = $action['volumeName'] ?? null;
+				$actionButtons[$key]['message'] = $action['message'] ?? null;
 
 				if(isset($action['redirectUrl'])) {
 					$actionButtons[$key]['redirectUrl'] = $action['redirectUrl'];
 				}
+				$actionButtons[$key]['redirectParams'] = $action['redirectParams'] ?? null;
 
 			}
 
@@ -1314,10 +1318,12 @@ class ItemAPI extends AbstractAPI {
 							$buttons[$key]['formatId'] = $actionButton['formatId'] ?? null;
 							$buttons[$key]['volumeId'] = $actionButton['volumeId'] ?? null;
 							$buttons[$key]['volumeName'] = $actionButton['volumeName'] ?? null;
+							$buttons[$key]['message'] = $actionButton['message'] ?? null;
 
 							if (isset($actionButton['redirectUrl'])) {
 								$buttons[$key]['redirectUrl'] = $actionButton['redirectUrl'];
 							}
+							$buttons[$key]['redirectParams'] = $actionButton['redirectParams'] ?? null;
 						}
 
 						if ($this->context == 'lida') {

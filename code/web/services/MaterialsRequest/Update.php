@@ -142,6 +142,8 @@ class MaterialsRequest_Update extends Admin_Admin {
 						if ($statusChanged) {
 							//Send an email as needed
 							$materialsRequest->sendStatusChangeEmail();
+							require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
+							MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 						}
 						if ($assigneeChanged) {
 							//Send an email as needed

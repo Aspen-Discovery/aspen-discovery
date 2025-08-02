@@ -118,6 +118,11 @@ var AspenDiscovery = (function(){
 		},
 
 		closeLightbox: function(callback){
+			if (AspenDiscovery._autoCloseTimer) {
+				clearTimeout(AspenDiscovery._autoCloseTimer);
+				AspenDiscovery._autoCloseTimer = null;
+			}
+			
 			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
@@ -385,38 +390,57 @@ var AspenDiscovery = (function(){
 		showMessage: function(title, body, autoClose, refreshAfterClose, largeModal, hideTitle){
 			if (largeModal === undefined || largeModal === false) {
 				aspenJQ('#modalDialog').removeClass('modal-dialog-large');
-			}else{
+			} else{
 				aspenJQ('#modalDialog').addClass('modal-dialog-large');
 			}
 			if (hideTitle !== undefined && hideTitle === true) {
 				aspenJQ('.modal-header').hide();
-			}else{
+			} else{
 				aspenJQ('.modal-header').show();
 			}
 
-			//	 autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
+			// Clear any existing auto-close timer to prevent it from closing new modals.
+			if (AspenDiscovery._autoCloseTimer) {
+				clearTimeout(AspenDiscovery._autoCloseTimer);
+				AspenDiscovery._autoCloseTimer = null;
+			}
+
+			// autoClose can be a boolean (true = 3 seconds) or a number (custom timeout in milliseconds).
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
-			if (autoClose === undefined){
+			if (autoClose === undefined) {
 				autoClose = false;
 			}
-			if (refreshAfterClose === undefined){
+			if (refreshAfterClose === undefined) {
 				refreshAfterClose = false;
 			}
 			aspenJQ("#myModalLabel").html(title);
 			aspenJQ(".modal-body").html(body);
 			aspenJQ('.modal-buttons').html('');
-			var modalDialog = aspenJQ("#modalDialog");
+			const modalDialog = aspenJQ("#modalDialog");
 			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
+			
 			if (autoClose) {
-				setTimeout(function(){
-					if (refreshAfterClose) {
-						location.reload();
-					} else {
-						AspenDiscovery.closeLightbox();
+				// Determine timeout duration
+				let timeoutDuration;
+				if (typeof autoClose === 'number') {
+					timeoutDuration = autoClose;
+				} else {
+					timeoutDuration = 3000;
+				}
+				
+				AspenDiscovery._autoCloseTimer = setTimeout(function(){
+					// Only close if this timer hasn't been cleared (prevents closing new modals).
+					if (AspenDiscovery._autoCloseTimer) {
+						AspenDiscovery._autoCloseTimer = null;
+						if (refreshAfterClose) {
+							location.reload();
+						} else {
+							AspenDiscovery.closeLightbox();
+						}
 					}
-				}, 3000);
-			}else if (refreshAfterClose) {
+				}, timeoutDuration);
+			} else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
 					location.reload();
 				})
@@ -424,6 +448,11 @@ var AspenDiscovery = (function(){
 		},
 
 		showMessageWithButtons: function(title, body, buttons, refreshAfterClose, closeDestination, largeModal, hideTitle, hideCloseButton){
+			if (AspenDiscovery._autoCloseTimer) {
+				clearTimeout(AspenDiscovery._autoCloseTimer);
+				AspenDiscovery._autoCloseTimer = null;
+			}
+			
 			if (largeModal === undefined || largeModal === false) {
 				aspenJQ('.modal-dialog').removeClass('modal-dialog-large');
 			}else{
@@ -454,7 +483,7 @@ var AspenDiscovery = (function(){
 						return false;
 					}
 				});
-			}else{
+			} else {
 				Globals.modalCloseDestination = '';
 			}
 			aspenJQ("#modalDialog").modal('show');

@@ -176,6 +176,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 						$materialRequest->update();
 
 						$materialRequest->sendStatusChangeEmail();
+						require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
+						MaterialsRequestUsage::incrementStat($materialRequest->status, $materialRequest->libraryId);
 					}
 				}
 			}
@@ -426,6 +428,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	function defaultColumnsToShow() : array {
 		return [
 			'id' => 'Id',
+			'source' => 'Source',
 			'title' => 'Title',
 			'author' => 'Author',
 			'format' => 'Format',

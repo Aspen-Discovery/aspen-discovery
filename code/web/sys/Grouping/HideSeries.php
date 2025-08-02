@@ -48,7 +48,6 @@ class HideSeries extends DataObject {
 	public function normalizeSeries($seriesTerm): string {
         $seriesTerm = rtrim($seriesTerm, '- .,;');
         $seriesTerm = preg_replace('/[#|]\s*\d+$/','',$seriesTerm);
-        $seriesTerm = preg_replace('/\s+\(+.*?\)+/','',$seriesTerm);
         $seriesTerm = preg_replace('/ & /', ' and ', $seriesTerm);
         $seriesTerm = preg_replace('/--/',' ',$seriesTerm);
         $seriesTerm = preg_replace('/,\s+(the|an)$/','',$seriesTerm);

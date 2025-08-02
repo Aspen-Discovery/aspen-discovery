@@ -759,17 +759,12 @@ class Record_AJAX extends Action {
 				];
 			}
 
-			//Get a list of volumes for the record
-			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+			// Get a list of volumes with unsuppressed items for the record.
 			$volumeData = [];
-			$volumeDataDB = new IlsVolumeInfo();
-			$volumeDataDB->recordId = $marcRecord->getIdWithSource();
-			$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
-			if ($volumeDataDB->find()) {
-				while ($volumeDataDB->fetch()) {
-					$volumeData[$volumeDataDB->volumeId] = clone($volumeDataDB);
-					$volumeData[$volumeDataDB->volumeId]->setHasLocalItems(false);
-				}
+			$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData();
+			foreach ($unsuppressedVolumeData as $volumeInfo) {
+				$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
+				$volumeData[$volumeInfo->volumeId]->setHasLocalItems(false);
 			}
 
 			$numItemsWithVolumes = 0;
@@ -973,18 +968,37 @@ class Record_AJAX extends Action {
 						'title' => 'Select valid user',
 					];
 				} else {
-					$homeLibrary = $patron->getHomeLibrary();
+					global $library;
 
 					$holdType = $_REQUEST['holdType'];
 
 					if (!empty($_REQUEST['cancelDate'])) {
 						$cancelDate = $_REQUEST['cancelDate'];
+
+						if ($library->maxHoldCancellationDate > 0) {
+							$maxAllowedTimestamp = time() + ($library->maxHoldCancellationDate * 24 * 60 * 60);
+							$cancelDateTimestamp = strtotime($cancelDate);
+
+							if ($cancelDateTimestamp > $maxAllowedTimestamp) {
+								return [
+									'success' => false,
+									'title' => translate([
+										'text' => 'Invalid Cancellation Date',
+										'isPublicFacing' => true,
+									]),
+									'message' => translate([
+										'text' => 'The cancellation date cannot be more than %1% days from today.',
+										1 => $library->maxHoldCancellationDate,
+										'isPublicFacing' => true,
+									]),
+								];
+							}
+						}
 					} else {
-						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+						if ($library->defaultNotNeededAfterDays <= 0) {
 							$cancelDate = null;
 						} else {
-							//Default to a date based on the default not needed after days in the library configuration.
-							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+							$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
 							$cancelDate = date('Y-m-d', $nnaDate);
 						}
 					}
@@ -1131,7 +1145,7 @@ class Record_AJAX extends Action {
 						}
 
 						$interface->assign('confirmationNeeded', $confirmationNeeded);
-
+						$homeLibrary = $user->getHomeLibrary();
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// Set the update permission based on active library's settings. Or allow by default.
 						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
@@ -1902,6 +1916,7 @@ class Record_AJAX extends Action {
 
 		$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
 		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
+		$interface->assign('maxHoldCancellationDate', $library->maxHoldCancellationDate);
 		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation && !$promptForHoldNotifications);
 		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
 
@@ -2127,6 +2142,113 @@ class Record_AJAX extends Action {
 		require_once ROOT_DIR . "/Drivers/LibKeyDriver.php";
 		$libKeyDriver = new LibKeyDriver();
 		return $libKeyDriver->getLibKeyResult($uniqueIdentifierList)["data"]["bestIntegratorLink"]["bestLink"];
+	}
+
+	/** @noinspection PhpUnused */
+	public function getLocalIllEmailForm() : array {
+		global $interface;
+		if (UserAccount::isLoggedIn()) {
+			$id = $_REQUEST['id'];
+			if (strpos($id, ':') > 0) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+			$recordSource = $_REQUEST['recordSource'];
+			$interface->assign('recordSource', $recordSource);
+			$marcRecord = new MarcRecordDriver($id);
+			$volume = $_REQUEST['volume'] ?? '';
+
+			if (empty($volume)) {
+				//Get the list of requestable volumes?
+			}
+
+			$structure = [
+				'title' => [
+					'property' => 'title',
+					'type' => 'text',
+					'label' => 'Title',
+					'readOnly' => false,
+					'default' => $marcRecord->getTitle(),
+				],
+				'author' => [
+					'property' => 'author',
+					'type' => 'text',
+					'label' => 'Author',
+					'readOnly' => false,
+					'default' => $marcRecord->getAuthor(),
+				],
+				'volume' => [
+					'property' => 'volume',
+					'type' => 'text',
+					'label' => 'Volume To Request',
+					'readOnly' => false,
+					'default' => $volume,
+				],
+				'note' => [
+					'property' => 'note',
+					'type' => 'textarea',
+					'label' => 'Note',
+					'readOnly' => false,
+					'default' => '',
+				],
+				'recordId' => [
+					'property' => 'recordId',
+					'type' => 'hidden',
+					'label' => 'Record ID',
+					'default' => $marcRecord->getUniqueID(),
+				],
+			];
+
+			$interface->assign('structure', $structure);
+			$interface->assign('canSave', false);
+			$formFields = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+			$interface->assign('formFields', $formFields);
+			$interface->assign('message', $interface->fetch('Record/local-ill-email-form.tpl'));
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Request Title',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Record/local-ill-email-form.tpl'),
+				'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitLocalIllEmailForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Request", 'isPublicFacing' => true]) . "</button>",
+			];
+		} else {
+			$results = [
+				'title' => translate([
+					'text' => 'Please login',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+		return $results;
+	}
+
+	public function submitLocalIllEmailForm() : array {
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
+			return $user->submitLocalIllRequestEmail();
+		} else {
+			$results = [
+				'title' => translate([
+					'text' => 'Please login',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+		return $results;
 	}
 }
 

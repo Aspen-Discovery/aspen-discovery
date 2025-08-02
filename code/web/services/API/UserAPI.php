@@ -72,6 +72,7 @@ class UserAPI extends AbstractAPI {
 					'submitVdxRequest',
 					'cancelVdxRequest',
 					'submitLocalIllRequest',
+					'submitLocalIllRequestEmail',
 					'getNotificationPreference',
 					'setNotificationPreference',
 					'getNotificationPreferences',
@@ -2027,12 +2028,29 @@ class UserAPI extends AbstractAPI {
 
 					if (!empty($_REQUEST['cancelDate'])) {
 						$cancelDate = $_REQUEST['cancelDate'];
-					} elseif ($homeLibrary->defaultNotNeededAfterDays <= 0) {
-						$cancelDate = null;
+
+						if ($library->maxHoldCancellationDate > 0) {
+							$maxAllowedTimestamp = time() + ($library->maxHoldCancellationDate * 24 * 60 * 60);
+							$cancelDateTimestamp = strtotime($cancelDate);
+
+							if ($cancelDateTimestamp > $maxAllowedTimestamp) {
+								return [
+									'success' => false,
+									'message' => translate([
+										'text' => 'The cancellation date cannot be more than %1% days from today.',
+										1 => $library->maxHoldCancellationDate,
+										'isPublicFacing' => true,
+									]),
+								];
+							}
+						}
 					} else {
-						//Default to a date based on the default not needed after days in the library configuration.
-						$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-						$cancelDate = date('Y-m-d', $nnaDate);
+						if ($library->defaultNotNeededAfterDays <= 0) {
+							$cancelDate = null;
+						} else {
+							$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+							$cancelDate = date('Y-m-d', $nnaDate);
+						}
 					}
 
 					$holdType = $_REQUEST['holdType'];
@@ -3787,6 +3805,19 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
+	function submitLocalIllRequestEmail() : array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			return $user->submitLocalIllRequestEmail();
+		} else {
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Login unsuccessful', 'isPublicFacing'=>true]),
+				'title' => translate(['text'=>'Error', 'isPublicFacing'=>true])
+			];
+		}
+	}
+
 	/**
 	 * Loads the reading history for the user.  Includes print, eContent, and OverDrive titles.
 	 * Note: The return of this method can be quite lengthy if the patron has a large number of items in their reading history.
@@ -3861,7 +3892,8 @@ class UserAPI extends AbstractAPI {
 				$page = $_REQUEST['page'] ?? 1;
 				$pageSize = $_REQUEST['pageSize'] ?? 25;
 				$sort = $_REQUEST['sort_by'] ?? 'checkedOut';
-				$readingHistory = $user->getReadingHistory($page, $pageSize, $sort);
+				$filter = $_REQUEST['filter'] ?? '';
+				$readingHistory = $user->getReadingHistory($page, $pageSize, $sort, $filter);
 
 				$options = [
 					'totalItems' => $readingHistory['numTitles'],
@@ -6599,6 +6631,9 @@ class UserAPI extends AbstractAPI {
 			$materialsRequest->dateUpdated = time();
 
 			if($materialsRequest->insert()) {
+				require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
+				MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
+
 				return [
 					'success' => true,
 					'title' => 'Success',

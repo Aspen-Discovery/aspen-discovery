@@ -38,7 +38,20 @@ class MaterialsRequest_NewRequest extends MyAccount {
 		$request = new MaterialsRequest();
 		$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 		$request->illItem = true; // set the place hold option on by default
-		if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
+		if (isset($_REQUEST['isLocalIll'])) {
+			$request->source = 2;
+		}else{
+			$request->source = 1;
+		}
+		if (isset($_REQUEST['title']) && strlen($_REQUEST['title']) > 0) {
+			$request->title = urldecode($_REQUEST['title']);
+			if (isset($_REQUEST['author']) && strlen($_REQUEST['author']) > 0) {
+				$request->author = urldecode($_REQUEST['author']);
+			}
+			if (isset($_REQUEST['volume']) && strlen($_REQUEST['volume']) > 0) {
+				$request->comments = "Volume " . urldecode($_REQUEST['volume']);
+			}
+		}else if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
 			$searchType = $_REQUEST['searchIndex'] ?? 'Keyword';
 			if (strcasecmp($searchType, 'author') == 0) {
 				$request->author = $_REQUEST['lookfor'];

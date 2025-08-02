@@ -1,0 +1,424 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aspen Discovery Work API",
+    "version": "1.0.0",
+    "description": "OpenAPI documentation for the Aspen Discovery Work API endpoints. These endpoints allow fetching of data for grouped works."
+  },
+  "servers": [
+    {
+      "url": "https://{aspenDomain}/API/WorkAPI?method=",
+      "variables": {
+        "aspenDomain": {
+          "default": "example.aspendiscovery.org",
+          "description": "The URL of the Aspen instance"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "getGroupedWork": {
+      "get": {
+        "summary": "Get a grouped work",
+        "description": "Return data about a specified grouped work.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grouped work information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "subtitle": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "cover": {
+                          "type": "string"
+                        },
+                        "series": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "formats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string"
+                              },
+                              "actions": {
+                                "type": "array"
+                              },
+                              "isAvailable": {
+                                "type": "boolean"
+                              },
+                              "numRelatedRecords": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Get a grouped work in relation to a user",
+        "description": "Return data about a specified grouped work.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grouped work information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "subtitle": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "lastCheckOut": {
+                          "type": "string"
+                        },
+                        "appearsOnLists": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "cover": {
+                          "type": "string"
+                        },
+                        "series": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "formats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "label": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string"
+                              },
+                              "actions": {
+                                "type": "array"
+                              },
+                              "isAvailable": {
+                                "type": "boolean"
+                              },
+                              "numRelatedRecords": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    },
+    "getRatingData": {
+      "post": {
+        "summary": "Get a rating information",
+        "description": "Return rating data for the grouped work.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rating information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "average": {
+                          "type": "integer"
+                        },
+                        "barWidth5Star": {
+                          "type": "integer"
+                        },
+                        "barWidth4Star": {
+                          "type": "integer"
+                        },
+                        "barWidth3Star": {
+                          "type": "integer"
+                        },
+                        "barWidth2Star": {
+                          "type": "integer"
+                        },
+                        "barWidth1Star": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "BasicUserAuth": {
+        "required": true,
+        "content": {
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid method or parameters",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "invalid_method"
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - Request requires authentication",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "unauthorized_access"
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The specified resource was not found.",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BasicResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BasicResultOnlyMessage": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

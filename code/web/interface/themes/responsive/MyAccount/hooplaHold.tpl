@@ -110,9 +110,9 @@
                             <button onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle('{$record->recordId}', '{$record->userId}', 'Flex');" class="btn btn-sm btn-warning">{translate text="Check Out" isPublicFacing=true}</button>
                         {/if}
                         <button onclick="return AspenDiscovery.Hoopla.cancelHold('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
-                        {if !empty($showWhileYouWait)} 
+                        {if !empty($showWhileYouWait)}
                             {if !empty($record->getGroupedWorkId())}
-                                <button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>
+                                <button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}', '{$record->getPrimaryFormat()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>
                             {/if}
                         {/if}
                     </div>

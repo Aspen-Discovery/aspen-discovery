@@ -37,6 +37,7 @@ class MaterialsRequestFormFields extends DataObject {
 		'publisher' => 'Publisher',
 		'publicationYear' => 'Publication Year',
 		'id' => 'Request ID Number (staff view only)',
+		'source' => 'Request Source',
 		'staffComments' => 'Staff Comments (staff view only)',
 		'status' => 'Status (staff view only)',
 		'title' => 'Title',
@@ -73,7 +74,6 @@ class MaterialsRequestFormFields extends DataObject {
 				'values' => self::$fieldTypeOptions,
 				'default' => 'text',
 			],
-			//			'required'      => array(), // checkbox
 			'weight' => [
 				'property' => 'weight',
 				'type' => 'integer',
@@ -215,6 +215,14 @@ class MaterialsRequestFormFields extends DataObject {
 		$defaultField->formCategory = 'Staff Information';
 		$defaultField->fieldLabel = 'Request Id';
 		$defaultField->fieldType = 'id';
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new MaterialsRequestFormFields();
+		$defaultField->libraryId = $libraryId;
+		$defaultField->formCategory = 'Staff Information';
+		$defaultField->fieldLabel = 'Request Source';
+		$defaultField->fieldType = 'source';
 		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 

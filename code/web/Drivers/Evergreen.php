@@ -2029,13 +2029,36 @@ class Evergreen extends AbstractIlsDriver {
 	public function getExpirationInformation(User $patron) : ExpirationInformation {
 		$expirationInformation = new ExpirationInformation();
 
-		$authToken = $this->getAPIAuthToken($patron, true);
-		if ($authToken != null) {
-			$sessionData = $this->fetchSession($authToken);
-			if ($sessionData != null) {
-				$expireTime = $sessionData['expire_date'];
-				$expireTime = strtotime($expireTime);
-				$expirationInformation->expirationDate = $expireTime;
+		// Use the same approach as loadContactInformation() to get patron-specific data
+		// instead of session data, which returns staff account info when masquerading.
+		$staffSessionInfo = $this->getStaffUserInfo();
+		if ($staffSessionInfo !== false) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+			$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+			$request .= '&param=' . json_encode($patron->getBarcode());
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			ExternalRequestLogEntry::logRequest('evergreen.getExpirationInformation', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]->__p)) {
+					if ($apiResponse->payload[0]->__c == 'au') {
+						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au'));
+
+						if (!empty($mappedPatronData['expire_date'])) {
+							$expireTime = $mappedPatronData['expire_date'];
+							$expireTime = strtotime($expireTime);
+							$expirationInformation->expirationDate = $expireTime;
+						}
+					}
+				}
 			}
 		}
 
@@ -2585,7 +2608,7 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function loadContactInformation(User $user) {
+	public function loadContactInformation(User $user): void {
 		$staffSessionInfo = $this->getStaffUserInfo();
 		if ($staffSessionInfo !== false) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -2601,7 +2624,7 @@ class Evergreen extends AbstractIlsDriver {
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
-				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+				if (isset($apiResponse->payload[0]->__p)) {
 					if ($apiResponse->payload[0]->__c == 'au') { //class
 						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 

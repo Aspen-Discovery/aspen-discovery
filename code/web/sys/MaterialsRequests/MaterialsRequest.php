@@ -8,6 +8,7 @@ class MaterialsRequest extends DataObject {
 	// Note: if table column names are changed, data for class MaterialsRequestFieldsToDisplay will need updated.
 	public $id;
 	public $libraryId;
+	public $source;
 	public $title;
 	public $season;
 	public $magazineTitle;
@@ -58,8 +59,9 @@ class MaterialsRequest extends DataObject {
 	protected $_selectedHoldCandidate;
 
 	public static function getObjectStructure(string $context) : array {
+		global $library;
 		if ($context == 'requestsNeedingHolds') {
-			return [
+			$objectStructure = [
 				'id' => [
 					'property' => 'id',
 					'type' => 'label',
@@ -67,6 +69,22 @@ class MaterialsRequest extends DataObject {
 					'description' => 'The unique id of the request within the database',
 					'uniqueProperty' => true,
 				],
+			];
+			if ($library->localIllRequestType == 1) {
+				$objectStructure += [
+					'source' => [
+						'property' => 'source',
+						'type' => 'enum',
+						'label' => 'Source',
+						'description' => 'The source of the request',
+						'values' => [
+							1 => 'Materials Request',
+							2 => 'Local ILL',
+						]
+					]
+				];
+			}
+			$objectStructure += [
 				'patronBarcode' => [
 					'property' => 'patronBarcode',
 					'type' => 'label',
@@ -115,6 +133,7 @@ class MaterialsRequest extends DataObject {
 					'canSort' => false,
 				]
 			];
+			return $objectStructure;
 		}else{
 			//This needs to be implemented and needs to be responsive to fields the library has set up
 			return [];
@@ -306,6 +325,7 @@ class MaterialsRequest extends DataObject {
 					'id',
 					'status',
 					'staffComments',
+					'source'
 				])) {
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
@@ -350,6 +370,7 @@ class MaterialsRequest extends DataObject {
 				'id',
 				'status',
 				'staffComments',
+				'source'
 			])) {
 				unset($fieldsToSortByCategory[$fieldKey]);
 			}
@@ -434,7 +455,7 @@ class MaterialsRequest extends DataObject {
 	function sendStaffNewMaterialsRequestEmail() : void {
 		global $configArray;
 		global $interface;
-		if ($this->getCreatedByUser() !== false && $this->createdEmailSent == 0) {
+		if ($this->getCreatedByUser() !== false && empty($this->createdEmailSent)) {
 			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
 			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
 				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
@@ -886,5 +907,16 @@ class MaterialsRequest extends DataObject {
 	public function automaticCheckForExistingRecordNeedsToBeDone() : bool {
 		//Automatically check for existing records if it has been an hour and an existing record with the same format has not been found.
 		return ((time() - $this->lastCheckForExistingRecord) > 60 * 60) && !$this->hasExistingRecord;
+	}
+
+	public function insert($context = '') : int|bool {
+		if (empty($this->source)) {
+			$this->source = 1;
+		}
+		$ret = parent::insert($context);
+		if ($ret) {
+			$this->sendStaffNewMaterialsRequestEmail();
+		}
+		return $ret;
 	}
 }

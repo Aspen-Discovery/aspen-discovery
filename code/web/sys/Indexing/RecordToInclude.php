@@ -56,14 +56,9 @@ class RecordToInclude extends DataObject {
 	public $weight;
 
 	static function getObjectStructure($context = ''): array {
-		$indexingProfiles = [];
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()) {
-			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
+
 		return [
 			'id' => [
 				'property' => 'id',

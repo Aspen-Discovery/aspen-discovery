@@ -168,11 +168,24 @@
 
 					{if $showHoldCancelDate == 1}
 						<div id="cancelHoldDate" class="form-group">
+							{* Determine default cancellation date based on library settings. *}
+							{assign var='__prepopDays' value=0}
+							{if $defaultNotNeededAfterDays > 0}
+								{assign var='__prepopDays' value=$defaultNotNeededAfterDays}
+								{if $maxHoldCancellationDate > 0 && $defaultNotNeededAfterDays > $maxHoldCancellationDate}
+									{assign var='__prepopDays' value=$maxHoldCancellationDate}
+								{/if}
+							{/if}
 							<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by" isPublicFacing=true}</label>
-							<input type="date" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}">
-							<span id="cancelHoldDateHelpBlock" class="text-danger" style="display:none; padding-bottom: 1em">{translate text="Please select a date later than today." isPublicFacing=true}</span>
-							<div class="loginFormRow">
-								<i>{translate text="If this date is reached, the hold will automatically be cancelled for you. " isPublicFacing=true}</i>
+							<input type="date" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10"{if $__prepopDays > 0} value="{($smarty.now + ($__prepopDays * 24 * 60 * 60))|date_format:"%Y-%m-%d"}"{/if} min="{$smarty.now|date_format:"%Y-%m-%d"}"{if $maxHoldCancellationDate > 0} max="{($smarty.now + ($maxHoldCancellationDate * 24 * 60 * 60))|date_format:"%Y-%m-%d"}"{/if}>
+							<div class="help-block" style="margin-top: 4px;">
+								<small style="color: #666;">
+									<i class="fa fa-info-circle" style="margin-right: 4px;"></i>
+									{translate text="If this date is reached, the hold will automatically be cancelled for you." isPublicFacing=true}
+									{if $maxHoldCancellationDate > 0}
+										{translate text="You can select a cancellation date up to %1% days from today." 1=$maxHoldCancellationDate isPublicFacing=true}
+									{/if}
+								</small>
 							</div>
 						</div>
 					{/if}

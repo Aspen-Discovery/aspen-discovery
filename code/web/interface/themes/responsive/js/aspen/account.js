@@ -690,9 +690,11 @@ AspenDiscovery.Account = (function () {
 					} else if (response.result.success === false && response.result.has2FA === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 					} else {
+						loadingElem.hide();
 						loginErrorElem.html(response.result.message).show();
 					}
 				}, 'json').fail(function () {
+					loadingElem.hide();
 					loginErrorElem.text("There was an error processing your login, please try again.").show();
 				})
 			}
@@ -1359,6 +1361,39 @@ AspenDiscovery.Account = (function () {
 			} else {
 				this.ajaxLogin(null, this.thawHoldAll, true);
 				//auto close so that if user opts out of thawing, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false;
+		},
+
+		confirmChangePickupLocationAll: function (userId) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmChangePickupLocationAll&patronId=" + userId, function (data) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				this.ajaxLogin(null, this.confirmChangePickupLocationAll, true);
+			}
+			return false
+		},
+
+		changeAllPickupLocations: function (userId) {
+			if (Globals.loggedIn) {
+				var newLocation = $("#newPickupLocation").val();
+				var newSublocation = $("#pickupSublocation").val();
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=changeAllPickupLocations&patronId=" + userId + "&newLocation=" + newLocation + "&newSublocation=" + newSublocation, function (data) {
+					if (data.success) {
+						AspenDiscovery.Account.reloadHolds();
+						AspenDiscovery.showMessage(data.title, data.message, true, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				this.ajaxLogin(null, this.changeAllPickupLocations, true);
 			}
 			return false;
 		},

@@ -8,12 +8,8 @@ class LibrarySideLoadScope extends DataObject {
 	public $sideLoadScopeId;
 
 	static function getObjectStructure($context = ''): array {
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Side Loads'));
 		$allLibraryList = Library::getLibraryList(false);
-		if (!UserAccount::userHasPermission('Administer All Side Loads')) {
-			$libraryList = Library::getLibraryList(true);
-		}else{
-			$libraryList = $allLibraryList;
-		}
 
 		$sideLoadScopes = [];
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';

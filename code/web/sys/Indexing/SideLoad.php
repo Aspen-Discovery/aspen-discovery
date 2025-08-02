@@ -390,6 +390,7 @@ class SideLoad extends DataObject {
 							'Audio Books' => 'Audio Books',
 							'Movies' => 'Movies',
 							'Music' => 'Music',
+							'Comic' => 'Comic',
 							'Other' => 'Other',
 						],
 						'label' => 'Specified Format Category',

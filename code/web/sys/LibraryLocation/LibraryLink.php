@@ -40,17 +40,7 @@ class LibraryLink extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$languageList = Language::getLanguageList();
 
 		$patronTypeList = PType::getPatronTypeList();

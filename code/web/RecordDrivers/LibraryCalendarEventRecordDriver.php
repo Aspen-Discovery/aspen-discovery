@@ -7,12 +7,15 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	private $valid;
 	/** @var LMLibraryCalendarEvent */
 	private $eventObject;
+	private $originalId;
 
 	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
 		} else {
+			// Store the original ID for use when record is not found in search index.
+			$this->originalId = $recordData;
 			disableErrorHandler();
 			try {
 				require_once ROOT_DIR . '/sys/SearchObject/EventsSearcher.php';
@@ -120,7 +123,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Events/library_calendar_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
+	public function getBookcoverUrl($size = 'small', $absolutePath = false): string {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -128,7 +131,14 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		} else {
 			$bookCoverUrl = '';
 		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=library_calendar_event";
+
+		// For expired events that don't have a valid ID, use the original ID from constructor.
+		$uniqueId = $this->getUniqueID();
+		if (empty($uniqueId) && !$this->isValid() && !empty($this->originalId)) {
+			$uniqueId = $this->originalId;
+		}
+
+		$bookCoverUrl .= "/bookcover.php?id={$uniqueId}&size={$size}&type=library_calendar_event";
 
 		return $bookCoverUrl;
 	}

@@ -167,15 +167,19 @@
 		}
 		{literal}$(function () {{/literal}
 			{if !empty($property.sortable)}
-			{literal}$('#{/literal}{$propName}{literal} tbody').sortable({
-				update: function (event, ui) {
-					$.each($(this).sortable('toArray'), function (index, value) {
-						var inputId = '#{/literal}{$propName}Weight_' + value.substr({$propName|@strlen}); {literal}
-						$(inputId).val(index + 1);
-					});
-				}
-			});
-			{/literal}
+				{literal}
+				const propName = '{/literal}{$propName}{literal}';
+				const tbodySel = '#' + propName + ' tbody';
+				$(tbodySel).sortable({
+					update() {
+						$(this).sortable('toArray').forEach((value, index) => {
+							const suffix  = value.slice(propName.length);
+							const inputId = '#' + propName + 'Weight_' + suffix;
+							$(inputId).val(index + 1);
+						});
+					}
+				});
+				{/literal}
 			{/if}
 			document.querySelectorAll('.auto-grow-textarea').forEach(textarea => {
 				autoGrowTextarea(textarea);
@@ -193,7 +197,7 @@
 
 		function addNew{$propName}{literal}() {
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} - 1;
-			var newRow = "<tr>";
+			let newRow = "<tr id='{/literal}{$propName}{literal}" + numAdditional{/literal}{$propName}{literal} + "'>";
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if !empty($property.sortable)}

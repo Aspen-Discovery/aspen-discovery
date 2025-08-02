@@ -209,6 +209,17 @@ class Nashville extends CarlX {
 			$level = Logger::LOG_ERROR;
 		}
 		$logger->log($message, $level);
+		//send email if error
+		if ($level == Logger::LOG_ERROR) {
+			global $serverName;
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if (!empty($systemVariables->errorEmail)) {
+				$mailer->send($systemVariables->errorEmail, "$serverName Error with Non Resident Patron Update", $message);
+			}
+		}
 		return [
 			'success' => $success,
 			'message' => $message,

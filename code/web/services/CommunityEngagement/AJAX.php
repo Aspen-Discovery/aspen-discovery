@@ -61,6 +61,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 	}
 
 	function filterCampaigns() {
+		global $library;
 
 		$campaignId = isset($_REQUEST['campaignId']) ? intval($_REQUEST['campaignId']) : 0;
 		$userId = isset($_REQUEST['userId']) ? intval($_REQUEST['userId']) : 0;
@@ -75,7 +76,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
 					$campaign->completedUsersCount = $campaign->getCompletedUsersCount();
 					$html = '<div class="dashboardCategory row" style="border: 1px solid #3174AF; padding: 0 10px 10px 10px; margin-bottom: 10px;">';
 					$html .= '<div class="col-sm-12">';
-					$html .= "<h2 class=\"dashboardCategoryLabel\"><a href=\"/CommunityEngagement/CampaignTable?id={$campaignId}\">" . htmlspecialchars($campaign->name) . "</a></h2>";
+					$html .= '<h5 style="font-weight:bold;">';
+					$html .= '<a href="/CommunityEngagement/CampaignTable?id=' . htmlspecialchars($campaignId) . '">';
+					$html .= htmlspecialchars($campaign->name);
+					$html .= '</a>';
+					$html .= '</h5>';
 					$html .= '<div style="border-bottom: 2px solid #3174AF; padding: 10px; margin-bottom: 10px;">';
 					$html .= '<div class="dashboardLabel">Number of Patrons Enrolled:</div>';
 					$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->currentEnrollments) . '</div>';
@@ -103,7 +108,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
 						$campaign->completedUsersCount = $campaign->getCompletedUsersCount();
 						$html .= '<div class="dashboardCategory row" style="border: 1px solid #3174AF; padding: 0 10px 10px 10px; margin-bottom: 10px;">';
 						$html .= '<div class="col-sm-12">';
-						$html .= "<h2 class=\"dashboardCategoryLabel\"><a href=\"/CommunityEngagement/CampaignTable?id={$campaignId}\">" . htmlspecialchars($campaign->name) . "</a></h2>";
+						$html .= '<h5 style="font-weight:bold;">';
+						$html .= '<a href="/CommunityEngagement/CampaignTable?id=' . htmlspecialchars($campaign->id) . '">';
+						$html .= htmlspecialchars($campaign->name);
+						$html .= '</a>';
+						$html .= '</h5>';
 						$html .= '<div style="border-bottom: 2px solid #3174AF; padding: 10px; margin-bottom: 10px;">';
 						$html .= '<div class="dashboardLabel">Number of Patrons Enrolled:</div>';
 						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->currentEnrollments) . '</div>';
@@ -125,65 +134,140 @@ class CommunityEngagement_AJAX extends JSON_Action {
 			}
 		} elseif ($filterType === 'user') {
 			if ($userId > 0) {
-				// Fetch user campaigns
-				$userCampaigns = Campaign::getUserEnrolledCampaigns($userId);
-	
-				if (!empty($userCampaigns)) {
+				$campaign = new Campaign();
+				$allEligibleCampaigns = $campaign->getCampaigns($userId, true);
+				$user = new User();
+				$user->id = $userId;
+				if ($user->find(true)) {
+					$userEmailOptInSetting = $user->campaignNotificationsByEmail;
+				} else {
+					$userEmailOptInSetting = 0;
+				}
+				if (!empty($allEligibleCampaigns)) {
 					$html = '';
-					foreach ($userCampaigns as $campaign) {
-						$campaign->completedUsersCount = $campaign->getCompletedUsersCount();
-						$html .= '<div class="dashboardCategory row" style="border: 1px solid #3174AF; padding: 0 10px 10px 10px; margin-bottom: 10px;">';
-						$html .= '<div class="col-sm-12">';
-						$html .= "<h5 style=\"font-weight:bold;\"><a href=\"/CommunityEngagement/CampaignTable?id={$campaign->id}\">" . htmlspecialchars($campaign->name) . "</a></h5>";
-						$html .= '<div style="border-bottom: 2px solid #3174AF; padding: 10px; margin-bottom: 10px;">';
-						$html .= '<div class="dashboardLabel">Number of Patrons Enrolled: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->currentEnrollments) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of Enrollments: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->enrollmentCounter) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of UnEnrollments: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->unenrollmentCounter) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of Users Who Have Completed the Campaign:</div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->completedUsersCount) . '</div>';
-						$html .= '</div>';
-						$html .= '</div>';
-						$html .= '</div>';
+					$html .= "<button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.refreshCurrentUserStats($userId); return false;' style='margin: 5px 0;'>Refresh Campaign Progress</button>";
+
+					foreach ($allEligibleCampaigns as $campaign) {
+						$html .= '<div class="dashboardCategory" style="border: 1px solid #3174AF; padding: 15px; margin-bottom: 20px;">';
+
+						$html .= "<h5><a href=\"/CommunityEngagement/CampaignTable?id={$campaign->id}\">" . htmlspecialchars($campaign->name) . "</a></h5>";
+
+						$html .= "<table class='table table-bordered table-sm'>";
+						$html .= "<thead><tr>
+									<th>Milestone</th>
+									<th>Progress</th>
+									<th>Status</th>
+									<th>Reward</th>
+								</tr></thead><tbody>";
+
+						if (!empty($campaign->milestones)) {
+							foreach ($campaign->milestones as $milestone) {
+								$completed = (int)($milestone->completedGoals ?? 0);
+								$total = (int)($milestone->totalGoals ?? 0);
+								$progressBeyondLimit = $milestone->progressBeyondOneHundredPercent ?? false;
+								if (!$progressBeyondLimit && $completed > $total) {
+									$completed = $total;
+								}
+
+								$progress = "$completed / $total";
+								$percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
+								$isComplete = $milestone->milestoneComplete == 1;
+								$rewardGiven = $milestone->rewardGiven == 1;
+
+								if ($milestone->rewardType == 1 && $milestone->awardAutomatically && $isComplete && !$rewardGiven) {
+									$milestone->rewardGiven = 1;
+									$rewardGiven = 1;
+								}
+
+								$html .= "<tr><td>" . htmlspecialchars($milestone->name) . "</td>";
+
+								// Progress bar
+								$html .= "<td>
+									{$progress}
+									<div class='progress' style='width:100%; border:1px solid black; border-radius:4px;height:20px;'>
+										<div class='progress-bar' role='progressbar' aria-valuenow='{$percentage}' aria-valuemin='0' aria-valuemax='100' style='width: {$percentage}%; background-color: blue; color: white; text-align: center;'>
+											{$percentage}%
+										</div>
+									</div>
+								</td>";
+
+								// Status and manual progress
+								$html .= "<td>";
+								if ($isComplete) {
+									$html .= "Complete";
+									if ($milestone->milestoneType === 'manual' && $milestone->progressBeyondOneHundredPercent) {
+										if ($campaign->enrolled) {
+											$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
+										} else {
+											$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
+										}
+									}
+								} else {
+									$html .= "Incomplete";
+									if ($milestone->milestoneType === 'manual') {
+										if ($campaign->enrolled) {
+											$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
+										} else {
+											$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
+										}
+									}
+								}
+								$html .= "</td>";
+
+								// Reward button
+								$html .= "<td>";
+								$canGiveReward = $isComplete && !$rewardGiven;
+
+								if ($rewardGiven) {
+									$html .= "Reward Given";
+								} else {
+									$disabled = $canGiveReward ? '' : 'disabled';
+									$tooltip = !$canGiveReward ? 'title="Milestone not complete or reward already given."' : '';
+									$onclick = $canGiveReward
+										? "onclick='AspenDiscovery.CommunityEngagement.adminMilestoneRewardGiven({$userId}, {$campaign->id}, {$milestone->id}); return false;'"
+										: '';
+
+									$html .= "<button class='btn btn-primary btn-sm' {$disabled} {$tooltip} {$onclick}>Give Reward</button>";
+								}
+								$html .= "</td></tr>";
+							}
+						} else {
+							$html .= "<tr><td colspan='4'>No milestones defined for this campaign.</td></tr>";
+						}
+
+						$html .= "</tbody></table>";
+
+						// Campaign complete / reward section
+						$campaignComplete = $campaign->isComplete == 1;
+						$campaignRewardGiven = $campaign->campaignRewardGiven == 1;
+						$html .= "<p><strong>Campaign Complete:</strong> " . ($campaignComplete ? "Yes" : "No") . "</p>";
+						$html .= "<p><strong>Reward Given:</strong> " . ($campaignRewardGiven ? "Yes" : "No") . "</p>";
+
+						if ($campaign->rewardType == 1 && $campaign->awardAutomatically == 1 && $campaignComplete) {
+							$html .= "<p>Rewarded Automatically</p>";
+						} elseif (!$campaignRewardGiven) {
+							$html .= "<button class='btn btn-primary' style='margin-right: 5px;' onclick='AspenDiscovery.CommunityEngagement.adminCampaignRewardGiven({$userId}, {$campaign->id}); return false;'>Give Campaign Reward</button>";
+						}
+
+						// Enrollment buttons
+						if (($campaign->isActive || $campaign->isUpcoming) && $library->allowAdminToEnrollUsersInAdminView && $campaign->canEnroll) {
+							if ($campaign->enrolled) {
+								$html .= "<button type='button' class='btn btn-danger' onclick='AspenDiscovery.CommunityEngagement.adminUnenroll({$campaign->id}, {$userId}); return false;'>Unenroll</button>";
+							} else {
+								$html .= "<button type='button' class='btn btn-success' onclick='AspenDiscovery.CommunityEngagement.adminEnrollPatron({$campaign->id}, {$userId}, {$userEmailOptInSetting}); return false;'>Enroll</button>";
+							}
+						}
+
+						$html .= "</div>"; // end campaign box
 					}
-	
 					$response['html'] = $html;
 					$response['success'] = true;
 				} else {
-					$response['message'] = 'User not found.';
+					$response['message'] = 'No campaigns found for this user.';
 				}
-	
 			} else {
-				// Get all users in campaigns if no specific user is selected
-				$userCampaigns = Campaign::getAllCampaignsWithEnrolledUsers();
-				if (!empty($userCampaigns)) {
-					$html = '';
-					foreach ($userCampaigns as $campaign) {
-						$campaign->completedUsersCount = $campaign->getCompletedUsersCount();
-						$html .= '<div class="dashboardCategory row" style="border: 1px solid #3174AF; padding: 0 10px 10px 10px; margin-bottom: 10px;">';
-						$html .= '<div class="col-sm-12">';
-						$html .= "<h5 style=\"font-weight:bold;\"><a href=\"/CommunityEngagement/CampaignTable?id={$campaign->id}\">" . htmlspecialchars($user->name) . "</a></h5>";
-						$html .= '<div style="border-bottom: 2px solid #3174AF; padding: 10px; margin-bottom: 10px;">';
-						$html .= '<div class="dashboardLabel">Number of Patrons Enrolled: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->currentEnrollments) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of Enrollments: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->enrollmentCounter) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of UnEnrollments: </div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->unenrollmentCounter) . '</div>';
-						$html .= '<div class="dashboardLabel">Number of Users Who Have Completed the Campaign:</div>';
-						$html .= '<div class="dashboardValue">' . htmlspecialchars($campaign->completedUsersCount) . '</div>';
-						$html .= '</div>';
-						$html .= '</div>';
-						$html .= '</div>';
-					}
-	
-					$response['html'] = $html;
-					$response['success'] = true;
-				} else {
-					$response['message'] = 'No users found';
-				}
+				$response['html'] = '<div class="alert alert-info" style="margin: 10px 0;">Please select a user.</div>';
+				$response['success'] = true;
 			}
 		} else {
 			$response['message'] = 'Invalid filter type.';
@@ -523,6 +607,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
 		require_once ROOT_DIR . '/sys/Account/User.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+		global $interface;
 
 		$campaignId = $_GET['campaignId'];
 		$userId = $_GET['userId'];
@@ -590,6 +675,13 @@ class CommunityEngagement_AJAX extends JSON_Action {
 			]);
 		}
 
+		$interface->assign('campaignId', $campaignId);
+		$interface->assign('userId', $userId);
+		$interface->assign('user', $user);
+		$interface->assign('campaignName', $campaignName ?? '');
+		$interface->assign('isOptedIn', $isOptedIn);
+		$interface->assign('emailReminder', $emailReminder);
+		$interface->assign('sliderState', $sliderState);
 
 		return [
 			'success' => true,
@@ -597,10 +689,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 				'text' => 'Campaign Notification Options',
 				'isPublicFacing' => true
 			]),
-			'modalBody' => translate([
-				'text' => 'Opt in to campaign email updates for ' .$campaignName . ':',
-				'isPublicFacing' => true,
-			]) . '<label class="switch"><input type="checkbox" id="emailOptInSlider"' . $sliderState . '><span class="slider"></span></label><br>' . $emailReminder,
+			'modalBody' => $interface->fetch('CommunityEngagement/campaignEmailOptInForm.tpl'),
 			'modalButtons' => "<button type='button' class='tool btn btn-primary' onclick='AspenDiscovery.CommunityEngagement.handleCampaignEnrollment($campaignId, $userId, $(\"#emailOptInSlider\").prop(\"checked\") ? 1 : 0)'>" . translate([
 				'text' => 'Submit',
 				'isPublicFacing' => true,
@@ -610,6 +699,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
 	public function saveCampaignEmailOptInToggle() {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
+		global $interface;
 
 		$campaignId = $_GET['campaignId'] ?? null;
 		$userId = $_GET['userId'] ?? null;
@@ -628,7 +718,11 @@ class CommunityEngagement_AJAX extends JSON_Action {
 				]),
 			];
 		}
-
+		$campaign = new Campaign();
+		$campaign->id = $campaignId;
+		if ($campaign->find(true)) {
+			$campaignName = $campaign->name;
+		}
 
 		$userCampaign = new UserCampaign();
 		$userCampaign->userId = $userId;
@@ -640,11 +734,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 		if ($success) {
 			if ($userCampaign->optInToCampaignEmailNotifications == 1) {
-				$campaign = new Campaign();
-				$campaign->id = $campaignId;
-				if ($campaign->find(true)) {
-					$campaignName = $campaign->name;
-				}
 
 				$user = new User();
 				$user->id = $userId;
@@ -654,6 +743,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
 			}
 			$userCampaign->checkAndHandleCampaignCompletion($userId, $campaignId);
+			$interface->assign('campaignName', $campaignName);
 
 	
 			return [
@@ -662,10 +752,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 					'text' => 'Success',
 					'isPublicFacing' => true,
 				]),
-				'message' => translate([
-					'text' => 'You have updated your campaign notification preferences.',
-					'isPublicFacing' => true,
-				])
+				'message' => $interface->fetch('CommunityEngagement/saveCampaignEmailOptInForm.tpl')
 			];
 		} else {
 			return [
@@ -994,6 +1081,151 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		]);
 		exit;
 	}
-	
 
+	public function fetchLibraryUsers($enrolledOnly = false) {
+		global $library;
+		global $logger;
+
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+
+		$users = [];
+		$libraryId = $library->libraryId;
+		$user = new User();
+
+		if ($library->displayOnlyUsersForLocationInUserAdmin) {
+			$user->whereAdd('homeLocationId = ' . $libraryId);
+		}
+
+		$user->orderBy('displayname ASC');
+		$user->limit(0, 500);
+
+		$users = array();
+
+		if($user->find()) {
+			while ($user->fetch()) {
+				$users[] = array(
+					'id' => $user->id,
+					'displayName' => $user->displayName,
+				);
+			} 
+		}
+		return $users;
+	}
+
+	public function getLibraryUsers() {
+		global $library;
+		try {
+			$users = $this->fetchLibraryUsers();
+
+			 echo json_encode([
+				'success' => true, 
+				'users' => $users, 
+				'title' => translate([
+					'text' => 'Users Loaded',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => count($users) . ' users found',
+					'isPublicFacing' => true,
+				]),
+			]);
+
+		} catch (Exception $e){
+			echo json_encode([
+				'success' => false,
+				'users' => [],
+				'title' => translate([
+					'text' => 'Error', 
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Error loading users: ' . $e->getMessage(),
+					'isPublicFacing' => true,
+				]),
+			]);
+		}
+		exit;
+	}
+
+
+	public function addUserByBarcode() {
+		$barcode = $_POST['barcode'] ?? '';
+		
+		if (empty($barcode)) {
+			return ['success' => false, 'title' => 'Error','message' => 'Barcode is required'];
+		}
+		
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		require_once ROOT_DIR . '/CatalogFactory.php';
+		global $library;
+		global $logger;
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		$accountProfile->find(true);
+		$user = new User();
+		
+		// Check if user already exists
+		$user->ils_barcode = $barcode;
+		if ($user->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]), 
+				'message' => translate([
+					'text' => 'User already exists',
+					'isPublicFacing' => true
+				])
+			];
+		}
+		
+		// Try to load from ILS
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if (method_exists($catalog, 'findNewUser')) {
+			$newUser = $catalog->findNewUser($barcode, '');
+		} else {
+			return [
+				'success' => false, 
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]), 
+				'message' => translate([
+					'text' => 'Your ILS does not currently support this function',
+					'isPublicFacing' => true
+				])
+			];
+		}
+		
+		if ($newUser && !($newUser instanceof AspenError)) {
+			$newUser->getDisplayName();
+			$newUser->update();
+			
+			return [
+				'success' => true, 
+				'title' => translate([
+					'text' => 'User Added',
+					'isPublicFacing' => true
+				]), 
+				'message' => translate([
+					'text' => 'User Added to Aspen',
+					'isPublicFacing' => true
+				])
+			];
+		}
+		
+		return [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true
+			]), 
+			'message' => translate([
+				'text' => 'User not found in ILS or could not be loaded',
+				'isPublicFacing' => true
+			])
+		];
+	}
 }

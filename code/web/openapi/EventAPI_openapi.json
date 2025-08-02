@@ -1,0 +1,563 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aspen Discovery Event API",
+    "version": "1.0.0",
+    "description": "OpenAPI documentation for the Aspen Discovery Event API endpoints.\nThese endpoints allow fetching event information and managing saved events for a user."
+  },
+  "servers": [
+    {
+      "url": "https://{aspenDomain}/API/EventAPI?method=",
+      "variables": {
+        "aspenDomain": {
+          "default": "example.aspendiscovery.org",
+          "description": "The URL of the Aspen instance"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "getEventDetails": {
+      "get": {
+        "summary": "Get details for an event",
+        "description": "Returns details about a specific event.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "communico",
+                "library_calendar",
+                "springshare",
+                "assabet"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "isAllDay": {
+                          "type": "boolean"
+                        },
+                        "startDate": {
+                          "type": "string"
+                        },
+                        "endDate": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "registrationRequired": {
+                          "type": "boolean"
+                        },
+                        "registrationBody": {
+                          "type": "string"
+                        },
+                        "bypass": {
+                          "type": "boolean"
+                        },
+                        "cover": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "audiences": {
+                          "type": "object"
+                        },
+                        "categories": {
+                          "type": "object"
+                        },
+                        "programTypes": {
+                          "type": "object"
+                        },
+                        "room": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Get details for an event in relation to a user",
+        "description": "Returns details about a specific event.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "communico",
+                "library_calendar",
+                "springshare",
+                "assabet"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "isAllDay": {
+                          "type": "boolean"
+                        },
+                        "startDate": {
+                          "type": "string"
+                        },
+                        "endDate": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "registrationRequired": {
+                          "type": "boolean"
+                        },
+                        "userIsRegistered": {
+                          "type": "boolean"
+                        },
+                        "inUserEvents": {
+                          "type": "boolean"
+                        },
+                        "registrationBody": {
+                          "type": "string"
+                        },
+                        "bypass": {
+                          "type": "boolean"
+                        },
+                        "cover": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "audiences": {
+                          "type": "object"
+                        },
+                        "categories": {
+                          "type": "object"
+                        },
+                        "programTypes": {
+                          "type": "object"
+                        },
+                        "room": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        },
+                        "canAddToList": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    },
+    "saveEvent": {
+      "post": {
+        "summary": "Save an event for the user",
+        "description": "Saves the event to the users 'Saved Events.'",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved event response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    },
+    "removeSavedEvent": {
+      "post": {
+        "summary": "Remove saved event",
+        "description": "Removes an event from the users 'Saved Events.'",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "confirmationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove saved event response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    },
+    "getSavedEvents": {
+      "post": {
+        "summary": "Get a list of saved events",
+        "description": "Return a list of saved events for a user.",
+        "requestBody": {
+          "$ref": "#/components/parameters/BasicUserAuth"
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "default": "all"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "default": 1
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "default": 20
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "es",
+            "description": "If applicable translates the response to the provided language."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved event information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "totalResults": {
+                          "type": "integer"
+                        },
+                        "page_current": {
+                          "type": "integer"
+                        },
+                        "page_total": {
+                          "type": "integer"
+                        },
+                        "filter": {
+                          "type": "string"
+                        },
+                        "events": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters or missing required fields.",
+            "schema": {
+              "$ref": "#/components/responses/BadRequest"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials or access denied.",
+            "schema": {
+              "$ref": "#/components/responses/Unauthorized"
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "BasicUserAuth": {
+        "required": true,
+        "content": {
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid method or parameters",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "invalid_method"
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - Request requires authentication",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "unauthorized_access"
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The specified resource was not found.",
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BasicResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BasicResultOnlyMessage": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

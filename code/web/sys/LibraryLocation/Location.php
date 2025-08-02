@@ -126,6 +126,8 @@ class Location extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public $allowUpdatingHoursFromILS;
+	/** @noinspection PhpUnused */
+	public $allowUpdatingContactInfoFromILS;
 
 	protected $_hours;
 	private $_moreDetailsOptions;
@@ -448,6 +450,15 @@ class Location extends DataObject {
 				'editPermissions' => ['Location Address and Hours Settings'],
 				'affectsLiDA' => true,
 			],
+			'allowUpdatingContactInfoFromILS' => [
+				'property' => 'allowUpdatingContactInfoFromILS',
+				'type' => 'checkbox',
+				'label' => 'Automatically Update Contact Information from the ILS',
+				'description' => 'Whether address, phone number, and email should be automatically updated from the ILS.',
+				'hideInLists' => true,
+				'default' => 0,
+				'permissions' => ['Location ILS Connection'],
+			],
 			'address' => [
 				'property' => 'address',
 				'type' => 'textarea',
@@ -740,8 +751,8 @@ class Location extends DataObject {
 					'allowUpdatingHoursFromILS' => [
 						'property' => 'allowUpdatingHoursFromILS',
 						'type' => 'checkbox',
-						'label' => 'Automatically Update with Closures from the ILS',
-						'description' => 'Whether closures should be automatically updated from the ILS.',
+						'label' => 'Automatically Update with Library Hours and Closures from the ILS',
+						'description' => 'Whether library hours and closures should be automatically updated from the ILS.',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Location ILS Connection'],
@@ -3200,14 +3211,16 @@ class Location extends DataObject {
 						}
 					}
 				}
-				//Local ILL is not available, check to see if VDX is available.
-				require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-				require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-				$vdxSettings = new VdxSetting();
-				if ($vdxSettings->find(true)) {
-					//Get configuration for the form.
-					if ($this->vdxFormId != -1) {
-						$this->_interlibraryLoanType = 'vdx';
+				if ($this->_interlibraryLoanType == 'none') {
+					//Local ILL is not available, check to see if VDX is available.
+					require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+					require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+					$vdxSettings = new VdxSetting();
+					if ($vdxSettings->find(true)) {
+						//Get configuration for the form.
+						if ($this->vdxFormId != -1) {
+							$this->_interlibraryLoanType = 'vdx';
+						}
 					}
 				}
 			} catch (Exception $e) {
@@ -3248,6 +3261,7 @@ class Location extends DataObject {
 	 * - Remove curbsidePickupInstructionsSetting if the ILS is not Koha.
 	 * - Disable and change the note of curbsidePickupInstructionsSetting if allowCheckIn is enabled.
 	 * - Remove allowUpdatingHoursFromILS if the ILS is not Koha.
+	 * - Remove allowUpdatingContactInfoFromILS if the ILS is not Koha.
 	 *
 	 * @param array $structure
 	 * @return array
@@ -3258,9 +3272,9 @@ class Location extends DataObject {
 			$accountProfile = $parentLibrary->getAccountProfile();
 			$ils = $accountProfile ? $accountProfile->ils : '';
 			if ($ils !== 'koha') {
-				// Currently, only Koha curbside pickups are implemented in Aspen.
 				unset($structure['ilsSection']['properties']['curbsidePickupInstructionsSetting']);
 				unset($structure['hoursSection']['properties']['allowUpdatingHoursFromILS']);
+				unset($structure['hoursSection']['properties']['allowUpdatingContactInfoFromILS']);
 			} else {
 				// Check if "Mark Arrived" is enabled in the CurbsidePickupSetting.
 				require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';

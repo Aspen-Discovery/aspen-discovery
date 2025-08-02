@@ -105,7 +105,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @return    array                            An array of query results
 	 *
 	 */
-	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null) {
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $format = null, $fieldsToReturn = null) {
 		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
@@ -207,8 +207,11 @@ class GroupedWorksSolrConnector2 extends Solr {
 				$searchLocation = null;
 			}
 		}
+		global $solrScope;
+		if (isset($format) && $limitFormat) {
+			$options['fq'][] = 'format:"' . $solrScope.'#' . $format . '"';
+		}
 		if ($availableOnly) {
-			global $solrScope;
 			$options['fq'][] = "availability_toggle:$solrScope#available OR availability_toggle:$solrScope#available_online";
 		}
 

@@ -63,7 +63,7 @@
 	<div id="ungrouping">
 		<h4>{translate text="Record Ungrouped" isPublicFacing=true}</h4>
 		<table class="table-striped table table-condensed notranslate">
-		<tr><td>{translate text="This record has been ungrouped from all other records" isPublicFacing=true}</td><td><a onclick="AspenDiscovery.GroupedWork.deleteUngrouping('{$recordDriver->getPermanentId()}', '{$ungroupingId}')" class="btn btn-danger btn-sm">{translate text="Allow to Group" isPublicFacing=true}</a></td></tr>
+		<tr><td>{translate text="This record has been ungrouped from its original work and cannot be grouped with other records." isPublicFacing=true}</td><td><a onclick="AspenDiscovery.GroupedWork.deleteUngrouping('{$recordDriver->getPermanentId()}', '{$ungroupingId}')" class="btn btn-danger btn-sm">{translate text="Allow to Group" isPublicFacing=true}</a></td></tr>
 		</table>
 	</div>
 {/if}

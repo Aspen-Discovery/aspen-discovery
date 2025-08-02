@@ -997,4 +997,15 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function hasAdditionalFineFields(): bool {
 		return false;
 	}
+
+	public function changeAllHoldsPickupLocationFast(User $patron, $newPickupLocation, $newPickupSublocation = null): array {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function hasFastChangeAllHoldsPickupLocation() : bool {
+		return false;
+	}
 }

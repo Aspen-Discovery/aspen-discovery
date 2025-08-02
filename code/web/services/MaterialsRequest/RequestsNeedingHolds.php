@@ -176,6 +176,8 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 									$materialsRequest->dateUpdated = time();
 
 									$materialsRequest->sendStatusChangeEmail();
+									require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
+									MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 								}
 							}
 						}
@@ -246,6 +248,8 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 								$materialsRequest->status = $newStatus;
 								$materialsRequest->dateUpdated = time();
 								$materialsRequest->sendStatusChangeEmail();
+								require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestUsage.php';
+								MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 								$materialsRequest->update();
 							}
 						}

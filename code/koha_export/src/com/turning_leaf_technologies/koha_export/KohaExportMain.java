@@ -1000,17 +1000,21 @@ public class KohaExportMain {
 			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId, address, phone, contactEmail) VALUES (?, ?, ?, -1, -1, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET address = ?, phone = ?, contactEmail = ? WHERE locationId = ?");
 			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight, markRecordsAsOwned) VALUES (?, ?, ?, '', 1, 1)");
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight, markRecordsAsOwned) VALUES (?, ?, ?, '', 1, 1) ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
 			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement kohaLibraryHoursStmt = kohaConn.prepareStatement("SELECT day, open_time, close_time FROM library_hours WHERE library_id = ? ORDER BY day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement locationsToUpdateHoursStmt = dbConn.prepareStatement("SELECT locationId from location where allowUpdatingHoursFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement librariesToUpdateHolidaysStmt = dbConn.prepareStatement("SELECT libraryId from library where allowUpdatingHolidaysFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, closed, open, close) VALUES (?, ?, 0, '00:30', '00:30') ");
+			PreparedStatement locationsToUpdateContactInfoStmt = dbConn.prepareStatement("SELECT locationId from location where allowUpdatingContactInfoFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, open, close) VALUES (?, ?, ?, ?) ");
+			PreparedStatement updateHoursStmt = dbConn.prepareStatement("UPDATE location_hours SET open = ?, close = ? WHERE locationId = ? AND day = ?");
 			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addHolidayStmt = dbConn.prepareStatement("INSERT INTO holiday (libraryId, date, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
 			PreparedStatement removeHolidayStmt = dbConn.prepareStatement("DELETE FROM holiday WHERE id = ?");
@@ -1022,12 +1026,21 @@ public class KohaExportMain {
 			while (locationsToUpdateHoursRS.next()) {
 				locationsToUpdateHours.add(locationsToUpdateHoursRS.getLong("locationId"));
 			}
+			locationsToUpdateHoursRS.close();
 
 			ResultSet librariesToUpdateHolidaysRS = librariesToUpdateHolidaysStmt.executeQuery();
 			HashSet<Long> librariesToUpdateHolidays = new HashSet<>();
 			while (librariesToUpdateHolidaysRS.next()) {
 				librariesToUpdateHolidays.add(librariesToUpdateHolidaysRS.getLong("libraryId"));
 			}
+			librariesToUpdateHolidaysRS.close();
+
+			ResultSet locationsToUpdateContactInfoRS = locationsToUpdateContactInfoStmt.executeQuery();
+			HashSet<Long> locationsToUpdateContactInfo = new HashSet<>();
+			while (locationsToUpdateContactInfoRS.next()) {
+				locationsToUpdateContactInfo.add(locationsToUpdateContactInfoRS.getLong("locationId"));
+			}
+			locationsToUpdateContactInfoRS.close();
 
 			String currentYear = new SimpleDateFormat("yyyy").format(new Date());
 			GregorianCalendar nextYearCal = new GregorianCalendar();
@@ -1117,14 +1130,24 @@ public class KohaExportMain {
 					if (existingAspenLocationRS.next()){
 						existingLocationId = existingAspenLocationRS.getLong("libraryId");
 					}
-				}else{
+				} else {
+					// Update contact information for existing location if enabled.
 					existingLocationId = existingAspenLocationRS.getLong("locationId");
+					
+					if (locationsToUpdateContactInfo.contains(existingLocationId)) {
+						String[] contactInfo = extractBranchContactInfo(kohaBranches);
+						updateAspenLocationStmt.setString(1, contactInfo[0]);
+						updateAspenLocationStmt.setString(2, contactInfo[1]);
+						updateAspenLocationStmt.setString(3, contactInfo[2]);
+						updateAspenLocationStmt.setLong(4, existingLocationId);
+						updateAspenLocationStmt.executeUpdate();
+					}
 				}
 				if (existingLocationId != 0) {
 					HashMap<java.sql.Date, Long> existingHolidayDates = new HashMap<>();
 					long libraryId = existingAspenLocationRS.getLong("libraryId");
 					if (existingAspenLocationRS.getBoolean("isMainBranch")) {
-						//Get the existing holidays in case we need to delete any
+						// Get the existing holidays in case any need to be deleted.
 						existingHolidaysStmt.setLong(1, libraryId);
 						existingHolidaysStmt.setDate(2, java.sql.Date.valueOf(currentYear + "-01-01"));
 						ResultSet existingHolidaysRS = existingHolidaysStmt.executeQuery();
@@ -1134,19 +1157,65 @@ public class KohaExportMain {
 						}
 					}
 
-					//update hours for the branch.  We can only get closed times.
-					existingHoursStmt.setLong(1, existingLocationId);
-					ResultSet existingHoursRS = existingHoursStmt.executeQuery();
-					if (existingHoursRS.next()) {
-						long numHours = existingHoursRS.getLong(1);
-						if (numHours == 0) {
-							//Create default hours
-							for (int i = 0; i < 7; i++) {
+					if (locationsToUpdateHours.contains(existingLocationId)) {
+						existingHoursStmt.setLong(1, existingLocationId);
+						ResultSet existingHoursRS = existingHoursStmt.executeQuery();
+						boolean hasExistingHours = false;
+						if (existingHoursRS.next()) {
+							long numHours = existingHoursRS.getLong(1);
+							hasExistingHours = numHours > 0;
+						}
+						existingHoursRS.close();
+
+						kohaLibraryHoursStmt.setString(1, ilsCode);
+						ResultSet kohaHoursRS = kohaLibraryHoursStmt.executeQuery();
+						
+						while (kohaHoursRS.next()) {
+							int day = kohaHoursRS.getInt("day");
+							String openTime = kohaHoursRS.getString("open_time");
+							String closeTime = kohaHoursRS.getString("close_time");
+
+							// Trim time from HH:MM:SS to HH:MM if necessary.
+							if (openTime != null && openTime.length() > 5) {
+								openTime = openTime.substring(0, 5);
+							}
+							if (closeTime != null && closeTime.length() > 5) {
+								closeTime = closeTime.substring(0, 5);
+							}
+
+							if (hasExistingHours) {
+								updateHoursStmt.setString(1, openTime != null ? openTime : "09:00");
+								updateHoursStmt.setString(2, closeTime != null ? closeTime : "17:00");
+								updateHoursStmt.setLong(3, existingLocationId);
+								updateHoursStmt.setInt(4, day);
+								updateHoursStmt.executeUpdate();
+							} else {
 								addHoursStmt.setLong(1, existingLocationId);
-								addHoursStmt.setLong(2, i);
+								addHoursStmt.setInt(2, day);
+								addHoursStmt.setString(3, openTime != null ? openTime : "09:00");
+								addHoursStmt.setString(4, closeTime != null ? closeTime : "17:00");
 								addHoursStmt.executeUpdate();
 							}
 						}
+						kohaHoursRS.close();
+
+					} else {
+						// Fallback: create default hours if none exist and hours updates not enabled.
+						existingHoursStmt.setLong(1, existingLocationId);
+						ResultSet existingHoursRS = existingHoursStmt.executeQuery();
+						if (existingHoursRS.next()) {
+							long numHours = existingHoursRS.getLong(1);
+							if (numHours == 0) {
+								for (int i = 0; i < 7; i++) {
+									addHoursStmt.setLong(1, existingLocationId);
+									addHoursStmt.setInt(2, i);
+									addHoursStmt.setString(3, "09:00");
+									addHoursStmt.setString(4, "17:00");
+									addHoursStmt.executeUpdate();
+								}
+							}
+						}
+						existingHoursRS.close();
 					}
 
 					kohaRepeatableHolidaysStmt.setString(1, ilsCode);
@@ -1155,14 +1224,14 @@ public class KohaExportMain {
 						int weekday = kohaRepeatableHolidaysRS.getInt("weekday");
 						if (!kohaRepeatableHolidaysRS.wasNull()) {
 							if (locationsToUpdateHours.contains(existingLocationId)) {
-								//The library is closed on this date
+								// The library is closed on this date.
 								markLibraryClosed.setLong(1, existingLocationId);
 								markLibraryClosed.setInt(2, weekday);
 								markLibraryClosed.executeUpdate();
 							}
 						} else {
 							if (librariesToUpdateHolidays.contains(libraryId)) {
-								//Add the holiday for this year
+								// Add the holiday for this year.
 								String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
 								java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
 								String title = kohaRepeatableHolidaysRS.getString("title");
@@ -1172,7 +1241,7 @@ public class KohaExportMain {
 								addHolidayStmt.executeUpdate();
 								existingHolidayDates.remove(holidayDateAsDate);
 
-								//Add the holiday for next year
+								// Add the holiday for next year.
 								holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
 								holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
 								addHolidayStmt.setLong(1, libraryId);
@@ -1184,8 +1253,7 @@ public class KohaExportMain {
 						}
 					}
 
-					//update holidays for the library
-					//Koha stores holidays per branch rather than per library system for now, we will just assign based on the main branch
+					// Koha stores holidays per location (branch), so assign based on the set Main Branch in Aspen.
 					if (existingAspenLocationRS.getBoolean("isMainBranch")) {
 						kohaSpecialHolidaysStmt.setInt(1, Integer.parseInt(currentYear));
 						kohaSpecialHolidaysStmt.setInt(2, Integer.parseInt(nextYear));
@@ -1205,7 +1273,7 @@ public class KohaExportMain {
 						}
 					}
 
-					//Remove anything leftover
+					// Remove anything leftover.
 					if (librariesToUpdateHolidays.contains(libraryId)) {
 						for (Long holidayToBeDeleted : existingHolidayDates.values()) {
 							removeHolidayStmt.setLong(1, holidayToBeDeleted);
@@ -1213,11 +1281,15 @@ public class KohaExportMain {
 						}
 					}
 				} else {
-					logger.error("Aspen does not currently have a location defined for code " + ilsCode + " please create the location in Aspen first so the library information is properly defined.");
+					logger.error("Aspen does not currently have a location defined for code {}. Please create the location in Aspen first so the library information is properly defined.", ilsCode);
 				}
+				existingAspenLocationRS.close();
 			}
+
+			kohaLibraryHoursStmt.close();
+			updateHoursStmt.close();
 		} catch (Exception e) {
-			logger.error("Error updating branch information from Koha", e);
+			logger.error("Error updating branch information from Koha: ", e);
 		}
 	}
 
@@ -1808,5 +1880,54 @@ public class KohaExportMain {
 			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
+	}
+
+	/**
+	 * Extract contact information from Koha branches table and format address.
+	 * Address format: Address1, Address2, Address3, City, State ZIP, Country
+	 * @param kohaBranches ResultSet positioned at the branch record.
+	 * @return String array with [0] = formatted address, [1] = phone, [2] = email.
+	 */
+	private static String[] extractBranchContactInfo(ResultSet kohaBranches) throws SQLException {
+		String branchAddress = kohaBranches.getString("branchaddress1");
+		String branchAddress2 = kohaBranches.getString("branchaddress2");
+		String branchAddress3 = kohaBranches.getString("branchaddress3");
+		String branchCity = kohaBranches.getString("branchcity");
+		String branchState = kohaBranches.getString("branchstate");
+		String branchCountry = kohaBranches.getString("branchcountry");
+		String branchZip = kohaBranches.getString("branchzip");
+		String branchPhone = kohaBranches.getString("branchphone");
+		String branchEmail = kohaBranches.getString("branchemail");
+
+		StringBuilder fullAddress = new StringBuilder();
+		if (branchAddress != null && !branchAddress.trim().isEmpty()) {
+			fullAddress.append(branchAddress.trim());
+		}
+		if (branchAddress2 != null && !branchAddress2.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append("\n");
+			fullAddress.append(branchAddress2.trim());
+		}
+		if (branchAddress3 != null && !branchAddress3.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append("\n");
+			fullAddress.append(branchAddress3.trim());
+		}
+		if (branchCity != null && !branchCity.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append("\n");
+			fullAddress.append(branchCity.trim());
+		}
+		if (branchState != null && !branchState.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append(", ");
+			fullAddress.append(branchState.trim());
+		}
+		if (branchZip != null && !branchZip.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append(" ");
+			fullAddress.append(branchZip.trim());
+		}
+		if (branchCountry != null && !branchCountry.trim().isEmpty()) {
+			if (fullAddress.length() > 0) fullAddress.append(", ");
+			fullAddress.append(branchCountry.trim());
+		}
+		
+		return new String[]{fullAddress.toString(), branchPhone, branchEmail};
 	}
 }

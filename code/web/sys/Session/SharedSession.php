@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -9,7 +9,7 @@ class SharedSession extends DataObject {
 	protected $userId;
 	protected $createdOn;
 
-	public function isSessionStillValid() {
+	public function isSessionStillValid() : bool {
 		return $this->createdOn < strtotime('+1 hour', $this->createdOn);
 	}
 
@@ -45,18 +45,32 @@ class SharedSession extends DataObject {
 		$this->createdOn = $created;
 	}
 
-	public function redirectUser(User $user, $returnTo, $id = null) {
+	public function redirectUser(User $user, $returnTo, $id = null) : void {
 		$page = '/MyAccount/' . $returnTo;
 		if ($returnTo === 'GroupedWork' && $id) {
 			$page = '/GroupedWork/' . $id . '/Home/';
 		}elseif ($returnTo === 'Fines' || $returnTo === 'YearInReview') {
+			/** @noinspection PhpConditionAlreadyCheckedInspection */
 			$page = '/MyAccount/' . $returnTo;
+		}else if ($returnTo === 'NewMaterialRequest') {
+			$page = '/MaterialsRequest/NewRequest';
+		}else if ($returnTo === 'NewMaterialRequestIls') {
+			$page = '/MaterialsRequest/NewRequestIls';
 		} else if (!empty($id)) {
 			$page = "/$returnTo/$id" ;
 		}
 
 		global $configArray;
 		$redirectTo = $configArray['Site']['url'] . $page . '?minimalInterface=true'; // set minimalInterface to hide some unnecessary elements that clutter the mobile UI
+		if (isset($_REQUEST['title'])) {
+			$redirectTo .= '&title=' . urlencode($_REQUEST['title']);
+		}
+		if (isset($_REQUEST['author'])) {
+			$redirectTo .= '&author=' . urlencode($_REQUEST['author']);
+		}
+		if (isset($_REQUEST['volume'])) {
+			$redirectTo .= '&volume=' . urlencode($_REQUEST['volume']);
+		}
 		if (UserAccount::loginWithAspen($user)) {
 			global $timer;
 			/** SessionInterface $session */ global $session;

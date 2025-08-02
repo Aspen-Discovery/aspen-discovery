@@ -29,7 +29,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}
 
-	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true): string {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -48,24 +48,35 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 		if (isset($this->fields['type'])) {
 			$interface->assign('type', $this->fields['type']);
 		}
-		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
-		$interface->assign('publisher', isset($this->fields['publisher']) ? $this->fields['publisher'] : '');
+		$interface->assign('source', $this->fields['source'] ?? '');
+		$interface->assign('publisher', $this->fields['publisher'] ?? '');
 		if (array_key_exists('date_text', $this->fields)) {
 			$interface->assign('date', $this->fields['date_text']);
 		} else {
 			if (array_key_exists('date', $this->fields)) {
-				// check to see whether $this->fields['date'] is an array then loop through each member
+				// Check to see whether $this->fields['date'] is an array then loop through each member.
+				//	- Extract date portion directly from ISO format to avoid timezone conversion issues.
+				//	- Fallback to original method for non-ISO dates.
 				if (is_array($this->fields['date'])) {
 					$date = '';
 					foreach ($this->fields['date'] as $datePart) {
-						$date .= date('Y-m-d', strtotime($datePart)) . ' ';
+
+						if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $datePart, $matches)) {
+							$date .= $matches[1] . ' ';
+						} else {
+							$date .= date('Y-m-d', strtotime($datePart)) . ' ';
+						}
 					}
-					$interface->assign('date', $date);
+					$interface->assign('date', trim($date));
 				} else {
-					$interface->assign('date', date('Y-m-d', $this->fields['date']));
+					if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $this->fields['date'], $matches)) {
+						$interface->assign('date', $matches[1]);
+					} else {
+						$interface->assign('date', date('Y-m-d', $this->fields['date']));
+					}
 				}
 			} else {
-				$interface->assign('date', null);
+				$interface->assign('date');
 			}
 		}
 

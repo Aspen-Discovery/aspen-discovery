@@ -19,7 +19,7 @@ class Admin_Hosting extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new HostInformation();
-		$object->orderBy($this->getDefaultSort());
+		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();

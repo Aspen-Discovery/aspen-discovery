@@ -196,7 +196,37 @@ class UserList extends DataObject {
 		if (!empty($sort)) {
 			$sortOptions = UserList::getSortOptions();
 			if (array_key_exists($sort, $sortOptions)) {
-				$listEntry->orderBy($sortOptions[$sort]);
+				$listEntry->selectAdd();
+				$listEntry->selectAdd("user_list_entry.*");
+				if ($sort == "title") {
+					//set cases for what to use as sorting title
+					$listEntry->selectAdd('CASE WHEN user_list_entry.source = "GroupedWork" THEN groupedWork.full_title WHEN user_list_entry.source = "Lists" THEN userList.title WHEN user_list_entry.source = "Series" THEN series.groupedWorkSeriesTitle ELSE user_list_entry.title END AS ItemTitle');
+
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWorkInfo = new GroupedWork();
+					$listEntry->joinAdd($groupedWorkInfo, "LEFT", 'groupedWork', 'sourceId', 'permanent_id');
+
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$userListInfo = new UserList();
+					$listEntry->joinAdd($userListInfo, "LEFT", 'userList', 'sourceId', 'id');
+
+					require_once ROOT_DIR . '/sys/Series/Series.php';
+					$seriesInfo = new Series();
+					$listEntry->joinAdd($seriesInfo, "LEFT", 'series', 'sourceId', 'id');
+					$listEntry->orderBy("CASE WHEN ItemTitle IS NULL THEN 1 ELSE 0 END ASC, ItemTitle");
+				} elseif ($sort == "author") {
+					$listEntry->selectAdd('CASE WHEN user_list_entry.source = "GroupedWork" THEN groupedWork.author WHEN user_list_entry.source = "Series" THEN series.author ELSE NULL END AS ItemAuthor');
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWorkInfo = new GroupedWork();
+					$listEntry->joinAdd($groupedWorkInfo, "LEFT", 'groupedWork', 'sourceId', 'permanent_id');
+
+					require_once ROOT_DIR . '/sys/Series/Series.php';
+					$seriesInfo = new Series();
+					$listEntry->joinAdd($seriesInfo, "LEFT", 'series', 'sourceId', 'id');
+					$listEntry->orderBy("CASE WHEN ItemAuthor IS NULL THEN 1 ELSE 0 END ASC, ItemAuthor");
+				} else {
+					$listEntry->orderBy($sortOptions[$sort]);
+				}
 			}
 		}
 
@@ -391,7 +421,7 @@ class UserList extends DataObject {
 
 		// Because the DB does not persist an "author" column on the list itself,
 		// pull it from the underlying record when the sort of list is rendered.
-		if ($sortName === 'author') {
+		/*if ($sortName === 'author') {
 			$allEntriesInfo = $this->getListEntries(null, $forLiDA, $appVersion, 0, 0);
 			$allEntries = $allEntriesInfo['listEntries'];
 			$idsBySource = $allEntriesInfo['idsBySource'];
@@ -427,10 +457,10 @@ class UserList extends DataObject {
 			} else {
 				$filteredListEntries = $allEntries;
 			}
-		} else {
+		} else {*/
 			$listEntryInfo = $this->getListEntries($sortName, $forLiDA, $appVersion, $start, $numItems);
 			$filteredListEntries = $listEntryInfo['listEntries'];
-		}
+		//}
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {

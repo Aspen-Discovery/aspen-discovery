@@ -62,7 +62,12 @@ abstract class RecordInterface {
 				$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
 				$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
 				$extraParams[] = 'page=' . $interface->get_template_vars('page');
+			}
+			if ($interface != null && !empty($interface->get_template_vars('searchSource'))) {
 				$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+			}
+			if ($interface != null && !empty($interface->get_template_vars('activeFormat'))) {
+				$extraParams[] = 'activeFormat=' . $interface->get_template_vars('activeFormat');
 			}
 
 			if (count($extraParams) > 0) {

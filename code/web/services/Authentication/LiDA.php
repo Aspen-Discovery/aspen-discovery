@@ -13,6 +13,8 @@ class Authentication_LiDA extends Action {
 
 			$returnTo = $_REQUEST['goTo'] ?? 'Home';
 			$id = $_REQUEST['id'] ?? null;
+			$logger->log('Return to: ' . $returnTo, Logger::LOG_ERROR);
+			$logger->log($_REQUEST, Logger::LOG_ERROR);
 
 			if (isset($_REQUEST['session']) && isset($_REQUEST['user'])) {
 				$session = new SharedSession();
@@ -53,6 +55,30 @@ class Authentication_LiDA extends Action {
 					// no matching shared session found, we just redirect them to the requested page and will be asked to log in when necessary
 					if ($returnTo === 'GroupedWork' && $id) {
 						header('Location: /GroupedWork/' . $id . '/Home/?minimalInterface=true');
+					}else if ($returnTo === 'NewMaterialRequest') {
+						$url = 'Location: /MaterialsRequest/NewRequest?minimalInterface=true';
+						if (isset($_REQUEST['title'])) {
+							$url .= '&title=' . urlencode($_REQUEST['title']);
+						}
+						if (isset($_REQUEST['author'])) {
+							$url .= '&author=' . urlencode($_REQUEST['author']);
+						}
+						if (isset($_REQUEST['volume'])) {
+							$url .= '&volume=' . urlencode($_REQUEST['volume']);
+						}
+						header($url);
+					}else if ($returnTo === 'NewMaterialRequestIls') {
+						$url = 'Location: /MaterialsRequest/NewRequestIls?minimalInterface=true';
+						if (isset($_REQUEST['title'])) {
+							$url .= '&title=' . urlencode($_REQUEST['title']);
+						}
+						if (isset($_REQUEST['author'])) {
+							$url .= '&author=' . urlencode($_REQUEST['author']);
+						}
+						if (isset($_REQUEST['volume'])) {
+							$url .= '&volume=' . urlencode($_REQUEST['volume']);
+						}
+						header($url);
 					} else {
 						header('Location: /MyAccount/' . $returnTo . '?minimalInterface=true');
 					}
@@ -61,6 +87,10 @@ class Authentication_LiDA extends Action {
 				// not enough data provided, we just redirect them to the requested page and will be asked to log in when necessary
 				if ($returnTo === 'GroupedWork' && $id) {
 					header('Location: /GroupedWork/' . $id . '/Home/?minimalInterface=true');
+				}else if ($returnTo === 'NewMaterialRequest') {
+					header('Location: /MaterialsRequest/NewRequest?minimalInterface=true');
+				}else if ($returnTo === 'NewMaterialRequestIls') {
+					header('Location: /MaterialsRequest/NewRequestIls?minimalInterface=true');
 				} else {
 					header('Location: /MyAccount/' . $returnTo . '?minimalInterface=true');
 				}

@@ -10,13 +10,7 @@ class ILLItemType extends DataObject {
 
 
 	static function getObjectStructure($context = ''): array {
-		$library = new Library();
-		$library->orderBy('displayName');
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
+		$libraryList = Library::getLibraryList(false);
 
 		$structure = [
 			'id' => [

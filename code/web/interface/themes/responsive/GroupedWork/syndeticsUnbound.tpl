@@ -3,8 +3,8 @@
 	<script src="https://unbound.syndetics.com/syndeticsunbound/connector/initiator.php?a_id={$unboundAccountNumber}{if !empty($unboundInstanceNumber)}&i_id={$unboundInstanceNumber}{/if}" type="text/javascript"></script>
 	<script type="text/javascript">
 		var su_session = LibraryThingConnector.runUnboundWithMetadata({ldelim}
-			"title":"{$recordDriver->getTitle()}",
-			"author":"{$recordDriver->getPrimaryAuthor()}",
+			"title":"{$recordDriver->getTitle()|escape:'javascript'}",
+			"author":"{$recordDriver->getPrimaryAuthor()|escape:'javascript'}",
 			"isbn":"{$recordDriver->getCleanISBN()}",
 			"upc":"{$recordDriver->getCleanUPC()}",
 			"id":"{$recordDriver->getPermanentId()}",

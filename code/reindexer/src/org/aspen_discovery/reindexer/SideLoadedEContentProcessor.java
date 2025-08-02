@@ -244,7 +244,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 						econtentItem.setFormatCategory("eBook");
 						econtentRecord.setFormatBoost(8);
 					} else {
-						logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+						if (econtentItem.getFormat() == null || econtentItem.getFormat().equals("")) {
+							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier() + " defaulting to Online Materials");
+							econtentItem.setFormat("Online Materials");
+							econtentItem.setFormatCategory("Other");
+							econtentRecord.setFormatBoost(2);
+						}
 					}
 				}
 			}else{

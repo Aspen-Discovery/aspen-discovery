@@ -7,16 +7,7 @@ class LibraryRecordToInclude extends RecordToInclude {
 	public $libraryId;
 
 	static function getObjectStructure($context = ''): array {
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
 		$structure = parent::getObjectStructure($context);
 		$structure['libraryId'] = [

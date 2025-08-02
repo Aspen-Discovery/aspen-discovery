@@ -123,6 +123,31 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	/**
+	 * overriding getLinkUrl from RecordInterface to check
+	 * the conditions which cause us to load the invalidRecord.tpl
+	 * template when viewing a record. 
+	 * 
+	 * @param bool $absolutePath if true prepend site url from config to the result
+	 * @return string url for the record or an empty string 
+	 */
+	public function getLinkUrl($absolutePath = false) {
+		if(!$this->isValid())
+		{
+			return "";
+		}
+		$groupedWork = $this->getGroupedWorkDriver();
+		if(empty($groupedWork) || !$groupedWork->isValid())
+		{
+			$parentRecords = $this->getParentRecords();
+			if(count($parentRecords) == 0)
+			{
+				return "";
+			}
+		}
+		return parent::getLinkUrl($absolutePath);
+	}
+
+	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user
 	 * comments) from the external MySQL database.
@@ -1325,13 +1350,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 						if ($allVolumesRequireIll) {
 							if (count($itemsWithoutVolumes) > 0) {
-								//Check to see if a title level request is possible and if so show a request or hold button as appropriate
+								//Check to see if a title level request is possible, and if so show a request or hold button as appropriate
 								if ($itemsWithoutVolumesNeedIllRequest) {
 									if ($interLibraryLoanType == 'vdx') {
 										//VDX does not support volumes, we'll just prompt for a regular VDX
 										$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
 									} elseif ($interLibraryLoanType == 'localIll') {
-										$this->_actions[$variationId][] = getMultiVolumeRequestAction($this->getModule(), $source, $id);
+										$this->_actions[$variationId][] = getMultiVolumeRequestAction($this->getModule(), $source, $id, $this);
 									}
 								}else{
 									$this->_actions[$variationId][] = getUntitledVolumeHoldAction($this->getModule(), $source, $id, $variationId);
@@ -1354,7 +1379,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 									//VDX does not support volumes, we'll just prompt for a regular VDX
 									$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
 								}elseif ($interLibraryLoanType == 'localIll') {
-									$this->_actions[$variationId][] = getSpecificVolumeLocalIllRequestAction($this->getModule(), $source, $id, $volumeInfo);
+									$this->_actions[$variationId][] = getSpecificVolumeLocalIllRequestAction($this->getModule(), $source, $id, $volumeInfo, $this);
 								}
 							}else{
 								$this->_actions[$variationId][] = getSpecificVolumeHoldAction($this->getModule(), $source, $id, $volumeInfo);
@@ -1362,7 +1387,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 					}
 				}else{
-					//No volumes, just get the proper action based on interlibrary loan type required
+					//No volumes, just get the proper action based on the interlibrary loan type required
 					if ($treatHoldAsInterLibraryLoanRequest) {
 						if ($interLibraryLoanType == 'vdx') {
 							$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
@@ -3291,7 +3316,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @return array
 	 */
 	public function getInterLibraryLoanIntegrationInformation(?Grouping_Record $relatedRecord, $variationId): array {
-//See if we have InterLibrary Loan integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
+		//See if we have InterLibrary Loan integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
 		$interLibraryLoanType = 'none';
 		$treatHoldAsInterLibraryLoanRequest = false;
 		$homeLocation = null;

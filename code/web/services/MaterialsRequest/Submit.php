@@ -155,6 +155,7 @@ class MaterialsRequest_Submit extends Action {
 								$materialsRequest->holdPickupLocation = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 								$materialsRequest->bookmobileStop = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
 								$materialsRequest->illItem = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+								$materialsRequest->source = (empty($_REQUEST['source']) || !is_numeric($_REQUEST['source'])) ? 1 : $_REQUEST['source'];
 
 								$materialsRequest->libraryId = $homeLibrary->libraryId;
 

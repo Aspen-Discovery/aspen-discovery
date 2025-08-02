@@ -105,6 +105,9 @@ class GroupedWork_Home extends Action {
 		$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 		$timer->logTime('Loaded semantic data');
 
+		$interface->assign('activeFormat', $_REQUEST['activeFormat'] ?? null);
+		$interface->assign('searchSource', $_REQUEST['activeSearchSource'] ?? 'global');
+
 		// Display Page
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 	}

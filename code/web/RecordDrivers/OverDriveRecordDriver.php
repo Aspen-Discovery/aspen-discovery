@@ -195,7 +195,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null) {
-			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+			$groupedWorkDriver->assignGroupedWorkStaffView();
 			if ($groupedWorkDriver->isValid()) {
 				$interface->assign('hasValidGroupedWork', true);
 				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();

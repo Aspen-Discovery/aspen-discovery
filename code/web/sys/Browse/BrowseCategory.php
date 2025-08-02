@@ -166,6 +166,10 @@ class BrowseCategory extends BaseBrowsable {
 	 * @see DB/DB_DataObject::insert()
 	 */
 	public function insert($context = '') {
+		// Set userId for manually created browse categories (i.e., not from searching).
+		if (empty($this->userId)) {
+			$this->userId = UserAccount::getActiveUserId();
+		}
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
