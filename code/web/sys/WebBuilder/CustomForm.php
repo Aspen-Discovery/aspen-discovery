@@ -35,6 +35,9 @@ class CustomForm extends DB_LibraryLinkedObject {
 		$formFieldStructure = CustomFormField::getObjectStructure($context);
 		unset ($formFieldStructure['weight']);
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Forms'));
+		// get the structure for the library system's emails
+		$emailStructure = LibraryCustomForm::getObjectStructure($context);
+		
 		return [
 			'id' => [
 				'property' => 'id',
@@ -113,13 +116,17 @@ class CustomForm extends DB_LibraryLinkedObject {
 			],
 			'libraries' => [
 				'property' => 'libraries',
-				'type' => 'multiSelect',
-				'listStyle' => 'checkboxSimple',
+				'type' => 'oneToMany',
 				'label' => 'Libraries',
-				'description' => 'Define libraries that use these settings',
-				'values' => $libraryList,
-				'hideInLists' => true,
+				'description' => 'Define libraries that use these settings and email to send results to',
+				'keyThis' => 'id',
+				'keyOther' => 'formId',
+				'subObjectType' => 'LibraryCustomForm',
+				'structure' => $emailStructure,
+				'canAddNew' => true,
+				'canDelete' => true, 
 			],
+		
 		];
 	}
 
@@ -177,7 +184,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 			$libraryLink->formId = $this->id;
 			$libraryLink->find();
 			while ($libraryLink->fetch()) {
-				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
+				$this->_libraries[$libraryLink->libraryId] = clone $libraryLink;
 			}
 		}
 		return $this->_libraries;
@@ -199,15 +206,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 
 	public function saveLibraries() {
 		if (isset($this->_libraries) && is_array($this->_libraries)) {
-			$this->clearLibraries();
-
-			foreach ($this->_libraries as $libraryId) {
-				$libraryLink = new LibraryCustomForm();
-
-				$libraryLink->formId = $this->id;
-				$libraryLink->libraryId = $libraryId;
-				$libraryLink->insert();
-			}
+			$this->saveOneToManyOptions($this->_libraries, 'formId');
 			unset($this->_libraries);
 		}
 	}
