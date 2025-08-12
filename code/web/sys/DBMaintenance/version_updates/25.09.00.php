@@ -95,6 +95,16 @@ function getUpdates25_09_00(): array {
 		//other
 
 		//Talpa Search
+
+		// Brendan Lawlor
+		'addLibraryEmailToCustomForm' => [
+			 'title' => 'Add library email to custom form',
+			 'description' => 'Add library email to custom form',
+			 'continueOnError' => false,
+			 'sql' => [
+				 'ALTER TABLE library_web_builder_custom_form ADD COLUMN emailResultsTo varchar(100) DEFAULT ""'
+			 ]
+		 ], //addLibraryEmailToCustomForm
 		
 	];
 }
