@@ -497,6 +497,7 @@ class UInterface extends Smarty {
 				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 				$this->assign('primaryButtonBackgroundColor', $primaryTheme->primaryButtonBackgroundColor);
 				$this->assign('primaryButtonForegroundColor', $primaryTheme->primaryButtonForegroundColor);
+				$this->assign('bodyFont', $primaryTheme->bodyFont);
 			}
 		} catch (PDOException $e) {
 			global $logger;
