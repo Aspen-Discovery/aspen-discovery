@@ -13,7 +13,6 @@ class API_Documentation extends Action {
 		$interface->assign('showContentAsFullWidth', true);
 		$interface->assign('serverUrl', $serverUrl);
 		$interface->assign('apiFile', $apiFile);
-		$interface->assign('serverUrl', $serverUrl);
 
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
 			$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
