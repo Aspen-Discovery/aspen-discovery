@@ -2142,15 +2142,46 @@ class User extends DataObject {
 			uasort($holdsToReturn['available'], $holdSort);
 		}
 		if (!empty($holdsToReturn['unavailable'])) {
-			$indexToSortBy = match ($unavailableSort) {
-				'author', 'position', 'status', 'format' => $unavailableSort,
-				'placed' => 'createDate',
-				'cancelDate' => 'automaticCancellationDate',
-				'libraryAccount' => 'user',
-				'location' => 'pickupLocationName',
-				default => 'sortTitle',
-			};
-			uasort($holdsToReturn['unavailable'], $holdSort);
+			if ($unavailableSort === 'reactivate') {
+				$reactivateDateSort = function (Hold $a, Hold $b) {
+					$titleA = $a->getSortTitle();
+					$titleB = $b->getSortTitle();
+
+					// Get reactivation dates, treating null/0 as "no date set" (i.e., indefinitely frozen or not frozen).
+					$dateA = (!empty($a->reactivateDate) && $a->reactivateDate > 0) ? $a->reactivateDate : null;
+					$dateB = (!empty($b->reactivateDate) && $b->reactivateDate > 0) ? $b->reactivateDate : null;
+
+					// Both have reactivation dates, so sort by date (earliest first).
+					if ($dateA !== null && $dateB !== null) {
+						if ($dateA == $dateB) {
+							return strnatcasecmp($titleA, $titleB);
+						}
+						return $dateA <=> $dateB;
+					}
+
+					// Sort those with reactivation date first.
+					if ($dateA !== null && $dateB === null) {
+						return -1;
+					}
+					if ($dateA === null && $dateB !== null) {
+						return 1;
+					}
+
+					// Neither has a reactivation date, so sort by title.
+					return strnatcasecmp($titleA, $titleB);
+				};
+				uasort($holdsToReturn['unavailable'], $reactivateDateSort);
+			} else {
+				$indexToSortBy = match ($unavailableSort) {
+					'author', 'position', 'status', 'format' => $unavailableSort,
+					'placed' => 'createDate',
+					'cancelDate' => 'automaticCancellationDate',
+					'libraryAccount' => 'user',
+					'location' => 'pickupLocationName',
+					default => 'sortTitle',
+				};
+				uasort($holdsToReturn['unavailable'], $holdSort);
+			}
 		}
 
 		if ($source == 'interlibrary_loan') {
