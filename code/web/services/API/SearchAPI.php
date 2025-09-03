@@ -2466,6 +2466,8 @@ class SearchAPI extends AbstractAPI {
 						$communicoAddToList = false;
 						$springShareAddToList = false;
 						$assabetAddToList = false;
+						$aspenEventsBypass = false;
+						$aspenEventsAddToList = false;
 						$libraryEventSettings = [];
 
 						if($browseCategory->source === 'Events') {
@@ -2510,6 +2512,9 @@ class SearchAPI extends AbstractAPI {
 										$assabetBypass = $eventSetting->bypassAspenEventPages;
 										$assabetAddToList = $eventSetting->eventsInLists;
 									}
+								} else if ($source == 'aspenEvents') {
+									$aspenEventsAddToList = true;
+									$aspenEventsBypass = false;
 								} else {
 									// invalid event source
 								}
@@ -2576,6 +2581,10 @@ class SearchAPI extends AbstractAPI {
 									$eventSource = 'assabet';
 									$bypass = $assabetBypass;
 									$addToList = $assabetAddToList;
+								} else if (str_starts_with($record['id'], 'aspenEvent')) {
+									$eventSource = 'aspenEvents';
+									$bypass = $aspenEventsBypass;
+									$addToList = $aspenEventsAddToList;
 								} else {
 									$eventSource = 'unknown';
 									$bypass = false;
@@ -2583,8 +2592,10 @@ class SearchAPI extends AbstractAPI {
 								}
 
 								$registrationRequired = false;
-								if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
-									$registrationRequired = true;
+								if (isset($record['registration_required'])) {
+									if ($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
+										$registrationRequired = true;
+									}
 								}
 
 								$locationInfo = null;
@@ -2625,6 +2636,7 @@ class SearchAPI extends AbstractAPI {
 								}
 
 								$items[$recordKey]['itemList'] = [];
+
 							} else {
 								$items[$recordKey]['key'] = $record['id'];
 								$items[$recordKey]['title'] = $record['title_display'];
@@ -3136,6 +3148,8 @@ class SearchAPI extends AbstractAPI {
 		$communicoAddToList = false;
 		$springShareAddToList = false;
 		$assabetAddToList = false;
+		$aspenEventsBypass = false;
+		$aspenEventsAddToList = true;
 		$libraryEventSettings = [];
 		if($searchEngine == 'Events') {
 			$searchLibrary = Library::getSearchLibrary();
@@ -3179,6 +3193,9 @@ class SearchAPI extends AbstractAPI {
 						$assabetBypass = $eventSetting->bypassAspenEventPages;
 						$assabetAddToList = $eventSetting->eventsInLists;
 					}
+				} else if ($source == 'aspenEvents') {
+					$aspenEventsBypass = false;
+					$aspenEventsAddToList = true;
 				} else {
 					// invalid event source
 				}
@@ -3272,6 +3289,10 @@ class SearchAPI extends AbstractAPI {
 						$eventSource = 'assabet';
 						$bypass = $assabetBypass;
 						$addToList = $assabetAddToList;
+					} else if (str_starts_with($record['id'], 'aspenEvent')) {
+						$eventSource = 'aspenEvents';
+						$bypass = $aspenEventsBypass;
+						$addToList = $aspenEventsAddToList;
 					} else {
 						$eventSource = 'unknown';
 						$bypass = false;
@@ -3279,8 +3300,10 @@ class SearchAPI extends AbstractAPI {
 					}
 
 					$registrationRequired = false;
-					if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
-						$registrationRequired = true;
+					if (isset($record['registration_required'])) {
+						if ($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
+							$registrationRequired = true;
+						}
 					}
 
 					$locationInfo = null;

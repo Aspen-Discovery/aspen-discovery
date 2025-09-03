@@ -46,6 +46,28 @@ class MyAccount_MyList extends MyAccount {
 		$list = new UserList();
 		$list->id = $listId;
 
+		// Setup print interface variables
+		$printListAuthor = isset($_REQUEST['listAuthor']) ? filter_var($_REQUEST['listAuthor'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printListDescription = isset($_REQUEST['listDescription']) ? filter_var($_REQUEST['listDescription'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryCovers = isset($_REQUEST['covers']) ? filter_var($_REQUEST['covers'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntrySeries = isset($_REQUEST['series']) ? filter_var($_REQUEST['series'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryFormats = isset($_REQUEST['formats']) ? filter_var($_REQUEST['formats'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryDescription = isset($_REQUEST['description']) ? filter_var($_REQUEST['description'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryNotes = isset($_REQUEST['notes']) ? filter_var($_REQUEST['notes'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryHoldings = isset($_REQUEST['holdings']) ? filter_var($_REQUEST['holdings'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printEntryRating = isset($_REQUEST['rating']) ? filter_var($_REQUEST['rating'], FILTER_VALIDATE_BOOLEAN) : false;
+		$printInterface = isset($_REQUEST['print']) ? filter_var($_REQUEST['print'], FILTER_VALIDATE_BOOLEAN) : false;
+		$interface->assign('printInterface', $printInterface);
+		$interface->assign('printListAuthor', $printListAuthor);
+		$interface->assign('printListDescription', $printListDescription);
+		$interface->assign('printEntryCovers', $printEntryCovers);
+		$interface->assign('printEntrySeries', $printEntrySeries);
+		$interface->assign('printEntryFormats', $printEntryFormats);
+		$interface->assign('printEntryDescription', $printEntryDescription);
+		$interface->assign('printEntryNotes', $printEntryNotes);
+		$interface->assign('printEntryHoldings', $printEntryHoldings);
+		$interface->assign('printEntryRating', $printEntryRating);
+
 		//If the list does not exist, create a new My Favorites List
 		if (!$list->find(true)) {
 			global $interface;
@@ -233,6 +255,7 @@ class MyAccount_MyList extends MyAccount {
 	private function buildListForDisplay(UserList $list, bool $allowEdit, string $sortName, int $pageSize) : void {
 		global $interface;
 
+		$printInterface = isset($_REQUEST['print']) ? filter_var($_REQUEST['print'], FILTER_VALIDATE_BOOLEAN) : false;
 		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 		if ($queryParams == null) {
 			$queryParams = [];
@@ -289,6 +312,12 @@ class MyAccount_MyList extends MyAccount {
 		$endRecord = $page * $pageSize;
 		if ($endRecord > $totalRecords) {
 			$endRecord = $totalRecords;
+		}
+		if ($printInterface) {
+			// When printing, show all results on one page
+			$startRecord = 0;
+			$endRecord = $totalRecords;
+			$pageSize = $totalRecords;
 		}
 		$pageInfo = [
 			'resultTotal' => $totalRecords,

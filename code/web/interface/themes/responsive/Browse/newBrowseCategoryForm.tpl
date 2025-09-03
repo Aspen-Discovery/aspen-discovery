@@ -23,7 +23,7 @@
 					</a>
 					<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>
 				</label>
-				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required">
+				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required" maxlength="100">
 			</div>
 			{if !empty($property)} {* If data for Select tag is present, use the object editor template to build the <select> *}
 			<div class="form-group">

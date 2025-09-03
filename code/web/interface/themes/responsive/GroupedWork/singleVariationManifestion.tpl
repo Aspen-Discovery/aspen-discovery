@@ -1,6 +1,7 @@
 {strip}
 <div class="col-xs-12">
 	<div class="row">
+		{if $printInterface === false || ($printInterface === true && $printEntryFormats === true)}
 		<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults)} col-md-3{/if} manifestation-format">
 			<a class="btn btn-xs btn-primary btn-wrap" href="{$relatedManifestation->getUrl()}" {if $relatedManifestation->getNumRelatedRecords() > 1}onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}','{$relatedManifestation->getFirstVariation()->databaseId|escapeCSS}');" aria-label="View Manifestations for {translate text=$relatedManifestation->format inAttribute=true isPublicFacing=true}"{else} aria-label="View {translate text=$relatedManifestation->format inAttribute=true}"{/if}>
 				{translate text=$relatedManifestation->format isPublicFacing=true}
@@ -10,8 +11,12 @@
 				<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId|escapeCSS}'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{if $relatedManifestation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
 			</a>
 		</div>
+		{/if}
 		<div class="col-tn-8 col-xs-8{if empty($viewingCombinedResults)} col-md-5 col-lg-6{/if}">
+			{if $printInterface === false}
 			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation->getStatusInformation() viewingIndividualRecord=0}
+			{/if}
+            {if $printInterface === false || ($printInterface === true && $printEntryHoldings === true)}
 			{if $relatedManifestation->showCopySummary()}
 				{if $relatedManifestation->getNumRelatedRecords() == 1}
 					{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemsDisplayedByDefault() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId recordViewUrl=$relatedManifestation->getUrl() format=$relatedManifestation->format isEContent=$relatedManifestation->isEContent()}
@@ -19,7 +24,9 @@
 					{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemsDisplayedByDefault() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId format=$relatedManifestation->format isEContent=$relatedManifestation->isEContent()}
 				{/if}
 			{/if}
+			{/if}
 		</div>
+		{if $printInterface === false}
 		<div class="col-tn-8 col-tn-offset-4 col-xs-8 col-xs-offset-4{if empty($viewingCombinedResults)} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
 			<div class="btn-toolbar">
 				<div class="btn-group btn-group-vertical btn-block">
@@ -35,6 +42,7 @@
 				</div>
 			</div>
 		</div>
+		{/if}
 	</div>
 	<div class="row">
 		<div class="col-xs-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId}" style="display:none">

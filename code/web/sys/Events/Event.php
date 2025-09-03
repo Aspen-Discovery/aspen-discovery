@@ -88,7 +88,13 @@ class Event extends DataObject {
 				'values' => [],
 				'hiddenByDefault' => true,
 			],
-			'eventTypeId' => [],
+			'eventTypeId' => [
+				'property' => 'eventTypeId',
+				'type' => 'enum',
+				'label' => 'Event Type',
+				'description' => 'The type of event',
+				'values' => [],
+			],
 			'title' => [
 				'property' => 'title',
 				'type' => 'text',
@@ -405,16 +411,10 @@ class Event extends DataObject {
 			} else {
 				$eventTypes = ["Choose an event type"] + $eventTypes;
 			}
-			$structure['eventTypeId'] = [
-				'property' => 'eventTypeId',
-				'type' => 'enum',
-				'label' => 'Event Type',
-				'required' => true,
-				'description' => 'The type of event',
-				'placeholder' => 'Choose an event type',
-				'values' => $eventTypes,
-				'onchange' => "return AspenDiscovery.Events.getEventTypeFields(this.value);",
-			];
+			$structure['eventTypeId']['required'] = true;
+			$structure['eventTypeId']['placeholder'] = 'Choose an event type';
+			$structure['eventTypeId']['values'] = $eventTypes;
+			$structure['eventTypeId']['onchange'] = "return AspenDiscovery.Events.getEventTypeFields(this.value);";
 			$structure['title']['hiddenByDefault'] = true;
 			$structure['infoSection']['hiddenByDefault'] = true;
 			$structure['scheduleSection']['hiddenByDefault'] = true;
@@ -424,14 +424,8 @@ class Event extends DataObject {
 			$structure['infoSection']['properties']['fieldSetFieldSection']['hiddenByDefault'] = true;
 		} else {
 			$eventTypes = EventType::getEventTypeList();
-			$structure['eventTypeId'] = [
-				'property' => 'eventTypeId',
-				'type' => 'enum',
-				'label' => 'Event Type',
-				'description' => 'The type of event',
-				'values' => $eventTypes,
-				'readOnly' => true,
-			];
+			$structure['eventTypeId']['values'] = $eventTypes;
+			$structure['eventTypeId']['readOnly'] = true;
 			$structure['locationId']['readOnly'] = true;
 			$structure['infoSection']['expandByDefault'] = false;
 			$structure['scheduleSection']['hiddenByDefault'] = false;
@@ -450,11 +444,14 @@ class Event extends DataObject {
 			// convert the array to string before storing in the database
 			$this->weekDays = implode(",", $this->weekDays);
 		}
+		// Save changed fields before parent::update() clears them.
+		$changedFields = $this->_changedFields;
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveFields();
+			$this->_changedFields = $changedFields;
 			$this->generateInstances();
 		}
 		return $ret;
@@ -795,12 +792,14 @@ class Event extends DataObject {
 			$instance->eventId = $this->id;
 			$instance->deleted = 0;
 			$instance->find();
+			$dates = [];
 			while ($instance->fetch()) {
 				$date = strtotime($instance->date);
 				if ($date) {
-					$this->_datesPreview .= date("l, F jS, Y", $date) . "; ";
+					$dates[] = date("l, F jS, Y", $date);
 				}
 			}
+			$this->_datesPreview = implode("; ", $dates);
 		}
 		return $this->_datesPreview ?? '';
 	}

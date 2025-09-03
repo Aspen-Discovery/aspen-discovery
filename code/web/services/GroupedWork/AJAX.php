@@ -235,7 +235,8 @@ class GroupedWork_AJAX extends JSON_Action {
 		$series = $recordDriver->getSeries();
 		if (!empty($indexedSeries) || !empty($series)) {
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 			$interface->assign('indexedSeries', $indexedSeries);
@@ -583,6 +584,13 @@ class GroupedWork_AJAX extends JSON_Action {
 		$workReview = new UserWorkReview();
 		$workReview->groupedRecordPermanentId = $_REQUEST['id'];
 		$workReview->userId = UserAccount::getActiveUserId();
+		if (empty($workReview->title)) {
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$driver = new GroupedWorkDriver($_REQUEST['id']);
+			if ($driver && $driver->isValid()) {
+				$workReview->title = $driver->getTitle();
+			}
+		}
 		if ($workReview->find(true)) {
 			if ($rating != $workReview->rating) { // update gives an error if the rating value is the same as stored.
 				$workReview->rating = $rating;
@@ -795,6 +803,11 @@ class GroupedWork_AJAX extends JSON_Action {
 			// set the user's rating and/or review
 			if (!empty($rating) && is_numeric($rating)) {
 				$groupedWorkReview->rating = $rating;
+			}
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$driver = new GroupedWorkDriver($id);
+			if ($driver && $driver->isValid()) {
+				$groupedWorkReview->title = $driver->getTitle();
 			}
 			if ($newReview) {
 				$groupedWorkReview->review = $HadReview ? $comment : ''; // set an empty review when the user was doing only ratings. (per library settings) //TODO there is no default value in the database.
@@ -2663,4 +2676,121 @@ class GroupedWork_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	public function getHorizDisplayFormatEdition () : array {
+		global $interface;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$interface->assign('workId', $id);
+		$selectedFormat = $_REQUEST['format'];
+		$interface->assign('format', $selectedFormat);
+		$variationId = $_REQUEST['variationId'];
+		$interface->assign('variationId', $variationId);
+
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'No related manifestations exist for this record',
+				'isPublicFacing' => 'true',
+			]),
+		];
+
+		$groupedWorkDriver = new GroupedWorkDriver($id);
+		$relatedManifestation = null;
+		$foundManifestation = false;
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		foreach ($relatedManifestations as $relatedManifestation) {
+			if ($relatedManifestation->format == $selectedFormat) {
+				$foundManifestation = true;
+				break;
+			}
+		}
+
+		if ($foundManifestation) {
+			$variation = null;
+			$foundVariation = false;
+			foreach ($relatedManifestation->getVariations() as $variation) {
+				if ($variation->databaseId == $variationId) {
+					$foundVariation = true;
+					break;
+				}
+			}
+
+			if ($foundVariation) {
+				$relatedRecords = $variation->getRelatedRecords();
+				$firstRecord = reset($relatedRecords);
+				$interface->assign('firstRecord', $firstRecord);
+				$interface->assign('isEContent', $firstRecord->isEContent());
+				$interface->assign('itemSummary', $firstRecord->getItemSummary());
+				$interface->assign('relatedRecords', $relatedRecords);
+				$interface->assign('relatedManifestation', $relatedManifestation);
+				$interface->assign('variationId', $variation->databaseId);
+				$interface->assign('workId', $id);
+
+				$result = [
+					'success' => true,
+					'message' => $interface->fetch('GroupedWork/horizDisplayEdition.tpl'),
+				];
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	public function getAllEditionsForVariation () : array {
+		global $interface;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$interface->assign('workId', $id);
+		$selectedFormat = $_REQUEST['format'];
+		$interface->assign('format', $selectedFormat);
+		$variationId = $_REQUEST['variationId'];
+		$interface->assign('variationId', $variationId);
+
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'No related manifestations exist for this record',
+				'isPublicFacing' => 'true',
+			]),
+		];
+
+		$groupedWorkDriver = new GroupedWorkDriver($id);
+		$relatedManifestation = null;
+		$foundManifestation = false;
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		foreach ($relatedManifestations as $relatedManifestation) {
+			if ($relatedManifestation->format == $selectedFormat) {
+				$foundManifestation = true;
+				break;
+			}
+		}
+
+		if ($foundManifestation) {
+			$variation = null;
+			$foundVariation = false;
+			foreach ($relatedManifestation->getVariations() as $variation) {
+				if ($variation->databaseId == $variationId) {
+					$foundVariation = true;
+					break;
+				}
+			}
+
+			if ($foundVariation) {
+				$relatedRecords = $variation->getRelatedRecords();
+				$interface->assign('relatedRecords', $relatedRecords);
+				$interface->assign('relatedManifestation', $relatedManifestation);
+				$interface->assign('inPopUp', false);
+				$interface->assign('promptAlternateEdition', false);
+
+				$result = [
+					'success' => true,
+					'message' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
+				];
+			}
+		}
+
+		return $result;
+	}
 }

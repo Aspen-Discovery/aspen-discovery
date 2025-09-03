@@ -313,8 +313,8 @@
 		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
 		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
-		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" sortMissingLast="true"/>
+		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false" sortMissingLast="true"/>
 		<field name="itype" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 

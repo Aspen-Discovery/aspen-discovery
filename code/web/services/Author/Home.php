@@ -224,9 +224,11 @@ class Author_Home extends ResultsAction {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 			$interface->assign($detailOption, true);
 		}
+		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 
 		$this->setShowCovers();
 

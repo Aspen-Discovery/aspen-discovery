@@ -32,20 +32,20 @@
 		"#combined-results-section-results-{$combinedResultSection->id}",
 		{/foreach}
 	];
-function reloadCombinedResults(){ldelim}
-	{foreach from=$combinedResultSections item=combinedResultSection}
-	AspenDiscovery.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:javascript}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
-	{/foreach}
-{rdelim};
+	function reloadCombinedResults(){ldelim}
+		{foreach from=$combinedResultSections item=combinedResultSection}
+			{assign var=resultsClass value=get_class($combinedResultSection)}
+			AspenDiscovery.Searches.getCombinedResults('{$resultsClass}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:javascript}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
+		{/foreach}
+	{rdelim}
 
-$(function(){ldelim}
+	$(function(){ldelim}
 		AspenDiscovery.Searches.reorderCombinedResults();
 		reloadCombinedResults();
 
 		$(window).resize(function(){ldelim}
 			AspenDiscovery.Searches.reorderCombinedResults();
 		{rdelim});
-
-{rdelim});
+	{rdelim});
 </script>
 

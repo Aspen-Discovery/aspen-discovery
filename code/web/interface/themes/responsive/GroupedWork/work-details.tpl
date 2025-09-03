@@ -10,23 +10,27 @@
 		{/if}
 		{if $recordDriver->hasCachedSeries()}
 			{assign var=summSeries value=$recordDriver->getSeries(false)}
-			{if !empty($summSeries)}
+			{if !empty($summSeries) && empty($summSeries.allHidden)}
 				<div class="series row">
 					<div class="result-label col-md-3">{translate text="Series" isPublicFacing=true} </div>
 					<div class="col-md-9 result-value">
 						{if !empty($summSeries.fromNovelist)}
 							<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)}<strong> {translate text="volume %1%" 1=$summSeries.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}
 						{elseif !empty($summSeries.fromSeriesIndex)}
-							<a href="/Series/{$summSeries.seriesId}">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)}<strong> {translate text="volume %1%" 1=$summSeries.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
+							{if !$summSeries.hidden}
+								<a href="/Series/{$summSeries.seriesId}">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)}<strong> {translate text="volume %1%" 1=$summSeries.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
+							{/if}
 							{if !empty($summSeries.additionalSeries)}
 								{assign var=numSeriesShown value=1}
 								{foreach from=$summSeries.additionalSeries item=additional}
-									{assign var=numSeriesShown value=$numSeriesShown+1}
-									{if $numSeriesShown == 4}
-										<a onclick="$('#moreSeries').show();$('#moreSeriesLink').hide();" id="moreSeriesLink">{translate text='More Series...' isPublicFacing=true}</a>
-										<div id="moreSeries" style="display:none">
+									{if !$additional.hidden}
+										{assign var=numSeriesShown value=$numSeriesShown+1}
+										{if $numSeriesShown == 4}
+											<a onclick="$('#moreSeries').show();$('#moreSeriesLink').hide();" id="moreSeriesLink">{translate text='More Series...' isPublicFacing=true}</a>
+											<div id="moreSeries" style="display:none">
+										{/if}
+										<a href="/Series/{$additional.seriesId}">{$additional.seriesTitle}</a>{if !empty($additional.volume)}<strong> {translate text="volume %1%" 1=$additional.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
 									{/if}
-									<a href="/Series/{$additional.seriesId}">{$additional.seriesTitle}</a>{if !empty($additional.volume)}<strong> {translate text="volume %1%" 1=$additional.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
 								{/foreach}
 								{if $numSeriesShown >= 4}
 									</div>

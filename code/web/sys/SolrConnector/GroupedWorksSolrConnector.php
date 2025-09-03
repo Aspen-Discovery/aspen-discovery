@@ -15,11 +15,7 @@ class GroupedWorksSolrConnector extends Solr {
 		return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
 	}
 
-	function getRecordByBarcode($barcode) {
-		if ($this->debug) {
-			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
-		}
-
+	function getRecordByBarcode($barcode) : ?array {
 		// Query String Parameters
 		$options = [
 			'q' => "barcode:\"$barcode\"",
@@ -30,11 +26,7 @@ class GroupedWorksSolrConnector extends Solr {
 			AspenError::raiseError($result);
 		}
 
-		if (isset($result['response']['docs'][0])) {
-			return $result['response']['docs'][0];
-		} else {
-			return null;
-		}
+		return $result['response']['docs'][0] ?? null;
 	}
 
 	function getRecordByIsbn($isbns, $fieldsToReturn = null) {

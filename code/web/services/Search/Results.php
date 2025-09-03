@@ -8,7 +8,7 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 class Search_Results extends ResultsAction {
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $timer;
 		global $memoryWatcher;
@@ -104,9 +104,11 @@ class Search_Results extends ResultsAction {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 			$interface->assign($detailOption, true);
 		}
+		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 
 
 		// Include Search Engine Class
@@ -754,22 +756,17 @@ class Search_Results extends ResultsAction {
 		$searchLocation = Location::getSearchLocation(null);
 
 		if ($searchLocation) {
-			$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
-			$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
-			$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
-			$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
-			$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
-			$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
-			$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+			$groupedWorkDisplaySettings = $searchLocation->getGroupedWorkDisplaySettings();
 		} else {
-			$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
-			$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
-			$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
-			$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
-			$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
-			$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
-			$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+			$groupedWorkDisplaySettings = $searchLibrary->getGroupedWorkDisplaySettings();
 		}
+		$superScopeLabel = $groupedWorkDisplaySettings->availabilityToggleLabelSuperScope;
+		$localLabel = $groupedWorkDisplaySettings->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+		$availableLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+		$availableOnlineLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
 		return [
 			$superScopeLabel,
 			$localLabel,

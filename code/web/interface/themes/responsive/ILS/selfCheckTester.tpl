@@ -8,6 +8,10 @@
 					<div><strong>{$checkoutResult.title}</strong></div>
 					<div>{$checkoutResult.message}</div>
 
+					{if !empty($checkoutResult.completionMessage)}
+						<div>{$checkoutResult.completionMessage}</div>
+					{/if}
+
 					{if !empty($checkoutResult.itemData)}
 						<div>Title: {$checkoutResult.itemData.title}</div>
 						<div>Due: {$checkoutResult.itemData.due}</div>

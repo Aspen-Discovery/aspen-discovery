@@ -1,6 +1,9 @@
 AspenDiscovery.GroupedWork = (function(){
 	return {
 		hasTableOfContentsInRecord: false,
+		groupedWorks: {},
+		manifestationSwipers: {},
+		variationSwipers: {},
 
 		clearUserRating: function (groupedWorkId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
@@ -19,13 +22,13 @@ AspenDiscovery.GroupedWork = (function(){
 		clearNotInterested: function (notInterestedId){
 			var url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
-					url, function(data){
-						if (data.result === false){
-							AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
-						}else{
-							$("#notInterested" + notInterestedId).hide();
-						}
+				url, function(data){
+					if (data.result === false){
+						AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
+					}else{
+						$("#notInterested" + notInterestedId).hide();
 					}
+				}
 			);
 		},
 
@@ -733,5 +736,145 @@ AspenDiscovery.GroupedWork = (function(){
 			);
 			return false;
 		},
+
+		initializeHorizontalFormatSwipers: function(workId) {
+			this.manifestationSwipers[workId] = new Swiper('.swiper-manifestations-' + workId, {
+				slidesPerView: 4,
+				spaceBetween: 5,
+				direction: 'horizontal',
+
+				// Accessibility
+				a11y: {
+					enabled: true
+				},
+
+				// Navigation arrows
+				navigation: {
+					nextEl: '#swiper-button-manifestation-next-' + workId,
+					prevEl: '#swiper-button-manifestation-prev-' + workId
+				}
+			});
+			// Fix keyboard navigation
+			$(".swiper-manifestations-" + workId + " .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+			$(".swiper-manifestations-" + workId + " .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+			this.manifestationSwipers[workId].on('slideChangeTransitionEnd', function () {
+				$("#browse-category-feed .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+				$("#browse-category-feed .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+
+				const newSlideIndex = AspenDiscovery.GroupedWork.manifestationSwipers[workId].activeIndex;
+				// Get the element for the newly selected slide
+				const newSlideElement = AspenDiscovery.GroupedWork.manifestationSwipers[workId].slides[newSlideIndex];
+				AspenDiscovery.GroupedWork.showManifestation(newSlideElement.dataset.workid, newSlideElement.dataset.format, newSlideElement.dataset.cleanedworkid);
+			});
+			this.manifestationSwipers[workId].on('click', function (swiper, event) {
+				if (swiper.clickedIndex !== undefined) {
+					// Navigate to the clicked slide
+					swiper.slideTo(swiper.clickedIndex);
+				}
+			});
+			this.variationSwipers[workId] = new Swiper('.swiper-variations-' + workId, {
+				slidesPerView: 4,
+				spaceBetween: 5,
+				direction: 'horizontal',
+
+				// Accessibility
+				a11y: {
+					enabled: true
+				},
+
+				// Navigation arrows
+				navigation: {
+					nextEl: '#swiper-button-variation-next-' + workId,
+					prevEl: '#swiper-button-variation-prev-' + workId
+				}
+			});
+			// Fix keyboard navigation
+			$('#swiper-button-variation-next-' + workId + " .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+			$('#swiper-button-variation-next-' + workId + " .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+			this.variationSwipers[workId].on('slideChangeTransitionEnd', function () {
+				$('#swiper-button-variation-next-' + workId + " .swiper-wrapper > .swiper-slide:not(.swiper-slide-visible) a").prop("tabindex", "-1");
+				$('#swiper-button-variation-next-' + workId + " .swiper-wrapper > .swiper-slide-visible a").removeProp("tabindex");
+			});
+		},
+
+		showManifestation: function(workId, format, cleanedWorkId) {
+			let variationsInfoElement = $('#variationsInfo_' + workId);
+			variationsInfoElement.hide();
+			let activeManifestationInfoJSON = this.groupedWorks[cleanedWorkId][format];
+			let activeManifestationInfo = JSON.parse(activeManifestationInfoJSON);
+			// noinspection JSUnresolvedReference
+			if (activeManifestationInfo.numVariations === 1) {
+				const activeVariationInfo = Object.values(activeManifestationInfo.variations)[0];
+				this.showVariation(workId, format, activeVariationInfo.databaseId, cleanedWorkId);
+			}else{
+				//Show variations swiper
+				let variationSwiper = this.variationSwipers[workId];
+				variationSwiper.removeAllSlides();
+				$.each(activeManifestationInfo.variations, function(){
+					let variationButton = '<div class="swiper-slide horizontal-format-button">\n' +
+						'<a onclick="return AspenDiscovery.GroupedWork.showVariation(\'' + workId + '\', \'' + format + '\', \'' + this.databaseId + '\', \'' + cleanedWorkId + '\');">' +
+						this.label + '<br/>' + this.groupedStatus +
+						'</a>' +
+						'</div>'
+					variationSwiper.appendSlide(variationButton);
+				});
+				variationsInfoElement.show();
+				//Show the first variation
+				const activeVariationInfo = Object.values(activeManifestationInfo.variations)[0];
+				this.showVariation(workId, format, activeVariationInfo.databaseId, cleanedWorkId);
+			}
+
+			return false;
+		},
+
+		showVariation: function(workId, format, variationId, cleanedWorkId){
+			let activeManifestationInfoJSON = this.groupedWorks[cleanedWorkId][format];
+			let activeManifestationInfo = JSON.parse(activeManifestationInfoJSON);
+			//let activeVariationInfo = activeManifestationInfo.variations[variationId];
+
+			this.showEdition(workId, format, variationId, cleanedWorkId);
+
+			//$("#variationInfo_" + workId).html(editionInfo);
+
+			return false;
+		},
+
+		showEdition: function(workId, format, variationId) {
+			$("#variationInfo_" + workId).html("Loading");
+			var url = Globals.path + '/GroupedWork/' + workId + '/AJAX';
+			let params = {
+				'method': 'getHorizDisplayFormatEdition',
+				'format':format,
+				'variationId':variationId
+			}
+			$.getJSON(url, params, function (data){
+				if (data.success) {
+					$("#variationInfo_" + workId).html(data.message);
+				}else{
+					$("#variationInfo_" + workId).html("");
+				}
+			});
+
+			return false;
+		},
+
+		showAllEditionsForVariation: function(workId, format, variationId) {
+			$("#horizDisplayShowEditionsRow_" + workId).hide();
+			var url = Globals.path + '/GroupedWork/' + workId + '/AJAX';
+			let params = {
+				'method': 'getAllEditionsForVariation',
+				'format':format,
+				'variationId':variationId
+			}
+			$.getJSON(url, params, function (data){
+				if (data.success) {
+					$("#horizDisplayAllEditions_" + workId).html(data.message);
+				}else{
+					$("#horizDisplayAllEditions_" + workId).html("");
+				}
+			});
+
+			return false;
+		}
 	};
 }(AspenDiscovery.GroupedWork || {}));

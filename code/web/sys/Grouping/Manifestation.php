@@ -453,4 +453,22 @@ class Grouping_Manifestation {
 		return reset($this->_variations);
 	}
 
+	/**
+	 * Returns information for use when displaying grouped work manifestations using the horizontal display
+	 *
+	 * @return string
+	 * @noinspection PhpUnused
+	 */
+	function getHorizontalFormatDisplayInfo() : string {
+		$variationsData = [];
+		foreach ($this->_variations as $variation) {
+			$variationsData[$variation->databaseId] = $variation->getHorizontalFormatDisplayInfo();
+		}
+		$data = [
+			'numVariations' => $this->getNumVariations(),
+			'variations' => $variationsData
+		];
+		return json_encode($data);
+	}
+
 }

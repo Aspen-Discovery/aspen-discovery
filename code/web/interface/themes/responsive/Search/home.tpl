@@ -32,13 +32,13 @@
 							<div class="swiper-slide" id="swiper-loading-{$browseCategory.textId}" style="height: 200px">
 								<i class="fas fa-lg fa-spinner fa-spin"></i>
 							</div>
-						   <script type="text/javascript">
-							   $(function() {
-								   setTimeout(function() {
-									   AspenDiscovery.Browse.initializeBrowseCategorySwiper("{$browseCategory.textId}");
-								   }, 1000);
-							   });
-						   </script>
+							<script type="text/javascript">
+								$(function() {ldelim}
+									setTimeout(function() {ldelim}
+										AspenDiscovery.Browse.initializeBrowseCategorySwiper("{$browseCategory.textId}");
+									{rdelim}, 1000);
+								{rdelim})
+							</script>
 						</div>
 						<div class="swiper-navigation-container">
 							<div class="swiper-button-next"></div>

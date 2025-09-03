@@ -832,11 +832,13 @@ public class PolarisExportMain {
 
 				//Update records
 				boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
-				totalChanges += updateBibsFromPolaris(lastExtractTime);
-				if (!indexingProfile.isRunFullUpdate()) {
-					//Process deleted bibs
+				if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0) {
+					//Process incremental for updated records and deleted records
+					totalChanges += updateBibsFromPolarisIncremental(lastExtractTime);
 					totalChanges += extractDeletedBibs(lastExtractTime);
 				} else {
+					//Process full update for all records
+					totalChanges += updateBibsFromPolarisFull(lastExtractTime);
 					//Loop through remaining records and delete them
 					if (allowDeletingExistingRecords) {
 						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
@@ -938,11 +940,8 @@ public class PolarisExportMain {
 		return numChanges;
 	}
 
-	private static int updateBibsFromPolaris(long lastExtractTime) {
+	private static int updateBibsFromPolarisFull(long lastExtractTime) {
 		int numChanges = 0;
-
-		bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
-		itemIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
 
 		//Get a paged list of all bibs
 		String lastId = "0";
@@ -953,18 +952,11 @@ public class PolarisExportMain {
 		} else {
 			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		}
-		String formattedLastExtractTime = "";
-		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
-			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
-		}
 		if (indexingProfile.isRunFullUpdate() && indexingProfile.getLastChangeProcessed() > 0){
 			lastId = Long.toString(indexingProfile.getLastChangeProcessed());
 			logEntry.incSkipped(indexingProfile.getLastChangeProcessed());
 			logEntry.addNote("Starting processing at bib " + lastId);
 		}
-		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, StandardCharsets.UTF_8);
-		String formattedTimeNow = dateFormatter.format(Instant.now());
 
 		//Get the highest bib from Polaris
 		//noinspection SpellCheckingInspection
@@ -985,20 +977,6 @@ public class PolarisExportMain {
 			}
 			//noinspection SpellCheckingInspection
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
-			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-				//noinspection SpellCheckingInspection
-				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
-				if (use7_4DateFormatFunctionality()) {
-					//noinspection SpellCheckingInspection
-					getBibsUrl += "&enddatecreated=" + formattedTimeNow;
-				}
-				//noinspection SpellCheckingInspection
-				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
-				if (use7_4DateFormatFunctionality()) {
-					//noinspection SpellCheckingInspection
-					getBibsUrl += "&enddatemodified=" + formattedTimeNow;
-				}
-			}
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
 			numChanges += response.numChanges;
 			//Polaris has an issue where if there are more than 100 suppressed titles, it will return 0 as the lastId.  We need to account for that
@@ -1022,193 +1000,253 @@ public class PolarisExportMain {
 		indexingProfile.setLastChangeProcessed(0);
 		indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 
+		logEntry.addNote("Finished updating bibs");
+		logEntry.saveResults();
+		
+		return numChanges;
+	}
+
+	private static int updateBibsFromPolarisIncremental(long lastExtractTime) {
+		int numChanges = 0;
+
+		bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
+		itemIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
+
+		//Get a paged list of all bibs
+		MarcFactory marcFactory = MarcFactory.newInstance();
+		DateTimeFormatter dateFormatter;
+		if (use7_4DateFormatFunctionality()) {
+			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		} else {
+			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		}
+		String formattedLastExtractTime = "";
+		formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+		logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
+		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, StandardCharsets.UTF_8);
+		String formattedTimeNow = dateFormatter.format(Instant.now());
+
+		//Get the highest bib from Polaris
+		//noinspection SpellCheckingInspection
+		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
+		long maxBibId = -1;
+		if (maxBibResponse.isSuccess()){
+			maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
+			logEntry.addNote("The maximum bib id in the Polaris Database is " + maxBibId);
+		}
+
 		//If we are doing a continuous index, get a list of any items that have been updated or changed or bib ids that have been replaced
-		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-			HashSet<String> bibsToUpdate = new HashSet<>();
+		HashSet<String> bibsToUpdate = new HashSet<>();
 
-			//Get a list of any bibs that have been replaced.
-			DateTimeFormatter dateReplacedFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-			String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
-			//noinspection SpellCheckingInspection
-			String getBibReplacedUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/replacementids?startdate=" + formattedLastItemExtractDate;
-			WebServiceResponse bibsReplaced = callPolarisAPI(getBibReplacedUrl, null, "GET", "application/json", accessSecret);
-			if (bibsReplaced.isSuccess()){
-				try {
-					JSONObject response = bibsReplaced.getJSONResponse();
-					JSONArray allBibs = response.getJSONArray("BibReplacementIDRows");
-					logEntry.addNote("There were " + allBibs.length() + "bibs where the id has been replaced");
-					for (int i = 0; i < allBibs.length(); i++) {
-						JSONObject curBibReplacement = allBibs.getJSONObject(i);
-						String originalId = Long.toString(curBibReplacement.getLong("OriginalBibRecordID"));
-						String newId = Long.toString(curBibReplacement.getLong("NewBibliographicRecordID"));
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), originalId);
-						if (result.reindexWork){
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						}else if (result.deleteWork){
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
-						}
-						logEntry.incDeleted();
-						bibsToUpdate.add(newId);
-					}
-					logEntry.saveResults();
-				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for replaced bibs response", e);
-				}
-			}
-
-			DateTimeFormatter itemDateFormatter;
-			if (use7_4DateFormatFunctionality()) {
-				itemDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-			} else {
-				itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-			}
-			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
-			logEntry.addNote("Getting a list of all items that have been updated");
-			logEntry.saveResults();
-
-			long sourceId = -1;
+		// Get a list of all the bibs that have been updated since the last extract 
+		String getUpdatedBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/updated?updatedate=" + formattedLastExtractTime;	
+		WebServiceResponse updatedBibs = callPolarisAPI(getUpdatedBibsUrl, null, "GET", "application/json", accessSecret);
+		if (updatedBibs.isSuccess()){
 			try {
-				sourceForPolarisStmt.setString(1, indexingProfile.getName());
-				ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
-				if (sourceForPolarisRS.next()){
-					sourceId = sourceForPolarisRS.getLong(1);
-				}else{
-					//Nothing has been indexed yet, leave source ID set to -1
+				JSONObject response = updatedBibs.getJSONResponse();
+				int errorCode = response.getInt("PAPIErrorCode");
+				if (errorCode != 0) {
+					String errorMessage = response.getString("ErrorMessage");
+					logEntry.incErrors("Polaris API error " + errorCode + ": " + errorMessage);
+					return numChanges;
+				}
+				JSONArray allBibs = response.getJSONArray("BibIDListRows");
+				for (int i = 0; i < allBibs.length(); i++) {
+					JSONObject bibObj = allBibs.getJSONObject(i);
+					String bibId = Long.toString(bibObj.getLong("BibliographicRecordID"));
+					bibsToUpdate.add(bibId);
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error getting source id for " + indexingProfile.getName(), e);
+				logEntry.incErrors("error getting updated bibs list from Polaris", e);
+			}
+		}
+
+		//Get a list of any bibs that have been replaced.
+		DateTimeFormatter dateReplacedFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
+		//noinspection SpellCheckingInspection
+		String getBibReplacedUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/replacementids?startdate=" + formattedLastItemExtractDate;
+		WebServiceResponse bibsReplaced = callPolarisAPI(getBibReplacedUrl, null, "GET", "application/json", accessSecret);
+		if (bibsReplaced.isSuccess()){
+			try {
+				JSONObject response = bibsReplaced.getJSONResponse();
+				JSONArray allBibs = response.getJSONArray("BibReplacementIDRows");
+				logEntry.addNote("There were " + allBibs.length() + "bibs where the id has been replaced");
+				for (int i = 0; i < allBibs.length(); i++) {
+					JSONObject curBibReplacement = allBibs.getJSONObject(i);
+					String originalId = Long.toString(curBibReplacement.getLong("OriginalBibRecordID"));
+					String newId = Long.toString(curBibReplacement.getLong("NewBibliographicRecordID"));
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), originalId);
+					if (result.reindexWork){
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					}else if (result.deleteWork){
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					}
+					logEntry.incDeleted();
+					bibsToUpdate.add(newId);
+				}
+				logEntry.saveResults();
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to parse document for replaced bibs response", e);
+			}
+		}
+
+		DateTimeFormatter itemDateFormatter;
+		if (use7_4DateFormatFunctionality()) {
+			itemDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		} else {
+			itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		}
+		String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
+		logEntry.addNote("Getting a list of all items that have been updated");
+		logEntry.saveResults();
+
+		long sourceId = -1;
+		try {
+			sourceForPolarisStmt.setString(1, indexingProfile.getName());
+			ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
+			if (sourceForPolarisRS.next()){
+				sourceId = sourceForPolarisRS.getLong(1);
+			}else{
+				//Nothing has been indexed yet, leave source ID set to -1
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error getting source id for " + indexingProfile.getName(), e);
+		}
+
+		// Get a list of items that have been deleted and update those MARC records too
+		if (sourceId != -1) {
+			DateTimeFormatter itemDeleteDateFormatter;
+			if (use7_4DateFormatFunctionality()) {
+				itemDeleteDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			}else{
+				itemDeleteDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			}
+			String formattedItemDeleteDate = URLEncoder.encode(itemDeleteDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
+
+			//noinspection SpellCheckingInspection
+			String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedItemDeleteDate;
+			WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
+			int bibsToUpdateBasedOnDeletedItems = 0;
+			if (pagedDeletedItems.isSuccess()) {
+				try {
+					JSONObject response = pagedDeletedItems.getJSONResponse();
+					JSONArray allItems = response.getJSONArray("ItemIDListRows");
+					logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
+					logEntry.saveResults();
+					for (int i = 0; i < allItems.length(); i++) {
+						JSONObject curItem = allItems.getJSONObject(i);
+						long itemId = curItem.getLong("ItemRecordID");
+						//Figure out the bib record based on the item id.
+						String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+						if (bibForItem == null) {
+							bibForItem = getBibIdForItemId(itemId);
+						}
+						if (bibForItem != null) {
+							if (!bibsToUpdate.contains(bibForItem)) {
+								logEntry.incProducts();
+								bibsToUpdate.add(bibForItem);
+								bibsToUpdateBasedOnDeletedItems++;
+								if (logEntry.getNumProducts() % 250 == 0) {
+									logEntry.saveResults();
+								}
+							}
+						}
+						if (i > 0 && (i % 1000 == 0)) {
+							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
+							logEntry.saveResults();
+						}
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to parse document for deleted items response", e);
+				}
+			}
+			logEntry.addNote("There are " + bibsToUpdateBasedOnDeletedItems + " records to be updated based on deleted items.");
+			logEntry.saveResults();
+
+			//Get the highest item id from Polaris
+			//noinspection SpellCheckingInspection
+			WebServiceResponse maxItemResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/maxid", null, "GET", "application/json", accessSecret);
+			long maxItemId = -1;
+			if (maxItemResponse.isSuccess()){
+				maxItemId = maxItemResponse.getJSONResponse().getJSONArray("ItemIDListRows").getJSONObject(0).getLong("ItemRecordID");
+				logEntry.addNote("The maximum item id in the Polaris Database is " + maxItemId);
 			}
 
-			// Get a list of items that have been deleted and update those MARC records too
-			if (sourceId != -1) {
-				DateTimeFormatter itemDeleteDateFormatter;
-				if (use7_4DateFormatFunctionality()) {
-					itemDeleteDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-				}else{
-					itemDeleteDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
-				}
-				String formattedItemDeleteDate = URLEncoder.encode(itemDeleteDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
-
+			boolean doneLoading = false;
+			long highestItemIdProcessed = 0;
+			int bibsToUpdateBasedOnChangedItems = 0;
+			while (!doneLoading) {
 				//noinspection SpellCheckingInspection
-				String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedItemDeleteDate;
-				WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
-				int bibsToUpdateBasedOnDeletedItems = 0;
-				if (pagedDeletedItems.isSuccess()) {
+				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&nrecs=100&lastId=" + highestItemIdProcessed;
+				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
+				if (pagedItems.isSuccess()) {
 					try {
-						JSONObject response = pagedDeletedItems.getJSONResponse();
+						JSONObject response = pagedItems.getJSONResponse();
 						JSONArray allItems = response.getJSONArray("ItemIDListRows");
-						logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
-						logEntry.saveResults();
+
+						if (allItems.isEmpty()) {
+							doneLoading = true;
+						}
 						for (int i = 0; i < allItems.length(); i++) {
 							JSONObject curItem = allItems.getJSONObject(i);
 							long itemId = curItem.getLong("ItemRecordID");
-							//Figure out the bib record based on the item id.
-							String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
-							if (bibForItem == null) {
-								bibForItem = getBibIdForItemId(itemId);
-							}
-							if (bibForItem != null) {
-								if (!bibsToUpdate.contains(bibForItem)) {
-									logEntry.incProducts();
-									bibsToUpdate.add(bibForItem);
-									bibsToUpdateBasedOnDeletedItems++;
-									if (logEntry.getNumProducts() % 250 == 0) {
-										logEntry.saveResults();
-									}
-								}
-								//						}else{
-								//							logger.info("The bib was deleted when item " + itemId + " was.");
-							}
-							if (i > 0 && (i % 1000 == 0)) {
-								logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
-								logEntry.saveResults();
-							}
-						}
-					} catch (Exception e) {
-						logEntry.incErrors("Unable to parse document for deleted items response", e);
-					}
-				}
-				logEntry.addNote("There are " + bibsToUpdateBasedOnDeletedItems + " records to be updated based on deleted items.");
-				logEntry.saveResults();
-
-				//Get the highest item id from Polaris
-				//noinspection SpellCheckingInspection
-				WebServiceResponse maxItemResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/maxid", null, "GET", "application/json", accessSecret);
-				long maxItemId = -1;
-				if (maxItemResponse.isSuccess()){
-					maxItemId = maxItemResponse.getJSONResponse().getJSONArray("ItemIDListRows").getJSONObject(0).getLong("ItemRecordID");
-					logEntry.addNote("The maximum item id in the Polaris Database is " + maxItemId);
-				}
-
-				doneLoading = false;
-				highestIdProcessed = 0;
-				int bibsToUpdateBasedOnChangedItems = 0;
-				while (!doneLoading) {
-					//noinspection SpellCheckingInspection
-					String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&nrecs=100&lastId=" + highestIdProcessed;
-					WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
-					if (pagedItems.isSuccess()) {
-						try {
-							JSONObject response = pagedItems.getJSONResponse();
-							JSONArray allItems = response.getJSONArray("ItemIDListRows");
-
-							if (allItems.isEmpty()) {
-								doneLoading = true;
-							}
-							for (int i = 0; i < allItems.length(); i++) {
-								JSONObject curItem = allItems.getJSONObject(i);
-								long itemId = curItem.getLong("ItemRecordID");
-								if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
-									//Figure out the bib record based on the item id.
-									//Getting from Aspen is faster if we can get it.
-									HashSet<String> bibsForItem = getBibIdsForItemIdFromAspen(itemId, sourceId);
-									for (String bibForItem : bibsForItem) {
-										//check we've already updated this bib, if so it's ok to skip
-										if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
-											logEntry.incProducts();
-											bibsToUpdate.add(bibForItem);
-											bibsToUpdateBasedOnChangedItems++;
-											if (logEntry.getNumProducts() % 250 == 0) {
-												logEntry.saveResults();
-											}
+							if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
+								//Figure out the bib record based on the item id.
+								//Getting from Aspen is faster if we can get it.
+								HashSet<String> bibsForItem = getBibIdsForItemIdFromAspen(itemId, sourceId);
+								for (String bibForItem : bibsForItem) {
+									//check we've already updated this bib, if so it's ok to skip
+									if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
+										logEntry.incProducts();
+										bibsToUpdate.add(bibForItem);
+										bibsToUpdateBasedOnChangedItems++;
+										if (logEntry.getNumProducts() % 250 == 0) {
+											logEntry.saveResults();
 										}
 									}
-								} else {
-									logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
 								}
-								if (itemId > highestIdProcessed) {
-									highestIdProcessed = itemId;
-								}
-								if (i > 0 && (i % 500 == 0)) {
-									logEntry.addNote("Processed " + i + " items to load bib id for the item");
-								}
+							} else {
+								logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
 							}
-
-							if (highestIdProcessed >= maxItemId){
-								doneLoading = true;
+							if (itemId > highestItemIdProcessed) {
+								highestItemIdProcessed = itemId;
 							}
-						} catch (Exception e) {
-							logEntry.incErrors("Unable to parse document for paged items response", e);
+							if (i > 0 && (i % 500 == 0)) {
+								logEntry.addNote("Processed " + i + " items to load bib id for the item");
+							}
 						}
 
-					}else{
-						logEntry.incErrors("Could not get paged items");
+						if (highestItemIdProcessed >= maxItemId){
+							doneLoading = true;
+						}
+					} catch (Exception e) {
+						logEntry.incErrors("Unable to parse document for paged items response", e);
 					}
+
+				}else{
+					logEntry.incErrors("Could not get paged items");
 				}
-				logEntry.addNote("There are " + bibsToUpdateBasedOnChangedItems + " records to be updated based on changes to the items.");
-				logEntry.saveResults();
 			}
-
-			//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
-			for(String bibNumber: bibsToUpdate){
-				logger.debug("Updating " + bibNumber);
-				numChanges += updateBibFromPolaris(bibNumber, marcFactory, lastExtractTime, false);
-			}
-
-			logEntry.addNote("Finished updating bibs");
+			logEntry.addNote("There are " + bibsToUpdateBasedOnChangedItems + " records to be updated based on changes to the items.");
 			logEntry.saveResults();
 		}
+
+
+		//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
+		List<String> bibsNumber = new ArrayList<>(bibsToUpdate);
+		int batchSize = 50;
+
+		for (int i = 0; i < bibsNumber.size(); i += batchSize) {
+			List<String> batch = bibsNumber.subList(i, Math.min(i + batchSize, bibsNumber.size()));
+			String bibIds = String.join(",", batch);
+			numChanges += updateBibFromPolaris(bibIds, marcFactory, lastExtractTime, false);
+			logEntry.setCurrentId(batch.get(batch.size() - 1));
+		}
+
+		logEntry.addNote("Finished updating bibs");
+		logEntry.saveResults();
 
 		return numChanges;
 	}

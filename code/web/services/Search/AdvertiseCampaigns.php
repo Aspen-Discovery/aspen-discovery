@@ -25,8 +25,7 @@ class AdvertiseCampaigns extends Action {
 				$campaignRewardDescription = $campaignReward->getTextBlockTranslation('description', $activeLanguageCode);
 			}
 			$campaignMilestones = CampaignMilestone::getMilestoneByCampaign($campaignId);
-			// var_dump($campaignMilestones);
-
+			$extraCreditActivites = CampaignExtraCredit::getExtraCreditByCampaign($campaignId);
 		}
 
 		$interface->assign('campaignName', $campaignName);
@@ -36,7 +35,8 @@ class AdvertiseCampaigns extends Action {
 		$interface->assign('campaignRewardImage', $campaignRewardImage);
 		$interface->assign('campaignRewardType', $campaignRewardType);
 		$interface->assign('campaignRewardExists', $campaignRewardExists);
-		$interface->Assign('campaignRewardDescription', $campaignRewardDescription);
+		$interface->assign('campaignRewardDescription', $campaignRewardDescription);
+		$interface->assign('extraCreditActivities', $extraCreditActivites);
 
 		$this->display('/advertise-campaigns.tpl', 'Advertise Campaigns');
 	}

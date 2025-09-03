@@ -4607,6 +4607,17 @@ class Library extends DataObject {
 		return false;
 	}
 
+	static function hasCommunityEngagementEnabled(): bool {
+		global $enabledModules;
+		global $library;
+
+		if (array_key_exists('Community Engagement', $enabledModules)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public function getMasqueradeStatus(): int {
 		return $this->allowMasqueradeMode;
 	}
@@ -4727,17 +4738,22 @@ class Library extends DataObject {
 		}
 	}
 
+	private static $_librariesByLocationId = [];
 	static function getLibraryForLocation($locationId) : ?Library {
-		if (isset($locationId) && $locationId > 0) {
-			$libLookup = new Library();
-			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
-			$libLookup->find();
-			if ($libLookup->getNumResults() > 0) {
-				$libLookup->fetch();
-				return clone $libLookup;
+		if (!isset(self::$_librariesByLocationId[$locationId])) {
+			self::$_librariesByLocationId[$locationId] = null;
+			if (isset($locationId) && $locationId > 0) {
+				$libLookup = new Library();
+				$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
+				$libLookup->find();
+				if ($libLookup->getNumResults() > 0) {
+					$libLookup->fetch();
+					self::$_librariesByLocationId[$locationId] = clone $libLookup;
+				}
 			}
 		}
-		return null;
+
+		return self::$_librariesByLocationId[$locationId];
 	}
 
 	public function __get($name) {
@@ -6013,6 +6029,7 @@ class Library extends DataObject {
 		}
 
 		$apiInfo['hasEventSettings'] = $this->hasEventSettings();
+		$apiInfo['hasCommunityEngagementEnabled'] = $this->hasCommunityEngagementEnabled();
 
 		$apiInfo['palaceProjectInstructions'] = null;
 		if ($this->palaceProjectScopeId > 0) {

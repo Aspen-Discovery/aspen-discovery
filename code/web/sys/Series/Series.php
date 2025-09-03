@@ -385,7 +385,7 @@ class Series extends DataObject {
 				$interface->assign('seriesMemberId', $current->getListEntryId());
 
 				$interface->assign('recordDriver', $current);
-				$html[$listPosition] = $interface->fetch($current->getSeriesEntry($this->id));
+				$html[$listPosition] = $interface->fetch($current->getSeriesEntry($this->id, $currentId));
 			}
 		}
 		return $html;

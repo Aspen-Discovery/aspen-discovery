@@ -768,7 +768,7 @@ class BookCoverProcessor {
 				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
 			}
-			if ($recordDriver->isValid()) {
+			if ($recordDriver != null && $recordDriver->isValid()) {
 				$title = $recordDriver->getTitle();
 				if ($recordDriver instanceof OpenArchivesRecordDriver) {
 					$author = '';

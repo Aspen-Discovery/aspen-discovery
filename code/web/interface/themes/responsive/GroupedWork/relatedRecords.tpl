@@ -1,9 +1,9 @@
 {strip}
 	{foreach from=$relatedRecords item=relatedRecord key=index}
-		<div class="row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:1px">
+		<div class="relatedRecord row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:1px">
 			{if !empty($showEditionCovers) && $showEditionCovers == 1}
 				<div class="col-tn-2 col-md-2 col-lg-2">
-					<img src="{$relatedRecord->getBookcoverUrl('small')}" class="img-thumbnail {$coverStyle}">
+					<img src="{$relatedRecord->getBookcoverUrl('small')}" class="img-thumbnail {$coverStyle}" alt="{translate text='Book Cover' inAttribute=true isPublicFacing=true}">
 				</div>
 			{/if}
 

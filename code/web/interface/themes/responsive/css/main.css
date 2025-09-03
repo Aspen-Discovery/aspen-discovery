@@ -10828,6 +10828,62 @@ a.browse-thumbnail.active {
 .trackNumber {
   font-weight: bold;
 }
+.swiper-manifestations {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+.horizontal-format-button {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  text-align: center;
+  position: relative;
+  width: auto !important;
+  font-size: small;
+  height: auto;
+  display: inline-block;
+  border: 1px solid #dddddd;
+  flex-direction: column;
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+.horizontal-format-button.floating {
+  border: none;
+}
+.horizontal-format-button .related-manifestation-shelf-status {
+  font-size: smaller;
+  font-weight: normal;
+  display: flex;
+  text-transform: uppercase;
+}
+.horizontal-format-button.swiper-slide-active {
+  border-width: 3px;
+}
+.variationsInfo {
+  padding-top: 6px;
+  padding-left: 46px;
+  padding-right: 46px;
+}
+.variationInfo {
+  padding-top: 6px;
+  padding-left: 46px;
+  padding-right: 46px;
+}
+.horizDisplayShowEditionsRow {
+  margin-top: 6px;
+  text-align: center;
+}
+.horizDisplayAllEditions {
+  margin-top: 6px;
+}
+.horizDisplayShelfLocations {
+  margin-top: 10px;
+  font-size: small;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.relatedRecord {
+  font-size: small;
+}
 #innReachSearchResultsHeader {
   padding-top: 15px;
 }
@@ -10985,7 +11041,7 @@ a.browse-thumbnail.active {
   body .calendar-nav-cell .btn {
     display: none;
   }
-  body h1 {
+  body h1.calendar-event-h1 {
     display: none;
   }
   body #footer-container {
@@ -11664,6 +11720,28 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   cursor: pointer !important;
 }
 /* Only apply to /MyAccount/list.tpl. */
+[data-context="print-layout"] * {
+  text-shadow: none !important;
+  color: #000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+[data-context="print-layout"] .ui-rater-starsOff,
+[data-context="print-layout"] .ui-rater-starsOn {
+  background: url('/interface/themes/responsive/images/star/stars.png') repeat-x 0 0 !important;
+}
+[data-context="print-layout"] .ui-rater-starsOn {
+  background-position: 0 -36px !important;
+}
+[data-context="print-layout"] .label {
+  border: 1px solid #000;
+}
+[data-context="print-layout"] span.btn-editions {
+  display: none;
+}
+[data-context="print-layout"] .related-manifestation.grouped {
+  border: none !important;
+}
 @media print {
   /* Make sure descriptions and multiple manifestations are visible . */
   body#MyAccount-MyList .list-entry-hidden-desc.hidden-xs,

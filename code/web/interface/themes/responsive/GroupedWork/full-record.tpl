@@ -83,7 +83,7 @@
 						</div>
 					</div>
 				{/if}
-			
+
 				{if !empty($showAudience)}
 					<div class="row result-audience result-{str_replace(" ", "-", join(" ", $recordDriver->getFormats()))|lower}">
 						<div class="result-label col-sm-4 col-xs-12">{translate text='Audience' isPublicFacing=true} </div>
@@ -142,10 +142,12 @@
 
 				{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
-				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
+				{include file="GroupedWork/allManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() summId=$recordDriver->getPermanentId() workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
 
 				<div class="row">
-					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
+					<div class="col-xs-12">
+						{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
+					</div>
 				</div>
 
 			</div>

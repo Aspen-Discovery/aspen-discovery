@@ -113,5 +113,18 @@
 			$borrowPass2.attr('data-rule-equalTo', "#borrower_password");
 			$borrowPass2.attr('data-msg-equalTo', '{translate text="Passwords must match." isPublicFacing=true inAttribute=true}');
 		}
+
+		// Prevent double-submission of self-registration form.
+		let isSubmitting = false;
+		$('form[id^="objectEditor"]').on('submit', (e) => {
+			if (isSubmitting) return e.preventDefault();
+			// Timeout to allow for jQuery validation to check first.
+			setTimeout(() => {
+				if ($(e.target).valid()) {
+					isSubmitting = true;
+					$(e.target).find('button[type="submit"][name="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> {translate text="Processing..." isPublicFacing=true}');
+				}
+			}, 10);
+		});
 	});
 </script>

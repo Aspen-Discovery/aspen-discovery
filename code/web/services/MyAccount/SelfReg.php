@@ -112,14 +112,24 @@ class SelfReg extends Action {
 					} else {
 						//Submit form to ILS if age is validated and contact info is not invalid
 						if (!empty($dob)) {
-							if (SystemUtils::validateAge($library->minSelfRegAge, $dob)){
+							$maxSelfRegAge = $selfRegFields['identitySection']['properties']['borrower_dateofbirth']['maxAgeForSelfReg'] ?? null;
+							if (SystemUtils::validateAge($library->minSelfRegAge, $dob, $maxSelfRegAge)){
 								if (!$invalidContactInfo) {
 									$result = $catalog->selfRegister();
 									$interface->assign('selfRegResult', $result);
 								}
 							} else {
+								if((int) $library->minSelfRegAge > 0 && !empty($maxSelfRegAge) && (int) $maxSelfRegAge > 0){
+									$text = "You must be at least $library->minSelfRegAge and no older than $maxSelfRegAge years old. Please enter a valid date of birth";
+								} elseif($library->minSelfRegAge > 0){
+									$text = "You must be at least $library->minSelfRegAge years old. Please enter a valid date of birth";
+								} elseif(!empty($maxSelfRegAge) && (int) $maxSelfRegAge > 0) {
+									$text = "You must be no older than $maxSelfRegAge years old. Please enter a valid date of birth";
+								} else {
+									$text = "Please enter a valid date of birth";
+								}
 								$ageMessage = translate([
-									'text' => 'You must be at least ' . $library->minSelfRegAge . ' years old. Please enter a valid date of birth.',
+									'text' => $text,
 									'isPublicFacing' => true
 								]);
 								$interface->assign('ageMessage', $ageMessage);

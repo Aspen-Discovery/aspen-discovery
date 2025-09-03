@@ -401,14 +401,15 @@ function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToT
 	$tempSubdomain = '';
 	if (count($serverComponents) >= 3) {
 		// Handle multi-level subdomains by extracting all subdomain combinations.
-		// For discover.kids.library.org, test: discover.kids, kids, discover.
+		// and add to the array in order of most to least specific
+		// For discover.kids.library.org, test: discover.kids, discover.
+		// Do not test kids since that should be entered as a different library if valid.
 		$subdomainParts = array_slice($serverComponents, 0, -2);
-
 		// Add all possible subdomain combinations, starting from the most specific.
-		for ($i = 0; $i < count($subdomainParts); $i++) {
-			$subdomainToTest = implode('.', array_slice($subdomainParts, $i));
+		for ($i = count($subdomainParts); $i >= 1; $i--) {
+			$subdomainToTest = implode('.', array_slice($subdomainParts, 0, $i));
 			$subdomainsToTest[] = $subdomainToTest;
-			if ($i == 0) {
+			if ($i == count($subdomainParts)) {
 				// Use the full subdomain for test indicator processing.
 				$tempSubdomain = $subdomainToTest;
 			}

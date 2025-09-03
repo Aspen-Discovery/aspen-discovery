@@ -35,6 +35,13 @@ abstract class Action
 		$minimalInterface = $_REQUEST['minimalInterface'] ?? false;
 		$interface->assign('minimalInterface', $minimalInterface);
 
+		$printInterface = isset($_REQUEST['print']) ? filter_var($_REQUEST['print'], FILTER_VALIDATE_BOOLEAN) : false;
+		$interface->assign('printInterface', $printInterface);
+		$printLibraryName = isset($_REQUEST['printLibraryName']) ? filter_var($_REQUEST['printLibraryName'], FILTER_VALIDATE_BOOLEAN) : false;
+		$interface->assign('printLibraryName', $printLibraryName);
+		$printLibraryLogo = isset($_REQUEST['printLibraryLogo']) ? filter_var($_REQUEST['printLibraryLogo'], FILTER_VALIDATE_BOOLEAN) : false;
+		$interface->assign('printLibraryLogo', $printLibraryLogo);
+
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
 			$this->loadAccountSidebarVariables();
@@ -45,9 +52,11 @@ abstract class Action
 				//Messages table doesn't exist, ignore
 			}
 		}
-		if ($this->isStandalonePage){
+		if ($this->isStandalonePage) {
 			$interface->display('standalone-layout.tpl');
-		}else {
+		} elseif ($printInterface) {
+			$interface->display('print-layout.tpl');
+		} else {
 			$interface->display('layout.tpl');
 		}
 	}

@@ -24,6 +24,7 @@ abstract class DataObject implements JsonSerializable {
 	private $__orderBy;
 	private $__groupBy;
 	private $__where;
+	private $__hasEmptyWhereAddIn = false;
 	private $__limitStart;
 	private $__limitCount;
 	protected $__lastQuery;
@@ -127,6 +128,11 @@ abstract class DataObject implements JsonSerializable {
 			$this->__queryStmt = null;
 		}
 
+		//If a where add in clause is empty, we will always get no results
+		if ($this->__hasEmptyWhereAddIn) {
+			return false;
+		}
+
 		global $aspen_db;
 		if (!isset($aspen_db)) {
 			return false;
@@ -221,6 +227,10 @@ abstract class DataObject implements JsonSerializable {
 	public function fetchAll(?string $fieldName = null, ?string $fieldValue = null, bool $lowerCaseKey = false, bool $usePrimaryKey = false): array {
 		$this->__fetchingFromDB = true;
 		$results = [];
+		if ($this->__hasEmptyWhereAddIn) {
+			//Don't bother querying since we will return nothing
+			return $results;
+		}
 		if ($fieldName != null && $fieldValue != null) {
 			$this->selectAdd();
 			$this->selectAdd($fieldName);
@@ -307,6 +317,9 @@ abstract class DataObject implements JsonSerializable {
 	}
 
 	public function whereAddIn($field, $values, $escapeValues, $logic = 'AND') : void {
+		if (empty($values)) {
+			$this->__hasEmptyWhereAddIn = true;
+		}
 		if ($escapeValues) {
 			foreach ($values as $index => $value) {
 				$values[$index] = $this->escape($value);
@@ -640,6 +653,11 @@ abstract class DataObject implements JsonSerializable {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
+		}
+
+		if ($this->__hasEmptyWhereAddIn) {
+			//Don't bother querying since we will return nothing
+			return 0;
 		}
 
 		global $aspen_db;
@@ -1079,7 +1097,7 @@ abstract class DataObject implements JsonSerializable {
 	 * @noinspection PhpUnused
 	 */
 	public function setProperty(string $propertyName, $newValue, ?array $propertyStructure): bool {
-		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
+		$propertyChanged = $this->$propertyName !== $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
 			$this->_changedFields[] = $propertyName;
 			$oldValue = $this->$propertyName;

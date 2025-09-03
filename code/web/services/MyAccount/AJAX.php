@@ -4999,6 +4999,17 @@ class MyAccount_AJAX extends JSON_Action {
 			$fines = $patron->getFines(false);
 			$useOutstanding = $patron->getCatalogDriver()->showOutstandingFines();
 
+			// For Sierra, check if user's account is locked
+			if (!empty($fines) && $patron->getCatalogDriver()->isPatronAccountLocked($patron, reset($fines[$patronId]))) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'This account is currently in use by staff.  Fine payments cannot be made at this time.  Please try again after a few moments or contact the library if this issue persists.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
 			$finesPaid = '';
 			$purchaseUnits = [];
 			$purchaseUnits['items'] = [];
@@ -8859,14 +8870,16 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function deleteList() {
+	function deleteList(): array {
 		$result = [
 			'success' => false,
-			'message' => 'Something went wrong.',
+			'message' => 'The selected lists could not be deleted. Please try again or contact library staff.',
 		];
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+
+		$hardDelete = isset($_REQUEST['optOutSoftDeletion']) && $_REQUEST['optOutSoftDeletion'] == 'true';
 
 		if (isset($_REQUEST['selected'])) {
 			$itemsToRemove = $_REQUEST['selected'];
@@ -8874,28 +8887,94 @@ class MyAccount_AJAX extends JSON_Action {
 				$list = new UserList();
 				$list->id = $listId;
 				if ($list->find(true)) {
-					//Perform an action on the list, but verify that the user has permission to do so.
+					// Perform an action on the list, but verify that the user has permission to do so.
 					$userCanEdit = false;
 					$userObj = UserAccount::getActiveUserObj();
-					if ($userObj != false) {
+					if ($userObj) {
 						$userCanEdit = $userObj->canEditList($list);
 					}
 					if ($userCanEdit) {
-						$list->delete();
+						$list->delete(false, $hardDelete);
 						$result['success'] = true;
-						$result['message'] = 'Selected lists deleted successfully';
+						$result['message'] = $hardDelete ? 'The selected lists have been permanently deleted.' : 'The selected lists have been soft deleted.';
 					} else {
-						$result['message'] = 'You do not have permissions to delete that list';
+						$result['message'] = 'You do not have permissions to delete that list.';
 						$result['success'] = false;
 					}
 				} else {
 					$result['success'] = false;
-					$result['message'] = 'Could not find the list to delete';
+					$result['message'] = 'The list to delete could not be found. Please try again or contact library staff.';
 				}
 			}
 		}
 
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getDeleteListForm(): array {
+		$modalBody = translate([
+				'text' => 'Are you sure you want to delete this entire list? The list and all titles within it will be soft-deleted and can be restored by library staff within 30 days.',
+				'isPublicFacing' => true
+			]) . '<br/><br/>' .
+			'<div>' .
+			'<input type="checkbox" id="optOutSoftDeletion" style="margin-right: 5px;">' .
+			'<label class="form-check-label" for="optOutSoftDeletion">' . translate([
+				'text' => 'Opt Out of Soft Deletion',
+				'isPublicFacing' => true
+			]) . '</label>' .
+			'</div>';
+
+		$modalButtons = '<button id="confirmDeleteList" class="tool btn btn-danger" onclick="AspenDiscovery.Lists.doDeleteList()"><span class="fas fa-spinner fa-spin" style="display:none; margin-right: 4px;"></span>' . translate([
+				'text' => 'Yes',
+				'isPublicFacing' => true
+			]) . '</button>';
+		$modalButtons .= '<button id="cancelDeleteList" class="tool btn btn-default" onclick="AspenDiscovery.closeLightbox()">' . translate([
+				'text' => 'No',
+				'isPublicFacing' => true
+			]) . '</button>';
+
+		return [
+			'title' => translate([
+				'text' => 'Delete List?',
+				'isPublicFacing' => true
+			]),
+			'modalBody' => $modalBody,
+			'modalButtons' => $modalButtons
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getDeleteSelectedListsForm(): array {
+		$modalBody = translate([
+				'text' => 'Are you sure you want to delete the selected lists? The lists and all titles within them will be soft-deleted and can be restored by library staff within 30 days.',
+				'isPublicFacing' => true
+			]) . '<br/><br/>' .
+			'<div>' .
+			'<input type="checkbox" id="optOutSoftDeletionBulk" style="margin-right: 5px;">' .
+			'<label class="form-check-label" for="optOutSoftDeletionBulk">' . translate([
+				'text' => 'Opt Out of Soft Deletion',
+				'isPublicFacing' => true
+			]) . '</label>' .
+			'</div>';
+
+		$modalButtons = '<button id="confirmDeleteSelectedLists" class="tool btn btn-danger" onclick="AspenDiscovery.Account.doDeleteSelectedLists()"><span class="fas fa-spinner fa-spin" style="display:none; margin-right: 4px;"></span>' . translate([
+				'text' => 'Yes',
+				'isPublicFacing' => true
+			]) . '</button>';
+		$modalButtons .= '<button id="cancelDeleteSelectedLists" class="tool btn btn-default" onclick="AspenDiscovery.closeLightbox()">' . translate([
+				'text' => 'No',
+				'isPublicFacing' => true
+			]) . '</button>';
+
+		return [
+			'title' => translate([
+				'text' => 'Delete Selected Lists?',
+				'isPublicFacing' => true
+			]),
+			'modalBody' => $modalBody,
+			'modalButtons' => $modalButtons
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -9803,6 +9882,8 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneUsersProgress.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignExtraCreditActivityUsersProgress.php';
+
 
 
 		$campaignId = $_GET['campaignId'] ?? null;
@@ -9857,6 +9938,11 @@ class MyAccount_AJAX extends JSON_Action {
 					$milestoneProgress->userId = $userId;
 					$milestoneProgress->ce_campaign_id = $campaignId;
 					$milestoneProgress->delete(true);
+
+					$extraCreditProgress = new CampaignExtraCreditActivityUsersProgress();
+					$extraCreditProgress->userId = $userId;
+					$extraCreditProgress->ce_campaign_id = $campaignId;
+					$extraCreditProgress->delete(true);
 					//Increase unenrollment counter
 					$campaign->unenrollmentCounter++;
 					$campaign->currentEnrollments--;
@@ -10396,6 +10482,24 @@ class MyAccount_AJAX extends JSON_Action {
 
 		return [
 			'success' => true,
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getListPrintOptions() {
+		global $interface;
+		$interface->assign('printListId', strip_tags($_REQUEST['listId']));
+
+		return [
+			'title' => translate([
+				'text' => 'Print Options',
+				'isAdminFacing' => 'true',
+			]),
+			'modalBody' => $interface->fetch('MyAccount/list-print-options.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Lists.buildAndOpenPrintUrl()'>" . translate([
+					'text' => 'Print',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
 		];
 	}
 

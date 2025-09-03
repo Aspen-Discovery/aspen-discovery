@@ -28,6 +28,7 @@ class SierraSelfRegistrationForm extends DataObject {
 	public $selfRegUseAgency;
 	public $selfRegUsePatronIdBarcode;
 	public $selfRegNoticePrefOptions;
+	public $addSelfRegNote;
 
 
 	private $_fields;
@@ -244,6 +245,14 @@ class SierraSelfRegistrationForm extends DataObject {
 				'description' => "Do not check if a user with the same first name, last name, and birth date already exists",
 				'hideInLists' => true,
 				'default' => 0,
+			],
+			'addSelfRegNote' => [
+				'property' => 'addSelfRegNote',
+				'type' => 'checkbox',
+				'label' => 'Add Self-Registration Note',
+				'description' => 'Automatically add a dated Circ Note in Sierra when patrons self register.',
+				'hideInLists' => true,
+				'default' => 1,
 			],
 			'municipalities' => [
 				'property' => 'municipalities',

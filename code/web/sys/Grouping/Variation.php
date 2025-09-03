@@ -324,4 +324,18 @@ class Grouping_Variation {
 		}
 		return false;
 	}
+
+	/**
+	 * Returns information for use when displaying grouped work manifestations using the horizontal display
+	 *
+	 * @return array
+	 */
+	function getHorizontalFormatDisplayInfo() : array {
+		return [
+			'databaseId' => $this->databaseId,
+			'label' => $this->label,
+			'groupedStatus' => translate(['text' => $this->getStatusInformation()->getGroupedStatus(), 'isPublicFacing' => true]),
+			'numEditions' => $this->getNumRelatedRecords()
+		];
+	}
 }

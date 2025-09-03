@@ -1,4 +1,33 @@
 /* Only apply to /MyAccount/list.tpl. */
+[data-context="print-layout"] {
+  * {
+    text-shadow: none !important;
+    color: #000 !important; // Black prints faster: h5bp.com/s
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ui-rater-starsOff, .ui-rater-starsOn {
+    background: url('/interface/themes/responsive/images/star/stars.png') repeat-x 0 0 !important;
+  }
+
+  .ui-rater-starsOn {
+    background-position: 0 -36px !important;
+  }
+
+  .label {
+    border: 1px solid #000;
+  }
+
+  span.btn-editions {
+    display: none;
+  }
+
+  .related-manifestation.grouped {
+    border: none !important;
+  }
+}
+
 @media print {
   /* Make sure descriptions and multiple manifestations are visible . */
   body#MyAccount-MyList .list-entry-hidden-desc.hidden-xs,

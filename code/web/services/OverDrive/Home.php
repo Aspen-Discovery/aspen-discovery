@@ -53,7 +53,8 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction {
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 

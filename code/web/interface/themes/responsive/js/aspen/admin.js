@@ -1038,7 +1038,7 @@ AspenDiscovery.Admin = (function () {
 					].forEach(selector => $(selector).show());
 					break;
 				case "2": // ILS Request System
-					["#propertyRowallowDeletingILSRequests", "#propertyRowallowMaterialRequestsBranchChoice", "#propertyRowdisplayMaterialsRequestToPublic"]
+					["#propertyRowallowDeletingILSRequests", "#propertyRowallowMaterialRequestsBranchChoice", "#propertyRowdisplayMaterialsRequestToPublic", "#propertyRownewMaterialsRequestSummary"]
 						.forEach(selector => $(selector).show());
 					break;
 				case "3": // External Request Link

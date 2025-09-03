@@ -45,9 +45,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			}
 			$this->id = $recordId;
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-			$this->overDriveProduct = new OverDriveAPIProduct();
-			$this->overDriveProduct->overdriveId = $recordId;
-			if ($this->overDriveProduct->find(true)) {
+			$this->overDriveProduct = OverDriveAPIProduct::getOverDriveProductForId($recordId);
+			if ($this->overDriveProduct !== null) {
 				$this->valid = true;
 			} else {
 				$this->valid = false;
@@ -285,56 +284,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * @return OverDriveAPIProductAvailability[]
 	 */
 	function getAvailabilityInformation() : array {
-		global $library;
 		if ($this->availability == null) {
-			$this->availability = [];
-			$overDriveScopes = $library->getOverdriveScopeObjects();
-			if (!empty($overDriveScopes)) {
-				require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
-				foreach ($overDriveScopes as $overDriveScope) {
-					$availability = new OverDriveAPIProductAvailability();
-					$availability->productId = $this->overDriveProduct->id;
-
-					$availability->settingId = $overDriveScope->settingId;
-					$libraryScopingId = $this->getLibraryScopingId();
-					//OverDrive availability now returns correct counts for the library including shared items for each library.
-					// Get the correct availability for with either the library (if available) or the shared collection
-					$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
-					$availability->orderBy("libraryId DESC");
-					if ($availability->find(true)) {
-						$this->availability[] = clone $availability;
-					}
-				}
-			}
+			$this->availability = OverDriveAPIProductAvailability::getOverDriveAvailabilityForId($this->id);
 		}
 		return $this->availability;
-	}
-
-	public function getLibraryScopingId() : int {
-		//For econtent, we need to be more specific when restricting copies
-		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$activeLibrary = Library::getActiveLibrary();
-		global $locationSingleton;
-		$activeLocation = $locationSingleton->getActiveLocation();
-		$homeLibrary = Library::getPatronHomeLibrary();
-
-		//Load the holding label for the branch where the user is physically.
-		if (!is_null($homeLibrary)) {
-			return $homeLibrary->libraryId;
-		} elseif (!is_null($activeLocation)) {
-			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->libraryId;
-		} elseif (isset($activeLibrary)) {
-			return $activeLibrary->libraryId;
-		} elseif (!is_null($searchLocation)) {
-			return $searchLocation->libraryId;
-		} elseif (isset($searchLibrary)) {
-			return $searchLibrary->libraryId;
-		} else {
-			return -1;
-		}
 	}
 
 	public function getDescriptionFast() {
@@ -1220,6 +1173,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$item->numHolds = $availability->numberOfHolds;
 			}
 		}
-
 	}
+
 }

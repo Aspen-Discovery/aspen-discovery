@@ -1026,11 +1026,10 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	 * Retrieves a document specified by the item barcode.
 	 *
 	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
-	 * @access  public
-	 * @return  string              The requested resource
+	 * @return  ?array               The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecordByBarcode($barcode) {
+	function getRecordByBarcode(string $barcode) : ?array  {
 		$recordData = $this->indexEngine->getRecordByBarcode($barcode);
 		if ($recordData != null) {
 			$recordData = $this->cleanScopedFieldsForRecord($recordData);

@@ -847,7 +847,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$summLanguage = null;
 		$isFirst = true;
 		global $library;
-		$alwaysShowMainDetails = $library->getGroupedWorkDisplaySettings()->alwaysShowSearchResultsMainDetails;
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		$alwaysShowMainDetails = $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails;
+		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
+
 		foreach ($relatedRecords as $relatedRecord) {
 			if ($isFirst) {
 				$summPublisher = $relatedRecord->publisher;
@@ -1390,9 +1393,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 *
 	 * @access  public
 	 * @param int $seriesId ID of the series that this work is contained on
+	 * @param array $instance Metadata about this specific list entry
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSeriesEntry(?int $seriesId = null) {
+	public function getSeriesEntry(?int $seriesId = null, ?array $instance = null) {
 		global $interface;
 		global $timer;
 
@@ -1440,13 +1444,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		//Description
 		$interface->assign('summDescription', $this->getDescriptionFast());
 		$timer->logTime('Finished Loading Description');
-		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
-			$interface->assign('summSeries', $this->getSeries(false, $seriesId));
-		} else {
-			$interface->assign('ajaxSeries', true);
-			$interface->assign('summSeries', '');
-		}
+		$interface->assign('summVolume', $instance['volume'] ?? '');
 
 		$interface->assign('summPubDate', $this->getEarliestPublicationDate());
 
@@ -1769,7 +1767,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 *
 	 * @return Grouping_Manifestation[]|null
 	 */
-	public function getRelatedManifestations() {
+	public function getRelatedManifestations() : ?array {
 		if ($this->_relatedManifestations == null) {
 			global $timer;
 			global $memoryWatcher;
@@ -1876,6 +1874,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				$this,
 				"compareRelatedManifestations",
 			]);
+
 			$timer->logTime("Finished loading related manifestations");
 			$memoryWatcher->logMemory("Finished loading related manifestations");
 		}
@@ -1974,7 +1973,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list') {
+	public function getSearchResult($view = 'list') : string {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -1989,7 +1988,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
 		$interface->assign('summId', $id);
-		if (substr($id, 0, 1) == '.') {
+		if (str_starts_with($id, '.')) {
 			$interface->assign('summShortId', substr($id, 1));
 		} else {
 			$interface->assign('summShortId', $id);
@@ -2131,6 +2130,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		$timer->logTime("Finished assignment of data based on solr debug info");
 
+		$interface->assign('formatDisplayStyle', $library->getGroupedWorkDisplaySettings()->formatDisplayStyle);
+
 		//Get Rating
 		$interface->assign('summRating', $this->getRatingData());
 		$timer->logTime("Finished loading rating data");
@@ -2163,16 +2164,33 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		if (!$this->_requiredDataForActionsPreloaded) {
 			$this->_requiredDataForActionsPreloaded = true;
 
-			require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-			require_once ROOT_DIR . '/sys/ILS/IlsHoldSummary.php';
-			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 			foreach ($allRecordIdsBySource as $source => $recordIds) {
-				//Load all available file uploads
-				RecordFile::preloadFiles($source, $recordIds);
-				//Load all hold information
-				IlsHoldSummary::preloadHoldSummaries($source, $recordIds);
-				//Load all volume information
-				IlsVolumeInfo::preloadVolumeInfo($source, $allRecordIdsWithSource[$source]);
+				if ($source == 'overdrive') {
+					require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+					OverDriveAPIProduct::preloadProducts($recordIds);
+					require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+					OverDriveAPIProductAvailability::preloadAvailability($recordIds);
+				}else if ($source == 'axis360') {
+					require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
+					Axis360Title::preloadTitles($recordIds);
+				}else if ($source == 'hoopla') {
+					require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
+					HooplaExtract::preloadTitles($recordIds);
+				}else{
+					require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+					require_once ROOT_DIR . '/sys/ILS/IlsHoldSummary.php';
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+
+					//Load all available file uploads
+					RecordFile::preloadFiles($source, $recordIds);
+					//Load all hold information
+					IlsHoldSummary::preloadHoldSummaries($source, $recordIds);
+					//Load all volume information
+					IlsVolumeInfo::preloadVolumeInfo($source, $allRecordIdsWithSource[$source]);
+					//Load ILSRecords
+					IlsRecord::preloadIlsRecords($source, $recordIds);
+				}
 			}
 		}
 	}
@@ -2285,6 +2303,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 				$first = true;
 				$seriesInfo = [];
+				$allHidden = true;
 				foreach ($seriesMembers as $seriesMember) {
 					$series = $seriesMember->getSeries();
 					if ($series != null) {
@@ -2294,7 +2313,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 								'seriesId' => $series->id,
 								'volume' => $seriesMember->volume,
 								'fromNovelist' => false,
-								'fromSeriesIndex' => true
+								'fromSeriesIndex' => true,
+								'hidden' => !$series->isIndexed,
 							];
 							$first = false;
 						} else {
@@ -2303,11 +2323,16 @@ class GroupedWorkDriver extends IndexRecordDriver {
 								'seriesId' => $series->id,
 								'volume' => $seriesMember->volume,
 								'fromNovelist' => false,
-								'fromSeriesIndex' => true
+								'fromSeriesIndex' => true,
+								'hidden' => !$series->isIndexed,
 							];
+						}
+						if ($series->isIndexed) {
+							$allHidden = false;
 						}
 					}
 				}
+				$seriesInfo['allHidden'] = $allHidden;
 				$this->seriesData = $seriesInfo;
 			} else {
 				//Get a list of isbns from the record and existing display info if any
@@ -2697,9 +2722,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				/** @var GroupedWorkSubDriver $driver */
 				$recordTOC = $driver->getTableOfContents();
 				if ($recordTOC != null && count($recordTOC) > 0) {
-					$editionDescription = "{$record->format}";
+					$editionDescription = "$record->format";
 					if ($record->edition) {
-						$editionDescription .= " - {$record->edition}";
+						$editionDescription .= " - $record->edition";
 					}
 					$tableOfContents = array_merge($tableOfContents, ["<h4>From the $editionDescription</h4>"], $recordTOC);
 				}

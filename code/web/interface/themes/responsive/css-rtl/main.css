@@ -10379,6 +10379,60 @@ a.browse-thumbnail.active {
 .trackNumber {
   font-weight: bold;
 }
+.swiper-manifestations {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+.horizontal-format-button {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  text-align: center;
+  position: relative;
+  width: auto !important;
+  font-size: small;
+  height: auto;
+  display: inline-block;
+  border: 1px solid #dddddd;
+  flex-direction: column;
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+.horizontal-format-button.floating {
+  border: none;
+}
+.horizontal-format-button .related-manifestation-shelf-status {
+  font-size: smaller;
+  font-weight: normal;
+  display: flex;
+  text-transform: uppercase;
+}
+.horizontal-format-button.swiper-slide-active {
+  border-width: 3px;
+}
+.variationsInfo {
+  padding-top: 6px;
+  padding-left: 46px;
+  padding-right: 46px;
+}
+.variationInfo {
+  padding-top: 6px;
+  padding-left: 46px;
+  padding-right: 46px;
+}
+.horizDisplayShowEditionsRow {
+  margin-top: 6px;
+  text-align: center;
+}
+.horizDisplayAllEditions {
+  margin-top: 6px;
+}
+.horizDisplayShelfLocations {
+  margin-top: 6px;
+  font-size: small;
+}
+.relatedRecord {
+  font-size: small;
+}
 #innReachSearchResultsHeader {
   padding-top: 15px;
 }
@@ -10683,6 +10737,62 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
 }
 .webResourceRow {
   margin-bottom: 4px;
+}
+.toast-notification {
+  display: flex;
+  align-items: center;
+  background-color: #1b6ec2;
+  color: #fff;
+  padding: 10px 20px 10px 0px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  width: 400px;
+  position: fixed;
+}
+.toast-notification .toast-column-left {
+  flex: 0 0 20%;
+  display: flex;
+  justify-content: center;
+}
+.toast-notification .toast-column-right {
+  float: left;
+  width: 80%;
+  position: relative;
+}
+.toast-notification .toast-notification-icon {
+  font-size: 2.5em;
+}
+.toast-notification .toast-message-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.toast-notification .toast-message-subtitle {
+  font-size: 1em;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 5px;
+}
+.toast-notification .toast-message-link {
+  text-decoration: underline;
+  color: white;
+}
+.toast-notification .toast-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: -5px;
+  margin-right: -10px;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #fff;
 }
 .researchStarter {
   border: solid 1px #00a4e3;

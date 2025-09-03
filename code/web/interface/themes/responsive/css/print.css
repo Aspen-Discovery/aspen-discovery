@@ -1,0 +1,79 @@
+/* Only apply to /MyAccount/list.tpl. */
+[data-context="print-layout"] * {
+  text-shadow: none !important;
+  color: #000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+[data-context="print-layout"] .ui-rater-starsOff,
+[data-context="print-layout"] .ui-rater-starsOn {
+  background: url('/interface/themes/responsive/images/star/stars.png') repeat-x 0 0 !important;
+}
+[data-context="print-layout"] .ui-rater-starsOn {
+  background-position: 0 -36px !important;
+}
+[data-context="print-layout"] .label {
+  border: 1px solid #000;
+}
+[data-context="print-layout"] span.btn-editions {
+  display: none;
+}
+[data-context="print-layout"] .related-manifestation.grouped {
+  border: none !important;
+}
+@media print {
+  /* Make sure descriptions and multiple manifestations are visible . */
+  body#MyAccount-MyList .list-entry-hidden-desc.hidden-xs,
+  body#MyAccount-MyList .list-entry-hidden-format.hidden-xs {
+    display: block !important;
+  }
+  /* Make sure list title is prominently displayed. */
+  body#MyAccount-MyList #listTitle {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: block !important;
+  }
+  /* Hide buttons and controls that aren't needed. */
+  body#MyAccount-MyList .btn-toolbar,
+  body#MyAccount-MyList .btn-group,
+  body#MyAccount-MyList .resultActions {
+    display: none !important;
+  }
+  /* Hide mobile-only toggle rows "Description" and "Click to view". */
+  body#MyAccount-MyList .list-entry-desc-toggle {
+    display: none !important;
+  }
+  /* Hide the back-to-top arrow. */
+  body#MyAccount-MyList .top-link {
+    display: none !important;
+  }
+  /* Prevent page breaks inside list items and their descriptions. */
+  body#MyAccount-MyList .result,
+  body#MyAccount-MyList .resultsList.listEntry,
+  body#MyAccount-MyList .list-entry-hidden-desc,
+  body#MyAccount-MyList .result-value,
+  body#MyAccount-MyList .user-list-entry-note {
+    page-break-inside: avoid !important;
+    /* For old browsers */
+    break-inside: avoid !important;
+  }
+  /* Allow page breaks in list items when descriptions are omitted. */
+  body#MyAccount-MyList.no-print-descriptions .result,
+  body#MyAccount-MyList.no-print-descriptions .resultsList.listEntry {
+    page-break-inside: auto !important;
+    /* For old browsers */
+    break-inside: auto !important;
+  }
+  /* Optionally hide descriptions when selected. */
+  body#MyAccount-MyList.no-print-descriptions .list-entry-hidden-desc {
+    display: none !important;
+  }
+  /* Strip out any screen‐only height/overflow rules to allow landscape printing. */
+  body#MyAccount-MyList {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+/*# sourceMappingURL=print.css.map */

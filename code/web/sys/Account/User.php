@@ -1743,6 +1743,7 @@ class User extends DataObject {
 		return $totalFines;
 	}
 
+	private $_checkoutsBySource = [];
 	/**
 	 * Return all titles that are currently checked out by the user.
 	 *
@@ -1758,150 +1759,150 @@ class User extends DataObject {
 	 * @return Checkout[]
 	 */
 	public function getCheckouts(bool $includeLinkedUsers = true, string $source = 'all'): array {
-		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		//Check to see if we should return cached information, we will reload it if we last fetched data more than
-		//15 minutes ago or if the refresh option is selected
-		$reloadCheckoutInformation = false;
-		if (($this->checkoutInfoLastLoaded < (time() - 5 * 60)) || isset($_REQUEST['refreshCheckouts'])) {
-			$reloadCheckoutInformation = true;
-		}
+		$cacheKey = ($includeLinkedUsers ? '1' : 0) . $source;
+		if (!isset($this->_checkoutsBySource[$cacheKey])) {
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			//Check to see if we should return cached information, we will reload it if we last fetched data more than
+			//15 minutes ago or if the refresh option is selected
+			$reloadCheckoutInformation = false;
+			if (($this->checkoutInfoLastLoaded < (time() - 5 * 60)) || isset($_REQUEST['refreshCheckouts'])) {
+				$reloadCheckoutInformation = true;
+			}
 
-		$checkoutsToReturn = [];
-		if ($reloadCheckoutInformation) {
-			global $timer;
-			$allCheckedOut = [];
-			//Get checked out titles from the ILS
-			global $offlineMode;
-			if ($this->hasIlsConnection() && !$offlineMode) {
-				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
-				$allCheckedOut = $ilsCheckouts;
-				$timer->logTime("Loaded transactions from catalog. {$this->id}");
-				if ($source == 'all' || $source == 'ils') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $ilsCheckouts);
+			$checkoutsToReturn = [];
+			if ($reloadCheckoutInformation) {
+				global $timer;
+				$allCheckedOut = [];
+				//Get checked out titles from the ILS
+				global $offlineMode;
+				if ($this->hasIlsConnection() && !$offlineMode) {
+					$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
+					$allCheckedOut = $ilsCheckouts;
+					$timer->logTime("Loaded transactions from catalog. {$this->id}");
+					if ($source == 'all' || $source == 'ils') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $ilsCheckouts);
+					}
+				}
+
+				//Get checked out titles from OverDrive
+				//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
+				if ($this->isValidForEContentSource('overdrive')) {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$driver = new OverDriveDriver();
+					$overDriveCheckedOutItems = $driver->getCheckouts($this);
+					$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
+					$timer->logTime("Loaded transactions from overdrive. {$this->id}");
+					if ($source == 'all' || $source == 'overdrive') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $overDriveCheckedOutItems);
+					}
+				}
+
+				//Get checked out titles from Hoopla
+				//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
+				if ($this->isValidForEContentSource('hoopla')) {
+					require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+					$hooplaDriver = new HooplaDriver();
+					$hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
+					$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
+					$timer->logTime("Loaded transactions from hoopla. {$this->id}");
+					if ($source == 'all' || $source == 'hoopla') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $hooplaCheckedOutItems);
+					}
+				}
+
+				if ($this->isValidForEContentSource('cloud_library')) {
+					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+					$cloudLibraryDriver = new CloudLibraryDriver();
+					$cloudLibraryCheckedOutItems = $cloudLibraryDriver->getCheckouts($this);
+					$allCheckedOut = array_merge($allCheckedOut, $cloudLibraryCheckedOutItems);
+					$timer->logTime("Loaded transactions from cloud_library. {$this->id}");
+					if ($source == 'all' || $source == 'cloud_library') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $cloudLibraryCheckedOutItems);
+					}
+				}
+
+				if ($this->isValidForEContentSource('axis360')) {
+					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+					$axis360Driver = new Axis360Driver();
+					$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
+					$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
+					$timer->logTime("Loaded transactions from Boundless. {$this->id}");
+					if ($source == 'all' || $source == 'axis360') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
+					}
+				}
+
+				if ($this->isValidForEContentSource('palace_project')) {
+					require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+					$palaceProjectDriver = new PalaceProjectDriver();
+					$palaceProjectCheckedOutItems = $palaceProjectDriver->getCheckouts($this);
+					$allCheckedOut = array_merge($allCheckedOut, $palaceProjectCheckedOutItems);
+					$timer->logTime("Loaded transactions from Palace Project. {$this->id}");
+					if ($source == 'all' || $source == 'palace_project') {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $palaceProjectCheckedOutItems);
+					}
+				}
+
+				//Delete all existing checkouts
+				$checkout = new Checkout();
+				$checkout->userId = $this->id;
+				$checkout->delete(true);
+
+				foreach ($allCheckedOut as $checkout) {
+					if (is_null($checkout->sourceId)) {
+						$checkout->sourceId = '';
+					}
+					if (is_null($checkout->recordId)) {
+						$checkout->recordId = '';
+					}
+					if ($checkout->insert() == 0) {
+						if (IPAddress::showDebuggingInformation()) {
+							global $logger;
+							$logger->log(Logger::LOG_ERROR, "Could not save checkout to database");
+						}
+					}
+				}
+
+				$this->__set('checkoutInfoLastLoaded', time());
+				$this->update();
+			} else {
+				//fetch cached checkouts
+				$checkout = new Checkout();
+				$checkout->userId = $this->id;
+				if ($source != 'all') {
+					$checkout->type = $source;
+				}
+				$checkout->find();
+				while ($checkout->fetch()) {
+					$checkoutsToReturn[] = clone $checkout;
 				}
 			}
 
-			//Get checked out titles from OverDrive
-			//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
-			if ($this->isValidForEContentSource('overdrive')) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				$overDriveCheckedOutItems = $driver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
-				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
-				if ($source == 'all' || $source == 'overdrive') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $overDriveCheckedOutItems);
-				}
-			}
-
-			//Get checked out titles from Hoopla
-			//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
-			if ($this->isValidForEContentSource('hoopla')) {
-				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$hooplaDriver = new HooplaDriver();
-				$hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
-				$timer->logTime("Loaded transactions from hoopla. {$this->id}");
-				if ($source == 'all' || $source == 'hoopla') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $hooplaCheckedOutItems);
-				}
-			}
-
-			if ($this->isValidForEContentSource('cloud_library')) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$cloudLibraryDriver = new CloudLibraryDriver();
-				$cloudLibraryCheckedOutItems = $cloudLibraryDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $cloudLibraryCheckedOutItems);
-				$timer->logTime("Loaded transactions from cloud_library. {$this->id}");
-				if ($source == 'all' || $source == 'cloud_library') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $cloudLibraryCheckedOutItems);
-				}
-			}
-
-			if ($this->isValidForEContentSource('axis360')) {
-				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-				$axis360Driver = new Axis360Driver();
-				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
-				$timer->logTime("Loaded transactions from Boundless. {$this->id}");
-				if ($source == 'all' || $source == 'axis360') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
-				}
-			}
-
-			if ($this->isValidForEContentSource('palace_project')) {
-				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-				$palaceProjectDriver = new PalaceProjectDriver();
-				$palaceProjectCheckedOutItems = $palaceProjectDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $palaceProjectCheckedOutItems);
-				$timer->logTime("Loaded transactions from Palace Project. {$this->id}");
-				if ($source == 'all' || $source == 'palace_project') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $palaceProjectCheckedOutItems);
-				}
-			}
-
-			//Delete all existing checkouts
-			$checkout = new Checkout();
-			$checkout->userId = $this->id;
-			$checkout->delete(true);
-
-			foreach ($allCheckedOut as $checkout) {
-				if (is_null($checkout->sourceId)) {
-					$checkout->sourceId = '';
-				}
-				if (is_null($checkout->recordId)) {
-					$checkout->recordId = '';
-				}
-				if ($checkout->insert() == 0) {
-					if (IPAddress::showDebuggingInformation()) {
-						global $logger;
-						$logger->log(Logger::LOG_ERROR, "Could not save checkout to database");
+			if ($includeLinkedUsers) {
+				if ($this->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($this->getLinkedUsers() as $linkedUser) {
+						$checkoutsToReturn = array_merge($checkoutsToReturn, $linkedUser->getCheckouts(false, $source));
 					}
 				}
 			}
 
-			$this->__set('checkoutInfoLastLoaded', time());
-			$this->update();
-		} else {
-			//fetch cached checkouts
-			$checkout = new Checkout();
-			$checkout->userId = $this->id;
-			if ($source != 'all') {
-				$checkout->type = $source;
+			if ($source == 'all') {
+				$this->calculateCostSavingsForCurrentCheckouts($checkoutsToReturn);
 			}
-			$checkout->find();
-			while ($checkout->fetch()) {
-				$checkoutsToReturn[] = clone $checkout;
-			}
+			$this->_checkoutsBySource[$cacheKey] = $checkoutsToReturn;
 		}
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $linkedUser) {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $linkedUser->getCheckouts(false, $source));
-				}
-			}
-		}
-
-		if ($source == 'all') {
-			$this->calculateCostSavingsForCurrentCheckouts($checkoutsToReturn);
-		}
-		return $checkoutsToReturn;
+		return $this->_checkoutsBySource[$cacheKey];
 	}
 
-	public function isRecordCheckedOut($source, $recordId) {
-		$this->getCheckouts(false, 'all');
-		require_once ROOT_DIR . "/sys/User/Checkout.php";
-		$checkout = new Checkout();
-		$checkout->userId = $this->id;
-		$checkout->source = $source;
-		$checkout->recordId = $recordId;
-		if ($checkout->find(true)) {
-			return true;
-		} else {
-			return false;
+	public function isRecordCheckedOut(string $source, string $recordId) : bool {
+		$checkouts = $this->getCheckouts(false);
+		foreach ($checkouts as $checkout) {
+			if ($checkout->source == $source && $checkout->recordId == $recordId) {
+				return true;
+			}
 		}
+		return false;
 	}
 
 	public function isBlockedFromIllRequests() {
@@ -1915,163 +1916,170 @@ class User extends DataObject {
 		return $this->_isBlockedFromIllRequests;
 	}
 
+	private $_holdsBySource = [];
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all'): array {
-		require_once ROOT_DIR . '/sys/User/Hold.php';
-		//Check to see if we should return cached information, we will reload it if we last fetched it more than
-		//5 minutes ago or if the refresh option is selected
-		$reloadHoldInformation = false;
-		if (($this->holdInfoLastLoaded < time() - 5 * 60) || isset($_REQUEST['refreshHolds'])) {
-			$reloadHoldInformation = true;
-		}
+		$cacheKey = ($includeLinkedUsers ? '1' : 0) . $source;
+		if (!isset($this->_holdsBySource[$cacheKey])) {
+			require_once ROOT_DIR . '/sys/User/Hold.php';
+			//Check to see if we should return cached information, we will reload it if we last fetched it more than
+			//5 minutes ago or if the refresh option is selected
+			$reloadHoldInformation = false;
+			if (($this->holdInfoLastLoaded < time() - 5 * 60) || isset($_REQUEST['refreshHolds'])) {
+				$reloadHoldInformation = true;
+			}
 
-		$holdsToReturn = [
-			'available' => [],
-			'unavailable' => [],
-		];
-		if ($reloadHoldInformation) {
-			//When we reload holds, we will fetch from all sources so they can be cached.
-
-			$allHolds = [
+			$holdsToReturn = [
 				'available' => [],
 				'unavailable' => [],
 			];
-			global $offlineMode;
-			if ($this->hasIlsConnection() && !$offlineMode) {
-				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-				$allHolds = $ilsHolds;
-				if ($source == 'all' || $source == 'ils') {
-					$holdsToReturn = $ilsHolds;
+			if ($reloadHoldInformation) {
+				//When we reload holds, we will fetch from all sources so they can be cached.
+
+				$allHolds = [
+					'available' => [],
+					'unavailable' => [],
+				];
+				global $offlineMode;
+				if ($this->hasIlsConnection() && !$offlineMode) {
+					$ilsHolds = $this->getCatalogDriver()->getHolds($this);
+					$allHolds = $ilsHolds;
+					if ($source == 'all' || $source == 'ils') {
+						$holdsToReturn = $ilsHolds;
+					}
+				}
+
+				//Get holds from OverDrive
+				if ($source == 'all' || $source == 'overdrive') {
+					if ($this->isValidForEContentSource('overdrive')) {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$overDriveHolds = $driver->getHolds($this);
+						$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
+					}
+				}
+
+				//Get holds from cloudLibrary
+				if ($source == 'all' || $source == 'cloud_library') {
+					if ($this->isValidForEContentSource('cloud_library')) {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$cloudLibraryHolds = $driver->getHolds($this);
+						$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
+					}
+				}
+
+				//Get holds from Boundless
+				if ($source == 'all' || $source == 'axis360') {
+					if ($this->isValidForEContentSource('axis360')) {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$axis360Holds = $driver->getHolds($this);
+						$allHolds = array_merge_recursive($allHolds, $axis360Holds);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
+					}
+				}
+
+				//Get holds from Palace Project
+				if ($source == 'all' || $source == 'palace_project') {
+					if ($this->isValidForEContentSource('palace_project')) {
+						require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+						$driver = new PalaceProjectDriver();
+						$palaceProjectHolds = $driver->getHolds($this);
+						$allHolds = array_merge_recursive($allHolds, $palaceProjectHolds);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
+					}
+				}
+
+				if ($source == 'all' || $source == 'interlibrary_loan') {
+					if ($this->hasInterlibraryLoan()) {
+						//For now, this is just VDX
+						require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+						$driver = new VdxDriver();
+						$vdxRequests = $driver->getRequests($this);
+						$allHolds = array_merge_recursive($allHolds, $vdxRequests);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $vdxRequests);
+					}
+				}
+
+				//Get holds from Hoopla
+				if ($source == 'all' || $source == 'hoopla') {
+					if ($this->isValidForEContentSource('hoopla_flex')) {
+						require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+						$driver = new HooplaDriver();
+						$hooplaHolds = $driver->getHolds($this);
+						$allHolds = array_merge_recursive($allHolds, $hooplaHolds);
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $hooplaHolds);
+					}
+				}
+
+				//Delete all existing holds
+				$hold = new Hold();
+				$hold->userId = $this->id;
+				$hold->delete(true);
+
+				foreach ($allHolds['available'] as $holdToSave) {
+					if (is_null($holdToSave->sourceId)) {
+						$holdToSave->sourceId = '';
+					}
+					if (is_null($holdToSave->recordId)) {
+						$holdToSave->recordId = '';
+					}
+					if (!$holdToSave->insert()) {
+						global $logger;
+						$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+					}
+				}
+				foreach ($allHolds['unavailable'] as $holdToSave) {
+					if (is_null($holdToSave->sourceId)) {
+						$holdToSave->sourceId = '';
+					}
+					if (is_null($holdToSave->recordId)) {
+						$holdToSave->recordId = '';
+					}
+					if (!$holdToSave->insert()) {
+						global $logger;
+						$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+					}
+				}
+				$this->__set('holdInfoLastLoaded', time());
+				$this->update();
+			} else {
+				//fetch cached holds
+				$hold = new Hold();
+				$hold->userId = $this->id;
+				if ($source != 'all') {
+					$hold->type = $source;
+				}
+				/** @var Hold $allHolds */
+				$allHolds = $hold->fetchAll();
+				foreach ($allHolds as $hold) {
+					$key = $hold->source;
+					if (!empty($hold->cancelId)) {
+						$key .= $hold->cancelId;
+					} else {
+						$key .= $hold->sourceId;
+					}
+					$key .= $hold->userId;
+					if ($hold->available) {
+						$holdsToReturn['available'][$key] = $hold;
+					} else {
+						$holdsToReturn['unavailable'][$key] = $hold;
+					}
 				}
 			}
 
-			//Get holds from OverDrive
-			if ($source == 'all' || $source == 'overdrive') {
-				if ($this->isValidForEContentSource('overdrive')) {
-					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-					$driver = new OverDriveDriver();
-					$overDriveHolds = $driver->getHolds($this);
-					$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
+			if ($includeLinkedUsers) {
+				if ($this->getLinkedUsers() != null) {
+					foreach ($this->getLinkedUsers() as $user) {
+						$holdsToReturn = array_merge_recursive($holdsToReturn, $user->getHolds(false, $unavailableSort, $availableSort, $source));
+					}
 				}
 			}
-
-			//Get holds from cloudLibrary
-			if ($source == 'all' || $source == 'cloud_library') {
-				if ($this->isValidForEContentSource('cloud_library')) {
-					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-					$driver = new CloudLibraryDriver();
-					$cloudLibraryHolds = $driver->getHolds($this);
-					$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
-				}
-			}
-
-			//Get holds from Boundless
-			if ($source == 'all' || $source == 'axis360') {
-				if ($this->isValidForEContentSource('axis360')) {
-					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-					$driver = new Axis360Driver();
-					$axis360Holds = $driver->getHolds($this);
-					$allHolds = array_merge_recursive($allHolds, $axis360Holds);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
-				}
-			}
-
-			//Get holds from Palace Project
-			if ($source == 'all' || $source == 'palace_project') {
-				if ($this->isValidForEContentSource('palace_project')) {
-					require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-					$driver = new PalaceProjectDriver();
-					$palaceProjectHolds = $driver->getHolds($this);
-					$allHolds = array_merge_recursive($allHolds, $palaceProjectHolds);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
-				}
-			}
-
-			if ($source == 'all' || $source == 'interlibrary_loan') {
-				if ($this->hasInterlibraryLoan()) {
-					//For now, this is just VDX
-					require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-					$driver = new VdxDriver();
-					$vdxRequests = $driver->getRequests($this);
-					$allHolds = array_merge_recursive($allHolds, $vdxRequests);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $vdxRequests);
-				}
-			}
-
-			//Get holds from Hoopla
-			if ($source == 'all' || $source == 'hoopla') {
-				if ($this->isValidForEContentSource('hoopla_flex')) {
-					require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-					$driver = new HooplaDriver();
-					$hooplaHolds = $driver->getHolds($this);
-					$allHolds = array_merge_recursive($allHolds, $hooplaHolds);
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $hooplaHolds);
-				}
-			}
-
-			//Delete all existing holds
-			$hold = new Hold();
-			$hold->userId = $this->id;
-			$hold->delete(true);
-
-			foreach ($allHolds['available'] as $holdToSave) {
-				if (is_null($holdToSave->sourceId)) {
-					$holdToSave->sourceId = '';
-				}
-				if (is_null($holdToSave->recordId)) {
-					$holdToSave->recordId = '';
-				}
-				if (!$holdToSave->insert()) {
-					global $logger;
-					$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
-				}
-			}
-			foreach ($allHolds['unavailable'] as $holdToSave) {
-				if (is_null($holdToSave->sourceId)) {
-					$holdToSave->sourceId = '';
-				}
-				if (is_null($holdToSave->recordId)) {
-					$holdToSave->recordId = '';
-				}
-				if (!$holdToSave->insert()) {
-					global $logger;
-					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
-				}
-			}
-			$this->__set('holdInfoLastLoaded', time());
-			$this->update();
-		} else {
-			//fetch cached holds
-			$hold = new Hold();
-			$hold->userId = $this->id;
-			if ($source != 'all') {
-				$hold->type = $source;
-			}
-			/** @var Hold $allHolds */
-			$allHolds = $hold->fetchAll();
-			foreach ($allHolds as $hold) {
-				$key = $hold->source;
-				if (!empty($hold->cancelId)) {
-					$key .= $hold->cancelId;
-				} else {
-					$key .= $hold->sourceId;
-				}
-				$key .= $hold->userId;
-				if ($hold->available) {
-					$holdsToReturn['available'][$key] = $hold;
-				} else {
-					$holdsToReturn['unavailable'][$key] = $hold;
-				}
-			}
-		}
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $user->getHolds(false, $unavailableSort, $availableSort, $source));
-				}
-			}
+			$this->_holdsBySource[$cacheKey] = $holdsToReturn;
+		}else{
+			$holdsToReturn = $this->_holdsBySource[$cacheKey];
 		}
 
 		$indexToSortBy = 'sortTitle';
@@ -2268,21 +2276,19 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function isRecordOnHold($source, $recordId) {
-		$this->getHolds(false, 'all');
-		require_once ROOT_DIR . "/sys/User/Hold.php";
-		$hold = new Hold();
-		$hold->userId = $this->id;
-		$hold->source = $source;
-		$hold->recordId = $recordId;
-		if ($hold->find(true)) {
-			return true;
-		} else {
-			return false;
+	public function isRecordOnHold(string $source, string $recordId) : bool {
+		$holds = $this->getHolds(false);
+		foreach ($holds as $holdSection) {
+			foreach ($holdSection as $hold) {
+				if ($hold->source == $source && $hold->recordId == $recordId) {
+					return true;
+				}
+			}
 		}
+		return false;
 	}
 
-	public function areCirculationActionsDisabled() {
+	public function areCirculationActionsDisabled() : bool {
 		if (!$this->hasIlsConnection()) {
 			return true;
 		} else {
@@ -4834,6 +4840,7 @@ class User extends DataObject {
 				$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 			}
 			$sections['aspen_lida']->addAction(new AdminAction('Self-Check Settings', 'Define settings for self-check in Aspen LiDA.', '/AspenLiDA/SelfCheckSettings'), 'Administer Aspen LiDA Self-Check Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Self-Check Completion Messages', 'Define messages to show when self-check checkouts are completed in Aspen LiDA.', '/AspenLiDA/SelfCheckCompletionMessages'), 'Administer Aspen LiDA Self-Check Settings');
 		}
 		if (array_key_exists('Series', $enabledModules)) {
 			$sections['series'] = new AdminSection("Series Search");
@@ -4876,6 +4883,7 @@ class User extends DataObject {
 			//This happens before tables are created, ignore
 		}
 		$sections['support']->addAction(new AdminAction('Help Center', 'View the Help Center for Aspen Discovery.', 'https://help.aspendiscovery.org'), true);
+		$sections['support']->addAction(new AdminAction('API Documentation', 'View available OpenAPI specifications for Aspen Discovery APIs.', '/API/Documentation'), true);
 		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
 		$sorter = function (AdminSection $a, AdminSection $b) {
@@ -5871,7 +5879,7 @@ class User extends DataObject {
 		return 0;
 	}
 
-	function checkoutItem($barcode, Location $currentLocation): array {
+	function checkoutItem(string $barcode, Location $currentLocation): array {
 		if ($this->getCatalogDriver()->hasAPICheckout()) {
 			$result = $this->getCatalogDriver()->checkoutByAPI($this, $barcode, $currentLocation);
 		} else {
@@ -5879,6 +5887,39 @@ class User extends DataObject {
 		}
 
 		if ($result['success']) {
+			$format = '';
+			//Get the item for the barcode
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searcher */
+			$searcher = SearchObjectFactory::initSearchObject();
+			$groupedWorkForBarcode = $searcher->getRecordByBarcode($barcode);
+			if ($groupedWorkForBarcode != null) {
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($groupedWorkForBarcode);
+				// Get all the related records, use for covers since we don't need actions
+				foreach ($groupedWorkDriver->getRelatedRecords(true) as $record) {
+					foreach ($record->getItems() as $item) {
+						if ($item->itemId == $result['itemData']['itemId']) {
+							$format = $record->getFormat();
+							break;
+						}
+					}
+				}
+			}
+
+			//Determine if we need to show a message
+			require_once ROOT_DIR . '/sys/AspenLIDA/SelfCheckCompletionMessage.php';
+			$selfCheckCompletionMessage = new SelfCheckCompletionMessage();
+			$escapedFormat = $selfCheckCompletionMessage->escape($format);
+			$escapedOwningLocationCode = $selfCheckCompletionMessage->escape($result['itemData']['owningLocationCode']);
+			$escapedCheckoutLocationCode = $selfCheckCompletionMessage->escape($result['itemData']['checkoutLocationCode']);
+			$selfCheckCompletionMessage->whereAdd("$escapedFormat REGEXP formats");
+			$selfCheckCompletionMessage->whereAdd("$escapedOwningLocationCode REGEXP owningLocations");
+			$selfCheckCompletionMessage->whereAdd("$escapedCheckoutLocationCode REGEXP checkoutLocations");
+			$result['completionMessage'] = '';
+			if ($selfCheckCompletionMessage->find(true)) {
+				$result['completionMessage'] = $selfCheckCompletionMessage->getTextBlockTranslation('completionMessage', $this->interfaceLanguage);
+			}
+
 			$this->forceReloadOfCheckouts();
 		}
 		$this->clearCache();
@@ -5893,7 +5934,7 @@ class User extends DataObject {
 		if ($this->getCatalogDriver()->hasAPICheckin()) {
 			$result = $this->getCatalogDriver()->checkInByAPI($this, $barcode, $currentLocation);
 		} else {
-			$result = $this->getCatalogDriver()->checkInBySip($this, $barcode, $currentLocation->code);
+			$result = $this->getCatalogDriver()->checkInBySip($this, $barcode, $currentLocation);
 		}
 
 		if ($result['success']) {

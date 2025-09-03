@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class ILS_SelfCheckTester extends Admin_Admin {
-	function launch() {
+	function launch() : void {
 		global $interface;
 		if (isset($_REQUEST['submitCheckout']) || isset($_REQUEST['submitCheckin'])) {
 			require_once ROOT_DIR . "/services/API/UserAPI.php";

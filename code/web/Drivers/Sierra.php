@@ -2123,14 +2123,16 @@ class Sierra extends Millennium {
 					'value' => $selfRegistrationForm->selfRegAgency
 				];
 			}
-			$params['varFields'][] = [
-				'fieldTag' => 'x',
-				'content' => translate([
-					'text' => 'Patron self-registered on %1%.',
-					1 => date('m/d/Y'),
-					'isPublicFacing' => 'false'
-				]),
-			];
+			if ($selfRegistrationForm->addSelfRegNote) {
+				$params['varFields'][] = [
+					'fieldTag' => 'x',
+					'content' => translate([
+						'text' => 'Patron self-registered on %1%.',
+						1 => date('m/d/Y'),
+						'isPublicFacing' => 'false'
+					]),
+				];
+			}
 
 			// Override with any municipality-specific settings
 			if (!empty($municipalities)) {
@@ -2652,6 +2654,28 @@ class Sierra extends Millennium {
 
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $result;
+	}
+
+	public function isPatronAccountLocked(User $patron, $fine) : bool {
+		// Try paying $0 towards the fine - if patron record is locked API will return 500: Patron Record is Busy
+		$payment = new stdClass();
+		$payment->amount = 0;
+		$payment->paymentType = 1;
+		$payment->invoiceNumber = (string)$fine['invoiceNumber'];
+		$payment->initials = 'aspen';
+		$paymentParams['payments'][] = $payment;
+
+		$patronId = $patron->unique_ils_id;
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/fines/payment";
+
+		$makePaymentResponse = $this->_sendPage('sierra.addPayment', 'PUT', $sierraUrl, json_encode($paymentParams));
+
+		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/** @noinspection PhpRedundantMethodOverrideInspection */
