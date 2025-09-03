@@ -14,7 +14,7 @@ if ! [ -d "$keyrings" ]; then
 fi
 
 if ! [ -s "$keyrings/sury.gpg" ] || ! [ -s /etc/apt/sources.list.d/sury.list ]; then
-  wget -q -O - https://packages.sury.org/php/apt.gpg | gpg -o "$keyrings/sury.gpg" --dearmor
+  wget -q -O - https://packages.sury.org/php/apt.gpg | gpg --yes -o "$keyrings/sury.gpg" --dearmor
   echo "deb [signed-by=$keyrings/sury.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" >/etc/apt/sources.list.d/sury.list
 fi
 

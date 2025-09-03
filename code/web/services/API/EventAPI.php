@@ -85,6 +85,8 @@ class EventAPI extends AbstractAPI {
 			return $this->getSpringshareEventDetails();
 		} else if ($source == 'assabet') {
 			return $this->getAssabetEventDetails();
+		} else if ($source == 'aspenEvents') {
+			return $this->getAspenEventDetails();
 		} else {
 			return [
 				'success' => false,
@@ -326,8 +328,8 @@ class EventAPI extends AbstractAPI {
 			$itemData['url'] = $aspenEventDriver->getExternalUrl();
 			$itemData['audiences'] = $aspenEventDriver->getAudiences();
 			$itemData['categories'] = null;
-			$itemData['programTypes'] = null;
-			$itemData['room'] = null;
+			$itemData['programTypes'] = $aspenEventDriver->getProgramTypes();
+			$itemData['room'] = $aspenEventDriver->getRoom();
 
 			// check if event has passed
 			$today = new DateTime('now');

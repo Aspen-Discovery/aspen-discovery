@@ -58,10 +58,10 @@ class Mailer {
 	 * @param string|null $replyTo
 	 * @param string $subject
 	 * @param bool $htmlMessage
-	 * @param string $body
+	 * @param string|null $body
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, ?string $htmlBody) {
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) {
 		//Send the email
 		$curlWrapper = new CurlWrapper();
 		$headers = [

@@ -4,10 +4,10 @@ require_once ROOT_DIR . '/Action.php';
 
 class GroupedWork_Home extends Action {
 	/** @var GroupedWorkDriver $recordDriver */
-	private $recordDriver;
+	private GroupedWorkDriver $recordDriver;
 	private $lastSearch;
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $timer;
 		global $logger;
@@ -67,9 +67,11 @@ class GroupedWork_Home extends Action {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 			$interface->assign($detailOption, true);
 		}
+		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 
 		$this->recordDriver->assignBasicTitleDetails();
 		$timer->logTime('Initialized the Record Driver');

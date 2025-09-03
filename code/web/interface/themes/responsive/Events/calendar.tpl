@@ -5,7 +5,7 @@
 		<img src="{$headerImage}" {if !empty($headerAlt)}alt="{translate text=$headerAlt inAttribute=true isPublicFacing=true}" title="{translate text=$headerAlt inAttribute=true isPublicFacing=true}"{/if} id="calendar-header">
 	</div>
 {/if}
-<h1>{translate text='Events Calendar' isPublicFacing=true}</h1>
+<h1 class="calendar-event-h1">{translate text='Events Calendar' isPublicFacing=true}</h1>
 	<div class="calendar {if $useWeek}week-view{/if}">
 		<div class="row calendar-nav">
 			<div class="calendar-nav-cell col-tn-2 col-sm-1 align"><a class="btn btn-default" href="{$prevLink}" style="position:absolute;left: 0;"><i class="fas fa-caret-left" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>

@@ -38,7 +38,8 @@ class GroupedWork_Series extends Action {
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 

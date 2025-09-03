@@ -33,17 +33,12 @@ AspenDiscovery.Lists = (function(){
 			return this.submitListForm('makePrivate');
 		},
 
-		deleteListAction(){
-			const messageTitle = "Delete List?";
-			const messageBody = "Are you sure you want to delete this entire list? The list and all titles within it will be soft-deleted and can be restored within 30 days.<br/><br/>" +
-				"<div>" +
-				"<input type='checkbox' id='optOutSoftDeletion' style='margin-right: 5px;'>" +
-				"<label class='form-check-label' for='optOutSoftDeletion'>Opt Out of Soft Deletion</label>" +
-				"</div>";
-
-			let buttons = "<button id='confirmDeleteList' class='tool btn btn-danger' onclick='AspenDiscovery.Lists.doDeleteList()'><span class='fas fa-spinner fa-spin' style='display:none; margin-right: 4px;'></span>Yes</button>";
-			buttons += "<button id='cancelDeleteList' class='tool btn btn-default' onclick='AspenDiscovery.closeLightbox()'>No</button>";
-			AspenDiscovery.showMessageWithButtons(messageTitle, messageBody, buttons, false, '', false, false, true);
+		deleteListAction() {
+			const url = Globals.path + '/MyAccount/AJAX?method=getDeleteListForm';
+			$.getJSON(url, function(data) {
+				const { title, modalBody, modalButtons } = data;
+				AspenDiscovery.showMessageWithButtons(title, modalBody, modalButtons, false, '', false, false, true);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -238,6 +233,62 @@ AspenDiscovery.Lists = (function(){
 				}
 			});
 			return false;
+		},
+
+		getPrintListOptions: function (listId) {
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getListPrintOptions&listId=' + listId);
+			return false;
+		},
+
+		buildAndOpenPrintUrl: function () {
+			const print = document.getElementById('print').value;
+			const listId = document.getElementById('listId').value;
+
+			const baseUrl = Globals.path + '/MyAccount/MyList/' + listId;
+
+
+			// Checkbox names (in order as in the form)
+			const checkboxIds = [
+				'printLibraryName',
+				'printLibraryLogo',
+				'listAuthor',
+				'listDescription',
+				'covers',
+				'series',
+				'formats',
+				'description',
+				'notes',
+				'rating',
+				'holdings'
+			];
+
+			// Build URL params object
+			const params = {
+				print
+			};
+
+			checkboxIds.forEach(id => {
+				const el = document.getElementById(id);
+				if (el) {
+					// Only include if checked, send value "true" (or customize as needed)
+					params[id] = el.checked ? 'true' : 'false';
+				}
+			});
+
+			// Build search string
+			const urlSearchParams = new URLSearchParams(params).toString();
+
+			// Final URL
+			const printUrl = `${baseUrl}?${urlSearchParams}`;
+
+			// Open print window and prompt print dialog once loaded
+			const win = window.open(printUrl, '_blank', 'width=900,height=900');
+			if (win) {
+				// Wait for the new window to load content, then trigger print
+				win.onload = function () {
+					win.print();
+				};
+			}
 		}
 	};
 }(AspenDiscovery.Lists || {}));

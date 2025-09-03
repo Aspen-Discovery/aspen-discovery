@@ -1895,7 +1895,7 @@ class CatalogConnection {
 		}
 	}
 
-	public function checkoutBySip(User $patron, $barcode, $currentLocationId): array {
+	public function checkoutBySip(User $patron, string $barcode, $currentLocationId): array {
 		return $this->driver->checkoutBySip($patron, $barcode, $currentLocationId);
 	}
 
@@ -1905,6 +1905,18 @@ class CatalogConnection {
 
 	public function checkoutByAPI(User $patron, $barcode, Location $currentLocation): array {
 		return $this->driver->checkoutByAPI($patron, $barcode, $currentLocation);
+	}
+
+	public function hasAPICheckin() : bool {
+		return $this->driver->hasAPICheckin();
+	}
+
+	public function checkInByAPI(User $patron, string $barcode, Location $currentLocation): array {
+		return $this->driver->checkInByAPI($patron, $barcode, $currentLocation);
+	}
+
+	public function checkInBySip(User $patron, string $barcode, Location $currentLocation): array {
+		return $this->driver->checkInBySip($patron, $barcode, $currentLocation);
 	}
 
 	public function allowUpdatesOfPreferredName(User $patron): bool {
@@ -2013,5 +2025,9 @@ class CatalogConnection {
 
 	public function hasIlsConsentSupport(): bool {
 		return $this->driver->hasIlsConsentSupport();
+	}
+
+	public function isPatronAccountLocked(User $patron, $fine): bool {
+		return $this->driver->isPatronAccountLocked($patron, $fine);
 	}
 }

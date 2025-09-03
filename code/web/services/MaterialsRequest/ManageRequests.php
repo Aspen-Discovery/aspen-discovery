@@ -132,6 +132,39 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				}
 			}
 
+			$startDateFilter = new StickyFilter();
+			$startDateFilter->userId = $user->id;
+			$startDateFilter->filterFor = "MaterialsRequest_StartDate";
+			if (!$startDateFilter->find(true)) {
+				if (!empty($_REQUEST['startDate'])) {
+					$startDateFilter->filterValue = $_REQUEST['startDate'];
+					$startDateFilter->insert();
+				}
+			} else {
+				if (!empty($_REQUEST['startDate'])) {
+					$startDateFilter->filterValue = $_REQUEST['startDate'];
+					$startDateFilter->update();
+				} else {
+					$startDateFilter->delete();
+				}
+			}
+
+			$endDateFilter = new StickyFilter();
+			$endDateFilter->userId = $user->id;
+			$endDateFilter->filterFor = "MaterialsRequest_EndDate";
+			if (!$endDateFilter->find(true)) {
+				if (!empty($_REQUEST['endDate'])) {
+					$endDateFilter->filterValue = $_REQUEST['endDate'];
+					$endDateFilter->insert();
+				}
+			} else {
+				if (!empty($_REQUEST['endDate'])) {
+					$endDateFilter->filterValue = $_REQUEST['endDate'];
+					$endDateFilter->update();
+				} else {
+					$endDateFilter->delete();
+				}
+			}
 		}
 
 
@@ -226,6 +259,26 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$formatsToShow = $defaultFormatsToShow;
 		}
 		$interface->assign('formatFilter', $formatsToShow);
+
+		if (empty($_REQUEST['startDate'])) {
+			$savedStartDate = new StickyFilter();
+			$savedStartDate->userId = $user->id;
+			$savedStartDate->filterFor = "MaterialsRequest_StartDate";
+			if ($savedStartDate->find(true)) {
+				$_REQUEST['startDate'] = $savedStartDate->filterValue;
+				$interface->assign('startDate', $savedStartDate->filterValue);
+			}
+		}
+
+		if (empty($_REQUEST['endDate'])) {
+			$savedEndDate = new StickyFilter();
+			$savedEndDate->userId = $user->id;
+			$savedEndDate->filterFor = "MaterialsRequest_EndDate";
+			if ($savedEndDate->find(true)) {
+				$_REQUEST['endDate'] = $savedEndDate->filterValue;
+				$interface->assign('endDate', $savedEndDate->filterValue);
+			}
+		}
 
 		//Get a list of all material requests for the user
 		$allRequests = [];

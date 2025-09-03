@@ -34,11 +34,11 @@
 					</div>
 				{/if}
 
-				{if !empty($summSeries) && !empty($summSeries.volume)}
+				{if !empty($summVolume)}
 					<div class="series row">
 						<div class="result-label col-xs-3">{translate text="Volume" isPublicFacing=true} </div>
 						<div class="result-value col-xs-9">
-							{$summSeries.volume|format_float_with_min_decimals}
+							{$summVolume|format_float_with_min_decimals}
 						</div>
 					</div>
 				{/if}

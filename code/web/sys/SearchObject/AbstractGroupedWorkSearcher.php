@@ -330,7 +330,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					unset($current['explain']);
 					unset($current['score']);
 				}
-				$interface->assign('recordIndex', $x + 1);
+				// Use absolute positioning for navigation links to display on grouped works spanning across pages.
+				$interface->assign('recordIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				if ($isSaved || $alwaysFlagNewTitles) {
 					if (isset($current["local_time_since_added_$solrScope"])) {
@@ -797,12 +798,15 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * Retrieves a document specified by the item barcode.
 	 *
 	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
-	 * @access  public
-	 * @return  string              The requested resource
+	 * @return  ?array               The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecordByBarcode($barcode) {
-		return $this->indexEngine->getRecordByBarcode($barcode);
+	function getRecordByBarcode(string $barcode) : ?array {
+		if ($this->indexEngine instanceof GroupedWorksSolrConnector || $this->indexEngine instanceof GroupedWorksSolrConnector2) {
+			return $this->indexEngine->getRecordByBarcode($barcode);
+		}else{
+			return null;
+		}
 	}
 
 	/**

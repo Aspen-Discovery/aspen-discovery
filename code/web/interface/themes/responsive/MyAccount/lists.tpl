@@ -31,12 +31,12 @@
 				</div>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row" style="margin-bottom: 20px;">
 			<div class="col-xs-12">
 				<div class="btn-toolbar">
 					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
 					{if count($lists) > 0}
-						<button onclick="return AspenDiscovery.Account.deleteSelectedLists()" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists" isPublicFacing=true}</button>
+						<button id="deleteSelectedListsBtn" onclick="return AspenDiscovery.Account.deleteSelectedLists()" class="btn btn-sm btn-danger" disabled>{translate text="Delete Selected Lists" isPublicFacing=true}</button>
 					{/if}
 					{if !empty($showConvertListsFromClassic)}
 						<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
@@ -49,7 +49,7 @@
 			<div class="row">
 
 					<div class="selectList col-xs-12 col-sm-1">
-						<input type="checkbox" name="selected[{$list->id}]" class="listSelect" id="selected{$list->id}">
+						<input type="checkbox" name="selected[{$list->id}]" class="listSelect" id="selected{$list->id}" onchange="$('#deleteSelectedListsBtn').prop('disabled', $('.listSelect:checked').length === 0);">
 					</div>
 
 				{if $showCovers == true}

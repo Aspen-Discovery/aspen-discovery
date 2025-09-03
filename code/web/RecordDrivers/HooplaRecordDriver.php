@@ -23,9 +23,8 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	public function __construct($recordId, $groupedWork = null) {
 		$this->id = $recordId;
 
-		$this->hooplaExtract = new HooplaExtract();
-		$this->hooplaExtract->hooplaId = $recordId;
-		if ($this->hooplaExtract->find(true)) {
+		$this->hooplaExtract = HooplaExtract::getHooplaTitleForId($recordId);
+		if ($this->hooplaExtract !== null) {
 			$this->valid = true;
 			$this->hooplaRawMetadata = json_decode($this->hooplaExtract->rawResponse);
 			$this->dateFirstDetected = $this->hooplaExtract->dateFirstDetected;

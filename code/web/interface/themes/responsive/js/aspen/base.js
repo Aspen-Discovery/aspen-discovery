@@ -310,14 +310,10 @@ var AspenDiscovery = (function(){
 			var titleSelect = aspenJQ("input.titleSelect");
 			titleSelect.attr('checked', 'checked');
 		},
-		getSelectedLists: function(){
-			var selectedLists = aspenJQ("input.listSelect:checked ").map(function() {
+		getSelectedLists() {
+			return aspenJQ("input.listSelect:checked ").map(function() {
 				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
-			if (selectedLists.length === 0){
-				var ret = confirm('No lists selected');
-			}
-			return selectedLists;
 		},
 		getSelectedBrowseCategories: function(){
 			var selectedCategories = aspenJQ("input.categorySelect:checked ").map(function() {

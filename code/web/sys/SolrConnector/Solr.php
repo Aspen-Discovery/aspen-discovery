@@ -652,7 +652,7 @@ abstract class Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchTerm, $searchLocation, $searchIndex) {
+	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation, $searchTerm, $searchIndex) {
 		return [];
 	}
 

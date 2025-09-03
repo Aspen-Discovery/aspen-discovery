@@ -53,7 +53,7 @@ done
 log "Building GD with RAQM support for PHP ${PHP_VER} using ${GD_VER}"
 
 log "Installing build prerequisites"
-sudo apt-get update -qq || true
+sudo apt-get -y update -qq || true
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   build-essential cmake git pkg-config autoconf libtool \
   libfreetype6-dev libpng-dev libjpeg-dev libwebp-dev libavif-dev \
@@ -103,7 +103,7 @@ if ! sudo -u "${SUDO_USER:-$USER}" bash -c \
   cat <<EOF | sudo tee /etc/apt/sources.list.d/sury-src.list >/dev/null
 deb-src [signed-by=/etc/apt/keyrings/sury.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main
 EOF
-  sudo apt-get update -qq || true
+  sudo apt-get -y update -qq || true
 fi
 
 log "Re-building PHP ${PHP_VER} GD extension"

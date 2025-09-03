@@ -14,9 +14,8 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 	public function __construct($recordId, $groupedWork = null) {
 		$this->id = $recordId;
 
-		$this->axis360Title = new Axis360Title();
-		$this->axis360Title->axis360Id = $recordId;
-		if ($this->axis360Title->find(true)) {
+		$this->axis360Title = Axis360Title::getAxis360TitleForId($recordId);
+		if ($this->axis360Title !== null) {
 			$this->valid = true;
 			$this->axis360RawMetadata = json_decode($this->axis360Title->rawResponse);
 		} else {

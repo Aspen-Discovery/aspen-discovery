@@ -809,6 +809,36 @@ AspenDiscovery.CommunityEngagement = function() {
 					alert('An error occurred while updating the reward status for this milestone.' + textStatus + ', ' + errorThrown);
 				});
 		},
+		adminManuallyProgressExtraCredit: function(extraCreditActivityId, userId, campaignId) {
+			var url = Globals.path + "/CommunityEngagement/AJAX?method=addProgressToExtraCreditActivities";
+
+			const params = {
+				extraCreditActivityId: extraCreditActivityId,
+				userId: userId,
+				campaignId: campaignId
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					const refreshUrl = Globals.path + "/CommunityEngagement/AJAX";
+					const refreshParams = {
+						method: 'filterCampaigns',
+						filterType: 'user',
+						userId: userId
+					};
+
+					$.getJSON(refreshUrl, refreshParams, function (refreshData) {
+						if (refreshData.success && refreshData.html) {
+							$("#filteredCampaign").html(refreshData.html);
+						}
+					});
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function (jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			})
+		}
 	}
 	
 }(AspenDiscovery.CommunityEngagement || {});

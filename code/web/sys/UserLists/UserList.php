@@ -400,6 +400,17 @@ class UserList extends DataObject {
 		return $this->_cleanDescription;
 	}
 
+	function getListAuthor(): ?string {
+		if ($this->user_id != null) {
+			$user = new User();
+			$user->id = $this->user_id;
+			if ($user->find(true)) {
+				return $user->getDisplayName();
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * remove all resources within this list
 	 * @param bool $updateBrowseCategories

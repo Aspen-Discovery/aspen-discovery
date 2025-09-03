@@ -496,7 +496,15 @@ class Koha extends AbstractIlsDriver {
 		$allIssueIds = [];
 		$allItemNumbers = [];
 		$circulationRulesForCheckouts = [];
-		while ($curRow = $results->fetch_assoc()) {
+		$allRows = $results->fetch_all(MYSQLI_ASSOC);
+		$allBibNumbers = [];
+		foreach ($allRows as $curRow) {
+			$allBibNumbers[] = $curRow['biblionumber'];
+		}
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		IlsRecord::preloadIlsRecords($this->getIndexingProfile()->name, $allBibNumbers);
+
+		foreach ($allRows as $curRow) {
 			$curCheckout = new Checkout();
 			$curCheckout->type = 'ils';
 			$curCheckout->source = $this->getIndexingProfile()->name;
@@ -2314,7 +2322,15 @@ class Koha extends AbstractIlsDriver {
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
-		while ($curRow = $results->fetch_assoc()) {
+		$allRows = $results->fetch_all(MYSQLI_ASSOC);
+		$allBibNumbers = [];
+		foreach ($allRows as $curRow) {
+			$allBibNumbers[] = $curRow['biblionumber'];
+		}
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		IlsRecord::preloadIlsRecords($this->getIndexingProfile()->name, $allBibNumbers);
+
+		foreach ($allRows as $curRow) {
 			//Each row in the table represents a hold
 			$curHold = new Hold();
 			$curHold->userId = $patron->id;
@@ -4080,6 +4096,11 @@ class Koha extends AbstractIlsDriver {
 			'required' => true,
 			'autocomplete' => false,
 		];
+		// Check if there is a maximum age for Self registration
+		$maxAgeForSelfReg = $kohaPreferences['PatronSelfRegistrationAgeRestriction'] ?? null;
+		if(is_numeric($maxAgeForSelfReg) && (int) $maxAgeForSelfReg > 0) {
+			$fields['identitySection']['properties']['borrower_dateofbirth']['maxAgeForSelfReg'] = $maxAgeForSelfReg;
+		}
 
 		$fields['identitySection']['properties']['borrower_initials'] = [
 			'property' => 'borrower_initials',
@@ -8712,6 +8733,9 @@ class Koha extends AbstractIlsDriver {
 							'title' => $title,
 							'due' => $response->due_date ?? null,
 							'barcode' => $barcode,
+							'itemId' => $recordId,
+							'owningLocationCode' => $holdingBranch,
+							'checkoutLocationCode' => $checkoutLocation
 						];
 
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);

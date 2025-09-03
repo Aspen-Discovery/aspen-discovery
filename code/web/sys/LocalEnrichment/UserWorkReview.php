@@ -9,6 +9,7 @@ class UserWorkReview extends DataObject {
 	public $review;
 	public $dateRated;
 	public $importedFrom;
+	public $title;
 
 	private $_displayName;
 

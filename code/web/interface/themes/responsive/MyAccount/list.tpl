@@ -1,5 +1,22 @@
 {strip}
 
+	{if $printInterface === true}
+		<div class="row">
+			<div class="col-xs-12">
+				<h2>{$userList->title|escape:"html"}</h2>
+				{if $printListAuthor === true}
+					<p><strong>{$userList->getListAuthor()}</strong></p>
+				{/if}
+                {if !empty($enableListDescriptions) && $printListDescription === true}
+	                <p>{$userList->getCleanDescription()|escape:"html"}</p>
+				{/if}
+			<p><small>{translate text='Created on' isPublicFacing=true}  {$dateCreated}<br/>
+			{translate text='Last Updated' isPublicFacing=true}  {$dateUpdated}</small></p>
+			</div>
+		</div>
+	{/if}
+
+	{if $printInterface === false}
 	<div class="row">
 		<div class="col-xs-12">
 			<form action="/MyAccount/MyList/{$userList->id}" id="myListFormHead">
@@ -139,15 +156,7 @@
 									{if !empty($showEmailThis)}
 									<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
 									{/if}
-									<div class="btn-group">
-										<button id="PrintOptions" type="button" class="btn btn-sm btn-default dropdown-toggle listViewButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-											{translate text='Print List Options' isPublicFacing=true} <span class="caret"></span>
-										</button>
-										<ul class="dropdown-menu">
-											<li><a href="#" onclick="return AspenDiscovery.Lists.printListWithoutDescriptions()">{translate text='Print Without Descriptions' isPublicFacing=true}</a></li>
-											<li><a href="#" onclick="return AspenDiscovery.Lists.printListWithDescriptions()">{translate text='Print With Descriptions' isPublicFacing=true}</a></li>
-										</ul>
-									</div>
+									<button value="printOptions" id="printOptions" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.getPrintListOptions("{$userList->id}")'>{translate text='Print Options' isPublicFacing=true}</button>
 									<a id="FavExport" class="btn btn-sm btn-default listViewButton" href="/MyAccount/AJAX?method=exportUserList&listId={$userList->id}">{translate text='Export List to CSV' isPublicFacing=true}</a>
 									<a id="FavExportRis" class="btn btn-sm btn-default listViewButton" href="/MyAccount/AJAX?method=exportUserListRIS&listId={$userList->id}">{translate text='Export List to RIS' isPublicFacing=true}</a>
 									<button value="citeList" id="FavCite" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations' isPublicFacing=true}</button>
@@ -190,13 +199,14 @@
 			</form>
 		</div>
 	</div>
+	{/if}
 
 	{if $userList->deleted == 0}
 		{if !empty($resourceList)}
+            {if $printInterface === false}
 			<div class="row">
 				<form class="navbar form-inline">
 					<div class="col-xs-4">
-
 						{if $recordCount > 20}
 						<label for="pageSize" class="control-label">{translate text='Records Per Page' isPublicFacing=true}</label>&nbsp;
 						<select id="pageSize" class="pageSize form-control-sm" onchange="AspenDiscovery.changePageSize()">
@@ -225,11 +235,12 @@
 							</div>
 						{/if}
 					</div>
-					<div class="col-xs-4">
+                    <div class="col-xs-4">
 						<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers' isPublicFacing=true} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 				</form>
 			</div>
+            {/if}
 
 			<input type="hidden" name="myListActionItem" id="myListActionItem">
 			<div id="UserList">{*Keep only list entries in div for custom sorting functions*}

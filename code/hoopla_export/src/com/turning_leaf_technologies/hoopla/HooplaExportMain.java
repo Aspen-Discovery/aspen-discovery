@@ -329,6 +329,7 @@ public class HooplaExportMain {
 						//Delete the work from solr and the database
 						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 					}
+					existingRecords.remove(hooplaTitle.getHooplaId());
 					numDeleted++;
 					logEntry.incDeleted();
 				}
@@ -905,6 +906,7 @@ public class HooplaExportMain {
 					logEntry.incDeleted();
 					deleteHooplaItemStmt.setLong(1, existingTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
+					existingRecords.remove(hooplaId);
 				}else {
 					if (existingTitle == null){
 						addHooplaTitleToDB.setLong(1, hooplaId);

@@ -254,6 +254,81 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
 						$html .= "</tbody></table>";
 
+						$extraCreditActivities = CampaignExtraCredit::getExtraCreditByCampaign($campaign->id, $userId);
+
+						if (!empty($extraCreditActivities)) {
+							$html .= "<h6>Extra Credit Activities</h6>";
+							$html .= "<table class='table table-bordered table-sm'>";
+							$html .= "<thead><tr>
+										<th>Activity</th>
+										<th>Progress</th>
+										<th>Status</th>
+										<th>Reward</th>
+									</tr></thead><tbody>";
+
+							foreach ($extraCreditActivities as $activity) {
+								$completed = (int)($activity->completedGoals ?? 0);
+								$total = (int)($activity->totalGoals ?? 0);
+
+								if ($completed > $total) {
+									$completed = $total;
+								}
+
+								$progress = "$completed / $total";
+								$percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
+								$isComplete = $percentage >= 100;
+								$rewardGiven = $activity->rewardGiven ?? false;
+
+								if ($activity->rewardType == 1 && $activity->awardAutomatically && $isComplete && !$rewardGiven) {
+									$rewardGiven = true;
+								}
+
+								$html .= "<tr>";
+								$html .= "<td>" . htmlspecialchars($activity->name) . "<br><small>" . htmlspecialchars($activity->rewardDescription ?? '') . "</small></td>";
+
+								$html .= "<td>
+											{$progress}
+											<div class='progress' style='width:100%; border:1px solid black; border-radius:4px;height:20px;'>
+												<div class='progress-bar' role='progressbar' aria-valuenow='{$percentage}' aria-valuemin='0' aria-valuemax='100' style='width: {$percentage}%; background-color: green; color: white; text-align: center;'>
+													{$percentage}%
+												</div>
+											</div>
+										</td>";
+
+								$html .= "<td>";
+								if ($isComplete) {
+									$html .= "Complete";
+								} else {
+									$html .= "Incomplete";
+									if ($campaign->enrolled) {
+										$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressExtraCredit({$activity->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
+									} else {
+										$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
+									}
+								}
+								$html .= "</td>";
+
+								$html .= "<td>";
+								if ($rewardGiven) {
+									$html .= "Reward Given";
+								} else {
+									$canGiveReward = $isComplete && !$rewardGiven;
+									$disabled = $canGiveReward ? '' : 'disabled';
+									$tooltip = !$canGiveReward ? 'title="Activity not complete or reward already given."' : '';
+									$onclick = $canGiveReward
+										? "onclick='AspenDiscovery.CommunityEngagement.adminExtraCreditRewardGiven({$userId}, {$campaign->id}, {$activity->id}); return false;'"
+										: '';
+
+									$html .= "<button class='btn btn-primary btn-sm' {$disabled} {$tooltip} {$onclick}>Give Reward</button>";
+								}
+								$html .= "</td>";
+
+								$html .= "</tr>";
+							}
+
+							$html .= "</tbody></table>";
+						}
+
 						// Campaign complete / reward section
 						$campaignComplete = $campaign->isComplete == 1;
 						$campaignRewardGiven = $campaign->campaignRewardGiven == 1;
@@ -411,13 +486,15 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 	}
 
-	public function manuallyProgressUserMilestone() {
+	public function manuallyProgressUserMilestone($milestoneId = null, $userId = null, $campaignId = null) {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
 
-		$milestoneId = $_GET['milestoneId'] ?? null;
-		$userId = $_GET['userId'] ?? null;
-		$campaignId = $_GET['campaignId'] ?? null;
+		$milestoneId = $milestoneId ?? $_GET['milestoneId'] ?? null;
+		$userId = $userId ?? $_GET['userId'] ?? null;
+		$campaignId = $campaignId ?? $_GET['campaignId'] ?? null;
 
 		if (!isset($milestoneId) || $milestoneId <=0) {
 			echo json_encode([
@@ -1234,15 +1311,15 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		];
 	}
 
-	public function addProgressToExtraCreditActivities() {
+	public function addProgressToExtraCreditActivities($extraCreditActivityId = null, $userId = null, $campaignId = null) {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/ExtraCredit.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignExtraCreditActivityUsersProgress.php';
 
-		$extraCreditActivityId = $_GET['extraCreditActivityId'] ?? null;
-		$userId = $_GET['userId'] ?? null;
-		$campaignId = $_GET['campaignId'] ?? null;
+		$extraCreditActivityId = $extraCreditActivityId ?? $_GET['extraCreditActivityId'] ?? null;
+		$userId = $userId ?? $_GET['userId'] ?? null;
+		$campaignId = $campaignId ?? $_GET['campaignId'] ?? null;
 
 
 		if (!isset($extraCreditActivityId) || $extraCreditActivityId <= 0) {

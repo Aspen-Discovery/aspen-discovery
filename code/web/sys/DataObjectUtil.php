@@ -697,6 +697,29 @@ class DataObjectUtil {
 										$history->changeDate = time();
 										$history->insert();
 									}
+								} elseif ($subProperty['type'] == 'time') {
+									$oldValue = $subObject->$subPropertyName;
+									if (empty(strlen($_REQUEST[$requestKey][$id])) || $_REQUEST[$requestKey][$id] == '00:00:00') {
+										$changed = $subObject->setProperty($subPropertyName, null, $subProperty);
+									} else {
+										$dateParts = date_parse($_REQUEST[$requestKey][$id]);
+										$time = str_pad($dateParts['hour'], 2, '0', STR_PAD_LEFT) . ':' . str_pad($dateParts['minute'], 2, '0', STR_PAD_LEFT) . ':' . str_pad($dateParts['second'], 2, '0', STR_PAD_LEFT);
+										$changed = $subObject->setProperty($subPropertyName, $time, $subProperty);
+									}
+
+									if (!empty($changed) && !empty($object->{$object->__primaryKey}) && $object->objectHistoryEnabled()) {
+										require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+										$history = new DataObjectHistory();
+										$history->objectType = get_class($object);
+										$primaryKey = $object->__primaryKey;
+										$history->objectId = $object->$primaryKey;
+										$history->propertyName = DataObjectUtil::getHistoryPropertyName($object, $propertyName . '.' . $subPropertyName);
+										$history->oldValue = (string)$oldValue;
+										$history->newValue = (string)($subObject->$subPropertyName ?? '');
+										$history->changedBy = UserAccount::getActiveUserId();
+										$history->changeDate = time();
+										$history->insert();
+									}
 								} elseif (!in_array($subProperty['type'], [
 									'label',
 									'foreignKey',

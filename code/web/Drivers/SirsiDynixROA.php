@@ -3791,6 +3791,9 @@ class SirsiDynixROA extends HorizonAPI {
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 
+		$itemKey = '';
+		$owningLocationCode = '';
+		$checkoutLocationCode = '';
 		$lookupItemResponse = $this->getWebServiceResponse('lookupItem', $webServiceURL . '/catalog/item/barcode/' . $barcode, null, $sessionToken);
 		if (empty($lookupItemResponse) || !empty($lookupItemResponse->messageList)) {
 			$result['message'] = translate([
@@ -3805,6 +3808,8 @@ class SirsiDynixROA extends HorizonAPI {
 			require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 			$scoSettings = new AspenLiDASelfCheckSetting();
 			$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+			$itemKey = $lookupItemResponse->key;
+			$currentItemLocation = $lookupItemResponse->fields->currentLocation->key;
 
 			if ($checkoutLocationSetting == 0) {
 				//Use the active location, no change needed
@@ -3816,7 +3821,6 @@ class SirsiDynixROA extends HorizonAPI {
 			}else {
 				$doCheckout = true;
 
-				$currentItemLocation = $lookupItemResponse->fields->currentLocation->key;
 				if ($currentItemLocation == 'CHECKEDOUT') {
 					$result['message'] = translate([
 						'text' => 'This title is already checked out, cannot check it out again.',
@@ -3830,8 +3834,6 @@ class SirsiDynixROA extends HorizonAPI {
 				}elseif ($currentItemLocation == 'HOLDS') {
 					//The title is on the hold shelf, make sure it is on the hold shelf for the current patron
 					$doCheckout = false;
-
-					$itemKey = $lookupItemResponse->key;
 
 					//Get holds for the patron
 					$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*},barcode}}");
@@ -3884,11 +3886,16 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 
 		//For patrons that have fines, but that are not at the fine threshold, we need to add an override.
-		$totalFines = $patron->getTotalFines(false);
+		$this->getFines($patron);
+		$totalFines = $patron->getAccountSummary()->totalFines;
+		global $logger;
+		$logger->log('User fines are ' . $totalFines, Logger::LOG_DEBUG);
+		$userProfileResponse = $this->getWebServiceResponse('getUserProfile', $webServiceURL . '/policy/userProfile/key/' . $patron->patronType, null, $sessionToken);
 		if ($totalFines > 0) {
-			$userProfileResponse = $this->getWebServiceResponse('getUserProfile', $webServiceURL . '/policy/userProfile/key/' . $patron->patronType, null, $sessionToken);
 			if ($userProfileResponse) {
+				$logger->log('Billing threshold is ' . $userProfileResponse->fields->billThreshold->amount, Logger::LOG_DEBUG);
 				if ($totalFines < $userProfileResponse->fields->billThreshold->amount) {
+					$logger->log('User fines are under billing threshold', Logger::LOG_DEBUG);
 					$addOverrideCode = true;
 				}else{
 					$result['message'] = translate([
@@ -3901,6 +3908,38 @@ class SirsiDynixROA extends HorizonAPI {
 					]);
 					$doCheckout = false;
 				}
+			}else{
+				$logger->log('Could not get user profile', Logger::LOG_DEBUG);
+			}
+		}else{
+			$logger->log('User fines are less than or equal to 0', Logger::LOG_DEBUG);
+		}
+		//For patrons that have overdue titles, but are not at the limit we need to add an override
+		$numOverdue = 0;
+		$checkouts = $this->getCheckouts($patron);
+		foreach ($checkouts as $checkout) {
+			if ($checkout->isOverdue()) {
+				$numOverdue++;
+			}
+		}
+		if ($numOverdue > 0) {
+			if ($userProfileResponse) {
+				if ($numOverdue >= $userProfileResponse->fields->overdueThreshold) {
+					$result['message'] = translate([
+						'text' => 'Your account has too many overdue titles to check out this title.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your account has too many overdue titles to check out this title.',
+						'isPublicFacing' => true,
+					]);
+					$doCheckout = false;
+				}else{
+					$logger->log('User number of overdue items are under threshold', Logger::LOG_DEBUG);
+					$addOverrideCode = true;
+				}
+			}else{
+				$logger->log('Could not get user profile', Logger::LOG_DEBUG);
 			}
 		}
 
@@ -3951,6 +3990,9 @@ class SirsiDynixROA extends HorizonAPI {
 								'title' => $checkout->getTitle(),
 								'due' => date('M j Y', $checkout->dueDate),
 								'barcode' => $barcode,
+								'itemId' => $itemKey,
+								'owningLocationCode' => $owningLocationCode,
+								'checkoutLocationCode' => $checkoutLocationCode
 							];
 							break;
 						}

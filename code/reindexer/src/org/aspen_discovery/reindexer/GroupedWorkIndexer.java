@@ -1600,25 +1600,57 @@ public class GroupedWorkIndexer {
 			getDisplayInfoStmt.setString(1, groupedWork.getId());
 			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
 			if (displayInfoRS.next()) {
+				if (groupedWork.isDebugEnabled()) {
+					groupedWork.addDebugMessage("Applying Display Info for grouped work", 1);
+				}
+
 				String title = displayInfoRS.getString("title");
 				if (!title.isEmpty()){
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("Setting title to " + title + " based on display info", 2);
+					}
 					groupedWork.setTitle(title, "", title, AspenStringUtils.makeValueSortable(title), "", "", true, null);
 					groupedWork.clearSubTitle();
+				}else{
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("No title set in display info, not changing title", 2);
+					}
 				}
 				String author = displayInfoRS.getString("author");
 				if (!author.isEmpty()){
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("Setting author to " + author + " based on display info", 2);
+					}
 					//Force a format category of Books since we want to preserve this
 					groupedWork.setAuthorDisplay(author, "Books");
-				}
-				String seriesName = displayInfoRS.getString("seriesName");
-				String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
-				if (!seriesName.isEmpty()) {
-					groupedWork.clearSeries();
-					groupedWork.addSeries(seriesName);
-					if (!seriesDisplayOrder.isEmpty()) {
-						groupedWork.addSeriesWithVolume(seriesName, seriesDisplayOrder, 2);
+				}else{
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("No author set in display info, not changing author", 2);
 					}
 				}
+				if (!seriesModuleEnabled) {
+					String seriesName = displayInfoRS.getString("seriesName");
+					String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
+					if (seriesName != null && !seriesName.isEmpty()) {
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("Setting series to " + seriesName + " " + seriesDisplayOrder + " based on display info", 2);
+						}
+						groupedWork.clearSeries();
+						groupedWork.addSeries(seriesName);
+						if (seriesDisplayOrder != null && !seriesDisplayOrder.isEmpty()) {
+							groupedWork.addSeriesWithVolume(seriesName, seriesDisplayOrder, 2);
+						}
+					}else{
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);
+						}
+					}
+				}else{
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("Not applying series data for grouped work because series module is enabled", 2);
+					}
+				}
+
 			}
 			displayInfoRS.close();
 		}catch (Exception e){

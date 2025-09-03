@@ -40,9 +40,9 @@ class BrowseCategory extends BaseBrowsable {
 	/**
 	 * Note, may return invalid categories
 	 *
-	 * @return SubBrowseCategories[]
+	 * @return ?SubBrowseCategories[]
 	 */
-	public function getSubCategories() : array {
+	public function getSubCategories() : ?array {
 		global $module;
 		if (!isset($this->_subBrowseCategories) && $this->id) {
 			$this->_subBrowseCategories = [];
@@ -254,8 +254,8 @@ class BrowseCategory extends BaseBrowsable {
 				'property' => 'label',
 				'type' => 'text',
 				'label' => 'Label',
-				'description' => 'The label to show to the user',
-				'maxLength' => 50,
+				'description' => 'The label to show to the user.',
+				'maxLength' => 100,
 				'required' => true,
 			],
 			'textId' => [

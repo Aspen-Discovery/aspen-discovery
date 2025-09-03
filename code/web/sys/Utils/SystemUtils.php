@@ -54,7 +54,7 @@ class SystemUtils {
 		}
 	}
 
-	static function validateAge($minimumAge, $dob): bool {
+	static function validateAge($minimumAge, $dob, $maximumAge = null): bool {
 		$today = date("d-m-Y");//today's date
 
 		$dob = new DateTime($dob);
@@ -65,6 +65,9 @@ class SystemUtils {
 		$age = $interval->y;
 
 		if ($age >= $minimumAge) {
+			if(isset($maximumAge) && $maximumAge <= $age){
+				return false;
+			}
 			return true;
 		}
 		return false;

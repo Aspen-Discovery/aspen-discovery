@@ -825,7 +825,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function checkoutBySip(User $patron, $barcode, $currentLocationId) {
+	public function checkoutBySip(User $patron, string $barcode, $currentLocationId) : array {
 		$checkout_result = [];
 		$success = false;
 		$title = translate([
@@ -941,13 +941,33 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',
+			'api' => [
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'This functionality has not been implemented for this ILS',
+					'isPublicFacing' => true,
+				]),
+			],
 		];
 	}
 
-	public function checkInBySIP(User $patron, $barcode, Location $currentLocation): array {
+	public function checkInBySIP(User $patron, string $barcode, Location $currentLocation): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS',
+			'api' => [
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'This functionality has not been implemented for this ILS',
+					'isPublicFacing' => true,
+				]),
+			],
 		];
 	}
 
@@ -1019,6 +1039,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	public function hasAdditionalFineFields(): bool {
+		return false;
+	}
+
+	public function isPatronAccountLocked(User $patron, $fine): bool {
 		return false;
 	}
 }
