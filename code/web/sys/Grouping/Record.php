@@ -191,11 +191,14 @@ class Grouping_Record {
 				if ($item->locallyOwned) {
 					$this->_statusInformation->setIsLocallyOwned(true);
 					$this->_statusInformation->addLocalCopies($item->numCopies);
-					if ($item->available && !$item->isEContent) {
-						global $locationSingleton;
-						$physicalLocation = $locationSingleton->getPhysicalLocation();
-						if (!empty($physicalLocation)) {
-							$this->_statusInformation->setAvailableHere(true);
+					if ($item->available) {
+						$this->_statusInformation->setAvailableLocally(true);
+						if (!$item->isEContent) {
+							global $locationSingleton;
+							$physicalLocation = $locationSingleton->getPhysicalLocation();
+							if (!empty($physicalLocation)) {
+								$this->_statusInformation->setAvailableHere(true);
+							}
 						}
 					}
 				}
