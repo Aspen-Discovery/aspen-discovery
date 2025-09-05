@@ -10795,8 +10795,7 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		initializeHorizontalFormatSwipers: function(workId) {
-			var container = document.getElementById('slider-' + workId);
+		initializeHorizontalSwiper: function (container, onSlideClick) {
 			var wrapper = container.querySelector('.slider-wrapper');
 			var prevBtn = container.querySelector('.slider-button-prev');
 			var nextBtn = container.querySelector('.slider-button-next');
@@ -10812,46 +10811,28 @@ AspenDiscovery.GroupedWork = (function(){
 
 			slides.forEach(function (slide) {
 				slide.addEventListener('click', function (e) {
-					// Remove active from all slides
 					slides.forEach(function (s) {
 						s.classList.remove('active');
 					});
-
-					// Add active to the clicked slide
 					slide.classList.add('active');
-
-					// Get format from data-attribute
-					var workId = slide.getAttribute('data-workId');
-					var format = slide.getAttribute('data-format');
-					var cleanedWorkId = slide.getAttribute('data-cleanedWorkId');
-					console.log('Clicked format:', format);
-
-					AspenDiscovery.GroupedWork.showManifestation(workId, format, cleanedWorkId);
+					onSlideClick(slide);
 				});
 			});
 
 			function updateButtonState() {
 				const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth;
 				const atStart = wrapper.scrollLeft <= 0;
-				const atEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 1; // -1 for rounding errors
+				const atEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 1;
 
-				// Always disable if no overflow
 				prevBtn.disabled = !hasOverflow || atStart;
 				nextBtn.disabled = !hasOverflow || atEnd;
 
 				prevBtn.classList.toggle('slider-button-disabled', !hasOverflow || atStart);
 				nextBtn.classList.toggle('slider-button-disabled', !hasOverflow || atEnd);
 			}
-
-			// Initial check
 			updateButtonState();
-
-			// Update on window resize and scroll
 			window.addEventListener('resize', updateButtonState);
 			wrapper.addEventListener('scroll', updateButtonState);
-
-			// Update on window resize
-			window.addEventListener('resize', updateButtonState);
 
 			// Touch/drag support
 			let isDown = false;
@@ -10876,11 +10857,9 @@ AspenDiscovery.GroupedWork = (function(){
 				if (!isDown) return;
 				e.preventDefault();
 				const x = e.pageX - wrapper.offsetLeft;
-				const walk = (x - startX) * 1.5; //scroll-fast
+				const walk = (x - startX) * 1.5;
 				wrapper.scrollLeft = scrollLeft - walk;
 			});
-
-			// Touch events for mobile
 			wrapper.addEventListener('touchstart', (e) => {
 				isDown = true;
 				startX = e.touches[0].pageX - wrapper.offsetLeft;
@@ -10894,6 +10873,27 @@ AspenDiscovery.GroupedWork = (function(){
 				const x = e.touches[0].pageX - wrapper.offsetLeft;
 				const walk = (x - startX) * 1.5;
 				wrapper.scrollLeft = scrollLeft - walk;
+			});
+		},
+
+		initializeHorizontalFormatSwipers: function (workId) {
+			var container = document.getElementById('slider-' + workId);
+			this.initializeHorizontalSwiper(container, function (slide) {
+				var workId = slide.getAttribute('data-workId');
+				var format = slide.getAttribute('data-format');
+				var cleanedWorkId = slide.getAttribute('data-cleanedWorkId');
+				AspenDiscovery.GroupedWork.showManifestation(workId, format, cleanedWorkId);
+			});
+		},
+
+		initializeHorizontalSourceSwipers: function (workId) {
+			var container = document.getElementById('variationsInfo_' + workId);
+			this.initializeHorizontalSwiper(container, function (slide) {
+				var workId = slide.getAttribute('data-workId');
+				var format = slide.getAttribute('data-format');
+				var cleanedWorkId = slide.getAttribute('data-cleanedWorkId');
+				var variationId = slide.getAttribute('data-variationId');
+				AspenDiscovery.GroupedWork.showVariation(workId, format, variationId, cleanedWorkId);
 			});
 		},
 
@@ -10931,107 +10931,6 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		initializeHorizontalSourceSwipers: function (workId) {
-			var container = document.getElementById('variationsInfo_' + workId);
-			var wrapper = container.querySelector('.slider-wrapper');
-			var prevBtn = container.querySelector('.slider-button-prev');
-			var nextBtn = container.querySelector('.slider-button-next');
-			var slideWidth = wrapper.querySelector('.slider-slide').offsetWidth + 12;
-			var slides = wrapper.querySelectorAll('.slider-slide');
-
-			prevBtn.addEventListener('click', function () {
-				wrapper.scrollLeft -= slideWidth;
-			});
-			nextBtn.addEventListener('click', function () {
-				wrapper.scrollLeft += slideWidth;
-			});
-
-			slides.forEach(function (slide) {
-				slide.addEventListener('click', function (e) {
-					// Remove active from all slides
-					slides.forEach(function (s) {
-						s.classList.remove('active');
-					});
-
-					// Add active to the clicked slide
-					slide.classList.add('active');
-
-					// Get format from data-attribute
-					var workId = slide.getAttribute('data-workId');
-					var format = slide.getAttribute('data-format');
-					var cleanedWorkId = slide.getAttribute('data-cleanedWorkId');
-					var variationId = slide.getAttribute('data-variationId');
-
-					AspenDiscovery.GroupedWork.showVariation(workId, format, variationId, cleanedWorkId);
-				});
-			});
-
-			function updateButtonState() {
-				const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth;
-				const atStart = wrapper.scrollLeft <= 0;
-				const atEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 1; // -1 for rounding errors
-
-				// Always disable if no overflow
-				prevBtn.disabled = !hasOverflow || atStart;
-				nextBtn.disabled = !hasOverflow || atEnd;
-
-				prevBtn.classList.toggle('slider-button-disabled', !hasOverflow || atStart);
-				nextBtn.classList.toggle('slider-button-disabled', !hasOverflow || atEnd);
-			}
-
-			// Initial check
-			updateButtonState();
-
-			// Update on window resize and scroll
-			window.addEventListener('resize', updateButtonState);
-			wrapper.addEventListener('scroll', updateButtonState);
-
-			// Update on window resize
-			window.addEventListener('resize', updateButtonState);
-
-			// Touch/drag support
-			let isDown = false;
-			let startX;
-			let scrollLeft;
-
-			wrapper.addEventListener('mousedown', (e) => {
-				isDown = true;
-				wrapper.classList.add('active');
-				startX = e.pageX - wrapper.offsetLeft;
-				scrollLeft = wrapper.scrollLeft;
-			});
-			wrapper.addEventListener('mouseleave', () => {
-				isDown = false;
-				wrapper.classList.remove('active');
-			});
-			wrapper.addEventListener('mouseup', () => {
-				isDown = false;
-				wrapper.classList.remove('active');
-			});
-			wrapper.addEventListener('mousemove', (e) => {
-				if (!isDown) return;
-				e.preventDefault();
-				const x = e.pageX - wrapper.offsetLeft;
-				const walk = (x - startX) * 1.5; //scroll-fast
-				wrapper.scrollLeft = scrollLeft - walk;
-			});
-
-			// Touch events for mobile
-			wrapper.addEventListener('touchstart', (e) => {
-				isDown = true;
-				startX = e.touches[0].pageX - wrapper.offsetLeft;
-				scrollLeft = wrapper.scrollLeft;
-			});
-			wrapper.addEventListener('touchend', () => {
-				isDown = false;
-			});
-			wrapper.addEventListener('touchmove', (e) => {
-				if (!isDown) return;
-				const x = e.touches[0].pageX - wrapper.offsetLeft;
-				const walk = (x - startX) * 1.5;
-				wrapper.scrollLeft = scrollLeft - walk;
-			});
-		},
 
 		showVariation: function(workId, format, variationId, cleanedWorkId){
 			let activeManifestationInfoJSON = this.groupedWorks[cleanedWorkId][format];
