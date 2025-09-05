@@ -10828,15 +10828,30 @@ a.browse-thumbnail.active {
 .trackNumber {
   font-weight: bold;
 }
-.horizontalFormatSelector {
-  margin-top: 1.5em;
-  margin-bottom: 1em;
-  /* Left Arrow SVG */
-  /* Right Arrow SVG */
-  /* Position arrows (example: inside slider, 10px from sides) */
+.slider-container {
+  display: flex;
+  width: 100%;
 }
-.horizontalFormatSelector .swiper-button-prev,
-.horizontalFormatSelector .swiper-button-next {
+.slider-button {
+  cursor: pointer;
+  z-index: 2;
+}
+.slider-wrapper {
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  scroll-behavior: smooth;
+  cursor: grab;
+  gap: 10px;
+}
+.slider-slide {
+  flex: 0 0 auto;
+  user-select: none;
+}
+.slider-wrapper:active {
+  cursor: grabbing;
+}
+.slider-button {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -10848,13 +10863,10 @@ a.browse-thumbnail.active {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   top: 50%;
   transform: translateY(-50%);
-  color: transparent !important;
-  /* Hide default Swiper arrow */
   position: absolute;
   z-index: 10;
 }
-.horizontalFormatSelector .swiper-button-prev:after,
-.horizontalFormatSelector .swiper-button-next:after {
+.slider-button:after {
   content: "";
   display: block;
   width: 16px;
@@ -10863,23 +10875,27 @@ a.browse-thumbnail.active {
   background-repeat: no-repeat;
   background-position: center;
 }
-.horizontalFormatSelector .swiper-button-prev:after {
-  background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M10 4L6 8L10 12' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-}
-.horizontalFormatSelector .swiper-button-next:after {
-  background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M6 4L10 8L6 12' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-}
-.horizontalFormatSelector .swiper-button-prev {
+.slider-button-prev {
   left: 10px;
 }
-.horizontalFormatSelector .swiper-button-next {
+.slider-button-prev:after {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2716%27%20height%3D%2716%27%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27none%27%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%3E%3Cpath%20d%3D%27M10%204L6%208L10%2012%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E");
+}
+.slider-button-next {
   right: 10px;
 }
-.horizontalFormatSelector .swiper-button-disabled {
+.slider-button-next:after {
+  background-image: url("data:image/svg+xml,%3Csvg%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M6%204L10%208L6%2012'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.slider-button-disabled {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
   /* Optional: removes it from accessibility tree */
+}
+.horizontalSliders {
+  margin-top: 1.5em;
+  margin-bottom: 1em;
 }
 .horizontal-format-button {
   break-inside: avoid-column;
@@ -10913,7 +10929,10 @@ a.browse-thumbnail.active {
   cursor: pointer;
   text-decoration: none;
 }
-.horizontal-format-button.swiper-slide-active {
+.horizontal-format-button.slider-sm {
+  min-width: 125px;
+}
+.horizontal-format-button.active {
   border-width: 3px;
 }
 .variationsInfo {

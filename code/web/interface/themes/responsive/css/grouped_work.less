@@ -117,62 +117,81 @@
   font-weight: bold;
 }
 
-.horizontalFormatSelector {
+.slider-container {
+  display: flex;
+  width: 100%;
+}
+.slider-button {
+  cursor: pointer;
+  z-index: 2;
+}
+.slider-wrapper {
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  scroll-behavior: smooth;
+  cursor: grab;
+  gap: 10px;
+}
+.slider-slide {
+  flex: 0 0 auto;
+  user-select: none;
+}
+.slider-wrapper:active {
+  cursor: grabbing;
+}
+
+.slider-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff !important;
+  border: 2px solid #000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  top: 50%;
+  transform: translateY(-50%);
+  position: absolute;
+  z-index: 10;
+}
+
+.slider-button:after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.slider-button-prev {
+  left: 10px;
+}
+
+.slider-button-prev:after {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2716%27%20height%3D%2716%27%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27none%27%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%3E%3Cpath%20d%3D%27M10%204L6%208L10%2012%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E");
+}
+
+.slider-button-next {
+  right: 10px;
+}
+
+.slider-button-next:after {
+  background-image: url("data:image/svg+xml,%3Csvg%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M6%204L10%208L6%2012'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.slider-button-disabled {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden; /* Optional: removes it from accessibility tree */
+}
+
+.horizontalSliders {
   margin-top: 1.5em;
   margin-bottom: 1em;
-
-  .swiper-button-prev,
-  .swiper-button-next {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #fff !important;
-    border: 2px solid #000 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    top: 50%;
-    transform: translateY(-50%);
-    color: transparent !important; /* Hide default Swiper arrow */
-    position: absolute;
-    z-index: 10;
-  }
-
-  .swiper-button-prev:after,
-  .swiper-button-next:after {
-    content: "";
-    display: block;
-    width: 16px;
-    height: 16px;
-    background-size: 16px 16px;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-
-  /* Left Arrow SVG */
-  .swiper-button-prev:after {
-    background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M10 4L6 8L10 12' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  }
-
-  /* Right Arrow SVG */
-  .swiper-button-next:after {
-    background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M6 4L10 8L6 12' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  }
-
-  /* Position arrows (example: inside slider, 10px from sides) */
-  .swiper-button-prev {
-    left: 10px;
-  }
-  .swiper-button-next {
-    right: 10px;
-  }
-
-  .swiper-button-disabled {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden; /* Optional: removes it from accessibility tree */
-  }
 }
 
 .horizontal-format-button {
@@ -206,8 +225,11 @@
     cursor: pointer;
     text-decoration: none;
   }
+  &.slider-sm {
+    min-width: 125px;
+  }
 }
-.horizontal-format-button.swiper-slide-active{
+.horizontal-format-button.active{
   border-width: 3px;
 }
 .variationsInfo {

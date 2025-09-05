@@ -463,13 +463,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     color: {$primaryButtonForegroundColor} !important;
 {rdelim}
 
-.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary, .horizontal-format-button:hover, .horizontal-format-button.swiper-slide-active, .horizontal-format-button.swiper-slide-active:hover{ldelim}
+.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary, .horizontal-format-button:hover, .horizontal-format-button.active, .horizontal-format-button.active:hover{ldelim}
     background-color: {$primaryButtonHoverBackgroundColor} !important;
     color: {$primaryButtonHoverForegroundColor} !important;
     border-color: {$primaryButtonHoverBorderColor};
 {rdelim}
 
-.horizontal-format-button.swiper-slide-active a, .horizontal-format-button:hover a{ldelim}
+.horizontal-format-button.active a, .horizontal-format-button:hover a{ldelim}
     color: {$primaryButtonHoverForegroundColor} !important;
 {rdelim}
 

@@ -31,26 +31,24 @@
 	</div>
 {else}
 	<div class="col-xs-12 formatDisplayHorizontal" id="relatedManfiestations{$summId|escape}" style="margin-top: 3px;margin-bottom: 5px;">
-		<div class="row horizontalFormatSelector">
+		<div class="horizontalSliders"><div class="row horizontalFormatSelector">
 			<div class="col-xs-12">
-				<div class="swiper-button-prev swiper-button-manifestations-prev swiper-button-manifestations-prev-{$summId|escape}" id="swiper-button-manifestation-prev-{$summId|escape}"></div>
-				<div class="swiper swiper-manifestations swiper-manifestations-{$summId|escape}" id="swiper-{$summId|escape}">
-					<div class="swiper-wrapper" id="swiper-manifestations-{$summId|escape}">
-						{assign var=firstFormat value=""}
-						{foreach from=$relatedManifestations item=$manifestation name=manifestations}
-							{if $smarty.foreach.manifestations.index ==0}
-								{assign var=firstFormat value=$manifestation->format}
-							{/if}
-							<div class="swiper-slide horizontal-format-button" data-workId="{$summId|escape}" data-format="{$manifestation->format}" data-cleanedWorkId="{$summId|regex_replace:"/-/" : ""}">
-								<a onclick="return AspenDiscovery.GroupedWork.showManifestation('{$summId|escape}', '{$manifestation->format}', '{$summId|regex_replace:"/-/" : ""}');">
-								<div class="horizontal-format-button-format">{$manifestation->format}</div>
-								{include file='GroupedWork/statusIndicator.tpl' statusInformation=$manifestation->getStatusInformation() viewingIndividualRecord=0 applyColors=false}
-								</a>
+				<div class="slider-container" id="slider-{$summId|escape}">
+					<div class="slider-button slider-button-prev" id="slider-prev-{$summId|escape}"></div>
+					<div class="slider-wrapper">
+                        {assign var=firstFormat value=""}
+                        {foreach from=$relatedManifestations item=$manifestation name=manifestations}
+                            {if $smarty.foreach.manifestations.index ==0}
+                                {assign var=firstFormat value=$manifestation->format}
+                            {/if}
+							<div class="slider-slide horizontal-format-button{if $smarty.foreach.manifestations.index == 0} active{/if}"
+							     data-workId="{$summId|escape}" data-format="{$manifestation->format}" data-cleanedWorkId="{$summId|regex_replace:"/-/" : ""}">
+									<div class="horizontal-format-button-format">{$manifestation->format}</div>
+                                    {include file='GroupedWork/statusIndicator.tpl' statusInformation=$manifestation->getStatusInformation() viewingIndividualRecord=0 applyColors=false}
 							</div>
-						{/foreach}
+                        {/foreach}
 					</div>
-				</div>
-				<div class="swiper-button-next swiper-button-manifestations-next swiper-button-manifestations-next-{$summId|escape}" id="swiper-button-manifestation-next-{$summId|escape}">
+					<div class="slider-button slider-button-next" id="slider-next-{$summId|escape}"></div>
 				</div>
 				<script>
 					$(document).ready(function(){ldelim}
@@ -68,21 +66,19 @@
 		</div>
 		<div class="row variationsInfo">
 			<div class="col-xs-12">
-				<div id="variationsInfo_{$summId|escape}" style="display: none;">
-					<div class="swiper-button-prev swiper-button-variations-prev" id="swiper-button-variation-prev-{$summId|escape}"></div>
-					<div class="swiper swiper-variations swiper-variations-{$summId|escape}" id="swiper-{$summId|escape}">
-						<div class="swiper-wrapper" id="swiper-variations-{$summId|escape}">
+				<div class="slider-container variations" id="variationsInfo_{$summId|escape}" style="display: none;">
+					<div class="slider-button slider-button-prev" id="slider-prev-{$summId|escape}"></div>
+					<div class="slider-wrapper" id="slider-variations-{$summId|escape}">
 
-						</div>
 					</div>
-					<div class="swiper-button-next swiper-button-variations-next" id="swiper-button-variation-next-{$summId|escape}"></div>
+					<div class="slider-button slider-button-next" id="slider-next-{$summId|escape}"></div>
 				</div>
 			</div>
+		</div>
 		</div>
 		<div class="row variationInfo">
 			<div class="col-xs-12">
 				<div id="variationInfo_{$summId|escape}">
-
 				</div>
 			</div>
 		</div>
