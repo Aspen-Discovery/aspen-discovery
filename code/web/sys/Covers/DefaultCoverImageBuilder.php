@@ -64,7 +64,18 @@ class DefaultCoverImageBuilder {
 					$this->foregroundColor = $tmpColor;
 				}
 				if (!empty($theme->defaultCover)) {
-					$this->defaultCoverImage = ROOT_DIR . '/files/original/' . $theme->defaultCover;
+					// Check if this is a user-uploaded custom default cover (stored in new structure)
+					require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+					$storageManager = StorageManager::getInstance();
+					$newPath = $storageManager->getImagePath('theme', 'backgrounds', 'original') . '/' . $theme->defaultCover;
+					
+					if (file_exists($newPath)) {
+						// User-uploaded custom default cover - use StorageManager path
+						$this->defaultCoverImage = $newPath;
+					} else {
+						// Fallback to old path for legacy/app-provided default covers
+						$this->defaultCoverImage = ROOT_DIR . '/files/original/' . $theme->defaultCover;
+					}
 				}
 			}
 		}

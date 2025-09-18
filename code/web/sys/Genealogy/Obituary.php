@@ -109,7 +109,102 @@ class Obituary extends DataObject {
 		return self::$_objectStructure[$context];
 	}
 
+	public function getPictureUrl($size = 'original') {
+		if (!empty($this->picture)) {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			return $storageManager->getImageUrl($this->picture, 'genealogy', 'obituary', $size);
+		}
+		return null;
+	}
+
+	private function processPictureUpload() {
+		if (empty($this->picture)) {
+			return;
+		}
+		
+		try {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			
+			// Check if this is a new upload (temporary file path)
+			if (strpos($this->picture, '/tmp/') === 0 || strpos($this->picture, sys_get_temp_dir()) === 0) {
+				$originalFilename = basename($this->picture);
+				$fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+				
+				if (empty($fileExtension)) {
+					throw new AspenError("Invalid file - no extension found");
+				}
+				
+				if (empty($this->obituaryId)) {
+					return; // Process after insert when obituaryId is available
+				}
+				
+				$standardizedFilename = "Obituary_picture_" . $this->obituaryId . "." . $fileExtension;
+				$imagePath = $storageManager->getImagePath('genealogy', 'obituary', 'original');
+				$finalPath = $imagePath . '/' . $standardizedFilename;
+				
+				// Handle filename conflicts
+				$counter = 1;
+				$baseName = "Obituary_picture_" . $this->obituaryId;
+				while (file_exists($finalPath)) {
+					$standardizedFilename = $baseName . "_" . $counter . "." . $fileExtension;
+					$finalPath = $imagePath . '/' . $standardizedFilename;
+					$counter++;
+					
+					if ($counter > 1000) {
+						throw new AspenError("Too many filename conflicts for Obituary {$this->obituaryId}");
+					}
+				}
+				
+				if (!move_uploaded_file($this->picture, $finalPath) && !rename($this->picture, $finalPath)) {
+					throw new AspenError("Failed to move uploaded file to: " . $finalPath);
+				}
+				
+				$this->picture = $standardizedFilename;
+			}
+			
+			// Generate thumbnail
+			if (!empty($this->picture)) {
+				$this->generatePictureThumbnail($storageManager);
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Picture upload failed for Obituary {$this->obituaryId}: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->picture = '';
+		}
+	}
+
+	private function generatePictureThumbnail($storageManager) {
+		try {
+			$imagePath = $storageManager->getImagePath('genealogy', 'obituary', 'original');
+			$originalFile = $imagePath . '/' . $this->picture;
+			
+			if (!file_exists($originalFile)) {
+				throw new AspenError("Original file not found: " . $originalFile);
+			}
+			
+			$thumbnailPath = $storageManager->getImagePath('genealogy', 'obituary', 'thumbnail');
+			$thumbnailFile = $thumbnailPath . '/' . $this->picture;
+			
+			if (!file_exists($thumbnailFile)) {
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+				if (!resizeImage($originalFile, $thumbnailFile, 150, 150)) {
+					throw new AspenError("Failed to create thumbnail for Obituary {$this->obituaryId}");
+				}
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Thumbnail generation failed for Obituary {$this->obituaryId}: " . $e->getMessage(), Logger::LOG_WARNING);
+		}
+	}
+
 	public function insert(string $context = '') : int|bool {
+		// Handle picture upload
+		$this->processPictureUpload();
+		
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
 		if ($this->personId) {
@@ -123,6 +218,9 @@ class Obituary extends DataObject {
 	}
 
 	public function update(string $context = '') : int|bool {
+		// Handle picture upload
+		$this->processPictureUpload();
+		
 		$ret = parent::update();
 		//Load the person this is for, and update solr
 		if ($this->personId) {

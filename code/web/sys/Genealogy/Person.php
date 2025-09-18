@@ -723,12 +723,108 @@ class Person extends SolrDataObject {
 		}
 	}
 
+	public function getPictureUrl($size = 'original') {
+		if (!empty($this->picture)) {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			return $storageManager->getImageUrl($this->picture, 'genealogy', 'person', $size);
+		}
+		return null;
+	}
+
+	private function processPictureUpload() {
+		if (empty($this->picture)) {
+			return;
+		}
+		
+		try {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			
+			// Check if this is a new upload (temporary file path)
+			if (strpos($this->picture, '/tmp/') === 0 || strpos($this->picture, sys_get_temp_dir()) === 0) {
+				$originalFilename = basename($this->picture);
+				$fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+				
+				if (empty($fileExtension)) {
+					throw new AspenError("Invalid file - no extension found");
+				}
+				
+				if (empty($this->personId)) {
+					return; // Process after insert when personId is available
+				}
+				
+				$standardizedFilename = "Person_picture_" . $this->personId . "." . $fileExtension;
+				$imagePath = $storageManager->getImagePath('genealogy', 'person', 'original');
+				$finalPath = $imagePath . '/' . $standardizedFilename;
+				
+				// Handle filename conflicts
+				$counter = 1;
+				$baseName = "Person_picture_" . $this->personId;
+				while (file_exists($finalPath)) {
+					$standardizedFilename = $baseName . "_" . $counter . "." . $fileExtension;
+					$finalPath = $imagePath . '/' . $standardizedFilename;
+					$counter++;
+					
+					if ($counter > 1000) {
+						throw new AspenError("Too many filename conflicts for Person {$this->personId}");
+					}
+				}
+				
+				if (!move_uploaded_file($this->picture, $finalPath) && !rename($this->picture, $finalPath)) {
+					throw new AspenError("Failed to move uploaded file to: " . $finalPath);
+				}
+				
+				$this->picture = $standardizedFilename;
+			}
+			
+			// Generate thumbnail
+			if (!empty($this->picture)) {
+				$this->generateThumbnail($storageManager);
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Picture upload failed for Person {$this->personId}: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->picture = '';
+		}
+	}
+
+	private function generateThumbnail($storageManager) {
+		try {
+			$imagePath = $storageManager->getImagePath('genealogy', 'person', 'original');
+			$originalFile = $imagePath . '/' . $this->picture;
+			
+			if (!file_exists($originalFile)) {
+				throw new AspenError("Original file not found: " . $originalFile);
+			}
+			
+			$thumbnailPath = $storageManager->getImagePath('genealogy', 'person', 'thumbnail');
+			$thumbnailFile = $thumbnailPath . '/' . $this->picture;
+			
+			if (!file_exists($thumbnailFile)) {
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+				if (!resizeImage($originalFile, $thumbnailFile, 150, 150)) {
+					throw new AspenError("Failed to create thumbnail for Person {$this->personId}");
+				}
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Thumbnail generation failed for Person {$this->personId}: " . $e->getMessage(), Logger::LOG_WARNING);
+		}
+	}
+
 	public function insert(string $context = '') : int|bool {
 		//Set the dateAdded and who added the record
 		$this->dateAdded = time();
 		$this->addedBy = UserAccount::getActiveUserId();
 		$this->modifiedBy = UserAccount::getActiveUserId();
 		$this->lastModified = time();
+		
+		// Handle picture upload
+		$this->processPictureUpload();
+		
 		$ret = parent::insert();
 		if ($ret) {
 			$this->saveMarriages();
@@ -744,6 +840,10 @@ class Person extends SolrDataObject {
 		if (empty($this->dateAdded)) {
 			$this->dateAdded = $this->lastModified;
 		}
+		
+		// Handle picture upload
+		$this->processPictureUpload();
+		
 		$ret = parent::update();
 		if ($ret) {
 			$this->saveMarriages();

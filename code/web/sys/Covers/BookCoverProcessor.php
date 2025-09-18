@@ -1983,7 +1983,9 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedSeriesCover($cover) {
-		$uploadedImage = $this->bookCoverPath . '/original/series/' . $cover;
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = new StorageManager();
+		$uploadedImage = $storageManager->getImagePath('series', null, 'original') . '/' . $cover;
 		if (file_exists($uploadedImage)) {
 			return $this->processImageURL('upload', $uploadedImage);
 		}
@@ -1991,7 +1993,9 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedSeriesMemberCover($cover) {
-		$uploadedImage = $this->bookCoverPath . '/original/seriesMember/' . $cover;
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = new StorageManager();
+		$uploadedImage = $storageManager->getImagePath('series', null, 'original') . '/' . $cover;
 		if (file_exists($uploadedImage)) {
 			return $this->processImageURL('upload', $uploadedImage);
 		}
