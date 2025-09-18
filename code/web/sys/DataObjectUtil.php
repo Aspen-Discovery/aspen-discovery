@@ -409,9 +409,62 @@ class DataObjectUtil {
 							$pathToMedium = $destFolder . '/medium';
 						} else {
 							$destFileName = ($object->id != null) ? $objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
-							$destFolder = $configArray['Site']['local'] . '/files/original';
-							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+							
+							// Use StorageManager for centralized file storage
+							require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+							$storageManager = StorageManager::getInstance();
+							
+							// Determine storage type based on object type and property name
+							$storageType = 'legacy'; // default fallback
+							$subtype = null;
+							
+							// Check for theme-related object types (from the match statement above)
+							$themeObjectTypes = [
+								'discovery_logo', 'default_cover', 'header_background_image', 'footer_logo', 
+								'logo_app', 'header_logo_app', 'books_image', 'books_image_selected',
+								'eBooks_image', 'eBooks_image_selected', 'audioBooks_image', 'audioBooks_image_selected',
+								'music_image', 'music_image_selected', 'movies_image', 'movies_image_selected',
+								'catalog_image', 'genealogy_image', 'articles_db_image', 'events_image',
+								'lists_image', 'series_image', 'library_website_image', 'history_archives_image'
+							];
+							
+							if (strpos(strtolower($objectType), 'theme') !== false || in_array($objectType, $themeObjectTypes)) {
+								$storageType = 'theme';
+								// Determine subtype based on exact propertyName matching
+								if (in_array($propertyName, ['logoName', 'logoApp', 'headerLogoApp'])) {
+									$subtype = 'logos';
+								} elseif ($propertyName === 'favicon') {
+									$subtype = 'favicons';
+								} elseif (in_array($propertyName, ['defaultCover', 'headerBackgroundImage', 'footerLogo'])) {
+									$subtype = 'backgrounds';
+								} else {
+									// All other theme images (category icons, etc.) go to logos by default
+									$subtype = 'logos';
+								}
+							} elseif (strpos(strtolower($objectType), 'imageupload') !== false) {
+								$storageType = 'web_builder';
+								// ImageUpload uses different size names that map to StorageManager sizes
+								$subtype = null; // web_builder doesn't use subtypes
+							} elseif (strpos(strtolower($objectType), 'event') !== false || 
+									strpos(strtolower($objectType), 'eventtype') !== false) {
+								$storageType = 'event';
+							} elseif (strpos(strtolower($objectType), 'reward') !== false) {
+								$storageType = 'reward';
+							} elseif (strpos(strtolower($objectType), 'series') !== false) {
+								$storageType = 'series';
+							} elseif (strpos(strtolower($objectType), 'calendar') !== false) {
+								$storageType = 'calendar';
+							} elseif (strpos(strtolower($objectType), 'web') !== false) {
+								$storageType = 'web_builder';
+							} elseif (strpos(strtolower($objectType), 'placard') !== false) {
+								$storageType = 'placard';
+							}
+							
+							// Use 'full' for web_builder and rewards (backward compatibility), 'original' for others
+							$originalSize = ($storageType === 'web_builder' || $storageType === 'reward') ? 'full' : 'original';
+							$destFolder = $storageManager->getImagePath($storageType, $subtype, $originalSize);
+							$pathToThumbs = $storageManager->getImagePath($storageType, $subtype, 'thumbnail');
+							$pathToMedium = $storageManager->getImagePath($storageType, $subtype, 'medium');
 						}
 
 						$destFullPath = $destFolder . '/' . $destFileName;
@@ -426,7 +479,8 @@ class DataObjectUtil {
 							require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 							if (isset($property['thumbWidth'])) {
-								resizeImage($destFullPath, "{$pathToThumbs}/{$destFileName}", $property['thumbWidth'], $property['thumbWidth']);
+								$thumbnailDestination = "{$pathToThumbs}/{$destFileName}";
+								$thumbnailResult = resizeImage($destFullPath, $thumbnailDestination, $property['thumbWidth'], $property['thumbWidth']);
 							}
 							if (isset($property['mediumWidth'])) {
 								//Create a thumbnail if needed

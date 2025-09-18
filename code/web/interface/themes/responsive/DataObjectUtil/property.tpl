@@ -478,12 +478,70 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if !empty($propValue) && $property.type == 'image'}
 				{if !empty($property.thumbWidth)}
-					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+					{if !empty($property.thumbnailUrl)}
+						<img src='{$property.thumbnailUrl}' style="display: block" alt="Selected Image for {$property.label}">
+					{else}
+						{* Generate StorageManager URL for theme images *}
+						{if !empty($property.property) && ($property.property == 'logoName' || $property.property == 'favicon' || $property.property == 'headerBackgroundImage' || $property.property == 'logoApp' || $property.property == 'headerLogoApp' || $property.property == 'defaultCover' || $property.property == 'footerLogo')}
+							{if $property.property == 'logoName' || $property.property == 'logoApp' || $property.property == 'headerLogoApp'}
+								<img src='/images/themes/logos/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+							{elseif $property.property == 'favicon'}
+								<img src='/images/themes/favicons/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+							{elseif $property.property == 'headerBackgroundImage' || $property.property == 'defaultCover' || $property.property == 'footerLogo'}
+								<img src='/images/themes/backgrounds/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+							{else}
+								<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+							{/if}
+						{* Check for EventType objects *}
+						{elseif !empty($object) && (strpos(get_class($object), 'EventType') !== false || strpos(get_class($object), 'Event') !== false)}
+							<img src='/images/events/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{* Check for Series objects *}
+						{elseif !empty($object) && (strpos(get_class($object), 'Series') !== false)}
+							<img src='/images/series/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{* Check for Calendar objects *}
+						{elseif !empty($object) && (strpos(get_class($object), 'Calendar') !== false)}
+							<img src='/images/calendars/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{* Check for Placard objects *}
+						{elseif !empty($object) && (strpos(get_class($object), 'Placard') !== false)}
+							<img src='/images/placards/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{else}
+							<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{/if}
+					{/if}
 				{else}
 					{if !empty($property.displayUrl)}
 						<img src='{$property.displayUrl}{$object->id}' style="display: block; max-width: 100%;" alt="Selected Image for {$property.label}">
 					{else}
-						<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+						{if !empty($property.originalUrl)}
+							<img src='{$property.originalUrl}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+						{else}
+							{* Generate StorageManager URL for theme images *}
+							{if !empty($property.property) && ($property.property == 'logoName' || $property.property == 'favicon' || $property.property == 'headerBackgroundImage' || $property.property == 'logoApp' || $property.property == 'headerLogoApp' || $property.property == 'defaultCover' || $property.property == 'footerLogo')}
+								{if $property.property == 'logoName' || $property.property == 'logoApp' || $property.property == 'headerLogoApp'}
+									<img src='/images/themes/logos/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+								{elseif $property.property == 'favicon'}
+									<img src='/images/themes/favicons/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+								{elseif $property.property == 'headerBackgroundImage' || $property.property == 'defaultCover' || $property.property == 'footerLogo'}
+									<img src='/images/themes/backgrounds/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+								{else}
+									<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+								{/if}
+							{* Check for EventType objects *}
+							{elseif !empty($object) && (strpos(get_class($object), 'EventType') !== false || strpos(get_class($object), 'Event') !== false)}
+								<img src='/images/events/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+							{* Check for Series objects *}
+							{elseif !empty($object) && (strpos(get_class($object), 'Series') !== false)}
+								<img src='/images/series/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+							{* Check for Calendar objects *}
+							{elseif !empty($object) && (strpos(get_class($object), 'Calendar') !== false)}
+								<img src='/images/calendars/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+							{* Check for Placard objects *}
+							{elseif !empty($object) && (strpos(get_class($object), 'Placard') !== false)}
+								<img src='/images/placards/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+							{else}
+								<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+							{/if}
+						{/if}
 					{/if}
 				{/if}
 			{/if}

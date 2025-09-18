@@ -428,13 +428,13 @@ class UInterface extends Smarty {
 				}
 			}
 			if (!empty($logoName)) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $this->assign('responsiveLogo', $storageManager->getImageUrl($logoName, 'theme', 'logos'));
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$this->assign('responsiveLogo', $storageManager->getImageUrl($logoName, 'theme', 'logos'));
 			} else {
-			    if (isset($configArray['Site']['responsiveLogo'])) {
-			        $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-			    }
+				if (isset($configArray['Site']['responsiveLogo'])) {
+					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+				}
 			}
 
 			//Get Footer Logo
@@ -446,10 +446,10 @@ class UInterface extends Smarty {
 				}
 			}
 			if ($footerLogo) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $footerLogoUrl = $storageManager->getImageUrl($footerLogo, 'theme', 'backgrounds', 'original');
-			    $this->assign('footerLogo', $footerLogoUrl);
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$footerLogoUrl = $storageManager->getImageUrl($footerLogo, 'theme', 'backgrounds', 'original');
+				$this->assign('footerLogo', $footerLogoUrl);
 			}
 
 			$footerLogoLink = null;
@@ -483,10 +483,10 @@ class UInterface extends Smarty {
 				}
 			}
 			if ($favicon) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $faviconUrl = $storageManager->getImageUrl($favicon, 'theme', 'favicons', 'original');
-			    $this->assign('favicon', $faviconUrl);
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$faviconUrl = $storageManager->getImageUrl($favicon, 'theme', 'favicons', 'original');
+				$this->assign('favicon', $faviconUrl);
 			}
 
 			if ($primaryTheme != null) {
@@ -1081,13 +1081,13 @@ class UInterface extends Smarty {
 				}
 			}
 			if (!empty($logoName)) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $this->assign('responsiveLogo', $storageManager->getImageUrl($logoName, 'theme', 'logos'));
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$this->assign('responsiveLogo', $storageManager->getImageUrl($logoName, 'theme', 'logos'));
 			} else {
-			    if (isset($configArray['Site']['responsiveLogo'])) {
-			        $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-			    }
+				if (isset($configArray['Site']['responsiveLogo'])) {
+					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+				}
 			}
 
 			//Get Footer Logo
@@ -1099,10 +1099,10 @@ class UInterface extends Smarty {
 				}
 			}
 			if ($footerLogo) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $footerLogoUrl = $storageManager->getImageUrl($footerLogo, 'theme', 'backgrounds', 'original');
-			    $this->assign('footerLogo', $footerLogoUrl);
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$footerLogoUrl = $storageManager->getImageUrl($footerLogo, 'theme', 'backgrounds', 'original');
+				$this->assign('footerLogo', $footerLogoUrl);
 			}
 
 			$footerLogoLink = null;
@@ -1140,10 +1140,10 @@ class UInterface extends Smarty {
 				}
 			}
 			if ($favicon) {
-			    require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
-			    $storageManager = StorageManager::getInstance();
-			    $faviconUrl = $storageManager->getImageUrl($favicon, 'theme', 'favicons', 'original');
-			    $this->assign('favicon', $faviconUrl);
+				require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+				$storageManager = StorageManager::getInstance();
+				$faviconUrl = $storageManager->getImageUrl($favicon, 'theme', 'favicons', 'original');
+				$this->assign('favicon', $faviconUrl);
 			}
 
 			$themeCss = $primaryTheme->generatedCss;
