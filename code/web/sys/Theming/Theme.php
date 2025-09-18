@@ -3477,7 +3477,7 @@ class Theme extends DataObject {
 		return $apiInfo;
 	}
 
-	public function prepareForSharingToCommunity() {
+	public function prepareForSharingToCommunity() : void {
 		parent::prepareForSharingToCommunity();
 		unset($this->logoName);
 		unset($this->_libraries);
