@@ -5919,13 +5919,13 @@ class Library extends DataObject {
 				$storageManager = StorageManager::getInstance();
 				
 				if ($theme->logoName) {
-					$apiInfo['logo'] = $storageManager->getImageUrl('theme', $theme->logoName, 'logos');
+					$apiInfo['logo'] = $storageManager->getImageUrl($theme->logoName, 'theme', 'logos');
 				}
 				if ($theme->favicon) {
-					$apiInfo['favicon'] = $storageManager->getImageUrl('theme', $theme->favicon, 'favicons');
+					$apiInfo['favicon'] = $storageManager->getImageUrl($theme->favicon, 'theme', 'favicons');
 				}
 				if ($theme->logoApp) {
-					$apiInfo['logoApp'] = $storageManager->getImageUrl('theme', $theme->logoApp, 'logos');
+					$apiInfo['logoApp'] = $storageManager->getImageUrl($theme->logoApp, 'theme', 'logos');
 				}
 				if ($theme->headerLogoApp) {
 					$apiInfo['headerLogoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->headerLogoApp;

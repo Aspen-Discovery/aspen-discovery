@@ -71,6 +71,16 @@ class Events_AJAX extends JSON_Action {
 				global $interface;
 				$fieldHTML = [];
 				foreach ($fieldStructure as $property) {
+					// Enhance property with StorageManager URLs for images
+					if (($property['type'] == 'image' || $property['type'] == 'file') && !empty($property['default'])) {
+						require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+						$storageManager = StorageManager::getInstance();
+						
+						// Generate URLs for different sizes
+						$property['thumbnailUrl'] = $storageManager->getImageUrl($property['default'], 'event', null, 'thumbnail');
+						$property['originalUrl'] = $storageManager->getImageUrl($property['default'], 'event', null, 'original');
+					}
+					
 					$interface->assign('property', $property);
 					$fieldHTML[] = $interface->fetch('DataObjectUtil/property.tpl');
 				}
