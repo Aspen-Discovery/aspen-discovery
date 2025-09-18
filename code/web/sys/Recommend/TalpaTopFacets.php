@@ -89,38 +89,41 @@ class TalpaTopFacets implements RecommendationInterface {
 				foreach ($facetSet['list'] as $facetKey => $facet) {
 					if (!empty($facetKey) && array_key_exists($facetKey, TopFacets::$formatCategorySortOrder)) {
 						if ($appliedTheme != null){
+							require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+							$storageManager = StorageManager::getInstance();
+							
 							if (strtolower($facet['value']) == "books" && !empty($appliedTheme->booksImage)){
-								$facet['imageName'] = '/files/original/' . $appliedTheme->booksImage;
+								$facet['imageName'] = $storageManager->getImageUrl($appliedTheme->booksImage, 'theme', 'logos', 'original');
 								if (!empty($appliedTheme->booksImageSelected)){
-									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->booksImageSelected;
+									$facet['imageNameSelected'] = $storageManager->getImageUrl($appliedTheme->booksImageSelected, 'theme', 'logos', 'original');
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
 							}elseif (strtolower($facet['value']) == "ebook" && !empty($appliedTheme->eBooksImage)){
-								$facet['imageName'] = '/files/original/' . $appliedTheme->eBooksImage;
+								$facet['imageName'] = $storageManager->getImageUrl($appliedTheme->eBooksImage, 'theme', 'logos', 'original');
 								if (!empty($appliedTheme->eBooksImageSelected)){
-									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->eBooksImageSelected;
+									$facet['imageNameSelected'] = $storageManager->getImageUrl($appliedTheme->eBooksImageSelected, 'theme', 'logos', 'original');
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
 							}elseif (strtolower($facet['value']) == "audio books" && !empty($appliedTheme->audioBooksImage)){
-								$facet['imageName'] = '/files/original/' . $appliedTheme->audioBooksImage;
+								$facet['imageName'] = $storageManager->getImageUrl($appliedTheme->audioBooksImage, 'theme', 'logos', 'original');
 								if (!empty($appliedTheme->audioBooksImageSelected)){
-									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->audioBooksImageSelected;
+									$facet['imageNameSelected'] = $storageManager->getImageUrl($appliedTheme->audioBooksImageSelected, 'theme', 'logos', 'original');
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
 							}elseif (strtolower($facet['value']) == "music" && !empty($appliedTheme->musicImage)){
-								$facet['imageName'] = '/files/original/' . $appliedTheme->musicImage;
+								$facet['imageName'] = $storageManager->getImageUrl($appliedTheme->musicImage, 'theme', 'logos', 'original');
 								if (!empty($appliedTheme->musicImageSelected)){
-									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->musicImageSelected;
+									$facet['imageNameSelected'] = $storageManager->getImageUrl($appliedTheme->musicImageSelected, 'theme', 'logos', 'original');
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
 							}elseif (strtolower($facet['value']) == "movies" && !empty($appliedTheme->moviesImage)){
-								$facet['imageName'] = '/files/original/' . $appliedTheme->moviesImage;
+								$facet['imageName'] = $storageManager->getImageUrl($appliedTheme->moviesImage, 'theme', 'logos', 'original');
 								if (!empty($appliedTheme->moviesImageSelected)){
-									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->moviesImageSelected;
+									$facet['imageNameSelected'] = $storageManager->getImageUrl($appliedTheme->moviesImageSelected, 'theme', 'logos', 'original');
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
