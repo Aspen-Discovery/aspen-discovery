@@ -70,7 +70,6 @@ class Series extends DataObject {
 				'description' => 'Image to replace the automatically generated series cover',
 				'maxWidth' => 280,
 				'maxHeight' => 280,
-				'path' => "$coverPath/original/series",
 				'hideInLists' => true,
 			],
 			'dateUpdated' => [
@@ -117,6 +116,10 @@ class Series extends DataObject {
 
 	public function update(string $context = '') : int|bool {
 		$this->dateUpdated = time();
+		
+		// Handle cover image upload
+		$this->processCoverUpload();
+		
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->reindexMembers();
@@ -128,6 +131,15 @@ class Series extends DataObject {
 		return $ret;
 	}
 
+	public function getCoverUrl($size = 'original') {
+		if (!empty($this->cover)) {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			return $storageManager->getImageUrl($this->cover, 'series', null, $size);
+		}
+		return null;
+	}
+
 	public function insert(string $context = '') : int|bool {
 		if (empty($this->dateUpdated)) {
 			$this->dateUpdated = time();
@@ -135,11 +147,98 @@ class Series extends DataObject {
 		if (empty($this->created)) {
 			$this->created = time();
 		}
+		
+		// Handle cover image upload
+		$this->processCoverUpload();
+		
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveSeriesMembers();
 		}
 		return $ret;
+	}
+
+	private function processCoverUpload() {
+		if (empty($this->cover)) {
+			return;
+		}
+		
+		try {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			
+			// Check if this is a new upload (temporary file path)
+			if (strpos($this->cover, '/tmp/') === 0 || strpos($this->cover, sys_get_temp_dir()) === 0) {
+				$originalFilename = basename($this->cover);
+				$fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+				
+				if (empty($fileExtension)) {
+					throw new AspenError("Invalid file - no extension found");
+				}
+				
+				if (empty($this->id)) {
+					return; // Process after insert when id is available
+				}
+				
+				$standardizedFilename = "Series_cover_" . $this->id . "." . $fileExtension;
+				$imagePath = $storageManager->getImagePath('series', null, 'original');
+				$finalPath = $imagePath . '/' . $standardizedFilename;
+				
+				// Handle filename conflicts
+				$counter = 1;
+				$baseName = "Series_cover_" . $this->id;
+				while (file_exists($finalPath)) {
+					$standardizedFilename = $baseName . "_" . $counter . "." . $fileExtension;
+					$finalPath = $imagePath . '/' . $standardizedFilename;
+					$counter++;
+					
+					if ($counter > 1000) {
+						throw new AspenError("Too many filename conflicts for Series {$this->id}");
+					}
+				}
+				
+				if (!move_uploaded_file($this->cover, $finalPath) && !rename($this->cover, $finalPath)) {
+					throw new AspenError("Failed to move uploaded file to: " . $finalPath);
+				}
+				
+				$this->cover = $standardizedFilename;
+			}
+			
+			// Generate thumbnail
+			if (!empty($this->cover)) {
+				$this->generateCoverThumbnail($storageManager);
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Cover upload failed for Series {$this->id}: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->cover = '';
+		}
+	}
+
+	private function generateCoverThumbnail($storageManager) {
+		try {
+			$imagePath = $storageManager->getImagePath('series', null, 'original');
+			$originalFile = $imagePath . '/' . $this->cover;
+			
+			if (!file_exists($originalFile)) {
+				throw new AspenError("Original file not found: " . $originalFile);
+			}
+			
+			$thumbnailPath = $storageManager->getImagePath('series', null, 'thumbnail');
+			$thumbnailFile = $thumbnailPath . '/' . $this->cover;
+			
+			if (!file_exists($thumbnailFile)) {
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+				if (!resizeImage($originalFile, $thumbnailFile, 200, 200)) {
+					throw new AspenError("Failed to create thumbnail for Series {$this->id}");
+				}
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Thumbnail generation failed for Series {$this->id}: " . $e->getMessage(), Logger::LOG_WARNING);
+		}
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {

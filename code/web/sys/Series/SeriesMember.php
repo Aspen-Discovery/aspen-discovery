@@ -83,7 +83,6 @@ class SeriesMember extends DataObject {
 				'description' => 'Replacement cover',
 				'maxWidth' => 280,
 				'maxHeight' => 280,
-				'path' => "$coverPath/original/seriesMember",
 				'hideInLists' => true,
 			],
 			'isPlaceholder' => [

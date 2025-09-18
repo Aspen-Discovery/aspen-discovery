@@ -68,7 +68,6 @@ class Reward extends DataObject {
 				'type' => 'image',
 				'label' => 'Image for Digital Badge',
 				'description' => 'The image to use for the digital badge',
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/reward_image/full',
 				'displayUrl' => '/CommunityEngagement/ViewImage?size=full&id=',
 				'required' => false,
 			],
@@ -92,23 +91,39 @@ class Reward extends DataObject {
 		return 'http://' . $serverName . '/CommunityEngagement/ViewImage?size=' . $size . '&id=' . $this->id;
 	}
 
+	public function getBadgeImageUrl($size = 'full') {
+		if (!empty($this->badgeImage)) {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			return $storageManager->getImageUrl($this->badgeImage, 'reward', null, $size);
+		}
+		return null;
+	}
+
 	public function uploadImage() {
 		if (!empty($this->badgeImage)) {
-			global $serverName;
-			$imageFile = '/data/aspen-discovery/' . $serverName . '/uploads/reward_image/full/' . $this->badgeImage;
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			$imageFile = $storageManager->getImagePath('reward', null, 'full') . '/' . $this->badgeImage;
 		}
 	}
 
 	public function insert(string $context = '') : int|bool {
-			$this->uploadImage();
-			$this->saveTextBlockTranslations('description');
+		// Handle badge image upload
+		$this->processBadgeUpload();
+		
+		$this->uploadImage();
+		$this->saveTextBlockTranslations('description');
 		
 		return parent::insert();
 	}
 
 	public function update(string $context = '') : bool|int {
-			$this->uploadImage();
-			$this->saveTextBlockTranslations('description');
+		// Handle badge image upload
+		$this->processBadgeUpload();
+		
+		$this->uploadImage();
+		$this->saveTextBlockTranslations('description');
 		
 		return parent::update();
 	}
@@ -135,5 +150,57 @@ class Reward extends DataObject {
 		return $rewardList;
 	}
 
+	private function processBadgeUpload() {
+		if (empty($this->badgeImage)) {
+			return;
+		}
+		
+		try {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			
+			// Check if this is a new upload (temporary file path)
+			if (strpos($this->badgeImage, '/tmp/') === 0 || strpos($this->badgeImage, sys_get_temp_dir()) === 0) {
+				$originalFilename = basename($this->badgeImage);
+				$fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+				
+				if (empty($fileExtension)) {
+					throw new AspenError("Invalid file - no extension found");
+				}
+				
+				if (empty($this->id)) {
+					return; // Process after insert when id is available
+				}
+				
+				$standardizedFilename = "Reward_badge_" . $this->id . "." . $fileExtension;
+				$imagePath = $storageManager->getImagePath('reward', null, 'full');
+				$finalPath = $imagePath . '/' . $standardizedFilename;
+				
+				// Handle filename conflicts
+				$counter = 1;
+				$baseName = "Reward_badge_" . $this->id;
+				while (file_exists($finalPath)) {
+					$standardizedFilename = $baseName . "_" . $counter . "." . $fileExtension;
+					$finalPath = $imagePath . '/' . $standardizedFilename;
+					$counter++;
+					
+					if ($counter > 1000) {
+						throw new AspenError("Too many filename conflicts for Reward {$this->id}");
+					}
+				}
+				
+				if (!move_uploaded_file($this->badgeImage, $finalPath) && !rename($this->badgeImage, $finalPath)) {
+					throw new AspenError("Failed to move uploaded file to: " . $finalPath);
+				}
+				
+				$this->badgeImage = $standardizedFilename;
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Badge upload failed for Reward {$this->id}: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->badgeImage = '';
+		}
+	}
 
 }

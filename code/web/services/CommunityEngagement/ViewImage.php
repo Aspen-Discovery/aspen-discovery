@@ -28,17 +28,20 @@ class CommunityEngagement_ViewImage extends Action {
 			die();
 		}
 
-		//Construct the full path to the image
-		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/reward_image/';
+		//Construct the full path to the image using StorageManager
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = StorageManager::getInstance();
+		
 		$extension = pathinfo($this->uploadedImage->badgeImage, PATHINFO_EXTENSION);
 
 		IF (ISSET($_REQUEST['size']) && $extension != 'svg') {
 			$size = $_REQUEST['size'];
 		} else {
-			$size = 'full';
+			$size = 'full';  // Use 'full' for rewards (like web_builder)
 		}
-		$fullPath = $dataPath . $size . '/' .$this->uploadedImage->badgeImage;
+		
+		$imagePath = $storageManager->getImagePath('reward', null, $size);
+		$fullPath = $imagePath . '/' . $this->uploadedImage->badgeImage;
 
 		if ($file = @fopen($fullPath, 'r')) {
 			fclose($file);

@@ -123,7 +123,6 @@ class Event extends DataObject {
 						'maxHeight' => 280,
 						'maxLength' => 100,
 						'description' => 'The cover for this event',
-						'path' => "$coverPath/aspenEvents/",
 						'hideInLists' => true,
 					],
 					'fieldSetFieldSection' => [
@@ -439,6 +438,10 @@ class Event extends DataObject {
 
 	public function update(string $context = '') : int|bool {
 		$this->dateUpdated = time();
+		
+		// Handle image upload
+		$this->processImageUpload();
+		
 		$this->setStartDate();
 		if (isset($this->weekDays) && is_array($this->weekDays)) {
 			// convert the array to string before storing in the database
@@ -461,6 +464,10 @@ class Event extends DataObject {
 		if (empty($this->dateUpdated)) {
 			$this->dateUpdated = time(); // Set to 0 for new events
 		}
+		
+		// Handle image upload
+		$this->processImageUpload();
+		
 		$this->setStartDate();
 		if (isset($this->weekDays) && is_array($this->weekDays)) {
 			// convert the array to string before storing in the database
@@ -995,5 +1002,88 @@ class Event extends DataObject {
 		}
 		$this->dateUpdated = time();
 		return $structure;
+	}
+
+	private function processImageUpload() {
+		if (empty($this->image)) {
+			return;
+		}
+		
+		try {
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			$storageManager = StorageManager::getInstance();
+			
+			// Check if this is a new upload (temporary file path)
+			if (strpos($this->image, '/tmp/') === 0 || strpos($this->image, sys_get_temp_dir()) === 0) {
+				$originalFilename = basename($this->image);
+				$fileExtension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+				
+				if (empty($fileExtension)) {
+					throw new AspenError("Invalid file - no extension found");
+				}
+				
+				if (empty($this->id)) {
+					return; // Process after insert when id is available
+				}
+				
+				$standardizedFilename = "Event_image_" . $this->id . "." . $fileExtension;
+				$imagePath = $storageManager->getImagePath('event', null, 'original');
+				$finalPath = $imagePath . '/' . $standardizedFilename;
+				
+				// Handle filename conflicts
+				$counter = 1;
+				$baseName = "Event_image_" . $this->id;
+				while (file_exists($finalPath)) {
+					$standardizedFilename = $baseName . "_" . $counter . "." . $fileExtension;
+					$finalPath = $imagePath . '/' . $standardizedFilename;
+					$counter++;
+					
+					if ($counter > 1000) {
+						throw new AspenError("Too many filename conflicts for Event {$this->id}");
+					}
+				}
+				
+				if (!move_uploaded_file($this->image, $finalPath) && !rename($this->image, $finalPath)) {
+					throw new AspenError("Failed to move uploaded file to: " . $finalPath);
+				}
+				
+				$this->image = $standardizedFilename;
+			}
+			
+			// Generate thumbnail
+			if (!empty($this->image)) {
+				$this->generateImageThumbnail($storageManager);
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Image upload failed for Event {$this->id}: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->image = '';
+		}
+	}
+
+	private function generateImageThumbnail($storageManager) {
+		try {
+			$imagePath = $storageManager->getImagePath('event', null, 'original');
+			$originalFile = $imagePath . '/' . $this->image;
+			
+			if (!file_exists($originalFile)) {
+				throw new AspenError("Original file not found: " . $originalFile);
+			}
+			
+			$thumbnailPath = $storageManager->getImagePath('event', null, 'thumbnail');
+			$thumbnailFile = $thumbnailPath . '/' . $this->image;
+			
+			if (!file_exists($thumbnailFile)) {
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+				if (!resizeImage($originalFile, $thumbnailFile, 200, 200)) {
+					throw new AspenError("Failed to create thumbnail for Event {$this->id}");
+				}
+			}
+			
+		} catch (AspenError $e) {
+			global $logger;
+			$logger->log("Thumbnail generation failed for Event {$this->id}: " . $e->getMessage(), Logger::LOG_WARNING);
+		}
 	}
 }
