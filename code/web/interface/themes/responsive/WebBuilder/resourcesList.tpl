@@ -8,7 +8,8 @@
 					<div class="col-xs-4 col-md-3 col-lg-2 featuredResource">
 						<a href="/WebBuilder/WebResource?id={$resource->id}">
 						{if !empty($resource->logo)}
-							<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
+							{assign var="logoUrl" value="/images/web_builder/thumbnail/`$resource->logo`"}
+							<img src='{$logoUrl}' alt="{$resource->name}" class="img-responsive img-thumbnail">
 						{else}
 							{$resource->name}
 						{/if}
@@ -41,7 +42,8 @@
 								{if !empty($resource->logo)}
 								<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 										<a href="/WebBuilder/WebResource?id={$resource->id}" tabindex="-1">
-											<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
+											{assign var="logoUrl" value="/images/web_builder/thumbnail/`$resource->logo`"}
+											<img src='{$logoUrl}' alt="{$resource->name}" class="img-responsive img-thumbnail">
 										</a>
 
 								</div>

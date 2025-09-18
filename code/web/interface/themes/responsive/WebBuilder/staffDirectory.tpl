@@ -7,7 +7,8 @@
 				<div class="row">
 					<div class="coversColumn col-xs-4 col-sm-3 col-md-2 text-center">
 						{if !empty($staffMember->photo)}
-							<img src="/files/thumbnail/{$staffMember->photo}" class="listResultImage img-thumbnail" alt="{translate text='Staff Picture' inAttribute=true isPublicFacing=true}">
+							{assign var="photoUrl" value="/images/web_builder/thumbnail/`$staffMember->photo`"}
+							<img src="{$photoUrl}" class="listResultImage img-thumbnail" alt="{translate text='Staff Picture' inAttribute=true isPublicFacing=true}">
 						{/if}
 					</div>
 					<div class="col-xs-8 col-sm-9 col-md-10">

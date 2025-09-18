@@ -115,7 +115,6 @@ class ImageUpload extends DataObject {
 				'description' => 'The full size image (max width 1068px).',
 				'maxWidth' => 1068,
 				'maxHeight' => 1068,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full',
 				'displayUrl' => '/WebBuilder/ViewImage?size=full&id=',
 				'hideInLists' => true,
 				'required' => true,
@@ -136,7 +135,6 @@ class ImageUpload extends DataObject {
 				'description' => 'The x-large size image (max width 1100 px).',
 				'maxWidth' => ImageUpload::$xLargeSize,
 				'maxHeight' => ImageUpload::$xLargeSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=x-large&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -156,7 +154,6 @@ class ImageUpload extends DataObject {
 				'description' => 'The medium size image (max width 600px).',
 				'maxWidth' => ImageUpload::$largeSize,
 				'maxHeight' => ImageUpload::$largeSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=large&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -176,7 +173,6 @@ class ImageUpload extends DataObject {
 				'description' => 'The medium size image (max width 400px).',
 				'maxWidth' => ImageUpload::$mediumSize,
 				'maxHeight' => ImageUpload::$mediumSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium',
 				'displayUrl' => '/WebBuilder/ViewImage?size=medium&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -196,7 +192,6 @@ class ImageUpload extends DataObject {
 				'description' => 'The small size image (max width 200px).',
 				'maxWidth' => ImageUpload::$smallSize,
 				'maxHeight' => ImageUpload::$smallSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small',
 				'displayUrl' => '/WebBuilder/ViewImage?size=small&id=',
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
 				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
@@ -237,17 +232,21 @@ class ImageUpload extends DataObject {
 
 	private function generateDerivatives() : void {
 		if (!empty($this->fullSizePath) && !empty($this->id)) {
-			global $serverName;
 			require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-			$fullSizeFile = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full/' . $this->fullSizePath;
+			require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+			
+			$storageManager = StorageManager::getInstance();
+			
+			// Resolve filename conflicts to prevent overwrites
+			$this->fullSizePath = $this->resolveFilenameConflict($this->fullSizePath);
+			
+			$fullSizeFile = $storageManager->getImagePath('web_builder', null, 'full') . '/' . $this->fullSizePath;
+			
 			if ($this->generateXLargeSize) {
-				$xLargeFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large/';
-				if (!file_exists($xLargeFilePath)) {
-					mkdir($xLargeFilePath, 0755, true);
-				}
-				$xLargeFile = $xLargeFilePath . $this->fullSizePath;
+				$xLargeFilePath = $storageManager->getImagePath('web_builder', null, 'x-large');
+				$xLargeFile = $xLargeFilePath . '/' . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $xLargeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $xLargeFilePath . "/Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -257,13 +256,10 @@ class ImageUpload extends DataObject {
 				}
 			}
 			if ($this->generateLargeSize) {
-				$largeFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large/';
-				if (!file_exists($largeFilePath)) {
-					mkdir($largeFilePath, 0755, true);
-				}
-				$largeFile = $largeFilePath . $this->fullSizePath;
+				$largeFilePath = $storageManager->getImagePath('web_builder', null, 'large');
+				$largeFile = $largeFilePath . '/' . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $largeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $largeFilePath . "/Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -273,13 +269,10 @@ class ImageUpload extends DataObject {
 				}
 			}
 			if ($this->generateMediumSize) {
-				$mediumFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium/';
-				if (!file_exists($mediumFilePath)) {
-					mkdir($mediumFilePath, 0755, true);
-				}
-				$mediumFile = $mediumFilePath . $this->fullSizePath;
+				$mediumFilePath = $storageManager->getImagePath('web_builder', null, 'medium');
+				$mediumFile = $mediumFilePath . '/' . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $mediumFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $mediumFilePath . "/Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -289,13 +282,10 @@ class ImageUpload extends DataObject {
 				}
 			}
 			if ($this->generateSmallSize) {
-				$smallFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small/';
-				if (!file_exists($smallFilePath)) {
-					mkdir($smallFilePath, 0755, true);
-				}
-				$smallFile = $smallFilePath . $this->fullSizePath;
+				$smallFilePath = $storageManager->getImagePath('web_builder', null, 'small');
+				$smallFile = $smallFilePath . '/' . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $smallFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
+					$prevUpload = $smallFilePath . "/Temp_" . $_FILES['fullSizePath']['full_path'];
 					if (file_exists($prevUpload)) {
 						unlink($prevUpload);
 					}
@@ -383,6 +373,33 @@ class ImageUpload extends DataObject {
 			}
 		}
 		return parent::delete($useWhere, $hardDelete);
+	}
+
+	/**
+	 * Resolve filename conflicts by adding numeric suffix
+	 */
+	private function resolveFilenameConflict($filename) {
+		require_once ROOT_DIR . '/sys/Storage/StorageManager.php';
+		$storageManager = StorageManager::getInstance();
+		
+		$basePath = $storageManager->getImagePath('web_builder', null, 'full');
+		$originalPath = $basePath . '/' . $filename;
+		
+		if (!file_exists($originalPath)) {
+			return $filename;
+		}
+		
+		$extension = pathinfo($filename, PATHINFO_EXTENSION);
+		$baseName = pathinfo($filename, PATHINFO_FILENAME);
+		$counter = 1;
+		
+		do {
+			$newFilename = $baseName . '_' . $counter . '.' . $extension;
+			$newPath = $basePath . '/' . $newFilename;
+			$counter++;
+		} while (file_exists($newPath));
+		
+		return $newFilename;
 	}
 
 	public function supportsSoftDelete(): bool {
