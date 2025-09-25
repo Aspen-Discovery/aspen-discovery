@@ -62,6 +62,11 @@
 				{$phoneMessage}
 			</div>
 		{/if}
+		{if !empty($captchaMessage)}
+			<div id="selfRegFail" class="alert alert-warning">
+				{$captchaMessage}
+			</div>
+		{/if}
 		{img_assign filename='self_reg_banner.png' var=selfRegBanner}
 		{if !empty($selfRegBanner)}
 			<img src="{$selfRegBanner}" alt="Self Register for a new library card" class="img-responsive">

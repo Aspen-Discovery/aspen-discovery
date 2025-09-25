@@ -30,7 +30,7 @@ if (file_exists($sqlBackupDir)) {
 				fclose($fhnd);
 
 				echo("Importing $exportFile\n");
-				if (strpos($line, "/*!999999\- enable the sandbox mode") === 0){
+				if (str_contains($line, "- enable the sandbox mode")){
 					$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort -D $dbName --force < $sqlBackupDir$exportFile";
 				}else{
 					$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $sqlBackupDir$exportFile ";
