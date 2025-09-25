@@ -1469,7 +1469,7 @@ class BookCoverProcessor {
 		}
 	}
 
-	private function getOpenArchivesCover($id) {
+	private function getOpenArchivesCover($id): bool {
 		//The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
 		//and then get the thumbnail from the og:image element
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
@@ -1489,61 +1489,71 @@ class BookCoverProcessor {
 			$curlWrapper->close_curl();
 			$matches = [];
 			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				$bookcoverUrl = html_entity_decode($matches[1]);
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
 			if (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if (strpos($bookcoverUrl, 'http') !== 0) {
+				$bookcoverUrl = html_entity_decode($matches[1]);
+				if (!str_starts_with($bookcoverUrl, 'http')) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
-			if (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if (strpos($bookcoverUrl, 'http') !== 0) {
+			if (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~s', $pageContents, $matches)) {
+				$bookcoverUrl = html_entity_decode($matches[1]);
+				if (!str_starts_with($bookcoverUrl, 'http')) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
+					return true;
+				}
+			}
+			if (preg_match('~<img class="full".*?src="(.*?)".*>~s', $pageContents, $matches)) {
+				$bookcoverUrl = html_entity_decode($matches[1]);
+				if (!str_starts_with($bookcoverUrl, 'http')) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
 			if (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
-				if (strpos($bookcoverUrl, 'http') !== 0) {
+				if (!str_starts_with($bookcoverUrl, 'http')) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
 			if (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
-				if (strpos($bookcoverUrl, 'http') !== 0) {
+				if (!str_starts_with($bookcoverUrl, 'http')) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
 			if (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
-				if (strpos($bookcoverUrl, 'http') !== 0) {
+				if (!str_starts_with($bookcoverUrl, 'http')) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+				if ($this->processImageURL('open_archives', $bookcoverUrl)){
 					return true;
 				}
 			}
@@ -1558,7 +1568,7 @@ class BookCoverProcessor {
 					foreach ($expressions as $expression) {
 						if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
 							$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
-							if ($this->processImageURL('open_archives', $bookcoverUrl, true)) {
+							if ($this->processImageURL('open_archives', $bookcoverUrl)) {
 								return true;
 							}
 						}
