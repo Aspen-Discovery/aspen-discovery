@@ -6323,6 +6323,10 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 				] = $result;
 			}
+		
+			// Log the WorldPay order creation request
+			require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
+			ExternalRequestLogEntry::logRequest('fine_payment.createworldpayorder', 'GET', '/MyAccount/AJAX?method=createWorldPayOrder', [], json_encode($_REQUEST), '200', json_encode(['success' => true, 'paymentId' => $payment->id,'url' => $payment->url, 'transactionDate' => $payment->transactionDate, 'userId' => $payment->userId]), []);
 
 			return [
 				'success' => true,
