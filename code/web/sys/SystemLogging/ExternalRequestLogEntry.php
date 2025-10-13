@@ -162,6 +162,7 @@ class ExternalRequestLogEntry extends DataObject {
 		$eCommerceOptions = [
 			[2,'payPalSettingId','PayPalSetting'],
 			[5,'proPaySettingId','ProPaySetting'],
+			[7,'worldPaySettingId','WorldPaySetting'],
 			[8,'aciSpeedpaySettingId','ACISpeedpaySetting'],
 			[9,'invoiceCloudSettingId','InvoiceCloudSetting'],
 			[11,'paypalPayflowSettingId','PayPalPayflowSetting'],

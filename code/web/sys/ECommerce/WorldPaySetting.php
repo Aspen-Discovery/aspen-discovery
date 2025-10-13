@@ -11,6 +11,7 @@ class WorldPaySetting extends DataObject {
 	public $settleCode;
 	public $paymentSite;
 	public $useLineItems;
+	public $forceDebugLog;
 
 	private $_libraries;
 
@@ -61,6 +62,14 @@ class WorldPaySetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Send Line Items',
 				'description' => 'Whether or not to send Line Items to FIS',
+			],
+			'forceDebugLog' => [
+				'property' => 'forceDebugLog',
+				'type' => 'checkbox',
+				'label' => 'Force Debugging Logs',
+				'description' => 'Whether or not to allow users to get debugging information about payments either if the user IP is authorized or not',
+				'hideInLists' => false,
+				'default' => false,
 			],
 
 			'libraries' => [
