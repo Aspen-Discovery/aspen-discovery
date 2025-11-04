@@ -70,14 +70,13 @@ public class HooplaExportMain {
 			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
-				String extractSingleWorkType = AspenStringUtils.getInputFromCommandLine("Enter the type of work to extract (Instant/Flex)");
+				String extractSingleWorkType = AspenStringUtils.getInputFromCommandLine("Enter the type of work to extract (INSTANT/Flex)");
 				if (extractSingleWorkType.equalsIgnoreCase("Instant")) {
 					singleWorkType = "Instant";
 				} else if (extractSingleWorkType.equalsIgnoreCase("Flex")) {
 					singleWorkType = "Flex";
 				} else {
-					System.out.println("Invalid work type. Please enter Instant or Flex.");
-					System.exit(1);
+					singleWorkType = "Instant";
 				}
 
 			}
@@ -99,6 +98,15 @@ public class HooplaExportMain {
 						}
 						if (args.length > 3) {
 							singleWorkId = args[3];
+						}
+					} else {
+						String extractSingleWorkType = AspenStringUtils.getInputFromCommandLine("Enter the type of work to extract (INSTANT/Flex)");
+						if (extractSingleWorkType.equalsIgnoreCase("Instant")) {
+							singleWorkType = "Instant";
+						} else if (extractSingleWorkType.equalsIgnoreCase("Flex")) {
+							singleWorkType = "Flex";
+						} else {
+							singleWorkType = "Instant";
 						}
 					}
 				}
