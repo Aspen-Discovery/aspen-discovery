@@ -1,0 +1,65 @@
+name: aspen-discovery
+recipe: lamp
+config:
+  webroot: ../usr/local/aspen-discovery/code/web
+  xdebug: develop,debug
+services:
+  appserver:
+    type: php:8.4
+    run_as_root:
+      - git config --global --add safe.directory /usr/local/aspen-discovery
+      - apt-get -y update
+      - apt-get -y install sudo nano cron wget rsyslog gpg openjdk-17-jre-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates zip pigz
+      - mkdir -m 0755 -p /usr/local/aspen-discovery/tmp && echo "Created temp directory."
+      - cp /usr/local/aspen-discovery/install/60-aspen.cnf /etc/mysql/mariadb.conf.d/ && echo "Added MariaDB conf."
+      - chown -R www-data:www-data /usr/local/aspen-discovery/tmp && echo "Updated temp directory."
+      - cp /usr/local/aspen-discovery/install/logrotate-debian.conf /etc/logrotate.d/aspen_discovery && echo "Finished logrotate setup."
+      - cp /usr/local/aspen-discovery/install/solr_limits.conf /etc/security/limits.d/solr.conf
+      - cp /usr/local/aspen-discovery/install/aspen_limits.conf /etc/security/limits.d/aspen.conf && echo "Finished updating limits."
+      - /usr/local/aspen-discovery/install/setup_aspen_user_debian.sh && echo "Finished setting up the Aspen user."
+      - cp /usr/local/aspen-discovery/code/web/.htaccess-lando /usr/local/aspen-discovery/code/web/.htaccess && echo "Finished the Lando setup process."
+    config:
+      php: install/php.ini
+    overrides:
+      volumes:
+        - .:/usr/local/aspen-discovery
+  database:
+    type: mariadb:11.4
+    portforward: 3308
+    creds:
+      user: aspen
+      password: aspen
+      database: aspen
+    config:
+      database: install/60-aspen.cnf
+  solr:
+    type: solr:8.11
+    # Note: The solr recipe only allows for 1 core out of the box, so we have to
+    # create the rest of the cores using run commands.
+    core: course_reserves
+    config:
+      dir: data_dir_setup/solr7/course_reserves/conf
+    run:
+      - solr create -c events -d /app/data_dir_setup/solr7/events/conf
+      - solr create -c genealogy -d /app/data_dir_setup/solr7/genealogy/conf
+      - solr create -c grouped_works_v2 -d /app/data_dir_setup/solr7/grouped_works_v2/conf
+      - solr create -c lists -d /app/data_dir_setup/solr7/lists/conf
+      - solr create -c open_archives -d /app/data_dir_setup/solr7/open_archives/conf
+      - solr create -c series -d /app/data_dir_setup/solr7/series/conf
+      - solr create -c website_pages -d /app/data_dir_setup/solr7/website_pages/conf
+
+proxy:
+  solr:
+    - solr.aspen-discovery.lndo.site:8983
+
+tooling:
+  xdebug-on:
+    service: appserver
+    description: Enable xdebug for nginx.
+    cmd: docker-php-ext-enable xdebug && pkill -o -USR2 php-fpm && echo "xdebug enabled"
+    user: root
+  xdebug-off:
+    service: appserver
+    description: Disable xdebug for nginx.
+    cmd: rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && pkill -o -USR2 php-fpm && echo "xdebug disabled"
+    user: root

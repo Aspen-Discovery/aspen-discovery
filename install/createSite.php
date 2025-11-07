@@ -341,7 +341,7 @@ $variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
 /*
  * Set up the server
  */
-
+echo "Setting up the server.\r\n";
 //Create the basic sites directory
 if ($siteOnWindows){
 	recursive_copy($installDir . '/sites/template.windows', $siteDir);
@@ -351,7 +351,7 @@ if ($siteOnWindows){
 else{
 	recursive_copy($installDir . '/sites/template.linux', $siteDir);
 }
-
+echo "Renaming the files.\r\n";
 //Rename files appropriately based on the sitename
 rename($siteDir . '/httpd-{sitename}.conf', $siteDir . "/httpd-$sitename.conf");
 if ($siteOnWindows){
@@ -420,31 +420,35 @@ if ($variables['ils'] == 'Koha'){
 	echo("Loading Koha information to database\r\n");
 	copy("$installDir/install/koha_connection.sql", "$tmp_dir/koha_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/koha_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_$sitename.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/koha_connection_$sitename.sql");
 }elseif ($variables['ils'] == 'Symphony'){
 	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
 	echo("Loading Symphony information to database\r\n");
 	copy("$installDir/install/symphony_connection.sql", "$tmp_dir/symphony_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/symphony_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/symphony_connection_$sitename.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/symphony_connection_$sitename.sql");
 }elseif ($variables['ils'] == 'Polaris'){
 	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
 	echo("Loading Polaris information to database\r\n");
 	copy("$installDir/install/polaris_connection.sql", "$tmp_dir/polaris_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/polaris_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/polaris_connection_$sitename.sql");
+	if ($runningOnWindows) {
+		exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/polaris_connection_$sitename.sql");
+	} else {
+		exec("mariadb -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/polaris_connection_$sitename.sql");
+	}
 }elseif ($variables['ils'] == 'Sierra'){
 	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
 	echo("Loading Sierra information to database\r\n");
 	copy("$installDir/install/sierra_connection.sql", "$tmp_dir/sierra_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/sierra_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/sierra_connection_$sitename.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/sierra_connection_$sitename.sql");
 }elseif ($variables['ils'] == 'CarlX'){
 	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
 	echo("Loading CarlX information to database\r\n");
 	copy("$installDir/install/carlx_connection.sql", "$tmp_dir/carlx_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/carlx_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" {$variables['databaseName']} < $tmp_dir/carlx_connection_$sitename.sql");
+	exec("mysql -u{$variables['databaseUser']} -p\"{$variables['databasePassword']}\" -h\"{$variables['databaseHost']}\" {$variables['databaseName']} < $tmp_dir/carlx_connection_$sitename.sql");
 }
 
 $aspen_db = null;

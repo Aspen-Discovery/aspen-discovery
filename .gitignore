@@ -238,5 +238,6 @@ code/aspen_app/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
 data_dir_setup/.idea/workspace.xml
 sites/nashville.aspenlocal
 sites/nashville.production
-
 /code/web/images/mnps
+.htaccess
+sites/aspen-discovery.lndo.site/

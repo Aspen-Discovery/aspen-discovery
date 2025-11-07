@@ -1,0 +1,38 @@
+# Enable rewrite engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Rewrite rules
+    RewriteRule ^robots\.txt$ robots.php [NC,L]
+    RewriteRule ^sitemapindex\.xml$ sitemapindex.php [NC,L]
+    RewriteRule ^grouped_work_site_map(.+)$ sitemaps/grouped_work_site_map$1 [NC,L]
+    RewriteRule ^(.*?\.php).*$ $1 [NC,L]
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Custom 404 error page
+ErrorDocument 404 /Error/Handle404
+
+# Disable directory listing and MultiViews
+Options -Indexes -MultiViews
+
+# Enable cache expirations
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType text/css "access plus 2 weeks"
+    ExpiresByType application/javascript "access plus 2 weeks"
+</IfModule>
+
+# Enable gzip compression
+<IfModule mod_deflate.c>
+    SetOutputFilter DEFLATE
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+</IfModule>
