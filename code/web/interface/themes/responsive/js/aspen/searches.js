@@ -359,6 +359,51 @@ AspenDiscovery.Searches = (function(){
 					$("#facetSearchResults").html(data.message);
 				}
 			});
+		},
+
+		/**
+		 * Load facet values asynchronously for collapsed facets
+		 * Part of async facet loading optimization
+		 * @param $facetElement - jQuery object for the facet toggle element
+		 */
+		loadFacetValues($facetElement) {
+			const facetId = $facetElement.attr('id');
+			const detailsId = facetId.replace('facetToggle_', 'facetDetails_');
+			const $facetDetails = $('#' + detailsId);
+
+			$facetDetails.find('.facet-loading-spinner').show();
+			$facetDetails.show();
+			$facetElement.removeClass('collapsed').addClass('expanded');
+			$facetElement.attr('aria-expanded', 'true');
+
+			const searchId = $facetElement.attr('data-search-id');
+			const facetName = $facetElement.attr('data-facet-name');
+
+			const url = Globals.path + '/Search/AJAX';
+			const params = {
+				method: 'getFacetValuesHTML',
+				searchId: searchId,
+				facetName: facetName
+			};
+
+			$.getJSON(url, params, function(response) {
+				$facetDetails.find('.facet-loading-spinner').hide();
+
+				if (response.success) {
+					$facetDetails.find('.facet-list-container').html(response.html);
+					$facetElement.attr('data-facet-loaded', 'true');
+				} else {
+					const errorMsg = response.message || 'Error loading facet values';
+					$facetDetails.find('.facet-list-container').html(
+						'<p class="alert alert-warning">' + errorMsg + '</p>'
+					);
+				}
+			}).fail(function() {
+				$facetDetails.find('.facet-loading-spinner').hide();
+				$facetDetails.find('.facet-list-container').html(
+					'<p class="alert alert-danger">Error loading facet values. Please try again.</p>'
+				);
+			});
 		}
 	}
 }(AspenDiscovery.Searches || {}));

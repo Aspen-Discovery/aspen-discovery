@@ -26,9 +26,10 @@
 			<h3 id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search' isPublicFacing=true}</h3>
 			<div id="facet-accordion" class="accordion">
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
-					{if count($cluster.list) > 0}
+					{* Show facets that have values loaded OR are placeholders for async loading *}
+					{if count($cluster.list) > 0 || (isset($cluster.loadedValues) && $cluster.loadedValues === false)}
 						<div class="facetList">
-							<div id="facetToggle_{$title}" aria-controls="facetDetails_{$title}" class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}collapsed{else}expanded{/if}" tabindex="0" role="button" aria-expanded="{if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}false{else}true{/if}">
+							<div id="facetToggle_{$title}" aria-controls="facetDetails_{$title}" class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}collapsed{else}expanded{/if}" tabindex="0" role="button" aria-expanded="{if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}false{else}true{/if}" data-facet-loaded="{if !empty($cluster.loadedValues) || count($cluster.list) > 0}true{else}false{/if}" data-search-id="{$searchId}" data-facet-name="{if !empty($cluster.field)}{$cluster.field}{else}{$title}{/if}">
 								{translate text=$cluster.label isPublicFacing=true}
 
 								{if !empty($cluster.canLock)}
@@ -40,7 +41,14 @@
 
 							</div>
 							<div id="facetDetails_{$title}" class="facetDetails" {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}style="display:none"{/if} role="region" aria-labelledby="facetToggle_{$title}">
+								{* Loading spinner for async facet loading *}
+								<div class="facet-loading-spinner" style="display:none; padding:15px; text-align:center;">
+									<i class="fas fa-spinner fa-spin"></i> {translate text="Loading..." isPublicFacing=true}
+								</div>
 
+								{* Facet content container *}
+								<div class="facet-list-container">
+								{if count($cluster.list) > 0}
 								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear' || $title == 'publishDateSort'}
 									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'rating_facet'}
@@ -56,37 +64,49 @@
 								{else}
 									{include file="Search/Recommend/standardFacet.tpl" cluster=$cluster title=$title}
 								{/if}
+								{else}
+									{* Empty placeholder for unloaded facets *}
+								{/if}
+								</div>{* Close facet-list-container *}
 							</div>
 						</div>
 						<script type="text/javascript">
-							{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 							{literal}
-							$("#facetToggle_{/literal}{$title}{literal}").on('click', function() {
+							$("#facetToggle_{/literal}{$title}{literal}").on('click', function(e) {
+								e.preventDefault();
 								var toggleButton = $(this);
-								$(this).toggleClass('expanded');
-								$(this).toggleClass('collapsed');
-								$('#facetDetails_{/literal}{$title}{literal}').toggle()
-								if (toggleButton.attr("aria-expanded") === "true") {
-									$(this).attr("aria-expanded","false");
-								}
-								else if (toggleButton.attr("aria-expanded") === "false") {
-									$(this).attr("aria-expanded","true");
+
+								// Check if we need to load facet values first (async facet loading)
+								if (toggleButton.attr('data-facet-loaded') === 'false') {
+									AspenDiscovery.Searches.loadFacetValues(toggleButton);
+								} else {
+									// Normal expand/collapse toggle
+									toggleButton.toggleClass('expanded collapsed');
+									$('#facetDetails_{/literal}{$title}{literal}').toggle();
+									var isExpanded = toggleButton.attr("aria-expanded") === "true";
+									toggleButton.attr("aria-expanded", !isExpanded);
 								}
 								return false;
-							})
-							$("#facetToggle_{/literal}{$title}{literal}").on('keypress', function() {
-								var toggleButton = $(this);
-								$(this).toggleClass('expanded');
-								$(this).toggleClass('collapsed');
-								$('#facetDetails_{/literal}{$title}{literal}').toggle()
-								if (toggleButton.attr("aria-expanded") === "true") {
-									$(this).attr("aria-expanded","false");
+							});
+
+							$("#facetToggle_{/literal}{$title}{literal}").on('keypress', function(e) {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									var toggleButton = $(this);
+
+									// Check if we need to load facet values first (async facet loading)
+									if (toggleButton.attr('data-facet-loaded') === 'false') {
+										AspenDiscovery.Searches.loadFacetValues(toggleButton);
+									} else {
+										// Normal expand/collapse toggle
+										toggleButton.toggleClass('expanded collapsed');
+										$('#facetDetails_{/literal}{$title}{literal}').toggle();
+										var isExpanded = toggleButton.attr("aria-expanded") === "true";
+										toggleButton.attr("aria-expanded", !isExpanded);
+									}
+									return false;
 								}
-								else if (toggleButton.attr("aria-expanded") === "false") {
-									$(this).attr("aria-expanded","true");
-								}
-								return false;
-							})
+							});
 							{/literal}
 						</script>
 					{/if}

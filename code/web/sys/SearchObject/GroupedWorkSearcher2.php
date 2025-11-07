@@ -16,6 +16,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	private ?string $fieldsToReturn = null;
 
 	/**
+	 * Flag to bypass async facet loading logic.
+	 * When true, all facets in facetConfig will be loaded regardless of collapseByDefault settings.
+	 * Used for async facet loading requests where we explicitly want to load a specific facet.
+	 */
+	private bool $bypassAsyncFacetLogic = false;
+
+	/**
 	 * Constructor. Initialise some details about the server
 	 *
 	 * @access  public
@@ -313,11 +320,37 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($facetConfig as $facetField => $facetInfo) {
 				if ($facetInfo instanceof FacetSetting) {
+					$shouldLoad = true;
+					$facetName = $facetInfo->getFacetName(2);
+
+					if (!$this->bypassAsyncFacetLogic) {
+						// Skip loading only if collapsed AND has no active filters AND is not a top facet.
+						if ($facetInfo->collapseByDefault && !$facetInfo->showAboveResults) {
+							$hasAppliedFilter = false;
+
+							// Check all variations of field name for active filters.
+							foreach ($this->filterList as $field => $filter) {
+								if ($field == $facetField ||
+									$field == $facetName ||
+									str_starts_with($field, $facetName . '_')) {
+									$hasAppliedFilter = true;
+									break;
+								}
+							}
+
+							if (!$hasAppliedFilter) {
+								$shouldLoad = false;
+							}
+						}
+
+						if (!$shouldLoad) {
+							continue;
+						}
+					}
+
 					$isMultiSelect = $facetInfo->multiSelect;
 					$additionalTags = '';
-					$facetName = $facetInfo->getFacetName(2);
 					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope") {
-						//$isEditionField = true;
 						$isMultiSelect = true;
 						$additionalTags = 'edition_info,edition_info_available_at,edition_info_format_category,edition_info_format';
 					} elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope") {
@@ -1051,5 +1084,16 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$this->facetOptions["f.$facetName.facet.limit"] = $facet->numTotalEntriesToShowInMore;
 			}
 		}
+	}
+
+	/**
+	 * Set whether to bypass async facet loading logic.
+	 * When set to true, all facets in facetConfig will be loaded regardless of collapseByDefault settings.
+	 * This is used for async facet loading requests where we explicitly want to load a specific facet.
+	 *
+	 * @param bool $bypass Whether to bypass async facet loading logic
+	 */
+	public function setBypassAsyncFacetLogic(bool $bypass): void {
+		$this->bypassAsyncFacetLogic = $bypass;
 	}
 }
