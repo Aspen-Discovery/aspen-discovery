@@ -89,19 +89,28 @@ public class EventsIndexerMain {
 				// Springshare LibCal
 				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from springshare_libcal_settings");
 				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
+				boolean hasLibCalSettings = false;
 				while (eventsSitesRS.next()) {
+					hasLibCalSettings = true;
 					SpringshareLibCalIndexer indexer = new SpringshareLibCalIndexer(
-							eventsSitesRS.getLong("id"),
-							eventsSitesRS.getString("name"),
-							eventsSitesRS.getString("baseUrl"),
-							eventsSitesRS.getString("calId"),
-							eventsSitesRS.getString("clientId"),
-							eventsSitesRS.getString("clientSecret"),
-							eventsSitesRS.getInt("numberOfDaysToIndex"),
-							solrUpdateServer, aspenConn, logger);
+								eventsSitesRS.getLong("id"),
+								eventsSitesRS.getString("name"),
+								eventsSitesRS.getString("baseUrl"),
+								eventsSitesRS.getString("calId"),
+								eventsSitesRS.getString("clientId"),
+								eventsSitesRS.getString("clientSecret"),
+								eventsSitesRS.getInt("numberOfDaysToIndex"),
+								solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
-				SpringshareLibCalIndexer.cleanOrphanEvents(solrUpdateServer, aspenConn, logger);
+				boolean shouldCleanLibCalOrphans = hasLibCalSettings;
+				if (!shouldCleanLibCalOrphans) {
+					// If all settings have been deleted, and there are orphaned events, clean them up.
+					shouldCleanLibCalOrphans = SpringshareLibCalIndexer.hasOrphanEvents(aspenConn);
+				}
+				if (shouldCleanLibCalOrphans) {
+					SpringshareLibCalIndexer.cleanOrphanEvents(solrUpdateServer, aspenConn, logger);
+				}
 
 				// Communico
 				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from communico_settings");
