@@ -33,6 +33,9 @@ class Admin_PermissionsReport extends Admin_Admin {
 			if (!empty($permission->requiredModule) && !array_key_exists($permission->requiredModule, $enabledModules)) {
 				continue;
 			}
+			if ($permission->name == 'Administer ProPay') {
+				continue;
+			}
 			if (!array_key_exists($permission->sectionName, $permissions)) {
 				$permissions[$permission->sectionName] = [];
 			}

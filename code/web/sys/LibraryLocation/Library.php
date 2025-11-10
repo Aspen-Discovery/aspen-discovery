@@ -497,6 +497,7 @@ class Library extends DataObject {
 	public $talpaSettingsId;
 
 	// Aspen Events
+	/** @noinspection PhpUnused */
 	public $aspenEventsToInclude;
 
 	/** @noinspection PhpUnused */

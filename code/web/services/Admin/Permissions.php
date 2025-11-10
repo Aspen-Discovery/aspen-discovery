@@ -77,22 +77,21 @@ class Admin_Permissions extends Admin_Admin {
 			//Determine if we should skip this permission because it's in a permission group or because it's deprecated (but not deleted)
 			if ($permission->name == 'Administer ProPay') {
 				continue;
-			}else{
-				$inGroup = false;
-				foreach ($permissionGroups as $group) {
-					if (array_key_exists($permission->id, $group['permissions'])) {
-						$inGroup = true;
-						break;
-					}
-				}
-				if ($inGroup) {
-					continue;
-				}
 			}
-
 			if (!array_key_exists($permission->sectionName, $permissions)) {
 				$permissions[$permission->sectionName] = [];
 			}
+			$inGroup = false;
+			foreach ($permissionGroups as $group) {
+				if (array_key_exists($permission->id, $group['permissions'])) {
+					$inGroup = true;
+					break;
+				}
+			}
+			if ($inGroup) {
+				continue;
+			}
+
 			if (!array_key_exists($permission->sectionName, $permissionLabelsForSortingBySection)) {
 				$permissionLabelsForSortingBySection[$permission->sectionName] = [];
 			}
