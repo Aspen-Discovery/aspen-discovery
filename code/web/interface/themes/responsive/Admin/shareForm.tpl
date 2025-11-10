@@ -17,7 +17,7 @@
 							{/if}
 						{/if}
 						{if !empty($id)}
-							<a class="btn btn-default" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=edit{$contextParams}'><i class="fas fa-edit" role="presentation"></i> {translate text="Edit" isAdminFacing=true}</a>
+							<a class="btn btn-default" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=edit{if !empty($contextParams)}{$contextParams}{/if}'><i class="fas fa-edit" role="presentation"></i> {translate text="Edit" isAdminFacing=true}</a>
 						{/if}
 					</div>
 				</div>

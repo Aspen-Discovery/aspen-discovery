@@ -11,7 +11,7 @@
 	{/if}
 {/if}
 {if !empty($showEditButtonsInCompareAndHistoryViews)}
-<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=edit&id={$id}{$contextParams}'>{translate text="Edit" isAdminFacing=true}</a>
+<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=edit&id={$id}{if !empty($contextParams)}{$contextParams}{/if}'>{translate text="Edit" isAdminFacing=true}</a>
 {/if}
 
 {if count($objectHistory) > 0}

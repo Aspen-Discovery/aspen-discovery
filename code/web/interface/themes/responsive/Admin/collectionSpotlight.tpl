@@ -4,7 +4,7 @@
 		<a class="btn btn-default" href="{$returnToListUrl|default:'/Admin/CollectionSpotlights'}"><i class="fas fa-arrow-alt-circle-left" role="presentation"></i> {translate text="Return to List" isAdminFacing=true}</a>
 	</div>
 	<div class="btn-group">
-		<a class="btn btn-default" href="/Admin/CollectionSpotlights?objectAction=edit&amp;id={$object->id}{$contextParams}"><i class="fas fa-edit" role="presentation"></i> {translate text="Edit" isAdminFacing=true}</a>
+		<a class="btn btn-default" href="/Admin/CollectionSpotlights?objectAction=edit&amp;id={$object->id}{if !empty($contextParams)}{$contextParams}{/if}"><i class="fas fa-edit" role="presentation"></i> {translate text="Edit" isAdminFacing=true}</a>
 		<a class="btn btn-default" href="/API/SearchAPI?method=getCollectionSpotlight&amp;id={$object->id}" target="_blank"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Preview" isAdminFacing=true}</a>
 	</div>
 	{if !empty($canDelete)}
