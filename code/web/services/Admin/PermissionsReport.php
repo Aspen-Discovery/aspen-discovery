@@ -57,7 +57,7 @@ class Admin_PermissionsReport extends Admin_Admin {
 	#[NoReturn]
 	function exportToCsv(array $roles, array $permissionSections) : void {
 		header('Content-Type: text/csv; charset=utf-8');
-		header('Content-Disposition: attachment;filename="MaterialsRequestDashboardReport.csv"');
+		header('Content-Disposition: attachment;filename="PermissionsByRole.csv"');
 		header('Cache-Control: max-age=0');
 		$fp = fopen('php://output', 'w');
 
