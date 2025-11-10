@@ -159,7 +159,7 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getInitializationJs(): string {
-		return 'AspenDiscovery.Admin.toggleIlsSpecificFields();AspenDiscovery.Admin.updateMaterialsRequestFields(); AspenDiscovery.Admin.updateHoldCancellationDateFields(); AspenDiscovery.Admin.displayDigitalRewardPlaceholderUpload(); AspenDiscovery.Admin.highlightCampaignsOpenToEnroll();';
+		return 'AspenDiscovery.Admin.updateMaterialsRequestFields(); AspenDiscovery.Admin.updateHoldCancellationDateFields(); AspenDiscovery.Admin.displayDigitalRewardPlaceholderUpload(); AspenDiscovery.Admin.highlightCampaignsOpenToEnroll();';
 	}
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];

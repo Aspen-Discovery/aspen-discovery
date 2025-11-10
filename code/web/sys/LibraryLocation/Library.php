@@ -6183,6 +6183,17 @@ class Library extends DataObject {
 	}
 
 	public function updateStructureForEditingObject($structure): array {
+		if (!empty($this->accountProfileId)) {
+			$allAccountProfiles = UserAccount::getAccountProfiles();
+			foreach ($allAccountProfiles as $accountProfileInfo) {
+				if ($accountProfileInfo['accountProfile']->id == $this->accountProfileId) {
+					$activeIls = $accountProfileInfo['accountProfile']->ils;
+					$structure = $this->filterPropertiesByILS($activeIls, $structure);
+					break;
+				}
+			}
+		}
+
 		//Get locations for the active library and apply those to third party registration locations
 		$location = new Location();
 		$location->libraryId = $this->libraryId;

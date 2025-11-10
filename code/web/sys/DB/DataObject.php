@@ -1670,4 +1670,19 @@ abstract class DataObject implements JsonSerializable {
 		$obj->whereAdd("dateDeleted > 0 AND dateDeleted < $cutOff");
 		return $obj->delete(true, true);
 	}
+
+	public function filterPropertiesByILS($activeILS, $structure) : array {
+		foreach ($structure as $propertyName => $property) {
+			if ($property['type'] == 'section') {
+				$structure[$propertyName]['properties'] = $this->filterPropertiesByILS($activeILS, $structure[$propertyName]['properties']);
+			}else{
+				if (array_key_exists('relatedIls', $property)) {
+					if (!in_array($activeILS, $property['relatedIls'])) {
+						unset($structure[$propertyName]);
+					}
+				}
+			}
+		}
+		return $structure;
+	}
 }
