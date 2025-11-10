@@ -27,8 +27,11 @@ class Admin_Permissions extends Admin_Admin {
 			}
 		}
 		$interface->assign('selectedRole', $selectedRole);
+
+		$permissionLabelsForSortingBySection = [];
+
 		// Load definitions for mutually exclusive permission groups.
-		$permissionGroups = self::loadPermissionGroups();
+		$permissionGroups = self::loadPermissionGroups($permissionLabelsForSortingBySection);
 		$interface->assign('permissionGroups', $permissionGroups);
 		if (isset($_REQUEST['submit']) && $selectedRole != null) {
 			if (isset($_REQUEST['permissionGroup'])) {
@@ -71,16 +74,45 @@ class Admin_Permissions extends Admin_Admin {
 			if (!empty($permission->requiredModule) && !array_key_exists($permission->requiredModule, $enabledModules)) {
 				continue;
 			}
+			//Determine if we should skip this permission because it's in a permission group or because it's deprecated (but not deleted)
+			if ($permission->name == 'Administer ProPay') {
+				continue;
+			}else{
+				$inGroup = false;
+				foreach ($permissionGroups as $group) {
+					if (array_key_exists($permission->id, $group['permissions'])) {
+						$inGroup = true;
+						break;
+					}
+				}
+				if ($inGroup) {
+					continue;
+				}
+			}
+
 			if (!array_key_exists($permission->sectionName, $permissions)) {
 				$permissions[$permission->sectionName] = [];
+			}
+			if (!array_key_exists($permission->sectionName, $permissionLabelsForSortingBySection)) {
+				$permissionLabelsForSortingBySection[$permission->sectionName] = [];
 			}
 			if ($selectedRole->hasPermission($permission->name)) {
 				$selectedSections[$permission->sectionName] = $permission->sectionName;
 			}
 			$permissions[$permission->sectionName][$permission->id] = clone $permission;
+			$permissionLabelsForSortingBySection[$permission->sectionName][$permission->name] = [
+				'type' => 'permission',
+				'id' => $permission->id
+			];
 		}
+
 		$interface->assign('permissions', $permissions);
 		$interface->assign('selectedSections', $selectedSections);
+		foreach ($permissionLabelsForSortingBySection as $sectionName => $permissions) {
+			ksort($permissionLabelsForSortingBySection[$sectionName], SORT_NATURAL | SORT_FLAG_CASE);
+		}
+		ksort($permissionLabelsForSortingBySection, SORT_NATURAL | SORT_FLAG_CASE);
+		$interface->assign('permissionLabelsForSortingBySection', $permissionLabelsForSortingBySection);
 
 		$this->display('permissions.tpl', 'Permissions');
 
@@ -92,7 +124,7 @@ class Admin_Permissions extends Admin_Admin {
 	 *
 	 * @return array<string,array{sectionName:string,label:string,description:string,permissions:string[]}>
 	 */
-	private static function loadPermissionGroups(): array {
+	private static function loadPermissionGroups(&$permissionLabelsForSortingBySection): array {
 		$groups = [];
 		$groupLookup = [];
 
@@ -106,6 +138,13 @@ class Admin_Permissions extends Admin_Admin {
 				'permissions' => [],
 			];
 			$groupLookup[$groupObj->id] = $groupObj->groupKey;
+			if (!array_key_exists($groupObj->sectionName, $permissionLabelsForSortingBySection)) {
+				$permissionLabelsForSortingBySection[$groupObj->sectionName] = [];
+			}
+			$permissionLabelsForSortingBySection[$groupObj->sectionName][$groupObj->label] = [
+				'type' => 'group',
+				'id' => $groupObj->groupKey
+			];
 		}
 
 		$mapping = new PermissionGroupPermission();
@@ -116,7 +155,7 @@ class Admin_Permissions extends Admin_Admin {
 				$permObj = new Permission();
 				$permObj->id = $mapping->permissionId;
 				if ($permObj->find(true)) {
-					$groups[$groupKey]['permissions'][] = $permObj->name;
+					$groups[$groupKey]['permissions'][$permObj->id] = clone $permObj;
 				}
 			}
 		}

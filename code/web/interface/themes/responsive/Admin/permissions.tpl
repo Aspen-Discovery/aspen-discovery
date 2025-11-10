@@ -70,9 +70,12 @@
 								</tr>
 								</thead>
 								<tbody>
-								{* Render any dropdowns for groups that belong to this section *}
-								{foreach from=$permissionGroups key=groupKey item=groupDef}
-									{if $sectionName == $groupDef.sectionName}
+								{* Display permissions and permission groups *}
+								{foreach from=$permissionLabelsForSortingBySection.$sectionName key=$permssionName item=$permissionInfo}
+									{if $permissionInfo.type == 'group'}
+										{* Display the group *}
+										{assign var='groupKey' value=$permissionInfo.id}
+										{assign var='groupDef' value=$permissionGroups.$groupKey}
 										<tr class="permissionRow">
 											<th scope="row" style="vertical-align: middle;">
 												<span id='permissionLabel' style="display: block">{translate text=$groupDef.label isAdminFacing=true}</span>
@@ -81,27 +84,18 @@
 											<td class="text-right">
 												<select name="permissionGroup[{$groupKey}]" class="form-control input-sm">
 													<option value="">{translate text="None" isAdminFacing=true}</option>
-													{foreach from=$groupDef.permissions item=permName}
-														{foreach from=$sectionPermissions key=permId item=permObj}
-															{if $permObj->name == $permName}
-																<option value="{$permId}" {if $selectedRole->hasPermission($permName)}selected{/if}>{translate text=$permName isAdminFacing=true}</option>
-															{/if}
-														{/foreach}
+													{foreach from=$groupDef.permissions key=permissionId item=permObj}
+														{assign var='permName' value=$permObj->name}
+														<option value="{$permissionId}" {if $selectedRole->hasPermission($permName)}selected{/if}>{translate text=$permName isAdminFacing=true}</option>
 													{/foreach}
 												</select>
 											</td>
 										</tr>
-									{/if}
-								{/foreach}
-								{* Render all remaining checkboxes, skipping grouped and ProPay *}
-								{foreach from=$sectionPermissions item=permission}
-									{assign var=skipPermission value=false}
-									{foreach from=$permissionGroups key=groupKey item=groupDef}
-										{if $sectionName == $groupDef.sectionName && in_array($permission->name, $groupDef.permissions)}
-											{assign var=skipPermission value=true}
-										{/if}
-									{/foreach}
-									{if !$skipPermission && $permission->name != "Administer ProPay"}
+									{else}
+										{* Display the permision *}
+										{assign var='permissionId' value=$permissionInfo.id}
+										{assign var='permission' value=$permissions.$sectionName.$permissionId}
+
 										<tr class="permissionRow" id="{$permission->name}">
 											<th scope="row" style="vertical-align: middle;">
 												<span id='permissionLabel' style="display: block">{translate text=$permission->name isAdminFacing=true}</span>
