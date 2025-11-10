@@ -581,7 +581,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			}
 
 			//Ignore boolean searches
-			if (preg_match('/(\b)AND|OR|NOT(\b)/i', $searchTerm)) {
+			if (preg_match('/(\b|^)(AND|OR|NOT)(\b)/', $searchTerm)) {
 				return $searchTerm;
 			}
 
