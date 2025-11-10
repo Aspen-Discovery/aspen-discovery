@@ -118,5 +118,20 @@ class DataObjectHistory extends DataObject {
 		return DataObjectHistory::$_userNames[$this->changedBy];
 	}
 
-
+	public function insert(string $context = ''): int|bool {
+		//Make sure that we aren't recording history of things with minor changes
+		//i.e. changing 0 to false or "0" or changing null to ""
+		if (is_null($this->oldValue)) {
+			$okToInsert = !empty($this->newValue);
+		}elseif (is_null($this->newValue)){
+			$okToInsert = !empty($this->oldValue);
+		}else{
+			$okToInsert = ($this->oldValue != $this->newValue);
+		}
+		if ($okToInsert) {
+			return parent::insert($context);
+		} else {
+			return false;
+		}
+	}
 }

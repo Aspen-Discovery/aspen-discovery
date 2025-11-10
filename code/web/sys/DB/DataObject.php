@@ -1122,7 +1122,13 @@ abstract class DataObject implements JsonSerializable {
 			}
 
 			//Check to see if the property changed more than just a little bit (not "1" vs 1 or 03 vs 3)
-			$propertyChangedMoreThanSlightly = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
+			if (is_null($this->$propertyName)) {
+				$propertyChangedMoreThanSlightly = !empty($newValue);
+			}elseif (is_null($newValue)){
+				$propertyChangedMoreThanSlightly = !empty($this->$propertyName);
+			}else{
+				$propertyChangedMoreThanSlightly = ($this->$propertyName != $newValue);
+			}
 			$this->$propertyName = $newValue;
 			if ($propertyChangedMoreThanSlightly) {
 				$this->handlePropertyChangeEffects($propertyName, $oldValue, $newValue, $propertyStructure, 'changed');
