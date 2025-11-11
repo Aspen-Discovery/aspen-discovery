@@ -1,13 +1,39 @@
 <?php
+
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class Translation_Translations extends Admin_Admin {
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $translator;
 		global $activeLanguage;
+
+		//Create default translations for any term that does not have a placeholder currently
+		$termsWithoutTranslations = new TranslationTerm();
+		$termsWithoutTranslations->whereAdd("id NOT IN (SELECT termId from translations where languageId = $activeLanguage->id)");
+		$termsWithoutTranslations->find();
+		while ($termsWithoutTranslations->fetch()) {
+			$translation = new Translation();
+			$translation->termId = $termsWithoutTranslations->getId();
+			$translation->languageId = $activeLanguage->id;
+			$translation->translated = 0;
+			//Set default text
+			$translation->translation = $termsWithoutTranslations->getTerm();
+			//Override with a Google translation if possible
+			if (!$termsWithoutTranslations->getIsMetadata() && $activeLanguage->code != 'en') {
+				$googleTranslation = $translator->getGoogleTranslation($termsWithoutTranslations->getTerm(), $activeLanguage->code);
+				if ($googleTranslation != null) {
+					$translation->translation = $googleTranslation;
+					$translation->googleTranslated = 1;
+				}
+			}
+			$translation->insert();
+		}
+
 		$translationModeActive = $translator->translationModeActive();
 		$interface->assign('translationModeActive', $translationModeActive);
 
@@ -90,8 +116,8 @@ class Translation_Translations extends Admin_Admin {
 
 		$total = $translation->count();
 
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 50; // to adjust number of items listed on a page
+		$page = $_REQUEST['page'] ?? 1;
+		$pageSize = $_REQUEST['pageSize'] ?? 50; // to adjust number of items listed on a page
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		$translation->limit(($page - 1) * $pageSize, $pageSize);
@@ -114,7 +140,8 @@ class Translation_Translations extends Admin_Admin {
 		$this->display('translations.tpl', 'Translations');
 	}
 
-	private function exportAllTranslations() {
+	#[NoReturn]
+	private function exportAllTranslations() : void {
 		set_time_limit(0);
 		ini_set('memory_limit', '1G');
 		header('Content-type: application/csv');
@@ -131,7 +158,7 @@ class Translation_Translations extends Admin_Admin {
 		while ($validLanguage->fetch()) {
 			$validLanguages[$validLanguage->code] = $validLanguage->id;
 			if ($validLanguage->code != 'ubb' && $validLanguage->code != 'pig') {
-				echo(",\"{$validLanguage->code}\"");
+				echo(",\"$validLanguage->code\"");
 			}
 		}
 		echo("\n");
@@ -142,9 +169,9 @@ class Translation_Translations extends Admin_Admin {
 		//Apply filters
 		$interfaceArea = $_REQUEST['interfaceArea'] ?? 'both';
 		if ($interfaceArea == 'public') {
-			$term->isPublicFacing = 1;
+			$term->setIsPublicFacing(1);
 		} elseif ($interfaceArea == 'admin') {
-			$term->isAdminFacing = 1;
+			$term->setIsAdminFacing(1);
 		}
 
 		if (!empty($_REQUEST['updatedSince'])) {
@@ -152,20 +179,20 @@ class Translation_Translations extends Admin_Admin {
 		}
 
 		if (empty($_REQUEST['showMetadata'])) {
-			$term->isMetadata = 0;;
+			$term->setIsMetadata(0);
 		}
 
 		if (empty($_REQUEST['showAdminEnteredData'])) {
-			$term->isAdminEnteredData = 0;
+			$term->setIsAdminEnteredData(0);
 		}
 
 		$term->find();
 		while ($term->fetch()) {
-			echo('"' . str_replace('"', '\"', $term->term) . '"');
+			echo('"' . str_replace('"', '\"', $term->getTerm()) . '"');
 			foreach ($validLanguages as $languageId) {
 				echo ",";
 				$translation = new Translation();
-				$translation->termId = $term->id;
+				$translation->termId = $term->getId();
 				$translation->languageId = $languageId;
 				if ($translation->find(true)) {
 					if ($translation->translated || $languageId == 1) {
@@ -182,7 +209,8 @@ class Translation_Translations extends Admin_Admin {
 		exit();
 	}
 
-	private function exportForBulkTranslation() {
+	#[NoReturn]
+	private function exportForBulkTranslation() : void {
 		set_time_limit(0);
 		header('Content-type: application/txt');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -212,7 +240,7 @@ class Translation_Translations extends Admin_Admin {
 		}
 
 		if (empty($_REQUEST['showMetadata'])) {
-			$term->setIsMetadata(0);;
+			$term->setIsMetadata(0);
 		}
 
 		if (empty($_REQUEST['showAdminEnteredData'])) {
@@ -223,7 +251,7 @@ class Translation_Translations extends Admin_Admin {
 		while ($term->fetch()) {
 			//Look to see if we have translated it into the active language
 			$translation = new Translation();
-			$translation->termId = $term->id;
+			$translation->termId = $term->getTerm();
 			$translation->languageId = $activeLanguage->id;
 			$writeTerm = false;
 			if ($translation->find(true)) {
@@ -239,7 +267,7 @@ class Translation_Translations extends Admin_Admin {
 				$termToWrite = $term->getDefaultText();
 
 				if (!empty($termToWrite) && !is_numeric($termToWrite)) {
-					echo("{$term->id}| {$termToWrite}\r\n");
+					echo("{$term->getId()}| $termToWrite\r\n");
 				}
 			}
 		}

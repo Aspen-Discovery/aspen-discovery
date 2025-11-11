@@ -525,7 +525,7 @@ class Translator {
 		return $this->googleSettings;
 	}
 
-	private function getGoogleTranslation(string $phrase, string $targetLanguage) : ?string {
+	public function getGoogleTranslation(string $phrase, string $targetLanguage) : ?string {
 		$googleSettings = $this->getGoogleTranslationSettings();
 		if (!is_null($googleSettings)) {
 			if ($this->googleTranslateWrapper === null) {
