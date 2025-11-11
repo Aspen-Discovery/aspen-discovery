@@ -17,9 +17,7 @@
 	<div class="alert alert-info">{$linkedObjectNotifications}</div>
 {/if}
 
-{if !empty($editFormInstructions)}
-	<div id="editFormInstructions" class="alert alert-info">{$editFormInstructions}</div>
-{/if}
+<div id="editFormInstructions" class="alert alert-info" {if empty($editFormInstructions)}style="display: none"{/if}>{if !empty($editFormInstructions)}{$editFormInstructions}{/if}</div>
 
 {* Create the base form *}
 <form id='objectEditor-{if !empty($id)}{$id}{else}-1{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>

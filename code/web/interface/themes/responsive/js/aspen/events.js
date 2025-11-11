@@ -85,7 +85,11 @@ AspenDiscovery.Events = (function(){
 						$("#description").text("");
 						return false;
 					} else {
-						$("#editFormInstructions").html(data.editFormInstructions);
+						if (data.editFormInstructions.length > 0) {
+							$("#editFormInstructions").html(data.editFormInstructions).show();
+						}else{
+							$("#editFormInstructions").hide();
+						}
 						eventType = data.eventType;
 						$("#title").val(eventType.title);
 						if (!eventType.titleCustomizable) {
