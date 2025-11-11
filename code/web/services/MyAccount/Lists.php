@@ -62,6 +62,7 @@ class Lists extends MyAccount {
 				$activeListGroup = UserAccount::getActiveUserObj()->getUnassignedListsForListGroups();
 				$activeListGroupDetails = new UserListGroup();
 				$activeListGroupDetails->title = 'Unassigned Lists';
+				$activeListGroupDetails->id = -1;
 			} else {
 				$listGroup = new UserListGroup();
 				$listGroup->id = $groupId;
