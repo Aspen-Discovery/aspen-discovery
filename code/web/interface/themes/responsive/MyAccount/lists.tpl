@@ -29,6 +29,7 @@
 			<div class="col-xs-12">
 				<div style="padding-bottom:1em;">
 					<button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showCreateListGroupForm('{$activeListGroupDetails->id}')">{translate text="Create a New List Group" isPublicFacing=true}</button>
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
 				</div>
 			</div>
 		</div>
