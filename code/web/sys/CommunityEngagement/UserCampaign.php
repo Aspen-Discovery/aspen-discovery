@@ -210,7 +210,7 @@ class UserCampaign extends DataObject {
 				if ($userCampaign->completed == 1) {
 
 					$library = $user->getHomeLibrary();
-					if ($library->sendStaffEmailOnCampaignCompletion == 1) {
+					if ($library->sendStaffEmailOnCampaignCompletion == 1 && $userCampaign->staffCampaignCompleteEmailSent == 0) {
 						$emailTemplate = EmailTemplate::getActiveTemplate('staffCampaignComplete');
 						
 						if (!$emailTemplate) {
@@ -224,6 +224,8 @@ class UserCampaign extends DataObject {
 							];
 							try {
 								$emailTemplate->sendEmail($library->campaignCompletionNewEmail, $parameters);
+								$userCampaign->staffCampaignCompleteEmailSent = 1;
+								$userCampaign->update();
 							} catch (Exception $e) {
 								$logger->log("Exception while sending email to {$library->campaignCompletionNewEmail}: " . $e->getMessage(), Logger::LOG_ERROR);
 							}
