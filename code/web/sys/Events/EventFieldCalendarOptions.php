@@ -71,4 +71,25 @@ class EventFieldCalendarOptions extends DataObject
 		self::$_objectStructure[$context] = $structure;
 		return self::$_objectStructure[$context];
 	}
+
+	protected $_solrFieldName = null;
+	public function getSolrFieldName() {
+		if ($this->_solrFieldName == null) {
+			$this->_solrFieldName = '';
+			if ($this->eventFieldId == -4) {
+				$this->_solrFieldName = 'room';
+			} else if ($this->eventFieldId == -3) {
+				$this->_solrFieldName = "branch";
+			} else if ($this->eventFieldId == -2) {
+				$this->_solrFieldName = "description";
+			} else {
+				$eventField = new EventField();
+				$eventField->id = $this->eventFieldId;
+				if ($eventField->find(true)) {
+					$this->_solrFieldName = $eventField->name;
+				}
+			}
+		}
+		return $this->_solrFieldName;
+	}
 }

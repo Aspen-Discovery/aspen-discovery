@@ -44,8 +44,6 @@ class Events_Calendar extends Action {
 		//Print settings
 		$printEndTime = isset($_REQUEST['endTime']) ? filter_var($_REQUEST['endTime'], FILTER_VALIDATE_BOOLEAN) : false;
 		$interface->assign("printEndTime", $printEndTime);
-		$printDescriptionAgenda = isset($_REQUEST['descriptionAgenda']) ? filter_var($_REQUEST['descriptionAgenda'], FILTER_VALIDATE_BOOLEAN) : false;
-		$interface->assign("printDescriptionAgenda", $printDescriptionAgenda);
 		if ($useWeek) {
 			$paddedWeek = str_pad($week, 2, '0', STR_PAD_LEFT);
 			$weekFilter = $year . '-' . $paddedWeek;
@@ -247,12 +245,15 @@ class Events_Calendar extends Action {
 						}
 
 						if (!empty($eventFieldsToShow)) {
-							foreach ($eventFieldsToShow as $field) {
-								$fieldName = str_replace(" ", "_", $field);
+							foreach ($eventFieldsToShow as $fieldToShow) {
+								$fieldName = str_replace(" ", "_", $fieldToShow->getSolrFieldName());
 								if (in_array($fieldName, ['branch', 'room', 'description'])) {
 									//If the event does not have the field set, ignore it
 									if (!empty($result[$fieldName])) {
-										$eventFields[$fieldName] = $result[$fieldName];
+										$eventFields[$fieldName] = [
+											'settings' => $fieldToShow,
+											'value' => $result[$fieldName]
+										];
 									}
 								}else{
 									$pattern = '/custom_([a-z]+)_'.$fieldName.'/i';
@@ -260,21 +261,22 @@ class Events_Calendar extends Action {
 									$matches = preg_grep($pattern, $keys);
 									if (!empty($matches)) {
 										foreach($matches as $match) {
-											$eventFields[$match] = $result[$match];
+											$eventFields[$match] = [
+												'settings' => $fieldToShow,
+												'value' => $result[$match]
+											];
 										}
 									}
 								}
 							}
 						}
 
-						$description = $result['description'];
 						$eventDayObj['events'][] = [
 							'id' => $result['id'],
 							'title' => $result['title'],
 							'link' => $url,
 							'formattedTime' => $formattedTime,
 							'isCancelled' => $isCancelled,
-							'description' => $description,
 							'eventFields' => $eventFields,
 						];
 					}
@@ -339,7 +341,7 @@ class Events_Calendar extends Action {
 		$calendarDisplaySettingId = 0;
 		require_once ROOT_DIR . '/sys/Events/CalendarDisplaySettingLibrary.php';
 		$setting = new CalendarDisplaySettingLibrary();
-		$setting->libraryId = $library->id;
+		$setting->libraryId = $library->libraryId;
 		if ($setting->find(true)) {
 			$calendarDisplaySettingId = $setting->calendarDisplaySettingId;
 		}
@@ -347,34 +349,22 @@ class Events_Calendar extends Action {
 	}
 
 	function getEventFieldsToShow($calendarDisplaySettingId) : array {
-		$eventFieldIds = [];
-		$eventFieldNames = [];
 		require_once ROOT_DIR . '/sys/Events/EventFieldCalendarOptions.php';
 		require_once ROOT_DIR . '/sys/Events/EventField.php';
 		$eventFieldOptions = new EventFieldCalendarOptions();
 		$eventFieldOptions->calendarDisplaySettingId = $calendarDisplaySettingId;
-		$eventFieldOptions->displayedOnline = 1;
 		$eventFieldOptions->orderBy('weight');
-		$eventFieldOptions->find();
-		while ($eventFieldOptions->fetch()) {
-			$eventFieldIds[] = $eventFieldOptions->eventFieldId;
-		}
-		foreach ($eventFieldIds as $eventFieldId) {
-			if ($eventFieldId == -4) {
-				$eventFieldNames[] = 'room';
-			} else if ($eventFieldId == -3) {
-				$eventFieldNames[] = "branch";
-			} else if ($eventFieldId == -2) {
-				$eventFieldNames[] = "description";
-			} else {
-				$eventField = new EventField();
-				$eventField->id = $eventFieldId;
-				if ($eventField->find(true)) {
-					$eventFieldNames[] = $eventField->name;
-				}
+		$allEventFieldOptions = $eventFieldOptions->fetchAll();
+		//Apply user selections
+		foreach ($allEventFieldOptions as $eventFieldOption) {
+			if (isset($_REQUEST['calendar_' . $eventFieldOption->eventFieldId])) {
+				$eventFieldOption->printedCalendar = filter_var($_REQUEST['calendar_' . $eventFieldOption->eventFieldId], FILTER_VALIDATE_BOOLEAN);
+			}
+			if (isset($_REQUEST['agenda_' . $eventFieldOption->eventFieldId])) {
+				$eventFieldOption->printedAgenda = filter_var($_REQUEST['agenda_' . $eventFieldOption->eventFieldId], FILTER_VALIDATE_BOOLEAN);
 			}
 		}
-		return $eventFieldNames;
+		return $allEventFieldOptions;
 	}
 
 }

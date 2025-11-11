@@ -628,8 +628,7 @@ AspenDiscovery.Events = (function(){
 
 			// Checkbox names (in order as in the form)
 			const checkboxIds = [
-				'endTime',
-				'descriptionAgenda'
+				'endTime'
 			];
 
 			// Build URL params object
@@ -645,6 +644,13 @@ AspenDiscovery.Events = (function(){
 				if (el) {
 					// Only include if checked, send value "true" (or customize as needed)
 					params[id] = el.checked ? 'true' : 'false';
+				}
+			});
+
+			const checkboxes = document.querySelectorAll('input[type="checkbox"].agenda-print-option, input[type="checkbox"].calendar-print-option');
+			checkboxes.forEach(el => {
+				if (el.id) {
+					params[el.id] = el.checked ? 'true' : 'false';
 				}
 			});
 

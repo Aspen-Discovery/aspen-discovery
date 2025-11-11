@@ -119,6 +119,17 @@
 	font-size: 12px;
 }
 
+.calendar-event-description {
+	font-style: italic;
+}
+
+.calendar-event-field.display-online {
+	display: inherit;
+}
+.calendar-event-field.hide-online {
+	display: none;
+}
+
 .calendar-event-state{
 	display: inherit;
 }
@@ -191,13 +202,20 @@
 			page-break-inside: avoid;
 
 			.calendar-event {
-				display: flex;
+				display: block;
 				flex-direction: row;
 				gap: 0.5rem;
 				justify-content: space-between;
 				margin: 1px 5px 1px 10px;
 				font-weight: bold;
 			}
+		}
+
+		.calendar-event-field.hide-print-agenda {
+			display: none;
+		}
+		.calendar-event-field.display-print-agenda {
+			display: inherit;
 		}
 	}
 	@media (min-width: @screen-sm-min) {
@@ -210,8 +228,11 @@
 			width: 95%;
 		}
 
-		.calendar-event-description {
+		.calendar-event-field.hide-print-calendar {
 			display: none;
+		}
+		.calendar-event-field.display-print-calendar {
+			display: initial;
 		}
 
 		.calendar {
@@ -275,7 +296,7 @@
 
 			.calendar-day-cell {
 				min-height: 12vh;
-				max-height: 20vh;
+				//max-height: 20vh; No max height so all display
 				flex-direction: row-reverse;
 				justify-content: space-between;
 				max-width: 100%;
@@ -310,8 +331,7 @@
 					.calendar-event {
 						margin: 0;
 						padding: 1px 0 0 3px;
-						display: flex;
-						flex-direction: row;
+						display: block; //Display as block to allow fields to show properly
 						column-gap: 0.5rem;
 						justify-content: left;
 						max-width: 100%;

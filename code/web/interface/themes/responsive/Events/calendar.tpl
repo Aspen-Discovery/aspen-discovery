@@ -62,11 +62,17 @@
 									</div>
 									{if !empty($event.eventFields)}
 										{foreach from=$event.eventFields key=eventFieldName item=eventField}
-											<div class="calendar-event-field" id="calendar-event-{$eventFieldName}">
-												{foreach from=$eventField item=value}
-													{str_replace(',',', ',$value)}&nbsp;
-												{/foreach}
-											</div>
+											{if $eventFieldName == 'description'}
+												<div class="calendar-event-field calendar-event-description {if $eventField.settings->displayedOnline}display-online{else}hide-online{/if} {if $eventField.settings->printedCalendar}display-print-calendar{else}hide-print-calendar{/if} {if $eventField.settings->printedAgenda}display-print-agenda{else}hide-print-agenda{/if}">
+													{$eventField.value}
+												</div>
+											{else}
+												<div class="calendar-event-field {if $eventField.settings->displayedOnline}display-online{else}hide-online{/if} {if $eventField.settings->printedCalendar}display-print-calendar{else}hide-print-calendar{/if} {if $eventField.settings->printedAgenda}display-print-agenda{else}hide-print-agenda{/if}" id="calendar-event-{$eventFieldName}">
+													{foreach from=$eventField.value item=value}
+														{str_replace(',',', ',$value)}&nbsp;
+													{/foreach}
+												</div>
+											{/if}
 										{/foreach}
 									{/if}
 									{if !empty($event.isCancelled)}
@@ -75,11 +81,6 @@
 										</div>
 									{/if}
 								</div>
-								{if !empty($printDescriptionAgenda) && !empty($event.description)}
-									<div class="calendar-event-description">
-										{$event.description}
-									</div>
-								{/if}
 							{/foreach}
 						</div>
 					</div>
