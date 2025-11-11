@@ -39,7 +39,7 @@ class Event extends DataObject {
 	public $recurrenceEnd;
 	/** @noinspection PhpUnused */
 	public $recurrenceCount;
-	public string|array|null $_dates; // Used to generate instances
+	public $_dates; // Used to generate instances
 	public $_instanceCount;
 	public $_datesPreview;
 
