@@ -271,7 +271,7 @@ class Grouping_StatusInformation {
 			if ($this->getAvailableCopies() > 9999) {
 				$numberOfCopiesMessage .= 'Always Available';
 			} else {
-				if ($library->showGroupedHoldCopiesCount == 4 || ($library->showGroupedHoldCopiesCount != 4 && ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0))) {
+				if ($library->showGroupedHoldCopiesCount == 4 || ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0)) {
 					if ($this->getAvailableCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy available';
 					} elseif ($this->getAvailableCopies() > 1) {
