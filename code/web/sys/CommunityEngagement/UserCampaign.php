@@ -16,6 +16,7 @@ class UserCampaign extends DataObject {
 	public $optInToCampaignLeaderboard;
 	public $optInToCampaignEmailNotifications;
 	public $campaignCompleteEmailSent;
+	public $staffCampaignCompleteEmailSent;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
