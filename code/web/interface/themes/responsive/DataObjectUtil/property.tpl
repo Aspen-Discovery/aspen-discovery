@@ -153,6 +153,13 @@
 							{/if}
 						</div>
 							{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+							{if !empty($property.noteBullets)}
+								<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+									{foreach from=$property.noteBullets item=bullet}
+										<li><small>{$bullet}</small></li>
+									{/foreach}
+								</ul>
+							{/if}
 						{/if}
 
 						{foreach from=$property.properties item=property}
@@ -223,16 +230,37 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'text' || $property.type == 'regularExpression' || $property.type == 'folder'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required)}required{/if}{if !empty($property.validationGroupName)} {$property.validationGroupName}-validation-group{/if}' {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.readOnly)}readonly{/if}  {if !empty($property.forcesReindex)}aria-describedby="{$propName}HelpBlock"{/if} >
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'integer'}
 			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if}>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
@@ -249,16 +277,37 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'url'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'email'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {$property.affectsLiDA}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'email2'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email2 {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'email_prefill'}
@@ -434,6 +483,13 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 
 		{elseif $property.type == 'password' || $property.type == 'storedPassword'}
 			{include file="DataObjectUtil/password.tpl"}
@@ -463,17 +519,38 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 
 		{elseif $property.type == 'enum' || $property.type == 'enumFromNestedSection'}
 			{include file="DataObjectUtil/enum.tpl"}
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'multiSelect'}
 			{include file="DataObjectUtil/multiSelect.tpl"}
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if !empty($propValue) && $property.type == 'image'}
@@ -520,6 +597,13 @@
 				</div>
 			{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			<script type="application/javascript">
 				{literal}
@@ -544,6 +628,13 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'checkboxFromNestedSection'}
 			{* {$propValue.$propName|@var_dump} *}
 			<div class="checkbox" {if !empty($property.forcesReindex) || !empty($property.affectsLiDA) || !empty($property.note)}style="margin-bottom: 0"{/if}>
@@ -557,6 +648,13 @@
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
+			{if !empty($property.noteBullets)}
+				<ul class="help-block" style="margin-top: 0; margin-bottom: 10px;">
+					{foreach from=$property.noteBullets item=bullet}
+						<li><small>{$bullet}</small></li>
+					{/foreach}
+				</ul>
+			{/if}
 		{elseif $property.type == 'webBuilderColor'}
 			<section style="display: flex; flex-flow: row wrap; margin-top: 2rem;">
 				{foreach from=$property.colorOptions item=colorOption}
