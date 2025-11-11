@@ -3463,7 +3463,7 @@ class Library extends DataObject {
 							1 => 'Only for unavailable titles',
 							2 => 'For available and unavailable titles with holds',
 							3 => 'For available and unavailable titles with and without holds',
-							4 => 'Show Holdable Copies without Hold Counts'
+							4 => 'Show available copies without hold counts'
 						],
 						'label' => 'Show Hold and Copy Counts',
 						'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.',

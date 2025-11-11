@@ -271,7 +271,7 @@ class Grouping_StatusInformation {
 			if ($this->getAvailableCopies() > 9999) {
 				$numberOfCopiesMessage .= 'Always Available';
 			} else {
-				if ($library->showGroupedHoldCopiesCount != 4 && ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0)) {
+				if ($library->showGroupedHoldCopiesCount == 4 || ($library->showGroupedHoldCopiesCount != 4 && ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0))) {
 					if ($this->getAvailableCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy available';
 					} elseif ($this->getAvailableCopies() > 1) {
@@ -299,15 +299,6 @@ class Grouping_StatusInformation {
 						$numberOfCopiesMessage .= '1 person is on the wait list';
 					} else {
 						$numberOfCopiesMessage .= '%2% people are on the wait list';
-					}
-				}
-
-				// Show Holdable Copies without Hold Counts
-				if ($library->showGroupedHoldCopiesCount == 4) {
-					if ($this->getHoldableCopies() == 1) {
-						$numberOfCopiesMessage .= '1 copy';
-					} elseif ($this->getHoldableCopies() > 1) {
-						$numberOfCopiesMessage .= '%5% copies';
 					}
 				}
 			}
@@ -338,7 +329,6 @@ class Grouping_StatusInformation {
 			2 => $this->getNumHolds(),
 			3 => $this->getOnOrderCopies(),
 			4 => $this->getAvailableCopies(),
-			5 => $this->getHoldableCopies(),
 			'isPublicFacing' => true,
 		]);
 	}
