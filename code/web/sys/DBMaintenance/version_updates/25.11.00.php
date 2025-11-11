@@ -289,6 +289,15 @@ function getUpdates25_11_00(): array {
 			],
 		], //add_description_for_grouped_work_display_info
 
+		//mark - grove
+		'add_grouped_work_permanent_id_to_manually_grouped_works'=> [
+			'title' => 'Add grouped work permanent id to manually grouped works',
+			'description' => 'Add the permanent id of the grouped work that is created.',
+			'sql' => [
+				"ALTER TABLE manually_grouped_works ADD COLUMN IF NOT EXISTS grouped_work_permanent_id VARCHAR(40)",
+			],
+		], //add_grouped_work_permanent_id_to_manually_grouped_works
+
 		//alexander - Open Fifth
 		'add_use_library_name_for_maps' => [
 			'title' => 'Add Use Library Name For Maps',
