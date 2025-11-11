@@ -18,7 +18,7 @@
 
 	<form class="form" id="translationSettings">
 		<div class="form-group">
-			<input type="checkbox" name="hideTranslated" id="hideTranslated" {if !empty($showTranslated)}checked{/if}>&nbsp;
+			<input type="checkbox" name="hideTranslated" id="hideTranslated" {if !empty($hideTranslated)}checked{/if}>&nbsp;
 			<label for="hideTranslated">{translate text="Hide terms that have been translated already" isAdminFacing=true}</label>
 		</div>
 		<div class="form-group">
