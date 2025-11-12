@@ -49,6 +49,7 @@ class Lists extends MyAccount {
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$lists = new UserList();
+		$lists->user_id = UserAccount::getActiveUserId();
 		$lists->listGroupId = -1;
 		$numUnassignedLists = $lists->count();
 		$interface->assign('numUnassignedLists', $numUnassignedLists);
@@ -71,6 +72,7 @@ class Lists extends MyAccount {
 				if ($listGroup->find(true)) {
 					$activeListGroupDetails = $listGroup;
 					$userList = new UserList();
+					$userList->user_id = UserAccount::getActiveUserId();
 					$userList->listGroupId = $listGroup->id;
 					$userList->find();
 					while ($userList->fetch()) {

@@ -253,7 +253,7 @@ class User extends DataObject {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
 		$userList->listGroupId = -1;
-		$userList->userId = $this->id;
+		$userList->user_id = $this->id;
 		$userList->orderBy('title ASC');
 		$userList->find();
 		$lists = [];

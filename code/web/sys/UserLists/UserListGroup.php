@@ -58,13 +58,14 @@ class UserListGroup extends DataObject {
 		return self::$_objectStructure[$context];
 	}
 
-	public static function getLastViewedGroupForUser(user $user): ?array {
+	public static function getLastViewedGroupForUser(User $user): ?array {
 		$lastViewed = new UserListGroup();
 		$lastViewed->userId = $user->id;
 		$lastViewed->id = $user->lastListGroupViewed;
 		if ($lastViewed->find(true)) {
 			$lists = [];
 			$listGroup = new UserList();
+			$listGroup->user_id = $user->id;
 			$listGroup->listGroupId = $lastViewed->id;
 			$listGroup->find();
 			while ($listGroup->fetch()) {
@@ -99,13 +100,19 @@ class UserListGroup extends DataObject {
 		}
 	}
 
-	function getListsForGroup(user $user): ?array {
+	/**
+	 * Get all the lists in a specific group
+	 * @param User $user
+	 * @return array|null
+	 */
+	function getListsForGroup(User $user): ?array {
 		$group = new UserListGroup();
 		$group->userId = $user->id;
 		$group->id = $this->id;
 		if ($group->find(true)) {
 			$lists = [];
 			$listGroup = new UserList();
+			$listGroup->user_id = $user->id;
 			$listGroup->listGroupId = $group->id;
 			$listGroup->find();
 			while ($listGroup->fetch()) {
@@ -121,6 +128,7 @@ class UserListGroup extends DataObject {
 	function numValidLists() : int {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
+		$userList->user_id = $this->userId;
 		$userList->listGroupId = $this->id;
 
 		return $userList->count();
