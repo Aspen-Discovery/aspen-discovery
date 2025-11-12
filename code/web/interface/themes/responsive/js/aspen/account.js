@@ -1500,7 +1500,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		showCreateListForm: function (source, sourceId) {
+		showCreateListForm: function (source, sourceId,defaultGroupId) {
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {method: "getCreateListForm"};
@@ -1510,13 +1510,16 @@ AspenDiscovery.Account = (function () {
 				if (sourceId !== undefined) {
 					params.sourceId = sourceId;
 				}
+				if (defaultGroupId !== undefined) {
+					params.defaultGroupId = defaultGroupId;
+				}
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
 				AspenDiscovery.Account.ajaxLogin($trigger, function () {
-					return AspenDiscovery.Account.showCreateListForm(source, sourceId);
+					return AspenDiscovery.Account.showCreateListForm(source, sourceId,defaultGroupId);
 				}, false);
 			}
 			return false;

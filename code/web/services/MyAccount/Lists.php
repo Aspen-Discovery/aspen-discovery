@@ -5,25 +5,21 @@ require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
 
 class Lists extends MyAccount {
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $library;
 
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
-		if (isset($_REQUEST['sort'])) {
-			$sort = $_REQUEST['sort'];
-		} else {
-			$sort = 'title';
-		}
+		$sort = $_REQUEST['sort'] ?? 'title';
 		if (($sort == 'dateCreated') || ($sort == 'created') || ($sort == 'dateUpdated')) {
 			$order = ' DESC';
 		} else {
 			$order = ' ASC';
 		}
 
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$page = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $page);
 
 		$listsPerPage = 20;
@@ -51,6 +47,11 @@ class Lists extends MyAccount {
 		$pager = new Pager($options);
 
 		$interface->assign('pageLinks', $pager->getLinks());
+
+		$lists = new UserList();
+		$lists->listGroupId = -1;
+		$numUnassignedLists = $lists->count();
+		$interface->assign('numUnassignedLists', $numUnassignedLists);
 
 		$activeListGroup = [];
 		$listGroup = new UserListGroup();

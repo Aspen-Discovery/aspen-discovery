@@ -87,6 +87,7 @@ class UserListGroup extends DataObject {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	public static function getLastAddedGroupForUser(user $user): ?UserListGroup {
 		$lastAdded = new UserListGroup();
 		$lastAdded->userId = $user->id;
@@ -116,7 +117,8 @@ class UserListGroup extends DataObject {
 		}
 	}
 
-	function numValidLists() {
+	/** @noinspection PhpUnused */
+	function numValidLists() : int {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
 		$userList->listGroupId = $this->id;
@@ -124,7 +126,7 @@ class UserListGroup extends DataObject {
 		return $userList->count();
 	}
 
-	function getListGroups(user $user) {
+	function getListGroups(user $user) : array {
 		require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
 		$group = new UserListGroup();
 		$group->userId = $user->id;
@@ -136,13 +138,12 @@ class UserListGroup extends DataObject {
 			}
 		}
 
-		$originalTitles = [];
-		foreach ($allGroups as $id => $grp) {
-			$originalTitles[$id] = $grp->title;
-		}
+		$originalTitles = array_map(function ($grp) {
+			return $grp->title;
+		}, $allGroups);
 
 		$groups = [];
-		foreach ($allGroups as $id => $grp) {
+		foreach ($allGroups as $grp) {
 			$titleParts = [];
 			$current = $grp;
 			$level = 0;
@@ -168,17 +169,18 @@ class UserListGroup extends DataObject {
 		return $groups;
 	}
 
-	public static function getFullGroupTitle(UserListGroup $group): string {
+	/** @noinspection PhpUnused */
+	public function getFullGroupTitle(): string {
 		require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
 
 		$titleParts = [];
-		$current = $group;
+		$current = $this;
 		$level = 0;
 
 		// Load all parent groups for the user
 		$allGroups = [];
 		$parent = new UserListGroup();
-		$parent->userId = $group->userId;
+		$parent->userId = $this->userId;
 		$parent->find();
 		while ($parent->fetch()) {
 			$allGroups[$parent->id] = clone($parent);
@@ -190,7 +192,7 @@ class UserListGroup extends DataObject {
 			$current = $allGroups[$current->parentGroupId];
 			$level++;
 		}
-		$titleParts[] = $group->title;
+		$titleParts[] = $this->title;
 
 		return implode(' » ', $titleParts);
 	}

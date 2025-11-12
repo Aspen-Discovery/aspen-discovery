@@ -1582,7 +1582,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$list->listGroupId = -1;
 				if (isset($_REQUEST['addToListGroupOption'])) {
 					$addToListGroupOption = $_REQUEST['addToListGroupOption'];
-					$addToListGroupNested = isset($_REQUEST['addToListGroupNested']) ? $_REQUEST['addToListGroupNested'] : 'none';
+					$addToListGroupNested = $_REQUEST['addToListGroupNested'] ?? 'none';
 					if ($addToListGroupOption == 'new') {
 						//Create a new list group
 						require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
@@ -1594,9 +1594,9 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 						$listGroup->insert();
 						$list->listGroupId = $listGroup->id;
-					} elseif ($addToListGroupOption == "existing" && is_numeric($addToListGroupOption)) {
+					} elseif ($addToListGroupOption == "existing" && is_numeric($addToListGroupNested)) {
 						//Add to an existing list group
-						$list->listGroupId = intval($addToListGroupOption);
+						$list->listGroupId = intval($addToListGroupNested);
 					}
 				}
 
@@ -1735,6 +1735,10 @@ class MyAccount_AJAX extends JSON_Action {
 			$source = $_REQUEST['source'];
 			$interface->assign('sourceId', $sourceId);
 			$interface->assign('source', $source);
+		}
+		if (isset($_REQUEST['defaultGroupId'])) {
+			$defaultGroupId = $_REQUEST['defaultGroupId'];
+			$interface->assign('defaultGroupId', $defaultGroupId);
 		}
 
 		//Check to see if we will index the list if it is public

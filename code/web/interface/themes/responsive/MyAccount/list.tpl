@@ -23,11 +23,9 @@
 				<div>
 					<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 					<h1 id="listTitle">{$userList->title|escape:"html"}</h1>
-					{if $inListGroup}
+					{if $inListGroup && !empty($allowEdit)}
 						<div id="listGroup">
-							<p class="text-muted">
-								<small>{translate text='Part of the list group: %1%' 1=$listGroupInfo->title isPublicFacing=true}</small>
-							</p>
+							<small>{translate text='In Group' isPublicFacing=true}  <a href="/MyAccount/Lists?groupId={$listGroupInfo->id}">{$listGroupInfo->getFullGroupTitle()}</a></small>
 						</div>
 					{/if}
 					{if !empty($notes)}
@@ -448,7 +446,7 @@
                     {/if}
 				</div>
 				</div>{/if}
-			
+
             {if strlen($pageLinks.all) > 0}<div class="text-center">{$pageLinks.all}</div>{/if}
         {else}
 			{translate text='You do not have any saved resources' isPublicFacing=true}
@@ -462,9 +460,9 @@
 		const updateButtonText = () => {
 			const checkedCount = $('.user-list-format-filter-checkbox:checked').length;
 			const buttonText = '{/literal}{translate text="Filter by Format" isPublicFacing=true}{literal}';
-			
+
 			const finalText = checkedCount > 0 ? `${buttonText} (${checkedCount} selected)` : buttonText;
-			
+
 			$('#filterDropdownButton').html(`${finalText}&nbsp;<span class="caret"></span>`);
 		};
 
@@ -480,7 +478,7 @@
 
 		$('#user-list-apply-format-filters').on('click', (event) => {
 			event.preventDefault();
-			
+
 			const selectedFormats = [];
 			$('.user-list-format-filter-checkbox:checked').each(function() {
 				selectedFormats.push($(this).val());
