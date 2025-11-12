@@ -1675,6 +1675,9 @@ abstract class DataObject implements JsonSerializable {
 		foreach ($structure as $propertyName => $property) {
 			if ($property['type'] == 'section') {
 				$structure[$propertyName]['properties'] = $this->filterPropertiesByILS($activeILS, $structure[$propertyName]['properties']);
+				if (empty($structure[$propertyName]['properties'])) {
+					unset($structure[$propertyName]);
+				}
 			}else{
 				if (array_key_exists('relatedIls', $property)) {
 					if (!in_array($activeILS, $property['relatedIls'])) {
