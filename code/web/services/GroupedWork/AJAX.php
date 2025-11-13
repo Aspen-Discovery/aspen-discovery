@@ -231,15 +231,13 @@ class GroupedWork_AJAX extends JSON_Action {
 		$memoryWatcher->logMemory('Loaded additional go deeper data');
 
 		//Load Series Summary
-		$indexedSeries = $recordDriver->getIndexedSeries();
 		$series = $recordDriver->getSeries();
-		if (!empty($indexedSeries) || !empty($series)) {
+		if (!empty($series)) {
 			global $library;
 			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
-			$interface->assign('indexedSeries', $indexedSeries);
 			$interface->assign('series', $series);
 			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
 		}
@@ -1104,7 +1102,6 @@ class GroupedWork_AJAX extends JSON_Action {
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('recordDriver', $recordDriver);
-		$indexedSeries = $recordDriver->getIndexedSeries();
 		$series = $recordDriver->getSeries();
 		$result = [
 			'result' => false,
@@ -1113,12 +1110,11 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isPublicFacing' => 'true',
 			]),
 		];
-		if (!empty($indexedSeries) || !empty($series)) {
+		if (!empty($series)) {
 			global $library;
 			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
-			$interface->assign('indexedSeries', $indexedSeries);
 			$interface->assign('series', $series);
 			$result = [
 				'result' => true,

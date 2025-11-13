@@ -81,8 +81,7 @@
 
 {*                  Series Grouped Work Implementation *}
 						{if !empty($showSeries) && !$talpaResult}
-							{assign var=indexedSeries value=$groupedWorkDriver->getIndexedSeries()}
-							{if $summSeries || $indexedSeries}
+							{if $summSeries}
 								<div class="series{$summISBN}">
 									<div class="result-label col-sm-4 col-xs-12">{translate text="Series" isPublicFacing=true} </div>
 									<div class="result-value col-sm-8 col-xs-12">
@@ -91,22 +90,6 @@
 												<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)} <strong>{translate text=volume isPublicFacing=true} {$summSeries.volume|format_float_with_min_decimals}</strong>{/if}<br>
 											{else}
 												<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if !empty($summSeries.volume)}<strong> {translate text="volume %1%" 1=$summSeries.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
-											{/if}
-										{/if}
-										{if !empty($indexedSeries)}
-											{assign var=numSeriesShown value=0}
-											{foreach from=$indexedSeries item=seriesItem name=loop}
-												{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
-													{assign var=numSeriesShown value=$numSeriesShown+1}
-													{if $numSeriesShown == 4}
-														<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...' isPublicFacing=true}</a>
-														<div id="moreSeries_{$summId}" style="display:none">
-													{/if}
-													<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if !empty($seriesItem.volume)}<strong> {translate text="volume %1%" 1=$seriesItem.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}<br>
-												{/if}
-											{/foreach}
-											{if $numSeriesShown >= 4}
-												</div>
 											{/if}
 										{/if}
 									</div>
