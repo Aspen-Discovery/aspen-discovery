@@ -261,9 +261,11 @@ public class AspenEventsIndexer {
 				ArrayList<String> librariesToShowEventFor = new ArrayList<>(librariesToShowAllFor);
 
 				//Add any libraries that want to see their events only
-				long libraryForLocation = libraryIdsByLocation.get(eventInfo.getLocationId());
-				if (librariesToShowSeparatelyFor.containsKey(libraryForLocation)) {
-					librariesToShowEventFor.add(librariesToShowSeparatelyFor.get(libraryForLocation));
+				Long libraryForLocation = libraryIdsByLocation.get(eventInfo.getLocationId());
+				if (libraryForLocation != null) {
+					if (librariesToShowSeparatelyFor.containsKey(libraryForLocation)) {
+						librariesToShowEventFor.add(librariesToShowSeparatelyFor.get(libraryForLocation));
+					}
 				}
 
 				// Libraries scopes
