@@ -14,7 +14,7 @@
 				{foreach from=$eventFieldNamesCalendar key=eventFieldId item=eventField}
 					<div class="form-group checkbox">
 						<label for="calendar_{$eventField}">
-							<input type="checkbox" class="calendar-print-option" name="calendar_{$eventFieldId}" id="calendar_{$eventFieldId}" checked>
+							<input type="checkbox" class="calendar-print-option" name="calendar_{$eventFieldId}" id="calendar_{$eventFieldId}">
 							<strong>{$eventField}</strong>
 						</label>
 					</div>
@@ -39,7 +39,7 @@
 				{foreach from=$eventFieldNamesAgenda key=eventFieldId item=eventField}
 					<div class="form-group checkbox">
 						<label for="agenda_{$eventField}">
-							<input class="agenda-print-option" type="checkbox" name="agenda_{$eventFieldId}" id="agenda_{$eventFieldId}" checked>
+							<input class="agenda-print-option" type="checkbox" name="agenda_{$eventFieldId}" id="agenda_{$eventFieldId}">
 							<strong>{$eventField}</strong>
 						</label>
 					</div>
