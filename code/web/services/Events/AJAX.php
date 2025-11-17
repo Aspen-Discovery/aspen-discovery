@@ -369,71 +369,41 @@ class Events_AJAX extends JSON_Action {
 		}
 
 		$eventFieldIds = [];
-		$eventFieldNamesCalendar = [];
-		$eventFieldNamesAgenda = [];
 		if (!empty ($calendarDisplaySettingId)) {
 			require_once ROOT_DIR . '/sys/Events/EventFieldCalendarOptions.php';
 			require_once ROOT_DIR . '/sys/Events/EventField.php';
-			$printedCalendarOptions = new EventFieldCalendarOptions();
-			$printedCalendarOptions->calendarDisplaySettingId = $calendarDisplaySettingId;
-			$printedCalendarOptions->printedCalendar = 1;
-			$printedCalendarOptions->orderBy('weight');
-			$printedCalendarOptions->find();
-			while ($printedCalendarOptions->fetch()) {
-				$eventFieldIds[$printedCalendarOptions->eventFieldId] = 'calendar';
-			}
-
-			$printedAgendaOptions = new EventFieldCalendarOptions();
-			$printedAgendaOptions->calendarDisplaySettingId = $calendarDisplaySettingId;
-			$printedAgendaOptions->printedAgenda = 1;
-			$printedAgendaOptions->orderBy('weight');
-			$printedAgendaOptions->find();
-			while ($printedAgendaOptions->fetch()) {
-				if (!array_key_exists ($printedAgendaOptions->eventFieldId, $eventFieldIds)) {
-					$eventFieldIds[$printedAgendaOptions->eventFieldId] = 'agenda';
-				} else {
-					$eventFieldIds[$printedAgendaOptions->eventFieldId] = 'both';
-				}
+			$printedOptions = new EventFieldCalendarOptions();
+			$printedOptions->calendarDisplaySettingId = $calendarDisplaySettingId;
+			$printedOptions->orderBy('weight');
+			$printedOptions->find();
+			while ($printedOptions->fetch()) {
+				$eventFieldIds[$printedOptions->eventFieldId] = array(
+					'name' => null,
+					'printedCalendar' => $printedOptions->printedCalendar,
+					'printedAgenda' => $printedOptions->printedAgenda,
+				);
 			}
 
 			foreach ($eventFieldIds as $eventFieldId => $printOption) {
 				if ($eventFieldId < 0) {
 					if ($eventFieldId == -2) {
-						$fieldName = 'Description';
+						$eventFieldIds[$eventFieldId]['name'] = 'Description';
 					}else if ($eventFieldId == -3) {
-						$fieldName = 'Branch';
+						$eventFieldIds[$eventFieldId]['name'] = 'Branch';
 					}else if ($eventFieldId == -4) {
-						$fieldName = 'Room';
-					}else{
-						continue;
-					}
-					if ($printOption == 'calendar') {
-						$eventFieldNamesCalendar[$eventFieldId] = $fieldName;
-					} else if ($printOption == 'agenda') {
-						$eventFieldNamesAgenda[$eventFieldId] = $fieldName;
-					} else {
-						$eventFieldNamesCalendar[$eventFieldId] = $fieldName;
-						$eventFieldNamesAgenda[$eventFieldId] = $fieldName;
+						$eventFieldIds[$eventFieldId]['name'] = 'Room';
 					}
 				} else {
 					$eventField = new EventField();
 					$eventField->id = $eventFieldId;
 					if ($eventField->find(true)) {
-						if ($printOption == 'calendar') {
-							$eventFieldNamesCalendar[$eventFieldId] = $eventField->name;
-						} else if ($printOption == 'agenda') {
-							$eventFieldNamesAgenda[$eventFieldId] = $eventField->name;
-						} else {
-							$eventFieldNamesCalendar[$eventFieldId] = $eventField->name;
-							$eventFieldNamesAgenda[$eventFieldId] = $eventField->name;
-						}
+						$eventFieldIds[$eventFieldId]['name'] = $eventField->name;
 					}
 				}
 			}
 		}
 
-		$interface->assign('eventFieldNamesCalendar', $eventFieldNamesCalendar);
-		$interface->assign('eventFieldNamesAgenda', $eventFieldNamesAgenda);
+		$interface->assign('eventFields', $eventFieldIds);
 
 		return [
 			'title' => translate([

@@ -10,12 +10,12 @@
 		<div class="col-md-6">
 			<h4 class="bold">{translate text="Calendar View Options" isPublicFacing=true}</h4>
 			<h5>({translate text="Landscape Orientation" isPublicFacing=true})</h5>
-			{if !empty($eventFieldNamesCalendar)}
-				{foreach from=$eventFieldNamesCalendar key=eventFieldId item=eventField}
+			{if !empty($eventFields)}
+				{foreach from=$eventFields key=eventFieldId item=eventField}
 					<div class="form-group checkbox">
-						<label for="calendar_{$eventField}">
-							<input type="checkbox" class="calendar-print-option" name="calendar_{$eventFieldId}" id="calendar_{$eventFieldId}">
-							<strong>{$eventField}</strong>
+						<label for="calendar_{$eventField.name}">
+							<input type="checkbox" class="calendar-print-option" name="calendar_{$eventField.name}" id="calendar_{$eventFieldId}" {if $eventField.printedCalendar}checked{/if}>
+							<strong>{$eventField.name}</strong>
 						</label>
 					</div>
 				{/foreach}
@@ -35,12 +35,12 @@
 		<div class="col-md-6">
 			<h4 class="bold">{translate text="Agenda View Options" isPublicFacing=true}</h4>
 			<h5>({translate text="Portrait Orientation" isPublicFacing=true})</h5>
-			{if !empty($eventFieldNamesAgenda)}
-				{foreach from=$eventFieldNamesAgenda key=eventFieldId item=eventField}
+			{if !empty($eventFields)}
+				{foreach from=$eventFields key=eventFieldId item=eventField}
 					<div class="form-group checkbox">
-						<label for="agenda_{$eventField}">
-							<input class="agenda-print-option" type="checkbox" name="agenda_{$eventFieldId}" id="agenda_{$eventFieldId}">
-							<strong>{$eventField}</strong>
+						<label for="agenda_{$eventField.name}">
+							<input class="agenda-print-option" type="checkbox" name="agenda_{$eventField.name}" id="agenda_{$eventFieldId}" {if $eventField.printedAgenda}checked{/if}>
+							<strong>{$eventField.name}</strong>
 						</label>
 					</div>
 				{/foreach}
