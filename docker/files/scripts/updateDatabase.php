@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../logger/DockerLogger.php';
 DockerLogger::init('BACKEND');
 
+require_once __DIR__ . '/../database/DatabaseHealth.php';
+
 // Set server name
 $_SERVER['SERVER_NAME'] = getenv('SITE_NAME');
 
@@ -123,6 +125,14 @@ function pruneCompletedUpdates($availableUpdates) {
 }
 
 function runPendingDatabaseUpdates() {
+
+	# Check database connection
+	global $aspen_db;
+	if (!checkDatabaseConnection($aspen_db) || !isDatabaseInitialized($aspen_db)) {
+		DockerLogger::error("Cannot connect to the database to run updates)");
+		exit(1);
+	}
+	
 	$pendingUpdates = getPendingDatabaseUpdates();
 	$updates = 0;
 	$failedUpdates = 0;
@@ -153,6 +163,8 @@ function runPendingDatabaseUpdates() {
 		];
 	}
 }
+
+# ================================================================================
 
 function prepareNightlyFullIndexing(): void {
 	require_once ROOT_DIR . '/sys/SystemVariables.php';
