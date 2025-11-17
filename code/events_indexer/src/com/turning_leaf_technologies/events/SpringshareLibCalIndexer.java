@@ -708,10 +708,10 @@ class SpringshareLibCalIndexer {
 
 	public static boolean hasOrphanEvents(Connection aspenConn) {
 		final String sql = "SELECT settingsId FROM springshare_libcal_events WHERE settingsId NOT IN (SELECT id FROM springshare_libcal_settings) AND deleted = 0 LIMIT 1";
-        try (PreparedStatement getEventsSitesToIndexStmt = aspenConn.prepareStatement(sql); ResultSet rs = getEventsSitesToIndexStmt.executeQuery()) {
-            return rs.next();
-        } catch (SQLException e) {
-            return false;
-        }
+		try (PreparedStatement getEventsSitesToIndexStmt = aspenConn.prepareStatement(sql); ResultSet rs = getEventsSitesToIndexStmt.executeQuery()) {
+			return rs.next();
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 }
