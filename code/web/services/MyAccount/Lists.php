@@ -9,6 +9,7 @@ class Lists extends MyAccount {
 		global $interface;
 		global $library;
 
+		$user = UserAccount::getActiveUserObj();
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
@@ -60,6 +61,8 @@ class Lists extends MyAccount {
 		$groupId = null;
 		if (isset($_REQUEST['groupId'])) {
 			$groupId = $_REQUEST['groupId'];
+			$user->lastListGroupViewed = $groupId;
+			$user->update();
 			if ($groupId == -1) {
 				$activeListGroup = UserAccount::getActiveUserObj()->getUnassignedListsForListGroups();
 				$activeListGroupDetails = new UserListGroup();
@@ -84,15 +87,21 @@ class Lists extends MyAccount {
 				}
 			}
 		} else {
-			$activeListGroup = UserListGroup::getLastViewedGroupForUser(UserAccount::getActiveUserObj());
-			if (empty($activeListGroup) && count($listGroups) > 0) {
-				$activeListGroup = $listGroup->getListsForGroup(UserAccount::getActiveUserObj());
-				$activeListGroupDetails = $listGroups[0];
+			if ($user->lastListGroupViewed == -1) {
+				$activeListGroup = UserAccount::getActiveUserObj()->getUnassignedListsForListGroups();
+				$activeListGroupDetails = new UserListGroup();
+				$activeListGroupDetails->title = 'Unassigned Lists';
+				$activeListGroupDetails->id = -1;
 			} else {
-				$activeListGroupDetails = UserListGroup::getLastViewedGroupDetailsForUser(UserAccount::getActiveUserObj());
+				$activeListGroup = UserListGroup::getLastViewedGroupForUser(UserAccount::getActiveUserObj());
+				if (empty($activeListGroup) && count($listGroups) > 0) {
+					$activeListGroup = $listGroup->getListsForGroup(UserAccount::getActiveUserObj());
+					$activeListGroupDetails = $listGroups[0];
+				} else {
+					$activeListGroupDetails = UserListGroup::getLastViewedGroupDetailsForUser(UserAccount::getActiveUserObj());
+				}
 			}
 		}
-
 		$interface->assign('groupId', $groupId);
 		$interface->assign('activeListGroup', $activeListGroup);
 		$interface->assign('activeListGroupDetails', $activeListGroupDetails);
