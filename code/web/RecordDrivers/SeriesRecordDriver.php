@@ -95,7 +95,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 			$seriesTitles = $seriesObject->getTitles();
 			$interface->assign('summNumTitles', count($seriesTitles['seriesMembers']));
 		}else{
-			$seriesTitles = $seriesObject->getTitles();
+			$seriesTitles = [];
 			$interface->assign('summNumTitles', 0);
 		}
 
