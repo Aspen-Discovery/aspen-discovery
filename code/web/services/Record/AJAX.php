@@ -1055,7 +1055,7 @@ class Record_AJAX extends Action {
 					$placeHoldOnEdition = 0;
 					if (isset($_REQUEST['promptForEdition'])) {
 						$promptForEdition = (int)$_REQUEST['promptForEdition'];
-						$placeHoldOnEdition = (int)$_REQUEST['placeHoldOnEdition'];
+						$placeHoldOnEdition = isset($_REQUEST['placeHoldOnEdition']) ? (int)$_REQUEST['placeHoldOnEdition'] : 0;
 						if ($promptForEdition > 0 && $placeHoldOnEdition > 1) {
 							//Placing a hold on a specific edition
 							$recordId = $_REQUEST['selectedEdition'];
@@ -1069,7 +1069,7 @@ class Record_AJAX extends Action {
 							}
 						}else{
 							//Placing a hold on the suggested edition
-							$rememberUserEditionPreference = (bool)$_REQUEST['rememberUserEditionPreference'];
+							$rememberUserEditionPreference = isset($_REQUEST['rememberUserEditionPreference']) ? filter_var($_REQUEST['rememberUserEditionPreference'], FILTER_VALIDATE_BOOLEAN) : false;
 							if ($rememberUserEditionPreference !== $user->rememberHoldPromptForEdition) {
 								$user->setRememberHoldPromptForEdition($rememberUserEditionPreference);
 							}
