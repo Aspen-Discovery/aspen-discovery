@@ -61,6 +61,15 @@ class OverDriveAPIProductAvailability extends DataObject {
 		return $this->_settingName;
 	}
 
+	/**
+	 * Gets the OverDrive ID.
+	 *
+	 * @return string|null
+	 */
+	function getOverdriveId() : ?string {
+		return $this->overdriveId ?? null;
+	}
+
 	private static $_preloadedAvailability = [];
 	/**
 	 * Preloads availability for an array of overdrive ids.
@@ -89,14 +98,19 @@ class OverDriveAPIProductAvailability extends DataObject {
 				$availability->selectAdd('overdriveId');
 
 				$availability->settingId = $overDriveScope->settingId;
-				//OverDrive availability now returns correct counts for the library including shared items for each library.
-				// Get the correct availability for with either the library (if available) or the shared collection
+				// Get the correct availability for with either the library (if available) or the shared collection.
 				$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
-				$availability->orderBy("libraryId DESC");
+				$availability->orderBy("libraryId DESC, overdriveId");
+				// Track which overdriveIds stored to avoid double-counting when both library-specific
+				// and shared collection records exist for the same identifier
+				$processedIds = [];
 				$availability->find();
 				while ($availability->fetch()) {
-					/** @noinspection PhpUndefinedFieldInspection */
-					self::$_preloadedAvailability[$availability->overdriveId][] = clone $availability;
+					$overdriveId = $availability->getOverdriveId();
+					if (!isset($processedIds[$overdriveId])) {
+						self::$_preloadedAvailability[$overdriveId][] = clone $availability;
+						$processedIds[$overdriveId] = true;
+					}
 				}
 			}
 		}
@@ -124,8 +138,7 @@ class OverDriveAPIProductAvailability extends DataObject {
 					$availability->selectAdd('overdriveId');
 
 					$availability->settingId = $overDriveScope->settingId;
-					//OverDrive availability now returns correct counts for the library including shared items for each library.
-					// Get the correct availability for with either the library (if available) or the shared collection
+					// Get the correct availability for with either the library (if available) or the shared collection.
 					$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
 					$availability->orderBy("libraryId DESC");
 					if ($availability->find(true)) {
