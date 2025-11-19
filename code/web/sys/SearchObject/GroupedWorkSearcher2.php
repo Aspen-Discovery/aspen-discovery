@@ -991,7 +991,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	 * @return  array              The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecord($id): array {
+	function getRecord($id): ?array {
 		$recordData = $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 		if ($recordData != null) {
 			$recordData = $this->cleanScopedFieldsForRecord($recordData);
