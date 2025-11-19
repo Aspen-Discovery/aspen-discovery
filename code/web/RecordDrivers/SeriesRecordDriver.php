@@ -92,13 +92,10 @@ class SeriesRecordDriver extends IndexRecordDriver {
 
 		$seriesObject = $this->getSeriesObject();
 		if ($seriesObject) {
-			$seriesTitles = $seriesObject->getTitles();
-			$interface->assign('summNumTitles', count($seriesTitles['seriesMembers']));
+			$interface->assign('summNumTitles', $seriesObject->numScopedTitlesInSeries());
 		}else{
-			$seriesTitles = [];
 			$interface->assign('summNumTitles', 0);
 		}
-
 
 		if ($showListsAppearingOn) {
 			//Check to see if there are lists the record is on

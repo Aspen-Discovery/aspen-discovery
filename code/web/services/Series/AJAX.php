@@ -15,7 +15,7 @@ class Series_AJAX extends JSON_Action {
 			$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
 			$message = $_REQUEST['message'];
 
-			//Load the course reserve
+			//Load the series
 			require_once ROOT_DIR . '/sys/Series/Series.php';
 			$series = new Series();
 			$series->id = $seriesId;

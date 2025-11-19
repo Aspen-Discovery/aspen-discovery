@@ -243,6 +243,7 @@ class Series extends DataObject {
 		return count($allTitles['seriesMembers']);
 	}
 
+	private ?array $_seriesTitles = null;
 	/**
 	 * Returns all members of the series as a custom array, used when loading members for display to the Series Page
 	 * Also returns a list of unique grouped work ids for the series
@@ -251,60 +252,73 @@ class Series extends DataObject {
 	 */
 	function getTitles($sortName = "volume asc", $includePlaceholders = true) : array {
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
-		$originalSeriesMembers = $this->getSeriesMembers($sortName, false, $includePlaceholders);
-		$seriesMembers = [];
-		$idsBySource = [
-			'GroupedWork' => []
-		];
-		$source = "GroupedWork";  // All series currently come from groupedWorks
-		foreach ($originalSeriesMembers as $seriesMember) {
-			if (!empty($seriesMember->groupedWorkPermanentId)) {
-				$idsBySource[$source][$seriesMember->groupedWorkPermanentId] = $seriesMember->groupedWorkPermanentId;
-			}
-			$tmpListEntry = [
-				'source' => $source,
-				'sourceId' => $seriesMember->groupedWorkPermanentId,
-				'title' => $seriesMember->displayName,
-				'author' => $seriesMember->author,
-				'description' => $seriesMember->description,
-				'volume' => $seriesMember->volume,
-				'pubDate' => $seriesMember->pubDate,
-				'seriesMemberId' => $seriesMember->id,
-				'weight' => $seriesMember->weight,
-				'seriesMember' => clone($seriesMember),
+		if ($this->_seriesTitles === null) {
+			$originalSeriesMembers = $this->getSeriesMembers($sortName, false, $includePlaceholders);
+			$seriesMembers = [];
+			$idsBySource = [
+				'GroupedWork' => []
 			];
+			$source = "GroupedWork";  // All series currently come from groupedWorks
+			foreach ($originalSeriesMembers as $seriesMember) {
+				if (!empty($seriesMember->groupedWorkPermanentId)) {
+					$idsBySource[$source][$seriesMember->groupedWorkPermanentId] = $seriesMember->groupedWorkPermanentId;
+				}
+				$tmpListEntry = [
+					'source' => $source,
+					'sourceId' => $seriesMember->groupedWorkPermanentId,
+					'title' => $seriesMember->displayName,
+					'author' => $seriesMember->author,
+					'description' => $seriesMember->description,
+					'volume' => $seriesMember->volume,
+					'pubDate' => $seriesMember->pubDate,
+					'seriesMemberId' => $seriesMember->id,
+					'weight' => $seriesMember->weight,
+					'seriesMember' => clone($seriesMember),
+				];
 
-			$seriesMembers[] = $tmpListEntry;
-		}
+				$this->_seriesTitles[] = $tmpListEntry;
+			}
 
-		//Filter to remove anything that is not part of this scope.
-		/** @var SearchObject_GroupedWorkSearcher2|false $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject($source);
-		if ($searchObject === false) {
-			AspenError::raiseError("Unknown Series Member Source $source");
-		}
-		$allSeriesMemberIds = $idsBySource[$source];
-		$scopedRecords = $searchObject->getScopedRecordIds($allSeriesMemberIds);
+			//Filter to remove anything that is not part of this scope.
+			/** @var SearchObject_GroupedWorkSearcher2|false $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject($source);
+			if ($searchObject === false) {
+				AspenError::raiseError("Unknown Series Member Source $source");
+			}
+			$allSeriesMemberIds = $idsBySource[$source];
+			$scopedRecords = $searchObject->getScopedRecordIds($allSeriesMemberIds);
 
-		//Remove anything that isn't in the scope from the series
-		$missingWorks = array_diff_key($allSeriesMemberIds, $scopedRecords);
+			//Remove anything that isn't in the scope from the series
+			$missingWorks = array_diff_key($allSeriesMemberIds, $scopedRecords);
 
-		$changeMade = true;
-		while ($changeMade) {
-			$changeMade = false;
-			foreach ($seriesMembers as $key => $seriesMember) {
-				if ($seriesMember['source'] == $source && in_array($seriesMember['sourceId'], $missingWorks)) {
-					unset($seriesMembers[$key]);
-					unset($idsBySource[$source][$key]);
-					$changeMade = true;
-					break;
+			$changeMade = true;
+			while ($changeMade) {
+				$changeMade = false;
+				foreach ($seriesMembers as $key => $seriesMember) {
+					if ($seriesMember['source'] == $source && in_array($seriesMember['sourceId'], $missingWorks)) {
+						unset($seriesMembers[$key]);
+						unset($idsBySource[$source][$key]);
+						$changeMade = true;
+						break;
+					}
 				}
 			}
 		}
 
+		//Sort the series members
+		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+		$sortMethod = $this->getSortMethodIdByName($sortName);
+
+		//Sort the titles based on the active sort method
+		uasort($this->_seriesTitles, function (array $a, array $b) use ($sortMethod) {
+			$seriesMemberA = $a['seriesMember'];
+			$seriesMemberB = $b['seriesMember'];
+			return $this->compareSeriesMembers($sortMethod, $seriesMemberA, $seriesMemberB);
+
+		});
+
 		return [
-			'seriesMembers' => $seriesMembers,
-			'idsBySource' => $idsBySource,
+			'seriesMembers' => $this->_seriesTitles
 		];
 	}
 
@@ -315,76 +329,38 @@ class Series extends DataObject {
 	 * @return SeriesMember[]      array of series members
 	 */
 	function getSeriesMembers($sortName = null, $showExcluded = true, $includePlaceholders = true) : array {
-		$sortMethod = $this->sortMethod;
-		if ($sortName != null) {
-			if ($sortName == 'volume') {
-				$sortMethod = 1;
-			}elseif ($sortName == 'displayName' || $sortName == 'title') {
-				$sortMethod = 2;
-			}elseif ($sortName == 'pubDate') {
-				$sortMethod = 3;
-			}elseif ($sortName == 'pubDate desc') {
-				$sortMethod = 4;
-			}else{
-				$sortMethod = 5;
+		if ($this->_seriesMembers === null) {
+			$this->_seriesMembers = [];
+
+			if (empty($this->id)) {
+				return [];
 			}
-			$sortName = $this->sortMethod;
+			$seriesMember = new SeriesMember();
+			$seriesMember->seriesId = $this->id;
+			if (!$showExcluded) {
+				$seriesMember->excluded = 0;
+			}
+			if (!$includePlaceholders) {
+				$seriesMember->isPlaceholder = 0;
+			}
+			$seriesMember->deleted = 0;
+
+			$this->_seriesMembers = $seriesMember->fetchAll();
+
+			$seriesMember->__destruct();
+			$seriesMember = null;
 		}
+
+		//Sort the series members
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
-		if (empty($this->id)) {
-			return [];
-		}
-		$seriesMember = new SeriesMember();
-		$seriesMember->seriesId = $this->id;
-		if (!$showExcluded) {
-			$seriesMember->excluded = 0;
-		}
-		if (!$includePlaceholders) {
-			$seriesMember->isPlaceholder = 0;
-		}
-		$seriesMember->deleted = 0;
+		$sortMethod = $this->getSortMethodIdByName($sortName);
+
 		//Sort the titles based on the active sort method
-		if ($sortMethod == 1) {
-			$seriesMember->orderBy('volume, displayName');
-		}else if ($sortMethod == 2) {
-			$seriesMember->orderBy('displayName');
-		}else if ($sortMethod == 3) {
-			$seriesMember->orderBy('pubDate, displayName');
-		}else if ($sortMethod == 4) {
-			$seriesMember->orderBy('pubDate desc, displayName');
-		}else{
-			$seriesMember->orderBy('weight');
-		}
+		uasort($this->_seriesMembers, function (SeriesMember $a, SeriesMember $b) use ($sortMethod) {
+			return $this->compareSeriesMembers($sortMethod, $a, $b);
 
-		$this->_seriesMembers = [];
-		$seriesMember->find();
-		while ($seriesMember->fetch()) {
-			$this->_seriesMembers[$seriesMember->id] = clone($seriesMember);
-		}
-		//Resort if we're doing volume sorting to get natural case sorting
-		if ($sortMethod == 1) {
-			uasort($this->_seriesMembers, function (SeriesMember $a, SeriesMember $b) {
+		});
 
-				$volumeComparison = 0;
-				if (!empty($a->volume) && !empty($b->volume)) {
-					$volumeComparison = strnatcasecmp($a->volume, $b->volume);
-				}else if (!empty($a->volume) && empty($b->volume)) {
-					//Sort things with volumes before things without
-					$volumeComparison = -1;
-				}else if (empty($a->volume) && !empty($b->volume)) {
-					//Sort things with volumes before things without
-					$volumeComparison = 1;
-				}
-				if ($volumeComparison == 0) {
-					return strnatcasecmp($a->displayName, $b->displayName);
-				}else{
-					return $volumeComparison;
-				}
-			});
-		}
-
-		$seriesMember->__destruct();
-		$seriesMember = null;
 		return $this->_seriesMembers;
 	}
 
@@ -543,5 +519,71 @@ class Series extends DataObject {
 			5 => 'custom',
 			default => 'volume',
 		};
+	}
+
+	/**
+	 * @param int $sortMethod
+	 * @param SeriesMember $a
+	 * @param SeriesMember $b
+	 * @return int
+	 */
+	function compareSeriesMembers(int $sortMethod, SeriesMember $a, SeriesMember $b): int {
+		if ($sortMethod == 1) {
+			$volumeComparison = 0;
+			if (!empty($a->volume) && !empty($b->volume)) {
+				$volumeComparison = strnatcasecmp($a->volume, $b->volume);
+			} else if (!empty($a->volume) && empty($b->volume)) {
+				//Sort things with volumes before things without
+				$volumeComparison = -1;
+			} else if (empty($a->volume) && !empty($b->volume)) {
+				//Sort things with volumes before things without
+				$volumeComparison = 1;
+			}
+			if ($volumeComparison == 0) {
+				return strnatcasecmp($a->displayName, $b->displayName);
+			} else {
+				return $volumeComparison;
+			}
+		} else if ($sortMethod == 2) {
+			return strnatcasecmp($a->displayName, $b->displayName);
+		} else if ($sortMethod == 3) {
+			$pubDateComparison = strcasecmp($a->pubDate, $b->pubDate);
+			if ($pubDateComparison == 0) {
+				return strnatcasecmp($a->displayName, $b->displayName);
+			} else {
+				return $pubDateComparison;
+			}
+		} else if ($sortMethod == 4) {
+			$pubDateComparison = strcasecmp($b->pubDate, $a->pubDate);
+			if ($pubDateComparison == 0) {
+				return strnatcasecmp($a->displayName, $b->displayName);
+			} else {
+				return $pubDateComparison;
+			}
+		} else {
+			return $a->weight <=> $b->weight;
+		}
+	}
+
+	/**
+	 * @param mixed $sortName
+	 * @return int
+	 */
+	public function getSortMethodIdByName(mixed $sortName): int {
+		$sortMethod = $this->sortMethod;
+		if ($sortName != null) {
+			if ($sortName == 'volume' || $sortName == 'volume asc') {
+				$sortMethod = 1;
+			} elseif ($sortName == 'displayName' || $sortName == 'title') {
+				$sortMethod = 2;
+			} elseif ($sortName == 'pubDate') {
+				$sortMethod = 3;
+			} elseif ($sortName == 'pubDate desc') {
+				$sortMethod = 4;
+			} else {
+				$sortMethod = 5;
+			}
+		}
+		return $sortMethod;
 	}
 }
