@@ -51,11 +51,23 @@
 					{translate text="Other Dates in this Series" isPublicFacing=true}
 				</div>
 				<div class="panel-body">
-					{foreach from=$recordDriver->getOtherEventsInSeries() item=event key=key}
+					{foreach from=$recordDriver->getOtherEventsInSeries() item=event key=key name="eventDateLoop"}
+						{if $smarty.foreach.eventDateLoop.iteration == 6}
+							<div class="col-xs-12">
+								<a href="#" id="moreEventDates" onclick="AspenDiscovery.Events.moreEventDates(); return false;">{translate text='more' isPublicFacing=true} ...</a>
+							</div>
+							<div class="narrowGroupHidden" id="narrowGroupHidden_eventDates" style="display:none">
+						{/if}
 						<div class="col-xs-12">
-							<a href='/AspenEvents/{$key|escape:'url'}/Event'>{$event|date_format:"%x"}</a>
+							<a href='/AspenEvents/{$key|escape:'url'}/Event'>{$event|format_date_locale:'medium'}</a>
 						</div>
 					{/foreach}
+					{if $smarty.foreach.eventDateLoop.total > 5}
+						<div class="col-xs-12">
+							<a href="#" onclick="AspenDiscovery.Events.lessEventDates(); return false;">{translate text='less' isPublicFacing=true} ...</a>
+						</div>
+						</div>{* closes narrowGroupHidden div *}
+					{/if}
 				</div>
 			</div>
 		{/if}
