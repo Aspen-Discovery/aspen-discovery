@@ -363,7 +363,7 @@ class Events_AJAX extends JSON_Action {
 		$calendarDisplaySettingId = 0;
 		require_once ROOT_DIR . '/sys/Events/CalendarDisplaySettingLibrary.php';
 		$setting = new CalendarDisplaySettingLibrary();
-		$setting->libraryId = $library->id;
+		$setting->libraryId = $library->libraryId;
 		if ($setting->find(true)) {
 			$calendarDisplaySettingId = $setting->calendarDisplaySettingId;
 		}
