@@ -2465,6 +2465,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	static array $additionalNotesFields = [
+		'246' => 'Other Title',
 		'310' => 'Current Publication Frequency',
 		'321' => 'Former Publication Frequency',
 		'351' => 'Organization & arrangement of materials',
