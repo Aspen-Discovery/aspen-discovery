@@ -326,6 +326,7 @@ AspenDiscovery.OverDrive = (function(){
 					AspenDiscovery.showMessage('Error', data.message);
 				}
 			});
+			return false;
 		},
 
 		getLargeCover: function (id){
