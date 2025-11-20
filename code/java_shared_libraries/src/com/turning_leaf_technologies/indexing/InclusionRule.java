@@ -50,17 +50,21 @@ class InclusionRule {
 		boolean detailedInclusionRuleHasNoRestrictions = false;
 		if (subLocationCode == null || subLocationCode.isEmpty() || subLocationCode.equals(".*")){
 			if (subLocationsToExclude == null || subLocationsToExclude.isEmpty()){
-				if (audience == null || audience.isEmpty() || audience.equals(".*")){
-					if (audiencesToExclude == null || audiencesToExclude.isEmpty()){
-						if (format == null || format.isEmpty() || format.equals(".*")){
-							if (formatsToExclude == null || formatsToExclude.isEmpty()){
-								if (shelfLocation == null || shelfLocation.isEmpty() || shelfLocation.equals(".*")){
-									if (shelfLocationsToExclude == null || shelfLocationsToExclude.isEmpty()){
-										if (collectionCode == null || collectionCode.isEmpty() || collectionCode.equals(".*")){
-											if (collectionCodesToExclude == null || collectionCodesToExclude.isEmpty()){
-												if (marcTagToMatch == null || marcTagToMatch.isEmpty() || marcTagToMatch.equals(".*")){
-													if (marcValueToMatch == null || marcValueToMatch.isEmpty() || marcValueToMatch.equals(".*")){
-														detailedInclusionRuleHasNoRestrictions = true;
+				if (iType == null || iType.isEmpty() || iType.equals(".*")) {
+					if (iTypesToExclude == null || iTypesToExclude.isEmpty()) {
+						if (audience == null || audience.isEmpty() || audience.equals(".*")) {
+							if (audiencesToExclude == null || audiencesToExclude.isEmpty()) {
+								if (format == null || format.isEmpty() || format.equals(".*")) {
+									if (formatsToExclude == null || formatsToExclude.isEmpty()) {
+										if (shelfLocation == null || shelfLocation.isEmpty() || shelfLocation.equals(".*")) {
+											if (shelfLocationsToExclude == null || shelfLocationsToExclude.isEmpty()) {
+												if (collectionCode == null || collectionCode.isEmpty() || collectionCode.equals(".*")) {
+													if (collectionCodesToExclude == null || collectionCodesToExclude.isEmpty()) {
+														if (marcTagToMatch == null || marcTagToMatch.isEmpty() || marcTagToMatch.equals(".*")) {
+															if (marcValueToMatch == null || marcValueToMatch.isEmpty() || marcValueToMatch.equals(".*")) {
+																detailedInclusionRuleHasNoRestrictions = true;
+															}
+														}
 													}
 												}
 											}
