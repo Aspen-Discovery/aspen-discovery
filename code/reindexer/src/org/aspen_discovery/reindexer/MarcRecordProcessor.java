@@ -1551,7 +1551,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		groupedWork.addAuthor2Role(contributors);
-		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100acq:110ab");
+		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100acdq:110ab");
 		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
 			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
 		}
