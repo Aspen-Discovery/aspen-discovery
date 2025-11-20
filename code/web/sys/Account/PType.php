@@ -188,6 +188,7 @@ class PType extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Allow users to renew their account online',
 				'description' => 'Allow users of this patron type to renew their account when permitted by library system settings.',
+				'note' => "The visibility of the renewal link also depends on the patron's home library settings. To show, ensure that 'Enable Card Renewal' is enabled within Library Settings.",
 			],
 			'enableYearInReview' => [
 				'property' => 'enableYearInReview',

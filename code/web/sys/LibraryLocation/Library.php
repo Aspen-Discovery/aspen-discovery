@@ -2666,6 +2666,7 @@ class Library extends DataObject {
 								'values' => $validCardRenewalOptions,
 								'label' => 'Enable Card Renewal',
 								'description' => 'Whether or not patrons can renew their library card',
+								'note' => "The visibility of the renewal link also depends on the patron's Patron Type. To show, ensure that 'Allow users to renew their account online' is enabled within Patron Types.",
 								'hideInLists' => true,
 							],
 							'showCardRenewalWhenExpirationIsClose' => [
