@@ -264,14 +264,20 @@ class Grouping_StatusInformation {
 		$numberOfCopiesMessage = '';
 		global $library;
 		//If we don't have holds or on order copies, we don't need to show anything.
-		if (($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) && ($library->showGroupedHoldCopiesCount != 3 && $library->showGroupedHoldCopiesCount != 4)) {
+		if ($library->showGroupedHoldCopiesCount == 4) {
+			if ($this->getHoldableCopies() == 1) {
+				$numberOfCopiesMessage .= '1 holdable copy.';
+			} elseif ($this->getHoldableCopies() > 1) {
+				$numberOfCopiesMessage .= '%5% holdable copies.';
+			}
+		} else if (($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) && ($library->showGroupedHoldCopiesCount != 3)) {
 			/** @noinspection PhpConditionAlreadyCheckedInspection */
 			$numberOfCopiesMessage = '';
 		} else {
 			if ($this->getAvailableCopies() > 9999) {
 				$numberOfCopiesMessage .= 'Always Available';
 			} else {
-				if ($library->showGroupedHoldCopiesCount == 4 || ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0)) {
+				if ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) {
 					if ($this->getAvailableCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy available';
 					} elseif ($this->getAvailableCopies() > 1) {
@@ -286,7 +292,7 @@ class Grouping_StatusInformation {
 				}else{
 					$showWaitList = false;
 				}
-				if ($library->showGroupedHoldCopiesCount != 4 && (($this->getNumHolds() > 0 && $this->getHoldableCopies() > 0) && ($showWaitList))) {
+				if (($this->getNumHolds() > 0 && $this->getHoldableCopies() > 0) && ($showWaitList)) {
 					if ($this->getCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy';
 					} elseif ($this->getCopies() > 1) {
@@ -329,6 +335,7 @@ class Grouping_StatusInformation {
 			2 => $this->getNumHolds(),
 			3 => $this->getOnOrderCopies(),
 			4 => $this->getAvailableCopies(),
+			5 => $this->getHoldableCopies(),
 			'isPublicFacing' => true,
 		]);
 	}
