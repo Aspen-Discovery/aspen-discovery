@@ -6412,6 +6412,7 @@ class User extends DataObject {
 			$structure['firstname']['readOnly'] = true;
 			$structure['lastname']['readOnly'] = true;
 			$structure['email']['readOnly'] = true;
+			$structure['email']['required'] = false;
 			unset($structure['additionalAdministrationLocations']);
 		}
 
